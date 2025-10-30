@@ -713,7 +713,7 @@ async function logIncidentAudit(event: {
       // Hash will be created on backend
     };
 
-    await apiClient.post('/api/v1/audit-logs', auditData);
+    await apiClient.post('/audit-logs', auditData);
   } catch (error) {
     // Log to console but don't fail the operation
     console.error('Audit log failed:', error);

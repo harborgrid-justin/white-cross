@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { API_CONFIG } from '@/constants/config';
 
 // Use internal API URL for server-side requests in Docker
-const API_BASE_URL = API_CONFIG.INTERNAL_API_URL.replace('/api/v1', '');
+const API_BASE_URL = API_CONFIG.INTERNAL_API_URL;
 
 export async function GET(
   request: NextRequest,

@@ -117,7 +117,7 @@ export async function serverFetch<T = any>(
 export function getBackendUrl(): string {
   return process.env.API_BASE_URL ||
          process.env.NEXT_PUBLIC_API_URL ||
-         'http://localhost:3001/api/v1';
+         'http://localhost:3001';
 }
 
 /**

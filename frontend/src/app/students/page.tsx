@@ -141,7 +141,7 @@ export default function StudentsPage() {
       if (selectedGrade !== 'all') params.grade = selectedGrade;
 
       const response = await apiClient.get<any>(
-        API_ENDPOINTS.students,
+        API_ENDPOINTS.STUDENTS.BASE,
         params
       );
 

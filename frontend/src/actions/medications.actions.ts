@@ -508,7 +508,7 @@ export async function generateMedicationAdministrationReport(
 ): Promise<ActionResult<{ reportUrl: string }>> {
   try {
     const response = await apiClient.post<{ reportUrl: string }>(
-      '/api/v1/medications/reports/administration',
+      '/medications/reports/administration',
       filters
     );
 
@@ -535,7 +535,7 @@ export async function exportMedicationHistory(
 ): Promise<ActionResult<{ downloadUrl: string }>> {
   try {
     const response = await apiClient.get<{ downloadUrl: string }>(
-      `/api/v1/students/${studentId}/medications/export?format=${format}`
+      `/students/${studentId}/medications/export?format=${format}`
     );
 
     return {
@@ -564,7 +564,7 @@ export async function checkDrugInteractions(
 ): Promise<ActionResult<{ interactions: Array<{ severity: string; description: string }> }>> {
   try {
     const response = await apiClient.post<{ interactions: Array<{ severity: string; description: string }> }>(
-      '/api/v1/medications/check-interactions',
+      '/medications/check-interactions',
       { medicationIds }
     );
 
@@ -589,7 +589,7 @@ export async function getMedicationFormularyInfo(
 ): Promise<ActionResult<{ formulary: unknown }>> {
   try {
     const response = await apiClient.get<{ formulary: unknown }>(
-      `/api/v1/medications/formulary?name=${encodeURIComponent(medicationName)}`
+      `/medications/formulary?name=${encodeURIComponent(medicationName)}`
     );
 
     return {

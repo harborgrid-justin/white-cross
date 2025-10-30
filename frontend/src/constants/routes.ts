@@ -421,7 +421,7 @@ export const ADMIN_ROUTES = {
  */
 export const API_ROUTES = {
   /** Base API URL */
-  BASE: '/api/v1',
+  BASE: '',
 
   /** Authentication */
   AUTH_LOGIN: '/auth/login',

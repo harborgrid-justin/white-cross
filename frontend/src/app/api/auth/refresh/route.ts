@@ -90,7 +90,7 @@ import { auditLog, AUDIT_ACTIONS, createAuditContext } from '@/lib/audit';
 export async function POST(request: NextRequest) {
   try {
     // Proxy refresh request to backend
-    const response = await proxyToBackend(request, '/api/v1/auth/refresh');
+    const response = await proxyToBackend(request, '/auth/refresh');
 
     const data = await response.json();
 

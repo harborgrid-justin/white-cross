@@ -1,677 +1,384 @@
-/**
- * @fileoverview HIPAA Compliance Dashboard Page
- *
- * Centralized dashboard for monitoring HIPAA compliance status, audit activity,
- * policy acknowledgments, training compliance, and regulatory alerts. Provides
- * real-time compliance metrics and quick access to compliance management tools.
- *
- * @module compliance
- *
- * @description
- * This page serves as the main entry point for compliance management in the
- * White Cross healthcare platform. It displays:
- * - Overall compliance score and risk metrics
- * - Active compliance alerts requiring attention
- * - Recent audit log activity with PHI access tracking
- * - Policy acknowledgment status
- * - Training compliance metrics
- * - Quick action cards for navigating to detailed views
- *
- * @see {@link https://www.hhs.gov/hipaa/for-professionals/security/laws-regulations/index.html | HIPAA Security Rule}
- *
- * @remarks
- * **HIPAA Compliance Tracking:**
- * - Compliance score calculated based on policy acknowledgments, training completion,
- *   audit log integrity, and security assessments
- * - Risk score derived from unresolved alerts, overdue training, and security findings
- * - All PHI access is logged and displayed in recent activity
- *
- * **Dashboard Metrics:**
- * - Compliance Score: Percentage indicating overall HIPAA compliance adherence
- * - Risk Score: Numerical value representing current risk level (lower is better)
- * - Active Alerts: Count of unresolved compliance alerts requiring review
- * - Audit Logs: Daily count with PHI access breakdown
- *
- * @since 1.0.0
- */
+'use client';
 
-import { Metadata } from 'next';
-import { Suspense } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
-import {
-  Shield,
-  FileText,
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-  TrendingUp,
-  Users,
-  FileCheck
-} from 'lucide-react';
-import Link from 'next/link';
+import React, { useState, useEffect } from 'react';
+import { reportsApi } from '@/services/modules/reportsApi';
+import { type ComplianceReport } from '@/types/reports';
+import { useToast } from '@/hooks/use-toast';
+import { Shield, AlertTriangle, CheckCircle, Search, Filter, FileText, Calendar, TrendingUp } from 'lucide-react';
 
 /**
- * Page metadata for SEO and browser display
+ * Compliance Main Page
+ * 
+ * Comprehensive compliance monitoring dashboard for tracking
+ * HIPAA, FERPA, and other regulatory compliance requirements.
  */
-export const metadata: Metadata = {
-  title: 'Compliance Dashboard | White Cross',
-  description: 'HIPAA compliance monitoring, audit logs, and policy management',
-};
+export default function CompliancePage() {
+  const [complianceData, setComplianceData] = useState<ComplianceReport | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedDateRange, setSelectedDateRange] = useState<string>('30');
+  const { toast } = useToast();
 
-/**
- * Force dynamic rendering for this route
- * Required because compliance data is user-specific and requires real-time metrics
- */
-export const dynamic = "force-dynamic";
+  /**
+   * Load compliance data from API
+   */
+  useEffect(() => {
+    const loadComplianceData = async () => {
+      setLoading(true);
+      
+      try {
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(endDate.getDate() - parseInt(selectedDateRange));
+        
+        const filters = {
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString(),
+        };
+        
+        const response = await reportsApi.getComplianceReport(filters);
+        setComplianceData(response);
+      } catch (error) {
+        console.error('Failed to load compliance data:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load compliance data. Please try again.',
+          variant: 'destructive',
+        });
+        setComplianceData(null);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-/**
- * Compliance Dashboard Page Component
- *
- * React Server Component that displays a comprehensive compliance overview with
- * real-time metrics, alerts, audit activity, and navigation to detailed views.
- *
- * @async
- * @returns {Promise<JSX.Element>} Rendered compliance dashboard with metrics and quick actions
- *
- * @description
- * **Key Features:**
- * - Real-time compliance score calculation
- * - Active alert monitoring with severity indicators
- * - Recent audit activity feed with PHI access tracking
- * - Quick action cards for common compliance tasks
- * - Policy acknowledgment status tracking
- * - Training compliance monitoring
- *
- * **Compliance Metrics Displayed:**
- * 1. **Compliance Score**: Overall HIPAA compliance percentage (target: 95%+)
- * 2. **Risk Score**: Numerical risk assessment (lower is better, target: <30)
- * 3. **Active Alerts**: Unresolved compliance issues (target: 0)
- * 4. **Daily Audit Logs**: Today's audit entries with PHI access count
- *
- * **Alert Severity Levels:**
- * - LOW: Informational, no immediate action required
- * - MEDIUM: Review recommended within 48 hours
- * - HIGH: Action required within 24 hours
- * - CRITICAL: Immediate attention required
- *
- * @example
- * ```tsx
- * // Rendered at route: /compliance
- * <ComplianceDashboardPage />
- * ```
- *
- * @remarks
- * This is a Next.js 16 Server Component with dynamic rendering.
- * All data is fetched server-side from compliance metrics aggregation service.
- * Metrics are calculated in real-time from audit logs, policy data, and training records.
- *
- * @see {@link getComplianceMetrics} for metrics calculation
- * @see {@link getRecentAlerts} for active alert retrieval
- * @see {@link getAuditSummary} for audit activity summary
- */
-export default async function ComplianceDashboardPage() {
-  // TODO: Replace with actual server actions
-  const metrics = await getComplianceMetrics();
-  const alerts = await getRecentAlerts();
-  const auditSummary = await getAuditSummary();
+    loadComplianceData();
+  }, [selectedDateRange, toast]);
+
+  const handleViewComplianceHistory = () => {
+    window.location.href = '/dashboard/compliance/history';
+  };
+
+  const handleGenerateAudit = () => {
+    window.location.href = '/dashboard/compliance/audit';
+  };
+
+  const formatDate = (dateString: string | Date) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const getComplianceStatusBadge = (status: string) => {
+    const statusStyles = {
+      'COMPLIANT': 'bg-green-100 text-green-800',
+      'WARNING': 'bg-yellow-100 text-yellow-800',
+      'NON_COMPLIANT': 'bg-red-100 text-red-800',
+    };
+
+    const statusIcons = {
+      'COMPLIANT': <CheckCircle className="w-3 h-3 mr-1" />,
+      'WARNING': <AlertTriangle className="w-3 h-3 mr-1" />,
+      'NON_COMPLIANT': <AlertTriangle className="w-3 h-3 mr-1" />,
+    };
+
+    return (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusStyles[status as keyof typeof statusStyles] || statusStyles.WARNING}`}>
+        {statusIcons[status as keyof typeof statusIcons]}
+        {status.replace('_', ' ')}
+      </span>
+    );
+  };
+
+  const getComplianceScore = () => {
+    if (!complianceData?.overallScore) return 0;
+    return Math.round(complianceData.overallScore);
+  };
+
+  const getScoreColor = (score: number) => {
+    if (score >= 90) return 'text-green-600';
+    if (score >= 70) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
+  const filteredViolations = complianceData?.violations?.filter(violation => {
+    const matchesSearch = !searchTerm || 
+      violation.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      violation.description.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesCategory = !selectedCategory || violation.type === selectedCategory;
+    
+    return matchesSearch && matchesCategory;
+  }) || [];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Compliance Dashboard</h1>
-          <p className="text-muted-foreground mt-1">
-            HIPAA compliance monitoring and audit trail management
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" asChild>
-            <Link href="/compliance/reports">
-              <FileText className="mr-2 h-4 w-4" />
-              Generate Report
-            </Link>
-          </Button>
-          <Button asChild>
-            <Link href="/compliance/audits">
-              <Shield className="mr-2 h-4 w-4" />
-              View Audit Logs
-            </Link>
-          </Button>
-        </div>
-      </div>
-
-      {/* Compliance Score Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Compliance Score</CardTitle>
-            <Shield className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{metrics.complianceScore}%</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+2.5%</span> from last month
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Risk Score</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-amber-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{metrics.riskScore}</div>
-            <p className="text-xs text-muted-foreground">
-              Low risk level
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Alerts</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{metrics.alerts.active}</div>
-            <p className="text-xs text-muted-foreground">
-              {metrics.alerts.critical} critical
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Audit Logs Today</CardTitle>
-            <FileCheck className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{auditSummary.todayCount}</div>
-            <p className="text-xs text-muted-foreground">
-              {auditSummary.phiAccessCount} PHI accesses
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Active Alerts Section */}
-      <Card>
-        <CardHeader>
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="mb-8">
           <div className="flex items-center justify-between">
-            <CardTitle>Active Compliance Alerts</CardTitle>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/compliance/audits?filter=alerts">View All</Link>
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {alerts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-              <CheckCircle className="h-12 w-12 mb-2 text-green-600" />
-              <p>No active compliance alerts</p>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Compliance Dashboard</h1>
+              <p className="text-gray-600 mt-2">Monitor HIPAA, FERPA, and regulatory compliance</p>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {alerts.map((alert) => (
-                <div
-                  key={alert.id}
-                  className="flex items-start justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
-                >
-                  <div className="flex items-start gap-3">
-                    <AlertTriangle className={`h-5 w-5 mt-0.5 ${getSeverityColor(alert.severity)}`} />
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-semibold">{alert.title}</h4>
-                        <Badge variant={getSeverityVariant(alert.severity)}>
-                          {alert.severity}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {alert.description}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        {formatTimestamp(alert.timestamp)}
-                      </p>
-                    </div>
+            <div className="flex space-x-3">
+              <button
+                onClick={handleViewComplianceHistory}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center"
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                View History
+              </button>
+              <button
+                onClick={handleGenerateAudit}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center"
+              >
+                <Shield className="w-4 h-4 mr-2" />
+                Generate Audit
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Compliance Score Overview */}
+        <div className="mb-8 bg-white rounded-lg shadow-sm border p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Overall Compliance Score</h2>
+              <p className="text-gray-600">Based on HIPAA, FERPA, and internal policy adherence</p>
+            </div>
+            <div className="text-center">
+              <div className={`text-4xl font-bold ${getScoreColor(getComplianceScore())}`}>
+                {getComplianceScore()}%
+              </div>
+              <p className="text-sm text-gray-500 mt-1">Last 30 days</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Stats */}
+        <div className="mb-8 grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-white p-4 rounded-lg shadow-sm border">
+            <h3 className="text-sm font-medium text-gray-700">HIPAA Logs</h3>
+            <p className="text-2xl font-bold text-blue-600">{complianceData?.hipaaLogs?.length || 0}</p>
+            <p className="text-xs text-gray-500 mt-1">Access logs recorded</p>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow-sm border">
+            <h3 className="text-sm font-medium text-gray-700">Medication Compliance</h3>
+            <p className="text-2xl font-bold text-green-600">
+              {complianceData?.medicationCompliance?.find(m => m.isActive)?.count || 0}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">Active medications tracked</p>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow-sm border">
+            <h3 className="text-sm font-medium text-gray-700">Vaccination Records</h3>
+            <p className="text-2xl font-bold text-purple-600">{complianceData?.vaccinationRecords || 0}</p>
+            <p className="text-xs text-gray-500 mt-1">Records maintained</p>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow-sm border">
+            <h3 className="text-sm font-medium text-gray-700">Violations</h3>
+            <p className="text-2xl font-bold text-red-600">{complianceData?.violations?.length || 0}</p>
+            <p className="text-xs text-gray-500 mt-1">Issues to address</p>
+          </div>
+        </div>
+
+        {/* Compliance Categories */}
+        {complianceData?.categoryScores && (
+          <div className="mb-8 bg-white rounded-lg shadow-sm border p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Compliance by Category</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {complianceData.categoryScores.map((category) => (
+                <div key={category.category} className="border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-medium text-gray-900">{category.category}</h3>
+                    {getComplianceStatusBadge(category.status)}
                   </div>
-                  <Button variant="outline" size="sm">
-                    Review
-                  </Button>
+                  <div className="flex items-center space-x-2 mb-2">
+                    <div className="flex-1 bg-gray-200 rounded-full h-2">
+                      <div 
+                        className={`h-2 rounded-full ${category.status === 'COMPLIANT' ? 'bg-green-500' : category.status === 'WARNING' ? 'bg-yellow-500' : 'bg-red-500'}`}
+                        style={{ width: `${category.percentage}%` }}
+                      />
+                    </div>
+                    <span className="text-sm font-medium text-gray-700">{category.percentage}%</span>
+                  </div>
+                  <p className="text-xs text-gray-600">
+                    {category.score} / {category.maxScore} points
+                  </p>
+                  {category.issues && category.issues.length > 0 && (
+                    <div className="mt-2">
+                      <p className="text-xs text-red-600">{category.issues.length} issue(s) found</p>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Quick Actions Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
-          <Link href="/compliance/audits">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileCheck className="h-5 w-5" />
-                Audit Logs
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                View and search comprehensive audit trail with tamper-proof verification
-              </p>
-            </CardContent>
-          </Link>
-        </Card>
-
-        <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
-          <Link href="/compliance/policies">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Policy Management
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Manage HIPAA policies, track acknowledgments, and version control
-              </p>
-            </CardContent>
-          </Link>
-        </Card>
-
-        <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
-          <Link href="/compliance/training">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Training Compliance
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Track staff training completion, certifications, and deadlines
-              </p>
-            </CardContent>
-          </Link>
-        </Card>
-
-        <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
-          <Link href="/compliance/reports">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                Compliance Reports
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Generate HIPAA, FERPA, and custom compliance reports
-              </p>
-            </CardContent>
-          </Link>
-        </Card>
-
-        <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
-          <Link href="/compliance/policies?status=pending">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5" />
-                Pending Acknowledgments
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                {metrics.policies.pending} policies awaiting acknowledgment
-              </p>
-            </CardContent>
-          </Link>
-        </Card>
-
-        <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
-          <Link href="/compliance/training?filter=overdue">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5" />
-                Overdue Training
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                {metrics.training.overdue} users with overdue training requirements
-              </p>
-            </CardContent>
-          </Link>
-        </Card>
-      </div>
-
-      {/* Recent Audit Activity */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Recent Audit Activity</CardTitle>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/compliance/audits">View All Logs</Link>
-            </Button>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {auditSummary.recentLogs.map((log) => (
-              <div
-                key={log.id}
-                className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors"
+        )}
+
+        {/* Date Range Filter */}
+        <div className="mb-6 bg-white p-4 rounded-lg shadow-sm border">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
+                <Search className="w-4 h-4 inline mr-1" />
+                Search Violations
+              </label>
+              <input
+                id="search"
+                type="text"
+                value={searchTerm}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+                placeholder="Search by type or description..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+                <Filter className="w-4 h-4 inline mr-1" />
+                Category
+              </label>
+              <select
+                id="category"
+                value={selectedCategory}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedCategory(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <div className="flex items-center gap-3">
-                  <Badge variant={getSeverityVariant(log.severity)}>
-                    {log.severity}
-                  </Badge>
-                  <div>
-                    <p className="text-sm font-medium">{log.action}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {log.userName} • {formatTimestamp(log.timestamp)}
-                    </p>
+                <option value="">All Categories</option>
+                <option value="HIPAA">HIPAA</option>
+                <option value="FERPA">FERPA</option>
+                <option value="DATA_SECURITY">Data Security</option>
+                <option value="ACCESS_CONTROL">Access Control</option>
+                <option value="DOCUMENTATION">Documentation</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="dateRange" className="block text-sm font-medium text-gray-700 mb-2">
+                <Calendar className="w-4 h-4 inline mr-1" />
+                Date Range
+              </label>
+              <select
+                id="dateRange"
+                value={selectedDateRange}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedDateRange(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="7">Last 7 days</option>
+                <option value="30">Last 30 days</option>
+                <option value="90">Last 90 days</option>
+                <option value="365">Last year</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Violations List */}
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          </div>
+        ) : filteredViolations.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+            <Shield className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900">
+              {complianceData?.violations?.length === 0 ? 'No compliance violations found' : 'No violations match your filters'}
+            </h3>
+            <p className="mt-1 text-sm text-gray-500">
+              {complianceData?.violations?.length === 0 
+                ? 'Great job maintaining compliance standards!' 
+                : 'Try adjusting your search or filter criteria.'}
+            </p>
+          </div>
+        ) : (
+          <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">Compliance Violations</h2>
+              <p className="text-sm text-gray-600">
+                {filteredViolations.length} violation(s) found
+              </p>
+            </div>
+            <div className="divide-y divide-gray-200">
+              {filteredViolations.map((violation) => (
+                <div
+                  key={violation.id}
+                  className="p-6 hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3 mb-2">
+                        <h3 className="text-lg font-medium text-gray-900">
+                          {violation.type.replace('_', ' ')}
+                        </h3>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          violation.severity === 'HIGH' ? 'bg-red-100 text-red-800' :
+                          violation.severity === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-blue-100 text-blue-800'
+                        }`}>
+                          {violation.severity}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-3">
+                        {violation.description}
+                      </p>
+                      <div className="flex items-center space-x-4 text-xs text-gray-500">
+                        <div className="flex items-center">
+                          <Calendar className="w-3 h-3 mr-1" />
+                          Detected: {formatDate(violation.detectedAt)}
+                        </div>
+                        {violation.resolvedAt && (
+                          <div className="flex items-center">
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            Resolved: {formatDate(violation.resolvedAt)}
+                          </div>
+                        )}
+                        {violation.affectedEntity && (
+                          <div>
+                            Entity: {violation.affectedEntity}
+                          </div>
+                        )}
+                      </div>
+                      {violation.resolution && (
+                        <div className="mt-3 p-3 bg-green-50 rounded-md">
+                          <p className="text-sm text-green-800">
+                            <strong>Resolution:</strong> {violation.resolution}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      {!violation.resolvedAt && (
+                        <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors">
+                          Mark Resolved
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
-                {log.phiAccessed && (
-                  <Badge variant="outline" className="bg-amber-50">
-                    PHI
-                  </Badge>
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        )}
+
+        {/* Recommendations */}
+        {complianceData?.recommendations && complianceData.recommendations.length > 0 && (
+          <div className="mt-8 bg-blue-50 rounded-lg p-6">
+            <h2 className="text-lg font-semibold text-blue-900 mb-4 flex items-center">
+              <TrendingUp className="w-5 h-5 mr-2" />
+              Recommendations
+            </h2>
+            <ul className="space-y-2">
+              {complianceData.recommendations.map((recommendation, index) => (
+                <li key={index} className="text-sm text-blue-800 flex items-start">
+                  <CheckCircle className="w-4 h-4 mr-2 mt-0.5 text-blue-600" />
+                  {recommendation}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
     </div>
   );
-}
-
-/**
- * Fetches aggregated compliance metrics
- *
- * Retrieves calculated compliance metrics including overall compliance score,
- * risk assessment, active alerts, and policy/training statistics. Metrics are
- * aggregated from audit logs, policy acknowledgments, and training records.
- *
- * @async
- * @returns {Promise<Object>} Compliance metrics object
- * @returns {number} return.complianceScore - Overall compliance percentage (0-100)
- * @returns {number} return.riskScore - Risk assessment score (lower is better)
- * @returns {Object} return.alerts - Alert statistics
- * @returns {number} return.alerts.active - Count of active unresolved alerts
- * @returns {number} return.alerts.critical - Count of critical severity alerts
- * @returns {Object} return.policies - Policy statistics
- * @returns {number} return.policies.pending - Count of policies awaiting acknowledgment
- * @returns {Object} return.training - Training statistics
- * @returns {number} return.training.overdue - Count of users with overdue training
- *
- * @description
- * **Compliance Score Calculation:**
- * - Policy acknowledgment rate: 40% weight
- * - Training completion rate: 30% weight
- * - Audit log integrity: 20% weight
- * - Security assessment score: 10% weight
- *
- * **Risk Score Factors:**
- * - Unresolved critical alerts (+10 per alert)
- * - Overdue training (+5 per user)
- * - Unacknowledged policies (+3 per policy)
- * - Recent security incidents (+20 per incident)
- *
- * @example
- * ```typescript
- * const metrics = await getComplianceMetrics();
- * console.log(`Compliance: ${metrics.complianceScore}%`);
- * console.log(`Risk Level: ${metrics.riskScore}`);
- * ```
- *
- * @todo Replace with actual server action connected to metrics service
- * @todo Implement real-time metric calculation from database
- */
-async function getComplianceMetrics() {
-  return {
-    complianceScore: 94,
-    riskScore: 23,
-    alerts: {
-      active: 3,
-      critical: 1,
-    },
-    policies: {
-      pending: 5,
-    },
-    training: {
-      overdue: 2,
-    },
-  };
-}
-
-/**
- * Fetches recent active compliance alerts
- *
- * Retrieves unresolved compliance alerts that require review or action.
- * Alerts are generated from automated compliance monitoring, audit log analysis,
- * and security assessments.
- *
- * @async
- * @returns {Promise<Array<Object>>} Array of active compliance alerts
- * @returns {string} return[].id - Unique alert identifier
- * @returns {string} return[].severity - Alert severity ('LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL')
- * @returns {string} return[].title - Brief alert title
- * @returns {string} return[].description - Detailed alert description
- * @returns {string} return[].timestamp - ISO 8601 timestamp when alert was generated
- *
- * @description
- * **Alert Types:**
- * - **Bulk PHI Access**: User accessed abnormally high number of records
- * - **Policy Acknowledgment Overdue**: Users have not acknowledged required policies
- * - **After-Hours Access**: PHI accessed outside normal business hours
- * - **Failed Authentication Attempts**: Multiple failed login attempts detected
- * - **Training Overdue**: Required training past deadline
- * - **Audit Chain Integrity**: Tampering detected in audit logs
- *
- * **Alert Priority:**
- * - CRITICAL: Immediate action required, potential security breach
- * - HIGH: Action required within 24 hours
- * - MEDIUM: Review recommended within 48 hours
- * - LOW: Informational, monitor for patterns
- *
- * @example
- * ```typescript
- * const alerts = await getRecentAlerts();
- * const criticalAlerts = alerts.filter(a => a.severity === 'CRITICAL');
- * console.log(`${criticalAlerts.length} critical alerts require attention`);
- * ```
- *
- * @todo Replace with actual server action
- * @todo Add alert prioritization algorithm
- * @todo Implement alert auto-resolution for false positives
- */
-async function getRecentAlerts() {
-  return [
-    {
-      id: '1',
-      severity: 'HIGH' as const,
-      title: 'Bulk PHI Access Detected',
-      description: 'User accessed more than 50 patient records in a single session',
-      timestamp: new Date().toISOString(),
-    },
-    {
-      id: '2',
-      severity: 'MEDIUM' as const,
-      title: 'Policy Acknowledgment Overdue',
-      description: '3 users have not acknowledged the updated HIPAA privacy policy',
-      timestamp: new Date().toISOString(),
-    },
-  ];
-}
-
-/**
- * Fetches audit activity summary
- *
- * Retrieves summarized audit log statistics for the current day including total
- * log count, PHI access count, and recent log entries for display on dashboard.
- *
- * @async
- * @returns {Promise<Object>} Audit activity summary
- * @returns {number} return.todayCount - Total audit log entries created today
- * @returns {number} return.phiAccessCount - Count of PHI access events today
- * @returns {Array<Object>} return.recentLogs - Array of most recent audit log entries
- * @returns {string} return.recentLogs[].id - Unique log entry ID
- * @returns {string} return.recentLogs[].action - Action that was logged
- * @returns {string} return.recentLogs[].severity - Log severity level
- * @returns {string} return.recentLogs[].userName - Name of user who performed action
- * @returns {string} return.recentLogs[].timestamp - ISO 8601 timestamp of action
- * @returns {boolean} return.recentLogs[].phiAccessed - Whether PHI was accessed
- *
- * @description
- * **Summary Metrics:**
- * - Today's Count: All audit entries created since midnight (server timezone)
- * - PHI Access Count: Subset of entries where PHI was viewed/modified
- * - Recent Logs: Last 5-10 audit entries for quick reference
- *
- * **Performance Considerations:**
- * - Uses database indexes on timestamp for fast daily aggregation
- * - PHI access count uses materialized view for performance
- * - Recent logs limited to prevent excessive data transfer
- *
- * @example
- * ```typescript
- * const summary = await getAuditSummary();
- * console.log(`Today: ${summary.todayCount} logs, ${summary.phiAccessCount} PHI accesses`);
- * summary.recentLogs.forEach(log => {
- *   console.log(`${log.userName}: ${log.action}`);
- * });
- * ```
- *
- * @todo Replace with actual server action
- * @todo Add caching with 1-minute TTL for performance
- */
-async function getAuditSummary() {
-  return {
-    todayCount: 127,
-    phiAccessCount: 43,
-    recentLogs: [
-      {
-        id: '1',
-        action: 'PHI_VIEW',
-        severity: 'INFO' as const,
-        userName: 'Jane Smith',
-        timestamp: new Date().toISOString(),
-        phiAccessed: true,
-      },
-      {
-        id: '2',
-        action: 'POLICY_ACKNOWLEDGMENT',
-        severity: 'INFO' as const,
-        userName: 'John Doe',
-        timestamp: new Date().toISOString(),
-        phiAccessed: false,
-      },
-    ],
-  };
-}
-
-/**
- * Maps alert severity to Tailwind CSS text color class
- *
- * Returns appropriate text color class for alert severity indicators.
- * Uses color-coded system for quick visual identification of alert priority.
- *
- * @param {string} severity - Alert severity level
- * @returns {string} Tailwind CSS text color class
- *
- * @description
- * **Color Mapping:**
- * - LOW: Blue (text-blue-600) - Informational
- * - MEDIUM: Amber (text-amber-600) - Warning
- * - HIGH: Orange (text-orange-600) - Important
- * - CRITICAL: Red (text-red-600) - Urgent
- *
- * @example
- * ```tsx
- * <AlertTriangle className={getSeverityColor('CRITICAL')} />
- * // Renders: <AlertTriangle className="text-red-600" />
- * ```
- */
-function getSeverityColor(severity: string): string {
-  const colors = {
-    LOW: 'text-blue-600',
-    MEDIUM: 'text-amber-600',
-    HIGH: 'text-orange-600',
-    CRITICAL: 'text-red-600',
-  };
-  return colors[severity as keyof typeof colors] || 'text-gray-600';
-}
-
-/**
- * Maps severity level to UI badge variant
- *
- * Determines the visual styling for severity and status badges.
- * Provides consistent badge styling across compliance dashboard.
- *
- * @param {string} severity - Severity or status level
- * @returns {'default' | 'secondary' | 'destructive' | 'outline'} Badge variant
- *
- * @description
- * **Variant Mapping:**
- * - LOW/INFO: Secondary (gray) - Low priority
- * - MEDIUM/WARNING: Outline (bordered) - Medium priority
- * - HIGH/ERROR/CRITICAL/SECURITY: Destructive (red) - High priority
- *
- * @example
- * ```tsx
- * <Badge variant={getSeverityVariant('HIGH')}>HIGH</Badge>
- * // Renders: <Badge variant="destructive">HIGH</Badge>
- * ```
- */
-function getSeverityVariant(severity: string): 'default' | 'secondary' | 'destructive' | 'outline' {
-  const variants = {
-    LOW: 'secondary' as const,
-    MEDIUM: 'outline' as const,
-    HIGH: 'destructive' as const,
-    CRITICAL: 'destructive' as const,
-    INFO: 'default' as const,
-    WARNING: 'outline' as const,
-    ERROR: 'destructive' as const,
-    SECURITY: 'destructive' as const,
-  };
-  return variants[severity as keyof typeof variants] || 'default';
-}
-
-/**
- * Formats timestamp to relative or absolute format
- *
- * Converts ISO 8601 timestamp to human-readable relative format for recent
- * events (e.g., "5 minutes ago") or absolute format for older events.
- *
- * @param {string} timestamp - ISO 8601 timestamp string
- * @returns {string} Formatted timestamp string
- *
- * @description
- * **Format Rules:**
- * - < 1 minute: "Just now"
- * - < 60 minutes: "X minutes ago"
- * - < 24 hours: "X hours ago"
- * - >= 24 hours: Absolute date (e.g., "Jan 15, 02:30 PM")
- *
- * @example
- * ```typescript
- * formatTimestamp(new Date().toISOString()); // "Just now"
- * formatTimestamp(new Date(Date.now() - 300000).toISOString()); // "5 minutes ago"
- * formatTimestamp('2024-01-15T14:30:00Z'); // "Jan 15, 02:30 PM"
- * ```
- */
-function formatTimestamp(timestamp: string): string {
-  const date = new Date(timestamp);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins} minutes ago`;
-  if (diffMins < 1440) return `${Math.floor(diffMins / 60)} hours ago`;
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 }

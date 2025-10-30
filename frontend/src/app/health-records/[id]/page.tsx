@@ -8,18 +8,18 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { ArrowLeft, Edit, FileText, Calendar, User, Trash2, AlertTriangle } from 'lucide-react';
-
-// UI Components
-import { Card } from '@/components/ui/layout/Card';
+import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/display/Badge';
-
-// API Client
+import { Card } from '@/components/ui/layout/Card';
 import { apiClient, API_ENDPOINTS } from '@/lib/api-client';
+import {
+  HealthRecordHeader,
+  StudentInfoCard,
+  RecordDetailsCard,
+  HipaaComplianceNotice
+} from '@/components/pages/HealthRecords';
 
 interface HealthRecord {
   id: string;
@@ -45,10 +45,20 @@ interface HealthRecord {
   };
 }
 
-export default function HealthRecordDetailPage() {
-  const params = useParams();
-  const recordId = params?.id as string;
-
+/**
+ * Health Record Detail Page Component
+ * 
+ * Client component that displays detailed health record information using modular components.
+ * Now refactored for better maintainability and reusability.
+ * 
+ * @param props.params - Promise that resolves to route parameters
+ */
+export default function HealthRecordDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id: recordId } = use(params);
   const [record, setRecord] = useState<HealthRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -65,9 +75,6 @@ export default function HealthRecordDetailPage() {
           API_ENDPOINTS.healthRecordById(recordId)
         );
 
-        console.log('[HealthRecordDetail] API response:', response);
-
-        // Handle different response structures
         if (response.data && !Array.isArray(response.data)) {
           setRecord(response.data);
         } else {
@@ -110,144 +117,13 @@ export default function HealthRecordDetailPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Link href="/health-records">
-            <Button variant="secondary" leftIcon={<ArrowLeft />}>
-              Back
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Health Record</h1>
-            <p className="mt-1 text-gray-600">
-              {new Date(record.recordDate).toLocaleDateString()}
-            </p>
-          </div>
-        </div>
-        <div className="flex space-x-3">
-          <Link href={`/health-records/${record.id}/edit`}>
-            <Button leftIcon={<Edit />}>Edit Record</Button>
-          </Link>
-          <Button variant="destructive" leftIcon={<Trash2 />}>
-            Delete
-          </Button>
-        </div>
-      </div>
+      <HealthRecordHeader recordId={record.id} recordDate={record.recordDate} />
 
-      {/* Student Information */}
-      {record.student && (
-        <Card>
-          <div className="px-6 py-4 border-b border-gray-200">
-            <div className="flex items-center">
-              <User className="h-5 w-5 text-gray-400 mr-2" />
-              <h2 className="text-lg font-semibold text-gray-900">Student Information</h2>
-            </div>
-          </div>
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <p className="text-sm font-medium text-gray-500">Student Name</p>
-                <Link
-                  href={`/students/${record.student.id}`}
-                  className="mt-1 text-sm text-blue-600 hover:text-blue-800"
-                >
-                  {record.student.firstName} {record.student.lastName}
-                </Link>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Student Number</p>
-                <p className="mt-1 text-sm text-gray-900">{record.student.studentNumber}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Grade</p>
-                <p className="mt-1 text-sm text-gray-900">{record.student.grade}</p>
-              </div>
-            </div>
-          </div>
-        </Card>
-      )}
+      {record.student && <StudentInfoCard student={record.student} />}
 
-      {/* Record Details */}
-      <Card>
-        <div className="px-6 py-4 border-b border-gray-200">
-          <div className="flex items-center">
-            <FileText className="h-5 w-5 text-gray-400 mr-2" />
-            <h2 className="text-lg font-semibold text-gray-900">Record Details</h2>
-          </div>
-        </div>
-        <div className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <p className="text-sm font-medium text-gray-500">Record Type</p>
-              <div className="mt-1">
-                <Badge variant="info">{record.recordType.replace('_', ' ')}</Badge>
-              </div>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500">Record Date</p>
-              <div className="mt-1 flex items-center text-sm text-gray-900">
-                <Calendar className="h-4 w-4 mr-2 text-gray-400" />
-                {new Date(record.recordDate).toLocaleDateString()}
-              </div>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500">Healthcare Provider</p>
-              <p className="mt-1 text-sm text-gray-900">{record.provider || 'Not specified'}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500">Follow-up Required</p>
-              <div className="mt-1">
-                <Badge variant={record.followUpRequired ? 'warning' : 'success'}>
-                  {record.followUpRequired ? 'Yes' : 'No'}
-                </Badge>
-              </div>
-            </div>
-          </div>
+      <RecordDetailsCard record={record} />
 
-          {record.followUpRequired && record.followUpDate && (
-            <div>
-              <p className="text-sm font-medium text-gray-500">Follow-up Date</p>
-              <div className="mt-1 flex items-center text-sm text-gray-900">
-                <Calendar className="h-4 w-4 mr-2 text-gray-400" />
-                {new Date(record.followUpDate).toLocaleDateString()}
-              </div>
-            </div>
-          )}
-
-          {record.description && (
-            <div>
-              <p className="text-sm font-medium text-gray-500">Description</p>
-              <p className="mt-1 text-sm text-gray-900 whitespace-pre-wrap">
-                {record.description}
-              </p>
-            </div>
-          )}
-
-          {record.diagnosis && (
-            <div>
-              <p className="text-sm font-medium text-gray-500">Diagnosis</p>
-              <p className="mt-1 text-sm text-gray-900 whitespace-pre-wrap">{record.diagnosis}</p>
-            </div>
-          )}
-
-          {record.treatment && (
-            <div>
-              <p className="text-sm font-medium text-gray-500">Treatment</p>
-              <p className="mt-1 text-sm text-gray-900 whitespace-pre-wrap">{record.treatment}</p>
-            </div>
-          )}
-
-          {record.notes && (
-            <div>
-              <p className="text-sm font-medium text-gray-500">Additional Notes</p>
-              <p className="mt-1 text-sm text-gray-900 whitespace-pre-wrap">{record.notes}</p>
-            </div>
-          )}
-        </div>
-      </Card>
-
-      {/* Metadata */}
+      {/* Metadata Card */}
       <Card>
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900">Record Metadata</h2>
@@ -270,19 +146,7 @@ export default function HealthRecordDetailPage() {
         </div>
       </Card>
 
-      {/* HIPAA Compliance Notice */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div className="flex">
-          <FileText className="h-5 w-5 text-blue-600 mr-2" />
-          <div>
-            <p className="text-sm font-medium text-blue-800">HIPAA Compliance</p>
-            <p className="text-sm text-blue-700 mt-1">
-              This health record contains Protected Health Information (PHI). Access and disclosure
-              are logged for compliance purposes.
-            </p>
-          </div>
-        </div>
-      </div>
+      <HipaaComplianceNotice />
     </div>
   );
 }

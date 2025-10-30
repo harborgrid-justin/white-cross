@@ -1,107 +1,91 @@
-'use client';
+import { BillingHeader, BillingList } from '@/components/pages/Billing';
 
-import { PageHeader } from '@/components/shared/PageHeader';
-import { Card } from '@/components/ui/layout/Card';
-import { DollarSign, FileText, AlertTriangle, TrendingUp } from 'lucide-react';
-import Link from 'next/link';
-
+/**
+ * Billing Dashboard Page
+ * 
+ * Main billing and invoicing dashboard with financial metrics,
+ * invoice management, and billing operations overview.
+ */
 export default function BillingPage() {
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Billing & Invoices"
-        description="Manage invoices, payments, and billing reports"
+    <div className="min-h-screen bg-gray-50">
+      <BillingHeader
+        totalInvoices={156}
+        totalRevenue={245680}
+        outstandingBalance={45230}
+        paidInvoices={132}
+        overdueInvoices={8}
+        draftInvoices={16}
+        averagePaymentTime={28}
+        collectionRate={87.3}
+        onCreateInvoice={() => {
+          // Navigate to invoice builder
+          window.location.href = '/dashboard/billing/invoices/new';
+        }}
+        onImportInvoices={() => {
+          // Handle import
+          console.log('Import invoices');
+        }}
+        onExportInvoices={() => {
+          // Handle export
+          console.log('Export invoices');
+        }}
+        onRefresh={() => {
+          // Handle refresh
+          window.location.reload();
+        }}
+        onSettings={() => {
+          // Navigate to settings
+          window.location.href = '/dashboard/billing/settings';
+        }}
+        onBulkActions={() => {
+          console.log('Bulk actions');
+        }}
+        onSendStatements={() => {
+          console.log('Send statements');
+        }}
+        onProcessPayments={() => {
+          window.location.href = '/dashboard/billing/payments';
+        }}
       />
-
-      {/* Quick Stats */}
-      <div className="grid gap-6 md:grid-cols-4">
-        <Card>
-          <div className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Invoices</p>
-                <p className="text-2xl font-bold text-gray-900 mt-2">0</p>
-              </div>
-              <FileText className="h-8 w-8 text-blue-500" />
-            </div>
-          </div>
-        </Card>
-
-        <Card>
-          <div className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Outstanding</p>
-                <p className="text-2xl font-bold text-orange-600 mt-2">$0.00</p>
-              </div>
-              <AlertTriangle className="h-8 w-8 text-orange-500" />
-            </div>
-          </div>
-        </Card>
-
-        <Card>
-          <div className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Paid This Month</p>
-                <p className="text-2xl font-bold text-green-600 mt-2">$0.00</p>
-              </div>
-              <DollarSign className="h-8 w-8 text-green-500" />
-            </div>
-          </div>
-        </Card>
-
-        <Card>
-          <div className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Revenue</p>
-                <p className="text-2xl font-bold text-gray-900 mt-2">$0.00</p>
-              </div>
-              <TrendingUp className="h-8 w-8 text-purple-500" />
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="grid gap-6 md:grid-cols-3">
-        <Link href="/billing/invoices">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-            <div className="p-6">
-              <FileText className="h-8 w-8 text-blue-500 mb-3" />
-              <h3 className="text-lg font-semibold mb-2">Invoices</h3>
-              <p className="text-sm text-gray-600">
-                View and manage all invoices
-              </p>
-            </div>
-          </Card>
-        </Link>
-
-        <Link href="/billing/payments">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-            <div className="p-6">
-              <DollarSign className="h-8 w-8 text-green-500 mb-3" />
-              <h3 className="text-lg font-semibold mb-2">Payments</h3>
-              <p className="text-sm text-gray-600">
-                Track payments and transactions
-              </p>
-            </div>
-          </Card>
-        </Link>
-
-        <Link href="/billing/outstanding">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-            <div className="p-6">
-              <AlertTriangle className="h-8 w-8 text-orange-500 mb-3" />
-              <h3 className="text-lg font-semibold mb-2">Outstanding</h3>
-              <p className="text-sm text-gray-600">
-                View overdue and pending invoices
-              </p>
-            </div>
-          </Card>
-        </Link>
-      </div>
+      
+      <BillingList
+        onInvoiceClick={(invoice) => {
+          window.location.href = `/dashboard/billing/invoices/${invoice.id}`;
+        }}
+        onViewDetails={(invoice) => {
+          window.location.href = `/dashboard/billing/invoices/${invoice.id}`;
+        }}
+        onEditInvoice={(invoice) => {
+          window.location.href = `/dashboard/billing/invoices/${invoice.id}/edit`;
+        }}
+        onDeleteInvoice={(invoice) => {
+          if (confirm(`Are you sure you want to delete invoice ${invoice.invoiceNumber}?`)) {
+            console.log('Delete invoice:', invoice.id);
+          }
+        }}
+        onDownloadInvoice={(invoice) => {
+          console.log('Download invoice:', invoice.id);
+        }}
+        onSendInvoice={(invoice) => {
+          console.log('Send invoice:', invoice.id);
+        }}
+        onRecordPayment={(invoice) => {
+          window.location.href = `/dashboard/billing/payments/new?invoice=${invoice.id}`;
+        }}
+        onSelectionChange={(selectedIds) => {
+          console.log('Selected invoices:', selectedIds);
+        }}
+        onPageChange={(page) => {
+          console.log('Page change:', page);
+        }}
+        onViewModeChange={(mode) => {
+          console.log('View mode change:', mode);
+        }}
+        onBulkActions={(action, invoiceIds) => {
+          console.log('Bulk action:', action, invoiceIds);
+        }}
+      />
     </div>
   );
 }

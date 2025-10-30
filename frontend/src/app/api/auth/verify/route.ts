@@ -84,7 +84,7 @@ import { proxyToBackend } from '@/lib/apiProxy';
 export async function GET(request: NextRequest) {
   try {
     // Proxy verification request to backend
-    const response = await proxyToBackend(request, '/api/v1/auth/verify');
+    const response = await proxyToBackend(request, '/auth/verify');
 
     const data = await response.json();
 

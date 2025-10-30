@@ -106,4 +106,28 @@ export {
   type EmergencySeverity
 } from './modules/healthAssessmentsApi';
 
+// Export billing API service
+export {
+  billingApi,
+  BillingApi,
+  createBillingApi,
+  type BillingInvoice,
+  type InvoiceLineItem,
+  type PaymentRecord,
+  type BillingAnalytics,
+  type BillingSettings,
+  type CreateInvoiceRequest,
+  type UpdateInvoiceRequest,
+  type CreatePaymentRequest,
+  type ProcessRefundRequest,
+  type InvoiceFilters,
+  type PaymentFilters,
+  type InvoiceStatus,
+  type InvoicePriority,
+  type PaymentMethod,
+  type PaymentStatus,
+  type PaymentType,
+  type ServiceCategory
+} from './modules/billingApi';
+
 // Note: AdministrationService exports same classes as administrationApi, so we only export administrationApi to avoid ambiguity

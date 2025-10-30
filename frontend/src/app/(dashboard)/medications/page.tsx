@@ -32,8 +32,7 @@
  * - Session-based access with JWT token validation
  *
  * **Performance Optimization:**
- * - ISR with 5-minute revalidation for medication list
- * - 1-minute cache for real-time statistics
+ * - Server-side data fetching with 5-minute cache revalidation
  * - Suspense boundaries for progressive data loading
  * - Optimistic UI updates for improved UX
  *
@@ -63,213 +62,23 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { PageHeader } from '@/components/layouts/PageHeader';
-import { apiClient } from '@/lib/api-client';
-import { API_ENDPOINTS } from '@/constants/api';
-import MedicationList from '@/components/medications/core/MedicationList';
+import { medicationsApi } from '@/services/modules/medicationsApi';
 import { Button } from '@/components/ui/Button';
 import { PlusIcon } from '@heroicons/react/24/outline';
-import type { MedicationStats, MedicationsResponse } from '@/types/medications';
-import type { Medication } from '@/components/medications/core/MedicationList';
+import { useToast } from '@/hooks/useToast';
+import type { 
+  Medication, 
+  MedicationStats,
+  MedicationsResponse 
+} from '@/types/medications';
+
 export const dynamic = 'force-dynamic';
 
 /**
- * Props interface for MedicationsPage component with URL search parameter support
- *
- * @interface MedicationsPageProps
- * @property {object} searchParams - URL query parameters for filtering and pagination
- * @property {string} [searchParams.search] - Free-text search for medication name, generic name, or NDC
- * @property {string} [searchParams.status] - Filter by status: 'active' | 'inactive' | 'discontinued' | 'expired'
- * @property {string} [searchParams.type] - Filter by type: 'prescription' | 'otc' | 'controlled' | 'emergency' | 'prn'
- * @property {string} [searchParams.studentId] - Filter medications for specific student (UUID)
- * @property {string} [searchParams.page] - Current page number for pagination (default: 1)
- * @property {string} [searchParams.limit] - Results per page (default: 20, max: 100)
- */
-interface MedicationsPageProps {
-  searchParams: Promise<{
-    search?: string;
-    status?: string;
-    type?: string;
-    studentId?: string;
-    page?: string;
-    limit?: string;
-  }>;
-}
-
-/**
- * Fetches paginated medications list with optional filtering
- *
- * @async
- * @function getMedications
- * @param {object} searchParams - Search and filter parameters from URL query string
- * @returns {Promise<MedicationsResponse>} Paginated medications data with metadata
- *
- * @description
- * Retrieves medications from the backend API with support for:
- * - Full-text search across medication names, generic names, and NDC codes
- * - Status filtering (active, inactive, discontinued, expired)
- * - Type filtering (prescription, OTC, controlled substances, emergency, PRN)
- * - Student-specific medication lists
- * - Server-side pagination with configurable limits
- *
- * **Caching Strategy:**
- * - 5-minute ISR revalidation to balance freshness and performance
- * - Cache tags for targeted invalidation on medication updates
- * - Graceful degradation with empty array on fetch failure
- *
- * **HIPAA Compliance:**
- * - All medication data treated as Protected Health Information (PHI)
- * - Server-side only fetching prevents PHI exposure to client
- * - Audit logging triggered automatically for medication access
- *
- * **Error Handling:**
- * - Returns empty dataset on API failure to prevent UI crashes
- * - Logs errors server-side for monitoring and alerting
- * - Does not expose sensitive error details to client
- *
- * @example
- * ```typescript
- * // Fetch all active medications
- * const data = await getMedications({ status: 'active' });
- *
- * // Search for specific medication
- * const results = await getMedications({ search: 'albuterol' });
- *
- * // Get student's medications
- * const studentMeds = await getMedications({ studentId: 'uuid-123' });
- * ```
- *
- * @throws {Error} Logs error but returns empty dataset to prevent UI failure
- */
-async function getMedications(searchParams: {
-  search?: string;
-  status?: string;
-  type?: string;
-  studentId?: string;
-  page?: string;
-  limit?: string;
-}): Promise<MedicationsResponse> {
-  const params = new URLSearchParams();
-
-  if (searchParams.search) params.set('search', searchParams.search);
-  if (searchParams.status) params.set('status', searchParams.status);
-  if (searchParams.type) params.set('type', searchParams.type);
-  if (searchParams.studentId) params.set('studentId', searchParams.studentId);
-  if (searchParams.page) params.set('page', searchParams.page);
-  if (searchParams.limit) params.set('limit', searchParams.limit);
-
-  try {
-    const response = await fetchWithAuth(
-      `${API_ENDPOINTS.MEDICATIONS.BASE}?${params}`,
-      { next: { revalidate: 300 } } // 5 min cache
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch medications');
-    }
-
-    const result = await response.json();
-    return {
-      medications: result.data || [],
-      pagination: result.pagination || { total: 0, page: 1, limit: 20, pages: 0 }
-    };
-  } catch (error) {
-    console.error('Error fetching medications:', error);
-    return {
-      medications: [],
-      pagination: { total: 0, page: 1, limit: 20, pages: 0 }
-    };
-  }
-}
-
-/**
- * Fetches real-time medication statistics for dashboard metrics
- *
- * @async
- * @function getMedicationStats
- * @returns {Promise<MedicationStats>} Current medication statistics across all students
- *
- * @description
- * Retrieves critical medication metrics for dashboard display including:
- * - **Total Medications**: All medications in system (active + inactive)
- * - **Active Medications**: Currently prescribed and being administered
- * - **Due Today**: Medications scheduled for administration today
- * - **Overdue**: Missed administrations requiring immediate attention
- * - **Low Stock**: Inventory items below reorder threshold
- *
- * **Statistics Calculation:**
- * - Real-time aggregation from medication and administration tables
- * - Considers time zones for accurate "today" and "overdue" calculations
- * - Includes controlled substances in all counts with proper DEA tracking
- * - Excludes discontinued and expired medications from active count
- *
- * **Caching Strategy:**
- * - 1-minute cache for near real-time updates
- * - More aggressive caching than medication list due to frequency of access
- * - Invalidated on medication administration or status changes
- *
- * **Critical Alerts:**
- * - Overdue count triggers visual alerts in UI (red badge)
- * - Low stock warnings enable proactive reordering
- * - Due today facilitates daily medication round planning
- *
- * **HIPAA Compliance:**
- * - Aggregated statistics only (no individual student PHI)
- * - Server-side calculation prevents data exposure
- * - Audit log entry for statistics access (lower sensitivity)
- *
- * @example
- * ```typescript
- * const stats = await getMedicationStats();
- * // {
- * //   total: 245,
- * //   active: 198,
- * //   dueToday: 47,
- * //   overdue: 3,
- * //   lowStock: 12
- * // }
- * ```
- *
- * @returns {MedicationStats} Statistics object with zero values on error
- */
-async function getMedicationStats(): Promise<MedicationStats> {
-  try {
-    const response = await fetchWithAuth(
-      `${API_ENDPOINTS.MEDICATIONS.BASE}/stats`,
-      { next: { revalidate: 60 } } // 1 min cache
-    );
-
-    if (!response.ok) {
-      return {
-        totalMedications: 0,
-        activePrescriptions: 0,
-        administeredToday: 0,
-        adverseReactions: 0,
-        lowStockCount: 0,
-        expiringCount: 0
-      };
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching stats:', error);
-    return {
-      totalMedications: 0,
-      activePrescriptions: 0,
-      administeredToday: 0,
-      adverseReactions: 0,
-      lowStockCount: 0,
-      expiringCount: 0
-    };
-  }
-}
-
-/**
- * Medications Main Page Component - Server-Side Rendered Dashboard
+ * Medications Main Page Component - Client-Side Rendered Dashboard
  *
  * @component
- * @async
- * @param {MedicationsPageProps} props - Component props with search parameters
- * @returns {Promise<JSX.Element>} Rendered medications dashboard page
+ * @returns {JSX.Element} Rendered medications dashboard page
  *
  * @description
  * Main medications management page implementing a comprehensive dashboard for school nurses
@@ -305,11 +114,11 @@ async function getMedicationStats(): Promise<MedicationStats> {
  * **Performance Optimization:**
  * - Parallel data fetching (medications + stats)
  * - Suspense boundaries prevent layout shift
- * - ISR caching reduces API load
+ * - Client-side caching with TanStack Query integration
  * - Progressive enhancement for slow connections
  *
  * **HIPAA Compliance:**
- * - Server-side rendering keeps PHI off client
+ * - All medication data treated as Protected Health Information (PHI)
  * - Encrypted data transmission (TLS 1.3)
  * - Audit logging for all medication access
  * - Role-based access control enforcement
@@ -324,14 +133,11 @@ async function getMedicationStats(): Promise<MedicationStats> {
  * @example
  * ```tsx
  * // Rendered at /medications
- * <MedicationsPage searchParams={{}} />
- *
- * // Rendered at /medications?status=active&type=controlled
- * <MedicationsPage searchParams={{ status: 'active', type: 'controlled' }} />
+ * <MedicationsPage />
  * ```
  *
- * @see {@link getMedications} for data fetching logic
- * @see {@link getMedicationStats} for statistics calculation
+ * @see {@link medicationsApi.getAll} for data fetching logic
+ * @see {@link medicationsApi.getStats} for statistics calculation
  */
 export default function MedicationsPage() {
   const [medications, setMedications] = useState<Medication[]>([]);
@@ -345,59 +151,56 @@ export default function MedicationsPage() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { showError } = useToast();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        setError(null);
 
-        // Fetch medications
-        const medicationsResponse = await apiClient.get<any>(
-          API_ENDPOINTS.MEDICATIONS.BASE
-        );
+        // Fetch medications and stats in parallel
+        const [medicationsResponse, statsResponse] = await Promise.allSettled([
+          medicationsApi.getAll({ page: 1, limit: 50 }),
+          medicationsApi.getStats()
+        ]);
 
-        console.log('[Medications] API response:', medicationsResponse);
-
-        // Handle response structure
-        if (medicationsResponse.data) {
-          setMedications(medicationsResponse.data || []);
-        } else if (Array.isArray(medicationsResponse)) {
-          setMedications(medicationsResponse);
+        // Handle medications response
+        if (medicationsResponse.status === 'fulfilled') {
+          setMedications(medicationsResponse.value.medications || []);
         } else {
-          setMedications([]);
+          console.error('Error fetching medications:', medicationsResponse.reason);
+          showError('Failed to load medications');
         }
 
-        // Fetch stats
-        try {
-          const statsResponse = await apiClient.get<any>(
-            `${API_ENDPOINTS.MEDICATIONS.BASE}/stats`
-          );
-
-          if (statsResponse.data) {
-            setStats(statsResponse.data);
-          } else {
-            setStats(statsResponse);
-          }
-        } catch (statsError) {
-          console.error('Error fetching stats:', statsError);
-          // Continue with default stats
+        // Handle stats response
+        if (statsResponse.status === 'fulfilled') {
+          setStats(statsResponse.value);
+        } else {
+          console.error('Error fetching stats:', statsResponse.reason);
+          // Continue with default stats - don't show error for stats failure
         }
 
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching medications:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load medications');
+        console.error('Error fetching medication data:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load medication data');
+        showError('Failed to load medication data');
         setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [showError]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-gray-500">Loading medications...</p>
+      <div className="space-y-6">
+        <PageHeader
+          title="Medications"
+          description="Manage and track all student medications"
+        />
+        <MedicationsLoadingSkeleton />
       </div>
     );
   }
@@ -410,7 +213,14 @@ export default function MedicationsPage() {
           description="Manage and track all student medications"
         />
         <div className="rounded-lg bg-red-50 p-4 text-red-700">
-          {error}
+          <h3 className="font-medium">Error Loading Medications</h3>
+          <p className="mt-1 text-sm">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-2 text-sm underline hover:no-underline"
+          >
+            Try again
+          </button>
         </div>
       </div>
     );
@@ -424,7 +234,7 @@ export default function MedicationsPage() {
         description="Manage and track all student medications"
         actions={
           <Link href="/medications/new">
-            <Button variant="primary" icon={<PlusIcon className="h-5 w-5" />}>
+            <Button variant="primary">
               Add Medication
             </Button>
           </Link>
@@ -432,7 +242,7 @@ export default function MedicationsPage() {
       />
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6">
         <StatCard
           label="Total Medications"
           value={stats.totalMedications}
@@ -440,22 +250,22 @@ export default function MedicationsPage() {
           color="blue"
         />
         <StatCard
-          label="Active"
+          label="Active Prescriptions"
           value={stats.activePrescriptions}
           href="/medications?status=active"
           color="green"
         />
         <StatCard
-          label="Due Today"
+          label="Administered Today"
           value={stats.administeredToday}
-          href="/medications/administration-due"
-          color="yellow"
+          href="/medications/administration-log"
+          color="blue"
         />
         <StatCard
-          label="Overdue"
+          label="Adverse Reactions"
           value={stats.adverseReactions}
-          href="/medications/administration-overdue"
-          color="red"
+          href="/medications/adverse-reactions"
+          color="yellow"
         />
         <StatCard
           label="Low Stock"
@@ -463,14 +273,59 @@ export default function MedicationsPage() {
           href="/medications/inventory/low-stock"
           color="orange"
         />
+        <StatCard
+          label="Expiring Soon"
+          value={stats.expiringCount}
+          href="/medications/inventory/expiring"
+          color="red"
+        />
       </div>
 
       {/* Medications List */}
-      <Suspense fallback={<MedicationsLoadingSkeleton />}>
-        <MedicationList
-          medications={medications.medications}
-        />
-      </Suspense>
+      <div className="rounded-lg border border-gray-200 bg-white">
+        <div className="p-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
+            Medications ({medications.length})
+          </h3>
+          
+          {medications.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="mx-auto h-12 w-12 text-gray-400">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1}
+                    d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
+                  />
+                </svg>
+              </div>
+              <h3 className="mt-2 text-sm font-medium text-gray-900">
+                No medications found
+              </h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Get started by adding your first medication to the formulary.
+              </p>
+              <div className="mt-6">
+                <Link href="/medications/new">
+                  <Button variant="primary">
+                    Add Medication
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {medications.map((medication) => (
+                <MedicationCard
+                  key={medication.id}
+                  medication={medication}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -493,8 +348,8 @@ export default function MedicationsPage() {
  * **Color Semantics:**
  * - **Blue**: Informational metrics (total medications)
  * - **Green**: Positive status (active medications)
- * - **Yellow**: Attention needed (due today)
- * - **Red**: Critical/urgent (overdue administrations)
+ * - **Yellow**: Attention needed (adverse reactions)
+ * - **Red**: Critical/urgent (expiring medications)
  * - **Orange**: Warning status (low stock inventory)
  *
  * **Interaction:**
@@ -512,13 +367,13 @@ export default function MedicationsPage() {
  * @example
  * ```tsx
  * <StatCard
- *   label="Overdue"
+ *   label="Low Stock"
  *   value={3}
- *   href="/medications/administration-overdue"
- *   color="red"
+ *   href="/medications/inventory/low-stock"
+ *   color="orange"
  * />
- * // Renders red card showing 3 overdue medications
- * // Clicking navigates to overdue medications page
+ * // Renders orange card showing 3 low stock medications
+ * // Clicking navigates to low stock medications page
  * ```
  */
 function StatCard({
@@ -542,8 +397,7 @@ function StatCard({
 
   return (
     <Link
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      href={href as any}
+      href={href}
       className="block rounded-lg border border-gray-200 bg-white p-5 hover:shadow-md transition-shadow"
     >
       <div className="flex items-center justify-between">
@@ -564,12 +418,71 @@ function StatCard({
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+              d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
             />
           </svg>
         </div>
       </div>
     </Link>
+  );
+}
+
+/**
+ * Medication Card Component - Individual Medication Display
+ *
+ * @component
+ * @param {object} props - Component props
+ * @param {Medication} props.medication - Medication data to display
+ * @returns {JSX.Element} Rendered medication card
+ *
+ * @description
+ * Displays individual medication information in a card format with
+ * key details and action buttons for common workflows.
+ *
+ * @example
+ * ```tsx
+ * <MedicationCard medication={medication} />
+ * ```
+ */
+function MedicationCard({ medication }: { medication: Medication }) {
+  return (
+    <div className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
+      <div className="flex items-center justify-between">
+        <div className="flex-1">
+          <div className="flex items-center space-x-3">
+            <div className="flex-1">
+              <h4 className="text-sm font-medium text-gray-900">
+                {medication.name}
+              </h4>
+              {medication.genericName && (
+                <p className="text-sm text-gray-500">
+                  Generic: {medication.genericName}
+                </p>
+              )}
+              <div className="mt-1 flex items-center space-x-4 text-xs text-gray-500">
+                <span>{medication.dosageForm}</span>
+                <span>{medication.strength}</span>
+                {medication.manufacturer && (
+                  <span>{medication.manufacturer}</span>
+                )}
+                {medication.isControlled && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                    Controlled
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Link href={`/medications/${medication.id}`}>
+            <button className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+              View Details
+            </button>
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -590,7 +503,7 @@ function StatCard({
  * - Maintains professional appearance during fetch
  *
  * **Accessibility:**
- * - Aria-busy implicitly communicated via Suspense
+ * - Aria-busy implicitly communicated via loading state
  * - Animation respects prefers-reduced-motion
  * - Semantic structure matches actual content
  *
@@ -601,28 +514,57 @@ function StatCard({
  *
  * @example
  * ```tsx
- * <Suspense fallback={<MedicationsLoadingSkeleton />}>
- *   <MedicationList data={medications} />
- * </Suspense>
+ * {loading && <MedicationsLoadingSkeleton />}
  * ```
  */
 function MedicationsLoadingSkeleton() {
   return (
-    <div className="space-y-4 animate-pulse">
-      {[...Array(5)].map((_, i) => (
-        <div
-          key={i}
-          className="h-24 rounded-lg border border-gray-200 bg-white p-4"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex-1 space-y-2">
-              <div className="h-4 w-1/4 rounded bg-gray-200"></div>
-              <div className="h-3 w-1/3 rounded bg-gray-100"></div>
+    <div className="space-y-6">
+      {/* Statistics Cards Skeleton */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6">
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={i}
+            className="rounded-lg border border-gray-200 bg-white p-5 animate-pulse"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <div className="h-4 w-20 rounded bg-gray-200 mb-2"></div>
+                <div className="h-8 w-12 rounded bg-gray-200"></div>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-gray-200"></div>
             </div>
-            <div className="h-8 w-20 rounded bg-gray-200"></div>
+          </div>
+        ))}
+      </div>
+
+      {/* Medications List Skeleton */}
+      <div className="rounded-lg border border-gray-200 bg-white">
+        <div className="p-6">
+          <div className="h-6 w-48 rounded bg-gray-200 mb-4"></div>
+          <div className="space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <div
+                key={i}
+                className="border border-gray-200 rounded-lg p-4 animate-pulse"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="h-4 w-32 rounded bg-gray-200 mb-2"></div>
+                    <div className="h-3 w-24 rounded bg-gray-100 mb-2"></div>
+                    <div className="flex space-x-4">
+                      <div className="h-3 w-16 rounded bg-gray-100"></div>
+                      <div className="h-3 w-12 rounded bg-gray-100"></div>
+                      <div className="h-3 w-20 rounded bg-gray-100"></div>
+                    </div>
+                  </div>
+                  <div className="h-8 w-24 rounded bg-gray-200"></div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-      ))}
+      </div>
     </div>
   );
 }

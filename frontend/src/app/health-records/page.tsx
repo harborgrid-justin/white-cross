@@ -87,7 +87,7 @@ export default function HealthRecordsPage() {
         }
 
         const response = await apiClient.get<any>(
-          API_ENDPOINTS.healthRecords,
+          API_ENDPOINTS.HEALTH_RECORDS.BASE,
           params
         );
 
