@@ -93,7 +93,12 @@ export class EnhancedMessageService {
     // Encrypt content if requested
     let encryptedContent: string | undefined;
     if (dto.encrypted) {
-      encryptedContent = await this.encryptionService.encrypt(dto.content);
+      const encryptionResult = await this.encryptionService.encrypt(dto.content);
+      if (encryptionResult.success) {
+        encryptedContent = encryptionResult.data;
+      } else {
+        throw new BadRequestException(`Encryption failed: ${encryptionResult.message}`);
+      }
     }
 
     // Set thread ID if this is a reply
@@ -196,7 +201,12 @@ export class EnhancedMessageService {
     // Encrypt content if requested
     let encryptedContent: string | undefined;
     if (dto.encrypted) {
-      encryptedContent = await this.encryptionService.encrypt(dto.content);
+      const encryptionResult = await this.encryptionService.encrypt(dto.content);
+      if (encryptionResult.success) {
+        encryptedContent = encryptionResult.data;
+      } else {
+        throw new BadRequestException(`Encryption failed: ${encryptionResult.message}`);
+      }
     }
 
     // Set thread ID if this is a reply
@@ -242,12 +252,10 @@ export class EnhancedMessageService {
       batchId: `batch-${message.id}`,
       senderId,
       recipientIds,
-      conversationId: conversation.id,
+      conversationIds: [conversation.id],
       content: dto.content,
-      priority: 'MEDIUM',
       chunkSize: 20, // Process 20 recipients at a time
       chunkDelay: 50, // 50ms between chunks
-      requiresEncryption: dto.encrypted,
       createdAt: new Date(),
       initiatedBy: senderId,
     });
@@ -301,7 +309,12 @@ export class EnhancedMessageService {
     // Update encrypted content if it was originally encrypted
     let encryptedContent: string | undefined;
     if (message.encryptedContent) {
-      encryptedContent = await this.encryptionService.encrypt(dto.content);
+      const encryptionResult = await this.encryptionService.encrypt(dto.content);
+      if (encryptionResult.success) {
+        encryptedContent = encryptionResult.data;
+      } else {
+        throw new BadRequestException(`Encryption failed: ${encryptionResult.message}`);
+      }
     }
 
     // Update message

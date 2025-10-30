@@ -48,6 +48,7 @@ export class UpdateConversationDto {
   @ApiPropertyOptional({
     description: 'Additional metadata for the conversation',
     type: 'object',
+    additionalProperties: true,
   })
   @IsOptional()
   metadata?: Record<string, any>;

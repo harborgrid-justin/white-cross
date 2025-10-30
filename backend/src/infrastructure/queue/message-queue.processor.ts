@@ -6,7 +6,7 @@
 
 import { Processor, Process, OnQueueActive, OnQueueCompleted, OnQueueFailed } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
-import { Job } from 'bull';
+import type { Job } from 'bull';
 import { QueueName } from './enums';
 import {
   SendMessageJobDto,
@@ -17,7 +17,7 @@ import {
   BatchMessageJobDto,
   MessageCleanupJobDto,
 } from './dtos';
-import { JobResult, JobProgress } from './interfaces';
+import type { JobResult, JobProgress } from './interfaces';
 
 /**
  * Message Delivery Queue Processor

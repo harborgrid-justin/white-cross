@@ -34,6 +34,7 @@ export class EditMessageDto {
   @ApiPropertyOptional({
     description: 'Additional metadata for the edit',
     type: 'object',
+    additionalProperties: true,
   })
   @IsOptional()
   metadata?: Record<string, any>;

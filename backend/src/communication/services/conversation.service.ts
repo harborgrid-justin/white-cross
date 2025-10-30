@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op, WhereOptions } from 'sequelize';
 import { Conversation, ConversationType } from '../../database/models/conversation.model';
 import { ConversationParticipant, ParticipantRole } from '../../database/models/conversation-participant.model';
+import { ParticipantRole as ParticipantRoleEnum } from '../dto/conversation-participant.dto';
 import { Message } from '../../database/models/message.model';
 import { CreateConversationDto } from '../dto/create-conversation.dto';
 import { UpdateConversationDto } from '../dto/update-conversation.dto';
@@ -274,7 +275,7 @@ export class ConversationService {
     }
 
     // Check permissions
-    await this.checkPermission(conversationId, userId, ['OWNER', 'ADMIN']);
+    await this.checkPermission(conversationId, userId, [ParticipantRoleEnum.OWNER, ParticipantRoleEnum.ADMIN]);
 
     // Update conversation
     await conversation.update({
@@ -313,7 +314,7 @@ export class ConversationService {
     }
 
     // Check permissions - only owner can delete
-    await this.checkPermission(conversationId, userId, ['OWNER']);
+    await this.checkPermission(conversationId, userId, [ParticipantRoleEnum.OWNER]);
 
     // Soft delete conversation
     await conversation.destroy();
@@ -352,7 +353,7 @@ export class ConversationService {
     }
 
     // Check permissions
-    await this.checkPermission(conversationId, requesterId, ['OWNER', 'ADMIN']);
+    await this.checkPermission(conversationId, requesterId, [ParticipantRoleEnum.OWNER, ParticipantRoleEnum.ADMIN]);
 
     // Validate for direct conversations
     if (conversation.type === ConversationType.DIRECT) {
@@ -434,7 +435,7 @@ export class ConversationService {
     }
 
     // Check permissions for removing others
-    await this.checkPermission(conversationId, requesterId, ['OWNER', 'ADMIN']);
+    await this.checkPermission(conversationId, requesterId, [ParticipantRoleEnum.OWNER, ParticipantRoleEnum.ADMIN]);
 
     await participant.destroy();
   }
@@ -462,7 +463,7 @@ export class ConversationService {
 
     // If updating role, check permissions
     if (dto.role !== undefined) {
-      await this.checkPermission(conversationId, userId, ['OWNER', 'ADMIN']);
+      await this.checkPermission(conversationId, userId, [ParticipantRoleEnum.OWNER, ParticipantRoleEnum.ADMIN]);
     }
 
     // Update participant

@@ -16,6 +16,9 @@ import {
   ValidateNested,
   IsBoolean,
   MaxLength,
+  IsNumber,
+  Min,
+  Max,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { BaseQueueJob } from '../interfaces';
@@ -39,6 +42,25 @@ export enum DeliveryStatus {
   DELIVERED = 'delivered',
   READ = 'read',
   FAILED = 'failed',
+}
+
+/**
+ * Notification types
+ */
+export enum NotificationType {
+  PUSH = 'push',
+  EMAIL = 'email',
+  SMS = 'sms',
+  IN_APP = 'in_app',
+}
+
+/**
+ * Message cleanup types
+ */
+export enum CleanupType {
+  OLD_MESSAGES = 'old_messages',
+  DELETED_CONVERSATIONS = 'deleted_conversations',
+  EXPIRED_ATTACHMENTS = 'expired_attachments',
 }
 
 /**
@@ -103,6 +125,230 @@ export class SendMessageJobDto implements BaseQueueJob {
   @IsString({ each: true })
   @IsOptional()
   attachments?: string[];
+
+  /**
+   * Job creation timestamp
+   */
+  @IsDateString()
+  createdAt: Date;
+
+  /**
+   * User who initiated the job
+   */
+  @IsString()
+  @IsOptional()
+  initiatedBy?: string;
+
+  /**
+   * Job identifier
+   */
+  @IsString()
+  @IsOptional()
+  jobId?: string;
+
+  /**
+   * Additional metadata
+   */
+  @IsObject()
+  @IsOptional()
+  metadata?: Record<string, any>;
+}
+
+/**
+ * DTO for notification job
+ * Handles push notifications and email alerts
+ */
+export class NotificationJobDto implements BaseQueueJob {
+  /**
+   * Notification ID
+   */
+  @IsUUID()
+  @IsNotEmpty()
+  notificationId: string;
+
+  /**
+   * Notification type
+   */
+  @IsEnum(NotificationType)
+  @IsNotEmpty()
+  type: NotificationType;
+
+  /**
+   * Recipient user ID
+   */
+  @IsUUID()
+  @IsNotEmpty()
+  recipientId: string;
+
+  /**
+   * Notification title
+   */
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(200)
+  title: string;
+
+  /**
+   * Notification message
+   */
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(1000)
+  message: string;
+
+  /**
+   * Related message ID
+   */
+  @IsUUID()
+  @IsOptional()
+  messageId?: string;
+
+  /**
+   * Job creation timestamp
+   */
+  @IsDateString()
+  createdAt: Date;
+
+  /**
+   * User who initiated the job
+   */
+  @IsString()
+  @IsOptional()
+  initiatedBy?: string;
+
+  /**
+   * Job identifier
+   */
+  @IsString()
+  @IsOptional()
+  jobId?: string;
+
+  /**
+   * Additional metadata
+   */
+  @IsObject()
+  @IsOptional()
+  metadata?: Record<string, any>;
+}
+
+/**
+ * DTO for batch message job
+ * Handles sending messages to multiple recipients
+ */
+export class BatchMessageJobDto implements BaseQueueJob {
+  /**
+   * Batch ID
+   */
+  @IsUUID()
+  @IsNotEmpty()
+  batchId: string;
+
+  /**
+   * Sender user ID
+   */
+  @IsUUID()
+  @IsNotEmpty()
+  senderId: string;
+
+  /**
+   * Array of recipient user IDs
+   */
+  @IsArray()
+  @IsUUID(4, { each: true })
+  @IsNotEmpty()
+  recipientIds: string[];
+
+  /**
+   * Array of conversation IDs
+   */
+  @IsArray()
+  @IsUUID(4, { each: true })
+  @IsOptional()
+  conversationIds?: string[];
+
+  /**
+   * Message content
+   */
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(10000)
+  content: string;
+
+  /**
+   * Chunk size for batch processing
+   */
+  @IsNumber()
+  @Min(1)
+  @Max(100)
+  @IsOptional()
+  chunkSize?: number;
+
+  /**
+   * Delay between chunks in milliseconds
+   */
+  @IsNumber()
+  @Min(0)
+  @Max(5000)
+  @IsOptional()
+  chunkDelay?: number;
+
+  /**
+   * Job creation timestamp
+   */
+  @IsDateString()
+  createdAt: Date;
+
+  /**
+   * User who initiated the job
+   */
+  @IsString()
+  @IsOptional()
+  initiatedBy?: string;
+
+  /**
+   * Job identifier
+   */
+  @IsString()
+  @IsOptional()
+  jobId?: string;
+
+  /**
+   * Additional metadata
+   */
+  @IsObject()
+  @IsOptional()
+  metadata?: Record<string, any>;
+}
+
+/**
+ * DTO for message cleanup job
+ * Handles old message cleanup and retention policies
+ */
+export class MessageCleanupJobDto implements BaseQueueJob {
+  /**
+   * Type of cleanup to perform
+   */
+  @IsEnum(CleanupType)
+  @IsNotEmpty()
+  cleanupType: CleanupType;
+
+  /**
+   * Retention period in days
+   */
+  @IsNumber()
+  @Min(1)
+  @Max(3650) // 10 years max
+  @IsOptional()
+  retentionDays?: number;
+
+  /**
+   * Batch size for processing
+   */
+  @IsNumber()
+  @Min(1)
+  @Max(1000)
+  @IsOptional()
+  batchSize?: number;
 
   /**
    * Job creation timestamp

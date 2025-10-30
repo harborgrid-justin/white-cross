@@ -76,6 +76,7 @@ export class SendGroupMessageDto {
   @ApiPropertyOptional({
     description: 'Additional metadata for the message',
     type: 'object',
+    additionalProperties: true,
   })
   @IsOptional()
   metadata?: Record<string, any>;

@@ -3,14 +3,14 @@
  * @module infrastructure/queue/interfaces
  */
 
-export {
+export type {
   BaseQueueJob,
   QueueJobOptions,
   JobResult,
   JobProgress,
 } from './queue-job.interface';
 
-export {
+export type {
   QueueStats,
   QueueMetrics,
   QueueHealth,

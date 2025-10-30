@@ -35,7 +35,7 @@ export {
 } from './dtos';
 
 // Interfaces
-export {
+export type {
   BaseQueueJob,
   QueueJobOptions,
   JobResult,

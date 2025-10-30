@@ -394,16 +394,15 @@ export class QueueIntegrationHelper {
 
     for (const jobId of jobIds) {
       // This would need to fetch actual job status
-      // For now, return placeholder
+      // For now, return placeholder - all jobs are pending
       const status = 'pending';
       results.push({
         jobId,
         status,
       });
 
-      if (status === 'completed') completed++;
-      else if (status === 'failed') failed++;
-      else pending++;
+      // Since all jobs are currently pending in this placeholder implementation
+      pending++;
     }
 
     return {

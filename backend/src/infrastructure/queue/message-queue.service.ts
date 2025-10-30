@@ -6,7 +6,7 @@
 
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
-import { Queue, Job } from 'bull';
+import type { Queue, Job } from 'bull';
 import { QueueName, JobPriority } from './enums';
 import { QueueConfigService, QUEUE_CONFIGS } from './queue.config';
 import {
@@ -279,9 +279,9 @@ export class MessageQueueService implements OnModuleInit, OnModuleDestroy {
     return {
       priority: options?.priority || JobPriority.NORMAL,
       delay: options?.delay || 0,
-      attempts: options?.attempts || priorityOptions.attempts || config.maxAttempts,
+      attempts: options?.attempts || (priorityOptions as any)?.attempts || config.maxAttempts,
       timeout: options?.timeout || config.timeout,
-      backoff: options?.backoff || priorityOptions.backoff || {
+      backoff: options?.backoff || (priorityOptions as any)?.backoff || {
         type: config.backoffType,
         delay: config.backoffDelay,
       },

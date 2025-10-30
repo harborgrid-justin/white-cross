@@ -26,6 +26,8 @@ import {
   ApiConsumes,
 } from '@nestjs/swagger';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { Express } from 'express';
+import * as multer from 'multer';
 import { EnhancedMessageService } from '../services/enhanced-message.service';
 import { ConversationService } from '../services/conversation.service';
 import { MessageQueueService } from '../../infrastructure/queue/message-queue.service';
@@ -268,7 +270,7 @@ export class EnhancedMessageController {
       },
     },
   })
-  async uploadAttachments(@UploadedFiles() files: Express.Multer.File[], @Req() req: any) {
+  async uploadAttachments(@UploadedFiles() files: multer.File[], @Req() req: any) {
     // TODO: Implement file upload to storage service (S3, etc.)
     // For now, return placeholder URLs
     const urls = files.map(file => `https://storage.example.com/files/${file.originalname}`);
