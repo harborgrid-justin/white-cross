@@ -56,13 +56,13 @@ export interface ComplianceChecklistItemAttributes {
       fields: ['status'],
     },
     {
-      fields: ['due_date'],
+      fields: ['dueDate'],
     },
     {
-      fields: ['completed_at'],
+      fields: ['completedAt'],
     },
     {
-      fields: ['report_id'],
+      fields: ['reportId'],
     },
   ],
 })

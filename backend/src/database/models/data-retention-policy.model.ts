@@ -5,8 +5,8 @@ import {
   DataType,
   PrimaryKey,
   Default,
-  AllowNull,
-} from 'sequelize-typescript';
+  AllowNull
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum DataRetentionCategory {
@@ -44,19 +44,19 @@ export interface DataRetentionPolicyAttributes {
   timestamps: true,
   indexes: [
     {
-      fields: ['category'],
-    },
+      fields: ['category']
+  },
     {
-      fields: ['status'],
-    },
+      fields: ['status']
+  },
     {
-      fields: ['auto_delete'],
-    },
+      fields: ['autoDelete']
+  },
     {
-      fields: ['last_reviewed_at'],
-    },
-  ],
-})
+      fields: ['lastReviewedAt']
+  },
+  ]
+  })
 export class DataRetentionPolicy extends Model<DataRetentionPolicyAttributes> implements DataRetentionPolicyAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -65,42 +65,39 @@ export class DataRetentionPolicy extends Model<DataRetentionPolicyAttributes> im
 
   @Column({
     type: DataType.ENUM(...(Object.values(DataRetentionCategory) as string[])),
-    allowNull: false,
+    allowNull: false
   })
   category: DataRetentionCategory;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false,
+    allowNull: false
   })
   description: string;
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
-    field: 'retention_period_days',
+    allowNull: false
   })
   retentionPeriodDays: number;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false,
-    field: 'legal_basis',
+    allowNull: false
   })
   legalBasis: string;
 
   @Column({
     type: DataType.ENUM(...(Object.values(RetentionStatus) as string[])),
     allowNull: false,
-    defaultValue: RetentionStatus.ACTIVE,
+    defaultValue: RetentionStatus.ACTIVE
   })
   status: RetentionStatus;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false,
-    field: 'auto_delete',
+    defaultValue: false
   })
   autoDelete: boolean;
 

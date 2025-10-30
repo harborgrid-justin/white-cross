@@ -59,10 +59,10 @@ export interface CreateDistrictAttributes {
 @Table({
   tableName: 'districts',
   timestamps: true,
-  underscored: true,
+  underscored: false,
   indexes: [
     { fields: ['code'], unique: true },
-    { fields: ['is_active'] },
+    { fields: ['isActive'] },
   ],
 })
 export class District extends Model<DistrictAttributes, CreateDistrictAttributes> {
@@ -83,8 +83,7 @@ export class District extends Model<DistrictAttributes, CreateDistrictAttributes
   @Column({
     type: DataType.STRING(50),
     allowNull: false,
-    unique: true,
-    comment: 'Unique code identifier for the district',
+    unique: true
   })
   @Index
   code: string;

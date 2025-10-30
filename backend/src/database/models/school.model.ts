@@ -65,11 +65,11 @@ export interface CreateSchoolAttributes {
 @Table({
   tableName: 'schools',
   timestamps: true,
-  underscored: true,
+  underscored: false,
   indexes: [
     { fields: ['code'], unique: true },
-    { fields: ['district_id'] },
-    { fields: ['is_active'] },
+    { fields: ['districtId'] },
+    { fields: ['isActive'] },
   ],
 })
 export class School extends Model<SchoolAttributes, CreateSchoolAttributes> {
@@ -90,8 +90,7 @@ export class School extends Model<SchoolAttributes, CreateSchoolAttributes> {
   @Column({
     type: DataType.STRING(50),
     allowNull: false,
-    unique: true,
-    comment: 'Unique code identifier for the school',
+    unique: true
   })
   @Index
   code: string;

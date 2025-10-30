@@ -8,8 +8,8 @@ import {
   ForeignKey,
   BelongsTo,
   HasMany,
-  Index,
-} from 'sequelize-typescript';
+  Index
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 ;
 ;
@@ -25,8 +25,8 @@ export enum AlertSeverity {
   MEDIUM = 'MEDIUM',
   HIGH = 'HIGH',
   CRITICAL = 'CRITICAL',
-  EMERGENCY = 'EMERGENCY',
-}
+  EMERGENCY = 'EMERGENCY'
+  }
 
 /**
  * Alert Categories
@@ -37,8 +37,8 @@ export enum AlertCategory {
   COMPLIANCE = 'COMPLIANCE',
   SYSTEM = 'SYSTEM',
   MEDICATION = 'MEDICATION',
-  APPOINTMENT = 'APPOINTMENT',
-}
+  APPOINTMENT = 'APPOINTMENT'
+  }
 
 /**
  * Alert Status
@@ -48,8 +48,8 @@ export enum AlertStatus {
   ACKNOWLEDGED = 'ACKNOWLEDGED',
   RESOLVED = 'RESOLVED',
   EXPIRED = 'EXPIRED',
-  DISMISSED = 'DISMISSED',
-}
+  DISMISSED = 'DISMISSED'
+  }
 
 /**
  * Alert Attributes Interface
@@ -101,42 +101,42 @@ export interface AlertAttributes {
 @Table({
   tableName: 'alerts',
   timestamps: true,
-  underscored: true,
+  underscored: false,
   indexes: [
     {
       fields: ['severity'],
-      name: 'alerts_severity_idx',
-    },
+      name: 'alerts_severity_idx'
+  },
     {
       fields: ['status'],
-      name: 'alerts_status_idx',
-    },
+      name: 'alerts_status_idx'
+  },
     {
       fields: ['category'],
-      name: 'alerts_category_idx',
-    },
+      name: 'alerts_category_idx'
+  },
     {
-      fields: ['user_id'],
-      name: 'alerts_user_id_idx',
-    },
+      fields: ['userId'],
+      name: 'alerts_user_id_idx'
+  },
     {
-      fields: ['student_id'],
-      name: 'alerts_student_id_idx',
-    },
+      fields: ['studentId'],
+      name: 'alerts_student_id_idx'
+  },
     {
-      fields: ['school_id'],
-      name: 'alerts_school_id_idx',
-    },
+      fields: ['schoolId'],
+      name: 'alerts_school_id_idx'
+  },
     {
-      fields: ['created_at'],
-      name: 'alerts_created_at_idx',
-    },
+      fields: ['createdAt'],
+      name: 'alerts_created_at_idx'
+  },
     {
-      fields: ['status', 'severity', 'created_at'],
-      name: 'alerts_status_severity_created_idx',
-    },
-  ],
-})
+      fields: ['status', 'severity', 'createdAt'],
+      name: 'alerts_status_severity_created_idx'
+  },
+  ]
+  })
 export class Alert extends Model<AlertAttributes> implements AlertAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -148,8 +148,7 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
    */
   @ForeignKey(() => require('./alert-rule.model').AlertRule)
   @Column({
-    type: DataType.UUID,
-    field: 'definition_id',
+    type: DataType.UUID
   })
   definitionId?: string;
 
@@ -162,7 +161,7 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
   @Index
   @Column({
     type: DataType.ENUM(...(Object.values(AlertSeverity) as string[])),
-    allowNull: false,
+    allowNull: false
   })
   severity: AlertSeverity;
 
@@ -172,7 +171,7 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
   @Index
   @Column({
     type: DataType.ENUM(...(Object.values(AlertCategory) as string[])),
-    allowNull: false,
+    allowNull: false
   })
   category: AlertCategory;
 
@@ -181,7 +180,7 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
    */
   @Column({
     type: DataType.STRING(500),
-    allowNull: false,
+    allowNull: false
   })
   title: string;
 
@@ -190,7 +189,7 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
    */
   @Column({
     type: DataType.TEXT,
-    allowNull: false,
+    allowNull: false
   })
   message: string;
 
@@ -200,8 +199,7 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
   @Index
   @ForeignKey(() => require('./student.model').Student)
   @Column({
-    type: DataType.UUID,
-    field: 'student_id',
+    type: DataType.UUID
   })
   studentId?: string;
 
@@ -214,8 +212,7 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
   @Index
   @ForeignKey(() => require('./user.model').User)
   @Column({
-    type: DataType.UUID,
-    field: 'user_id',
+    type: DataType.UUID
   })
   userId?: string;
 
@@ -228,8 +225,7 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
   @Index
   @ForeignKey(() => require('./school.model').School)
   @Column({
-    type: DataType.UUID,
-    field: 'school_id',
+    type: DataType.UUID
   })
   schoolId?: string;
 
@@ -243,7 +239,7 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
   @Column({
     type: DataType.ENUM(...(Object.values(AlertStatus) as string[])),
     allowNull: false,
-    defaultValue: AlertStatus.ACTIVE,
+    defaultValue: AlertStatus.ACTIVE
   })
   status: AlertStatus;
 
@@ -259,8 +255,7 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
   @ForeignKey(() => require('./user.model').User)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'created_by',
+    allowNull: false
   })
   createdBy: string;
 
@@ -271,8 +266,7 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
    * When alert was acknowledged
    */
   @Column({
-    type: DataType.DATE,
-    field: 'acknowledged_at',
+    type: DataType.DATE
   })
   acknowledgedAt?: Date;
 
@@ -281,8 +275,7 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
    */
   @ForeignKey(() => require('./user.model').User)
   @Column({
-    type: DataType.UUID,
-    field: 'acknowledged_by',
+    type: DataType.UUID
   })
   acknowledgedBy?: string;
 
@@ -293,8 +286,7 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
    * When alert was resolved
    */
   @Column({
-    type: DataType.DATE,
-    field: 'resolved_at',
+    type: DataType.DATE
   })
   resolvedAt?: Date;
 
@@ -303,8 +295,7 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
    */
   @ForeignKey(() => require('./user.model').User)
   @Column({
-    type: DataType.UUID,
-    field: 'resolved_by',
+    type: DataType.UUID
   })
   resolvedBy?: string;
 
@@ -315,8 +306,7 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
    * When alert expires
    */
   @Column({
-    type: DataType.DATE,
-    field: 'expires_at',
+    type: DataType.DATE
   })
   expiresAt?: Date;
 
@@ -324,8 +314,7 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
    * Auto-escalate after this many minutes
    */
   @Column({
-    type: DataType.INTEGER,
-    field: 'auto_escalate_after',
+    type: DataType.INTEGER
   })
   autoEscalateAfter?: number;
 
@@ -334,8 +323,7 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
    */
   @Column({
     type: DataType.INTEGER,
-    defaultValue: 0,
-    field: 'escalation_level',
+    defaultValue: 0
   })
   escalationLevel?: number;
 
@@ -345,8 +333,7 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false,
-    field: 'requires_acknowledgment',
+    defaultValue: false
   })
   requiresAcknowledgment: boolean;
 
@@ -354,16 +341,14 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW,
-    field: 'created_at',
+    defaultValue: DataType.NOW
   })
   declare createdAt?: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW,
-    field: 'updated_at',
+    defaultValue: DataType.NOW
   })
   declare updatedAt?: Date;
 

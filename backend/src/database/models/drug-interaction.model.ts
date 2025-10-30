@@ -8,8 +8,8 @@ import {
   AllowNull,
   Index,
   ForeignKey,
-  BelongsTo,
-} from 'sequelize-typescript';
+  BelongsTo
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 ;
 import { InteractionSeverity } from '../../clinical/enums/interaction-severity.enum';
@@ -35,14 +35,14 @@ export interface DrugInteractionAttributes {
   timestamps: true,
   indexes: [
     {
-      fields: ['drug1_id', 'drug2_id'],
-      unique: true,
-    },
+      fields: ['drug1Id', 'drug2Id'],
+      unique: true
+  },
     {
-      fields: ['severity'],
-    },
-  ],
-})
+      fields: ['severity']
+  },
+  ]
+  })
 export class DrugInteraction extends Model<DrugInteractionAttributes> implements DrugInteractionAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -52,8 +52,7 @@ export class DrugInteraction extends Model<DrugInteractionAttributes> implements
   @ForeignKey(() => require('./drug-catalog.model').DrugCatalog)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'drug1_id',
+    allowNull: false
   })
   @Index
   drug1Id: string;
@@ -61,48 +60,45 @@ export class DrugInteraction extends Model<DrugInteractionAttributes> implements
   @ForeignKey(() => require('./drug-catalog.model').DrugCatalog)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'drug2_id',
+    allowNull: false
   })
   @Index
   drug2Id: string;
 
   @Column({
     type: DataType.ENUM(...(Object.values(InteractionSeverity) as string[])),
-    allowNull: false,
+    allowNull: false
   })
   @Index
   severity: InteractionSeverity;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false,
+    allowNull: false
   })
   description: string;
 
   @AllowNull
   @Column({
-    type: DataType.TEXT,
-    field: 'clinical_effects',
+    type: DataType.TEXT
   })
   clinicalEffects?: string;
 
   @AllowNull
   @Column({
-    type: DataType.TEXT,
+    type: DataType.TEXT
   })
   management?: string;
 
   @AllowNull
   @Column({
-    type: DataType.JSON,
+    type: DataType.JSON
   })
   references?: string[];
 
   @AllowNull
   @Column({
-    type: DataType.STRING(50),
-    field: 'evidence_level',
+    type: DataType.STRING(50)
   })
   evidenceLevel?: string;
 

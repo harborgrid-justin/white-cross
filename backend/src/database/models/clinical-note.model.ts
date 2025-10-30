@@ -8,8 +8,8 @@ import {
   AllowNull,
   Index,
   ForeignKey,
-  BelongsTo,
-} from 'sequelize-typescript';
+  BelongsTo
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 ;
 import { NoteType } from '../../clinical/enums/note-type.enum';
@@ -42,16 +42,16 @@ export interface ClinicalNoteAttributes {
   timestamps: true,
   indexes: [
     {
-      fields: ['student_id', 'type'],
-    },
+      fields: ['studentId', 'type']
+  },
     {
-      fields: ['visit_id'],
-    },
+      fields: ['visitId']
+  },
     {
-      fields: ['created_by'],
-    },
-  ],
-})
+      fields: ['createdBy']
+  },
+  ]
+  })
 export class ClinicalNote extends Model<ClinicalNoteAttributes> implements ClinicalNoteAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -60,8 +60,7 @@ export class ClinicalNote extends Model<ClinicalNoteAttributes> implements Clini
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'student_id',
+    allowNull: false
   })
   @Index
   studentId: string;
@@ -69,8 +68,7 @@ export class ClinicalNote extends Model<ClinicalNoteAttributes> implements Clini
   @AllowNull
   @ForeignKey(() => require('./clinic-visit.model').ClinicVisit)
   @Column({
-    type: DataType.UUID,
-    field: 'visit_id',
+    type: DataType.UUID
   })
   visitId?: string;
 
@@ -80,100 +78,90 @@ export class ClinicalNote extends Model<ClinicalNoteAttributes> implements Clini
   @Column({
     type: DataType.ENUM(...(Object.values(NoteType) as string[])),
     allowNull: false,
-    defaultValue: NoteType.GENERAL,
+    defaultValue: NoteType.GENERAL
   })
   type: NoteType;
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'created_by',
+    allowNull: false
   })
   @Index
   createdBy: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false,
+    allowNull: false
   })
   title: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false,
+    allowNull: false
   })
   content: string;
 
   // SOAP note components (optional, used when type is SOAP)
   @AllowNull
   @Column({
-    type: DataType.TEXT,
-    field: 'subjective',
+    type: DataType.TEXT
   })
   subjective?: string;
 
   @AllowNull
   @Column({
-    type: DataType.TEXT,
-    field: 'objective',
+    type: DataType.TEXT
   })
   objective?: string;
 
   @AllowNull
   @Column({
-    type: DataType.TEXT,
-    field: 'assessment',
+    type: DataType.TEXT
   })
   assessment?: string;
 
   @AllowNull
   @Column({
-    type: DataType.TEXT,
-    field: 'plan',
+    type: DataType.TEXT
   })
   plan?: string;
 
   @AllowNull
   @Column({
-    type: DataType.JSON,
-    field: 'tags',
+    type: DataType.JSON
   })
   tags?: string[];
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false,
-    field: 'is_confidential',
+    defaultValue: false
   })
   isConfidential: boolean;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false,
-    field: 'is_signed',
+    defaultValue: false
   })
   isSigned: boolean;
 
   @AllowNull
   @Column({
-    type: DataType.DATE,
-    field: 'signed_at',
+    type: DataType.DATE
   })
   signedAt?: Date;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false,
+    defaultValue: false
   })
   amended: boolean;
 
   @AllowNull
   @Column({
-    type: DataType.TEXT,
-    field: 'amendment_reason',
+    type: DataType.TEXT
   })
   amendmentReason?: string;
 

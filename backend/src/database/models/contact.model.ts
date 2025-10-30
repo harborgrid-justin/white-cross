@@ -30,81 +30,81 @@ export class Contact extends Model<Contact> {
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: false,
+    allowNull: false
   })
   firstName: string;
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: false,
+    allowNull: false
   })
   lastName: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: true,
+    allowNull: true
   })
   email: string | null;
 
   @Column({
     type: DataType.STRING(20),
-    allowNull: true,
+    allowNull: true
   })
   phone: string | null;
 
   @Column({
     type: DataType.ENUM(...(Object.values(ContactType) as string[])),
-    allowNull: false,
+    allowNull: false
   })
   type: ContactType;
 
   @Column({
     type: DataType.STRING(200),
-    allowNull: true,
+    allowNull: true
   })
   organization: string | null;
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: true,
+    allowNull: true
   })
   title: string | null;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: true,
+    allowNull: true
   })
   address: string | null;
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: true,
+    allowNull: true
   })
   city: string | null;
 
   @Column({
     type: DataType.STRING(50),
-    allowNull: true,
+    allowNull: true
   })
   state: string | null;
 
   @Column({
     type: DataType.STRING(20),
-    allowNull: true,
+    allowNull: true
   })
   zip: string | null;
 
   @Column({
     type: DataType.UUID,
     allowNull: true,
-    comment: 'UUID of related student or user',
+    comment: 'UUID of related student or user'
   })
   relationTo: string | null;
 
   @Column({
     type: DataType.STRING(50),
     allowNull: true,
-    comment: 'Type of relationship (parent, emergency, etc.)',
+    comment: 'Type of relationship (parent, emergency, etc.)'
   })
   relationshipType: string | null;
 
@@ -112,56 +112,53 @@ export class Contact extends Model<Contact> {
     type: DataType.JSONB,
     allowNull: true,
     defaultValue: {},
-    comment: 'Custom healthcare-specific fields',
+    comment: 'Custom healthcare-specific fields'
   })
   customFields: Record<string, any> | null;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true,
+    defaultValue: true
   })
   isActive: boolean;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: true,
+    allowNull: true
   })
   notes: string | null;
 
   @Column({
     type: DataType.UUID,
     allowNull: true,
-    comment: 'User who created this contact',
+    comment: 'User who created this contact'
   })
   createdBy: string | null;
 
   @Column({
     type: DataType.UUID,
     allowNull: true,
-    comment: 'User who last updated this contact',
+    comment: 'User who last updated this contact'
   })
   updatedBy: string | null;
 
   @CreatedAt
   @Column({
-    type: DataType.DATE,
-    field: 'createdAt',
+    type: DataType.DATE
   })
   declare createdAt: Date;
 
   @UpdatedAt
   @Column({
-    type: DataType.DATE,
-    field: 'updatedAt',
+    type: DataType.DATE
   })
   declare updatedAt: Date;
 
   @DeletedAt
   @Column({
     type: DataType.DATE,
-    field: 'deletedAt',
-    comment: 'Soft delete timestamp',
+    comment: 'Soft delete timestamp'
   })
   declare deletedAt: Date | null;
 

@@ -6,8 +6,8 @@ import {
   PrimaryKey,
   Default,
   AllowNull,
-  Index,
-} from 'sequelize-typescript';
+  Index
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 import { SyncEntityType, ConflictResolution } from './sync-queue-item.model';
 
@@ -46,13 +46,13 @@ export interface SyncConflictAttributes {
   timestamps: false,
   indexes: [
     {
-      fields: ['status'],
-    },
+      fields: ['status']
+  },
     {
-      fields: ['entity_type'],
-    },
-  ],
-})
+      fields: ['entityType']
+  },
+  ]
+  })
 export class SyncConflict extends Model<SyncConflictAttributes> implements SyncConflictAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -61,79 +61,70 @@ export class SyncConflict extends Model<SyncConflictAttributes> implements SyncC
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
-    field: 'queue_item_id',
+    allowNull: false
   })
   queueItemId: string;
 
   @Column({
     type: DataType.ENUM(...(Object.values(SyncEntityType) as string[])),
-    allowNull: false,
-    field: 'entity_type',
+    allowNull: false
   })
   @Index
   entityType: string;
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
-    field: 'entity_id',
+    allowNull: false
   })
   entityId: string;
 
   @Column({
     type: DataType.JSON,
-    allowNull: false,
-    field: 'client_version',
+    allowNull: false
   })
   clientVersion: ConflictVersion;
 
   @Column({
     type: DataType.JSON,
-    allowNull: false,
-    field: 'server_version',
+    allowNull: false
   })
   serverVersion: ConflictVersion;
 
   @AllowNull
   @Column({
-    type: DataType.ENUM(...(Object.values(ConflictResolution) as string[])),
+    type: DataType.ENUM(...(Object.values(ConflictResolution) as string[]))
   })
   resolution?: ConflictResolution;
 
   @AllowNull
   @Column({
-    type: DataType.DATE,
-    field: 'resolved_at',
+    type: DataType.DATE
   })
   resolvedAt?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.UUID,
-    field: 'resolved_by',
+    type: DataType.UUID
   })
   resolvedBy?: string;
 
   @AllowNull
   @Column({
-    type: DataType.JSON,
-    field: 'merged_data',
+    type: DataType.JSON
   })
   mergedData?: any;
 
   @Column({
     type: DataType.ENUM(...(Object.values(SyncStatus) as string[])),
     allowNull: false,
-    defaultValue: SyncStatus.PENDING,
+    defaultValue: SyncStatus.PENDING
   })
   @Index
   status: SyncStatus;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
-    field: 'created_at',
+    allowNull: false
   })
   declare createdAt?: Date;
 }

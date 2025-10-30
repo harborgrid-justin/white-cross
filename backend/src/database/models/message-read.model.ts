@@ -51,11 +51,11 @@ export interface MessageReadCreationAttributes
 @Table({
   tableName: 'message_reads',
   timestamps: true,
-  underscored: true,
+  underscored: false,
   indexes: [
     {
       unique: true,
-      fields: ['message_id', 'user_id'],
+      fields: ['messageId', 'userId'],
       name: 'message_reads_message_user_unique',
     },
   ],

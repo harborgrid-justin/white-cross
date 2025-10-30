@@ -7,8 +7,8 @@ import {
   Default,
   ForeignKey,
   BelongsTo,
-  Index,
-} from 'sequelize-typescript';
+  Index
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum DeliveryChannel {
@@ -56,34 +56,34 @@ export interface DeliveryLogAttributes {
 @Table({
   tableName: 'delivery_logs',
   timestamps: true,
-  underscored: true,
+  underscored: false,
   indexes: [
     {
-      fields: ['alert_id'],
-      name: 'delivery_logs_alert_id_idx',
-    },
+      fields: ['alertId'],
+      name: 'delivery_logs_alert_id_idx'
+  },
     {
       fields: ['channel'],
-      name: 'delivery_logs_channel_idx',
-    },
+      name: 'delivery_logs_channel_idx'
+  },
     {
       fields: ['success'],
-      name: 'delivery_logs_success_idx',
-    },
+      name: 'delivery_logs_success_idx'
+  },
     {
-      fields: ['last_attempt'],
-      name: 'delivery_logs_last_attempt_idx',
-    },
+      fields: ['lastAttempt'],
+      name: 'delivery_logs_last_attempt_idx'
+  },
     {
-      fields: ['recipient_id'],
-      name: 'delivery_logs_recipient_id_idx',
-    },
+      fields: ['recipientId'],
+      name: 'delivery_logs_recipient_id_idx'
+  },
     {
-      fields: ['alert_id', 'channel', 'recipient_id'],
-      name: 'delivery_logs_alert_channel_recipient_idx',
-    },
-  ],
-})
+      fields: ['alertId', 'channel', 'recipientId'],
+      name: 'delivery_logs_alert_channel_recipient_idx'
+  },
+  ]
+  })
 export class DeliveryLog extends Model<DeliveryLogAttributes> implements DeliveryLogAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -97,8 +97,7 @@ export class DeliveryLog extends Model<DeliveryLogAttributes> implements Deliver
   @ForeignKey(() => require('./alert.model').Alert)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'alert_id',
+    allowNull: false
   })
   alertId: string;
 
@@ -111,7 +110,7 @@ export class DeliveryLog extends Model<DeliveryLogAttributes> implements Deliver
   @Index
   @Column({
     type: DataType.ENUM(...(Object.values(DeliveryChannel) as string[])),
-    allowNull: false,
+    allowNull: false
   })
   declare channel: any;
 
@@ -121,8 +120,7 @@ export class DeliveryLog extends Model<DeliveryLogAttributes> implements Deliver
   @Index
   @ForeignKey(() => require('./user.model').User)
   @Column({
-    type: DataType.UUID,
-    field: 'recipient_id',
+    type: DataType.UUID
   })
   recipientId?: string;
 
@@ -136,7 +134,7 @@ export class DeliveryLog extends Model<DeliveryLogAttributes> implements Deliver
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false,
+    defaultValue: false
   })
   success: boolean;
 
@@ -146,8 +144,7 @@ export class DeliveryLog extends Model<DeliveryLogAttributes> implements Deliver
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 1,
-    field: 'attempt_count',
+    defaultValue: 1
   })
   attemptCount: number;
 
@@ -157,8 +154,7 @@ export class DeliveryLog extends Model<DeliveryLogAttributes> implements Deliver
   @Index
   @Column({
     type: DataType.DATE,
-    allowNull: false,
-    field: 'last_attempt',
+    allowNull: false
   })
   lastAttempt: Date;
 
@@ -166,8 +162,7 @@ export class DeliveryLog extends Model<DeliveryLogAttributes> implements Deliver
    * Timestamp of successful delivery
    */
   @Column({
-    type: DataType.DATE,
-    field: 'delivered_at',
+    type: DataType.DATE
   })
   deliveredAt?: Date;
 
@@ -175,24 +170,21 @@ export class DeliveryLog extends Model<DeliveryLogAttributes> implements Deliver
    * Error message if delivery failed
    */
   @Column({
-    type: DataType.TEXT,
-    field: 'error_message',
+    type: DataType.TEXT
   })
   errorMessage?: string;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW,
-    field: 'created_at',
+    defaultValue: DataType.NOW
   })
   declare createdAt?: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW,
-    field: 'updated_at',
+    defaultValue: DataType.NOW
   })
   declare updatedAt?: Date;
 

@@ -66,7 +66,7 @@ export interface MessageCreationAttributes
   tableName: 'messages',
   timestamps: true,
   paranoid: true,
-  underscored: true,
+  underscored: false,
 })
 export class Message extends Model<MessageAttributes, MessageCreationAttributes> {
   @PrimaryKey

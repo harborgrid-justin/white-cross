@@ -44,7 +44,7 @@ export interface MessageTemplateAttributes {
 @Table({
   tableName: 'message_templates',
   timestamps: true,
-  underscored: true,
+  underscored: false,
 })
 export class MessageTemplate extends Model<MessageTemplateAttributes> {
   @PrimaryKey

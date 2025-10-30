@@ -6,8 +6,8 @@ import {
   PrimaryKey,
   Default,
   AllowNull,
-  Index,
-} from 'sequelize-typescript';
+  Index
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum SyncActionType {
@@ -70,19 +70,19 @@ export interface SyncQueueItemAttributes {
   timestamps: true,
   indexes: [
     {
-      fields: ['device_id'],
-    },
+      fields: ['deviceId']
+  },
     {
-      fields: ['user_id'],
-    },
+      fields: ['userId']
+  },
     {
-      fields: ['synced'],
-    },
+      fields: ['synced']
+  },
     {
-      fields: ['priority'],
-    },
-  ],
-})
+      fields: ['priority']
+  },
+  ]
+  })
 export class SyncQueueItem extends Model<SyncQueueItemAttributes> implements SyncQueueItemAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -91,50 +91,45 @@ export class SyncQueueItem extends Model<SyncQueueItemAttributes> implements Syn
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
-    field: 'device_id',
+    allowNull: false
   })
   @Index
   deviceId: string;
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'user_id',
+    allowNull: false
   })
   @Index
   userId: string;
 
   @Column({
     type: DataType.ENUM(...(Object.values(SyncActionType) as string[])),
-    allowNull: false,
-    field: 'action_type',
+    allowNull: false
   })
   actionType: SyncActionType;
 
   @Column({
     type: DataType.ENUM(...(Object.values(SyncEntityType) as string[])),
-    allowNull: false,
-    field: 'entity_type',
+    allowNull: false
   })
   entityType: SyncEntityType;
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
-    field: 'entity_id',
+    allowNull: false
   })
   entityId: string;
 
   @Column({
     type: DataType.JSON,
-    allowNull: false,
+    allowNull: false
   })
   data: any;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
+    allowNull: false
   })
   timestamp: Date;
 
@@ -143,15 +138,14 @@ export class SyncQueueItem extends Model<SyncQueueItemAttributes> implements Syn
 
   @AllowNull
   @Column({
-    type: DataType.DATE,
-    field: 'synced_at',
+    type: DataType.DATE
   })
   syncedAt?: Date;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false,
+    defaultValue: false
   })
   @Index
   synced: boolean;
@@ -159,44 +153,40 @@ export class SyncQueueItem extends Model<SyncQueueItemAttributes> implements Syn
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 0,
+    defaultValue: 0
   })
   attempts: number;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 3,
-    field: 'max_attempts',
+    defaultValue: 3
   })
   maxAttempts: number;
 
   @AllowNull
   @Column({
-    type: DataType.TEXT,
-    field: 'last_error',
+    type: DataType.TEXT
   })
   lastError?: string;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false,
-    field: 'conflict_detected',
+    defaultValue: false
   })
   conflictDetected: boolean;
 
   @AllowNull
   @Column({
-    type: DataType.ENUM(...(Object.values(ConflictResolution) as string[])),
-    field: 'conflict_resolution',
+    type: DataType.ENUM(...(Object.values(ConflictResolution) as string[]))
   })
   conflictResolution?: ConflictResolution;
 
   @Column({
     type: DataType.ENUM(...(Object.values(SyncPriority) as string[])),
     allowNull: false,
-    defaultValue: SyncPriority.NORMAL,
+    defaultValue: SyncPriority.NORMAL
   })
   @Index
   priority: SyncPriority;
@@ -204,8 +194,7 @@ export class SyncQueueItem extends Model<SyncQueueItemAttributes> implements Syn
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true,
-    field: 'requires_online',
+    defaultValue: true
   })
   requiresOnline: boolean;
 

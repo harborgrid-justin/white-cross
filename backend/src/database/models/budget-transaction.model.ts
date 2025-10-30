@@ -17,8 +17,8 @@ import { Table, Column, Model, DataType, PrimaryKey, Default, ForeignKey, Belong
   tableName: 'budget_transactions',
   timestamps: true,
   createdAt: 'created_at',
-  updatedAt: 'updated_at',
-})
+  updatedAt: 'updated_at'
+  })
 export class BudgetTransaction extends Model<BudgetTransaction> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -28,61 +28,55 @@ export class BudgetTransaction extends Model<BudgetTransaction> {
   @ForeignKey(() => require('./budget-category.model').BudgetCategory)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'category_id',
+    allowNull: false
   })
   categoryId: string;
 
   @Column({
     type: DataType.DECIMAL(10, 2),
-    allowNull: false,
+    allowNull: false
   })
   amount: number;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false,
+    allowNull: false
   })
   description: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
-    field: 'transaction_date',
+    allowNull: false
   })
   transactionDate: Date;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: true,
-    field: 'reference_id',
+    allowNull: true
   })
   referenceId: string | null;
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: true,
-    field: 'reference_type',
+    allowNull: true
   })
   referenceType: string | null;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: true,
+    allowNull: true
   })
   notes: string | null;
 
   @CreatedAt
   @Column({
-    type: DataType.DATE,
-    field: 'created_at',
+    type: DataType.DATE
   })
   declare createdAt: Date;
 
   @UpdatedAt
   @Column({
-    type: DataType.DATE,
-    field: 'updated_at',
+    type: DataType.DATE
   })
   declare updatedAt: Date;
 

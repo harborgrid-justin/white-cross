@@ -2,9 +2,9 @@ import { Module, DynamicModule, OnApplicationBootstrap, OnApplicationShutdown, I
 import { DiscoveryModule, DiscoveryService, Reflector } from '@nestjs/core';
 import { SmartGarbageCollectionService } from './services/smart-garbage-collection.service';
 import { MemoryLeakDetectionService } from './services/memory-leak-detection.service';
-import { GcOptimizationService } from './services/gc-optimization.service';
+import { GCOptimizationService } from './services/gc-optimization.service';
 import { MemoryPressureInterceptor } from './interceptors/memory-pressure.interceptor';
-import { GcSchedulerGuard } from './guards/gc-scheduler.guard';
+import { GCSchedulerGuard } from './guards/gc-scheduler.guard';
 
 export interface SmartGarbageCollectionOptions {
   enableAutoGc?: boolean;
@@ -27,7 +27,7 @@ class SmartGarbageCollectionModuleService implements OnApplicationBootstrap, OnA
     private readonly reflector: Reflector,
     private readonly gcService: SmartGarbageCollectionService,
     private readonly leakDetectionService: MemoryLeakDetectionService,
-    private readonly optimizationService: GcOptimizationService,
+    private readonly optimizationService: GCOptimizationService,
   ) {}
 
   async onApplicationBootstrap() {
@@ -46,7 +46,7 @@ class SmartGarbageCollectionModuleService implements OnApplicationBootstrap, OnA
 
     // Optimize GC strategy every 10 minutes
     this.optimizationInterval = setInterval(async () => {
-      await this.optimizationService.optimizeGcStrategy();
+      await this.optimizationService.performOptimization();
     }, 600000);
   }
 
@@ -135,17 +135,17 @@ class SmartGarbageCollectionModuleService implements OnApplicationBootstrap, OnA
   providers: [
     SmartGarbageCollectionService,
     MemoryLeakDetectionService,
-    GcOptimizationService,
+    GCOptimizationService,
     MemoryPressureInterceptor,
-    GcSchedulerGuard,
+    GCSchedulerGuard,
     SmartGarbageCollectionModuleService,
   ],
   exports: [
     SmartGarbageCollectionService,
     MemoryLeakDetectionService,
-    GcOptimizationService,
+    GCOptimizationService,
     MemoryPressureInterceptor,
-    GcSchedulerGuard,
+    GCSchedulerGuard,
   ],
 })
 export class SmartGarbageCollectionModule {
@@ -156,9 +156,9 @@ export class SmartGarbageCollectionModule {
       providers: [
         SmartGarbageCollectionService,
         MemoryLeakDetectionService,
-        GcOptimizationService,
+        GCOptimizationService,
         MemoryPressureInterceptor,
-        GcSchedulerGuard,
+        GCSchedulerGuard,
         SmartGarbageCollectionModuleService,
         {
           provide: 'SMART_GC_OPTIONS',
@@ -177,9 +177,9 @@ export class SmartGarbageCollectionModule {
       exports: [
         SmartGarbageCollectionService,
         MemoryLeakDetectionService,
-        GcOptimizationService,
+        GCOptimizationService,
         MemoryPressureInterceptor,
-        GcSchedulerGuard,
+        GCSchedulerGuard,
       ],
     };
   }

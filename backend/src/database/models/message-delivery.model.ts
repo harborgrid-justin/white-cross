@@ -62,7 +62,7 @@ export interface MessageDeliveryCreationAttributes
 @Table({
   tableName: 'message_deliveries',
   timestamps: true,
-  underscored: true,
+  underscored: false,
 })
 export class MessageDelivery extends Model<MessageDeliveryAttributes, MessageDeliveryCreationAttributes> {
   @PrimaryKey

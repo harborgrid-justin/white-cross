@@ -7,22 +7,22 @@ import {
   Default,
   ForeignKey,
   BelongsTo,
-  Index,
-} from 'sequelize-typescript';
+  Index
+  } from 'sequelize-typescript';
 ;
 
 export enum MessageType {
   EMAIL = 'EMAIL',
   SMS = 'SMS',
-  PUSH_NOTIFICATION = 'PUSH_NOTIFICATION',
-}
+  PUSH_NOTIFICATION = 'PUSH_NOTIFICATION'
+  }
 
 export enum ReminderStatus {
   SCHEDULED = 'SCHEDULED',
   SENT = 'SENT',
   FAILED = 'FAILED',
-  CANCELLED = 'CANCELLED',
-}
+  CANCELLED = 'CANCELLED'
+  }
 
 export interface AppointmentReminderAttributes {
   id?: string;
@@ -40,8 +40,8 @@ export interface AppointmentReminderAttributes {
 @Table({
   tableName: 'appointment_reminders',
   timestamps: true,
-  underscored: true,
-})
+  underscored: false
+  })
 export class AppointmentReminder extends Model<AppointmentReminderAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -52,7 +52,7 @@ export class AppointmentReminder extends Model<AppointmentReminderAttributes> {
   @ForeignKey(() => require('./appointment.model').Appointment)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: false
   })
   appointmentId: string;
 
@@ -61,14 +61,14 @@ export class AppointmentReminder extends Model<AppointmentReminderAttributes> {
 
   @Column({
     type: DataType.ENUM(...(Object.values(MessageType) as string[])),
-    allowNull: false,
+    allowNull: false
   })
   type: MessageType;
 
   @Index
   @Column({
     type: DataType.DATE,
-    allowNull: false,
+    allowNull: false
   })
   scheduledFor: Date;
 
@@ -76,39 +76,37 @@ export class AppointmentReminder extends Model<AppointmentReminderAttributes> {
   @Column({
     type: DataType.ENUM(...(Object.values(ReminderStatus) as string[])),
     allowNull: false,
-    defaultValue: ReminderStatus.SCHEDULED,
+    defaultValue: ReminderStatus.SCHEDULED
   })
   status: ReminderStatus;
 
   @Column({
     type: DataType.DATE,
-    allowNull: true,
+    allowNull: true
   })
   sentAt?: Date;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: true,
+    allowNull: true
   })
   failureReason?: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false,
+    allowNull: false
   })
   message: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
-    field: 'created_at',
+    allowNull: false
   })
   declare createdAt?: Date;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
-    field: 'updated_at',
+    allowNull: false
   })
   declare updatedAt?: Date;
 }

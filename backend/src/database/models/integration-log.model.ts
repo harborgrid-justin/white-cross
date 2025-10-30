@@ -24,15 +24,15 @@ import {
 @Table({
   tableName: 'integration_logs',
   timestamps: true,
-  underscored: true,
+  underscored: false,
   indexes: [
-    { fields: ['integration_id'] },
-    { fields: ['integration_type'] },
+    { fields: ['integrationId'] },
+    { fields: ['integrationType'] },
     { fields: ['action'] },
     { fields: ['status'] },
-    { fields: ['started_at'] },
-    { fields: ['completed_at'] },
-    { fields: ['created_at'] },
+    { fields: ['startedAt'] },
+    { fields: ['completedAt'] },
+    { fields: ['createdAt'] },
   ],
 })
 export class IntegrationLog extends Model {

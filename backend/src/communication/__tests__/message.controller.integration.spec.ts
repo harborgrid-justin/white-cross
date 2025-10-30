@@ -1,9 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-import * as request from 'supertest';
+import request from 'supertest';
 import { MessageController } from '../controllers/message.controller';
 import { MessageService } from '../services/message.service';
 import { MessagePriority, MessageCategory, MessageType, RecipientType } from '../dto/send-message.dto';
+import { DeliveryChannelType, DeliveryStatus } from '../../database/models/message-delivery.model';
 
 describe('MessageController Integration Tests (e2e)', () => {
   let app: INestApplication;
@@ -27,16 +28,20 @@ describe('MessageController Integration Tests (e2e)', () => {
     category: MessageCategory.GENERAL,
     recipientCount: 1,
     senderId: mockUserId,
-    createdAt: new Date().toISOString(),
+    createdAt: new Date(),
+    isEncrypted: false,
+    attachments: [],
+    isEdited: false,
   };
 
   const mockDeliveryStatus = {
     id: 'delivery-123',
     messageId: mockMessageId,
     recipientId: mockRecipientId,
-    channel: MessageType.EMAIL,
-    status: 'SENT',
-    sentAt: new Date().toISOString(),
+    recipientType: RecipientType.PARENT,
+    channel: DeliveryChannelType.EMAIL,
+    status: DeliveryStatus.SENT,
+    sentAt: new Date(),
   };
 
   beforeAll(async () => {

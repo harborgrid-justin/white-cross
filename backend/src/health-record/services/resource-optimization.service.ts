@@ -844,7 +844,7 @@ export class ResourceOptimizationService implements OnModuleDestroy {
         incidentType: 'RESOURCE_ALERT',
         operation: 'RESOURCE_MONITORING',
         errorMessage: alert.message,
-        severity: alert.severity,
+        severity: this.mapAlertSeverityToIncidentSeverity(alert.severity),
         ipAddress: 'internal',
       });
     }
@@ -950,6 +950,19 @@ export class ResourceOptimizationService implements OnModuleDestroy {
   private assessComplianceImpact(alertType: ResourceAlertType): boolean {
     return alertType === ResourceAlertType.PHI_PROCESSING_OVERLOAD || 
            alertType === ResourceAlertType.COMPLIANCE_RISK_DETECTED;
+  }
+
+  /**
+   * Map alert severity to incident severity
+   */
+  private mapAlertSeverityToIncidentSeverity(alertSeverity: 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL'): 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' {
+    switch (alertSeverity) {
+      case 'INFO': return 'LOW';
+      case 'WARNING': return 'MEDIUM';
+      case 'ERROR': return 'HIGH';
+      case 'CRITICAL': return 'CRITICAL';
+      default: return 'MEDIUM';
+    }
   }
 
   /**

@@ -7,8 +7,8 @@ import {
   Default,
   ForeignKey,
   BelongsTo,
-  BeforeCreate,
-} from 'sequelize-typescript';
+  BeforeCreate
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 ;
 
@@ -18,15 +18,15 @@ export enum AllergyType {
   ENVIRONMENTAL = 'ENVIRONMENTAL',
   INSECT = 'INSECT',
   LATEX = 'LATEX',
-  OTHER = 'OTHER',
-}
+  OTHER = 'OTHER'
+  }
 
 export enum AllergySeverity {
   MILD = 'MILD',
   MODERATE = 'MODERATE',
   SEVERE = 'SEVERE',
-  LIFE_THREATENING = 'LIFE_THREATENING',
-}
+  LIFE_THREATENING = 'LIFE_THREATENING'
+  }
 
 export interface AllergyAttributes {
   id: string;
@@ -59,16 +59,16 @@ export interface AllergyAttributes {
   timestamps: true,
   indexes: [
     {
-      fields: ['studentId', 'active'],
-    },
+      fields: ['studentId', 'active']
+  },
     {
-      fields: ['allergyType', 'severity'],
-    },
+      fields: ['allergyType', 'severity']
+  },
     {
-      fields: ['epiPenExpiration'],
-    },
-  ],
-})
+      fields: ['epiPenExpiration']
+  },
+  ]
+  })
 export class Allergy extends Model<AllergyAttributes> implements AllergyAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -78,28 +78,26 @@ export class Allergy extends Model<AllergyAttributes> implements AllergyAttribut
   @ForeignKey(() => require('./student.model').Student)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'studentId',
+    allowNull: false
   })
   studentId: string;
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
+    allowNull: false
   })
   allergen: string;
 
   @Default(AllergyType.OTHER)
   @Column({
     type: DataType.ENUM(...(Object.values(AllergyType) as string[])),
-    allowNull: false,
-    field: 'allergyType',
+    allowNull: false
   })
   allergyType: AllergyType;
 
   @Column({
     type: DataType.ENUM(...(Object.values(AllergySeverity) as string[])),
-    allowNull: false,
+    allowNull: false
   })
   severity: AllergySeverity;
 
@@ -113,26 +111,22 @@ export class Allergy extends Model<AllergyAttributes> implements AllergyAttribut
   treatment?: string;
 
   @Column({
-    type: DataType.TEXT,
-    field: 'emergencyProtocol',
+    type: DataType.TEXT
   })
   emergencyProtocol?: string;
 
   @Column({
-    type: DataType.DATE,
-    field: 'onsetDate',
+    type: DataType.DATE
   })
   onsetDate?: Date;
 
   @Column({
-    type: DataType.DATE,
-    field: 'diagnosedDate',
+    type: DataType.DATE
   })
   diagnosedDate?: Date;
 
   @Column({
-    type: DataType.STRING,
-    field: 'diagnosedBy',
+    type: DataType.STRING
   })
   diagnosedBy?: string;
 
@@ -141,14 +135,12 @@ export class Allergy extends Model<AllergyAttributes> implements AllergyAttribut
   verified: boolean;
 
   @Column({
-    type: DataType.UUID,
-    field: 'verifiedBy',
+    type: DataType.UUID
   })
   verifiedBy?: string;
 
   @Column({
-    type: DataType.DATE,
-    field: 'verificationDate',
+    type: DataType.DATE
   })
   verificationDate?: Date;
 
@@ -161,50 +153,42 @@ export class Allergy extends Model<AllergyAttributes> implements AllergyAttribut
 
   @Default(false)
   @Column({
-    type: DataType.BOOLEAN,
-    field: 'epiPenRequired',
+    type: DataType.BOOLEAN
   })
   epiPenRequired: boolean;
 
   @Column({
-    type: DataType.STRING,
-    field: 'epiPenLocation',
+    type: DataType.STRING
   })
   epiPenLocation?: string;
 
   @Column({
-    type: DataType.DATE,
-    field: 'epiPenExpiration',
+    type: DataType.DATE
   })
   epiPenExpiration?: Date;
 
   @Column({
-    type: DataType.UUID,
-    field: 'healthRecordId',
+    type: DataType.UUID
   })
   healthRecordId?: string;
 
   @Column({
-    type: DataType.UUID,
-    field: 'createdBy',
+    type: DataType.UUID
   })
   createdBy?: string;
 
   @Column({
-    type: DataType.UUID,
-    field: 'updatedBy',
+    type: DataType.UUID
   })
   updatedBy?: string;
 
   @Column({
-    type: DataType.DATE,
-    field: 'createdAt',
+    type: DataType.DATE
   })
   declare createdAt: Date;
 
   @Column({
-    type: DataType.DATE,
-    field: 'updatedAt',
+    type: DataType.DATE
   })
   declare updatedAt: Date;
 

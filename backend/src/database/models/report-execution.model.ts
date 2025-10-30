@@ -7,8 +7,8 @@ import {
   Default,
   AllowNull,
   ForeignKey,
-  BelongsTo,
-} from 'sequelize-typescript';
+  BelongsTo
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 import { ReportTemplate } from './report-template.model';
 
@@ -17,22 +17,22 @@ export enum ReportType {
   MEDICATION_REPORT = 'MEDICATION_REPORT',
   INCIDENT_REPORT = 'INCIDENT_REPORT',
   COMPLIANCE_REPORT = 'COMPLIANCE_REPORT',
-  ANALYTICS_REPORT = 'ANALYTICS_REPORT',
-}
+  ANALYTICS_REPORT = 'ANALYTICS_REPORT'
+  }
 
 export enum OutputFormat {
   PDF = 'PDF',
   CSV = 'CSV',
   XLSX = 'XLSX',
-  JSON = 'JSON',
-}
+  JSON = 'JSON'
+  }
 
 export enum ReportStatus {
   PENDING = 'pending',
   GENERATING = 'generating',
   COMPLETED = 'completed',
-  FAILED = 'failed',
-}
+  FAILED = 'failed'
+  }
 
 export interface ReportExecutionAttributes {
   id: string;
@@ -56,8 +56,8 @@ export interface ReportExecutionAttributes {
 
 @Table({
   tableName: 'report_executions',
-  timestamps: false,
-})
+  timestamps: false
+  })
 export class ReportExecution extends Model<ReportExecutionAttributes> implements ReportExecutionAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -67,8 +67,7 @@ export class ReportExecution extends Model<ReportExecutionAttributes> implements
   @AllowNull
   @ForeignKey(() => require('./report-schedule.model').ReportSchedule)
   @Column({
-    type: DataType.UUID,
-    field: 'schedule_id',
+    type: DataType.UUID
   })
   scheduleId?: string;
 
@@ -77,15 +76,13 @@ export class ReportExecution extends Model<ReportExecutionAttributes> implements
 
   @Column({
     type: DataType.ENUM(...(Object.values(ReportType) as string[])),
-    allowNull: false,
-    field: 'report_type',
+    allowNull: false
   })
   reportType: ReportType;
 
   @Column({
     type: DataType.ENUM(...(Object.values(OutputFormat) as string[])),
-    allowNull: false,
-    field: 'output_format',
+    allowNull: false
   })
   outputFormat: OutputFormat;
 
@@ -96,42 +93,37 @@ export class ReportExecution extends Model<ReportExecutionAttributes> implements
   @Column({
     type: DataType.ENUM(...(Object.values(ReportStatus) as string[])),
     allowNull: false,
-    defaultValue: ReportStatus.PENDING,
+    defaultValue: ReportStatus.PENDING
   })
   status: ReportStatus;
 
   @AllowNull
   @Column({
-    type: DataType.STRING(500),
-    field: 'file_path',
+    type: DataType.STRING(500)
   })
   filePath?: string;
 
   @AllowNull
   @Column({
-    type: DataType.STRING(500),
-    field: 'download_url',
+    type: DataType.STRING(500)
   })
   downloadUrl?: string;
 
   @AllowNull
   @Column({
-    type: DataType.BIGINT,
-    field: 'file_size',
+    type: DataType.BIGINT
   })
   fileSize?: number;
 
   @AllowNull
   @Column({
-    type: DataType.INTEGER,
-    field: 'record_count',
+    type: DataType.INTEGER
   })
   recordCount?: number;
 
   @AllowNull
   @Column({
-    type: DataType.INTEGER,
-    field: 'execution_time_ms',
+    type: DataType.INTEGER
   })
   executionTimeMs?: number;
 
@@ -141,29 +133,25 @@ export class ReportExecution extends Model<ReportExecutionAttributes> implements
 
   @AllowNull
   @Column({
-    type: DataType.UUID,
-    field: 'executed_by',
+    type: DataType.UUID
   })
   executedBy?: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
-    field: 'started_at',
+    allowNull: false
   })
   startedAt: Date;
 
   @AllowNull
   @Column({
-    type: DataType.DATE,
-    field: 'completed_at',
+    type: DataType.DATE
   })
   completedAt?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.DATE,
-    field: 'expires_at',
+    type: DataType.DATE
   })
   expiresAt?: Date;
 }

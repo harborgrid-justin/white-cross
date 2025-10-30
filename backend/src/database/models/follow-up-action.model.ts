@@ -68,11 +68,11 @@ export interface CreateFollowUpActionAttributes {
 @Table({
   tableName: 'follow_up_actions',
   timestamps: true,
-  underscored: true,
+  underscored: false,
   indexes: [
-    { fields: ['incident_report_id', 'status'] },
-    { fields: ['assigned_to', 'status'] },
-    { fields: ['due_date', 'status'] },
+    { fields: ['incidentReportId', 'status'] },
+    { fields: ['assignedTo', 'status'] },
+    { fields: ['dueDate', 'status'] },
   ],
 })
 export class FollowUpAction extends Model<FollowUpActionAttributes, CreateFollowUpActionAttributes> {

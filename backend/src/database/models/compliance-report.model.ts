@@ -8,8 +8,8 @@ import {
   AllowNull,
   ForeignKey,
   BelongsTo,
-  HasMany,
-} from 'sequelize-typescript';
+  HasMany
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum ComplianceReportType {
@@ -55,22 +55,22 @@ export interface ComplianceReportAttributes {
   timestamps: true,
   indexes: [
     {
-      fields: ['report_type'],
-    },
+      fields: ['reportType']
+  },
     {
-      fields: ['status'],
-    },
+      fields: ['status']
+  },
     {
-      fields: ['period'],
-    },
+      fields: ['period']
+  },
     {
-      fields: ['due_date'],
-    },
+      fields: ['dueDate']
+  },
     {
-      fields: ['created_by_id'],
-    },
-  ],
-})
+      fields: ['createdById']
+  },
+  ]
+  })
 export class ComplianceReport extends Model<ComplianceReportAttributes> implements ComplianceReportAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -79,14 +79,13 @@ export class ComplianceReport extends Model<ComplianceReportAttributes> implemen
 
   @Column({
     type: DataType.ENUM(...(Object.values(ComplianceReportType) as string[])),
-    allowNull: false,
-    field: 'report_type',
+    allowNull: false
   })
   reportType: ComplianceReportType;
 
   @Column({
     type: DataType.STRING(200),
-    allowNull: false,
+    allowNull: false
   })
   title: string;
 
@@ -97,13 +96,13 @@ export class ComplianceReport extends Model<ComplianceReportAttributes> implemen
   @Column({
     type: DataType.ENUM(...(Object.values(ComplianceStatus) as string[])),
     allowNull: false,
-    defaultValue: ComplianceStatus.PENDING,
+    defaultValue: ComplianceStatus.PENDING
   })
   status: ComplianceStatus;
 
   @Column({
     type: DataType.STRING(50),
-    allowNull: false,
+    allowNull: false
   })
   period: string;
 
@@ -137,8 +136,7 @@ export class ComplianceReport extends Model<ComplianceReportAttributes> implemen
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'created_by_id',
+    allowNull: false
   })
   createdById: string;
 

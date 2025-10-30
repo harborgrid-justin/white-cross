@@ -6,8 +6,8 @@ import {
   PrimaryKey,
   Default,
   AllowNull,
-  Index,
-} from 'sequelize-typescript';
+  Index
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum NotificationPriority {
@@ -147,16 +147,16 @@ export interface PushNotificationCreationAttributes {
   timestamps: true,
   indexes: [
     {
-      fields: ['status'],
-    },
+      fields: ['status']
+  },
     {
-      fields: ['category'],
-    },
+      fields: ['category']
+  },
     {
-      fields: ['created_at'],
-    },
-  ],
-})
+      fields: ['createdAt']
+  },
+  ]
+  })
 export class PushNotification extends Model<PushNotificationAttributes, PushNotificationCreationAttributes> implements PushNotificationAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -166,34 +166,32 @@ export class PushNotification extends Model<PushNotificationAttributes, PushNoti
   // Recipients
   @Column({
     type: DataType.JSON,
-    allowNull: false,
-    field: 'user_ids',
+    allowNull: false
   })
   userIds: string[];
 
   @AllowNull
   @Column({
-    type: DataType.JSON,
-    field: 'device_tokens',
+    type: DataType.JSON
   })
   deviceTokens?: string[];
 
   // Content
   @Column({
     type: DataType.STRING,
-    allowNull: false,
+    allowNull: false
   })
   title: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false,
+    allowNull: false
   })
   body: string;
 
   @Column({
     type: DataType.ENUM(...(Object.values(NotificationCategory) as string[])),
-    allowNull: false,
+    allowNull: false
   })
   @Index
   category: NotificationCategory;
@@ -201,7 +199,7 @@ export class PushNotification extends Model<PushNotificationAttributes, PushNoti
   @Column({
     type: DataType.ENUM(...(Object.values(NotificationPriority) as string[])),
     allowNull: false,
-    defaultValue: NotificationPriority.NORMAL,
+    defaultValue: NotificationPriority.NORMAL
   })
   priority: NotificationPriority;
 
@@ -218,15 +216,13 @@ export class PushNotification extends Model<PushNotificationAttributes, PushNoti
   // Presentation
   @AllowNull
   @Column({
-    type: DataType.STRING,
-    field: 'image_url',
+    type: DataType.STRING
   })
   imageUrl?: string;
 
   @AllowNull
   @Column({
-    type: DataType.STRING,
-    field: 'icon_url',
+    type: DataType.STRING
   })
   iconUrl?: string;
 
@@ -245,38 +241,34 @@ export class PushNotification extends Model<PushNotificationAttributes, PushNoti
 
   @AllowNull
   @Column({
-    type: DataType.STRING,
-    field: 'collapse_key',
+    type: DataType.STRING
   })
   collapseKey?: string;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false,
-    field: 'require_interaction',
+    defaultValue: false
   })
   requireInteraction: boolean;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false,
+    defaultValue: false
   })
   silent: boolean;
 
   // Scheduling
   @AllowNull
   @Column({
-    type: DataType.DATE,
-    field: 'scheduled_for',
+    type: DataType.DATE
   })
   scheduledFor?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.DATE,
-    field: 'expires_at',
+    type: DataType.DATE
   })
   expiresAt?: Date;
 
@@ -284,29 +276,26 @@ export class PushNotification extends Model<PushNotificationAttributes, PushNoti
   @Column({
     type: DataType.ENUM(...(Object.values(NotificationStatus) as string[])),
     allowNull: false,
-    defaultValue: NotificationStatus.PENDING,
+    defaultValue: NotificationStatus.PENDING
   })
   @Index
   status: NotificationStatus;
 
   @AllowNull
   @Column({
-    type: DataType.DATE,
-    field: 'sent_at',
+    type: DataType.DATE
   })
   sentAt?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.DATE,
-    field: 'delivered_at',
+    type: DataType.DATE
   })
   deliveredAt?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.DATE,
-    field: 'failed_at',
+    type: DataType.DATE
   })
   failedAt?: Date;
 
@@ -314,8 +303,7 @@ export class PushNotification extends Model<PushNotificationAttributes, PushNoti
   @Column({
     type: DataType.JSON,
     allowNull: false,
-    defaultValue: [],
-    field: 'delivery_results',
+    defaultValue: []
   })
   deliveryResults: NotificationDeliveryResult[];
 
@@ -323,40 +311,35 @@ export class PushNotification extends Model<PushNotificationAttributes, PushNoti
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 0,
-    field: 'total_recipients',
+    defaultValue: 0
   })
   totalRecipients: number;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 0,
-    field: 'successful_deliveries',
+    defaultValue: 0
   })
   successfulDeliveries: number;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 0,
-    field: 'failed_deliveries',
+    defaultValue: 0
   })
   failedDeliveries: number;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 0,
-    field: 'clicked_count',
+    defaultValue: 0
   })
   clickedCount: number;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 0,
-    field: 'dismissed_count',
+    defaultValue: 0
   })
   dismissedCount: number;
 
@@ -364,31 +347,27 @@ export class PushNotification extends Model<PushNotificationAttributes, PushNoti
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 0,
-    field: 'retry_count',
+    defaultValue: 0
   })
   retryCount: number;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 3,
-    field: 'max_retries',
+    defaultValue: 3
   })
   maxRetries: number;
 
   @AllowNull
   @Column({
-    type: DataType.DATE,
-    field: 'next_retry_at',
+    type: DataType.DATE
   })
   nextRetryAt?: Date;
 
   // Metadata
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'created_by',
+    allowNull: false
   })
   createdBy: string;
 

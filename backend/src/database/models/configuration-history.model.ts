@@ -51,11 +51,11 @@ export interface CreateConfigurationHistoryAttributes {
   tableName: 'configuration_history',
   timestamps: true,
   updatedAt: false, // History records are immutable
-  underscored: true,
+  underscored: false,
   indexes: [
-    { fields: ['config_key'] },
-    { fields: ['changed_by'] },
-    { fields: ['configuration_id'] },
+    { fields: ['configKey'] },
+    { fields: ['changedBy'] },
+    { fields: ['configurationId'] },
   ],
 })
 export class ConfigurationHistory extends Model<ConfigurationHistoryAttributes, CreateConfigurationHistoryAttributes> {

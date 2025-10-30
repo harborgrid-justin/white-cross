@@ -6,8 +6,8 @@ import {
   PrimaryKey,
   Default,
   AllowNull,
-  Index,
-} from 'sequelize-typescript';
+  Index
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum NotificationPlatform {
@@ -65,17 +65,17 @@ export interface DeviceTokenCreationAttributes {
   timestamps: true,
   indexes: [
     {
-      fields: ['user_id', 'device_id'],
-      unique: true,
-    },
+      fields: ['userId', 'deviceId'],
+      unique: true
+  },
     {
-      fields: ['platform'],
-    },
+      fields: ['platform']
+  },
     {
-      fields: ['is_active', 'is_valid'],
-    },
-  ],
-})
+      fields: ['isActive', 'isValid']
+  },
+  ]
+  })
 export class DeviceToken extends Model<DeviceTokenAttributes, DeviceTokenCreationAttributes> implements DeviceTokenAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -84,58 +84,52 @@ export class DeviceToken extends Model<DeviceTokenAttributes, DeviceTokenCreatio
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'user_id',
+    allowNull: false
   })
   @Index
   userId: string;
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
-    field: 'device_id',
+    allowNull: false
   })
   deviceId: string;
 
   @Column({
     type: DataType.ENUM(...(Object.values(NotificationPlatform) as string[])),
-    allowNull: false,
+    allowNull: false
   })
   @Index
   platform: NotificationPlatform;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false,
+    allowNull: false
   })
   token: string;
 
   // Device metadata
   @AllowNull
   @Column({
-    type: DataType.STRING,
-    field: 'device_name',
+    type: DataType.STRING
   })
   deviceName?: string;
 
   @AllowNull
   @Column({
-    type: DataType.STRING,
-    field: 'device_model',
+    type: DataType.STRING
   })
   deviceModel?: string;
 
   @AllowNull
   @Column({
-    type: DataType.STRING,
-    field: 'os_version',
+    type: DataType.STRING
   })
   osVersion?: string;
 
   @AllowNull
   @Column({
-    type: DataType.STRING,
-    field: 'app_version',
+    type: DataType.STRING
   })
   appVersion?: string;
 
@@ -143,30 +137,26 @@ export class DeviceToken extends Model<DeviceTokenAttributes, DeviceTokenCreatio
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true,
-    field: 'is_active',
+    defaultValue: true
   })
   isActive: boolean;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true,
-    field: 'is_valid',
+    defaultValue: true
   })
   isValid: boolean;
 
   @AllowNull
   @Column({
-    type: DataType.DATE,
-    field: 'last_validated',
+    type: DataType.DATE
   })
   lastValidated?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.STRING,
-    field: 'invalid_reason',
+    type: DataType.STRING
   })
   invalidReason?: string;
 
@@ -174,24 +164,21 @@ export class DeviceToken extends Model<DeviceTokenAttributes, DeviceTokenCreatio
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true,
-    field: 'allow_notifications',
+    defaultValue: true
   })
   allowNotifications: boolean;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true,
-    field: 'allow_sound',
+    defaultValue: true
   })
   allowSound: boolean;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true,
-    field: 'allow_badge',
+    defaultValue: true
   })
   allowBadge: boolean;
 
@@ -203,8 +190,7 @@ export class DeviceToken extends Model<DeviceTokenAttributes, DeviceTokenCreatio
 
   @AllowNull
   @Column({
-    type: DataType.DATE,
-    field: 'last_used_at',
+    type: DataType.DATE
   })
   lastUsedAt?: Date;
 }

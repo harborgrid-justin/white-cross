@@ -5,8 +5,8 @@ import {
   DataType,
   PrimaryKey,
   Default,
-  AllowNull,
-} from 'sequelize-typescript';
+  AllowNull
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum PolicyCategory {
@@ -46,22 +46,22 @@ export interface PolicyDocumentAttributes {
   timestamps: true,
   indexes: [
     {
-      fields: ['category'],
-    },
+      fields: ['category']
+  },
     {
-      fields: ['status'],
-    },
+      fields: ['status']
+  },
     {
-      fields: ['effective_date'],
-    },
+      fields: ['effectiveDate']
+  },
     {
-      fields: ['review_date'],
-    },
+      fields: ['reviewDate']
+  },
     {
-      fields: ['approved_by'],
-    },
-  ],
-})
+      fields: ['approvedBy']
+  },
+  ]
+  })
 export class PolicyDocument extends Model<PolicyDocumentAttributes> implements PolicyDocumentAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -70,33 +70,32 @@ export class PolicyDocument extends Model<PolicyDocumentAttributes> implements P
 
   @Column({
     type: DataType.STRING(200),
-    allowNull: false,
+    allowNull: false
   })
   title: string;
 
   @Column({
     type: DataType.ENUM(...(Object.values(PolicyCategory) as string[])),
-    allowNull: false,
+    allowNull: false
   })
   category: PolicyCategory;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false,
+    allowNull: false
   })
   content: string;
 
   @Column({
     type: DataType.STRING(20),
     allowNull: false,
-    defaultValue: '1.0',
+    defaultValue: '1.0'
   })
   declare version: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
-    field: 'effective_date',
+    allowNull: false
   })
   effectiveDate: Date;
 
@@ -107,7 +106,7 @@ export class PolicyDocument extends Model<PolicyDocumentAttributes> implements P
   @Column({
     type: DataType.ENUM(...(Object.values(PolicyStatus) as string[])),
     allowNull: false,
-    defaultValue: PolicyStatus.DRAFT,
+    defaultValue: PolicyStatus.DRAFT
   })
   status: PolicyStatus;
 

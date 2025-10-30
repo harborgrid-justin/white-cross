@@ -62,10 +62,10 @@ export interface CreatePerformanceMetricAttributes {
   tableName: 'performance_metrics',
   timestamps: true,
   updatedAt: false, // Metrics are immutable
-  underscored: true,
+  underscored: false,
   indexes: [
-    { fields: ['metric_type'] },
-    { fields: ['recorded_at'] },
+    { fields: ['metricType'] },
+    { fields: ['recordedAt'] },
   ],
 })
 export class PerformanceMetric extends Model<PerformanceMetricAttributes, CreatePerformanceMetricAttributes> {

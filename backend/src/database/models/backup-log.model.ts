@@ -74,10 +74,10 @@ export interface CreateBackupLogAttributes {
 @Table({
   tableName: 'backup_logs',
   timestamps: true,
-  underscored: true,
+  underscored: false,
   indexes: [
     { fields: ['status'] },
-    { fields: ['started_at'] },
+    { fields: ['startedAt'] },
     { fields: ['type'] },
   ],
 })

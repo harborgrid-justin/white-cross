@@ -7,8 +7,8 @@ import {
   Default,
   ForeignKey,
   BelongsTo,
-  Index,
-} from 'sequelize-typescript';
+  Index
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 import { AlertSeverity, AlertCategory } from './alert.model';
 
@@ -19,8 +19,8 @@ export enum DeliveryChannel {
   WEBSOCKET = 'WEBSOCKET',
   EMAIL = 'EMAIL',
   SMS = 'SMS',
-  PUSH_NOTIFICATION = 'PUSH_NOTIFICATION',
-}
+  PUSH_NOTIFICATION = 'PUSH_NOTIFICATION'
+  }
 
 /**
  * Alert Preferences Attributes Interface
@@ -59,27 +59,27 @@ export interface AlertPreferencesAttributes {
 @Table({
   tableName: 'alert_preferences',
   timestamps: true,
-  underscored: true,
+  underscored: false,
   indexes: [
     {
-      fields: ['user_id'],
-      name: 'alert_preferences_user_id_idx',
-    },
+      fields: ['userId'],
+      name: 'alert_preferences_user_id_idx'
+  },
     {
-      fields: ['school_id'],
-      name: 'alert_preferences_school_id_idx',
-    },
+      fields: ['schoolId'],
+      name: 'alert_preferences_school_id_idx'
+  },
     {
-      fields: ['is_active'],
-      name: 'alert_preferences_is_active_idx',
-    },
+      fields: ['isActive'],
+      name: 'alert_preferences_is_active_idx'
+  },
     {
-      fields: ['user_id', 'school_id'],
+      fields: ['userId', 'schoolId'],
       name: 'alert_preferences_user_school_idx',
-      unique: true,
-    },
-  ],
-})
+      unique: true
+  },
+  ]
+  })
 export class AlertPreferences extends Model<AlertPreferencesAttributes> implements AlertPreferencesAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -93,8 +93,7 @@ export class AlertPreferences extends Model<AlertPreferencesAttributes> implemen
   @ForeignKey(() => require('./user.model').User)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'user_id',
+    allowNull: false
   })
   userId: string;
 
@@ -107,8 +106,7 @@ export class AlertPreferences extends Model<AlertPreferencesAttributes> implemen
   @Index
   @ForeignKey(() => require('./school.model').School)
   @Column({
-    type: DataType.UUID,
-    field: 'school_id',
+    type: DataType.UUID
   })
   schoolId?: string;
 
@@ -121,7 +119,7 @@ export class AlertPreferences extends Model<AlertPreferencesAttributes> implemen
   @Column({
     type: DataType.ARRAY(DataType.ENUM(...(Object.values(DeliveryChannel) as string[]))),
     allowNull: false,
-    defaultValue: [DeliveryChannel.WEBSOCKET, DeliveryChannel.EMAIL],
+    defaultValue: [DeliveryChannel.WEBSOCKET, DeliveryChannel.EMAIL]
   })
   channels: DeliveryChannel[];
 
@@ -131,8 +129,7 @@ export class AlertPreferences extends Model<AlertPreferencesAttributes> implemen
   @Column({
     type: DataType.ARRAY(DataType.ENUM(...(Object.values(AlertSeverity) as string[]))),
     allowNull: false,
-    defaultValue: Object.values(AlertSeverity),
-    field: 'severity_filter',
+    defaultValue: Object.values(AlertSeverity)
   })
   severityFilter: AlertSeverity[];
 
@@ -142,8 +139,7 @@ export class AlertPreferences extends Model<AlertPreferencesAttributes> implemen
   @Column({
     type: DataType.ARRAY(DataType.ENUM(...(Object.values(AlertCategory) as string[]))),
     allowNull: false,
-    defaultValue: Object.values(AlertCategory),
-    field: 'category_filter',
+    defaultValue: Object.values(AlertCategory)
   })
   categoryFilter: AlertCategory[];
 
@@ -152,10 +148,9 @@ export class AlertPreferences extends Model<AlertPreferencesAttributes> implemen
    */
   @Column({
     type: DataType.STRING(5),
-    field: 'quiet_hours_start',
     validate: {
-      is: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
-    },
+      is: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/
+  }
   })
   quietHoursStart?: string;
 
@@ -164,10 +159,9 @@ export class AlertPreferences extends Model<AlertPreferencesAttributes> implemen
    */
   @Column({
     type: DataType.STRING(5),
-    field: 'quiet_hours_end',
     validate: {
-      is: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
-    },
+      is: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/
+  }
   })
   quietHoursEnd?: string;
 
@@ -178,24 +172,21 @@ export class AlertPreferences extends Model<AlertPreferencesAttributes> implemen
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true,
-    field: 'is_active',
+    defaultValue: true
   })
   isActive: boolean;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW,
-    field: 'created_at',
+    defaultValue: DataType.NOW
   })
   declare createdAt?: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW,
-    field: 'updated_at',
+    defaultValue: DataType.NOW
   })
   declare updatedAt?: Date;
 

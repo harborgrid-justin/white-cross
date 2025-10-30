@@ -70,11 +70,11 @@ export interface ConversationParticipantCreationAttributes
 @Table({
   tableName: 'conversation_participants',
   timestamps: true,
-  underscored: true,
+  underscored: false,
   indexes: [
     {
       unique: true,
-      fields: ['conversation_id', 'user_id'],
+      fields: ['conversationId', 'userId'],
       name: 'conversation_participants_conversation_user_unique',
     },
   ],

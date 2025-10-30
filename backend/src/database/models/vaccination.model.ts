@@ -8,8 +8,8 @@ import {
   AllowNull,
   Index,
   ForeignKey,
-  BelongsTo,
-} from 'sequelize-typescript';
+  BelongsTo
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 ;
 ;
@@ -38,8 +38,8 @@ export enum VaccineType {
   ROTAVIRUS = 'ROTAVIRUS',
   MENINGOCOCCAL = 'MENINGOCOCCAL',
   HPV = 'HPV',
-  OTHER = 'OTHER',
-}
+  OTHER = 'OTHER'
+  }
 
 /**
  * Site of administration enumeration
@@ -55,8 +55,8 @@ export enum SiteOfAdministration {
   BUTTOCK_RIGHT = 'BUTTOCK_RIGHT',
   ORAL = 'ORAL',
   NASAL = 'NASAL',
-  OTHER = 'OTHER',
-}
+  OTHER = 'OTHER'
+  }
 
 /**
  * Route of administration enumeration
@@ -68,8 +68,8 @@ export enum RouteOfAdministration {
   ORAL = 'ORAL',
   INTRANASAL = 'INTRANASAL',
   INTRAVENOUS = 'INTRAVENOUS',
-  OTHER = 'OTHER',
-}
+  OTHER = 'OTHER'
+  }
 
 /**
  * Compliance status enumeration
@@ -79,8 +79,8 @@ export enum ComplianceStatus {
   OVERDUE = 'OVERDUE',
   PARTIALLY_COMPLIANT = 'PARTIALLY_COMPLIANT',
   EXEMPT = 'EXEMPT',
-  NON_COMPLIANT = 'NON_COMPLIANT',
-}
+  NON_COMPLIANT = 'NON_COMPLIANT'
+  }
 
 export interface VaccinationAttributes {
   id: string;
@@ -131,19 +131,19 @@ export interface VaccinationAttributes {
   paranoid: true, // Enable soft deletes for immunization records
   indexes: [
     {
-      fields: ['student_id', 'administration_date'],
-    },
+      fields: ['studentId', 'administrationDate']
+  },
     {
-      fields: ['vaccine_type', 'compliance_status'],
-    },
+      fields: ['vaccineType', 'complianceStatus']
+  },
     {
-      fields: ['next_due_date'],
-    },
+      fields: ['nextDueDate']
+  },
     {
-      fields: ['expiration_date'],
-    },
-  ],
-})
+      fields: ['expirationDate']
+  },
+  ]
+  })
 export class Vaccination extends Model<VaccinationAttributes> implements VaccinationAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -157,8 +157,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
   @ForeignKey(() => require('./student.model').Student)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'student_id',
+    allowNull: false
   })
   @Index
   studentId: string;
@@ -170,8 +169,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
   @AllowNull
   @ForeignKey(() => require('./health-record.model').HealthRecord)
   @Column({
-    type: DataType.UUID,
-    field: 'health_record_id',
+    type: DataType.UUID
   })
   healthRecordId?: string;
 
@@ -180,8 +178,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @Column({
     type: DataType.STRING(200),
-    allowNull: false,
-    field: 'vaccine_name',
+    allowNull: false
   })
   vaccineName: string;
 
@@ -190,8 +187,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @AllowNull
   @Column({
-    type: DataType.ENUM(...(Object.values(VaccineType) as string[])),
-    field: 'vaccine_type',
+    type: DataType.ENUM(...(Object.values(VaccineType) as string[]))
   })
   @Index
   vaccineType?: VaccineType;
@@ -201,8 +197,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @AllowNull
   @Column({
-    type: DataType.STRING(100),
-    field: 'manufacturer',
+    type: DataType.STRING(100)
   })
   manufacturer?: string;
 
@@ -211,8 +206,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @AllowNull
   @Column({
-    type: DataType.STRING(50),
-    field: 'lot_number',
+    type: DataType.STRING(50)
   })
   lotNumber?: string;
 
@@ -222,8 +216,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @AllowNull
   @Column({
-    type: DataType.STRING(10),
-    field: 'cvx_code',
+    type: DataType.STRING(10)
   })
   cvxCode?: string;
 
@@ -232,8 +225,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @AllowNull
   @Column({
-    type: DataType.STRING(20),
-    field: 'ndc_code',
+    type: DataType.STRING(20)
   })
   ndcCode?: string;
 
@@ -242,8 +234,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @AllowNull
   @Column({
-    type: DataType.INTEGER,
-    field: 'dose_number',
+    type: DataType.INTEGER
   })
   doseNumber?: number;
 
@@ -252,8 +243,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @AllowNull
   @Column({
-    type: DataType.INTEGER,
-    field: 'total_doses',
+    type: DataType.INTEGER
   })
   totalDoses?: number;
 
@@ -263,8 +253,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false,
-    field: 'series_complete',
+    defaultValue: false
   })
   seriesComplete: boolean;
 
@@ -273,8 +262,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @Column({
     type: DataType.DATE,
-    allowNull: false,
-    field: 'administration_date',
+    allowNull: false
   })
   @Index
   administrationDate: Date;
@@ -284,8 +272,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @Column({
     type: DataType.STRING(200),
-    allowNull: false,
-    field: 'administered_by',
+    allowNull: false
   })
   administeredBy: string;
 
@@ -294,8 +281,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @AllowNull
   @Column({
-    type: DataType.STRING(50),
-    field: 'administered_by_role',
+    type: DataType.STRING(50)
   })
   administeredByRole?: string;
 
@@ -304,8 +290,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @AllowNull
   @Column({
-    type: DataType.STRING(200),
-    field: 'facility',
+    type: DataType.STRING(200)
   })
   facility?: string;
 
@@ -314,8 +299,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @AllowNull
   @Column({
-    type: DataType.ENUM(...(Object.values(SiteOfAdministration) as string[])),
-    field: 'site_of_administration',
+    type: DataType.ENUM(...(Object.values(SiteOfAdministration) as string[]))
   })
   siteOfAdministration?: SiteOfAdministration;
 
@@ -324,8 +308,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @AllowNull
   @Column({
-    type: DataType.ENUM(...(Object.values(RouteOfAdministration) as string[])),
-    field: 'route_of_administration',
+    type: DataType.ENUM(...(Object.values(RouteOfAdministration) as string[]))
   })
   routeOfAdministration?: RouteOfAdministration;
 
@@ -334,8 +317,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @AllowNull
   @Column({
-    type: DataType.STRING(50),
-    field: 'dosage_amount',
+    type: DataType.STRING(50)
   })
   dosageAmount?: string;
 
@@ -344,8 +326,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @AllowNull
   @Column({
-    type: DataType.DATEONLY,
-    field: 'expiration_date',
+    type: DataType.DATEONLY
   })
   @Index
   expirationDate?: Date;
@@ -355,8 +336,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @AllowNull
   @Column({
-    type: DataType.DATEONLY,
-    field: 'next_due_date',
+    type: DataType.DATEONLY
   })
   @Index
   nextDueDate?: Date;
@@ -366,8 +346,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @AllowNull
   @Column({
-    type: DataType.TEXT,
-    field: 'reactions',
+    type: DataType.TEXT
   })
   reactions?: string;
 
@@ -376,8 +355,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @AllowNull
   @Column({
-    type: DataType.JSONB,
-    field: 'adverse_events',
+    type: DataType.JSONB
   })
   adverseEvents?: Record<string, any>;
 
@@ -387,8 +365,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false,
-    field: 'exemption_status',
+    defaultValue: false
   })
   exemptionStatus: boolean;
 
@@ -397,8 +374,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @AllowNull
   @Column({
-    type: DataType.TEXT,
-    field: 'exemption_reason',
+    type: DataType.TEXT
   })
   exemptionReason?: string;
 
@@ -407,8 +383,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @AllowNull
   @Column({
-    type: DataType.STRING(500),
-    field: 'exemption_document',
+    type: DataType.STRING(500)
   })
   exemptionDocument?: string;
 
@@ -418,8 +393,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
   @Column({
     type: DataType.ENUM(...(Object.values(ComplianceStatus) as string[])),
     allowNull: false,
-    defaultValue: ComplianceStatus.COMPLIANT,
-    field: 'compliance_status',
+    defaultValue: ComplianceStatus.COMPLIANT
   })
   @Index
   complianceStatus: ComplianceStatus;
@@ -430,8 +404,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false,
-    field: 'vfc_eligibility',
+    defaultValue: false
   })
   vfcEligibility: boolean;
 
@@ -441,8 +414,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false,
-    field: 'vis_provided',
+    defaultValue: false
   })
   visProvided: boolean;
 
@@ -451,8 +423,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @AllowNull
   @Column({
-    type: DataType.DATEONLY,
-    field: 'vis_date',
+    type: DataType.DATEONLY
   })
   visDate?: Date;
 
@@ -462,8 +433,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false,
-    field: 'consent_obtained',
+    defaultValue: false
   })
   consentObtained: boolean;
 
@@ -472,8 +442,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @AllowNull
   @Column({
-    type: DataType.STRING(200),
-    field: 'consent_by',
+    type: DataType.STRING(200)
   })
   consentBy?: string;
 
@@ -482,7 +451,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @AllowNull
   @Column({
-    type: DataType.TEXT,
+    type: DataType.TEXT
   })
   notes?: string;
 
@@ -491,8 +460,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @AllowNull
   @Column({
-    type: DataType.UUID,
-    field: 'created_by',
+    type: DataType.UUID
   })
   createdBy?: string;
 
@@ -501,8 +469,7 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @AllowNull
   @Column({
-    type: DataType.UUID,
-    field: 'updated_by',
+    type: DataType.UUID
   })
   updatedBy?: string;
 

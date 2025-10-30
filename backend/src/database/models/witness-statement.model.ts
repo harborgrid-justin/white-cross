@@ -8,8 +8,8 @@ import {
   AllowNull,
   Index,
   ForeignKey,
-  BelongsTo,
-} from 'sequelize-typescript';
+  BelongsTo
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 ;
 
@@ -19,8 +19,8 @@ export enum WitnessType {
   PARENT = 'PARENT',
   GUARDIAN = 'GUARDIAN',
   VISITOR = 'VISITOR',
-  OTHER = 'OTHER',
-}
+  OTHER = 'OTHER'
+  }
 
 export interface WitnessStatementAttributes {
   id: string;
@@ -42,10 +42,10 @@ export interface WitnessStatementAttributes {
   timestamps: true,
   indexes: [
     {
-      fields: ['incident_report_id', 'verified'],
-    },
-  ],
-})
+      fields: ['incidentReportId', 'verified']
+  },
+  ]
+  })
 export class WitnessStatement extends Model<WitnessStatementAttributes> implements WitnessStatementAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -55,58 +55,52 @@ export class WitnessStatement extends Model<WitnessStatementAttributes> implemen
   @ForeignKey(() => require('./incident-report.model').IncidentReport)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'incident_report_id',
+    allowNull: false
   })
   @Index
   incidentReportId: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false,
-    field: 'witness_name',
+    allowNull: false
   })
   witnessName: string;
 
   @Column({
     type: DataType.ENUM(...(Object.values(WitnessType) as string[])),
-    allowNull: false,
-    field: 'witness_type',
+    allowNull: false
   })
   witnessType: WitnessType;
 
   @AllowNull
   @Column({
-    type: DataType.STRING(255),
-    field: 'witness_contact',
+    type: DataType.STRING(255)
   })
   witnessContact?: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false,
+    allowNull: false
   })
   statement: string;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false,
+    defaultValue: false
   })
   @Index
   verified: boolean;
 
   @AllowNull
   @Column({
-    type: DataType.UUID,
-    field: 'verified_by',
+    type: DataType.UUID
   })
   verifiedBy?: string;
 
   @AllowNull
   @Column({
-    type: DataType.DATE,
-    field: 'verified_at',
+    type: DataType.DATE
   })
   verifiedAt?: Date;
 

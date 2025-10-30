@@ -5,8 +5,8 @@ import {
   DataType,
   PrimaryKey,
   Default,
-  AllowNull,
-} from 'sequelize-typescript';
+  AllowNull
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum ConsentType {
@@ -15,8 +15,8 @@ export enum ConsentType {
   FIELD_TRIP = 'FIELD_TRIP',
   EMERGENCY_TREATMENT = 'EMERGENCY_TREATMENT',
   DATA_SHARING = 'DATA_SHARING',
-  RESEARCH = 'RESEARCH',
-}
+  RESEARCH = 'RESEARCH'
+  }
 
 export interface ConsentFormAttributes {
   id?: string;
@@ -36,16 +36,16 @@ export interface ConsentFormAttributes {
   timestamps: true,
   indexes: [
     {
-      fields: ['type'],
-    },
+      fields: ['type']
+  },
     {
-      fields: ['is_active'],
-    },
+      fields: ['isActive']
+  },
     {
-      fields: ['expires_at'],
-    },
-  ],
-})
+      fields: ['expiresAt']
+  },
+  ]
+  })
 export class ConsentForm extends Model<ConsentFormAttributes> implements ConsentFormAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -54,40 +54,39 @@ export class ConsentForm extends Model<ConsentFormAttributes> implements Consent
 
   @Column({
     type: DataType.ENUM(...(Object.values(ConsentType) as string[])),
-    allowNull: false,
+    allowNull: false
   })
   type: ConsentType;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false,
+    allowNull: false
   })
   title: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false,
+    allowNull: false
   })
   description: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false,
+    allowNull: false
   })
   content: string;
 
   @Column({
     type: DataType.STRING(20),
     allowNull: false,
-    defaultValue: '1.0',
+    defaultValue: '1.0'
   })
   declare version: string;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true,
-    field: 'is_active',
+    defaultValue: true
   })
   isActive: boolean;
 

@@ -7,24 +7,24 @@ import {
   Default,
   ForeignKey,
   BelongsTo,
-  Index,
-} from 'sequelize-typescript';
+  Index
+  } from 'sequelize-typescript';
 import { AppointmentType } from './appointment.model';
 
 export enum WaitlistPriority {
   LOW = 'LOW',
   NORMAL = 'NORMAL',
   HIGH = 'HIGH',
-  URGENT = 'URGENT',
-}
+  URGENT = 'URGENT'
+  }
 
 export enum WaitlistStatus {
   WAITING = 'WAITING',
   NOTIFIED = 'NOTIFIED',
   SCHEDULED = 'SCHEDULED',
   EXPIRED = 'EXPIRED',
-  CANCELLED = 'CANCELLED',
-}
+  CANCELLED = 'CANCELLED'
+  }
 
 export interface AppointmentWaitlistAttributes {
   id?: string;
@@ -46,8 +46,8 @@ export interface AppointmentWaitlistAttributes {
 @Table({
   tableName: 'appointment_waitlist',
   timestamps: true,
-  underscored: true,
-})
+  underscored: false
+  })
 export class AppointmentWaitlist extends Model<AppointmentWaitlistAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -57,7 +57,7 @@ export class AppointmentWaitlist extends Model<AppointmentWaitlistAttributes> {
   @Index
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: false
   })
   studentId: string;
 
@@ -65,7 +65,7 @@ export class AppointmentWaitlist extends Model<AppointmentWaitlistAttributes> {
   @ForeignKey(() => require('./user.model').User)
   @Column({
     type: DataType.UUID,
-    allowNull: true,
+    allowNull: true
   })
   nurseId?: string;
 
@@ -74,13 +74,13 @@ export class AppointmentWaitlist extends Model<AppointmentWaitlistAttributes> {
 
   @Column({
     type: DataType.ENUM(...(Object.values(AppointmentType) as string[])),
-    allowNull: false,
+    allowNull: false
   })
   type: AppointmentType;
 
   @Column({
     type: DataType.DATE,
-    allowNull: true,
+    allowNull: true
   })
   preferredDate?: Date;
 
@@ -88,7 +88,7 @@ export class AppointmentWaitlist extends Model<AppointmentWaitlistAttributes> {
     type: DataType.INTEGER,
     allowNull: false,
     defaultValue: 30,
-    comment: 'Duration in minutes',
+    comment: 'Duration in minutes'
   })
   duration: number;
 
@@ -96,19 +96,19 @@ export class AppointmentWaitlist extends Model<AppointmentWaitlistAttributes> {
   @Column({
     type: DataType.ENUM(...(Object.values(WaitlistPriority) as string[])),
     allowNull: false,
-    defaultValue: WaitlistPriority.NORMAL,
+    defaultValue: WaitlistPriority.NORMAL
   })
   priority: WaitlistPriority;
 
   @Column({
     type: DataType.STRING(500),
-    allowNull: false,
+    allowNull: false
   })
   reason: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: true,
+    allowNull: true
   })
   notes?: string;
 
@@ -116,34 +116,32 @@ export class AppointmentWaitlist extends Model<AppointmentWaitlistAttributes> {
   @Column({
     type: DataType.ENUM(...(Object.values(WaitlistStatus) as string[])),
     allowNull: false,
-    defaultValue: WaitlistStatus.WAITING,
+    defaultValue: WaitlistStatus.WAITING
   })
   status: WaitlistStatus;
 
   @Column({
     type: DataType.DATE,
-    allowNull: true,
+    allowNull: true
   })
   notifiedAt?: Date;
 
   @Index
   @Column({
     type: DataType.DATE,
-    allowNull: true,
+    allowNull: true
   })
   expiresAt?: Date;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
-    field: 'created_at',
+    allowNull: false
   })
   declare createdAt?: Date;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
-    field: 'updated_at',
+    allowNull: false
   })
   declare updatedAt?: Date;
 

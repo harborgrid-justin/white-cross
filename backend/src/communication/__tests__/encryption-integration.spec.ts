@@ -104,7 +104,7 @@ describe('Encryption Integration Tests', () => {
     await Conversation.destroy({ where: {}, force: true });
 
     // Clear cache
-    await cacheService.reset();
+    await cacheService.clear();
   });
 
   describe('Encrypted Direct Message Flow', () => {
@@ -120,12 +120,14 @@ describe('Encryption Integration Tests', () => {
       });
 
       expect(encryptionResult.success).toBe(true);
-      expect(encryptionResult.data).toBeDefined();
-      expect(encryptionResult.data).not.toBe(messageContent); // Should be encrypted
-      expect(encryptionResult.metadata).toBeDefined();
-      expect(encryptionResult.metadata.algorithm).toBe('AES-256-GCM');
-      expect(encryptionResult.metadata.iv).toBeDefined();
-      expect(encryptionResult.metadata.authTag).toBeDefined();
+      if (encryptionResult.success) {
+        expect(encryptionResult.data).toBeDefined();
+        expect(encryptionResult.data).not.toBe(messageContent); // Should be encrypted
+        expect(encryptionResult.metadata).toBeDefined();
+        expect(encryptionResult.metadata.algorithm).toBe('AES-256-GCM');
+        expect(encryptionResult.metadata.iv).toBeDefined();
+        expect(encryptionResult.metadata.authTag).toBeDefined();
+      }
 
       // Act 2: Send encrypted message
       const dto: SendDirectMessageDto = {
@@ -134,7 +136,7 @@ describe('Encryption Integration Tests', () => {
         encrypted: true,
         metadata: {
           encryptionVersion: '1.0.0',
-          keyId: encryptionResult.metadata.keyId,
+          keyId: (encryptionResult as any).metadata?.keyId,
         },
       };
 

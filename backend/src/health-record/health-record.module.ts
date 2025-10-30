@@ -19,6 +19,7 @@
  */
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { CacheModule } from '@nestjs/cache-manager';
 import { HealthRecordService } from './health-record.service';
 import { HealthRecordController } from './health-record.controller';
 
@@ -80,6 +81,13 @@ import { CacheEntry } from '../database/models/cache-entry.model';
  */
 @Module({
   imports: [
+    // Cache configuration for health record operations
+    CacheModule.register({
+      ttl: 300, // Default TTL: 5 minutes (300 seconds)
+      max: 200, // Maximum number of items in cache (higher for health records)
+      isGlobal: false,
+    }),
+    
     SequelizeModule.forFeature([
       HealthRecord,
       Allergy,

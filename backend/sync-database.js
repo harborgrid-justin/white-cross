@@ -53,6 +53,7 @@ async function syncDatabase() {
     const { District } = require('./dist/database/models/district.model');
     const { School } = require('./dist/database/models/school.model');
     const { EmergencyContact } = require('./dist/database/models/emergency-contact.model');
+    const { AuditLog } = require('./dist/database/models/audit-log.model');
     
     // Add models to sequelize instance
     const models = [
@@ -62,6 +63,7 @@ async function syncDatabase() {
       District,
       School,
       EmergencyContact,
+      AuditLog,
       // Add other models as needed
     ];
 

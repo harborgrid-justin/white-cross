@@ -8,8 +8,8 @@ import {
   AllowNull,
   Index,
   ForeignKey,
-  BelongsTo,
-} from 'sequelize-typescript';
+  BelongsTo
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 ;
 import { FollowUpStatus } from '../../clinical/enums/follow-up-status.enum';
@@ -47,16 +47,16 @@ export interface FollowUpAppointmentAttributes {
   timestamps: true,
   indexes: [
     {
-      fields: ['student_id', 'status'],
-    },
+      fields: ['studentId', 'status']
+  },
     {
-      fields: ['original_visit_id'],
-    },
+      fields: ['originalVisitId']
+  },
     {
-      fields: ['scheduled_date'],
-    },
-  ],
-})
+      fields: ['scheduledDate']
+  },
+  ]
+  })
 export class FollowUpAppointment extends Model<FollowUpAppointmentAttributes> implements FollowUpAppointmentAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -65,8 +65,7 @@ export class FollowUpAppointment extends Model<FollowUpAppointmentAttributes> im
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'student_id',
+    allowNull: false
   })
   @Index
   studentId: string;
@@ -74,8 +73,7 @@ export class FollowUpAppointment extends Model<FollowUpAppointmentAttributes> im
   @AllowNull
   @ForeignKey(() => require('./clinic-visit.model').ClinicVisit)
   @Column({
-    type: DataType.UUID,
-    field: 'original_visit_id',
+    type: DataType.UUID
   })
   originalVisitId?: string;
 
@@ -84,15 +82,13 @@ export class FollowUpAppointment extends Model<FollowUpAppointmentAttributes> im
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'scheduled_by',
+    allowNull: false
   })
   scheduledBy: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
-    field: 'scheduled_date',
+    allowNull: false
   })
   @Index
   scheduledDate: Date;
@@ -100,65 +96,59 @@ export class FollowUpAppointment extends Model<FollowUpAppointmentAttributes> im
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 30,
-    field: 'duration_minutes',
+    defaultValue: 30
   })
   durationMinutes: number;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false,
+    allowNull: false
   })
   reason: string;
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: false,
+    allowNull: false
   })
   type: string;
 
   @Column({
     type: DataType.ENUM(...(Object.values(FollowUpStatus) as string[])),
     allowNull: false,
-    defaultValue: FollowUpStatus.SCHEDULED,
+    defaultValue: FollowUpStatus.SCHEDULED
   })
   @Index
   status: FollowUpStatus;
 
   @AllowNull
   @Column({
-    type: DataType.UUID,
-    field: 'assigned_to',
+    type: DataType.UUID
   })
   assignedTo?: string;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false,
-    field: 'reminder_sent',
+    defaultValue: false
   })
   reminderSent: boolean;
 
   @AllowNull
   @Column({
-    type: DataType.DATE,
-    field: 'reminder_sent_at',
+    type: DataType.DATE
   })
   reminderSentAt?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.DATE,
-    field: 'confirmed_at',
+    type: DataType.DATE
   })
   confirmedAt?: Date;
 
   @AllowNull
   @ForeignKey(() => require('./clinic-visit.model').ClinicVisit)
   @Column({
-    type: DataType.UUID,
-    field: 'completed_visit_id',
+    type: DataType.UUID
   })
   completedVisitId?: string;
 
@@ -167,49 +157,44 @@ export class FollowUpAppointment extends Model<FollowUpAppointmentAttributes> im
 
   @AllowNull
   @Column({
-    type: DataType.DATE,
-    field: 'completed_at',
+    type: DataType.DATE
   })
   completedAt?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.DATE,
-    field: 'cancelled_at',
+    type: DataType.DATE
   })
   cancelledAt?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.TEXT,
-    field: 'cancellation_reason',
+    type: DataType.TEXT
   })
   cancellationReason?: string;
 
   @AllowNull
   @Column({
-    type: DataType.UUID,
-    field: 'rescheduled_from_id',
+    type: DataType.UUID
   })
   rescheduledFromId?: string;
 
   @AllowNull
   @Column({
-    type: DataType.UUID,
-    field: 'rescheduled_to_id',
+    type: DataType.UUID
   })
   rescheduledToId?: string;
 
   @AllowNull
   @Column({
-    type: DataType.TEXT,
+    type: DataType.TEXT
   })
   notes?: string;
 
   @Column({
     type: DataType.STRING(50),
     allowNull: false,
-    defaultValue: 'normal',
+    defaultValue: 'normal'
   })
   priority: string;
 

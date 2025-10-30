@@ -7,8 +7,8 @@ import {
   Default,
   AllowNull,
   ForeignKey,
-  BelongsTo,
-} from 'sequelize-typescript';
+  BelongsTo
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 ;
 
@@ -26,10 +26,10 @@ export interface PolicyAcknowledgmentAttributes {
   indexes: [
     {
       unique: true,
-      fields: ['policy_id', 'user_id'],
-    },
-  ],
-})
+      fields: ['policyId', 'userId']
+  },
+  ]
+  })
 export class PolicyAcknowledgment extends Model<PolicyAcknowledgmentAttributes> implements PolicyAcknowledgmentAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -39,23 +39,20 @@ export class PolicyAcknowledgment extends Model<PolicyAcknowledgmentAttributes> 
   @ForeignKey(() => require('./policy-document.model').PolicyDocument)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'policy_id',
+    allowNull: false
   })
   policyId: string;
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'user_id',
+    allowNull: false
   })
   userId: string;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: new Date(),
-    field: 'acknowledged_at',
+    defaultValue: new Date()
   })
   acknowledgedAt: Date;
 

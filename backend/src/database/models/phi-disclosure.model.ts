@@ -6,8 +6,8 @@ import {
   PrimaryKey,
   Default,
   AllowNull,
-  HasMany,
-} from 'sequelize-typescript';
+  HasMany
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum DisclosureType {
@@ -17,8 +17,8 @@ export enum DisclosureType {
   AUTHORIZATION = 'AUTHORIZATION',
   REQUIRED_BY_LAW = 'REQUIRED_BY_LAW',
   PUBLIC_HEALTH = 'PUBLIC_HEALTH',
-  RESEARCH = 'RESEARCH',
-}
+  RESEARCH = 'RESEARCH'
+  }
 
 export enum DisclosurePurpose {
   TREATMENT = 'TREATMENT',
@@ -27,16 +27,16 @@ export enum DisclosurePurpose {
   LEGAL_REQUIREMENT = 'LEGAL_REQUIREMENT',
   PUBLIC_HEALTH = 'PUBLIC_HEALTH',
   RESEARCH = 'RESEARCH',
-  PATIENT_REQUEST = 'PATIENT_REQUEST',
-}
+  PATIENT_REQUEST = 'PATIENT_REQUEST'
+  }
 
 export enum DisclosureMethod {
   VERBAL = 'VERBAL',
   WRITTEN = 'WRITTEN',
   ELECTRONIC = 'ELECTRONIC',
   FAX = 'FAX',
-  PHONE = 'PHONE',
-}
+  PHONE = 'PHONE'
+  }
 
 export enum RecipientType {
   HEALTHCARE_PROVIDER = 'HEALTHCARE_PROVIDER',
@@ -45,8 +45,8 @@ export enum RecipientType {
   SCHOOL_OFFICIAL = 'SCHOOL_OFFICIAL',
   GOVERNMENT_AGENCY = 'GOVERNMENT_AGENCY',
   RESEARCHER = 'RESEARCHER',
-  OTHER = 'OTHER',
-}
+  OTHER = 'OTHER'
+  }
 
 export interface PhiDisclosureAttributes {
   id?: string;
@@ -81,25 +81,25 @@ export interface PhiDisclosureAttributes {
   timestamps: true,
   indexes: [
     {
-      fields: ['student_id', 'disclosure_date'],
-    },
+      fields: ['studentId', 'disclosureDate']
+  },
     {
-      fields: ['purpose', 'disclosure_date'],
-    },
+      fields: ['purpose', 'disclosureDate']
+  },
     {
-      fields: ['student_id'],
-    },
+      fields: ['studentId']
+  },
     {
-      fields: ['purpose'],
-    },
+      fields: ['purpose']
+  },
     {
-      fields: ['disclosure_date'],
-    },
+      fields: ['disclosureDate']
+  },
     {
-      fields: ['follow_up_date'],
-    },
-  ],
-})
+      fields: ['followUpDate']
+  },
+  ]
+  })
 export class PhiDisclosure extends Model<PhiDisclosureAttributes> implements PhiDisclosureAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -108,62 +108,55 @@ export class PhiDisclosure extends Model<PhiDisclosureAttributes> implements Phi
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'student_id',
+    allowNull: false
   })
   studentId: string;
 
   @Column({
     type: DataType.ENUM(...(Object.values(DisclosureType) as string[])),
-    allowNull: false,
-    field: 'disclosure_type',
+    allowNull: false
   })
   disclosureType: DisclosureType;
 
   @Column({
     type: DataType.ENUM(...(Object.values(DisclosurePurpose) as string[])),
-    allowNull: false,
+    allowNull: false
   })
   purpose: DisclosurePurpose;
 
   @Column({
     type: DataType.ENUM(...(Object.values(DisclosureMethod) as string[])),
-    allowNull: false,
+    allowNull: false
   })
   method: DisclosureMethod;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
-    field: 'disclosure_date',
+    allowNull: false
   })
   disclosureDate: Date;
 
   @Column({
     type: DataType.JSONB,
-    allowNull: false,
-    field: 'information_disclosed',
+    allowNull: false
   })
   informationDisclosed: string[];
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false,
-    field: 'minimum_necessary',
+    allowNull: false
   })
   minimumNecessary: string;
 
   @Column({
     type: DataType.ENUM(...(Object.values(RecipientType) as string[])),
-    allowNull: false,
-    field: 'recipient_type',
+    allowNull: false
   })
   recipientType: RecipientType;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false,
-    field: 'recipient_name',
+    allowNull: false
   })
   recipientName: string;
 
@@ -185,8 +178,7 @@ export class PhiDisclosure extends Model<PhiDisclosureAttributes> implements Phi
 
   @Column({
     type: DataType.BOOLEAN,
-    allowNull: false,
-    field: 'authorization_obtained',
+    allowNull: false
   })
   authorizationObtained: boolean;
 
@@ -200,31 +192,27 @@ export class PhiDisclosure extends Model<PhiDisclosureAttributes> implements Phi
 
   @Column({
     type: DataType.BOOLEAN,
-    allowNull: false,
-    field: 'patient_requested',
+    allowNull: false
   })
   patientRequested: boolean;
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'disclosed_by',
+    allowNull: false
   })
   disclosedBy: string;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false,
-    field: 'follow_up_required',
+    defaultValue: false
   })
   followUpRequired: boolean;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false,
-    field: 'follow_up_completed',
+    defaultValue: false
   })
   followUpCompleted: boolean;
 

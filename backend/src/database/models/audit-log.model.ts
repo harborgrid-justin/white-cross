@@ -13,8 +13,8 @@ import {
   PrimaryKey,
   Default,
   Index,
-  BeforeCreate,
-} from 'sequelize-typescript';
+  BeforeCreate
+  } from 'sequelize-typescript';
 import { AuditAction } from '../types/database.enums';
 
 /**
@@ -24,8 +24,8 @@ export enum ComplianceType {
   HIPAA = 'HIPAA',
   FERPA = 'FERPA',
   GDPR = 'GDPR',
-  GENERAL = 'GENERAL',
-}
+  GENERAL = 'GENERAL'
+  }
 
 /**
  * Severity levels for audit events
@@ -34,8 +34,8 @@ export enum AuditSeverity {
   LOW = 'LOW',
   MEDIUM = 'MEDIUM',
   HIGH = 'HIGH',
-  CRITICAL = 'CRITICAL',
-}
+  CRITICAL = 'CRITICAL'
+  }
 
 /**
  * AuditLog attributes interface
@@ -79,28 +79,28 @@ export interface AuditLogAttributes {
   tableName: 'audit_logs',
   timestamps: true,
   updatedAt: false, // Audit logs are immutable
-  underscored: true,
+  underscored: false, // Use camelCase to match existing columns
   indexes: [
     // Single-column indexes for common filters
-    { fields: ['user_id'] },
-    { fields: ['entity_type'] },
-    { fields: ['entity_id'] },
+    { fields: ['userId'] },
+    { fields: ['entityType'] },
+    { fields: ['entityId'] },
     { fields: ['action'] },
-    { fields: ['created_at'] },
-    { fields: ['is_phi'] },
-    { fields: ['compliance_type'] },
+    { fields: ['createdAt'] },
+    { fields: ['isPHI'] },
+    { fields: ['complianceType'] },
     { fields: ['severity'] },
     { fields: ['success'] },
-    { fields: ['session_id'] },
-    { fields: ['request_id'] },
+    { fields: ['sessionId'] },
+    { fields: ['requestId'] },
 
     // Composite indexes for common query patterns
-    { fields: ['entity_type', 'entity_id', 'created_at'] },
-    { fields: ['user_id', 'created_at'] },
-    { fields: ['action', 'entity_type', 'created_at'] },
-    { fields: ['is_phi', 'created_at'] },
-    { fields: ['compliance_type', 'created_at'] },
-    { fields: ['severity', 'created_at'] },
+    { fields: ['entityType', 'entityId', 'createdAt'] },
+    { fields: ['userId', 'createdAt'] },
+    { fields: ['action', 'entityType', 'createdAt'] },
+    { fields: ['isPHI', 'createdAt'] },
+    { fields: ['complianceType', 'createdAt'] },
+    { fields: ['severity', 'createdAt'] },
 
     // GIN index for tags array (PostgreSQL specific)
     { fields: ['tags'], using: 'gin' },
@@ -108,8 +108,8 @@ export interface AuditLogAttributes {
     // JSONB indexes for metadata and changes (PostgreSQL specific)
     { fields: ['metadata'], using: 'gin' },
     { fields: ['changes'], using: 'gin' },
-  ],
-})
+  ]
+  })
 export class AuditLog extends Model<AuditLogAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -118,8 +118,7 @@ export class AuditLog extends Model<AuditLogAttributes> {
 
   @Column({
     type: DataType.ENUM(...(Object.values(AuditAction) as string[])),
-    allowNull: false,
-    comment: 'Type of action performed (CREATE, READ, UPDATE, DELETE, etc.)',
+    allowNull: false
   })
   @Index
   action: AuditAction;
@@ -127,7 +126,7 @@ export class AuditLog extends Model<AuditLogAttributes> {
   @Column({
     type: DataType.STRING(100),
     allowNull: false,
-    comment: 'Type of entity affected (Student, HealthRecord, User, etc.)',
+    comment: 'Type of entity affected (Student, HealthRecord, User, etc.)'
   })
   @Index
   entityType: string;
@@ -135,7 +134,7 @@ export class AuditLog extends Model<AuditLogAttributes> {
   @Column({
     type: DataType.UUID,
     allowNull: true,
-    comment: 'ID of the entity affected (null for bulk operations)',
+    comment: 'ID of the entity affected (null for bulk operations)'
   })
   @Index
   entityId: string | null;
@@ -143,7 +142,7 @@ export class AuditLog extends Model<AuditLogAttributes> {
   @Column({
     type: DataType.UUID,
     allowNull: true,
-    comment: 'ID of user who performed the action (null for system operations)',
+    comment: 'ID of user who performed the action (null for system operations)'
   })
   @Index
   userId: string | null;
@@ -151,49 +150,49 @@ export class AuditLog extends Model<AuditLogAttributes> {
   @Column({
     type: DataType.STRING(200),
     allowNull: true,
-    comment: 'Name of user who performed the action (denormalized for reporting)',
+    comment: 'Name of user who performed the action (denormalized for reporting)'
   })
   userName: string | null;
 
   @Column({
     type: DataType.JSONB,
     allowNull: true,
-    comment: 'Complete change data (for backward compatibility)',
+    comment: 'Complete change data (for backward compatibility)'
   })
   changes: any;
 
   @Column({
     type: DataType.JSONB,
     allowNull: true,
-    comment: 'Previous values before the change (for UPDATE operations)',
+    comment: 'Previous values before the change (for UPDATE operations)'
   })
   previousValues: any;
 
   @Column({
     type: DataType.JSONB,
     allowNull: true,
-    comment: 'New values after the change (for CREATE/UPDATE operations)',
+    comment: 'New values after the change (for CREATE/UPDATE operations)'
   })
   newValues: any;
 
   @Column({
     type: DataType.STRING(45),
     allowNull: true,
-    comment: 'IP address of the client making the request',
+    comment: 'IP address of the client making the request'
   })
   ipAddress: string | null;
 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
-    comment: 'User agent string of the client',
+    comment: 'User agent string of the client'
   })
   userAgent: string | null;
 
   @Column({
     type: DataType.STRING(100),
     allowNull: true,
-    comment: 'Request correlation ID for tracing related operations',
+    comment: 'Request correlation ID for tracing related operations'
   })
   @Index
   requestId: string | null;
@@ -201,7 +200,7 @@ export class AuditLog extends Model<AuditLogAttributes> {
   @Column({
     type: DataType.STRING(100),
     allowNull: true,
-    comment: 'Session ID for grouping operations by user session',
+    comment: 'Session ID for grouping operations by user session'
   })
   @Index
   sessionId: string | null;
@@ -210,7 +209,7 @@ export class AuditLog extends Model<AuditLogAttributes> {
     type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: false,
-    comment: 'Flag indicating if this audit log involves Protected Health Information',
+    comment: 'Flag indicating if this audit log involves Protected Health Information'
   })
   @Index
   isPHI: boolean;
@@ -218,8 +217,7 @@ export class AuditLog extends Model<AuditLogAttributes> {
   @Column({
     type: DataType.ENUM(...(Object.values(ComplianceType) as string[])),
     allowNull: false,
-    defaultValue: ComplianceType.GENERAL,
-    comment: 'Compliance regulation this audit log relates to',
+    defaultValue: ComplianceType.GENERAL
   })
   @Index
   complianceType: ComplianceType;
@@ -227,8 +225,7 @@ export class AuditLog extends Model<AuditLogAttributes> {
   @Column({
     type: DataType.ENUM(...(Object.values(AuditSeverity) as string[])),
     allowNull: false,
-    defaultValue: AuditSeverity.LOW,
-    comment: 'Severity level of the audited action',
+    defaultValue: AuditSeverity.LOW
   })
   @Index
   severity: AuditSeverity;
@@ -237,7 +234,7 @@ export class AuditLog extends Model<AuditLogAttributes> {
     type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: true,
-    comment: 'Whether the operation completed successfully',
+    comment: 'Whether the operation completed successfully'
   })
   @Index
   success: boolean;
@@ -245,14 +242,14 @@ export class AuditLog extends Model<AuditLogAttributes> {
   @Column({
     type: DataType.TEXT,
     allowNull: true,
-    comment: 'Error message if operation failed',
+    comment: 'Error message if operation failed'
   })
   errorMessage: string | null;
 
   @Column({
     type: DataType.JSONB,
     allowNull: true,
-    comment: 'Additional metadata for context (query params, filter criteria, etc.)',
+    comment: 'Additional metadata for context (query params, filter criteria, etc.)'
   })
   metadata: any;
 
@@ -260,7 +257,7 @@ export class AuditLog extends Model<AuditLogAttributes> {
     type: DataType.ARRAY(DataType.STRING),
     allowNull: false,
     defaultValue: [],
-    comment: 'Tags for categorization and filtering',
+    comment: 'Tags for categorization and filtering'
   })
   tags: string[];
 
@@ -268,7 +265,7 @@ export class AuditLog extends Model<AuditLogAttributes> {
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    comment: 'Timestamp when the action was performed',
+    comment: 'Timestamp when the action was performed'
   })
   @Index
   declare createdAt?: Date;
@@ -305,8 +302,8 @@ export class AuditLog extends Model<AuditLogAttributes> {
         severity: data.severity,
         success: data.success,
         createdAt: data.createdAt,
-        tags: data.tags,
-      };
+        tags: data.tags
+  };
     }
 
     return data;

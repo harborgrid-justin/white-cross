@@ -7,8 +7,8 @@ import {
   Default,
   AllowNull,
   ForeignKey,
-  BelongsTo,
-} from 'sequelize-typescript';
+  BelongsTo
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 ;
 
@@ -28,10 +28,10 @@ export interface PhiDisclosureAuditAttributes {
   timestamps: false,
   indexes: [
     {
-      fields: ['disclosure_id'],
-    },
-  ],
-})
+      fields: ['disclosureId']
+  },
+  ]
+  })
 export class PhiDisclosureAudit extends Model<PhiDisclosureAuditAttributes> implements PhiDisclosureAuditAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -41,14 +41,13 @@ export class PhiDisclosureAudit extends Model<PhiDisclosureAuditAttributes> impl
   @ForeignKey(() => require('./phi-disclosure.model').PhiDisclosure)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'disclosure_id',
+    allowNull: false
   })
   disclosureId: string;
 
   @Column({
     type: DataType.STRING(50),
-    allowNull: false,
+    allowNull: false
   })
   action: string;
 
@@ -58,8 +57,7 @@ export class PhiDisclosureAudit extends Model<PhiDisclosureAuditAttributes> impl
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'performed_by',
+    allowNull: false
   })
   performedBy: string;
 

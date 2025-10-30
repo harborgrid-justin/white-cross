@@ -9,8 +9,8 @@ import {
   BelongsTo,
   Index,
   CreatedAt,
-  UpdatedAt,
-} from 'sequelize-typescript';
+  UpdatedAt
+  } from 'sequelize-typescript';
 ;
 
 export enum MedicationLogStatus {
@@ -18,11 +18,11 @@ export enum MedicationLogStatus {
   ADMINISTERED = 'ADMINISTERED',
   MISSED = 'MISSED',
   CANCELLED = 'CANCELLED',
-  REFUSED = 'REFUSED',
-}
+  REFUSED = 'REFUSED'
+  }
 
 export interface MedicationLogAttributes {
-  id: string;
+  id?: string;
   studentId: string;
   medicationId: string;
   dosage: number;
@@ -42,69 +42,67 @@ export interface MedicationLogAttributes {
 @Table({
   tableName: 'medication_logs',
   timestamps: true,
+  underscored: false,
   indexes: [
     { fields: ['studentId', 'medicationId'] },
     { fields: ['administeredAt'] },
     { fields: ['administeredBy'] },
-  ],
-})
+  ]
+  })
 export class MedicationLog extends Model<MedicationLogAttributes> implements MedicationLogAttributes {
   @PrimaryKey
   @Default(DataType.UUIDV4)
-  @Column(DataType.STRING)
+  @Column(DataType.UUID)
   declare id: string;
 
   @ForeignKey(() => require('./student.model').Student)
   @Index
   @Column({
-    type: DataType.STRING,
-    allowNull: false,
-    field: 'student_id',
+    type: DataType.UUID,
+    allowNull: false
   })
   studentId: string;
 
   @Column({
-    type: DataType.STRING,
-    allowNull: false,
-    field: 'medication_id',
+    type: DataType.UUID,
+    allowNull: false
   })
   medicationId: string;
 
   @Column({
     type: DataType.DECIMAL(10, 2),
-    allowNull: false,
+    allowNull: false
   })
   dosage: number;
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
+    allowNull: false
   })
   dosageUnit: string;
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
+    allowNull: false
   })
   route: string;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    comment: 'Scheduled time for medication administration',
+    comment: 'Scheduled time for medication administration'
   })
   scheduledAt?: Date;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
+    allowNull: false
   })
   administeredAt: Date;
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
-    field: 'administered_by',
+    allowNull: false
   })
   administeredBy: string;
 
@@ -113,40 +111,40 @@ export class MedicationLog extends Model<MedicationLogAttributes> implements Med
     type: DataType.ENUM(...(Object.values(MedicationLogStatus) as string[])),
     allowNull: true,
     defaultValue: MedicationLogStatus.ADMINISTERED,
-    comment: 'Status of medication administration',
+    comment: 'Status of medication administration'
   })
   status?: MedicationLogStatus;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: true,
+    allowNull: true
   })
   notes?: string;
 
   @Default(false)
   @Column({
     type: DataType.BOOLEAN,
-    allowNull: false,
+    allowNull: false
   })
   wasGiven: boolean;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: true,
+    allowNull: true
   })
   reasonNotGiven?: string;
 
   @CreatedAt
   @Column({
     type: DataType.DATE,
-    allowNull: false,
+    allowNull: false
   })
   declare createdAt: Date;
 
   @UpdatedAt
   @Column({
     type: DataType.DATE,
-    allowNull: false,
+    allowNull: false
   })
   declare updatedAt: Date;
 

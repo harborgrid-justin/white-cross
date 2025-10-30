@@ -69,7 +69,7 @@ export interface ConversationCreationAttributes
   tableName: 'conversations',
   timestamps: true,
   paranoid: true,
-  underscored: true,
+  underscored: false,
 })
 export class Conversation extends Model<ConversationAttributes, ConversationCreationAttributes> {
   @PrimaryKey

@@ -7,8 +7,8 @@ import {
   Default,
   AllowNull,
   ForeignKey,
-  BelongsTo,
-} from 'sequelize-typescript';
+  BelongsTo
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 ;
 
@@ -32,16 +32,16 @@ export interface ConsentSignatureAttributes {
   indexes: [
     {
       unique: true,
-      fields: ['consent_form_id', 'student_id'],
-    },
+      fields: ['consentFormId', 'studentId']
+  },
     {
-      fields: ['consent_form_id'],
-    },
+      fields: ['consentFormId']
+  },
     {
-      fields: ['student_id'],
-    },
-  ],
-})
+      fields: ['studentId']
+  },
+  ]
+  })
 export class ConsentSignature extends Model<ConsentSignatureAttributes> implements ConsentSignatureAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -51,28 +51,25 @@ export class ConsentSignature extends Model<ConsentSignatureAttributes> implemen
   @ForeignKey(() => require('./consent-form.model').ConsentForm)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'consent_form_id',
+    allowNull: false
   })
   consentFormId: string;
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'student_id',
+    allowNull: false
   })
   studentId: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false,
-    field: 'signed_by',
+    allowNull: false
   })
   signedBy: string;
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: false,
+    allowNull: false
   })
   relationship: string;
 
@@ -87,8 +84,7 @@ export class ConsentSignature extends Model<ConsentSignatureAttributes> implemen
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: new Date(),
-    field: 'signed_at',
+    defaultValue: new Date()
   })
   signedAt: Date;
 

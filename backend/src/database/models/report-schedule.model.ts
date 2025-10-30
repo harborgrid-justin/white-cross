@@ -7,8 +7,8 @@ import {
   Default,
   AllowNull,
   ForeignKey,
-  BelongsTo,
-} from 'sequelize-typescript';
+  BelongsTo
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 import { ReportTemplate } from './report-template.model';
 import { ReportType, OutputFormat } from './report-execution.model';
@@ -18,8 +18,8 @@ export enum ScheduleFrequency {
   WEEKLY = 'weekly',
   MONTHLY = 'monthly',
   QUARTERLY = 'quarterly',
-  CUSTOM = 'custom',
-}
+  CUSTOM = 'custom'
+  }
 
 export interface ReportScheduleAttributes {
   id: string;
@@ -45,8 +45,8 @@ export interface ReportScheduleAttributes {
 
 @Table({
   tableName: 'report_schedules',
-  timestamps: true,
-})
+  timestamps: true
+  })
 export class ReportSchedule extends Model<ReportScheduleAttributes> implements ReportScheduleAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -55,22 +55,20 @@ export class ReportSchedule extends Model<ReportScheduleAttributes> implements R
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false,
+    allowNull: false
   })
   name: string;
 
   @Column({
     type: DataType.ENUM(...(Object.values(ReportType) as string[])),
-    allowNull: false,
-    field: 'report_type',
+    allowNull: false
   })
   reportType: ReportType;
 
   @AllowNull
   @ForeignKey(() => require('./report-template.model').ReportTemplate)
   @Column({
-    type: DataType.UUID,
-    field: 'template_id',
+    type: DataType.UUID
   })
   templateId?: string;
 
@@ -79,22 +77,20 @@ export class ReportSchedule extends Model<ReportScheduleAttributes> implements R
 
   @Column({
     type: DataType.ENUM(...(Object.values(ScheduleFrequency) as string[])),
-    allowNull: false,
+    allowNull: false
   })
   frequency: ScheduleFrequency;
 
   @AllowNull
   @Column({
-    type: DataType.STRING(100),
-    field: 'cron_expression',
+    type: DataType.STRING(100)
   })
   cronExpression?: string;
 
   @Column({
     type: DataType.ENUM(...(Object.values(OutputFormat) as string[])),
     allowNull: false,
-    defaultValue: OutputFormat.PDF,
-    field: 'output_format',
+    defaultValue: OutputFormat.PDF
   })
   outputFormat: OutputFormat;
 
@@ -105,59 +101,52 @@ export class ReportSchedule extends Model<ReportScheduleAttributes> implements R
   @Column({
     type: DataType.JSON,
     allowNull: false,
-    defaultValue: [],
+    defaultValue: []
   })
   recipients: string[];
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true,
-    field: 'is_active',
+    defaultValue: true
   })
   isActive: boolean;
 
   @AllowNull
   @Column({
-    type: DataType.DATE,
-    field: 'last_executed_at',
+    type: DataType.DATE
   })
   lastExecutedAt?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.DATE,
-    field: 'next_execution_at',
+    type: DataType.DATE
   })
   nextExecutionAt?: Date;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 0,
-    field: 'execution_count',
+    defaultValue: 0
   })
   executionCount: number;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 0,
-    field: 'failure_count',
+    defaultValue: 0
   })
   failureCount: number;
 
   @AllowNull
   @Column({
-    type: DataType.TEXT,
-    field: 'last_error',
+    type: DataType.TEXT
   })
   lastError?: string;
 
   @AllowNull
   @Column({
-    type: DataType.UUID,
-    field: 'created_by',
+    type: DataType.UUID
   })
   createdBy?: string;
 

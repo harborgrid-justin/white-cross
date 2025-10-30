@@ -7,8 +7,8 @@ import {
   Default,
   ForeignKey,
   BelongsTo,
-  BeforeCreate,
-} from 'sequelize-typescript';
+  BeforeCreate
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 ;
 ;
@@ -36,28 +36,28 @@ export interface StudentMedicationAttributes {
   timestamps: true,
   indexes: [
     {
-      fields: ['studentId'],
-    },
+      fields: ['studentId']
+  },
     {
-      fields: ['medicationId'],
-    },
+      fields: ['medicationId']
+  },
     {
-      fields: ['isActive'],
-    },
+      fields: ['isActive']
+  },
     {
-      fields: ['startDate'],
-    },
+      fields: ['startDate']
+  },
     {
-      fields: ['endDate'],
-    },
+      fields: ['endDate']
+  },
     {
-      fields: ['studentId', 'isActive'],
-    },
+      fields: ['studentId', 'isActive']
+  },
     {
-      fields: ['createdBy'],
-    },
-  ],
-})
+      fields: ['createdBy']
+  },
+  ]
+  })
 export class StudentMedication extends Model<StudentMedicationAttributes> implements StudentMedicationAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -67,34 +67,32 @@ export class StudentMedication extends Model<StudentMedicationAttributes> implem
   @ForeignKey(() => require('./student.model').Student)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'studentId',
+    allowNull: false
   })
   studentId: string;
 
   @ForeignKey(() => require('./medication.model').Medication)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'medicationId',
+    allowNull: false
   })
   medicationId: string;
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
+    allowNull: false
   })
   dosage: string;
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
+    allowNull: false
   })
   frequency: string;
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
+    allowNull: false
   })
   route: string;
 
@@ -103,65 +101,55 @@ export class StudentMedication extends Model<StudentMedicationAttributes> implem
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
-    field: 'startDate',
+    allowNull: false
   })
   startDate: Date;
 
   @Column({
-    type: DataType.DATE,
-    field: 'endDate',
+    type: DataType.DATE
   })
   endDate?: Date;
 
   @Default(true)
   @Column({
-    type: DataType.BOOLEAN,
-    field: 'isActive',
+    type: DataType.BOOLEAN
   })
   isActive: boolean;
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
-    field: 'prescribedBy',
+    allowNull: false
   })
   prescribedBy: string;
 
   @Column({
-    type: DataType.STRING,
-    field: 'prescriptionNumber',
+    type: DataType.STRING
   })
   prescriptionNumber?: string;
 
   @Default(0)
   @Column({
-    type: DataType.INTEGER,
-    field: 'refillsRemaining',
+    type: DataType.INTEGER
   })
   refillsRemaining?: number;
 
   @Column({
-    type: DataType.UUID,
-    field: 'createdBy',
+    type: DataType.UUID
   })
   createdBy?: string;
 
   @Column({
-    type: DataType.UUID,
-    field: 'updatedBy',
+    type: DataType.UUID
   })
   updatedBy?: string;
 
   @Column({
-    type: DataType.DATE,
-    field: 'createdAt',
+    type: DataType.DATE
   })
   declare createdAt: Date;
 
   @Column({
-    type: DataType.DATE,
-    field: 'updatedAt',
+    type: DataType.DATE
   })
   declare updatedAt: Date;
 

@@ -37,14 +37,14 @@ export enum SyncDirection {
 @Table({
   tableName: 'sync_sessions',
   timestamps: true,
-  underscored: true,
+  underscored: false,
   indexes: [
     { fields: ['status'] },
     { fields: ['direction'] },
-    { fields: ['started_at'] },
-    { fields: ['completed_at'] },
-    { fields: ['triggered_by'] },
-    { fields: ['created_at'] },
+    { fields: ['startedAt'] },
+    { fields: ['completedAt'] },
+    { fields: ['triggeredBy'] },
+    { fields: ['createdAt'] },
   ],
 })
 export class SyncSession extends Model {

@@ -8,8 +8,8 @@ import {
   ForeignKey,
   BelongsTo,
   HasMany,
-  Index,
-} from 'sequelize-typescript';
+  Index
+  } from 'sequelize-typescript';
 ;
 ;
 ;
@@ -22,16 +22,16 @@ export enum AppointmentType {
   ILLNESS_EVALUATION = 'ILLNESS_EVALUATION',
   FOLLOW_UP = 'FOLLOW_UP',
   SCREENING = 'SCREENING',
-  EMERGENCY = 'EMERGENCY',
-}
+  EMERGENCY = 'EMERGENCY'
+  }
 
 export enum AppointmentStatus {
   SCHEDULED = 'SCHEDULED',
   IN_PROGRESS = 'IN_PROGRESS',
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
-  NO_SHOW = 'NO_SHOW',
-}
+  NO_SHOW = 'NO_SHOW'
+  }
 
 export interface AppointmentAttributes {
   studentId: string;
@@ -52,8 +52,8 @@ export interface AppointmentAttributes {
 @Table({
   tableName: 'appointments',
   timestamps: true,
-  underscored: true,
-})
+  underscored: false
+  })
 export class Appointment extends Model<AppointmentAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -64,8 +64,7 @@ export class Appointment extends Model<AppointmentAttributes> {
   @Column({
     type: DataType.UUID,
     allowNull: false,
-    field: 'studentId',
-    comment: 'Foreign key to students table - appointment patient',
+    comment: 'Foreign key to students table - appointment patient'
   })
   studentId: string;
 
@@ -74,8 +73,7 @@ export class Appointment extends Model<AppointmentAttributes> {
   @Column({
     type: DataType.UUID,
     allowNull: true,
-    field: 'nurseId',
-    comment: 'Foreign key to users table - assigned nurse',
+    comment: 'Foreign key to users table - assigned nurse'
   })
   nurseId: string;
 
@@ -88,7 +86,7 @@ export class Appointment extends Model<AppointmentAttributes> {
   @Index
   @Column({
     type: DataType.ENUM(...(Object.values(AppointmentType) as string[])),
-    allowNull: false,
+    allowNull: false
   })
   type: AppointmentType;
 
@@ -107,8 +105,7 @@ export class Appointment extends Model<AppointmentAttributes> {
   @Index
   @Column({
     type: DataType.DATE,
-    allowNull: false,
-    field: 'scheduledAt',
+    allowNull: false
   })
   scheduledAt: Date;
 
@@ -130,9 +127,9 @@ export class Appointment extends Model<AppointmentAttributes> {
     defaultValue: 30,
     validate: {
       min: 15,
-      max: 120,
-    },
-    comment: 'Duration in minutes',
+      max: 120
+  },
+    comment: 'Duration in minutes'
   })
   duration: number;
 
@@ -140,7 +137,7 @@ export class Appointment extends Model<AppointmentAttributes> {
   @Column({
     type: DataType.ENUM(...(Object.values(AppointmentStatus) as string[])),
     allowNull: false,
-    defaultValue: AppointmentStatus.SCHEDULED,
+    defaultValue: AppointmentStatus.SCHEDULED
   })
   status: AppointmentStatus;
 
@@ -148,8 +145,8 @@ export class Appointment extends Model<AppointmentAttributes> {
     type: DataType.STRING(500),
     allowNull: false,
     validate: {
-      len: [3, 500],
-    },
+      len: [3, 500]
+  }
   })
   reason: string;
 
@@ -157,8 +154,8 @@ export class Appointment extends Model<AppointmentAttributes> {
     type: DataType.TEXT,
     allowNull: true,
     validate: {
-      len: [0, 5000],
-    },
+      len: [0, 5000]
+  }
   })
   notes?: string;
 
@@ -166,24 +163,21 @@ export class Appointment extends Model<AppointmentAttributes> {
   @Column({
     type: DataType.UUID,
     allowNull: true,
-    field: 'recurringGroupId',
-    comment: 'Group ID for recurring appointments',
+    comment: 'Group ID for recurring appointments'
   })
   recurringGroupId?: string;
 
   @Column({
     type: DataType.STRING(50),
     allowNull: true,
-    field: 'recurringFrequency',
-    comment: 'Frequency: DAILY, WEEKLY, MONTHLY, YEARLY',
+    comment: 'Frequency: DAILY, WEEKLY, MONTHLY, YEARLY'
   })
   recurringFrequency?: string;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    field: 'recurringEndDate',
-    comment: 'End date for recurring appointments',
+    comment: 'End date for recurring appointments'
   })
   recurringEndDate?: Date;
 
@@ -192,15 +186,13 @@ export class Appointment extends Model<AppointmentAttributes> {
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
-    field: 'createdAt',
+    allowNull: false
   })
   declare createdAt?: Date;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
-    field: 'updatedAt',
+    allowNull: false
   })
   declare updatedAt?: Date;
 

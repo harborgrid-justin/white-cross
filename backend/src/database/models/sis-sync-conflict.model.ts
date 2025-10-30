@@ -29,14 +29,14 @@ export enum ConflictResolution {
 @Table({
   tableName: 'sis_sync_conflicts',
   timestamps: true,
-  underscored: true,
+  underscored: false,
   indexes: [
-    { fields: ['session_id'] },
-    { fields: ['student_id'] },
+    { fields: ['sessionId'] },
+    { fields: ['studentId'] },
     { fields: ['field'] },
     { fields: ['resolution'] },
-    { fields: ['resolved_at'] },
-    { fields: ['created_at'] },
+    { fields: ['resolvedAt'] },
+    { fields: ['createdAt'] },
   ],
 })
 export class SISSyncConflict extends Model {

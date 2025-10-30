@@ -9,8 +9,8 @@ import {
   Index,
   ForeignKey,
   BelongsTo,
-  HasMany,
-} from 'sequelize-typescript';
+  HasMany
+  } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -21,8 +21,8 @@ export enum Gender {
   MALE = 'MALE',
   FEMALE = 'FEMALE',
   OTHER = 'OTHER',
-  PREFER_NOT_TO_SAY = 'PREFER_NOT_TO_SAY',
-}
+  PREFER_NOT_TO_SAY = 'PREFER_NOT_TO_SAY'
+  }
 
 export interface StudentAttributes {
   id: string;
@@ -52,34 +52,34 @@ export interface StudentAttributes {
   indexes: [
     {
       fields: ['studentNumber'],
-      unique: true,
-    },
+      unique: true
+  },
     {
-      fields: ['nurseId'],
-    },
+      fields: ['nurseId']
+  },
     {
-      fields: ['isActive'],
-    },
+      fields: ['isActive']
+  },
     {
-      fields: ['grade'],
-    },
+      fields: ['grade']
+  },
     {
-      fields: ['lastName', 'firstName'],
-    },
+      fields: ['lastName', 'firstName']
+  },
     {
       fields: ['medicalRecordNum'],
       unique: true,
       where: {
         medicalRecordNum: {
-          [Op.ne]: null,
-        },
-      },
-    },
-  ],
-})
+          [Op.ne]: null
+  }
+  }
+  },
+  ]
+  })
 export class Student extends Model<StudentAttributes> implements StudentAttributes {
   @PrimaryKey
-  @Default(() => uuidv4())
+  @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
   declare id: string;
 
@@ -90,8 +90,7 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
   @Column({
     type: DataType.STRING(50),
     allowNull: false,
-    unique: true,
-    field: 'studentNumber',
+    unique: true
   })
   studentNumber: string;
 
@@ -101,8 +100,7 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
    */
   @Column({
     type: DataType.STRING(100),
-    allowNull: false,
-    field: 'firstName',
+    allowNull: false
   })
   firstName: string;
 
@@ -112,8 +110,7 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
    */
   @Column({
     type: DataType.STRING(100),
-    allowNull: false,
-    field: 'lastName',
+    allowNull: false
   })
   lastName: string;
 
@@ -123,8 +120,7 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
    */
   @Column({
     type: DataType.DATEONLY,
-    allowNull: false,
-    field: 'dateOfBirth',
+    allowNull: false
   })
   dateOfBirth: Date;
 
@@ -133,7 +129,7 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
    */
   @Column({
     type: DataType.STRING(10),
-    allowNull: false,
+    allowNull: false
   })
   grade: string;
 
@@ -142,7 +138,7 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
    */
   @Column({
     type: DataType.ENUM(...(Object.values(Gender) as string[])),
-    allowNull: false,
+    allowNull: false
   })
   gender: Gender;
 
@@ -152,8 +148,7 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
    */
   @AllowNull
   @Column({
-    type: DataType.STRING(500),
-    field: 'photo',
+    type: DataType.STRING(500)
   })
   photo?: string;
 
@@ -164,8 +159,7 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
   @AllowNull
   @Column({
     type: DataType.STRING(50),
-    unique: true,
-    field: 'medicalRecordNum',
+    unique: true
   })
   medicalRecordNum?: string;
 
@@ -175,8 +169,7 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true,
-    field: 'isActive',
+    defaultValue: true
   })
   isActive: boolean;
 
@@ -186,8 +179,7 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW,
-    field: 'enrollmentDate',
+    defaultValue: DataType.NOW
   })
   enrollmentDate: Date;
 
@@ -197,8 +189,7 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
   @AllowNull
   @ForeignKey(() => require('./user.model').User)
   @Column({
-    type: DataType.UUID,
-    field: 'nurseId',
+    type: DataType.UUID
   })
   nurseId?: string;
 
@@ -208,8 +199,7 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
   @AllowNull
   @ForeignKey(() => require('./school.model').School)
   @Column({
-    type: DataType.UUID,
-    field: 'schoolId',
+    type: DataType.UUID
   })
   schoolId?: string;
 
@@ -219,8 +209,7 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
   @AllowNull
   @ForeignKey(() => require('./district.model').District)
   @Column({
-    type: DataType.UUID,
-    field: 'districtId',
+    type: DataType.UUID
   })
   districtId?: string;
 
@@ -229,8 +218,7 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
    */
   @AllowNull
   @Column({
-    type: DataType.UUID,
-    field: 'createdBy',
+    type: DataType.UUID
   })
   createdBy?: string;
 
@@ -239,20 +227,17 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
    */
   @AllowNull
   @Column({
-    type: DataType.UUID,
-    field: 'updatedBy',
+    type: DataType.UUID
   })
   updatedBy?: string;
 
   @Column({
-    type: DataType.DATE,
-    field: 'createdAt',
+    type: DataType.DATE
   })
   declare createdAt?: Date;
 
   @Column({
-    type: DataType.DATE,
-    field: 'updatedAt',
+    type: DataType.DATE
   })
   declare updatedAt?: Date;
 

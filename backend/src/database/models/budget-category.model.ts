@@ -17,8 +17,8 @@ import { Table, Column, Model, DataType, PrimaryKey, Default, ForeignKey, Belong
   tableName: 'budget_categories',
   timestamps: true,
   createdAt: 'created_at',
-  updatedAt: 'updated_at',
-})
+  updatedAt: 'updated_at'
+  })
 export class BudgetCategory extends Model<BudgetCategory> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -27,57 +27,51 @@ export class BudgetCategory extends Model<BudgetCategory> {
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false,
+    allowNull: false
   })
   name: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: true,
+    allowNull: true
   })
   description: string | null;
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
-    field: 'fiscal_year',
+    allowNull: false
   })
   fiscalYear: number;
 
   @Column({
     type: DataType.DECIMAL(10, 2),
-    allowNull: false,
-    field: 'allocated_amount',
+    allowNull: false
   })
   allocatedAmount: number;
 
   @Column({
     type: DataType.DECIMAL(10, 2),
     allowNull: false,
-    defaultValue: 0,
-    field: 'spent_amount',
+    defaultValue: 0
   })
   spentAmount: number;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true,
-    field: 'is_active',
+    defaultValue: true
   })
   isActive: boolean;
 
   @CreatedAt
   @Column({
-    type: DataType.DATE,
-    field: 'created_at',
+    type: DataType.DATE
   })
   declare createdAt: Date;
 
   @UpdatedAt
   @Column({
-    type: DataType.DATE,
-    field: 'updated_at',
+    type: DataType.DATE
   })
   declare updatedAt: Date;
 

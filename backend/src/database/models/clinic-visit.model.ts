@@ -6,8 +6,8 @@ import {
   PrimaryKey,
   Default,
   AllowNull,
-  Index,
-} from 'sequelize-typescript';
+  Index
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 import { VisitDisposition } from '../../clinical/enums/visit-disposition.enum';
 
@@ -33,22 +33,22 @@ export interface ClinicVisitAttributes {
   timestamps: true,
   indexes: [
     {
-      fields: ['student_id'],
-    },
+      fields: ['studentId']
+  },
     {
-      fields: ['check_in_time'],
-    },
+      fields: ['checkInTime']
+  },
     {
-      fields: ['check_out_time'],
-    },
+      fields: ['checkOutTime']
+  },
     {
-      fields: ['disposition'],
-    },
+      fields: ['disposition']
+  },
     {
-      fields: ['attended_by'],
-    },
-  ],
-})
+      fields: ['attendedBy']
+  },
+  ]
+  })
 export class ClinicVisit extends Model<ClinicVisitAttributes> implements ClinicVisitAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -57,82 +57,72 @@ export class ClinicVisit extends Model<ClinicVisitAttributes> implements ClinicV
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'student_id',
+    allowNull: false
   })
   @Index
   studentId: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
-    field: 'check_in_time',
+    allowNull: false
   })
   @Index
   checkInTime: Date;
 
   @AllowNull
   @Column({
-    type: DataType.DATE,
-    field: 'check_out_time',
+    type: DataType.DATE
   })
   @Index
   checkOutTime?: Date;
 
   @Column({
     type: DataType.JSON,
-    allowNull: false,
-    field: 'reason_for_visit',
+    allowNull: false
   })
   reasonForVisit: string[];
 
   @AllowNull
   @Column({
-    type: DataType.JSON,
-    field: 'symptoms',
+    type: DataType.JSON
   })
   symptoms?: string[];
 
   @AllowNull
   @Column({
-    type: DataType.TEXT,
-    field: 'treatment',
+    type: DataType.TEXT
   })
   treatment?: string;
 
   @Column({
     type: DataType.ENUM(...(Object.values(VisitDisposition) as string[])),
-    allowNull: false,
+    allowNull: false
   })
   @Index
   disposition: VisitDisposition;
 
   @AllowNull
   @Column({
-    type: DataType.JSON,
-    field: 'classes_missed',
+    type: DataType.JSON
   })
   classesMissed?: string[];
 
   @AllowNull
   @Column({
-    type: DataType.INTEGER,
-    field: 'minutes_missed',
+    type: DataType.INTEGER
   })
   minutesMissed?: number;
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'attended_by',
+    allowNull: false
   })
   @Index
   attendedBy: string;
 
   @AllowNull
   @Column({
-    type: DataType.TEXT,
-    field: 'notes',
+    type: DataType.TEXT
   })
   notes?: string;
 

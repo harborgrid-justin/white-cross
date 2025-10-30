@@ -21,7 +21,7 @@ import Redis from 'ioredis';
 import * as zlib from 'zlib';
 import { promisify } from 'util';
 import { CacheConfigService } from './cache.config';
-import {
+import type {
   CacheOptions,
   CacheStats,
   CacheHealth,
@@ -29,9 +29,9 @@ import {
   BatchOperation,
   BatchOperationResult,
   InvalidationPattern,
-  CacheEvent,
   CacheMetadata,
 } from './cache.interfaces';
+import { CacheEvent } from './cache.interfaces';
 import {
   HighPerformance,
   GCSchedule,

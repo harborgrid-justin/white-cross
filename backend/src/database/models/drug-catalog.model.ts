@@ -7,8 +7,8 @@ import {
   Default,
   AllowNull,
   Index,
-  HasMany,
-} from 'sequelize-typescript';
+  HasMany
+  } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 ;
@@ -39,34 +39,34 @@ export interface DrugCatalogAttributes {
   timestamps: true,
   indexes: [
     {
-      fields: ['rxnorm_id'],
+      fields: ['rxnormId'],
       unique: true,
       where: {
         rxnorm_id: {
-          [Op.ne]: null,
-        },
-      },
-    },
+          [Op.ne]: null
+  }
+  }
+  },
     {
-      fields: ['rxnorm_code'],
+      fields: ['rxnormCode'],
       unique: true,
       where: {
         rxnorm_code: {
-          [Op.ne]: null,
-        },
-      },
-    },
+          [Op.ne]: null
+  }
+  }
+  },
     {
-      fields: ['generic_name'],
-    },
+      fields: ['genericName']
+  },
     {
-      fields: ['drug_class'],
-    },
+      fields: ['drugClass']
+  },
     {
-      fields: ['is_active'],
-    },
-  ],
-})
+      fields: ['isActive']
+  },
+  ]
+  })
 export class DrugCatalog extends Model<DrugCatalogAttributes> implements DrugCatalogAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -76,8 +76,7 @@ export class DrugCatalog extends Model<DrugCatalogAttributes> implements DrugCat
   @AllowNull
   @Column({
     type: DataType.STRING(50),
-    unique: true,
-    field: 'rxnorm_id',
+    unique: true
   })
   @Index
   rxnormId?: string;
@@ -85,31 +84,27 @@ export class DrugCatalog extends Model<DrugCatalogAttributes> implements DrugCat
   @AllowNull
   @Column({
     type: DataType.STRING(50),
-    unique: true,
-    field: 'rxnorm_code',
+    unique: true
   })
   @Index
   rxnormCode?: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false,
-    field: 'generic_name',
+    allowNull: false
   })
   @Index
   genericName: string;
 
   @AllowNull
   @Column({
-    type: DataType.JSON,
-    field: 'brand_names',
+    type: DataType.JSON
   })
   brandNames?: string[];
 
   @AllowNull
   @Column({
-    type: DataType.STRING(100),
-    field: 'drug_class',
+    type: DataType.STRING(100)
   })
   @Index
   drugClass?: string;
@@ -117,42 +112,38 @@ export class DrugCatalog extends Model<DrugCatalogAttributes> implements DrugCat
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true,
-    field: 'fda_approved',
+    defaultValue: true
   })
   fdaApproved: boolean;
 
   @AllowNull
   @Column({
-    type: DataType.JSONB,
-    field: 'common_doses',
+    type: DataType.JSONB
   })
   commonDoses?: Record<string, any>;
 
   @AllowNull
   @Column({
-    type: DataType.JSON,
-    field: 'side_effects',
+    type: DataType.JSON
   })
   sideEffects?: string[];
 
   @AllowNull
   @Column({
-    type: DataType.JSON,
+    type: DataType.JSON
   })
   contraindications?: string[];
 
   @AllowNull
   @Column({
-    type: DataType.JSON,
+    type: DataType.JSON
   })
   warnings?: string[];
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true,
-    field: 'is_active',
+    defaultValue: true
   })
   @Index
   isActive: boolean;

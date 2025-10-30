@@ -7,8 +7,8 @@ import {
   Default,
   ForeignKey,
   BelongsTo,
-  Index,
-} from 'sequelize-typescript';
+  Index
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 ;
 
@@ -97,28 +97,28 @@ export interface AcademicTranscriptCreationAttributes extends Omit<AcademicTrans
   timestamps: true,
   indexes: [
     {
-      fields: ['student_id'],
-      name: 'academic_transcripts_student_id_idx',
-    },
+      fields: ['studentId'],
+      name: 'academic_transcripts_student_id_idx'
+  },
     {
-      fields: ['academic_year'],
-      name: 'academic_transcripts_academic_year_idx',
-    },
+      fields: ['academicYear'],
+      name: 'academic_transcripts_academic_year_idx'
+  },
     {
-      fields: ['student_id', 'academic_year', 'semester'],
+      fields: ['studentId', 'academicYear', 'semester'],
       unique: true,
-      name: 'academic_transcripts_student_year_semester_unique',
-    },
+      name: 'academic_transcripts_student_year_semester_unique'
+  },
     {
       fields: ['gpa'],
-      name: 'academic_transcripts_gpa_idx',
-    },
+      name: 'academic_transcripts_gpa_idx'
+  },
     {
-      fields: ['imported_by'],
-      name: 'academic_transcripts_imported_by_idx',
-    },
-  ],
-})
+      fields: ['importedBy'],
+      name: 'academic_transcripts_imported_by_idx'
+  },
+  ]
+  })
 export class AcademicTranscript extends Model<AcademicTranscriptAttributes, AcademicTranscriptCreationAttributes> implements AcademicTranscriptAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -131,8 +131,7 @@ export class AcademicTranscript extends Model<AcademicTranscriptAttributes, Acad
   @ForeignKey(() => require('./student.model').Student)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'student_id',
+    allowNull: false
   })
   studentId: string;
 
@@ -141,8 +140,7 @@ export class AcademicTranscript extends Model<AcademicTranscriptAttributes, Acad
    */
   @Column({
     type: DataType.STRING(20),
-    allowNull: false,
-    field: 'academic_year',
+    allowNull: false
   })
   academicYear: string;
 
@@ -151,7 +149,7 @@ export class AcademicTranscript extends Model<AcademicTranscriptAttributes, Acad
    */
   @Column({
     type: DataType.STRING(20),
-    allowNull: false,
+    allowNull: false
   })
   semester: string;
 
@@ -160,7 +158,7 @@ export class AcademicTranscript extends Model<AcademicTranscriptAttributes, Acad
    */
   @Column({
     type: DataType.STRING(10),
-    allowNull: false,
+    allowNull: false
   })
   grade: string;
 
@@ -170,7 +168,7 @@ export class AcademicTranscript extends Model<AcademicTranscriptAttributes, Acad
   @Column({
     type: DataType.DECIMAL(3, 2),
     allowNull: false,
-    defaultValue: 0.0,
+    defaultValue: 0.0
   })
   gpa: number;
 
@@ -180,7 +178,7 @@ export class AcademicTranscript extends Model<AcademicTranscriptAttributes, Acad
   @Column({
     type: DataType.JSONB,
     allowNull: false,
-    defaultValue: [],
+    defaultValue: []
   })
   subjects: SubjectGrade[];
 
@@ -195,8 +193,8 @@ export class AcademicTranscript extends Model<AcademicTranscriptAttributes, Acad
       presentDays: 0,
       absentDays: 0,
       tardyDays: 0,
-      attendanceRate: 0,
-    },
+      attendanceRate: 0
+  }
   })
   attendance: AttendanceRecord;
 
@@ -209,8 +207,8 @@ export class AcademicTranscript extends Model<AcademicTranscriptAttributes, Acad
     defaultValue: {
       conductGrade: 'N/A',
       incidents: 0,
-      commendations: 0,
-    },
+      commendations: 0
+  }
   })
   behavior: BehaviorRecord;
 
@@ -218,8 +216,7 @@ export class AcademicTranscript extends Model<AcademicTranscriptAttributes, Acad
    * User who imported this record
    */
   @Column({
-    type: DataType.UUID,
-    field: 'imported_by',
+    type: DataType.UUID
   })
   importedBy?: string;
 
@@ -227,8 +224,7 @@ export class AcademicTranscript extends Model<AcademicTranscriptAttributes, Acad
    * When this record was imported
    */
   @Column({
-    type: DataType.DATE,
-    field: 'imported_at',
+    type: DataType.DATE
   })
   importedAt?: Date;
 
@@ -236,8 +232,7 @@ export class AcademicTranscript extends Model<AcademicTranscriptAttributes, Acad
    * Source system for import (e.g., "PowerSchool", "SIS", "Manual")
    */
   @Column({
-    type: DataType.STRING(100),
-    field: 'import_source',
+    type: DataType.STRING(100)
   })
   importSource?: string;
 
@@ -248,14 +243,12 @@ export class AcademicTranscript extends Model<AcademicTranscriptAttributes, Acad
   metadata?: Record<string, any>;
 
   @Column({
-    type: DataType.DATE,
-    field: 'created_at',
+    type: DataType.DATE
   })
   declare createdAt?: Date;
 
   @Column({
-    type: DataType.DATE,
-    field: 'updated_at',
+    type: DataType.DATE
   })
   declare updatedAt?: Date;
 

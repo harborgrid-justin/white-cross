@@ -53,11 +53,11 @@ export interface MessageReactionCreationAttributes
 @Table({
   tableName: 'message_reactions',
   timestamps: true,
-  underscored: true,
+  underscored: false,
   indexes: [
     {
       unique: true,
-      fields: ['message_id', 'user_id', 'emoji'],
+      fields: ['messageId', 'userId', 'emoji'],
       name: 'message_reactions_message_user_emoji_unique',
     },
   ],

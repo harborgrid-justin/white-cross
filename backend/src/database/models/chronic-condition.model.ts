@@ -8,8 +8,8 @@ import {
   AllowNull,
   Index,
   ForeignKey,
-  BelongsTo,
-} from 'sequelize-typescript';
+  BelongsTo
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 ;
 ;
@@ -30,8 +30,8 @@ export enum ConditionStatus {
   ACTIVE = 'ACTIVE',
   MANAGED = 'MANAGED',
   RESOLVED = 'RESOLVED',
-  MONITORING = 'MONITORING',
-}
+  MONITORING = 'MONITORING'
+  }
 
 export interface ChronicConditionAttributes {
   id: string;
@@ -66,22 +66,22 @@ export interface ChronicConditionAttributes {
   timestamps: true,
   indexes: [
     {
-      fields: ['student_id', 'is_active'],
-    },
+      fields: ['studentId', 'isActive']
+  },
     {
-      fields: ['status', 'is_active'],
-    },
+      fields: ['status', 'isActive']
+  },
     {
-      fields: ['next_review_date'],
-    },
+      fields: ['nextReviewDate']
+  },
     {
-      fields: ['requires_iep'],
-    },
+      fields: ['requiresIEP']
+  },
     {
-      fields: ['requires_504'],
-    },
-  ],
-})
+      fields: ['requires504']
+  },
+  ]
+  })
 export class ChronicCondition extends Model<ChronicConditionAttributes> implements ChronicConditionAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -91,8 +91,7 @@ export class ChronicCondition extends Model<ChronicConditionAttributes> implemen
   @ForeignKey(() => require('./student.model').Student)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'student_id',
+    allowNull: false
   })
   @Index
   studentId: string;
@@ -100,111 +99,103 @@ export class ChronicCondition extends Model<ChronicConditionAttributes> implemen
   @AllowNull
   @ForeignKey(() => require('./health-record.model').HealthRecord)
   @Column({
-    type: DataType.UUID,
-    field: 'health_record_id',
+    type: DataType.UUID
   })
   healthRecordId?: string;
 
   @Column({
     type: DataType.STRING(200),
-    allowNull: false,
+    allowNull: false
   })
   condition: string;
 
   @AllowNull
   @Column({
-    type: DataType.STRING(20),
-    field: 'icd_code',
+    type: DataType.STRING(20)
   })
   icdCode?: string;
 
   @Column({
     type: DataType.DATEONLY,
-    allowNull: false,
-    field: 'diagnosed_date',
+    allowNull: false
   })
   diagnosedDate: Date;
 
   @AllowNull
   @Column({
-    type: DataType.STRING(200),
-    field: 'diagnosed_by',
+    type: DataType.STRING(200)
   })
   diagnosedBy?: string;
 
   @Column({
     type: DataType.ENUM(...(Object.values(ConditionStatus) as string[])),
     allowNull: false,
-    defaultValue: ConditionStatus.ACTIVE,
+    defaultValue: ConditionStatus.ACTIVE
   })
   @Index
   status: ConditionStatus;
 
   @AllowNull
   @Column({
-    type: DataType.STRING(50),
+    type: DataType.STRING(50)
   })
   severity?: string;
 
   @AllowNull
   @Column({
-    type: DataType.TEXT,
+    type: DataType.TEXT
   })
   notes?: string;
 
   @AllowNull
   @Column({
-    type: DataType.TEXT,
-    field: 'care_plan',
+    type: DataType.TEXT
   })
   carePlan?: string;
 
   @Column({
     type: DataType.JSON,
     allowNull: false,
-    defaultValue: [],
+    defaultValue: []
   })
   medications: string[];
 
   @Column({
     type: DataType.JSON,
     allowNull: false,
-    defaultValue: [],
+    defaultValue: []
   })
   restrictions: string[];
 
   @Column({
     type: DataType.JSON,
     allowNull: false,
-    defaultValue: [],
+    defaultValue: []
   })
   triggers: string[];
 
   @Column({
     type: DataType.JSON,
     allowNull: false,
-    defaultValue: [],
+    defaultValue: []
   })
   accommodations: string[];
 
   @AllowNull
   @Column({
-    type: DataType.TEXT,
-    field: 'emergency_protocol',
+    type: DataType.TEXT
   })
   emergencyProtocol?: string;
 
   @AllowNull
   @Column({
-    type: DataType.DATEONLY,
-    field: 'last_review_date',
+    type: DataType.DATEONLY
   })
   lastReviewDate?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.DATEONLY,
-    field: 'next_review_date',
+    type: DataType.DATEONLY
   })
   @Index
   nextReviewDate?: Date;
@@ -212,8 +203,7 @@ export class ChronicCondition extends Model<ChronicConditionAttributes> implemen
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false,
-    field: 'requires_iep',
+    defaultValue: false
   })
   @Index
   requiresIEP: boolean;
@@ -221,8 +211,7 @@ export class ChronicCondition extends Model<ChronicConditionAttributes> implemen
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false,
-    field: 'requires_504',
+    defaultValue: false
   })
   @Index
   requires504: boolean;
@@ -230,8 +219,7 @@ export class ChronicCondition extends Model<ChronicConditionAttributes> implemen
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true,
-    field: 'is_active',
+    defaultValue: true
   })
   @Index
   isActive: boolean;

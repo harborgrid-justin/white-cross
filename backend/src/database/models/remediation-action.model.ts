@@ -5,8 +5,8 @@ import {
   DataType,
   PrimaryKey,
   Default,
-  AllowNull,
-} from 'sequelize-typescript';
+  AllowNull
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum RemediationPriority {
@@ -46,25 +46,25 @@ export interface RemediationActionAttributes {
   timestamps: true,
   indexes: [
     {
-      fields: ['violation_id'],
-    },
+      fields: ['violationId']
+  },
     {
-      fields: ['priority'],
-    },
+      fields: ['priority']
+  },
     {
-      fields: ['status'],
-    },
+      fields: ['status']
+  },
     {
-      fields: ['assigned_to'],
-    },
+      fields: ['assignedTo']
+  },
     {
-      fields: ['due_date'],
-    },
+      fields: ['dueDate']
+  },
     {
-      fields: ['completed_at'],
-    },
-  ],
-})
+      fields: ['completedAt']
+  },
+  ]
+  })
 export class RemediationAction extends Model<RemediationActionAttributes> implements RemediationActionAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -73,42 +73,39 @@ export class RemediationAction extends Model<RemediationActionAttributes> implem
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'violation_id',
+    allowNull: false
   })
   violationId: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false,
+    allowNull: false
   })
   action: string;
 
   @Column({
     type: DataType.ENUM(...(Object.values(RemediationPriority) as string[])),
     allowNull: false,
-    defaultValue: RemediationPriority.MEDIUM,
+    defaultValue: RemediationPriority.MEDIUM
   })
   priority: RemediationPriority;
 
   @Column({
     type: DataType.ENUM(...(Object.values(RemediationStatus) as string[])),
     allowNull: false,
-    defaultValue: RemediationStatus.PLANNED,
+    defaultValue: RemediationStatus.PLANNED
   })
   status: RemediationStatus;
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'assigned_to',
+    allowNull: false
   })
   assignedTo: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
-    field: 'due_date',
+    allowNull: false
   })
   dueDate: Date;
 

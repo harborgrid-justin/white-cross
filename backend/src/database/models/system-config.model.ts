@@ -123,7 +123,7 @@ export interface CreateSystemConfigAttributes {
 @Table({
   tableName: 'system_configurations',
   timestamps: true,
-  underscored: true,
+  underscored: false,
   indexes: [
     { fields: ['key'], unique: true },
     { fields: ['category'] },

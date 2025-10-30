@@ -8,8 +8,8 @@ import {
   AllowNull,
   Index,
   ForeignKey,
-  BelongsTo,
-} from 'sequelize-typescript';
+  BelongsTo
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 ;
 ;
@@ -49,16 +49,16 @@ export interface PrescriptionAttributes {
   timestamps: true,
   indexes: [
     {
-      fields: ['student_id', 'status'],
-    },
+      fields: ['studentId', 'status']
+  },
     {
-      fields: ['visit_id'],
-    },
+      fields: ['visitId']
+  },
     {
-      fields: ['treatment_plan_id'],
-    },
-  ],
-})
+      fields: ['treatmentPlanId']
+  },
+  ]
+  })
 export class Prescription extends Model<PrescriptionAttributes> implements PrescriptionAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -67,8 +67,7 @@ export class Prescription extends Model<PrescriptionAttributes> implements Presc
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'student_id',
+    allowNull: false
   })
   @Index
   studentId: string;
@@ -76,8 +75,7 @@ export class Prescription extends Model<PrescriptionAttributes> implements Presc
   @AllowNull
   @ForeignKey(() => require('./clinic-visit.model').ClinicVisit)
   @Column({
-    type: DataType.UUID,
-    field: 'visit_id',
+    type: DataType.UUID
   })
   visitId?: string;
 
@@ -87,8 +85,7 @@ export class Prescription extends Model<PrescriptionAttributes> implements Presc
   @AllowNull
   @ForeignKey(() => require('./treatment-plan.model').TreatmentPlan)
   @Column({
-    type: DataType.UUID,
-    field: 'treatment_plan_id',
+    type: DataType.UUID
   })
   treatmentPlanId?: string;
 
@@ -97,125 +94,114 @@ export class Prescription extends Model<PrescriptionAttributes> implements Presc
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'prescribed_by',
+    allowNull: false
   })
   prescribedBy: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false,
-    field: 'drug_name',
+    allowNull: false
   })
   drugName: string;
 
   @AllowNull
   @Column({
-    type: DataType.STRING(100),
-    field: 'drug_code',
+    type: DataType.STRING(100)
   })
   drugCode?: string;
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: false,
+    allowNull: false
   })
   dosage: string;
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: false,
+    allowNull: false
   })
   frequency: string;
 
   @Column({
     type: DataType.STRING(50),
-    allowNull: false,
+    allowNull: false
   })
   route: string;
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
+    allowNull: false
   })
   quantity: number;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 0,
-    field: 'quantity_filled',
+    defaultValue: 0
   })
   quantityFilled: number;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 0,
-    field: 'refills_authorized',
+    defaultValue: 0
   })
   refillsAuthorized: number;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 0,
-    field: 'refills_used',
+    defaultValue: 0
   })
   refillsUsed: number;
 
   @Column({
     type: DataType.DATEONLY,
-    allowNull: false,
-    field: 'start_date',
+    allowNull: false
   })
   startDate: Date;
 
   @AllowNull
   @Column({
-    type: DataType.DATEONLY,
-    field: 'end_date',
+    type: DataType.DATEONLY
   })
   endDate?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.TEXT,
+    type: DataType.TEXT
   })
   instructions?: string;
 
   @Column({
     type: DataType.ENUM(...(Object.values(PrescriptionStatus) as string[])),
     allowNull: false,
-    defaultValue: PrescriptionStatus.PENDING,
+    defaultValue: PrescriptionStatus.PENDING
   })
   @Index
   status: PrescriptionStatus;
 
   @AllowNull
   @Column({
-    type: DataType.STRING(255),
-    field: 'pharmacy_name',
+    type: DataType.STRING(255)
   })
   pharmacyName?: string;
 
   @AllowNull
   @Column({
-    type: DataType.DATE,
-    field: 'filled_date',
+    type: DataType.DATE
   })
   filledDate?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.DATE,
-    field: 'picked_up_date',
+    type: DataType.DATE
   })
   pickedUpDate?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.TEXT,
+    type: DataType.TEXT
   })
   notes?: string;
 

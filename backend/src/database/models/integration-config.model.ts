@@ -42,13 +42,13 @@ export enum IntegrationStatus {
 @Table({
   tableName: 'integration_configs',
   timestamps: true,
-  underscored: true,
+  underscored: false,
   indexes: [
     { fields: ['type'] },
     { fields: ['status'] },
-    { fields: ['is_active'] },
-    { fields: ['last_sync_at'] },
-    { fields: ['created_at'] },
+    { fields: ['isActive'] },
+    { fields: ['lastSyncAt'] },
+    { fields: ['createdAt'] },
   ],
 })
 export class IntegrationConfig extends Model {

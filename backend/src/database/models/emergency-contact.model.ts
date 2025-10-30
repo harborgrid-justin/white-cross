@@ -74,8 +74,8 @@ export interface EmergencyContactCreationAttributes
     { name: 'idx_emergency_contacts_is_active', fields: ['isActive'] },
     { name: 'idx_emergency_contacts_priority', fields: ['priority'] },
     { name: 'idx_emergency_contacts_verification_status', fields: ['verificationStatus'] },
-  ],
-})
+  ]
+  })
 export class EmergencyContact extends Model<EmergencyContactAttributes, EmergencyContactCreationAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -86,111 +86,109 @@ export class EmergencyContact extends Model<EmergencyContactAttributes, Emergenc
   @Column({
     type: DataType.UUID,
     allowNull: false,
-    comment: 'Foreign key to students table - emergency contact owner',
+    comment: 'Foreign key to students table - emergency contact owner'
   })
   studentId: string;
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: false,
+    allowNull: false
   })
   firstName: string;
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: false,
+    allowNull: false
   })
   lastName: string;
 
   @Column({
     type: DataType.STRING(50),
-    allowNull: false,
+    allowNull: false
   })
   relationship: string;
 
   @Column({
     type: DataType.STRING(20),
-    allowNull: false,
+    allowNull: false
   })
   phoneNumber: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: true,
+    allowNull: true
   })
   email: string | null;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: true,
+    allowNull: true
   })
   address: string | null;
 
   @Column({
     type: DataType.ENUM(...(Object.values(ContactPriority) as string[])),
     allowNull: false,
-    defaultValue: ContactPriority.PRIMARY,
+    defaultValue: ContactPriority.PRIMARY
   })
   priority: ContactPriority;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true,
+    defaultValue: true
   })
   isActive: boolean;
 
   @Column({
     type: DataType.ENUM(...(Object.values(PreferredContactMethod) as string[])),
     allowNull: true,
-    defaultValue: PreferredContactMethod.ANY,
+    defaultValue: PreferredContactMethod.ANY
   })
   preferredContactMethod: PreferredContactMethod | null;
 
   @Column({
     type: DataType.ENUM(...(Object.values(VerificationStatus) as string[])),
     allowNull: true,
-    defaultValue: VerificationStatus.UNVERIFIED,
+    defaultValue: VerificationStatus.UNVERIFIED
   })
   verificationStatus: VerificationStatus | null;
 
   @Column({
     type: DataType.DATE,
-    allowNull: true,
+    allowNull: true
   })
   lastVerifiedAt: Date | null;
 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
-    comment: 'JSON array of notification channels (sms, email, voice)',
+    comment: 'JSON array of notification channels (sms, email, voice)'
   })
   notificationChannels: string | null;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: true,
-    defaultValue: false,
+    defaultValue: false
   })
   canPickupStudent: boolean | null;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: true,
+    allowNull: true
   })
   notes: string | null;
 
   @CreatedAt
   @Column({
-    type: DataType.DATE,
-    field: 'createdAt',
+    type: DataType.DATE
   })
   declare createdAt: Date;
 
   @UpdatedAt
   @Column({
-    type: DataType.DATE,
-    field: 'updatedAt',
+    type: DataType.DATE
   })
   declare updatedAt: Date;
 

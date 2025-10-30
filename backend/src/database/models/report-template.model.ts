@@ -5,8 +5,8 @@ import {
   DataType,
   PrimaryKey,
   Default,
-  AllowNull,
-} from 'sequelize-typescript';
+  AllowNull
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum ReportType {
@@ -17,15 +17,15 @@ export enum ReportType {
   COMPLIANCE = 'compliance',
   DASHBOARD = 'dashboard',
   PERFORMANCE = 'performance',
-  CUSTOM = 'custom',
-}
+  CUSTOM = 'custom'
+  }
 
 export enum OutputFormat {
   PDF = 'pdf',
   EXCEL = 'excel',
   CSV = 'csv',
-  JSON = 'json',
-}
+  JSON = 'json'
+  }
 
 export interface ReportTemplateAttributes {
   id: string;
@@ -46,10 +46,10 @@ export interface ReportTemplateAttributes {
   timestamps: true,
   indexes: [
     {
-      fields: ['report_type'],
-    },
-  ],
-})
+      fields: ['reportType']
+  },
+  ]
+  })
 export class ReportTemplate extends Model<ReportTemplateAttributes> implements ReportTemplateAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -58,7 +58,7 @@ export class ReportTemplate extends Model<ReportTemplateAttributes> implements R
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false,
+    allowNull: false
   })
   name: string;
 
@@ -68,45 +68,39 @@ export class ReportTemplate extends Model<ReportTemplateAttributes> implements R
 
   @Column({
     type: DataType.ENUM(...(Object.values(ReportType) as string[])),
-    allowNull: false,
-    field: 'report_type',
+    allowNull: false
   })
   reportType: ReportType;
 
   @AllowNull
   @Column({
-    type: DataType.JSONB,
-    field: 'query_configuration',
+    type: DataType.JSONB
   })
   queryConfiguration?: Record<string, any>;
 
   @Column({
     type: DataType.ENUM(...(Object.values(OutputFormat) as string[])),
     allowNull: false,
-    defaultValue: OutputFormat.PDF,
-    field: 'default_output_format',
+    defaultValue: OutputFormat.PDF
   })
   defaultOutputFormat: OutputFormat;
 
   @AllowNull
   @Column({
-    type: DataType.JSONB,
-    field: 'format_options',
+    type: DataType.JSONB
   })
   formatOptions?: Record<string, any>;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true,
-    field: 'is_active',
+    defaultValue: true
   })
   isActive: boolean;
 
   @AllowNull
   @Column({
-    type: DataType.UUID,
-    field: 'created_by',
+    type: DataType.UUID
   })
   createdBy?: string;
 

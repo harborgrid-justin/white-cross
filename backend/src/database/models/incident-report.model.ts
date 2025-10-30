@@ -8,8 +8,8 @@ import {
   ForeignKey,
   BelongsTo,
   HasMany,
-  BeforeCreate,
-} from 'sequelize-typescript';
+  BeforeCreate
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 ;
 ;
@@ -22,15 +22,15 @@ export enum IncidentType {
   MEDICATION_ERROR = 'MEDICATION_ERROR',
   ALLERGIC_REACTION = 'ALLERGIC_REACTION',
   EMERGENCY = 'EMERGENCY',
-  OTHER = 'OTHER',
-}
+  OTHER = 'OTHER'
+  }
 
 export enum IncidentSeverity {
   LOW = 'LOW',
   MEDIUM = 'MEDIUM',
   HIGH = 'HIGH',
-  CRITICAL = 'CRITICAL',
-}
+  CRITICAL = 'CRITICAL'
+  }
 
 export enum InsuranceClaimStatus {
   NOT_FILED = 'NOT_FILED',
@@ -38,15 +38,15 @@ export enum InsuranceClaimStatus {
   PENDING = 'PENDING',
   APPROVED = 'APPROVED',
   DENIED = 'DENIED',
-  CLOSED = 'CLOSED',
-}
+  CLOSED = 'CLOSED'
+  }
 
 export enum ComplianceStatus {
   PENDING = 'PENDING',
   COMPLIANT = 'COMPLIANT',
   NON_COMPLIANT = 'NON_COMPLIANT',
-  UNDER_REVIEW = 'UNDER_REVIEW',
-}
+  UNDER_REVIEW = 'UNDER_REVIEW'
+  }
 
 export interface IncidentReportAttributes {
   id: string;
@@ -82,19 +82,19 @@ export interface IncidentReportAttributes {
   timestamps: true,
   indexes: [
     {
-      fields: ['studentId'],
-    },
+      fields: ['studentId']
+  },
     {
-      fields: ['reportedById'],
-    },
+      fields: ['reportedById']
+  },
     {
-      fields: ['type', 'occurredAt'],
-    },
+      fields: ['type', 'occurredAt']
+  },
     {
-      fields: ['severity'],
-    },
-  ],
-})
+      fields: ['severity']
+  },
+  ]
+  })
 export class IncidentReport extends Model<IncidentReportAttributes> implements IncidentReportAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -104,165 +104,146 @@ export class IncidentReport extends Model<IncidentReportAttributes> implements I
   @ForeignKey(() => require('./student.model').Student)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'studentId',
+    allowNull: false
   })
   studentId: string;
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'reportedById',
+    allowNull: false
   })
   reportedById: string;
 
   @Column({
     type: DataType.ENUM(...(Object.values(IncidentType) as string[])),
-    allowNull: false,
+    allowNull: false
   })
   type: IncidentType;
 
   @Column({
     type: DataType.ENUM(...(Object.values(IncidentSeverity) as string[])),
-    allowNull: false,
+    allowNull: false
   })
   severity: IncidentSeverity;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false,
+    allowNull: false
   })
   description: string;
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
+    allowNull: false
   })
   location: string;
 
   @Default([])
   @Column({
     type: DataType.ARRAY(DataType.STRING),
-    allowNull: false,
+    allowNull: false
   })
   witnesses: string[];
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false,
-    field: 'actionsTaken',
+    allowNull: false
   })
   actionsTaken: string;
 
   @Default(false)
   @Column({
-    type: DataType.BOOLEAN,
-    field: 'parentNotified',
+    type: DataType.BOOLEAN
   })
   parentNotified: boolean;
 
   @Column({
-    type: DataType.STRING,
-    field: 'parentNotificationMethod',
+    type: DataType.STRING
   })
   parentNotificationMethod?: string;
 
   @Column({
-    type: DataType.DATE,
-    field: 'parentNotifiedAt',
+    type: DataType.DATE
   })
   parentNotifiedAt?: Date;
 
   @Column({
-    type: DataType.UUID,
-    field: 'parentNotifiedBy',
+    type: DataType.UUID
   })
   parentNotifiedBy?: string;
 
   @Default(false)
   @Column({
-    type: DataType.BOOLEAN,
-    field: 'followUpRequired',
+    type: DataType.BOOLEAN
   })
   followUpRequired: boolean;
 
   @Column({
-    type: DataType.TEXT,
-    field: 'followUpNotes',
+    type: DataType.TEXT
   })
   followUpNotes?: string;
 
   @Default([])
   @Column({
     type: DataType.ARRAY(DataType.STRING),
-    allowNull: false,
+    allowNull: false
   })
   attachments: string[];
 
   @Default([])
   @Column({
     type: DataType.ARRAY(DataType.STRING),
-    allowNull: false,
-    field: 'evidencePhotos',
+    allowNull: false
   })
   evidencePhotos: string[];
 
   @Default([])
   @Column({
     type: DataType.ARRAY(DataType.STRING),
-    allowNull: false,
-    field: 'evidenceVideos',
+    allowNull: false
   })
   evidenceVideos: string[];
 
   @Column({
-    type: DataType.STRING,
-    field: 'insuranceClaimNumber',
+    type: DataType.STRING
   })
   insuranceClaimNumber?: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(InsuranceClaimStatus) as string[])),
-    field: 'insuranceClaimStatus',
+    type: DataType.ENUM(...(Object.values(InsuranceClaimStatus) as string[]))
   })
   insuranceClaimStatus?: InsuranceClaimStatus;
 
   @Default(ComplianceStatus.PENDING)
   @Column({
     type: DataType.ENUM(...(Object.values(ComplianceStatus) as string[])),
-    allowNull: false,
-    field: 'legalComplianceStatus',
+    allowNull: false
   })
   legalComplianceStatus: ComplianceStatus;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
-    field: 'occurredAt',
+    allowNull: false
   })
   occurredAt: Date;
 
   @Column({
-    type: DataType.UUID,
-    field: 'createdBy',
+    type: DataType.UUID
   })
   createdBy?: string;
 
   @Column({
-    type: DataType.UUID,
-    field: 'updatedBy',
+    type: DataType.UUID
   })
   updatedBy?: string;
 
   @Column({
-    type: DataType.DATE,
-    field: 'createdAt',
+    type: DataType.DATE
   })
   declare createdAt: Date;
 
   @Column({
-    type: DataType.DATE,
-    field: 'updatedAt',
+    type: DataType.DATE
   })
   declare updatedAt: Date;
 

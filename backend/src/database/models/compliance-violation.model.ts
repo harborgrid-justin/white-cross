@@ -5,8 +5,8 @@ import {
   DataType,
   PrimaryKey,
   Default,
-  AllowNull,
-} from 'sequelize-typescript';
+  AllowNull
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum ViolationType {
@@ -58,25 +58,25 @@ export interface ComplianceViolationAttributes {
   timestamps: true,
   indexes: [
     {
-      fields: ['violation_type'],
-    },
+      fields: ['violationType']
+  },
     {
-      fields: ['severity'],
-    },
+      fields: ['severity']
+  },
     {
-      fields: ['status'],
-    },
+      fields: ['status']
+  },
     {
-      fields: ['reported_by'],
-    },
+      fields: ['reportedBy']
+  },
     {
-      fields: ['assigned_to'],
-    },
+      fields: ['assignedTo']
+  },
     {
-      fields: ['discovered_at'],
-    },
-  ],
-})
+      fields: ['discoveredAt']
+  },
+  ]
+  })
 export class ComplianceViolation extends Model<ComplianceViolationAttributes> implements ComplianceViolationAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -85,47 +85,44 @@ export class ComplianceViolation extends Model<ComplianceViolationAttributes> im
 
   @Column({
     type: DataType.ENUM(...(Object.values(ViolationType) as string[])),
-    allowNull: false,
-    field: 'violation_type',
+    allowNull: false
   })
   violationType: ViolationType;
 
   @Column({
     type: DataType.STRING(200),
-    allowNull: false,
+    allowNull: false
   })
   title: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false,
+    allowNull: false
   })
   description: string;
 
   @Column({
     type: DataType.ENUM(...(Object.values(ViolationSeverity) as string[])),
-    allowNull: false,
+    allowNull: false
   })
   severity: ViolationSeverity;
 
   @Column({
     type: DataType.ENUM(...(Object.values(ViolationStatus) as string[])),
     allowNull: false,
-    defaultValue: ViolationStatus.REPORTED,
+    defaultValue: ViolationStatus.REPORTED
   })
   status: ViolationStatus;
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'reported_by',
+    allowNull: false
   })
   reportedBy: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
-    field: 'discovered_at',
+    allowNull: false
   })
   discoveredAt: Date;
 

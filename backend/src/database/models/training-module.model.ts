@@ -68,10 +68,10 @@ export interface CreateTrainingModuleAttributes {
 @Table({
   tableName: 'training_modules',
   timestamps: true,
-  underscored: true,
+  underscored: false,
   indexes: [
     { fields: ['category'] },
-    { fields: ['is_required'] },
+    { fields: ['isRequired'] },
     { fields: ['order'] },
   ],
 })

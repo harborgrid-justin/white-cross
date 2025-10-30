@@ -6,8 +6,8 @@ import {
   BeforeCreate,
   BeforeUpdate,
   PrimaryKey,
-  Default,
-} from 'sequelize-typescript';
+  Default
+  } from 'sequelize-typescript';
 import * as bcrypt from 'bcrypt';
 
 export enum UserRole {
@@ -16,8 +16,8 @@ export enum UserRole {
   SCHOOL_ADMIN = 'SCHOOL_ADMIN',
   DISTRICT_ADMIN = 'DISTRICT_ADMIN',
   VIEWER = 'VIEWER',
-  COUNSELOR = 'COUNSELOR',
-}
+  COUNSELOR = 'COUNSELOR'
+  }
 
 export interface UserAttributes {
   email: string;
@@ -47,8 +47,8 @@ export interface UserAttributes {
 @Table({
   tableName: 'users',
   timestamps: true,
-  underscored: false,
-})
+  underscored: false
+  })
 export class User extends Model<UserAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -59,158 +59,139 @@ export class User extends Model<UserAttributes> {
     type: DataType.STRING,
     allowNull: false,
     unique: true,
-    validate: { isEmail: true },
+    validate: { isEmail: true }
   })
   declare email: string;
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
+    allowNull: false
   })
   declare password: string;
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
-    field: 'firstName',
+    allowNull: false
   })
   declare firstName: string;
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
-    field: 'lastName',
+    allowNull: false
   })
   declare lastName: string;
 
   @Column({
     type: DataType.ENUM(...(Object.values(UserRole) as string[])),
     allowNull: false,
-    defaultValue: UserRole.NURSE,
+    defaultValue: UserRole.NURSE
   })
   declare role: UserRole;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true,
-    field: 'isActive',
+    defaultValue: true
   })
   declare isActive: boolean;
 
   @Column({
     type: DataType.DATE,
-    allowNull: true,
-    field: 'lastLogin',
+    allowNull: true
   })
   declare lastLogin?: Date;
 
   @Column({
     type: DataType.UUID,
-    allowNull: true,
-    field: 'schoolId',
+    allowNull: true
   })
   declare schoolId?: string;
 
   @Column({
     type: DataType.UUID,
-    allowNull: true,
-    field: 'districtId',
+    allowNull: true
   })
   declare districtId?: string;
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
-    field: 'phone',
+    allowNull: true
   })
   declare phone?: string;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false,
-    field: 'emailVerified',
+    defaultValue: false
   })
   declare emailVerified: boolean;
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
-    field: 'emailVerificationToken',
+    allowNull: true
   })
   declare emailVerificationToken?: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: true,
-    field: 'emailVerificationExpires',
+    allowNull: true
   })
   declare emailVerificationExpires?: Date;
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
-    field: 'passwordResetToken',
+    allowNull: true
   })
   declare passwordResetToken?: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: true,
-    field: 'passwordResetExpires',
+    allowNull: true
   })
   declare passwordResetExpires?: Date;
 
   @Column({
     type: DataType.DATE,
-    allowNull: true,
-    field: 'passwordChangedAt',
+    allowNull: true
   })
   declare passwordChangedAt?: Date;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false,
-    field: 'twoFactorEnabled',
+    defaultValue: false
   })
   declare twoFactorEnabled: boolean;
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
-    field: 'twoFactorSecret',
+    allowNull: true
   })
   declare twoFactorSecret?: string;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 0,
-    field: 'failedLoginAttempts',
+    defaultValue: 0
   })
   declare failedLoginAttempts: number;
 
   @Column({
     type: DataType.DATE,
-    allowNull: true,
-    field: 'lockoutUntil',
+    allowNull: true
   })
   declare lockoutUntil?: Date;
 
   @Column({
     type: DataType.DATE,
-    allowNull: true,
-    field: 'lastPasswordChange',
+    allowNull: true
   })
   declare lastPasswordChange?: Date;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false,
-    field: 'mustChangePassword',
+    defaultValue: false
   })
   declare mustChangePassword: boolean;
 

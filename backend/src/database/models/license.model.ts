@@ -87,11 +87,11 @@ export interface CreateLicenseAttributes {
 @Table({
   tableName: 'licenses',
   timestamps: true,
-  underscored: true,
+  underscored: false,
   indexes: [
-    { fields: ['license_key'], unique: true },
+    { fields: ['licenseKey'], unique: true },
     { fields: ['status'] },
-    { fields: ['district_id'] },
+    { fields: ['districtId'] },
   ],
 })
 export class License extends Model<LicenseAttributes, CreateLicenseAttributes> {

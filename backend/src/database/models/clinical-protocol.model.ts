@@ -6,8 +6,8 @@ import {
   PrimaryKey,
   Default,
   AllowNull,
-  Index,
-} from 'sequelize-typescript';
+  Index
+  } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 import { ProtocolStatus } from '../../clinical/enums/protocol-status.enum';
 
@@ -51,20 +51,20 @@ export interface ClinicalProtocolAttributes {
   timestamps: true,
   indexes: [
     {
-      fields: ['name'],
-    },
+      fields: ['name']
+  },
     {
-      fields: ['status'],
-    },
+      fields: ['status']
+  },
     {
-      fields: ['category'],
-    },
+      fields: ['category']
+  },
     {
       fields: ['code'],
-      unique: true,
-    },
-  ],
-})
+      unique: true
+  },
+  ]
+  })
 export class ClinicalProtocol extends Model<ClinicalProtocolAttributes> implements ClinicalProtocolAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -73,52 +73,52 @@ export class ClinicalProtocol extends Model<ClinicalProtocolAttributes> implemen
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false,
+    allowNull: false
   })
   name: string;
 
   @Column({
     type: DataType.STRING(50),
     allowNull: false,
-    unique: true,
+    unique: true
   })
   @Index({ unique: true })
   code: string;
 
   @Column({
     type: DataType.STRING(20),
-    allowNull: false,
+    allowNull: false
   })
   declare version: string;
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: false,
+    allowNull: false
   })
   @Index
   category: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false,
+    allowNull: false
   })
   description: string;
 
   @Column({
     type: DataType.JSON,
-    allowNull: false,
+    allowNull: false
   })
   indications: string[];
 
   @AllowNull
   @Column({
-    type: DataType.JSON,
+    type: DataType.JSON
   })
   contraindications?: string[];
 
   @Column({
     type: DataType.JSON,
-    allowNull: false,
+    allowNull: false
   })
   steps: Array<{
     order: number;
@@ -129,8 +129,7 @@ export class ClinicalProtocol extends Model<ClinicalProtocolAttributes> implemen
 
   @AllowNull
   @Column({
-    type: DataType.JSON,
-    field: 'decision_points',
+    type: DataType.JSON
   })
   decisionPoints?: Array<{
     step: number;
@@ -141,69 +140,63 @@ export class ClinicalProtocol extends Model<ClinicalProtocolAttributes> implemen
 
   @AllowNull
   @Column({
-    type: DataType.JSON,
-    field: 'required_equipment',
+    type: DataType.JSON
   })
   requiredEquipment?: string[];
 
   @AllowNull
   @Column({
-    type: DataType.JSON,
+    type: DataType.JSON
   })
   medications?: string[];
 
   @Column({
     type: DataType.ENUM(...(Object.values(ProtocolStatus) as string[])),
     allowNull: false,
-    defaultValue: ProtocolStatus.DRAFT,
+    defaultValue: ProtocolStatus.DRAFT
   })
   @Index
   status: ProtocolStatus;
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
-    field: 'created_by',
+    allowNull: false
   })
   createdBy: string;
 
   @AllowNull
   @Column({
-    type: DataType.UUID,
-    field: 'approved_by',
+    type: DataType.UUID
   })
   approvedBy?: string;
 
   @AllowNull
   @Column({
-    type: DataType.DATE,
-    field: 'approved_date',
+    type: DataType.DATE
   })
   approvedDate?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.DATEONLY,
-    field: 'effective_date',
+    type: DataType.DATEONLY
   })
   effectiveDate?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.DATEONLY,
-    field: 'review_date',
+    type: DataType.DATEONLY
   })
   reviewDate?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.JSON,
+    type: DataType.JSON
   })
   references?: string[];
 
   @AllowNull
   @Column({
-    type: DataType.JSON,
+    type: DataType.JSON
   })
   tags?: string[];
 

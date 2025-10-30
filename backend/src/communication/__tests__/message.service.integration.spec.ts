@@ -243,7 +243,7 @@ describe('MessageService Integration Tests', () => {
       const mockMessages = [mockMessage, { ...mockMessage, id: 'msg-2' }];
       jest.spyOn(messageModel, 'findAndCountAll').mockResolvedValue({
         rows: mockMessages as any,
-        count: 2,
+        count: 2 as any,
       });
 
       const result = await service.getMessages(1, 20, {});
@@ -260,7 +260,7 @@ describe('MessageService Integration Tests', () => {
     it('should filter messages by senderId', async () => {
       jest.spyOn(messageModel, 'findAndCountAll').mockResolvedValue({
         rows: [mockMessage] as any,
-        count: 1,
+        count: 1 as any,
       });
 
       await service.getMessages(1, 20, { senderId: mockUserId });
@@ -275,7 +275,7 @@ describe('MessageService Integration Tests', () => {
     it('should filter messages by category', async () => {
       jest.spyOn(messageModel, 'findAndCountAll').mockResolvedValue({
         rows: [mockMessage] as any,
-        count: 1,
+        count: 1 as any,
       });
 
       await service.getMessages(1, 20, { category: MessageCategory.HEALTH_UPDATE });
@@ -290,7 +290,7 @@ describe('MessageService Integration Tests', () => {
     it('should filter messages by priority', async () => {
       jest.spyOn(messageModel, 'findAndCountAll').mockResolvedValue({
         rows: [mockMessage] as any,
-        count: 1,
+        count: 1 as any,
       });
 
       await service.getMessages(1, 20, { priority: MessagePriority.URGENT });
@@ -326,7 +326,7 @@ describe('MessageService Integration Tests', () => {
     it('should retrieve sent messages for a user', async () => {
       jest.spyOn(messageModel, 'findAndCountAll').mockResolvedValue({
         rows: [mockMessage] as any,
-        count: 1,
+        count: 1 as any,
       });
 
       const result = await service.getSentMessages(mockUserId, 1, 20);
@@ -478,7 +478,7 @@ describe('MessageService Integration Tests', () => {
       const tenantMessages = [mockMessage];
       jest.spyOn(messageModel, 'findAndCountAll').mockResolvedValue({
         rows: tenantMessages as any,
-        count: 1,
+        count: 1 as any,
       });
 
       const result = await service.getMessages(1, 20, { senderId: mockUserId });
