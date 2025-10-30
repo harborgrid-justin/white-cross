@@ -139,7 +139,6 @@ export class SystemConfig extends Model<SystemConfigAttributes, CreateSystemConf
   @Column({
     type: DataType.STRING(100),
     allowNull: false,
-    unique: true,
     comment: 'Unique configuration key',
   })
   @Index

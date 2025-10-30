@@ -42,7 +42,7 @@ export interface DrugCatalogAttributes {
       fields: ['rxnormId'],
       unique: true,
       where: {
-        rxnorm_id: {
+        rxnormId: {
           [Op.ne]: null
   }
   }
@@ -51,7 +51,7 @@ export interface DrugCatalogAttributes {
       fields: ['rxnormCode'],
       unique: true,
       where: {
-        rxnorm_code: {
+        rxnormCode: {
           [Op.ne]: null
   }
   }
