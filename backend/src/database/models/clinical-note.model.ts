@@ -11,7 +11,7 @@ import {
   BelongsTo
   } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-;
+
 import { NoteType } from '../../clinical/enums/note-type.enum';
 
 export interface ClinicalNoteAttributes {
@@ -40,6 +40,8 @@ export interface ClinicalNoteAttributes {
 @Table({
   tableName: 'clinical_notes',
   timestamps: true,
+  underscored: false,
+  paranoid: true,
   indexes: [
     {
       fields: ['studentId', 'type']
@@ -76,7 +78,10 @@ export class ClinicalNote extends Model<ClinicalNoteAttributes> implements Clini
   declare visit?: any;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(NoteType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(NoteType)]
+    },
     allowNull: false,
     defaultValue: NoteType.GENERAL
   })

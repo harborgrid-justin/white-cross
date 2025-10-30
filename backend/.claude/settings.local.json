@@ -52,7 +52,8 @@
       "Bash(done)",
       "Read(//f/temp/white-cross/**)",
       "Bash(test:*)",
-      "Bash(npx next build:*)"
+      "Bash(npx next build:*)",
+      "WebFetch(domain:sequelize.org)"
     ],
     "deny": [],
     "ask": []

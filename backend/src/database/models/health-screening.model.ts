@@ -24,6 +24,8 @@ export interface HealthScreeningAttributes {
 @Table({
   tableName: 'health_screenings',
   timestamps: true,
+  underscored: false,
+  paranoid: true,
   indexes: [
     {
       fields: ['studentId'],

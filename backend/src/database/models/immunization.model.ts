@@ -29,6 +29,8 @@ export interface ImmunizationAttributes {
 @Table({
   tableName: 'immunizations',
   timestamps: true,
+  underscored: false,
+  paranoid: true,
   indexes: [
     {
       fields: ['studentId'],

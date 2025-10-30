@@ -51,6 +51,7 @@ export interface CacheEntryCreationAttributes extends Omit<CacheEntryAttributes,
 @Table({
   tableName: 'cache_entries',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       name: 'idx_cache_key',
@@ -86,7 +87,7 @@ export class CacheEntry extends Model<CacheEntryAttributes, CacheEntryCreationAt
   @Column(DataType.INTEGER)
   declare id: number;
 
-  @Index
+
   @Column({
     type: DataType.STRING(500),
     allowNull: false,

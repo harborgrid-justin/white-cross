@@ -40,6 +40,8 @@ export interface VitalSignsAttributes {
 @Table({
   tableName: 'vital_signs',
   timestamps: true,
+  underscored: false,
+  paranoid: true,
   indexes: [
     {
       fields: ['studentId'],
@@ -125,7 +127,7 @@ export class VitalSigns extends Model<VitalSignsAttributes> implements VitalSign
   @Column(DataType.JSON)
   abnormalFlags?: string[];
 
-  @Column(DataType.STRING)
+  @Column(DataType.STRING(255))
   measuredBy?: string;
 
   @Column(DataType.TEXT)

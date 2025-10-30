@@ -10,7 +10,6 @@ import {
   Index
   } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-;
 
 /**
  * Subject Grade Interface
@@ -95,6 +94,7 @@ export interface AcademicTranscriptCreationAttributes extends Omit<AcademicTrans
 @Table({
   tableName: 'academic_transcripts',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['studentId'],

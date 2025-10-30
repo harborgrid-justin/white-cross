@@ -22,6 +22,7 @@ export interface SyncStateAttributes {
 @Table({
   tableName: 'sync_states',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['entityType', 'entityId'],

@@ -76,7 +76,10 @@ export class PerformanceMetric extends Model<PerformanceMetricAttributes, Create
 
   @AllowNull(false)
   @Column({
-    type: DataType.ENUM(...(Object.values(MetricType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(MetricType)]
+    },
     allowNull: false,
     comment: 'Type of performance metric being recorded',
   })

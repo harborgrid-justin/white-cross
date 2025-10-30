@@ -10,7 +10,6 @@ import {
   BeforeCreate,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-;
 
 export enum MaintenanceType {
   CALIBRATION = 'CALIBRATION',
@@ -36,6 +35,7 @@ export interface MaintenanceLogAttributes {
 @Table({
   tableName: 'maintenance_logs',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['inventoryItemId'],
@@ -65,7 +65,10 @@ export class MaintenanceLog extends Model<MaintenanceLogAttributes> implements M
   inventoryItemId: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(MaintenanceType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(MaintenanceType)]
+    },
     allowNull: false,
   })
   type: MaintenanceType;
@@ -90,7 +93,7 @@ export class MaintenanceLog extends Model<MaintenanceLogAttributes> implements M
   @Column(DataType.DATE)
   nextMaintenanceDate?: Date;
 
-  @Column(DataType.STRING)
+  @Column(DataType.STRING(255))
   vendor?: string;
 
   @Column(DataType.TEXT)

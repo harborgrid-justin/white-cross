@@ -16,7 +16,6 @@ import {
   Index,
   AllowNull,
 } from 'sequelize-typescript';
-;
 
 /**
  * ConfigurationHistory attributes interface

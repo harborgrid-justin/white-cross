@@ -15,8 +15,7 @@ import {
   Index,
   AllowNull,
 } from 'sequelize-typescript';
-;
-;
+
 
 /**
  * District attributes interface
@@ -69,7 +68,7 @@ export class District extends Model<DistrictAttributes, CreateDistrictAttributes
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
-  declare id?: string;
+  declare id: string;
 
   @AllowNull(false)
   @Column({

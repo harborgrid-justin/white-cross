@@ -42,6 +42,7 @@ export interface DataRetentionPolicyAttributes {
 @Table({
   tableName: 'data_retention_policies',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['category']
@@ -64,7 +65,10 @@ export class DataRetentionPolicy extends Model<DataRetentionPolicyAttributes> im
   declare id?: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(DataRetentionCategory) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(DataRetentionCategory)]
+    },
     allowNull: false
   })
   category: DataRetentionCategory;
@@ -88,7 +92,10 @@ export class DataRetentionPolicy extends Model<DataRetentionPolicyAttributes> im
   legalBasis: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(RetentionStatus) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(RetentionStatus)]
+    },
     allowNull: false,
     defaultValue: RetentionStatus.ACTIVE
   })

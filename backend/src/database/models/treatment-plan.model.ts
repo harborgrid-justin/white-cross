@@ -25,6 +25,8 @@ export interface TreatmentPlanAttributes {
 @Table({
   tableName: 'treatment_plans',
   timestamps: true,
+  underscored: false,
+  paranoid: true,
   indexes: [
     {
       fields: ['studentId'],
@@ -68,7 +70,10 @@ export class TreatmentPlan extends Model<TreatmentPlanAttributes> implements Tre
   endDate?: Date;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(TreatmentStatus) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(TreatmentStatus)]
+    },
     allowNull: false,
   })
   status: TreatmentStatus;

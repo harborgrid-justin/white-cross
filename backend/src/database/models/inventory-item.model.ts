@@ -9,9 +9,8 @@ import {
   BeforeCreate,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-;
-;
-;
+
+
 
 export interface InventoryItemAttributes {
   id: string;
@@ -31,6 +30,7 @@ export interface InventoryItemAttributes {
 @Table({
   tableName: 'inventory_items',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['name'],
@@ -60,13 +60,13 @@ export class InventoryItem extends Model<InventoryItemAttributes> implements Inv
   declare id: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false,
   })
   name: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false,
   })
   category: string;
@@ -75,12 +75,12 @@ export class InventoryItem extends Model<InventoryItemAttributes> implements Inv
   description?: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     unique: true,
   })
   sku?: string;
 
-  @Column(DataType.STRING)
+  @Column(DataType.STRING(255))
   supplier?: string;
 
   @Column({
@@ -100,7 +100,7 @@ export class InventoryItem extends Model<InventoryItemAttributes> implements Inv
   })
   reorderQuantity: number;
 
-  @Column(DataType.STRING)
+  @Column(DataType.STRING(255))
   location?: string;
 
   @Column(DataType.TEXT)

@@ -11,10 +11,9 @@ import {
   Index
   } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-;
-;
-;
-;
+
+
+
 
 /**
  * Alert Severity Levels
@@ -160,7 +159,10 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
    */
   @Index
   @Column({
-    type: DataType.ENUM(...(Object.values(AlertSeverity) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(AlertSeverity)]
+    },
     allowNull: false
   })
   severity: AlertSeverity;
@@ -170,7 +172,10 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
    */
   @Index
   @Column({
-    type: DataType.ENUM(...(Object.values(AlertCategory) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(AlertCategory)]
+    },
     allowNull: false
   })
   category: AlertCategory;
@@ -237,7 +242,10 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
    */
   @Index
   @Column({
-    type: DataType.ENUM(...(Object.values(AlertStatus) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(AlertStatus)]
+    },
     allowNull: false,
     defaultValue: AlertStatus.ACTIVE
   })

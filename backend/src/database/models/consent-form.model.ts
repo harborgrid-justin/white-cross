@@ -34,6 +34,7 @@ export interface ConsentFormAttributes {
 @Table({
   tableName: 'consent_forms',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['type']
@@ -53,7 +54,10 @@ export class ConsentForm extends Model<ConsentFormAttributes> implements Consent
   declare id?: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(ConsentType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ConsentType)]
+    },
     allowNull: false
   })
   type: ConsentType;

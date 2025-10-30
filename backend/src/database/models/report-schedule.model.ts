@@ -45,7 +45,8 @@ export interface ReportScheduleAttributes {
 
 @Table({
   tableName: 'report_schedules',
-  timestamps: true
+  timestamps: true,
+  underscored: false
   })
 export class ReportSchedule extends Model<ReportScheduleAttributes> implements ReportScheduleAttributes {
   @PrimaryKey
@@ -60,7 +61,10 @@ export class ReportSchedule extends Model<ReportScheduleAttributes> implements R
   name: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(ReportType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ReportType)]
+    },
     allowNull: false
   })
   reportType: ReportType;
@@ -76,7 +80,10 @@ export class ReportSchedule extends Model<ReportScheduleAttributes> implements R
   declare template?: any;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(ScheduleFrequency) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ScheduleFrequency)]
+    },
     allowNull: false
   })
   frequency: ScheduleFrequency;
@@ -88,7 +95,10 @@ export class ReportSchedule extends Model<ReportScheduleAttributes> implements R
   cronExpression?: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(OutputFormat) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(OutputFormat)]
+    },
     allowNull: false,
     defaultValue: OutputFormat.PDF
   })

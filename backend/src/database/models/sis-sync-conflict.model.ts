@@ -15,7 +15,6 @@ import {
   ForeignKey,
   BelongsTo,
 } from 'sequelize-typescript';
-;
 
 export enum ConflictResolution {
   KEEP_LOCAL = 'KEEP_LOCAL',
@@ -85,7 +84,10 @@ export class SISSyncConflict extends Model {
   sisValue: any;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(ConflictResolution) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ConflictResolution)]
+    },
     allowNull: true,
     comment: 'How the conflict was resolved',
   })

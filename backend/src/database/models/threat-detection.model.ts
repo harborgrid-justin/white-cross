@@ -24,6 +24,7 @@ export interface ThreatDetectionAttributes {
 @Table({
   tableName: 'threat_detections',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['threatType'],

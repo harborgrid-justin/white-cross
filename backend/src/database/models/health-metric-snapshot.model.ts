@@ -55,7 +55,7 @@ export class HealthMetricSnapshot extends Model<HealthMetricSnapshotAttributes> 
   schoolId: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false,
   })
   metricName: string;
@@ -67,19 +67,22 @@ export class HealthMetricSnapshot extends Model<HealthMetricSnapshotAttributes> 
   value: number;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false,
   })
   unit: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false,
   })
   category: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(TrendDirection) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(TrendDirection)]
+    },
   })
   trend?: TrendDirection;
 

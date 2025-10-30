@@ -11,9 +11,8 @@ import {
   BeforeCreate
   } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-;
-;
-;
+
+
 
 export enum IncidentType {
   INJURY = 'INJURY',
@@ -80,6 +79,8 @@ export interface IncidentReportAttributes {
 @Table({
   tableName: 'incident_reports',
   timestamps: true,
+  underscored: false,
+  paranoid: true,
   indexes: [
     {
       fields: ['studentId']
@@ -115,13 +116,19 @@ export class IncidentReport extends Model<IncidentReportAttributes> implements I
   reportedById: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(IncidentType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(IncidentType)]
+    },
     allowNull: false
   })
   type: IncidentType;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(IncidentSeverity) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(IncidentSeverity)]
+    },
     allowNull: false
   })
   severity: IncidentSeverity;
@@ -133,14 +140,14 @@ export class IncidentReport extends Model<IncidentReportAttributes> implements I
   description: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false
   })
   location: string;
 
   @Default([])
   @Column({
-    type: DataType.ARRAY(DataType.STRING),
+    type: DataType.ARRAY(DataType.STRING(255)),
     allowNull: false
   })
   witnesses: string[];
@@ -158,7 +165,7 @@ export class IncidentReport extends Model<IncidentReportAttributes> implements I
   parentNotified: boolean;
 
   @Column({
-    type: DataType.STRING
+    type: DataType.STRING(255)
   })
   parentNotificationMethod?: string;
 
@@ -185,38 +192,44 @@ export class IncidentReport extends Model<IncidentReportAttributes> implements I
 
   @Default([])
   @Column({
-    type: DataType.ARRAY(DataType.STRING),
+    type: DataType.ARRAY(DataType.STRING(255)),
     allowNull: false
   })
   attachments: string[];
 
   @Default([])
   @Column({
-    type: DataType.ARRAY(DataType.STRING),
+    type: DataType.ARRAY(DataType.STRING(255)),
     allowNull: false
   })
   evidencePhotos: string[];
 
   @Default([])
   @Column({
-    type: DataType.ARRAY(DataType.STRING),
+    type: DataType.ARRAY(DataType.STRING(255)),
     allowNull: false
   })
   evidenceVideos: string[];
 
   @Column({
-    type: DataType.STRING
+    type: DataType.STRING(255)
   })
   insuranceClaimNumber?: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(InsuranceClaimStatus) as string[]))
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(InsuranceClaimStatus)]
+    }
   })
   insuranceClaimStatus?: InsuranceClaimStatus;
 
   @Default(ComplianceStatus.PENDING)
   @Column({
-    type: DataType.ENUM(...(Object.values(ComplianceStatus) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ComplianceStatus)]
+    },
     allowNull: false
   })
   legalComplianceStatus: ComplianceStatus;

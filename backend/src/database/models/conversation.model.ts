@@ -79,7 +79,10 @@ export class Conversation extends Model<ConversationAttributes, ConversationCrea
 
   @Index
   @Column({
-    type: DataType.ENUM(...(Object.values(ConversationType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ConversationType)]
+    },
     allowNull: false,
   })
   declare type: ConversationType;

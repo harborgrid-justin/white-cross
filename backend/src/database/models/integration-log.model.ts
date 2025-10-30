@@ -15,7 +15,6 @@ import {
   ForeignKey,
   BelongsTo,
 } from 'sequelize-typescript';
-;
 
 /**
  * IntegrationLog Model

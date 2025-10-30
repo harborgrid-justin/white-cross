@@ -9,8 +9,7 @@ import {
   BelongsTo,
   Index,
 } from 'sequelize-typescript';
-;
-;
+
 
 export enum MessageType {
   EMAIL = 'EMAIL',
@@ -72,20 +71,26 @@ export class MessageTemplate extends Model<MessageTemplateAttributes> {
 
   @Index
   @Column({
-    type: DataType.ENUM(...(Object.values(MessageType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(MessageType)]
+    },
     allowNull: false,
   })
   type: MessageType;
 
   @Index
   @Column({
-    type: DataType.ENUM(...(Object.values(MessageCategory) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(MessageCategory)]
+    },
     allowNull: false,
   })
   declare category: any;
 
   @Column({
-    type: DataType.ARRAY(DataType.STRING),
+    type: DataType.ARRAY(DataType.STRING(255)),
     allowNull: false,
     defaultValue: [],
   })

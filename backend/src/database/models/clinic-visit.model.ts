@@ -31,6 +31,8 @@ export interface ClinicVisitAttributes {
 @Table({
   tableName: 'clinic_visits',
   timestamps: true,
+  underscored: false,
+  paranoid: true,
   indexes: [
     {
       fields: ['studentId']
@@ -95,7 +97,10 @@ export class ClinicVisit extends Model<ClinicVisitAttributes> implements ClinicV
   treatment?: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(VisitDisposition) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(VisitDisposition)]
+    },
     allowNull: false
   })
   @Index

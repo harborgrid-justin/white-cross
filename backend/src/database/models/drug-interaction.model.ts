@@ -11,7 +11,7 @@ import {
   BelongsTo
   } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-;
+
 import { InteractionSeverity } from '../../clinical/enums/interaction-severity.enum';
 
 export interface DrugInteractionAttributes {
@@ -33,6 +33,7 @@ export interface DrugInteractionAttributes {
 @Table({
   tableName: 'drug_interactions',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['drug1Id', 'drug2Id'],
@@ -66,7 +67,10 @@ export class DrugInteraction extends Model<DrugInteractionAttributes> implements
   drug2Id: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(InteractionSeverity) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(InteractionSeverity)]
+    },
     allowNull: false
   })
   @Index

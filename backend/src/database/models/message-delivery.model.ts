@@ -72,7 +72,10 @@ export class MessageDelivery extends Model<MessageDeliveryAttributes, MessageDel
 
   @Index
   @Column({
-    type: DataType.ENUM(...(Object.values(RecipientType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(RecipientType)]
+    },
     allowNull: false,
   })
   recipientType: RecipientType;
@@ -86,14 +89,20 @@ export class MessageDelivery extends Model<MessageDeliveryAttributes, MessageDel
 
   @Index
   @Column({
-    type: DataType.ENUM(...(Object.values(DeliveryChannelType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(DeliveryChannelType)]
+    },
     allowNull: false,
   })
   declare channel: any;
 
   @Index
   @Column({
-    type: DataType.ENUM(...(Object.values(DeliveryStatus) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(DeliveryStatus)]
+    },
     allowNull: false,
   })
   status: DeliveryStatus;

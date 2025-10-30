@@ -11,8 +11,7 @@ import {
   BelongsTo
   } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-;
-;
+
 
 /**
  * Vaccine type enumeration
@@ -128,6 +127,7 @@ export interface VaccinationAttributes {
 @Table({
   tableName: 'vaccinations',
   timestamps: true,
+  underscored: false,
   paranoid: true, // Enable soft deletes for immunization records
   indexes: [
     {
@@ -187,7 +187,10 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @AllowNull
   @Column({
-    type: DataType.ENUM(...(Object.values(VaccineType) as string[]))
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(VaccineType)]
+    }
   })
   @Index
   vaccineType?: VaccineType;
@@ -299,7 +302,10 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @AllowNull
   @Column({
-    type: DataType.ENUM(...(Object.values(SiteOfAdministration) as string[]))
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(SiteOfAdministration)]
+    }
   })
   siteOfAdministration?: SiteOfAdministration;
 
@@ -308,7 +314,10 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    */
   @AllowNull
   @Column({
-    type: DataType.ENUM(...(Object.values(RouteOfAdministration) as string[]))
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(RouteOfAdministration)]
+    }
   })
   routeOfAdministration?: RouteOfAdministration;
 
@@ -391,7 +400,10 @@ export class Vaccination extends Model<VaccinationAttributes> implements Vaccina
    * Compliance status (for school requirements)
    */
   @Column({
-    type: DataType.ENUM(...(Object.values(ComplianceStatus) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ComplianceStatus)]
+    },
     allowNull: false,
     defaultValue: ComplianceStatus.COMPLIANT
   })

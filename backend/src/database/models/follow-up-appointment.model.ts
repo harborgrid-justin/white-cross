@@ -11,7 +11,7 @@ import {
   BelongsTo
   } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-;
+
 import { FollowUpStatus } from '../../clinical/enums/follow-up-status.enum';
 
 export interface FollowUpAppointmentAttributes {
@@ -45,6 +45,7 @@ export interface FollowUpAppointmentAttributes {
 @Table({
   tableName: 'follow_up_appointments',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['studentId', 'status']
@@ -113,7 +114,10 @@ export class FollowUpAppointment extends Model<FollowUpAppointmentAttributes> im
   type: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(FollowUpStatus) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(FollowUpStatus)]
+    },
     allowNull: false,
     defaultValue: FollowUpStatus.SCHEDULED
   })

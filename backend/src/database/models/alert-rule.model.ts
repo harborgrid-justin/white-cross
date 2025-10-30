@@ -114,6 +114,7 @@ export interface AlertRuleAttributes {
 @Table({
   tableName: 'alert_rules',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['category'],
@@ -171,7 +172,10 @@ export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAt
    * Alert category
    */
   @Column({
-    type: DataType.ENUM(...(Object.values(AlertCategory) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(AlertCategory)]
+    },
     allowNull: false
   })
   category: AlertCategory;
@@ -180,7 +184,10 @@ export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAt
    * Alert severity level
    */
   @Column({
-    type: DataType.ENUM(...(Object.values(AlertSeverity) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(AlertSeverity)]
+    },
     allowNull: false
   })
   severity: AlertSeverity;
@@ -228,7 +235,7 @@ export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAt
    * Roles that should receive this alert
    */
   @Column({
-    type: DataType.ARRAY(DataType.STRING)
+    type: DataType.ARRAY(DataType.STRING(255))
   })
   targetRoles?: string[];
 

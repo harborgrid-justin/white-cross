@@ -10,7 +10,6 @@ import {
   Index
   } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-;
 
 /**
  * Mental Health Record Types
@@ -117,6 +116,8 @@ export interface MentalHealthRecordAttributes {
 @Table({
   tableName: 'mental_health_records',
   timestamps: true,
+  underscored: false,
+  paranoid: true,
   indexes: [
     {
       fields: ['studentId'],
@@ -169,7 +170,10 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
    * Type of mental health record
    */
   @Column({
-    type: DataType.ENUM(...(Object.values(MentalHealthRecordType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(MentalHealthRecordType)]
+    },
     allowNull: false
   })
   recordType: MentalHealthRecordType;
@@ -262,7 +266,10 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
    * Current risk level assessment
    */
   @Column({
-    type: DataType.ENUM(...(Object.values(RiskLevel) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(RiskLevel)]
+    },
     allowNull: false,
     defaultValue: RiskLevel.NONE
   })

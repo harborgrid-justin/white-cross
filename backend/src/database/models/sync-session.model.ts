@@ -14,7 +14,6 @@ import {
   Index,
   HasMany,
 } from 'sequelize-typescript';
-;
 
 export enum SyncStatus {
   PENDING = 'PENDING',
@@ -77,7 +76,10 @@ export class SyncSession extends Model {
   completedAt: Date | null;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(SyncStatus) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(SyncStatus)]
+    },
     allowNull: false,
     defaultValue: SyncStatus.PENDING,
     comment: 'Current status of the sync session',
@@ -86,7 +88,10 @@ export class SyncSession extends Model {
   status: SyncStatus;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(SyncDirection) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(SyncDirection)]
+    },
     allowNull: false,
     comment: 'Direction of the sync operation',
   })
@@ -109,7 +114,7 @@ export class SyncSession extends Model {
   };
 
   @Column({
-    type: DataType.ARRAY(DataType.STRING),
+    type: DataType.ARRAY(DataType.STRING(255)),
     allowNull: false,
     comment: 'Types of entities being synchronized',
   })

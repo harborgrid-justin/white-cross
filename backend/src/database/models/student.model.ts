@@ -48,33 +48,40 @@ export interface StudentAttributes {
 @Table({
   tableName: 'students',
   timestamps: true,
-  paranoid: false, // Disable soft deletes - table doesn't have deletedAt column
+  underscored: false,
+  paranoid: true, // Enable soft deletes for HIPAA compliance - PHI data requires audit trail
   indexes: [
     {
       fields: ['studentNumber'],
       unique: true
-  },
+    },
     {
       fields: ['nurseId']
-  },
+    },
+    {
+      fields: ['schoolId']
+    },
+    {
+      fields: ['districtId']
+    },
     {
       fields: ['isActive']
-  },
+    },
     {
       fields: ['grade']
-  },
+    },
     {
       fields: ['lastName', 'firstName']
-  },
+    },
     {
       fields: ['medicalRecordNum'],
       unique: true,
       where: {
         medicalRecordNum: {
           [Op.ne]: null
-  }
-  }
-  },
+        }
+      }
+    }
   ]
   })
 export class Student extends Model<StudentAttributes> implements StudentAttributes {
@@ -137,8 +144,11 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
    * Student gender
    */
   @Column({
-    type: DataType.ENUM(...(Object.values(Gender) as string[])),
-    allowNull: false
+    type: DataType.STRING(20),
+    allowNull: false,
+    validate: {
+      isIn: [Object.values(Gender)]
+    }
   })
   gender: Gender;
 
@@ -189,7 +199,13 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
   @AllowNull
   @ForeignKey(() => require('./user.model').User)
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
+    references: {
+      model: 'users',
+      key: 'id'
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'SET NULL'
   })
   nurseId?: string;
 
@@ -199,7 +215,13 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
   @AllowNull
   @ForeignKey(() => require('./school.model').School)
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
+    references: {
+      model: 'schools',
+      key: 'id'
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE'
   })
   schoolId?: string;
 
@@ -209,7 +231,13 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
   @AllowNull
   @ForeignKey(() => require('./district.model').District)
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
+    references: {
+      model: 'districts',
+      key: 'id'
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE'
   })
   districtId?: string;
 
@@ -240,6 +268,11 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
     type: DataType.DATE
   })
   declare updatedAt?: Date;
+
+  @Column({
+    type: DataType.DATE
+  })
+  declare deletedAt?: Date;
 
   // Relationships
   // Using lazy evaluation with require() to prevent circular dependencies

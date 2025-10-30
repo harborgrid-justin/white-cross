@@ -11,8 +11,7 @@ import {
   } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
-;
-;
+
 
 export interface DrugCatalogAttributes {
   id: string;
@@ -37,6 +36,7 @@ export interface DrugCatalogAttributes {
 @Table({
   tableName: 'drug_catalog',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['rxnormId'],

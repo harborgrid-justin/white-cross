@@ -48,6 +48,7 @@ export interface ComplianceChecklistItemAttributes {
 @Table({
   tableName: 'compliance_checklist_items',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['category'],
@@ -83,13 +84,19 @@ export class ComplianceChecklistItem extends Model<ComplianceChecklistItemAttrib
   description?: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(ComplianceCategory) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ComplianceCategory)]
+    },
     allowNull: false,
   })
   category: ComplianceCategory;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(ChecklistItemStatus) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ChecklistItemStatus)]
+    },
     allowNull: false,
     defaultValue: ChecklistItemStatus.PENDING,
   })

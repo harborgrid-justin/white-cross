@@ -117,7 +117,10 @@ export class AuditLog extends Model<AuditLogAttributes> {
   declare id?: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(AuditAction) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(AuditAction)]
+    },
     allowNull: false
   })
   @Index
@@ -215,7 +218,10 @@ export class AuditLog extends Model<AuditLogAttributes> {
   isPHI: boolean;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(ComplianceType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ComplianceType)]
+    },
     allowNull: false,
     defaultValue: ComplianceType.GENERAL
   })
@@ -223,7 +229,10 @@ export class AuditLog extends Model<AuditLogAttributes> {
   complianceType: ComplianceType;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(AuditSeverity) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(AuditSeverity)]
+    },
     allowNull: false,
     defaultValue: AuditSeverity.LOW
   })
@@ -254,7 +263,7 @@ export class AuditLog extends Model<AuditLogAttributes> {
   metadata: any;
 
   @Column({
-    type: DataType.ARRAY(DataType.STRING),
+    type: DataType.ARRAY(DataType.STRING(255)),
     allowNull: false,
     defaultValue: [],
     comment: 'Tags for categorization and filtering'

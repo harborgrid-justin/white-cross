@@ -16,7 +16,6 @@ import {
   Index,
   AllowNull,
 } from 'sequelize-typescript';
-;
 
 /**
  * License types
@@ -112,7 +111,10 @@ export class License extends Model<LicenseAttributes, CreateLicenseAttributes> {
 
   @Default(LicenseType.TRIAL)
   @Column({
-    type: DataType.ENUM(...(Object.values(LicenseType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(LicenseType)]
+    },
     allowNull: false,
     defaultValue: LicenseType.TRIAL,
     comment: 'Type of license',
@@ -121,7 +123,10 @@ export class License extends Model<LicenseAttributes, CreateLicenseAttributes> {
 
   @Default(LicenseStatus.ACTIVE)
   @Column({
-    type: DataType.ENUM(...(Object.values(LicenseStatus) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(LicenseStatus)]
+    },
     allowNull: false,
     defaultValue: LicenseStatus.ACTIVE,
     comment: 'Current status of the license',
@@ -147,7 +152,7 @@ export class License extends Model<LicenseAttributes, CreateLicenseAttributes> {
 
   @AllowNull(false)
   @Column({
-    type: DataType.ARRAY(DataType.STRING),
+    type: DataType.ARRAY(DataType.STRING(255)),
     allowNull: false,
     comment: 'Array of enabled features',
   })

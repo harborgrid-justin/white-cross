@@ -1,6 +1,6 @@
 import { Table, Column, Model, DataType, PrimaryKey, Default, CreatedAt, UpdatedAt, Index, ForeignKey, BelongsTo } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
-;
+
 import { ContactPriority } from '../../contact/enums/contact-priority.enum';
 import { VerificationStatus } from '../../contact/enums/verification-status.enum';
 import { PreferredContactMethod } from '../../contact/enums/preferred-contact-method.enum';
@@ -67,6 +67,7 @@ export interface EmergencyContactCreationAttributes
 @Table({
   tableName: 'emergency_contacts',
   timestamps: true,
+  underscored: false,
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   indexes: [
@@ -127,7 +128,10 @@ export class EmergencyContact extends Model<EmergencyContactAttributes, Emergenc
   address: string | null;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(ContactPriority) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ContactPriority)]
+    },
     allowNull: false,
     defaultValue: ContactPriority.PRIMARY
   })
@@ -141,14 +145,20 @@ export class EmergencyContact extends Model<EmergencyContactAttributes, Emergenc
   isActive: boolean;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(PreferredContactMethod) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(PreferredContactMethod)]
+    },
     allowNull: true,
     defaultValue: PreferredContactMethod.ANY
   })
   preferredContactMethod: PreferredContactMethod | null;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(VerificationStatus) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(VerificationStatus)]
+    },
     allowNull: true,
     defaultValue: VerificationStatus.UNVERIFIED
   })

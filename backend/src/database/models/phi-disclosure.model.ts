@@ -79,6 +79,7 @@ export interface PhiDisclosureAttributes {
 @Table({
   tableName: 'phi_disclosures',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['studentId', 'disclosureDate']
@@ -113,19 +114,28 @@ export class PhiDisclosure extends Model<PhiDisclosureAttributes> implements Phi
   studentId: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(DisclosureType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(DisclosureType)]
+    },
     allowNull: false
   })
   disclosureType: DisclosureType;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(DisclosurePurpose) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(DisclosurePurpose)]
+    },
     allowNull: false
   })
   purpose: DisclosurePurpose;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(DisclosureMethod) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(DisclosureMethod)]
+    },
     allowNull: false
   })
   method: DisclosureMethod;
@@ -149,7 +159,10 @@ export class PhiDisclosure extends Model<PhiDisclosureAttributes> implements Phi
   minimumNecessary: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(RecipientType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(RecipientType)]
+    },
     allowNull: false
   })
   recipientType: RecipientType;

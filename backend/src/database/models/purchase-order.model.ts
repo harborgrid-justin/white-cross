@@ -11,8 +11,7 @@ import {
   BeforeCreate,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-;
-;
+
 
 export enum PurchaseOrderStatus {
   PENDING = 'PENDING',
@@ -41,6 +40,7 @@ export interface PurchaseOrderAttributes {
 @Table({
   tableName: 'purchase_orders',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['orderNumber'],
@@ -64,7 +64,7 @@ export class PurchaseOrder extends Model<PurchaseOrderAttributes> implements Pur
   declare id: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false,
     unique: true,
   })
@@ -115,7 +115,10 @@ export class PurchaseOrder extends Model<PurchaseOrderAttributes> implements Pur
 
   @Default(PurchaseOrderStatus.PENDING)
   @Column({
-    type: DataType.ENUM(...(Object.values(PurchaseOrderStatus) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(PurchaseOrderStatus)]
+    },
     allowNull: false,
   })
   status: PurchaseOrderStatus;

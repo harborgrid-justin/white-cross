@@ -11,6 +11,7 @@ import { ContactType } from '../../contact/enums/contact-type.enum';
 @Table({
   tableName: 'contacts',
   timestamps: true,
+  underscored: false,
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt',
@@ -53,7 +54,10 @@ export class Contact extends Model<Contact> {
   phone: string | null;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(ContactType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ContactType)]
+    },
     allowNull: false
   })
   type: ContactType;

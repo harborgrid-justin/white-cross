@@ -13,7 +13,6 @@ import {
   BelongsTo,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-;
 
 export interface StudentDrugAllergyAttributes {
   id: string;
@@ -30,6 +29,7 @@ export interface StudentDrugAllergyAttributes {
 @Table({
   tableName: 'student_drug_allergies',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['studentId', 'drugId'],

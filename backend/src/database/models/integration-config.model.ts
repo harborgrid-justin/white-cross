@@ -14,7 +14,6 @@ import {
   Index,
   HasMany,
 } from 'sequelize-typescript';
-;
 
 export enum IntegrationType {
   SIS = 'SIS',
@@ -65,7 +64,10 @@ export class IntegrationConfig extends Model {
   name: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(IntegrationType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(IntegrationType)]
+    },
     allowNull: false,
     comment: 'Type of external system being integrated',
   })
@@ -73,7 +75,10 @@ export class IntegrationConfig extends Model {
   type: IntegrationType;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(IntegrationStatus) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(IntegrationStatus)]
+    },
     allowNull: false,
     defaultValue: IntegrationStatus.INACTIVE,
     comment: 'Current status of the integration',

@@ -17,7 +17,6 @@ import {
   AllowNull,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-;
 
 export enum ActionStatus {
   PENDING = 'PENDING',
@@ -110,7 +109,10 @@ export class FollowUpAction extends Model<FollowUpActionAttributes, CreateFollow
 
   @Default(ActionPriority.MEDIUM)
   @Column({
-    type: DataType.ENUM(...(Object.values(ActionPriority) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ActionPriority)]
+    },
     allowNull: false,
     defaultValue: ActionPriority.MEDIUM,
     comment: 'Priority level of the action',
@@ -120,7 +122,10 @@ export class FollowUpAction extends Model<FollowUpActionAttributes, CreateFollow
 
   @Default(ActionStatus.PENDING)
   @Column({
-    type: DataType.ENUM(...(Object.values(ActionStatus) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ActionStatus)]
+    },
     allowNull: false,
     defaultValue: ActionStatus.PENDING,
     comment: 'Current status of the action',

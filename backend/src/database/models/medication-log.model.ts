@@ -11,7 +11,6 @@ import {
   CreatedAt,
   UpdatedAt
   } from 'sequelize-typescript';
-;
 
 export enum MedicationLogStatus {
   PENDING = 'PENDING',
@@ -43,6 +42,7 @@ export interface MedicationLogAttributes {
   tableName: 'medication_logs',
   timestamps: true,
   underscored: false,
+  paranoid: true,
   indexes: [
     { fields: ['studentId', 'medicationId'] },
     { fields: ['administeredAt'] },
@@ -76,13 +76,13 @@ export class MedicationLog extends Model<MedicationLogAttributes> implements Med
   dosage: number;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false
   })
   dosageUnit: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false
   })
   route: string;
@@ -101,14 +101,17 @@ export class MedicationLog extends Model<MedicationLogAttributes> implements Med
   administeredAt: Date;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false
   })
   administeredBy: string;
 
   @Index
   @Column({
-    type: DataType.ENUM(...(Object.values(MedicationLogStatus) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(MedicationLogStatus)]
+    },
     allowNull: true,
     defaultValue: MedicationLogStatus.ADMINISTERED,
     comment: 'Status of medication administration'

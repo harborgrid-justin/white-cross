@@ -56,6 +56,7 @@ export interface ComplianceViolationAttributes {
 @Table({
   tableName: 'compliance_violations',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['violationType']
@@ -84,7 +85,10 @@ export class ComplianceViolation extends Model<ComplianceViolationAttributes> im
   declare id?: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(ViolationType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ViolationType)]
+    },
     allowNull: false
   })
   violationType: ViolationType;
@@ -102,13 +106,19 @@ export class ComplianceViolation extends Model<ComplianceViolationAttributes> im
   description: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(ViolationSeverity) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ViolationSeverity)]
+    },
     allowNull: false
   })
   severity: ViolationSeverity;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(ViolationStatus) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ViolationStatus)]
+    },
     allowNull: false,
     defaultValue: ViolationStatus.REPORTED
   })

@@ -75,13 +75,19 @@ export class ReportExecution extends Model<ReportExecutionAttributes> implements
   declare schedule?: any;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(ReportType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ReportType)]
+    },
     allowNull: false
   })
   reportType: ReportType;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(OutputFormat) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(OutputFormat)]
+    },
     allowNull: false
   })
   outputFormat: OutputFormat;
@@ -91,7 +97,10 @@ export class ReportExecution extends Model<ReportExecutionAttributes> implements
   parameters?: Record<string, any>;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(ReportStatus) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ReportStatus)]
+    },
     allowNull: false,
     defaultValue: ReportStatus.PENDING
   })

@@ -84,6 +84,7 @@ export interface AnalyticsReportAttributes {
 @Table({
   tableName: 'analytics_reports',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['schoolId', 'reportType'],
@@ -100,13 +101,16 @@ export class AnalyticsReport extends Model<AnalyticsReportAttributes> implements
   declare id: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(ReportType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ReportType)]
+    },
     allowNull: false,
   })
   reportType: ReportType;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false,
   })
   title: string;
@@ -135,7 +139,7 @@ export class AnalyticsReport extends Model<AnalyticsReportAttributes> implements
   @Column(DataType.UUID)
   schoolId?: string;
 
-  @Column(DataType.STRING)
+  @Column(DataType.STRING(255))
   schoolName?: string;
 
   @Column({
@@ -173,18 +177,24 @@ export class AnalyticsReport extends Model<AnalyticsReportAttributes> implements
 
   @Default(ReportStatus.PENDING)
   @Column({
-    type: DataType.ENUM(...(Object.values(ReportStatus) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ReportStatus)]
+    },
     allowNull: false,
   })
   status: ReportStatus;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(ReportFormat) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ReportFormat)]
+    },
     allowNull: false,
   })
   format: ReportFormat;
 
-  @Column(DataType.STRING)
+  @Column(DataType.STRING(255))
   fileUrl?: string;
 
   @Column(DataType.INTEGER)

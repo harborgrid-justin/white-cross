@@ -10,7 +10,6 @@ import {
   BeforeCreate,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-;
 
 export enum InventoryTransactionType {
   PURCHASE = 'PURCHASE',
@@ -37,6 +36,7 @@ export interface InventoryTransactionAttributes {
 @Table({
   tableName: 'inventory_transactions',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['inventoryItemId'],
@@ -66,7 +66,10 @@ export class InventoryTransaction extends Model<InventoryTransactionAttributes> 
   inventoryItemId: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(InventoryTransactionType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(InventoryTransactionType)]
+    },
     allowNull: false,
   })
   type: InventoryTransactionType;
@@ -82,10 +85,10 @@ export class InventoryTransaction extends Model<InventoryTransactionAttributes> 
   })
   unitCost?: number;
 
-  @Column(DataType.STRING)
+  @Column(DataType.STRING(255))
   reason?: string;
 
-  @Column(DataType.STRING)
+  @Column(DataType.STRING(255))
   batchNumber?: string;
 
   @Column(DataType.DATE)

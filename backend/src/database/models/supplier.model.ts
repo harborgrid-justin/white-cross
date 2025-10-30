@@ -23,6 +23,7 @@ export interface SupplierAttributes {
 @Table({
   tableName: 'suppliers',
   timestamps: true,
+  underscored: false,
 })
 export class Supplier extends Model<SupplierAttributes> implements SupplierAttributes {
   @PrimaryKey

@@ -44,6 +44,7 @@ export interface RemediationActionAttributes {
 @Table({
   tableName: 'remediation_actions',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['violationId']
@@ -84,14 +85,20 @@ export class RemediationAction extends Model<RemediationActionAttributes> implem
   action: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(RemediationPriority) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(RemediationPriority)]
+    },
     allowNull: false,
     defaultValue: RemediationPriority.MEDIUM
   })
   priority: RemediationPriority;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(RemediationStatus) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(RemediationStatus)]
+    },
     allowNull: false,
     defaultValue: RemediationStatus.PLANNED
   })

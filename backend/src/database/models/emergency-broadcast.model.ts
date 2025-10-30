@@ -48,6 +48,7 @@ export interface EmergencyBroadcastAttributes {
 @Table({
   tableName: 'emergency_broadcasts',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['type'],
@@ -76,13 +77,19 @@ export class EmergencyBroadcast extends Model<EmergencyBroadcastAttributes> impl
   declare id: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(EmergencyType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(EmergencyType)]
+    },
     allowNull: false,
   })
   type: EmergencyType;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(EmergencyPriority) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(EmergencyPriority)]
+    },
     allowNull: false,
   })
   priority: EmergencyPriority;
@@ -147,7 +154,10 @@ export class EmergencyBroadcast extends Model<EmergencyBroadcastAttributes> impl
   sentAt: Date;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(BroadcastStatus) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(BroadcastStatus)]
+    },
     allowNull: false,
     defaultValue: BroadcastStatus.DRAFT,
   })

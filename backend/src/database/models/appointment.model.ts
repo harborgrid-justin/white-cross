@@ -10,10 +10,9 @@ import {
   HasMany,
   Index
   } from 'sequelize-typescript';
-;
-;
-;
-;
+
+
+
 
 export enum AppointmentType {
   ROUTINE_CHECKUP = 'ROUTINE_CHECKUP',
@@ -52,7 +51,8 @@ export interface AppointmentAttributes {
 @Table({
   tableName: 'appointments',
   timestamps: true,
-  underscored: false
+  underscored: false,
+  paranoid: true
   })
 export class Appointment extends Model<AppointmentAttributes> {
   @PrimaryKey
@@ -85,7 +85,10 @@ export class Appointment extends Model<AppointmentAttributes> {
 
   @Index
   @Column({
-    type: DataType.ENUM(...(Object.values(AppointmentType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(AppointmentType)]
+    },
     allowNull: false
   })
   type: AppointmentType;
@@ -135,7 +138,10 @@ export class Appointment extends Model<AppointmentAttributes> {
 
   @Index
   @Column({
-    type: DataType.ENUM(...(Object.values(AppointmentStatus) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(AppointmentStatus)]
+    },
     allowNull: false,
     defaultValue: AppointmentStatus.SCHEDULED
   })

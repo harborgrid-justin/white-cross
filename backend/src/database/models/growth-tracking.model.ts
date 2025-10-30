@@ -29,6 +29,8 @@ export interface GrowthTrackingAttributes {
 @Table({
   tableName: 'growth_tracking',
   timestamps: true,
+  underscored: false,
+  paranoid: true,
   indexes: [
     {
       fields: ['studentId'],

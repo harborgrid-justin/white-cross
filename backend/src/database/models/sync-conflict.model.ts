@@ -60,20 +60,23 @@ export class SyncConflict extends Model<SyncConflictAttributes> implements SyncC
   declare id: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false
   })
   queueItemId: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(SyncEntityType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(SyncEntityType)]
+    },
     allowNull: false
   })
   @Index
   entityType: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false
   })
   entityId: string;
@@ -92,7 +95,10 @@ export class SyncConflict extends Model<SyncConflictAttributes> implements SyncC
 
   @AllowNull
   @Column({
-    type: DataType.ENUM(...(Object.values(ConflictResolution) as string[]))
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ConflictResolution)]
+    }
   })
   resolution?: ConflictResolution;
 
@@ -115,7 +121,10 @@ export class SyncConflict extends Model<SyncConflictAttributes> implements SyncC
   mergedData?: any;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(SyncStatus) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(SyncStatus)]
+    },
     allowNull: false,
     defaultValue: SyncStatus.PENDING
   })

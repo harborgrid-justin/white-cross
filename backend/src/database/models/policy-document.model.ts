@@ -44,6 +44,7 @@ export interface PolicyDocumentAttributes {
 @Table({
   tableName: 'policy_documents',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['category']
@@ -75,7 +76,10 @@ export class PolicyDocument extends Model<PolicyDocumentAttributes> implements P
   title: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(PolicyCategory) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(PolicyCategory)]
+    },
     allowNull: false
   })
   category: PolicyCategory;
@@ -104,7 +108,10 @@ export class PolicyDocument extends Model<PolicyDocumentAttributes> implements P
   reviewDate?: Date;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(PolicyStatus) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(PolicyStatus)]
+    },
     allowNull: false,
     defaultValue: PolicyStatus.DRAFT
   })

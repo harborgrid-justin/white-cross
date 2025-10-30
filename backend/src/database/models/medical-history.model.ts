@@ -35,6 +35,8 @@ export interface MedicalHistoryAttributes {
 @Table({
   tableName: 'medical_history',
   timestamps: true,
+  underscored: false,
+  paranoid: true,
   indexes: [
     {
       fields: ['studentId'],
@@ -78,12 +80,12 @@ export class MedicalHistory extends Model<MedicalHistoryAttributes> implements M
   recordType: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false,
   })
   condition: string;
 
-  @Column(DataType.STRING)
+  @Column(DataType.STRING(255))
   diagnosisCode?: string;
 
   @Column(DataType.DATE)

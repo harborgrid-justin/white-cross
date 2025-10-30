@@ -68,6 +68,7 @@ export interface SyncQueueItemAttributes {
 @Table({
   tableName: 'sync_queue_items',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['deviceId']
@@ -90,7 +91,7 @@ export class SyncQueueItem extends Model<SyncQueueItemAttributes> implements Syn
   declare id: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false
   })
   @Index
@@ -104,19 +105,25 @@ export class SyncQueueItem extends Model<SyncQueueItemAttributes> implements Syn
   userId: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(SyncActionType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(SyncActionType)]
+    },
     allowNull: false
   })
   actionType: SyncActionType;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(SyncEntityType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(SyncEntityType)]
+    },
     allowNull: false
   })
   entityType: SyncEntityType;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false
   })
   entityId: string;
@@ -179,12 +186,18 @@ export class SyncQueueItem extends Model<SyncQueueItemAttributes> implements Syn
 
   @AllowNull
   @Column({
-    type: DataType.ENUM(...(Object.values(ConflictResolution) as string[]))
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ConflictResolution)]
+    }
   })
   conflictResolution?: ConflictResolution;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(SyncPriority) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(SyncPriority)]
+    },
     allowNull: false,
     defaultValue: SyncPriority.NORMAL
   })

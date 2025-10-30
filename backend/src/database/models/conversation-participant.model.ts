@@ -105,7 +105,10 @@ export class ConversationParticipant extends Model<
   declare userId: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(ParticipantRole) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ParticipantRole)]
+    },
     allowNull: false,
     defaultValue: ParticipantRole.MEMBER,
     comment: 'Role determining permissions in conversation',

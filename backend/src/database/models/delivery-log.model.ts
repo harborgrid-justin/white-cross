@@ -109,7 +109,10 @@ export class DeliveryLog extends Model<DeliveryLogAttributes> implements Deliver
    */
   @Index
   @Column({
-    type: DataType.ENUM(...(Object.values(DeliveryChannel) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(DeliveryChannel)]
+    },
     allowNull: false
   })
   declare channel: any;

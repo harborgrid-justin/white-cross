@@ -53,6 +53,7 @@ export interface ComplianceReportAttributes {
 @Table({
   tableName: 'compliance_reports',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['reportType']
@@ -78,7 +79,10 @@ export class ComplianceReport extends Model<ComplianceReportAttributes> implemen
   declare id?: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(ComplianceReportType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ComplianceReportType)]
+    },
     allowNull: false
   })
   reportType: ComplianceReportType;
@@ -94,7 +98,10 @@ export class ComplianceReport extends Model<ComplianceReportAttributes> implemen
   description?: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(ComplianceStatus) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ComplianceStatus)]
+    },
     allowNull: false,
     defaultValue: ComplianceStatus.PENDING
   })

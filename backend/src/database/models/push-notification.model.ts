@@ -145,6 +145,7 @@ export interface PushNotificationCreationAttributes {
 @Table({
   tableName: 'push_notifications',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['status']
@@ -178,7 +179,7 @@ export class PushNotification extends Model<PushNotificationAttributes, PushNoti
 
   // Content
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false
   })
   title: string;
@@ -190,14 +191,20 @@ export class PushNotification extends Model<PushNotificationAttributes, PushNoti
   body: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(NotificationCategory) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(NotificationCategory)]
+    },
     allowNull: false
   })
   @Index
   category: NotificationCategory;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(NotificationPriority) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(NotificationPriority)]
+    },
     allowNull: false,
     defaultValue: NotificationPriority.NORMAL
   })
@@ -216,18 +223,18 @@ export class PushNotification extends Model<PushNotificationAttributes, PushNoti
   // Presentation
   @AllowNull
   @Column({
-    type: DataType.STRING
+    type: DataType.STRING(255)
   })
   imageUrl?: string;
 
   @AllowNull
   @Column({
-    type: DataType.STRING
+    type: DataType.STRING(255)
   })
   iconUrl?: string;
 
   @AllowNull
-  @Column(DataType.STRING)
+  @Column(DataType.STRING(255))
   sound?: string;
 
   @AllowNull
@@ -241,7 +248,7 @@ export class PushNotification extends Model<PushNotificationAttributes, PushNoti
 
   @AllowNull
   @Column({
-    type: DataType.STRING
+    type: DataType.STRING(255)
   })
   collapseKey?: string;
 
@@ -274,7 +281,10 @@ export class PushNotification extends Model<PushNotificationAttributes, PushNoti
 
   // Delivery tracking
   @Column({
-    type: DataType.ENUM(...(Object.values(NotificationStatus) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(NotificationStatus)]
+    },
     allowNull: false,
     defaultValue: NotificationStatus.PENDING
   })

@@ -28,6 +28,8 @@ export interface MedicationAttributes {
 @Table({
   tableName: 'medications',
   timestamps: true,
+  underscored: false,
+  paranoid: true,
   indexes: [
     {
       fields: ['name'],
@@ -54,31 +56,31 @@ export class Medication extends Model<MedicationAttributes> implements Medicatio
   declare id: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false,
   })
   name: string;
 
-  @Column(DataType.STRING)
+  @Column(DataType.STRING(255))
   genericName?: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false,
   })
   dosageForm: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false,
   })
   strength: string;
 
-  @Column(DataType.STRING)
+  @Column(DataType.STRING(255))
   manufacturer?: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     unique: true,
   })
   ndc?: string;

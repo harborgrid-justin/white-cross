@@ -6,9 +6,14 @@ import {
   BeforeCreate,
   BeforeUpdate,
   PrimaryKey,
-  Default
+  Default,
+  ForeignKey,
+  BelongsTo,
+  HasMany
   } from 'sequelize-typescript';
 import * as bcrypt from 'bcrypt';
+import type { School } from './school.model';
+import type { District } from './district.model';
 
 export enum UserRole {
   ADMIN = 'ADMIN',
@@ -20,6 +25,7 @@ export enum UserRole {
   }
 
 export interface UserAttributes {
+  id?: string;
   email: string;
   password: string;
   firstName: string;
@@ -47,44 +53,62 @@ export interface UserAttributes {
 @Table({
   tableName: 'users',
   timestamps: true,
-  underscored: false
+  underscored: false,
+  indexes: [
+    { fields: ['email'], unique: true },
+    { fields: ['schoolId'] },
+    { fields: ['districtId'] },
+    { fields: ['role'] },
+    { fields: ['isActive'] },
+    { fields: ['emailVerificationToken'] },
+    { fields: ['passwordResetToken'] }
+  ]
   })
 export class User extends Model<UserAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
-  @Column(DataType.UUID)
-  declare id?: string;
+  @Column({
+    type: DataType.UUID,
+    allowNull: false
+  })
+  declare id: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false,
     unique: true,
-    validate: { isEmail: true }
+    validate: { isEmail: true },
+    comment: 'User email address (unique, used for login)'
   })
   declare email: string;
 
   @Column({
-    type: DataType.STRING,
-    allowNull: false
+    type: DataType.STRING(255),
+    allowNull: false,
+    comment: 'Hashed password (bcrypt)'
   })
   declare password: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(100),
     allowNull: false
   })
   declare firstName: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(100),
     allowNull: false
   })
   declare lastName: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(UserRole) as string[])),
+    type: DataType.STRING(20),
     allowNull: false,
-    defaultValue: UserRole.NURSE
+    defaultValue: UserRole.NURSE,
+    validate: {
+      isIn: [Object.values(UserRole)]
+    },
+    comment: 'User role for authorization'
   })
   declare role: UserRole;
 
@@ -101,20 +125,36 @@ export class User extends Model<UserAttributes> {
   })
   declare lastLogin?: Date;
 
+  @ForeignKey(() => require('./school.model').School)
   @Column({
     type: DataType.UUID,
-    allowNull: true
+    allowNull: true,
+    references: {
+      model: 'schools',
+      key: 'id'
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'SET NULL',
+    comment: 'ID of the school this user is associated with'
   })
   declare schoolId?: string;
 
+  @ForeignKey(() => require('./district.model').District)
   @Column({
     type: DataType.UUID,
-    allowNull: true
+    allowNull: true,
+    references: {
+      model: 'districts',
+      key: 'id'
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'SET NULL',
+    comment: 'ID of the district this user is associated with'
   })
   declare districtId?: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(20),
     allowNull: true
   })
   declare phone?: string;
@@ -127,7 +167,7 @@ export class User extends Model<UserAttributes> {
   declare emailVerified: boolean;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: true
   })
   declare emailVerificationToken?: string;
@@ -139,7 +179,7 @@ export class User extends Model<UserAttributes> {
   declare emailVerificationExpires?: Date;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: true
   })
   declare passwordResetToken?: string;
@@ -152,7 +192,8 @@ export class User extends Model<UserAttributes> {
 
   @Column({
     type: DataType.DATE,
-    allowNull: true
+    allowNull: true,
+    comment: 'Timestamp when password was last changed (for token invalidation)'
   })
   declare passwordChangedAt?: Date;
 
@@ -164,7 +205,7 @@ export class User extends Model<UserAttributes> {
   declare twoFactorEnabled: boolean;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: true
   })
   declare twoFactorSecret?: string;
@@ -184,7 +225,8 @@ export class User extends Model<UserAttributes> {
 
   @Column({
     type: DataType.DATE,
-    allowNull: true
+    allowNull: true,
+    comment: 'Timestamp when password was last changed (for password rotation policy)'
   })
   declare lastPasswordChange?: Date;
 
@@ -194,6 +236,19 @@ export class User extends Model<UserAttributes> {
     defaultValue: false
   })
   declare mustChangePassword: boolean;
+
+  // Associations
+  @BelongsTo(() => require('./school.model').School, {
+    foreignKey: 'schoolId',
+    as: 'school',
+  })
+  declare school?: School;
+
+  @BelongsTo(() => require('./district.model').District, {
+    foreignKey: 'districtId',
+    as: 'district',
+  })
+  declare district?: District;
 
   @BeforeCreate
   static async hashPasswordBeforeCreate(user: User) {

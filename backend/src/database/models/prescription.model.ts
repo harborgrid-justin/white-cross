@@ -11,8 +11,8 @@ import {
   BelongsTo
   } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-;
-;
+
+
 import { PrescriptionStatus } from '../../clinical/enums/prescription-status.enum';
 
 export interface PrescriptionAttributes {
@@ -47,6 +47,8 @@ export interface PrescriptionAttributes {
 @Table({
   tableName: 'prescriptions',
   timestamps: true,
+  underscored: false,
+  paranoid: true,
   indexes: [
     {
       fields: ['studentId', 'status']
@@ -174,7 +176,10 @@ export class Prescription extends Model<PrescriptionAttributes> implements Presc
   instructions?: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(PrescriptionStatus) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(PrescriptionStatus)]
+    },
     allowNull: false,
     defaultValue: PrescriptionStatus.PENDING
   })

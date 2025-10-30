@@ -40,6 +40,8 @@ export interface HealthRecordAttributes {
 @Table({
   tableName: 'health_records',
   timestamps: true,
+  underscored: false,
+  paranoid: true,
   indexes: [
     {
       fields: ['studentId', 'recordDate'],

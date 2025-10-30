@@ -49,6 +49,7 @@ export interface ClinicalProtocolAttributes {
 @Table({
   tableName: 'clinical_protocols',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['name']
@@ -151,7 +152,10 @@ export class ClinicalProtocol extends Model<ClinicalProtocolAttributes> implemen
   medications?: string[];
 
   @Column({
-    type: DataType.ENUM(...(Object.values(ProtocolStatus) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ProtocolStatus)]
+    },
     allowNull: false,
     defaultValue: ProtocolStatus.DRAFT
   })

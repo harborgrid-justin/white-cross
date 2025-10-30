@@ -23,6 +23,7 @@ export interface WebhookAttributes {
 @Table({
   tableName: 'webhooks',
   timestamps: true,
+  underscored: false,
 })
 export class Webhook extends Model<WebhookAttributes> implements WebhookAttributes {
   @PrimaryKey

@@ -63,6 +63,7 @@ export interface DeviceTokenCreationAttributes {
 @Table({
   tableName: 'device_tokens',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['userId', 'deviceId'],
@@ -90,13 +91,16 @@ export class DeviceToken extends Model<DeviceTokenAttributes, DeviceTokenCreatio
   userId: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false
   })
   deviceId: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(NotificationPlatform) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(NotificationPlatform)]
+    },
     allowNull: false
   })
   @Index
@@ -111,25 +115,25 @@ export class DeviceToken extends Model<DeviceTokenAttributes, DeviceTokenCreatio
   // Device metadata
   @AllowNull
   @Column({
-    type: DataType.STRING
+    type: DataType.STRING(255)
   })
   deviceName?: string;
 
   @AllowNull
   @Column({
-    type: DataType.STRING
+    type: DataType.STRING(255)
   })
   deviceModel?: string;
 
   @AllowNull
   @Column({
-    type: DataType.STRING
+    type: DataType.STRING(255)
   })
   osVersion?: string;
 
   @AllowNull
   @Column({
-    type: DataType.STRING
+    type: DataType.STRING(255)
   })
   appVersion?: string;
 
@@ -156,7 +160,7 @@ export class DeviceToken extends Model<DeviceTokenAttributes, DeviceTokenCreatio
 
   @AllowNull
   @Column({
-    type: DataType.STRING
+    type: DataType.STRING(255)
   })
   invalidReason?: string;
 

@@ -10,7 +10,6 @@ import {
   BeforeCreate
   } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-;
 
 export enum AllergyType {
   FOOD = 'FOOD',
@@ -57,6 +56,8 @@ export interface AllergyAttributes {
 @Table({
   tableName: 'allergies',
   timestamps: true,
+  underscored: false,
+  paranoid: true,
   indexes: [
     {
       fields: ['studentId', 'active']
@@ -83,20 +84,26 @@ export class Allergy extends Model<AllergyAttributes> implements AllergyAttribut
   studentId: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false
   })
   allergen: string;
 
   @Default(AllergyType.OTHER)
   @Column({
-    type: DataType.ENUM(...(Object.values(AllergyType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(AllergyType)]
+    },
     allowNull: false
   })
   allergyType: AllergyType;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(AllergySeverity) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(AllergySeverity)]
+    },
     allowNull: false
   })
   severity: AllergySeverity;
@@ -126,7 +133,7 @@ export class Allergy extends Model<AllergyAttributes> implements AllergyAttribut
   diagnosedDate?: Date;
 
   @Column({
-    type: DataType.STRING
+    type: DataType.STRING(255)
   })
   diagnosedBy?: string;
 
@@ -158,7 +165,7 @@ export class Allergy extends Model<AllergyAttributes> implements AllergyAttribut
   epiPenRequired: boolean;
 
   @Column({
-    type: DataType.STRING
+    type: DataType.STRING(255)
   })
   epiPenLocation?: string;
 

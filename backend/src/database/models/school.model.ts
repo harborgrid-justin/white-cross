@@ -16,7 +16,6 @@ import {
   Index,
   AllowNull,
 } from 'sequelize-typescript';
-;
 
 /**
  * School attributes interface
@@ -76,7 +75,7 @@ export class School extends Model<SchoolAttributes, CreateSchoolAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
-  declare id?: string;
+  declare id: string;
 
   @AllowNull(false)
   @Column({

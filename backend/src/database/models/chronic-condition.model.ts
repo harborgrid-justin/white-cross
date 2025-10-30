@@ -11,8 +11,7 @@ import {
   BelongsTo
   } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-;
-;
+
 
 // Re-export enums for convenience
 export { AccommodationType } from '../../chronic-condition/enums';
@@ -64,6 +63,8 @@ export interface ChronicConditionAttributes {
 @Table({
   tableName: 'chronic_conditions',
   timestamps: true,
+  underscored: false,
+  paranoid: true,
   indexes: [
     {
       fields: ['studentId', 'isActive']
@@ -128,7 +129,10 @@ export class ChronicCondition extends Model<ChronicConditionAttributes> implemen
   diagnosedBy?: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(ConditionStatus) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ConditionStatus)]
+    },
     allowNull: false,
     defaultValue: ConditionStatus.ACTIVE
   })

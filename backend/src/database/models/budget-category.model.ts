@@ -1,5 +1,4 @@
 import { Table, Column, Model, DataType, PrimaryKey, Default, ForeignKey, BelongsTo, HasMany, CreatedAt, UpdatedAt } from 'sequelize-typescript';
-;
 
 /**
  * Budget Category Model
@@ -16,6 +15,7 @@ import { Table, Column, Model, DataType, PrimaryKey, Default, ForeignKey, Belong
 @Table({
   tableName: 'budget_categories',
   timestamps: true,
+  underscored: false,
   createdAt: 'created_at',
   updatedAt: 'updated_at'
   })

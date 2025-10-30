@@ -9,7 +9,6 @@ import {
   BeforeCreate,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-;
 
 export interface VendorAttributes {
   id: string;
@@ -29,6 +28,7 @@ export interface VendorAttributes {
 @Table({
   tableName: 'vendors',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['name'],
@@ -49,30 +49,30 @@ export class Vendor extends Model<VendorAttributes> implements VendorAttributes 
   declare id: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false,
   })
   name: string;
 
-  @Column(DataType.STRING)
+  @Column(DataType.STRING(255))
   contactName?: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     unique: true,
   })
   email?: string;
 
-  @Column(DataType.STRING)
+  @Column(DataType.STRING(255))
   phone?: string;
 
   @Column(DataType.TEXT)
   address?: string;
 
-  @Column(DataType.STRING)
+  @Column(DataType.STRING(255))
   website?: string;
 
-  @Column(DataType.STRING)
+  @Column(DataType.STRING(255))
   taxId?: string;
 
   @Column(DataType.TEXT)

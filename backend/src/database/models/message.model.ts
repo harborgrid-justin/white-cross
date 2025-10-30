@@ -127,7 +127,10 @@ export class Message extends Model<MessageAttributes, MessageCreationAttributes>
   declare encryptionVersion?: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(MessagePriority) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(MessagePriority)]
+    },
     allowNull: false,
     defaultValue: MessagePriority.MEDIUM,
   })
@@ -135,7 +138,10 @@ export class Message extends Model<MessageAttributes, MessageCreationAttributes>
 
   @Index
   @Column({
-    type: DataType.ENUM(...(Object.values(MessageCategory) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(MessageCategory)]
+    },
     allowNull: false,
     defaultValue: MessageCategory.GENERAL,
   })
@@ -158,7 +164,7 @@ export class Message extends Model<MessageAttributes, MessageCreationAttributes>
   declare scheduledAt?: Date;
 
   @Column({
-    type: DataType.ARRAY(DataType.STRING),
+    type: DataType.ARRAY(DataType.STRING(255)),
     allowNull: false,
     defaultValue: [],
     comment: 'Array of attachment URLs',

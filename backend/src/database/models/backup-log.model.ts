@@ -89,7 +89,10 @@ export class BackupLog extends Model<BackupLogAttributes, CreateBackupLogAttribu
 
   @AllowNull(false)
   @Column({
-    type: DataType.ENUM(...(Object.values(BackupType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(BackupType)]
+    },
     allowNull: false,
     comment: 'Type of backup operation',
   })
@@ -97,7 +100,10 @@ export class BackupLog extends Model<BackupLogAttributes, CreateBackupLogAttribu
 
   @AllowNull(false)
   @Column({
-    type: DataType.ENUM(...(Object.values(BackupStatus) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(BackupStatus)]
+    },
     allowNull: false,
     comment: 'Current status of the backup',
   })

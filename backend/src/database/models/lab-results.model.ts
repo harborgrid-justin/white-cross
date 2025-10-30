@@ -40,6 +40,8 @@ export interface LabResultsAttributes {
 @Table({
   tableName: 'lab_results',
   timestamps: true,
+  underscored: false,
+  paranoid: true,
   indexes: [
     {
       fields: ['studentId'],
@@ -80,12 +82,12 @@ export class LabResults extends Model<LabResultsAttributes> implements LabResult
   testType: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false,
   })
   testName: string;
 
-  @Column(DataType.STRING)
+  @Column(DataType.STRING(255))
   testCode?: string;
 
   @Column({
@@ -109,10 +111,10 @@ export class LabResults extends Model<LabResultsAttributes> implements LabResult
   @Column(DataType.FLOAT)
   resultValue?: number;
 
-  @Column(DataType.STRING)
+  @Column(DataType.STRING(255))
   resultUnit?: string;
 
-  @Column(DataType.STRING)
+  @Column(DataType.STRING(255))
   referenceRange?: string;
 
   @Default(false)
@@ -129,19 +131,19 @@ export class LabResults extends Model<LabResultsAttributes> implements LabResult
   @Column(DataType.ENUM('pending', 'completed', 'reviewed', 'cancelled'))
   status: string;
 
-  @Column(DataType.STRING)
+  @Column(DataType.STRING(255))
   orderedBy?: string;
 
-  @Column(DataType.STRING)
+  @Column(DataType.STRING(255))
   performedBy?: string;
 
-  @Column(DataType.STRING)
+  @Column(DataType.STRING(255))
   reviewedBy?: string;
 
   @Column(DataType.DATE)
   reviewedDate?: Date;
 
-  @Column(DataType.STRING)
+  @Column(DataType.STRING(255))
   labName?: string;
 
   @Column(DataType.TEXT)

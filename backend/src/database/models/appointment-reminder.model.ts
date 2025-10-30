@@ -9,7 +9,6 @@ import {
   BelongsTo,
   Index
   } from 'sequelize-typescript';
-;
 
 export enum MessageType {
   EMAIL = 'EMAIL',
@@ -60,7 +59,10 @@ export class AppointmentReminder extends Model<AppointmentReminderAttributes> {
   declare appointment: any;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(MessageType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(MessageType)]
+    },
     allowNull: false
   })
   type: MessageType;
@@ -74,7 +76,10 @@ export class AppointmentReminder extends Model<AppointmentReminderAttributes> {
 
   @Index
   @Column({
-    type: DataType.ENUM(...(Object.values(ReminderStatus) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ReminderStatus)]
+    },
     allowNull: false,
     defaultValue: ReminderStatus.SCHEDULED
   })

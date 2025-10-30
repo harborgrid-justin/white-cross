@@ -115,7 +115,10 @@ export class TrainingModule extends Model<TrainingModuleAttributes, CreateTraini
 
   @AllowNull(false)
   @Column({
-    type: DataType.ENUM(...(Object.values(TrainingCategory) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(TrainingCategory)]
+    },
     allowNull: false,
     comment: 'Category of the training module',
   })
@@ -144,7 +147,7 @@ export class TrainingModule extends Model<TrainingModuleAttributes, CreateTraini
 
   @AllowNull(true)
   @Column({
-    type: DataType.ARRAY(DataType.STRING),
+    type: DataType.ARRAY(DataType.STRING(255)),
     allowNull: true,
     comment: 'Array of attachment file paths',
   })

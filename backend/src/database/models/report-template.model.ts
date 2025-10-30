@@ -44,6 +44,7 @@ export interface ReportTemplateAttributes {
 @Table({
   tableName: 'report_templates',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['reportType']
@@ -67,7 +68,10 @@ export class ReportTemplate extends Model<ReportTemplateAttributes> implements R
   description?: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(ReportType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(ReportType)]
+    },
     allowNull: false
   })
   reportType: ReportType;
@@ -79,7 +83,10 @@ export class ReportTemplate extends Model<ReportTemplateAttributes> implements R
   queryConfiguration?: Record<string, any>;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(OutputFormat) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(OutputFormat)]
+    },
     allowNull: false,
     defaultValue: OutputFormat.PDF
   })

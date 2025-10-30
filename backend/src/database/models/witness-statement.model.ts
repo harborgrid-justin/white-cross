@@ -11,7 +11,6 @@ import {
   BelongsTo
   } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-;
 
 export enum WitnessType {
   STAFF = 'STAFF',
@@ -40,6 +39,7 @@ export interface WitnessStatementAttributes {
 @Table({
   tableName: 'witness_statements',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['incidentReportId', 'verified']
@@ -67,7 +67,10 @@ export class WitnessStatement extends Model<WitnessStatementAttributes> implemen
   witnessName: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(WitnessType) as string[])),
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(WitnessType)]
+    },
     allowNull: false
   })
   witnessType: WitnessType;

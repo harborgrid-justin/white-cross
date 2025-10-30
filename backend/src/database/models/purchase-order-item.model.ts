@@ -10,8 +10,7 @@ import {
   BeforeCreate,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-;
-;
+
 
 export interface PurchaseOrderItemAttributes {
   id: string;
@@ -25,6 +24,7 @@ export interface PurchaseOrderItemAttributes {
 @Table({
   tableName: 'purchase_order_items',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['purchaseOrderId'],

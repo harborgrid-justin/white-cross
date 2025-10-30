@@ -10,8 +10,7 @@ import {
   BeforeCreate
   } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-;
-;
+
 
 export interface StudentMedicationAttributes {
   id: string;
@@ -34,6 +33,7 @@ export interface StudentMedicationAttributes {
 @Table({
   tableName: 'student_medications',
   timestamps: true,
+  underscored: false,
   indexes: [
     {
       fields: ['studentId']
@@ -79,19 +79,19 @@ export class StudentMedication extends Model<StudentMedicationAttributes> implem
   medicationId: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false
   })
   dosage: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false
   })
   frequency: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false
   })
   route: string;
@@ -117,13 +117,13 @@ export class StudentMedication extends Model<StudentMedicationAttributes> implem
   isActive: boolean;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false
   })
   prescribedBy: string;
 
   @Column({
-    type: DataType.STRING
+    type: DataType.STRING(255)
   })
   prescriptionNumber?: string;
 
