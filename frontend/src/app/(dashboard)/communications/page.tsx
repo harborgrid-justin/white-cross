@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { CommunicationsApi, type Message } from '@/services/modules/communicationsApi';
-import { apiClient } from '@/services/core/ApiClient';
+import { fetchCommunicationsDashboardData } from './data';
+import { type Message } from '@/services/modules/communicationsApi';
 import { useToast } from '@/hooks/use-toast';
 import { MessageCircle, Send, Search, Filter, Plus } from 'lucide-react';
 
@@ -19,7 +19,6 @@ export default function CommunicationsPage() {
   const [selectedType, setSelectedType] = useState<string>('');
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const { toast } = useToast();
-  const communicationsApi = new CommunicationsApi(apiClient);
 
   /**
    * Load communications data from API
@@ -29,22 +28,24 @@ export default function CommunicationsPage() {
       setLoading(true);
       
       try {
-        const filters: Record<string, string | number> = {};
+        const filters = {
+          search: searchTerm.trim() || undefined,
+          priority: selectedType || undefined,
+          status: selectedStatus || undefined
+        };
         
-        if (searchTerm.trim()) {
-          filters.search = searchTerm.trim();
+        const { communications: communicationsData, error } = 
+          await fetchCommunicationsDashboardData(filters);
+        
+        setCommunications(communicationsData);
+        
+        if (error) {
+          toast({
+            title: 'Error',
+            description: error,
+            variant: 'destructive',
+          });
         }
-        
-        if (selectedType) {
-          filters.priority = selectedType;
-        }
-        
-        if (selectedStatus) {
-          filters.status = selectedStatus;
-        }
-        
-        const response = await communicationsApi.getMessages(filters);
-        setCommunications(response.data || []);
       } catch (error) {
         console.error('Failed to load communications:', error);
         toast({

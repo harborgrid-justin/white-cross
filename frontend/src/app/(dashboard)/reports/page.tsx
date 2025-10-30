@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { reportsApi } from '@/services/modules/reportsApi';
+import { fetchReportsDashboardData } from './data';
 import { type ReportHistory } from '@/types/reports';
 import { useToast } from '@/hooks/use-toast';
 import { FileText, Download, Search, Filter, Plus, Calendar, BarChart3 } from 'lucide-react';
@@ -28,22 +28,24 @@ export default function ReportsPage() {
       setLoading(true);
       
       try {
-        const filters: Record<string, string | number> = {};
+        const filters = {
+          search: searchTerm.trim() || undefined,
+          type: selectedType || undefined,
+          status: selectedStatus || undefined
+        };
         
-        if (searchTerm.trim()) {
-          filters.search = searchTerm.trim();
+        const { reports: reportsData, error } = 
+          await fetchReportsDashboardData(filters);
+        
+        setReports(reportsData);
+        
+        if (error) {
+          toast({
+            title: 'Error',
+            description: error,
+            variant: 'destructive',
+          });
         }
-        
-        if (selectedType) {
-          filters.type = selectedType;
-        }
-        
-        if (selectedStatus) {
-          filters.status = selectedStatus;
-        }
-        
-        const response = await reportsApi.getReportHistory(filters);
-        setReports(response.history || []);
       } catch (error) {
         console.error('Failed to load reports:', error);
         toast({

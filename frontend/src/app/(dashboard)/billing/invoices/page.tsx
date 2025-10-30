@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/layout/Card';
-import { billingApi, type BillingInvoice, type InvoiceFilters } from '@/services/api';
+import { type BillingInvoice, type InvoiceFilters } from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
+import { fetchInvoicesDashboardData } from './data';
 
 export default function InvoicesPage() {
   const [invoices, setInvoices] = useState<BillingInvoice[]>([]);
@@ -12,7 +13,7 @@ export default function InvoicesPage() {
   const { toast } = useToast();
 
   /**
-   * Load invoices data from API
+   * Load invoices data from data layer
    */
   useEffect(() => {
     const loadInvoices = async () => {
@@ -20,25 +21,18 @@ export default function InvoicesPage() {
       
       try {
         const filters: InvoiceFilters = {};
+        const { invoices, error } = await fetchInvoicesDashboardData(filters, searchTerm);
         
-        // Add search filter if search term exists
-        if (searchTerm.trim()) {
-          // For now, we'll filter client-side after getting results
-          // In a real implementation, the API would handle search
+        if (error) {
+          toast({
+            title: 'Error',
+            description: error,
+            variant: 'destructive',
+          });
+          setInvoices([]);
+        } else {
+          setInvoices(invoices);
         }
-        
-        const response = await billingApi.getInvoices(1, 50, filters);
-        
-        // Apply client-side search filter if needed
-        const filteredInvoices = searchTerm.trim() 
-          ? response.data.filter(invoice => 
-              invoice.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              invoice.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              invoice.providerName.toLowerCase().includes(searchTerm.toLowerCase())
-            )
-          : response.data;
-        
-        setInvoices(filteredInvoices);
       } catch (error) {
         console.error('Failed to load invoices:', error);
         toast({

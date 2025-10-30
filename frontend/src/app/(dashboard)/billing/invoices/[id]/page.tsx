@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { BillingDetail } from '@/components/pages/Billing';
 import { BillingInvoice } from '@/components/pages/Billing/BillingCard';
-import { billingApi, type BillingInvoice as ApiBillingInvoice } from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
+import { fetchInvoiceDetailDashboardData, deleteInvoice, downloadInvoicePDF, sendInvoice } from './data';
 
 /**
  * Invoice Detail Page
@@ -18,56 +18,25 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
   const { toast } = useToast();
 
   /**
-   * Load invoice data from API
+   * Load invoice data from data layer
    */
   useEffect(() => {
     const loadInvoice = async () => {
       setLoading(true);
       
       try {
-        const apiInvoice = await billingApi.getInvoiceById(params.id);
+        const { invoice, error } = await fetchInvoiceDetailDashboardData(params.id);
         
-        // Convert API invoice format to component format
-        const convertedInvoice: BillingInvoice = {
-          id: apiInvoice.id,
-          invoiceNumber: apiInvoice.invoiceNumber,
-          patientId: apiInvoice.patientId,
-          patientName: apiInvoice.patientName,
-          patientEmail: apiInvoice.patientEmail,
-          patientPhone: apiInvoice.patientPhone,
-          patientAddress: apiInvoice.patientAddress,
-          providerId: apiInvoice.providerId,
-          providerName: apiInvoice.providerName,
-          serviceDate: apiInvoice.serviceDate,
-          issueDate: apiInvoice.issueDate,
-          dueDate: apiInvoice.dueDate,
-          status: apiInvoice.status,
-          priority: apiInvoice.priority,
-          lineItems: apiInvoice.lineItems,
-          subtotal: apiInvoice.subtotal,
-          discountAmount: apiInvoice.discountAmount,
-          taxAmount: apiInvoice.taxAmount,
-          totalAmount: apiInvoice.totalAmount,
-          amountPaid: apiInvoice.amountPaid,
-          balanceDue: apiInvoice.balanceDue,
-          payments: apiInvoice.payments.map(payment => ({
-            id: payment.id,
-            amount: payment.amount,
-            method: payment.method,
-            date: payment.date,
-            reference: payment.reference,
-            notes: payment.notes
-          })),
-          notes: apiInvoice.notes,
-          terms: apiInvoice.terms,
-          insuranceClaimId: apiInvoice.insuranceClaimId,
-          insuranceStatus: apiInvoice.insuranceStatus,
-          createdBy: apiInvoice.createdBy,
-          createdAt: apiInvoice.createdAt,
-          updatedAt: apiInvoice.updatedAt
-        };
-        
-        setInvoice(convertedInvoice);
+        if (error) {
+          toast({
+            title: 'Error',
+            description: error,
+            variant: 'destructive',
+          });
+          setInvoice(null);
+        } else {
+          setInvoice(invoice);
+        }
       } catch (error) {
         console.error('Failed to load invoice:', error);
         toast({
@@ -94,29 +63,29 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
         }}
         onDeleteInvoice={async (invoice) => {
           if (confirm(`Are you sure you want to delete invoice ${invoice.invoiceNumber}?`)) {
-            try {
-              await billingApi.deleteInvoice(invoice.id);
+            const { success, error } = await deleteInvoice(invoice.id);
+            
+            if (success) {
               toast({
                 title: 'Success',
                 description: `Invoice ${invoice.invoiceNumber} has been deleted.`,
               });
               window.location.href = '/dashboard/billing';
-            } catch (error) {
-              console.error('Failed to delete invoice:', error);
+            } else {
               toast({
                 title: 'Error',
-                description: 'Failed to delete invoice. Please try again.',
+                description: error || 'Failed to delete invoice. Please try again.',
                 variant: 'destructive',
               });
             }
           }
         }}
         onDownloadInvoice={async (invoice) => {
-          try {
-            const pdfBlob = await billingApi.downloadInvoicePDF(invoice.id);
-            
+          const { blob, success, error } = await downloadInvoicePDF(invoice.id);
+          
+          if (success && blob) {
             // Create download link
-            const url = window.URL.createObjectURL(pdfBlob);
+            const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
             a.download = `${invoice.invoiceNumber}.pdf`;
@@ -129,27 +98,26 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
               title: 'Success',
               description: 'Invoice PDF downloaded successfully.',
             });
-          } catch (error) {
-            console.error('Failed to download invoice:', error);
+          } else {
             toast({
               title: 'Error',
-              description: 'Failed to download invoice PDF. Please try again.',
+              description: error || 'Failed to download invoice PDF. Please try again.',
               variant: 'destructive',
             });
           }
         }}
         onSendInvoice={async (invoice) => {
-          try {
-            await billingApi.sendInvoice(invoice.id, invoice.patientEmail);
+          const { success, error } = await sendInvoice(invoice.id, invoice.patientEmail);
+          
+          if (success) {
             toast({
               title: 'Success',
               description: `Invoice ${invoice.invoiceNumber} has been sent to ${invoice.patientEmail}`,
             });
-          } catch (error) {
-            console.error('Failed to send invoice:', error);
+          } else {
             toast({
               title: 'Error',
-              description: 'Failed to send invoice. Please try again.',
+              description: error || 'Failed to send invoice. Please try again.',
               variant: 'destructive',
             });
           }

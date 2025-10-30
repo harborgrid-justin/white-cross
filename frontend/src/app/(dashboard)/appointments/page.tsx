@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { appointmentsApi } from '@/services/modules/appointmentsApi';
+import { fetchAppointmentsDashboardData } from './data';
 import { type Appointment } from '@/types/appointments';
 import { useToast } from '@/hooks/use-toast';
 import { Calendar, Clock, Search, Filter, Plus, Users } from 'lucide-react';
@@ -28,22 +28,24 @@ export default function AppointmentsPage() {
       setLoading(true);
       
       try {
-        const filters: Record<string, string | number> = {};
+        const filters = {
+          search: searchTerm.trim() || undefined,
+          status: selectedStatus || undefined,
+          date: selectedDate || undefined
+        };
         
-        if (searchTerm.trim()) {
-          filters.search = searchTerm.trim();
+        const { appointments: appointmentsData, error } = 
+          await fetchAppointmentsDashboardData(filters);
+        
+        setAppointments(appointmentsData);
+        
+        if (error) {
+          toast({
+            title: 'Error',
+            description: error,
+            variant: 'destructive',
+          });
         }
-        
-        if (selectedStatus) {
-          filters.status = selectedStatus;
-        }
-        
-        if (selectedDate) {
-          filters.date = selectedDate;
-        }
-        
-        const response = await appointmentsApi.getAll(filters);
-        setAppointments(response.data || []);
       } catch (error) {
         console.error('Failed to load appointments:', error);
         toast({

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { reportsApi } from '@/services/modules/reportsApi';
+import { fetchComplianceDashboardData } from './data';
 import { type ComplianceReport } from '@/types/reports';
 import { useToast } from '@/hooks/use-toast';
 import { Shield, AlertTriangle, CheckCircle, Search, Filter, FileText, Calendar, TrendingUp } from 'lucide-react';
@@ -28,17 +28,22 @@ export default function CompliancePage() {
       setLoading(true);
       
       try {
-        const endDate = new Date();
-        const startDate = new Date();
-        startDate.setDate(endDate.getDate() - parseInt(selectedDateRange));
-        
         const filters = {
-          startDate: startDate.toISOString(),
-          endDate: endDate.toISOString(),
+          dateRange: selectedDateRange
         };
         
-        const response = await reportsApi.getComplianceReport(filters);
-        setComplianceData(response);
+        const { complianceData: complianceResponse, error } = 
+          await fetchComplianceDashboardData(filters);
+        
+        setComplianceData(complianceResponse);
+        
+        if (error) {
+          toast({
+            title: 'Error',
+            description: error,
+            variant: 'destructive',
+          });
+        }
       } catch (error) {
         console.error('Failed to load compliance data:', error);
         toast({

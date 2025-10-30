@@ -62,7 +62,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { PageHeader } from '@/components/layouts/PageHeader';
-import { medicationsApi } from '@/services/modules/medicationsApi';
+import { fetchMedicationsDashboardData } from './data';
 import { Button } from '@/components/ui/Button';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import { useToast } from '@/hooks/useToast';
@@ -159,26 +159,16 @@ export default function MedicationsPage() {
         setLoading(true);
         setError(null);
 
-        // Fetch medications and stats in parallel
-        const [medicationsResponse, statsResponse] = await Promise.allSettled([
-          medicationsApi.getAll({ page: 1, limit: 50 }),
-          medicationsApi.getStats()
-        ]);
+        // Use separated data layer function
+        const { medications: medicationsData, stats: statsData, error: dataError } = 
+          await fetchMedicationsDashboardData({ page: 1, limit: 50 });
 
-        // Handle medications response
-        if (medicationsResponse.status === 'fulfilled') {
-          setMedications(medicationsResponse.value.medications || []);
-        } else {
-          console.error('Error fetching medications:', medicationsResponse.reason);
-          showError('Failed to load medications');
-        }
+        setMedications(medicationsData);
+        setStats(statsData);
 
-        // Handle stats response
-        if (statsResponse.status === 'fulfilled') {
-          setStats(statsResponse.value);
-        } else {
-          console.error('Error fetching stats:', statsResponse.reason);
-          // Continue with default stats - don't show error for stats failure
+        if (dataError) {
+          setError(dataError);
+          showError(dataError);
         }
 
         setLoading(false);
@@ -234,9 +224,7 @@ export default function MedicationsPage() {
         description="Manage and track all student medications"
         actions={
           <Link href="/medications/new">
-            <Button variant="primary">
-              Add Medication
-            </Button>
+            <Button variant="primary">Add Medication</Button>
           </Link>
         }
       />
@@ -308,9 +296,7 @@ export default function MedicationsPage() {
               </p>
               <div className="mt-6">
                 <Link href="/medications/new">
-                  <Button variant="primary">
-                    Add Medication
-                  </Button>
+                  <Button variant="primary">Add Medication</Button>
                 </Link>
               </div>
             </div>

@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { BillingPayment } from '@/components/pages/Billing';
 import { BillingPaymentRecord } from '@/components/pages/Billing/BillingPayment';
-import { billingApi, type PaymentRecord, type PaymentFilters } from '@/services/api';
+import { type PaymentFilters } from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
+import { fetchPaymentsDashboardData, processPaymentRefund, voidPayment } from './data';
 
 /**
  * Payments Page
@@ -20,7 +21,7 @@ export default function PaymentsPage() {
   const { toast } = useToast();
 
   /**
-   * Load payments data from API
+   * Load payments data from data layer
    */
   useEffect(() => {
     const loadPayments = async () => {
@@ -28,48 +29,18 @@ export default function PaymentsPage() {
       
       try {
         const filters: PaymentFilters = {};
+        const { payments, error } = await fetchPaymentsDashboardData(filters, searchTerm);
         
-        // Add search filter if search term exists
-        if (searchTerm.trim()) {
-          // For now, we'll filter client-side after getting results
-          // In a real implementation, the API would handle search
+        if (error) {
+          toast({
+            title: 'Error',
+            description: error,
+            variant: 'destructive',
+          });
+          setPayments([]);
+        } else {
+          setPayments(payments);
         }
-        
-        const response = await billingApi.getPayments(1, 50, filters);
-        
-        // Convert API PaymentRecord to component BillingPaymentRecord format
-        const convertedPayments: BillingPaymentRecord[] = response.data.map((payment: PaymentRecord) => ({
-          id: payment.id,
-          amount: payment.amount,
-          method: payment.method,
-          date: payment.date,
-          reference: payment.reference,
-          notes: payment.notes,
-          status: payment.status,
-          type: payment.type,
-          patientId: payment.patientId,
-          patientName: payment.patientName,
-          invoiceId: payment.invoiceId,
-          invoiceNumber: payment.invoiceNumber,
-          processedBy: payment.processedBy,
-          processedAt: payment.processedAt,
-          transactionId: payment.transactionId,
-          authorizationCode: payment.authorizationCode,
-          refundedAmount: payment.refundedAmount,
-          refundReason: payment.refundReason,
-          metadata: payment.metadata
-        }));
-        
-        // Apply client-side search filter if needed
-        const filteredPayments = searchTerm.trim() 
-          ? convertedPayments.filter(payment => 
-              payment.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              payment.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              payment.reference?.toLowerCase().includes(searchTerm.toLowerCase())
-            )
-          : convertedPayments;
-        
-        setPayments(filteredPayments);
       } catch (error) {
         console.error('Failed to load payments:', error);
         toast({
@@ -84,7 +55,7 @@ export default function PaymentsPage() {
     };
 
     loadPayments();
-  }, [searchTerm]);
+  }, [searchTerm, toast]);
 
   /**
    * Handle payment creation
@@ -120,13 +91,13 @@ export default function PaymentsPage() {
     const refundReason = prompt('Enter refund reason:');
     
     if (refundAmount && refundReason) {
-      try {
-        await billingApi.processRefund({
-          paymentId: payment.id,
-          amount: parseFloat(refundAmount),
-          reason: refundReason
-        });
-        
+      const { success, error } = await processPaymentRefund(
+        payment.id,
+        parseFloat(refundAmount),
+        refundReason
+      );
+      
+      if (success) {
         toast({
           title: 'Success',
           description: `Refund of $${refundAmount} processed for payment ${payment.id}`,
@@ -134,11 +105,10 @@ export default function PaymentsPage() {
         
         // Refresh the payments list
         handleRefresh();
-      } catch (error) {
-        console.error('Failed to process refund:', error);
+      } else {
         toast({
           title: 'Error',
-          description: 'Failed to process refund. Please try again.',
+          description: error || 'Failed to process refund. Please try again.',
           variant: 'destructive',
         });
       }
@@ -152,9 +122,9 @@ export default function PaymentsPage() {
     const reason = prompt('Enter reason for voiding this payment:');
     
     if (reason && confirm(`Are you sure you want to void payment ${payment.id}?`)) {
-      try {
-        await billingApi.voidPayment(payment.id, reason);
-        
+      const { success, error } = await voidPayment(payment.id, reason);
+      
+      if (success) {
         toast({
           title: 'Success',
           description: `Payment ${payment.id} has been voided`,
@@ -162,11 +132,10 @@ export default function PaymentsPage() {
         
         // Refresh the payments list
         handleRefresh();
-      } catch (error) {
-        console.error('Failed to void payment:', error);
+      } else {
         toast({
           title: 'Error',
-          description: 'Failed to void payment. Please try again.',
+          description: error || 'Failed to void payment. Please try again.',
           variant: 'destructive',
         });
       }

@@ -2,42 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { BillingReports } from '@/components/pages/Billing';
-import { billingApi, type BillingAnalytics } from '@/services/api';
+import { fetchBillingReportsDashboardData, type ReportPeriod, type RevenueMetrics, type PaymentMetrics } from './data';
 import { useToast } from '@/hooks/use-toast';
-
-/**
- * Report time period types
- */
-type ReportPeriod = 'today' | 'week' | 'month' | 'quarter' | 'year' | 'custom';
 
 /**
  * Report chart types
  */
 type ChartType = 'line' | 'bar' | 'pie' | 'area';
-
-/**
- * Revenue metrics interface
- */
-interface RevenueMetrics {
-  totalRevenue: number;
-  previousPeriodRevenue: number;
-  revenueGrowth: number;
-  averageInvoiceValue: number;
-  collectionRate: number;
-  outstandingBalance: number;
-}
-
-/**
- * Payment metrics interface
- */
-interface PaymentMetrics {
-  totalPayments: number;
-  paymentVolume: number;
-  averagePaymentTime: number;
-  paymentMethods: { method: string; amount: number; percentage: number }[];
-  refundRate: number;
-  chargebackRate: number;
-}
 
 /**
  * BillingReportsPage Component
@@ -80,69 +51,23 @@ export default function BillingReportsPage() {
       setLoading(true);
       
       try {
-        // Calculate date range based on selected period
-        const now = new Date();
-        let startDate: string | undefined;
-        let endDate: string | undefined;
+        const customRange = selectedPeriod === 'custom' && dateRange.start && dateRange.end 
+          ? dateRange 
+          : undefined;
         
-        if (selectedPeriod === 'custom' && dateRange.start && dateRange.end) {
-          startDate = dateRange.start;
-          endDate = dateRange.end;
-        } else if (selectedPeriod !== 'custom') {
-          endDate = now.toISOString();
-          const start = new Date(now);
-          
-          switch (selectedPeriod) {
-            case 'today':
-              start.setDate(start.getDate() - 1);
-              break;
-            case 'week':
-              start.setDate(start.getDate() - 7);
-              break;
-            case 'month':
-              start.setMonth(start.getMonth() - 1);
-              break;
-            case 'quarter':
-              start.setMonth(start.getMonth() - 3);
-              break;
-            case 'year':
-              start.setFullYear(start.getFullYear() - 1);
-              break;
-          }
-          
-          startDate = start.toISOString();
+        const { revenueMetrics: revenueData, paymentMetrics: paymentData, error } = 
+          await fetchBillingReportsDashboardData(selectedPeriod, customRange);
+        
+        setRevenueMetrics(revenueData);
+        setPaymentMetrics(paymentData);
+        
+        if (error) {
+          toast({
+            title: 'Error',
+            description: error,
+            variant: 'destructive',
+          });
         }
-        
-        // Fetch billing analytics
-        const billingAnalytics = await billingApi.getBillingAnalytics(startDate, endDate);
-        
-        // Fetch payment analytics
-        const paymentAnalytics = await billingApi.getPaymentAnalytics(startDate, endDate);
-        
-        // Convert billing analytics to revenue metrics format
-        setRevenueMetrics({
-          totalRevenue: billingAnalytics.totalRevenue,
-          previousPeriodRevenue: billingAnalytics.monthlyRevenue, // This would need proper calculation
-          revenueGrowth: 0, // Would need to calculate from historical data
-          averageInvoiceValue: billingAnalytics.averageInvoiceValue,
-          collectionRate: billingAnalytics.collectionRate,
-          outstandingBalance: billingAnalytics.outstandingBalance
-        });
-        
-        // Convert payment analytics to payment metrics format
-        setPaymentMetrics({
-          totalPayments: paymentAnalytics.totalPayments,
-          paymentVolume: paymentAnalytics.totalAmount,
-          averagePaymentTime: paymentAnalytics.averagePaymentTime,
-          paymentMethods: paymentAnalytics.paymentMethods.map(pm => ({
-            method: pm.method,
-            amount: pm.amount,
-            percentage: (pm.amount / paymentAnalytics.totalAmount) * 100
-          })),
-          refundRate: paymentAnalytics.refundRate,
-          chargebackRate: paymentAnalytics.chargebackRate
-        });
-        
       } catch (error) {
         console.error('Failed to load billing analytics:', error);
         toast({
