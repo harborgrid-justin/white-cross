@@ -50,8 +50,9 @@ export default function BroadcastAnalytics() {
         <div className="flex items-center gap-2">
           <select
             value={timeRange}
-            onChange={(e) => setTimeRange(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setTimeRange(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+            aria-label="Select time range"
           >
             <option value="7d">Last 7 days</option>
             <option value="30d">Last 30 days</option>
@@ -147,4 +148,102 @@ export default function BroadcastAnalytics() {
               <div className="flex items-center gap-2">
                 <div className="w-24 bg-gray-200 rounded-full h-2">
                   <div className="bg-red-600 h-2 rounded-full" style={{ width: '92%' }}></div>
-                </
+                </div>
+                <span className="text-sm text-gray-600">92%</span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">Announcements</span>
+              <div className="flex items-center gap-2">
+                <div className="w-24 bg-gray-200 rounded-full h-2">
+                  <div className="bg-blue-600 h-2 rounded-full" style={{ width: '78%' }}></div>
+                </div>
+                <span className="text-sm text-gray-600">78%</span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">General Updates</span>
+              <div className="flex items-center gap-2">
+                <div className="w-24 bg-gray-200 rounded-full h-2">
+                  <div className="bg-yellow-600 h-2 rounded-full" style={{ width: '65%' }}></div>
+                </div>
+                <span className="text-sm text-gray-600">65%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Top Performers */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold mb-4">Top Performing Broadcasts</h3>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between py-3 border-b border-gray-100">
+            <div>
+              <h4 className="font-medium text-gray-900">COVID-19 Vaccination Update</h4>
+              <p className="text-sm text-gray-600">Emergency • Jan 15, 2025</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1">
+                <Eye className="h-4 w-4 text-gray-400" />
+                <span className="text-sm">2,340</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <ThumbsUp className="h-4 w-4 text-gray-400" />
+                <span className="text-sm">456</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <MessageSquare className="h-4 w-4 text-gray-400" />
+                <span className="text-sm">89</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between py-3 border-b border-gray-100">
+            <div>
+              <h4 className="font-medium text-gray-900">Weekly Health Tips</h4>
+              <p className="text-sm text-gray-600">Health Updates • Jan 14, 2025</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1">
+                <Eye className="h-4 w-4 text-gray-400" />
+                <span className="text-sm">1,890</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <ThumbsUp className="h-4 w-4 text-gray-400" />
+                <span className="text-sm">234</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <MessageSquare className="h-4 w-4 text-gray-400" />
+                <span className="text-sm">67</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between py-3">
+            <div>
+              <h4 className="font-medium text-gray-900">Community Event Announcement</h4>
+              <p className="text-sm text-gray-600">Announcements • Jan 13, 2025</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1">
+                <Eye className="h-4 w-4 text-gray-400" />
+                <span className="text-sm">1,567</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <ThumbsUp className="h-4 w-4 text-gray-400" />
+                <span className="text-sm">178</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <MessageSquare className="h-4 w-4 text-gray-400" />
+                <span className="text-sm">45</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
