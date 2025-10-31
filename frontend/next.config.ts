@@ -228,7 +228,7 @@ const nextConfig: NextConfig = {
    * for security purposes (important for HIPAA compliance).
    *
    * Proxied Routes:
-   * - /api/v1/* -> Backend REST API endpoints
+   * - /api/v1/* -> Backend REST API endpoints (proxied to non-versioned backend)
    * - /graphql -> GraphQL API endpoint
    * - /uploads/* -> File upload/download endpoints (patient documents, images)
    * - /api/backend-health -> Backend health check endpoint
@@ -243,7 +243,7 @@ const nextConfig: NextConfig = {
    * @example
    * ```typescript
    * // Client makes request to: /api/v1/students
-   * // Next.js proxies to: http://localhost:3001/api/v1/students
+   * // Next.js proxies to: http://localhost:3001/students
    * const response = await fetch('/api/v1/students');
    * ```
    *
@@ -721,4 +721,3 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
-

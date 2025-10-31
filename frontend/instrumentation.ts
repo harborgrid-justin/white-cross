@@ -120,7 +120,7 @@ export function register() {
  * // Example error log output:
  * // {
  * //   error: "Database connection timeout",
- * //   path: "/api/v1/students",
+ * //   path: "/api/students",
  * //   method: "GET"
  * // }
  * ```
@@ -150,4 +150,3 @@ export async function onRequestError(
   // - Record in audit log for compliance tracking
   // - Custom retry logic for transient failures
 }
-
