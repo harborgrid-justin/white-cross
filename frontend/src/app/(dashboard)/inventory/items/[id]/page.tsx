@@ -56,7 +56,7 @@ export const metadata: Metadata = {
 /**
  * Force dynamic rendering for real-time stock levels and transaction data.
  */
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * Props interface for dynamic route page component.

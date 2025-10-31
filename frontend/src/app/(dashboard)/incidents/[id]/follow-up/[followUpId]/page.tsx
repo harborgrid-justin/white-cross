@@ -99,7 +99,7 @@ export const metadata: Metadata = {
 };
 
 // Force dynamic rendering due to auth requirements and real-time progress updates
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * Follow-Up Action Details Component

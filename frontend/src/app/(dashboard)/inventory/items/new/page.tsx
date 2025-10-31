@@ -60,7 +60,7 @@ export const metadata: Metadata = {
 /**
  * Force dynamic rendering for authentication and real-time validation.
  */
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * New Inventory Item Page Component

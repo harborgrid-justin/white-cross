@@ -45,7 +45,7 @@ export const metadata: Metadata = {
 /**
  * Force dynamic rendering for real-time stock data and authentication.
  */
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * Stock Levels Page Component

@@ -61,7 +61,7 @@ export const metadata: Metadata = {
  * Force dynamic rendering for this route
  * Required because audit logs are user-specific and require authentication
  */
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * URL search parameters for audit log filtering

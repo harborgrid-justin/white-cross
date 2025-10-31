@@ -86,7 +86,7 @@ export const metadata: Metadata = {
  *
  * @constant {string} dynamic - "force-dynamic" disables static optimization
  */
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * Page Props Interface

@@ -52,7 +52,7 @@ export const metadata: Metadata = {
 /**
  * Force dynamic rendering for authentication and FIFO batch selection.
  */
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * Stock Issuance Page Component

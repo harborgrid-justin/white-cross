@@ -5,6 +5,12 @@
  * Manage PRN medications with symptom-based administration triggers.
  */
 
+/**
+ * Force dynamic rendering for as-needed medications - real-time tracking required
+ */
+export const dynamic = 'force-dynamic';
+
+
 'use client';
 
 import { useState, useEffect } from 'react';

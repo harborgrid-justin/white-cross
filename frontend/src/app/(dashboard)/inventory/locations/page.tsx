@@ -84,7 +84,7 @@ export const metadata: Metadata = {
 /**
  * Force dynamic rendering for authentication and real-time location data.
  */
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * Inventory Locations Management Page Component

@@ -63,7 +63,7 @@ export const metadata: Metadata = {
 /**
  * Force dynamic rendering for authentication and audit logging.
  */
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * Props interface for dynamic route page component.

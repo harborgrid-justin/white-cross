@@ -7,6 +7,12 @@
 
 'use client';
 
+/**
+ * Force dynamic rendering for real-time immunization data
+ * Immunization records are frequently updated and user-specific
+ */
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';

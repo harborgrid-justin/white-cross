@@ -133,7 +133,7 @@ export const metadata: Metadata = {
 /**
  * Force dynamic rendering for authentication and configuration management.
  */
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * Inventory Settings Page Component

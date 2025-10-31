@@ -79,7 +79,7 @@ export const metadata: Metadata = {
 /**
  * Force dynamic rendering for real-time alert data and prioritization.
  */
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * Low Stock Alerts Page Component

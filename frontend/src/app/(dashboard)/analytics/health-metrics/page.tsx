@@ -62,7 +62,7 @@ import { Calendar, Download, Filter, RefreshCw } from 'lucide-react';
  *
  * @type {"force-dynamic"}
  */
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * Health Metrics Analytics Page Component

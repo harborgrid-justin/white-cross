@@ -143,7 +143,7 @@ export const metadata: Metadata = {
 };
 
 // Force dynamic rendering due to auth requirements and real-time incident data
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * Severity color mapping for visual incident severity indicators.

@@ -42,6 +42,12 @@
  * @see {@link https://www.fda.gov/regulatory-information/search-fda-guidance-documents/part-11-electronic-records-electronic-signatures-scope-and-application|FDA 21 CFR Part 11}
  */
 
+/**
+ * Force dynamic rendering for specific document access - requires authentication and access logging
+ */
+export const dynamic = 'force-dynamic';
+
+
 import { Metadata } from 'next'
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'

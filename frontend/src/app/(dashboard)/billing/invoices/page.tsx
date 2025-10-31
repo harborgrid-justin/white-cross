@@ -1,5 +1,11 @@
 'use client';
 
+/**
+ * Force dynamic rendering for user-specific billing data
+ * Invoice data is sensitive financial information that varies per user
+ */
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/layout/Card';
 import { type BillingInvoice, type InvoiceFilters } from '@/services/api';

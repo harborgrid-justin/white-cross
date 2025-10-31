@@ -1,5 +1,11 @@
 'use client';
 
+/**
+ * Force dynamic rendering for appointment creation form
+ * Requires real-time availability checking and user authentication
+ */
+export const dynamic = 'force-dynamic';
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { PageHeader } from '@/components/shared/PageHeader';

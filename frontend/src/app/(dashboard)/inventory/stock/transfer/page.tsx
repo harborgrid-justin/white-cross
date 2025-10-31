@@ -67,7 +67,7 @@ export const metadata: Metadata = {
 /**
  * Force dynamic rendering for real-time location availability checks.
  */
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * Stock Transfer Page Component

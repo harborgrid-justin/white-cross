@@ -55,7 +55,7 @@ export const metadata: Metadata = {
  * Force dynamic rendering for this route
  * Required for real-time acknowledgment status and user-specific policy assignments
  */
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * URL search parameters for policy filtering

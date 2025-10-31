@@ -8,7 +8,25 @@
  * @since 2025-10-26
  */
 
+import { Metadata } from 'next';
 import { Suspense } from 'react'
+
+/**
+ * Page metadata for admin settings overview
+ */
+export const metadata: Metadata = {
+  title: 'System Settings | White Cross Admin',
+  description: 'Administrative dashboard for system configuration, user management, and health monitoring',
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
+/**
+ * Force dynamic rendering for real-time system statistics
+ */
+export const dynamic = 'force-dynamic';
 import {
   Users,
   Building2,

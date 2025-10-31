@@ -68,7 +68,7 @@ import { Download, Filter, RefreshCw } from 'lucide-react';
  *
  * @type {"force-dynamic"}
  */
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * Medication Compliance Analytics Page Component

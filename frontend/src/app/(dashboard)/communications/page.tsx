@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * Force dynamic rendering for real-time communication dashboard
+ */
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect } from 'react';
 import { fetchCommunicationsDashboardData } from './data';
 import { type Message } from '@/services/modules/communicationsApi';

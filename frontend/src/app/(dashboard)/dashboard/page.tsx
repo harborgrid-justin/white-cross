@@ -8,6 +8,7 @@
  * - Responsive grid layout
  */
 
+import { Metadata } from 'next';
 import { Container } from '@/components/layouts/Container';
 import {
   Users,
@@ -17,6 +18,18 @@ import {
   TrendingUp,
   Activity,
 } from 'lucide-react';
+
+/**
+ * Page metadata for SEO and browser display
+ */
+export const metadata: Metadata = {
+  title: 'Dashboard | White Cross',
+  description: 'Healthcare dashboard with student statistics, medication tracking, appointment scheduling, and incident monitoring',
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 /**
  * Dynamic Rendering Configuration

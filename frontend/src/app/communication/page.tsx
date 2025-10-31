@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 }
 
 // Force dynamic rendering due to client-side data requirements
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * Communication Hub Page

@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * Force dynamic rendering for current billing reports
+ */
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect } from 'react';
 import { BillingReports } from '@/components/pages/Billing';
 import { fetchBillingReportsDashboardData, type ReportPeriod, type RevenueMetrics, type PaymentMetrics } from './data';

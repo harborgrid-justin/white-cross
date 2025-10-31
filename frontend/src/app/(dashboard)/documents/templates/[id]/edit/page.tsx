@@ -66,6 +66,12 @@
  * @see {@link https://handlebarsjs.com/|Handlebars.js Template Syntax}
  */
 
+/**
+ * Force dynamic rendering for template editing - requires current template data
+ */
+export const dynamic = 'force-dynamic';
+
+
 import { Metadata } from 'next'
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
