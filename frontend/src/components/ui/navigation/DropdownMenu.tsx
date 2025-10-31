@@ -14,10 +14,7 @@
 
 import React, { Fragment } from 'react';
 import { Menu, Transition } from '@headlessui/react';
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-const cn = (...inputs: (string | undefined)[]) => twMerge(clsx(inputs));
+import { cn } from '@/lib/utils';
 
 /**
  * Menu item variant type

@@ -269,17 +269,7 @@
  */
 
 import React from 'react';
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-/**
- * Utility function for merging Tailwind CSS class names with proper precedence.
- *
- * @param {Array<string | undefined>} inputs - Class names to merge
- * @returns {string} Merged class string
- * @internal
- */
-const cn = (...inputs: (string | undefined)[]) => twMerge(clsx(inputs));
+import { cn } from '@/lib/utils';
 
 /**
  * Props for the main Table component.
@@ -544,6 +534,47 @@ const TableRow = React.forwardRef<HTMLTableRowElement, TableRowProps>(
 );
 
 /**
+ * Sort indicator icon component showing ascending/descending arrows.
+ *
+ * @param {Object} props - Icon props
+ * @param {('asc' | 'desc' | null)} props.direction - Sort direction
+ * @param {boolean} props.sortable - Whether column is sortable
+ * @returns {JSX.Element | null} Sort icon or null if not sortable
+ * @internal
+ */
+const SortIcon: React.FC<{ direction: 'asc' | 'desc' | null; sortable: boolean }> = ({ 
+  direction, 
+  sortable 
+}) => {
+  if (!sortable) return null;
+
+  return (
+    <span className="ml-2 inline-flex flex-col" aria-hidden="true">
+      <svg
+        className={cn(
+          'h-3 w-3 -mb-0.5',
+          direction === 'asc' ? 'text-gray-900' : 'text-gray-400'
+        )}
+        fill="currentColor"
+        viewBox="0 0 20 20"
+      >
+        <path d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" />
+      </svg>
+      <svg
+        className={cn(
+          'h-3 w-3',
+          direction === 'desc' ? 'text-gray-900' : 'text-gray-400'
+        )}
+        fill="currentColor"
+        viewBox="0 0 20 20"
+      >
+        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+      </svg>
+    </span>
+  );
+};
+
+/**
  * TableHead component (th) for column header cells with optional sorting.
  *
  * Renders column header cells with support for sortable columns. When sortable,
@@ -590,43 +621,6 @@ const TableRow = React.forwardRef<HTMLTableRowElement, TableRowProps>(
 const TableHead = React.forwardRef<HTMLTableHeaderCellElement, TableHeadProps>(
   ({ className, sortable = false, sortDirection = null, onSort, children, ...props }, ref) => {
     /**
-     * Sort indicator icon component showing ascending/descending arrows.
-     *
-     * @param {Object} props - Icon props
-     * @param {('asc' | 'desc' | null)} props.direction - Sort direction
-     * @returns {JSX.Element | null} Sort icon or null if not sortable
-     * @internal
-     */
-    const SortIcon = ({ direction }: { direction: 'asc' | 'desc' | null }) => {
-      if (!sortable) return null;
-
-      return (
-        <span className="ml-2 inline-flex flex-col" aria-hidden="true">
-          <svg
-            className={cn(
-              'h-3 w-3 -mb-0.5',
-              direction === 'asc' ? 'text-gray-900' : 'text-gray-400'
-            )}
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" />
-          </svg>
-          <svg
-            className={cn(
-              'h-3 w-3',
-              direction === 'desc' ? 'text-gray-900' : 'text-gray-400'
-            )}
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-          </svg>
-        </span>
-      );
-    };
-
-    /**
      * Handles keyboard events for sortable headers.
      *
      * @param {React.KeyboardEvent<HTMLTableCellElement>} e - Keyboard event
@@ -656,7 +650,7 @@ const TableHead = React.forwardRef<HTMLTableHeaderCellElement, TableHeadProps>(
       >
         <div className="flex items-center">
           {children}
-          <SortIcon direction={sortDirection} />
+          <SortIcon direction={sortDirection} sortable={sortable} />
         </div>
       </th>
     );

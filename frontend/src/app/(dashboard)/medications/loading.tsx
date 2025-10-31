@@ -21,8 +21,8 @@
  * @since 1.0.0
  */
 
-import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 
 export default function MedicationsLoading() {
   return (

@@ -19,22 +19,24 @@ interface TemplateProps {
 
 /**
  * Page transition template with fade animation
- * Handles hydration properly to avoid SSR mismatches
+ * Uses proper hydration pattern to prevent SSR mismatches
  */
 export default function Template({ children }: TemplateProps) {
   const pathname = usePathname();
-  const [isHydrated, setIsHydrated] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
-  // Handle client-side hydration to avoid SSR mismatch with animations
+  // Ensure component is mounted on client before showing animations
   useEffect(() => {
-    setIsHydrated(true);
+    setIsMounted(true);
   }, []);
 
-  // Don't render animations until hydration is complete
-  if (!isHydrated) {
+  // During SSR and before hydration, render without animations
+  // This ensures server and client render the same content initially
+  if (!isMounted) {
     return <div>{children}</div>;
   }
 
+  // After hydration, enable animations
   return (
     <AnimatePresence mode="wait">
       <motion.div

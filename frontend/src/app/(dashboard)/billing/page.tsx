@@ -1,109 +1,60 @@
-import { Metadata } from 'next';
-import { BillingHeader, BillingList } from '@/components/pages/Billing';
-
 /**
- * Page metadata for SEO and browser display
+ * Billing Page - White Cross Healthcare Platform
+ *
+ * Features:
+ * - Healthcare billing and invoice management
+ * - Insurance claims processing
+ * - Financial reporting and analytics
+ * - HIPAA-compliant billing operations
  */
-export const metadata: Metadata = {
-  title: 'Billing & Invoices | White Cross',
-  description: 'Manage invoices, track payments, and monitor billing operations for healthcare services',
-  robots: {
-    index: false,
-    follow: false,
-  },
-};
+
+'use client';
 
 /**
- * Force dynamic rendering for real-time financial data
+ * Force dynamic rendering for real-time billing data
  */
 export const dynamic = 'force-dynamic';
 
-/**
- * Billing Dashboard Page
- *
- * Main billing and invoicing dashboard with financial metrics,
- * invoice management, and billing operations overview.
- */
+import React from 'react';
+import { PageHeader } from '@/components/layouts/PageHeader';
+import { Plus, DollarSign } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import BillingContent from './_components/BillingContent';
+import BillingSidebar from './_components/BillingSidebar';
+
 export default function BillingPage() {
   return (
     <div className="min-h-screen bg-gray-50">
-      <BillingHeader
-        totalInvoices={156}
-        totalRevenue={245680}
-        outstandingBalance={45230}
-        paidInvoices={132}
-        overdueInvoices={8}
-        draftInvoices={16}
-        averagePaymentTime={28}
-        collectionRate={87.3}
-        onCreateInvoice={() => {
-          // Navigate to invoice builder
-          window.location.href = '/dashboard/billing/invoices/new';
-        }}
-        onImportInvoices={() => {
-          // Handle import
-          console.log('Import invoices');
-        }}
-        onExportInvoices={() => {
-          // Handle export
-          console.log('Export invoices');
-        }}
-        onRefresh={() => {
-          // Handle refresh
-          window.location.reload();
-        }}
-        onSettings={() => {
-          // Navigate to settings
-          window.location.href = '/dashboard/billing/settings';
-        }}
-        onBulkActions={() => {
-          console.log('Bulk actions');
-        }}
-        onSendStatements={() => {
-          console.log('Send statements');
-        }}
-        onProcessPayments={() => {
-          window.location.href = '/dashboard/billing/payments';
-        }}
+      <PageHeader
+        title="Billing & Invoices"
+        description="Manage healthcare billing, insurance claims, and financial operations"
+        actions={
+          <div className="flex space-x-3">
+            <Button variant="secondary">
+              <DollarSign className="h-4 w-4 mr-2" />
+              Process Payment
+            </Button>
+            <Button variant="primary">
+              <Plus className="h-4 w-4 mr-2" />
+              Create Invoice
+            </Button>
+          </div>
+        }
       />
-      
-      <BillingList
-        onInvoiceClick={(invoice) => {
-          window.location.href = `/dashboard/billing/invoices/${invoice.id}`;
-        }}
-        onViewDetails={(invoice) => {
-          window.location.href = `/dashboard/billing/invoices/${invoice.id}`;
-        }}
-        onEditInvoice={(invoice) => {
-          window.location.href = `/dashboard/billing/invoices/${invoice.id}/edit`;
-        }}
-        onDeleteInvoice={(invoice) => {
-          if (confirm(`Are you sure you want to delete invoice ${invoice.invoiceNumber}?`)) {
-            console.log('Delete invoice:', invoice.id);
-          }
-        }}
-        onDownloadInvoice={(invoice) => {
-          console.log('Download invoice:', invoice.id);
-        }}
-        onSendInvoice={(invoice) => {
-          console.log('Send invoice:', invoice.id);
-        }}
-        onRecordPayment={(invoice) => {
-          window.location.href = `/dashboard/billing/payments/new?invoice=${invoice.id}`;
-        }}
-        onSelectionChange={(selectedIds) => {
-          console.log('Selected invoices:', selectedIds);
-        }}
-        onPageChange={(page) => {
-          console.log('Page change:', page);
-        }}
-        onViewModeChange={(mode) => {
-          console.log('View mode change:', mode);
-        }}
-        onBulkActions={(action, invoiceIds) => {
-          console.log('Bulk action:', action, invoiceIds);
-        }}
-      />
+
+      <div className="p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Main Billing Content */}
+          <div className="lg:col-span-3">
+            <BillingContent />
+          </div>
+          
+          {/* Billing Sidebar */}
+          <div className="lg:col-span-1">
+            <BillingSidebar />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
