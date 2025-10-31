@@ -25,11 +25,9 @@ export function HealthRecordHeader({ recordId, recordDate }: HealthRecordHeaderP
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center space-x-4">
-        <Link href="/health-records">
-          <Button variant="secondary" leftIcon={<ArrowLeft />}>
-            Back
-          </Button>
-        </Link>
+        <Button href="/health-records" variant="secondary" leftIcon={<ArrowLeft />}>
+          Back
+        </Button>
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Health Record</h1>
           <p className="mt-1 text-gray-600">
@@ -38,9 +36,9 @@ export function HealthRecordHeader({ recordId, recordDate }: HealthRecordHeaderP
         </div>
       </div>
       <div className="flex space-x-3">
-        <Link href={`/health-records/${recordId}/edit`}>
-          <Button leftIcon={<Edit />}>Edit Record</Button>
-        </Link>
+        <Button href={`/health-records/${recordId}/edit`} leftIcon={<Edit />}>
+          Edit Record
+        </Button>
         <Button variant="destructive" leftIcon={<Trash2 />}>
           Delete
         </Button>

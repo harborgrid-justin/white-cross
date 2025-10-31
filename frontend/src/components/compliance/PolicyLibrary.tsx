@@ -51,12 +51,10 @@ export function PolicyLibrary({ policies, statistics, onViewPolicy, onEditPolicy
           <h2 className="text-2xl font-bold">Policy Library</h2>
           <p className="text-gray-600 mt-1">Manage organizational policies and compliance documents</p>
         </div>
-        <Link href="/compliance/policies/new">
-          <Button className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            New Policy
-          </Button>
-        </Link>
+        <Button href="/compliance/policies/new" className="flex items-center gap-2">
+          <Plus className="h-4 w-4" />
+          New Policy
+        </Button>
       </div>
 
       {/* Search */}

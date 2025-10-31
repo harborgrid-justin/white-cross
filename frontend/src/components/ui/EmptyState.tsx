@@ -9,7 +9,6 @@
  */
 
 import React from 'react';
-import Link from 'next/link';
 import { LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
@@ -103,43 +102,25 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         {(actionLabel || secondaryActionLabel) && (
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             {actionLabel && (
-              <>
-                {actionHref ? (
-                  <Link href={actionHref}>
-                    <Button variant="primary" className="w-full sm:w-auto">
-                      {actionLabel}
-                    </Button>
-                  </Link>
-                ) : (
-                  <Button
-                    variant="primary"
-                    onClick={onAction}
-                    className="w-full sm:w-auto"
-                  >
-                    {actionLabel}
-                  </Button>
-                )}
-              </>
+              <Button
+                variant="primary"
+                href={actionHref}
+                onClick={onAction}
+                className="w-full sm:w-auto"
+              >
+                {actionLabel}
+              </Button>
             )}
 
             {secondaryActionLabel && (
-              <>
-                {secondaryActionHref ? (
-                  <Link href={secondaryActionHref}>
-                    <Button variant="outline" className="w-full sm:w-auto">
-                      {secondaryActionLabel}
-                    </Button>
-                  </Link>
-                ) : (
-                  <Button
-                    variant="outline"
-                    onClick={onSecondaryAction}
-                    className="w-full sm:w-auto"
-                  >
-                    {secondaryActionLabel}
-                  </Button>
-                )}
-              </>
+              <Button
+                variant="outline"
+                href={secondaryActionHref}
+                onClick={onSecondaryAction}
+                className="w-full sm:w-auto"
+              >
+                {secondaryActionLabel}
+              </Button>
             )}
           </div>
         )}

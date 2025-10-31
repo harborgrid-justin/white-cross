@@ -7,7 +7,7 @@
 
 import { Suspense } from 'react';
 import { Metadata } from 'next';
-import { Link } from 'next/link';
+import Link from 'next/link';
 import ReportsDashboard from '@/components/medications/ReportsDashboard';
 import { PageHeader } from '@/components/shared/PageHeader';
 

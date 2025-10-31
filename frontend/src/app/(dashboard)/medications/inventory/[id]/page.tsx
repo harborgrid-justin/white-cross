@@ -8,7 +8,7 @@
 import { Suspense } from 'react';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { Link } from 'next/link';
+import Link from 'next/link';
 import InventoryItemDetail from '@/components/medications/InventoryItemDetail';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { fetchWithAuth } from '@/lib/server/fetch';

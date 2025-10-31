@@ -112,7 +112,7 @@ const UserMenu = memo(({ onClose }: UserMenuProps) => {
       {/* Menu Items */}
       <div className="py-1">
         <Link
-          to={PROTECTED_ROUTES.PROFILE}
+          href={PROTECTED_ROUTES.PROFILE}
           className="
             group flex items-center px-4 py-2 text-sm
             text-gray-700 dark:text-gray-300
@@ -126,7 +126,7 @@ const UserMenu = memo(({ onClose }: UserMenuProps) => {
           My Profile
         </Link>
         <Link
-          to={PROTECTED_ROUTES.PROFILE_SETTINGS}
+          href={PROTECTED_ROUTES.PROFILE_SETTINGS}
           className="
             group flex items-center px-4 py-2 text-sm
             text-gray-700 dark:text-gray-300
@@ -333,7 +333,7 @@ export const Navigation = memo(({ className = '' }: NavigationProps) => {
 
           {/* Logo (Mobile) */}
           <Link
-            to={PROTECTED_ROUTES.DASHBOARD}
+            href={PROTECTED_ROUTES.DASHBOARD}
             className="lg:hidden ml-3 flex items-center space-x-2"
           >
             <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
