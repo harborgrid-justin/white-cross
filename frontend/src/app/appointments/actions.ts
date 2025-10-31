@@ -71,8 +71,8 @@ export interface Appointment {
 // ==========================================
 
 /**
- * Get appointments with enhanced caching
- * Uses Next.js v16 cacheLife with 5-minute expiration
+ * Get appointments with caching
+ * Uses standard Next.js caching with 5-minute expiration
  */
 export const getAppointments = cache(async (filters?: {
   studentId?: string;
@@ -82,10 +82,6 @@ export const getAppointments = cache(async (filters?: {
   page?: number;
   limit?: number;
 }): Promise<{ appointments: Appointment[]; total: number }> => {
-  'use cache';
-  cacheLife(300); // 5 minutes
-  cacheTag('appointments', 'calendar-appointments', CACHE_TAGS.PHI);
-  
   try {
     const params = new URLSearchParams();
     if (filters?.studentId) params.append('studentId', filters.studentId);
@@ -100,8 +96,8 @@ export const getAppointments = cache(async (filters?: {
     
     const response = await fetch(url, {
       next: { 
-        revalidate: 300,
-        tags: ['appointments', 'calendar-appointments', CACHE_TAGS.PHI] 
+        revalidate: 300, // 5 minutes
+        tags: ['appointments', 'calendar-appointments'] 
       }
     });
 

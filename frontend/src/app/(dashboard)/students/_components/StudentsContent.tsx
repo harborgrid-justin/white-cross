@@ -30,48 +30,8 @@ import {
   getStudentCount,
   getStudentStatistics,
   exportStudentData
-} from '../../students/actions';
-
-export interface Student {
-  id: string;
-  studentNumber: string;
-  firstName: string;
-  lastName: string;
-  dateOfBirth: string;
-  grade: '9th' | '10th' | '11th' | '12th';
-  gender: 'MALE' | 'FEMALE' | 'OTHER' | 'PREFER_NOT_TO_SAY';
-  phone?: string;
-  email?: string;
-  address?: {
-    street: string;
-    city: string;
-    state: string;
-    zipCode: string;
-  };
-  emergencyContacts: {
-    id: string;
-    name: string;
-    relationship: string;
-    phone: string;
-    email?: string;
-    isPrimary: boolean;
-  }[];
-  healthInfo: {
-    hasAllergies: boolean;
-    hasMedications: boolean;
-    hasConditions: boolean;
-    lastCheckup?: string;
-  };
-  attendance: {
-    presentToday: boolean;
-    absencesThisMonth: number;
-    tardiesThisMonth: number;
-  };
-  status: 'ACTIVE' | 'INACTIVE' | 'GRADUATED' | 'TRANSFERRED';
-  enrollmentDate: string;
-  lastUpdated: string;
-  recordedBy: string;
-}
+} from '@/app/students/actions';
+import type { Student } from '@/types/student.types';
 
 interface StudentsContentProps {
   searchParams: {
@@ -86,142 +46,8 @@ interface StudentsContentProps {
   };
 }
 
-// Mock data for demonstration
-const mockStudents: Student[] = [
-  {
-    id: '1',
-    studentNumber: 'WC2024001',
-    firstName: 'Emma',
-    lastName: 'Johnson',
-    dateOfBirth: '2007-03-15',
-    grade: '11th',
-    gender: 'FEMALE',
-    phone: '(555) 123-4567',
-    email: 'emma.johnson@student.whitecross.edu',
-    address: {
-      street: '123 Oak Street',
-      city: 'Springfield',
-      state: 'IL',
-      zipCode: '62701'
-    },
-    emergencyContacts: [
-      {
-        id: 'ec1',
-        name: 'Sarah Johnson',
-        relationship: 'Mother',
-        phone: '(555) 123-4567',
-        email: 'sarah.johnson@email.com',
-        isPrimary: true
-      }
-    ],
-    healthInfo: {
-      hasAllergies: true,
-      hasMedications: false,
-      hasConditions: false,
-      lastCheckup: '2024-08-15'
-    },
-    attendance: {
-      presentToday: true,
-      absencesThisMonth: 2,
-      tardiesThisMonth: 1
-    },
-    status: 'ACTIVE',
-    enrollmentDate: '2022-08-20',
-    lastUpdated: '2024-01-15T10:30:00Z',
-    recordedBy: 'Nancy Wilson'
-  },
-  {
-    id: '2',
-    studentNumber: 'WC2024002',
-    firstName: 'Michael',
-    lastName: 'Chen',
-    dateOfBirth: '2006-11-22',
-    grade: '12th',
-    gender: 'MALE',
-    phone: '(555) 987-6543',
-    email: 'michael.chen@student.whitecross.edu',
-    address: {
-      street: '456 Pine Avenue',
-      city: 'Springfield',
-      state: 'IL',
-      zipCode: '62702'
-    },
-    emergencyContacts: [
-      {
-        id: 'ec2',
-        name: 'Lisa Chen',
-        relationship: 'Mother',
-        phone: '(555) 987-6543',
-        isPrimary: true
-      }
-    ],
-    healthInfo: {
-      hasAllergies: false,
-      hasMedications: true,
-      hasConditions: true,
-      lastCheckup: '2024-09-02'
-    },
-    attendance: {
-      presentToday: false,
-      absencesThisMonth: 0,
-      tardiesThisMonth: 3
-    },
-    status: 'ACTIVE',
-    enrollmentDate: '2021-08-18',
-    lastUpdated: '2024-01-14T14:45:00Z',
-    recordedBy: 'Nancy Wilson'
-  },
-  {
-    id: '3',
-    studentNumber: 'WC2024003',
-    firstName: 'Sophia',
-    lastName: 'Rodriguez',
-    dateOfBirth: '2008-07-08',
-    grade: '10th',
-    gender: 'FEMALE',
-    phone: '(555) 555-0123',
-    email: 'sophia.rodriguez@student.whitecross.edu',
-    address: {
-      street: '789 Maple Drive',
-      city: 'Springfield',
-      state: 'IL',
-      zipCode: '62703'
-    },
-    emergencyContacts: [
-      {
-        id: 'ec3',
-        name: 'Maria Rodriguez',
-        relationship: 'Mother',
-        phone: '(555) 555-0123',
-        isPrimary: true
-      }
-    ],
-    healthInfo: {
-      hasAllergies: true,
-      hasMedications: true,
-      hasConditions: false,
-      lastCheckup: '2024-07-20'
-    },
-    attendance: {
-      presentToday: true,
-      absencesThisMonth: 1,
-      tardiesThisMonth: 0
-    },
-    status: 'ACTIVE',
-    enrollmentDate: '2023-08-22',
-    lastUpdated: '2024-01-13T09:15:00Z',
-    recordedBy: 'Nancy Wilson'
-  }
-];
-
-function getStatusBadgeVariant(status: Student['status']) {
-  switch (status) {
-    case 'ACTIVE': return 'success';
-    case 'INACTIVE': return 'warning';
-    case 'GRADUATED': return 'info';
-    case 'TRANSFERRED': return 'secondary';
-    default: return 'secondary';
-  }
+function getStatusBadgeVariant(isActive: boolean) {
+  return isActive ? 'success' : 'secondary';
 }
 
 function getGradeBadgeColor(grade: string) {
@@ -261,8 +87,8 @@ export function StudentsContent({ searchParams }: StudentsContentProps) {
         const filters = {
           search: searchParams.search,
           grade: searchParams.grade,
-          status: searchParams.status,
-          hasHealthAlerts: searchParams.hasHealthAlerts === 'true',
+          isActive: searchParams.status === 'ACTIVE' || searchParams.status === undefined,
+          hasAllergies: searchParams.hasHealthAlerts === 'true',
         };
 
         // Remove undefined values
@@ -274,8 +100,8 @@ export function StudentsContent({ searchParams }: StudentsContentProps) {
         setStudents(studentsData);
       } catch (error) {
         console.error('Failed to fetch students:', error);
-        // Fall back to mock data on error
-        setStudents(mockStudents);
+        // Set empty array on error instead of using mock data
+        setStudents([]);
       } finally {
         setLoading(false);
       }
@@ -323,9 +149,14 @@ export function StudentsContent({ searchParams }: StudentsContentProps) {
   }
 
   const totalStudents = students.length;
-  const presentToday = students.filter(s => s.attendance.presentToday).length;
-  const healthAlerts = students.filter(s => s.healthInfo.hasAllergies || s.healthInfo.hasMedications || s.healthInfo.hasConditions).length;
-  const activeStudents = students.filter(s => s.status === 'ACTIVE').length;
+  const activeStudents = students.filter(s => s.isActive).length;
+  const healthAlerts = students.filter(s => 
+    (s.allergies && s.allergies.length > 0) || 
+    (s.medications && s.medications.length > 0) ||
+    (s.chronicConditions && s.chronicConditions.length > 0)
+  ).length;
+  // For now, we'll show 0 for present today since we don't have attendance data in the basic Student type
+  const presentToday = 0;
 
   return (
     <div className="space-y-6">
@@ -474,8 +305,8 @@ export function StudentsContent({ searchParams }: StudentsContentProps) {
                           {student.grade}
                         </Badge>
                         <div>
-                          <Badge variant={getStatusBadgeVariant(student.status)}>
-                            {student.status}
+                          <Badge variant={getStatusBadgeVariant(student.isActive)}>
+                            {student.isActive ? 'ACTIVE' : 'INACTIVE'}
                           </Badge>
                         </div>
                       </div>
@@ -484,32 +315,40 @@ export function StudentsContent({ searchParams }: StudentsContentProps) {
                       <div className="text-sm text-gray-900">
                         <div className="flex items-center gap-1">
                           <Phone className="h-3 w-3 text-gray-400" />
-                          <span>{student.phone || 'N/A'}</span>
+                          <span>
+                            {student.emergencyContacts && student.emergencyContacts.length > 0 
+                              ? student.emergencyContacts[0].phoneNumber 
+                              : 'N/A'}
+                          </span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Mail className="h-3 w-3 text-gray-400" />
-                          <span className="text-xs">{student.email || 'N/A'}</span>
+                          <span className="text-xs">
+                            {student.emergencyContacts && student.emergencyContacts.length > 0 
+                              ? student.emergencyContacts[0].email || 'N/A'
+                              : 'N/A'}
+                          </span>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          {student.attendance.presentToday ? (
-                            <UserCheck className="h-4 w-4 text-green-600" />
-                          ) : (
-                            <UserX className="h-4 w-4 text-red-600" />
-                          )}
-                          <span className="text-xs">
-                            {student.attendance.presentToday ? 'Present' : 'Absent'}
+                          <UserCheck className="h-4 w-4 text-gray-400" />
+                          <span className="text-xs text-gray-500">
+                            No attendance data
                           </span>
                         </div>
                         <div className="flex items-center gap-1">
-                          {(student.healthInfo.hasAllergies || student.healthInfo.hasMedications || student.healthInfo.hasConditions) && (
+                          {((student.allergies && student.allergies.length > 0) || 
+                            (student.medications && student.medications.length > 0) ||
+                            (student.chronicConditions && student.chronicConditions.length > 0)) && (
                             <AlertTriangle className="h-3 w-3 text-orange-500" />
                           )}
                           <span className="text-xs text-gray-500">
-                            Health: {student.healthInfo.hasAllergies || student.healthInfo.hasMedications || student.healthInfo.hasConditions ? 'Alerts' : 'Normal'}
+                            Health: {((student.allergies && student.allergies.length > 0) || 
+                                     (student.medications && student.medications.length > 0) ||
+                                     (student.chronicConditions && student.chronicConditions.length > 0)) ? 'Alerts' : 'Normal'}
                           </span>
                         </div>
                       </div>

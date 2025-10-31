@@ -17,12 +17,8 @@ import { Button } from '@/components/ui/Button';
 import { Plus, Calendar, List, Repeat, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { AppointmentList, AppointmentCalendar } from '@/components/appointments';
-import { apiClient, API_ENDPOINTS } from '@/lib/api-client';
-import { 
-  Appointment, 
-  appointmentStatusColors, 
-  appointmentUtils 
-} from './data';
+import { getAppointments, getUpcomingAppointments, type Appointment as ServerAppointment } from '@/app/appointments/actions';
+import { appointmentUtils, type Appointment } from './data';
 
 export default function AppointmentsPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -32,32 +28,53 @@ export default function AppointmentsPage() {
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
 
+  // Transform server appointment to local appointment format
+  const transformServerAppointment = (serverApt: ServerAppointment): Appointment => ({
+    id: serverApt.id,
+    studentId: serverApt.studentId,
+    studentName: `Student ${serverApt.studentId}`, // This would normally come from a student lookup
+    appointmentType: serverApt.appointmentType,
+    scheduledDate: serverApt.scheduledDate,
+    scheduledTime: serverApt.scheduledTime || '09:00', // Default time if not provided
+    duration: serverApt.duration || 30,
+    status: serverApt.status,
+    priority: serverApt.priority || 'medium',
+    reason: serverApt.reason,
+    nurseId: undefined, // Not in server response
+    nurseName: undefined, // Not in server response
+  });
+
   useEffect(() => {
     const loadAppointments = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        // Load today's appointments
+        // Load today's appointments using server actions
         const today = new Date().toISOString().split('T')[0];
-        const todayResponse = await apiClient.get<{ data: Appointment[] }>(
-          API_ENDPOINTS.APPOINTMENTS.BY_DATE,
-          { date: today }
-        );
+        const nextWeek = new Date();
+        nextWeek.setDate(nextWeek.getDate() + 7);
+        
+        const todayResult = await getAppointments({
+          dateFrom: today,
+          dateTo: today
+        });
 
         // Load upcoming appointments (next 7 days)
-        const upcomingResponse = await apiClient.get<{ data: Appointment[] }>(
-          API_ENDPOINTS.APPOINTMENTS.UPCOMING,
-          { days: 7 }
-        );
+        const upcomingResult = await getAppointments({
+          dateFrom: today,
+          dateTo: nextWeek.toISOString().split('T')[0]
+        });
 
-        // Handle response format - could be { data: [] } or direct array
-        const todayData = Array.isArray(todayResponse) ? todayResponse : (todayResponse.data || []);
-        const upcomingData = Array.isArray(upcomingResponse) ? upcomingResponse : (upcomingResponse.data || []);
+        // Transform server appointments to local format
+        const todayTransformed = todayResult.appointments.map(transformServerAppointment);
+        const upcomingTransformed = upcomingResult.appointments
+          .filter(apt => apt.scheduledDate !== today)
+          .map(transformServerAppointment);
 
-        setTodayAppointments(todayData);
-        setUpcomingAppointments(upcomingData);
-        setAppointments([...todayData, ...upcomingData]);
+        setTodayAppointments(todayTransformed);
+        setUpcomingAppointments(upcomingTransformed);
+        setAppointments([...todayTransformed, ...upcomingTransformed]);
 
         setLoading(false);
       } catch (err: unknown) {
@@ -189,11 +206,11 @@ export default function AppointmentsPage() {
                     <p className="text-xs text-gray-600 truncate">{appointment.reason}</p>
                   )}
                   <div className="mt-2 flex gap-2">
-                    <Link href={`/appointments/${appointment.id}` as any}>
+                    <Link href={`/appointments/${appointment.id}`}>
                       <Button variant="ghost" size="xs">View</Button>
                     </Link>
                     {appointmentUtils.canEdit(appointment.status) && (
-                      <Link href={`/appointments/${appointment.id}/edit` as any}>
+                      <Link href={`/appointments/${appointment.id}/edit`}>
                         <Button variant="ghost" size="xs">Edit</Button>
                       </Link>
                     )}
@@ -203,7 +220,7 @@ export default function AppointmentsPage() {
             </div>
             {upcomingAppointments.length > 6 && (
               <div className="mt-4 text-center">
-                <Link href="/appointments" as any>
+                <Link href="/appointments">
                   <Button variant="outline" size="sm">
                     View All Appointments ({upcomingAppointments.length})
                   </Button>

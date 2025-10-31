@@ -23,46 +23,49 @@ import {
   Ruler
 } from 'lucide-react';
 
-export interface HealthRecord {
+// Import server actions
+import { getHealthRecordsAction } from '@/app/health-records/actions';
+
+// Import types - interface that matches the server response structure
+interface HealthRecord {
   id: string;
   studentId: string;
-  studentName: string;
-  recordType: 'MEDICAL_HISTORY' | 'PHYSICAL_EXAM' | 'IMMUNIZATION' | 'ALLERGY' | 'MEDICATION' | 'VITAL_SIGNS' | 'GROWTH_CHART' | 'SCREENING';
-  status: 'ACTIVE' | 'INACTIVE' | 'PENDING_REVIEW' | 'ARCHIVED';
-  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  recordType: string;
   title: string;
   description: string;
-  recordedBy: string;
-  recordedById: string;
-  recordedDate: string;
+  recordDate: string;
+  provider?: string;
+  providerNpi?: string;
+  facility?: string;
+  facilityNpi?: string;
+  diagnosis?: string;
+  diagnosisCode?: string;
+  treatment?: string;
+  followUpRequired: boolean;
+  followUpDate?: string;
+  followUpCompleted: boolean;
+  isConfidential: boolean;
+  notes?: string;
   createdAt: string;
   updatedAt: string;
-  expirationDate?: string;
-  requiresFollowUp: boolean;
-  isConfidential: boolean;
-  tags: string[];
-  attachments?: string[];
-  vitalSigns?: {
-    temperature?: number;
-    bloodPressure?: string;
-    heartRate?: number;
-    respiratoryRate?: number;
-    weight?: number;
-    height?: number;
-    bmi?: number;
+  // Optional properties for UI enhancement - not from server
+  status?: 'ACTIVE' | 'INACTIVE' | 'PENDING_REVIEW' | 'ARCHIVED';
+  priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  studentName?: string;
+  recordedBy?: string;
+  requiresFollowUp?: boolean;
+  // Optional nested objects that may not be present
+  student?: {
+    firstName?: string;
+    lastName?: string;
   };
-  medications?: {
-    name: string;
-    dosage: string;
-    frequency: string;
-    startDate: string;
-    endDate?: string;
-  }[];
-  allergies?: {
-    allergen: string;
-    reaction: string;
-    severity: 'MILD' | 'MODERATE' | 'SEVERE' | 'LIFE_THREATENING';
-  }[];
+  vitalSigns?: {
+    temperature?: string;
+    bloodPressure?: string;
+    heartRate?: string;
+    weight?: string;
+  };
+  expirationDate?: string;
 }
 
 interface HealthRecordsContentProps {
@@ -93,168 +96,50 @@ export function HealthRecordsContent({ searchParams }: HealthRecordsContentProps
       try {
         setIsLoading(true);
         
-        // Simulate API call with mock data
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Use server action to fetch health records
+        const result = await getHealthRecordsAction(
+          searchParams.studentId, 
+          searchParams.type
+        );
         
-        const mockRecords: HealthRecord[] = [
-          {
-            id: '1',
-            studentId: 'student-001',
-            studentName: 'Emma Johnson',
-            recordType: 'PHYSICAL_EXAM',
-            status: 'ACTIVE',
-            priority: 'MEDIUM',
-            title: 'Annual Physical Examination',
-            description: 'Comprehensive physical examination including vision, hearing, and growth assessment.',
-            recordedBy: 'Dr. Sarah Wilson',
-            recordedById: 'doctor-001',
-            recordedDate: '2024-09-15T10:00:00Z',
-            createdAt: '2024-09-15T10:30:00Z',
-            updatedAt: '2024-09-15T10:30:00Z',
-            expirationDate: '2025-09-15T10:00:00Z',
-            requiresFollowUp: false,
-            isConfidential: false,
-            tags: ['annual', 'physical', 'routine'],
-            vitalSigns: {
-              temperature: 98.6,
-              bloodPressure: '110/70',
-              heartRate: 85,
-              respiratoryRate: 18,
-              weight: 125.5,
-              height: 64,
-              bmi: 21.5,
-            },
-          },
-          {
-            id: '2',
-            studentId: 'student-002',
-            studentName: 'Michael Chen',
-            recordType: 'ALLERGY',
-            status: 'ACTIVE',
-            priority: 'HIGH',
-            title: 'Severe Peanut Allergy',
-            description: 'Documented severe allergic reaction to peanuts. Student carries EpiPen at all times.',
-            recordedBy: 'Nurse Jennifer Davis',
-            recordedById: 'nurse-001',
-            recordedDate: '2024-08-20T14:15:00Z',
-            createdAt: '2024-08-20T14:30:00Z',
-            updatedAt: '2024-08-20T14:30:00Z',
-            requiresFollowUp: true,
-            isConfidential: true,
-            tags: ['allergy', 'severe', 'epipen', 'emergency'],
-            allergies: [
-              {
-                allergen: 'Peanuts',
-                reaction: 'Anaphylaxis, difficulty breathing, swelling',
-                severity: 'LIFE_THREATENING',
-              },
-            ],
-          },
-          {
-            id: '3',
-            studentId: 'student-003',
-            studentName: 'Sofia Rodriguez',
-            recordType: 'MEDICATION',
-            status: 'ACTIVE',
-            priority: 'MEDIUM',
-            title: 'ADHD Medication Management',
-            description: 'Daily medication regimen for attention deficit hyperactivity disorder.',
-            recordedBy: 'Dr. Mark Thompson',
-            recordedById: 'doctor-002',
-            recordedDate: '2024-09-01T09:00:00Z',
-            createdAt: '2024-09-01T09:15:00Z',
-            updatedAt: '2024-09-01T09:15:00Z',
-            requiresFollowUp: true,
-            isConfidential: true,
-            tags: ['adhd', 'medication', 'daily'],
-            medications: [
-              {
-                name: 'Methylphenidate',
-                dosage: '10mg',
-                frequency: 'Twice daily',
-                startDate: '2024-09-01T09:00:00Z',
-              },
-            ],
-          },
-          {
-            id: '4',
-            studentId: 'student-004',
-            studentName: 'Alex Thompson',
-            recordType: 'IMMUNIZATION',
-            status: 'ACTIVE',
-            priority: 'LOW',
-            title: 'COVID-19 Vaccination',
-            description: 'Second dose of COVID-19 vaccine administered. No adverse reactions reported.',
-            recordedBy: 'Nurse Jennifer Davis',
-            recordedById: 'nurse-001',
-            recordedDate: '2024-08-15T11:00:00Z',
-            createdAt: '2024-08-15T11:15:00Z',
-            updatedAt: '2024-08-15T11:15:00Z',
-            requiresFollowUp: false,
-            isConfidential: false,
-            tags: ['covid19', 'vaccination', 'immunization'],
-          },
-          {
-            id: '5',
-            studentId: 'student-005',
-            studentName: 'Maya Patel',
-            recordType: 'SCREENING',
-            status: 'PENDING_REVIEW',
-            priority: 'HIGH',
-            title: 'Vision Screening - Requires Follow-up',
-            description: 'Annual vision screening indicates potential vision problems. Referral to ophthalmologist recommended.',
-            recordedBy: 'School Nurse Sarah Johnson',
-            recordedById: 'nurse-002',
-            recordedDate: '2024-10-01T13:30:00Z',
-            createdAt: '2024-10-01T13:45:00Z',
-            updatedAt: '2024-10-01T13:45:00Z',
-            requiresFollowUp: true,
-            isConfidential: false,
-            tags: ['vision', 'screening', 'referral', 'follow-up'],
-          },
-        ];
-        
-        // Apply filters
-        let filteredRecords = mockRecords;
-        
-        if (searchParams.type) {
-          filteredRecords = filteredRecords.filter(record => 
-            record.recordType === searchParams.type
-          );
+        if (result.success && result.data) {
+          // Transform server data to match our interface
+          const transformedRecords: HealthRecord[] = result.data.map((record: HealthRecord) => ({
+            ...record,
+            // Set default values for optional fields
+            status: 'ACTIVE' as const,
+            priority: record.isConfidential ? 'HIGH' as const : 'MEDIUM' as const,
+            studentName: record.student?.firstName && record.student?.lastName 
+              ? `${record.student.firstName} ${record.student.lastName}` 
+              : 'Unknown Student',
+            recordedBy: record.provider || 'System',
+            requiresFollowUp: record.followUpRequired,
+          }));
+          
+          // Apply client-side filters for search params not handled by server
+          let filteredRecords = transformedRecords;
+          
+          if (searchParams.search) {
+            const searchTerm = searchParams.search.toLowerCase();
+            filteredRecords = filteredRecords.filter(record =>
+              record.title.toLowerCase().includes(searchTerm) ||
+              record.description.toLowerCase().includes(searchTerm) ||
+              (record.studentName || '').toLowerCase().includes(searchTerm) ||
+              (record.recordedBy || '').toLowerCase().includes(searchTerm)
+            );
+          }
+          
+          setRecords(filteredRecords);
+          setTotalCount(filteredRecords.length);
+        } else {
+          console.error('Failed to fetch health records:', result.error);
+          setRecords([]);
+          setTotalCount(0);
         }
-        
-        if (searchParams.status) {
-          filteredRecords = filteredRecords.filter(record => 
-            record.status === searchParams.status
-          );
-        }
-        
-        if (searchParams.priority) {
-          filteredRecords = filteredRecords.filter(record => 
-            record.priority === searchParams.priority
-          );
-        }
-        
-        if (searchParams.search) {
-          const searchTerm = searchParams.search.toLowerCase();
-          filteredRecords = filteredRecords.filter(record =>
-            record.title.toLowerCase().includes(searchTerm) ||
-            record.description.toLowerCase().includes(searchTerm) ||
-            record.studentName.toLowerCase().includes(searchTerm) ||
-            record.recordedBy.toLowerCase().includes(searchTerm)
-          );
-        }
-        
-        if (searchParams.studentId) {
-          filteredRecords = filteredRecords.filter(record => 
-            record.studentId === searchParams.studentId
-          );
-        }
-        
-        setRecords(filteredRecords);
-        setTotalCount(filteredRecords.length);
       } catch (error) {
         console.error('Error fetching health records:', error);
+        setRecords([]);
+        setTotalCount(0);
       } finally {
         setIsLoading(false);
       }
@@ -471,17 +356,17 @@ export function HealthRecordsContent({ searchParams }: HealthRecordsContentProps
                       </span>
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
-                        {new Date(record.recordedDate).toLocaleDateString()}
+                        {new Date(record.recordDate).toLocaleDateString()}
                       </span>
                     </div>
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
                   <Badge className={getPriorityColor(record.priority)}>
-                    {record.priority}
+                    {record.priority || 'MEDIUM'}
                   </Badge>
                   <Badge className={getStatusColor(record.status)}>
-                    {record.status.replace('_', ' ')}
+                    {record.status?.replace('_', ' ') || 'ACTIVE'}
                   </Badge>
                 </div>
               </div>
