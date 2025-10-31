@@ -294,7 +294,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
     try {
       const params = filters ? `?${buildUrlParams(filters).toString()}` : ''
       const response = await this.client.get<PaginatedResponse<Appointment>>(`/appointments${params}`)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -391,7 +391,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
   async create(appointmentData: CreateAppointmentData): Promise<{ appointment: Appointment }> {
     try {
       const response = await this.client.post<{ appointment: Appointment }>('/appointments', appointmentData)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -403,7 +403,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
   async update(id: string, data: UpdateAppointmentData): Promise<{ appointment: Appointment }> {
     try {
       const response = await this.client.put(`/appointments/${id}`, data)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -478,7 +478,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
   async cancel(id: string, reason?: string): Promise<{ appointment: Appointment }> {
     try {
       const response = await this.client.put(`/appointments/${id}/cancel`, { reason })
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -490,7 +490,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
   async markNoShow(id: string): Promise<{ appointment: Appointment }> {
     try {
       const response = await this.client.put(`/appointments/${id}/no-show`, {})
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -506,7 +506,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
       if (duration) params.append('duration', String(duration))
       
       const response = await this.client.get(`/appointments/availability/${nurseId}?${params.toString()}`)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -519,7 +519,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
     try {
       const params = limit ? `?limit=${limit}` : ''
       const response = await this.client.get(`/appointments/upcoming/${nurseId}${params}`)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -536,7 +536,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
     try {
       const params = filters ? `?${buildUrlParams(filters).toString()}` : ''
       const response = await this.client.get(`/appointments/statistics${params}`)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -548,7 +548,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
   async createRecurring(data: RecurringAppointmentData): Promise<{ appointments: Appointment[]; count: number }> {
     try {
       const response = await this.client.post('/appointments/recurring', data)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -561,7 +561,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
   async setAvailability(data: NurseAvailabilityData): Promise<{ availability: NurseAvailability }> {
     try {
       const response = await this.client.post('/appointments/availability', data)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -574,7 +574,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
     try {
       const params = date ? `?date=${date}` : ''
       const response = await this.client.get(`/appointments/availability/nurse/${nurseId}${params}`)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -586,7 +586,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
   async updateAvailability(id: string, data: Partial<NurseAvailabilityData>): Promise<{ availability: NurseAvailability }> {
     try {
       const response = await this.client.put(`/appointments/availability/${id}`, data)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -619,7 +619,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
   }): Promise<{ entry: AppointmentWaitlist }> {
     try {
       const response = await this.client.post('/appointments/waitlist', data)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -632,7 +632,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
     try {
       const params = filters ? `?${buildUrlParams(filters).toString()}` : ''
       const response = await this.client.get(`/appointments/waitlist${params}`)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -646,7 +646,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
       const response = await this.client.delete(`/appointments/waitlist/${id}`, {
         data: { reason }
       })
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -748,7 +748,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
   async processPendingReminders(): Promise<ReminderProcessingResult> {
     try {
       const response = await this.client.post('/appointments/reminders/process')
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -760,7 +760,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
   async getAppointmentReminders(appointmentId: string): Promise<{ reminders: AppointmentReminder[] }> {
     try {
       const response = await this.client.get(`/appointments/${appointmentId}/reminders`)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -777,7 +777,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
   }): Promise<{ reminder: AppointmentReminder }> {
     try {
       const response = await this.client.post('/appointments/reminders', data)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -789,7 +789,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
   async cancelReminder(reminderId: string): Promise<{ reminder: AppointmentReminder }> {
     try {
       const response = await this.client.delete(`/appointments/reminders/${reminderId}`)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -816,7 +816,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
       }
 
       const response = await this.client.get(`/appointments/conflicts?${params.toString()}`)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -829,7 +829,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
   async addToWaitlistFull(data: WaitlistEntryData): Promise<{ entry: AppointmentWaitlist }> {
     try {
       const response = await this.client.post('/appointments/waitlist', data)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -844,7 +844,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
   ): Promise<{ entry: AppointmentWaitlist }> {
     try {
       const response = await this.client.patch(`/appointments/waitlist/${id}`, { priority })
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -856,7 +856,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
   async getWaitlistPosition(waitlistEntryId: string): Promise<{ position: number; total: number }> {
     try {
       const response = await this.client.get(`/appointments/waitlist/${waitlistEntryId}/position`)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -871,7 +871,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
   ): Promise<{ entry: AppointmentWaitlist; notification: any }> {
     try {
       const response = await this.client.post(`/appointments/waitlist/${id}/notify`, { message })
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -884,7 +884,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
   async getById(id: string): Promise<{ appointment: Appointment }> {
     try {
       const response = await this.client.get(`/appointments/${id}`)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -901,7 +901,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
   }): Promise<{ appointment: Appointment }> {
     try {
       const response = await this.client.put(`/appointments/${id}/complete`, data)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -913,7 +913,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
   async start(id: string): Promise<{ appointment: Appointment }> {
     try {
       const response = await this.client.put(`/appointments/${id}/start`)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -932,7 +932,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
         scheduledAt: newScheduledAt,
         reason
       })
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -951,7 +951,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
         appointmentIds,
         reason
       })
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -967,7 +967,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
     try {
       const params = buildUrlParams({ ...filters, studentIds: studentIds.join(',') })
       const response = await this.client.get(`/appointments/students?${params.toString()}`)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -985,7 +985,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
     try {
       const params = buildUrlParams({ dateFrom, dateTo, nurseId })
       const response = await this.client.get(`/appointments/range?${params.toString()}`)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -998,7 +998,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
     try {
       const params = buildUrlParams({ ...filters, search: query })
       const response = await this.client.get(`/appointments/search?${params.toString()}`)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -1016,7 +1016,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
     try {
       const params = new URLSearchParams({ dateFrom, dateTo, groupBy })
       const response = await this.client.get(`/appointments/trends?${params.toString()}`)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -1038,7 +1038,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
     try {
       const params = buildUrlParams({ nurseId, dateFrom, dateTo })
       const response = await this.client.get(`/appointments/stats/no-show?${params.toString()}`)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -1061,7 +1061,7 @@ class AppointmentsApiImpl implements IAppointmentsApi {
     try {
       const params = new URLSearchParams({ nurseId, dateFrom, dateTo })
       const response = await this.client.get(`/appointments/stats/utilization?${params.toString()}`)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }

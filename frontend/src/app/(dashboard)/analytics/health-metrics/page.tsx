@@ -225,7 +225,7 @@ export default function HealthMetricsPage() {
               <input
                 type="date"
                 value={dateRange.start.toISOString().split('T')[0]}
-                onChange={(e) =>
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setDateRange((prev) => ({ ...prev, start: new Date(e.target.value) }))
                 }
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
@@ -234,7 +234,7 @@ export default function HealthMetricsPage() {
               <input
                 type="date"
                 value={dateRange.end.toISOString().split('T')[0]}
-                onChange={(e) =>
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setDateRange((prev) => ({ ...prev, end: new Date(e.target.value) }))
                 }
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"

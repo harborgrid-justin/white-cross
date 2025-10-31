@@ -44,6 +44,11 @@ export interface Appointment {
   studentId: string;
   appointmentType: string;
   scheduledDate: string;
+  scheduledTime?: string;
+  duration?: number;
+  priority?: 'low' | 'medium' | 'high' | 'urgent';
+  reason?: string;
+  notes?: string;
   status: 'scheduled' | 'confirmed' | 'in-progress' | 'completed' | 'cancelled' | 'no-show';
   createdAt: string;
   updatedAt: string;
@@ -116,8 +121,8 @@ export async function createAppointment(data: CreateAppointmentData): Promise<Ac
 
     revalidateTag('appointments');
     revalidateTag(`student-appointments-${data.studentId}`);
-    revalidatePath('/appointments');
-    revalidatePath(`/students/${data.studentId}`);
+    revalidatePath('/appointments', 'page');
+    revalidatePath(`/students/${data.studentId}`, 'page');
 
     return {
       success: true,
@@ -155,7 +160,7 @@ export async function createAppointmentsBulk(
     );
 
     revalidateTag('appointments');
-    revalidatePath('/appointments');
+    revalidatePath('/appointments', 'page');
 
     return {
       success: true,
@@ -201,7 +206,7 @@ export async function updateAppointment(
     if (data.studentId) {
       revalidateTag(`student-appointments-${data.studentId}`);
     }
-    revalidatePath('/appointments');
+    revalidatePath('/appointments', 'page');
 
     return {
       success: true,
@@ -243,7 +248,7 @@ export async function rescheduleAppointment(
 
     revalidateTag('appointments');
     revalidateTag(`appointment-${data.appointmentId}`);
-    revalidatePath('/appointments');
+    revalidatePath('/appointments', 'page');
 
     return {
       success: true,
@@ -282,7 +287,7 @@ export async function cancelAppointment(
 
     revalidateTag('appointments');
     revalidateTag(`appointment-${appointmentId}`);
-    revalidatePath('/appointments');
+    revalidatePath('/appointments', 'page');
 
     return {
       success: true,
@@ -321,7 +326,7 @@ export async function completeAppointment(
 
     revalidateTag('appointments');
     revalidateTag(`appointment-${appointmentId}`);
-    revalidatePath('/appointments');
+    revalidatePath('/appointments', 'page');
 
     return {
       success: true,
@@ -360,7 +365,7 @@ export async function markAppointmentNoShow(
 
     revalidateTag('appointments');
     revalidateTag(`appointment-${appointmentId}`);
-    revalidatePath('/appointments');
+    revalidatePath('/appointments', 'page');
 
     return {
       success: true,
@@ -399,7 +404,7 @@ export async function confirmAppointment(
 
     revalidateTag('appointments');
     revalidateTag(`appointment-${appointmentId}`);
-    revalidatePath('/appointments');
+    revalidatePath('/appointments', 'page');
 
     return {
       success: true,
@@ -446,7 +451,7 @@ export async function deleteAppointment(appointmentId: string): Promise<ActionRe
 
     revalidateTag('appointments');
     revalidateTag(`appointment-${appointmentId}`);
-    revalidatePath('/appointments');
+    revalidatePath('/appointments', 'page');
 
     return {
       success: true,

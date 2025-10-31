@@ -6,7 +6,7 @@
 
 import { POST } from '../route';
 import { NextRequest } from 'next/server';
-import { createUser } from '../../../../../tests/utils/test-factories';
+import { createTestUser } from '@tests/utils/test-factories';
 
 // Mock dependencies
 jest.mock('@/lib/apiProxy');
@@ -49,7 +49,7 @@ describe('/api/auth/login', () => {
 
     it('should authenticate user with valid credentials', async () => {
       // Arrange
-      const user = createUser({ email: validCredentials.email });
+      const user = createTestUser({ email: validCredentials.email });
       const mockResponse = {
         success: true,
         data: {
@@ -91,7 +91,7 @@ describe('/api/auth/login', () => {
 
     it('should audit log successful login', async () => {
       // Arrange
-      const user = createUser({ email: validCredentials.email });
+      const user = createTestUser({ email: validCredentials.email });
       const mockResponse = {
         success: true,
         data: {
@@ -345,7 +345,7 @@ describe('/api/auth/login', () => {
 
     it('should capture IP address in audit log', async () => {
       // Arrange
-      const user = createUser({ email: validCredentials.email });
+      const user = createTestUser({ email: validCredentials.email });
       mockProxyToBackend.mockResolvedValue({
         json: async () => ({
           success: true,
@@ -374,7 +374,7 @@ describe('/api/auth/login', () => {
 
     it('should capture user agent in audit log', async () => {
       // Arrange
-      const user = createUser({ email: validCredentials.email });
+      const user = createTestUser({ email: validCredentials.email });
       mockProxyToBackend.mockResolvedValue({
         json: async () => ({
           success: true,
@@ -458,7 +458,7 @@ describe('/api/auth/login', () => {
 
     it('should return token expiration information', async () => {
       // Arrange
-      const user = createUser({ email: validCredentials.email });
+      const user = createTestUser({ email: validCredentials.email });
       const mockResponse = {
         success: true,
         data: {
@@ -494,7 +494,7 @@ describe('/api/auth/login', () => {
 
     it('should not return sensitive user data in response', async () => {
       // Arrange
-      const user = createUser({ email: validCredentials.email });
+      const user = createTestUser({ email: validCredentials.email });
       const mockResponse = {
         success: true,
         data: {
@@ -535,7 +535,7 @@ describe('/api/auth/login', () => {
 
     it('should handle case-insensitive email matching', async () => {
       // Arrange
-      const user = createUser({ email: 'nurse@school.edu' });
+      const user = createTestUser({ email: 'nurse@school.edu' });
       const uppercaseEmailCredentials = {
         email: 'NURSE@SCHOOL.EDU',
         password: 'SecurePassword123!',

@@ -71,8 +71,8 @@ export async function createIncident(
     // Revalidate caches
     revalidateTag('incidents');
     revalidateTag(`student-incidents-${data.studentId}`);
-    revalidatePath('/incidents');
-    revalidatePath(`/students/${data.studentId}/incidents`);
+    revalidatePath('/incidents', 'page');
+    revalidatePath(`/students/${data.studentId}/incidents`, 'page');
 
     // Log audit trail (PHI access)
     await logIncidentAudit({
@@ -149,8 +149,8 @@ export async function updateIncident(
     if (response.data.studentId) {
       revalidateTag(`student-incidents-${response.data.studentId}`);
     }
-    revalidatePath('/incidents');
-    revalidatePath(`/incidents/${data.id}`);
+    revalidatePath('/incidents', 'page');
+    revalidatePath(`/incidents/${data.id}`, 'page');
 
     // Log audit trail
     await logIncidentAudit({
@@ -247,7 +247,7 @@ export async function deleteIncident(id: string): Promise<ActionResult<void>> {
     // Revalidate caches
     revalidateTag('incidents');
     revalidateTag(`incident-${id}`);
-    revalidatePath('/incidents');
+    revalidatePath('/incidents', 'page');
 
     // Log audit trail
     await logIncidentAudit({
@@ -290,7 +290,7 @@ export async function addWitness(
 
     // Revalidate caches
     revalidateTag(`incident-witnesses-${data.incidentId}`);
-    revalidatePath(`/incidents/${data.incidentId}/witnesses`);
+    revalidatePath(`/incidents/${data.incidentId}/witnesses`, 'page');
 
     // Log audit
     await logIncidentAudit({
@@ -349,7 +349,7 @@ export async function submitWitnessStatement(
 
     // Revalidate caches
     revalidateTag(`witness-statement-${data.witnessId}`);
-    revalidatePath(`/incidents/${data.incidentId}/witnesses/${data.witnessId}`);
+    revalidatePath(`/incidents/${data.incidentId}/witnesses/${data.witnessId}`, 'page');
 
     // Log audit with hash
     await logIncidentAudit({
@@ -450,7 +450,7 @@ export async function createFollowUpAction(
 
     // Revalidate caches
     revalidateTag(`incident-follow-ups-${data.incidentId}`);
-    revalidatePath(`/incidents/${data.incidentId}/follow-up`);
+    revalidatePath(`/incidents/${data.incidentId}/follow-up`, 'page');
 
     // Log audit
     await logIncidentAudit({

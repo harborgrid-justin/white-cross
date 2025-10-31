@@ -67,10 +67,44 @@ export function generateAuditHash(
 /**
  * Verify audit log integrity by checking hash chain
  */
+// Overload signatures
 export function verifyAuditChain(
   currentLog: AuditLog,
   previousLog?: AuditLog
-): boolean {
+): boolean;
+export function verifyAuditChain(
+  logs: AuditLog[]
+): { valid: boolean; firstInvalidIndex?: number };
+
+// Implementation
+export function verifyAuditChain(
+  currentLogOrLogs: AuditLog | AuditLog[],
+  previousLog?: AuditLog
+): boolean | { valid: boolean; firstInvalidIndex?: number } {
+  // Handle array case
+  if (Array.isArray(currentLogOrLogs)) {
+    const logs = currentLogOrLogs;
+    for (let i = 0; i < logs.length; i++) {
+      const currentLog = logs[i];
+      const prevLog = i > 0 ? logs[i - 1] : undefined;
+
+      // Verify current log hash
+      const expectedHash = generateAuditHash(currentLog, prevLog?.verificationHash);
+      if (currentLog.verificationHash !== expectedHash) {
+        return { valid: false, firstInvalidIndex: i };
+      }
+
+      // Verify chain integrity
+      if (prevLog && currentLog.previousHash !== prevLog.verificationHash) {
+        return { valid: false, firstInvalidIndex: i };
+      }
+    }
+    return { valid: true };
+  }
+
+  // Handle single log case
+  const currentLog = currentLogOrLogs;
+
   // Verify current log hash
   const expectedHash = generateAuditHash(currentLog, previousLog?.verificationHash);
   if (currentLog.verificationHash !== expectedHash) {
@@ -281,7 +315,7 @@ export function generateComplianceFlags(
  */
 export async function exportAuditLogs(
   logs: AuditLog[],
-  format: 'JSON' | 'CSV' | 'PDF',
+  format: 'JSON' | 'CSV' | 'PDF' | 'XLSX',
   encrypt = true,
   password?: string
 ): Promise<{ data: string | Buffer; encrypted: boolean }> {
@@ -297,6 +331,11 @@ export async function exportAuditLogs(
     case 'PDF':
       // In production, use a PDF library like pdfkit or puppeteer
       data = `PDF export not implemented in this example`;
+      break;
+    case 'XLSX':
+      // In production, use a library like xlsx or exceljs
+      // For now, export as CSV with .xlsx extension
+      data = convertToCSV(logs);
       break;
     default:
       throw new Error(`Unsupported format: ${format}`);

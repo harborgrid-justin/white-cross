@@ -43,9 +43,11 @@ function getNotificationIcon(type: NotificationType) {
     appointment: <Calendar className={cn(iconClass, 'text-green-500')} />,
     medication: <Pill className={cn(iconClass, 'text-orange-500')} />,
     incident: <AlertTriangle className={cn(iconClass, 'text-red-500')} />,
-    'health-alert': <AlertCircle className={cn(iconClass, 'text-red-600')} />,
+    health_alert: <AlertCircle className={cn(iconClass, 'text-red-600')} />,
     system: <Info className={cn(iconClass, 'text-gray-500')} />,
-    reminder: <Bell className={cn(iconClass, 'text-yellow-500')} />
+    reminder: <Bell className={cn(iconClass, 'text-yellow-500')} />,
+    mention: <MessageSquare className={cn(iconClass, 'text-blue-400')} />,
+    reply: <MessageSquare className={cn(iconClass, 'text-green-400')} />
   };
   return icons[type] || <Bell className={iconClass} />;
 }
@@ -71,19 +73,23 @@ function getPriorityColor(priority: string): string {
 /**
  * Get notification type badge color
  */
-function getTypeBadgeVariant(type: NotificationType): 'default' | 'secondary' | 'destructive' | 'outline' {
+function getTypeBadgeVariant(type: NotificationType): 'default' | 'secondary' | 'danger' {
   switch (type) {
-    case 'health-alert':
+    case 'health_alert':
     case 'incident':
-      return 'destructive';
+      return 'danger';
     case 'message':
     case 'broadcast':
+    case 'mention':
+    case 'reply':
       return 'default';
     case 'appointment':
     case 'medication':
+    case 'system':
+    case 'reminder':
       return 'secondary';
     default:
-      return 'outline';
+      return 'default';
   }
 }
 
@@ -100,11 +106,15 @@ export function NotificationCard({
     title,
     message,
     priority,
-    isRead,
+    status,
     createdAt,
-    actionText,
-    actionUrl
+    actions
   } = notification;
+
+  const isRead = status === 'read';
+  const primaryAction = actions.find(a => a.primary);
+  const actionText = primaryAction?.label;
+  const actionUrl = primaryAction?.url;
 
   return (
     <Card
@@ -179,7 +189,7 @@ export function NotificationCard({
                 variant="link"
                 size="sm"
                 className="h-auto p-0 mt-2"
-                onClick={(e) => {
+                onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                   e.stopPropagation();
                   window.open(actionUrl, '_blank');
                 }}

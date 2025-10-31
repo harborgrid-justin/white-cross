@@ -139,7 +139,7 @@ export async function createAuditLogAction(
 
     // Revalidate caches
     revalidateTag('audit-logs');
-    revalidatePath('/compliance/audits');
+    revalidatePath('/compliance/audits', 'page');
 
     // Fire-and-forget secondary logging (never fails the operation)
     await logToSecondaryStore(auditLogEntry).catch(() => {});
@@ -348,7 +348,7 @@ export async function createPolicyAction(
     });
 
     revalidateTag('policies');
-    revalidatePath('/compliance/policies');
+    revalidatePath('/compliance/policies', 'page');
 
     // Audit log
     await createAuditLogAction(
@@ -408,7 +408,7 @@ export async function acknowledgePolicyAction(
 
     revalidateTag('policies');
     revalidateTag(`policy-${policyId}`);
-    revalidatePath('/compliance/policies');
+    revalidatePath('/compliance/policies', 'page');
 
     // Audit log
     await createAuditLogAction(context, {
@@ -500,7 +500,7 @@ export async function generateComplianceReportAction(
     });
 
     revalidateTag('compliance-reports');
-    revalidatePath('/compliance/reports');
+    revalidatePath('/compliance/reports', 'page');
 
     // Audit log
     await createAuditLogAction(context, {
@@ -620,7 +620,7 @@ export async function resolveComplianceViolationAction(
 
     revalidateTag('compliance-alerts');
     revalidateTag('compliance-violations');
-    revalidatePath('/compliance');
+    revalidatePath('/compliance', 'page');
 
     // Audit log
     await createAuditLogAction(context, {
@@ -679,7 +679,7 @@ export async function recordTrainingCompletionAction(
 
     revalidateTag('training');
     revalidateTag(`user-training-${userId}`);
-    revalidatePath('/compliance/training');
+    revalidatePath('/compliance/training', 'page');
 
     // Audit log
     await createAuditLogAction(context, {

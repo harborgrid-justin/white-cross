@@ -25,7 +25,7 @@ import { cookies } from 'next/headers';
 import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { z } from 'zod';
+import { z, type ZodIssue } from 'zod';
 
 // Import schemas
 import {
@@ -66,8 +66,7 @@ const BACKEND_URL = process.env.API_BASE_URL || process.env.NEXT_PUBLIC_API_URL 
 export interface ActionResult<T = any> {
   success?: boolean;
   data?: T;
-  errors?: {
-    [key: string]: string[];
+  errors?: Record<string, string[]> & {
     _form?: string[];
   };
   message?: string;
@@ -192,7 +191,7 @@ export async function createHealthRecordAction(
   } catch (error) {
     if (error instanceof z.ZodError) {
       const fieldErrors: Record<string, string[]> = {};
-      error.errors.forEach((err) => {
+      error.errors.forEach((err: ZodIssue) => {
         const path = err.path.join('.');
         if (!fieldErrors[path]) {
           fieldErrors[path] = [];
@@ -302,7 +301,7 @@ export async function updateHealthRecordAction(
   } catch (error) {
     if (error instanceof z.ZodError) {
       const fieldErrors: Record<string, string[]> = {};
-      error.errors.forEach((err) => {
+      error.errors.forEach((err: ZodIssue) => {
         const path = err.path.join('.');
         if (!fieldErrors[path]) {
           fieldErrors[path] = [];
@@ -493,7 +492,7 @@ export async function createImmunizationAction(
   } catch (error) {
     if (error instanceof z.ZodError) {
       const fieldErrors: Record<string, string[]> = {};
-      error.errors.forEach((err) => {
+      error.errors.forEach((err: ZodIssue) => {
         const path = err.path.join('.');
         if (!fieldErrors[path]) {
           fieldErrors[path] = [];
@@ -615,7 +614,7 @@ export async function updateImmunizationAction(
   } catch (error) {
     if (error instanceof z.ZodError) {
       const fieldErrors: Record<string, string[]> = {};
-      error.errors.forEach((err) => {
+      error.errors.forEach((err: ZodIssue) => {
         const path = err.path.join('.');
         if (!fieldErrors[path]) {
           fieldErrors[path] = [];
@@ -730,7 +729,7 @@ export async function createAllergyAction(
   } catch (error) {
     if (error instanceof z.ZodError) {
       const fieldErrors: Record<string, string[]> = {};
-      error.errors.forEach((err) => {
+      error.errors.forEach((err: ZodIssue) => {
         const path = err.path.join('.');
         if (!fieldErrors[path]) {
           fieldErrors[path] = [];
@@ -840,7 +839,7 @@ export async function updateAllergyAction(
   } catch (error) {
     if (error instanceof z.ZodError) {
       const fieldErrors: Record<string, string[]> = {};
-      error.errors.forEach((err) => {
+      error.errors.forEach((err: ZodIssue) => {
         const path = err.path.join('.');
         if (!fieldErrors[path]) {
           fieldErrors[path] = [];
@@ -1022,7 +1021,7 @@ export async function createVitalSignsAction(
   } catch (error) {
     if (error instanceof z.ZodError) {
       const fieldErrors: Record<string, string[]> = {};
-      error.errors.forEach((err) => {
+      error.errors.forEach((err: ZodIssue) => {
         const path = err.path.join('.');
         if (!fieldErrors[path]) {
           fieldErrors[path] = [];
@@ -1135,7 +1134,7 @@ export async function updateVitalSignsAction(
   } catch (error) {
     if (error instanceof z.ZodError) {
       const fieldErrors: Record<string, string[]> = {};
-      error.errors.forEach((err) => {
+      error.errors.forEach((err: ZodIssue) => {
         const path = err.path.join('.');
         if (!fieldErrors[path]) {
           fieldErrors[path] = [];
@@ -1248,7 +1247,7 @@ export async function createMedicalConditionAction(
   } catch (error) {
     if (error instanceof z.ZodError) {
       const fieldErrors: Record<string, string[]> = {};
-      error.errors.forEach((err) => {
+      error.errors.forEach((err: ZodIssue) => {
         const path = err.path.join('.');
         if (!fieldErrors[path]) {
           fieldErrors[path] = [];
@@ -1358,7 +1357,7 @@ export async function updateMedicalConditionAction(
   } catch (error) {
     if (error instanceof z.ZodError) {
       const fieldErrors: Record<string, string[]> = {};
-      error.errors.forEach((err) => {
+      error.errors.forEach((err: ZodIssue) => {
         const path = err.path.join('.');
         if (!fieldErrors[path]) {
           fieldErrors[path] = [];

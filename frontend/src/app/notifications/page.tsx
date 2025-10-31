@@ -129,7 +129,7 @@ export default function NotificationsPage() {
                       <input
                         type="checkbox"
                         checked={filters.priorities?.includes(priority)}
-                        onChange={(e) => {
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                           const priorities = filters.priorities || [];
                           setFilters({
                             ...filters,
@@ -151,7 +151,7 @@ export default function NotificationsPage() {
               {/* Actions */}
               <div className="pt-4 border-t border-gray-200">
                 <button
-                  onClick={() => markAllAsRead()}
+                  onClick={() => void markAllAsRead()}
                   className="w-full px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
                 >
                   Mark all as read
@@ -173,7 +173,7 @@ export default function NotificationsPage() {
                   notifications={filteredNotifications}
                   grouped
                   onMarkAsRead={markAsRead}
-                  onSnooze={snooze}
+                  onSnooze={(id: string, until: Date) => snooze({ id, snoozedUntil: until })}
                   onArchive={archive}
                   onDelete={deleteNotification}
                 />

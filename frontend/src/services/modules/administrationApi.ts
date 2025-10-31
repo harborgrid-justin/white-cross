@@ -517,9 +517,9 @@ export class AdministrationApi {
     } catch (error) {
       if (error instanceof z.ZodError) {
         throw createValidationError(
-          error.errors[0]?.message || 'Validation error',
-          error.errors[0]?.path.join('.'),
-          error.errors.reduce((acc, err) => {
+          error.issues[0]?.message || 'Validation error',
+          error.issues[0]?.path.join('.'),
+          error.issues.reduce((acc: Record<string, string[]>, err: z.ZodIssue) => {
             const path = err.path.join('.');
             if (!acc[path]) acc[path] = [];
             acc[path].push(err.message);
@@ -550,9 +550,9 @@ export class AdministrationApi {
     } catch (error) {
       if (error instanceof z.ZodError) {
         throw createValidationError(
-          error.errors[0]?.message || 'Validation error',
-          error.errors[0]?.path.join('.'),
-          error.errors.reduce((acc, err) => {
+          error.issues[0]?.message || 'Validation error',
+          error.issues[0]?.path.join('.'),
+          error.issues.reduce((acc: Record<string, string[]>, err: z.ZodIssue) => {
             const path = err.path.join('.');
             if (!acc[path]) acc[path] = [];
             acc[path].push(err.message);
@@ -632,9 +632,9 @@ export class AdministrationApi {
     } catch (error) {
       if (error instanceof z.ZodError) {
         throw createValidationError(
-          error.errors[0]?.message || 'Validation error',
-          error.errors[0]?.path.join('.'),
-          error.errors.reduce((acc, err) => {
+          error.issues[0]?.message || 'Validation error',
+          error.issues[0]?.path.join('.'),
+          error.issues.reduce((acc: Record<string, string[]>, err: z.ZodIssue) => {
             const path = err.path.join('.');
             if (!acc[path]) acc[path] = [];
             acc[path].push(err.message);
@@ -737,9 +737,9 @@ export class AdministrationApi {
     } catch (error) {
       if (error instanceof z.ZodError) {
         throw createValidationError(
-          error.errors[0]?.message || 'Validation error',
-          error.errors[0]?.path.join('.'),
-          error.errors.reduce((acc, err) => {
+          error.issues[0]?.message || 'Validation error',
+          error.issues[0]?.path.join('.'),
+          error.issues.reduce((acc: Record<string, string[]>, err: z.ZodIssue) => {
             const path = err.path.join('.');
             if (!acc[path]) acc[path] = [];
             acc[path].push(err.message);
@@ -886,9 +886,9 @@ export class AdministrationApi {
     } catch (error) {
       if (error instanceof z.ZodError) {
         throw createValidationError(
-          error.errors[0]?.message || 'Validation error',
-          error.errors[0]?.path.join('.'),
-          error.errors.reduce((acc, err) => {
+          error.issues[0]?.message || 'Validation error',
+          error.issues[0]?.path.join('.'),
+          error.issues.reduce((acc: Record<string, string[]>, err: z.ZodIssue) => {
             const path = err.path.join('.');
             if (!acc[path]) acc[path] = [];
             acc[path].push(err.message);
@@ -1098,9 +1098,9 @@ export class AdministrationApi {
     } catch (error) {
       if (error instanceof z.ZodError) {
         throw createValidationError(
-          error.errors[0]?.message || 'Validation error',
-          error.errors[0]?.path.join('.'),
-          error.errors.reduce((acc, err) => {
+          error.issues[0]?.message || 'Validation error',
+          error.issues[0]?.path.join('.'),
+          error.issues.reduce((acc: Record<string, string[]>, err: z.ZodIssue) => {
             const path = err.path.join('.');
             if (!acc[path]) acc[path] = [];
             acc[path].push(err.message);

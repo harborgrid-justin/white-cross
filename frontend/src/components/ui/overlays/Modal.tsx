@@ -22,6 +22,7 @@ import { cn } from '../../../utils/cn';
  * @interface ModalProps
  * @extends {React.HTMLAttributes<HTMLDivElement>}
  *
+ * @property {React.ReactNode} [children] - Modal content
  * @property {boolean} open - Whether modal is currently open/visible
  * @property {() => void} [onClose] - Callback function when modal should close
  * @property {('sm' | 'md' | 'lg' | 'xl' | 'full')} [size='md'] - Modal width size
@@ -31,6 +32,7 @@ import { cn } from '../../../utils/cn';
  * @property {boolean} [showCloseButton=true] - Show X close button in top-right
  */
 interface ModalProps extends React.HTMLAttributes<HTMLDivElement> {
+  children?: React.ReactNode;
   open: boolean;
   onClose?: () => void;
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
@@ -45,8 +47,12 @@ interface ModalProps extends React.HTMLAttributes<HTMLDivElement> {
  *
  * @interface ModalContentProps
  * @extends {React.HTMLAttributes<HTMLDivElement>}
+ *
+ * @property {React.ReactNode} [children] - Content area content
  */
-interface ModalContentProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface ModalContentProps extends React.HTMLAttributes<HTMLDivElement> {
+  children?: React.ReactNode;
+}
 
 /**
  * Props for the ModalHeader component.
@@ -54,9 +60,11 @@ interface ModalContentProps extends React.HTMLAttributes<HTMLDivElement> {}
  * @interface ModalHeaderProps
  * @extends {React.HTMLAttributes<HTMLDivElement>}
  *
+ * @property {React.ReactNode} [children] - Header content
  * @property {boolean} [divider=true] - Show bottom border divider
  */
 interface ModalHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
+  children?: React.ReactNode;
   divider?: boolean;
 }
 
@@ -65,8 +73,12 @@ interface ModalHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
  *
  * @interface ModalBodyProps
  * @extends {React.HTMLAttributes<HTMLDivElement>}
+ *
+ * @property {React.ReactNode} [children] - Body content
  */
-interface ModalBodyProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface ModalBodyProps extends React.HTMLAttributes<HTMLDivElement> {
+  children?: React.ReactNode;
+}
 
 /**
  * Props for the ModalFooter component.
@@ -74,9 +86,11 @@ interface ModalBodyProps extends React.HTMLAttributes<HTMLDivElement> {}
  * @interface ModalFooterProps
  * @extends {React.HTMLAttributes<HTMLDivElement>}
  *
+ * @property {React.ReactNode} [children] - Footer content (usually buttons)
  * @property {boolean} [divider=true] - Show top border divider
  */
 interface ModalFooterProps extends React.HTMLAttributes<HTMLDivElement> {
+  children?: React.ReactNode;
   divider?: boolean;
 }
 
@@ -85,8 +99,12 @@ interface ModalFooterProps extends React.HTMLAttributes<HTMLDivElement> {
  *
  * @interface ModalTitleProps
  * @extends {React.HTMLAttributes<HTMLHeadingElement>}
+ *
+ * @property {React.ReactNode} [children] - Title text or content
  */
-interface ModalTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {}
+interface ModalTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {
+  children?: React.ReactNode;
+}
 
 /**
  * Modal dialog component with focus trap and comprehensive accessibility.

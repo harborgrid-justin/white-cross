@@ -9,7 +9,7 @@ const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
  * Audit log entry interface
  */
 export interface AuditLogEntry {
-  userId?: string;
+  userId?: string | null;
   action: string;
   resource: string;
   resourceId?: string;
@@ -139,18 +139,20 @@ export const AUDIT_ACTIONS = {
 } as const;
 
 /**
- * Extract IP address from request
+ * Extract IP address from request or headers
  */
-export function extractIPAddress(request: Request): string | undefined {
+export function extractIPAddress(request: Request | { get(name: string): string | null }): string | undefined {
   // Check various headers for IP address
-  const headers = [
+  const headersList = [
     'x-forwarded-for',
     'x-real-ip',
     'cf-connecting-ip'
   ];
 
-  for (const header of headers) {
-    const value = request.headers.get(header);
+  const headers = 'headers' in request ? request.headers : request;
+
+  for (const header of headersList) {
+    const value = headers.get(header);
     if (value) {
       // x-forwarded-for can contain multiple IPs, take the first one
       return value.split(',')[0].trim();
@@ -161,10 +163,11 @@ export function extractIPAddress(request: Request): string | undefined {
 }
 
 /**
- * Extract user agent from request
+ * Extract user agent from request or headers
  */
-export function extractUserAgent(request: Request): string | undefined {
-  return request.headers.get('user-agent') || undefined;
+export function extractUserAgent(request: Request | { get(name: string): string | null }): string | undefined {
+  const headers = 'headers' in request ? request.headers : request;
+  return headers.get('user-agent') || undefined;
 }
 
 /**

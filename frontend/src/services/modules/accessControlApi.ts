@@ -193,7 +193,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   async getRoles(): Promise<{ roles: Role[] }> {
     try {
       const response = await this.client.get('/access-control/roles')
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -205,7 +205,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   async getRoleById(id: string): Promise<{ role: Role }> {
     try {
       const response = await this.client.get(`/access-control/roles/${id}`)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -217,7 +217,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   async createRole(data: CreateRoleData): Promise<{ role: Role }> {
     try {
       const response = await this.client.post('/access-control/roles', data)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -229,7 +229,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   async updateRole(id: string, data: UpdateRoleData): Promise<{ role: Role }> {
     try {
       const response = await this.client.put(`/access-control/roles/${id}`, data)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -241,7 +241,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   async deleteRole(id: string): Promise<DeleteResponse> {
     try {
       const response = await this.client.delete(`/access-control/roles/${id}`)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -254,7 +254,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   async getPermissions(): Promise<{ permissions: Permission[] }> {
     try {
       const response = await this.client.get('/access-control/permissions')
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -266,7 +266,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   async createPermission(data: CreatePermissionData): Promise<{ permission: Permission }> {
     try {
       const response = await this.client.post('/access-control/permissions', data)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -279,7 +279,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   async assignPermissionToRole(roleId: string, permissionId: string): Promise<{ rolePermission: RolePermission }> {
     try {
       const response = await this.client.post(`/access-control/roles/${roleId}/permissions/${permissionId}`)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -291,7 +291,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   async removePermissionFromRole(roleId: string, permissionId: string): Promise<DeleteResponse> {
     try {
       const response = await this.client.delete(`/access-control/roles/${roleId}/permissions/${permissionId}`)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -304,7 +304,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   async assignRoleToUser(userId: string, roleId: string): Promise<{ userRole: UserRoleAssignment }> {
     try {
       const response = await this.client.post(`/access-control/users/${userId}/roles/${roleId}`)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -316,7 +316,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   async removeRoleFromUser(userId: string, roleId: string): Promise<DeleteResponse> {
     try {
       const response = await this.client.delete(`/access-control/users/${userId}/roles/${roleId}`)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -329,7 +329,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   async getUserPermissions(userId: string): Promise<UserPermissionsResult> {
     try {
       const response = await this.client.get(`/access-control/users/${userId}/permissions`)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -343,7 +343,7 @@ class AccessControlApiImpl implements IAccessControlApi {
       const response = await this.client.get(`/access-control/users/${userId}/check`, {
         params: { resource, action }
       })
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -356,7 +356,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   async getUserSessions(userId: string): Promise<{ sessions: Session[] }> {
     try {
       const response = await this.client.get(`/access-control/users/${userId}/sessions`)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -368,7 +368,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   async deleteSession(token: string): Promise<DeleteResponse> {
     try {
       const response = await this.client.delete(`/access-control/sessions/${token}`)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -380,7 +380,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   async deleteAllUserSessions(userId: string): Promise<DeleteSessionsResponse> {
     try {
       const response = await this.client.delete(`/access-control/users/${userId}/sessions`)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -393,7 +393,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   async getSecurityIncidents(params?: SecurityIncidentFilters): Promise<SecurityIncidentsPaginatedResponse> {
     try {
       const response = await this.client.get('/access-control/security-incidents', { params })
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -405,7 +405,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   async createSecurityIncident(data: CreateSecurityIncidentData): Promise<{ incident: SecurityIncident }> {
     try {
       const response = await this.client.post('/access-control/security-incidents', data)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -417,7 +417,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   async updateSecurityIncident(id: string, data: UpdateSecurityIncidentData): Promise<{ incident: SecurityIncident }> {
     try {
       const response = await this.client.put(`/access-control/security-incidents/${id}`, data)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -430,7 +430,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   async getIpRestrictions(): Promise<{ restrictions: IpRestriction[] }> {
     try {
       const response = await this.client.get('/access-control/ip-restrictions')
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -442,7 +442,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   async addIpRestriction(data: AddIpRestrictionData): Promise<{ restriction: IpRestriction }> {
     try {
       const response = await this.client.post('/access-control/ip-restrictions', data)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -454,7 +454,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   async removeIpRestriction(id: string): Promise<DeleteResponse> {
     try {
       const response = await this.client.delete(`/access-control/ip-restrictions/${id}`)
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -467,7 +467,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   async getStatistics(): Promise<SecurityStatistics> {
     try {
       const response = await this.client.get('/access-control/statistics')
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }
@@ -480,7 +480,7 @@ class AccessControlApiImpl implements IAccessControlApi {
   async initializeDefaultRoles(): Promise<{ roles: Role[] }> {
     try {
       const response = await this.client.post('/access-control/initialize-roles')
-      return extractApiData(response)
+      return response.data
     } catch (error) {
       throw handleApiError(error as any)
     }

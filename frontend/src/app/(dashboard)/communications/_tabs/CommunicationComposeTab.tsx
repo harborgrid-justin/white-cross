@@ -287,7 +287,7 @@ export const CommunicationComposeTab: React.FC<CommunicationComposeTabProps> = (
           <Input
             label="Subject"
             value={subject}
-            onChange={(e) => setSubject(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSubject(e.target.value)}
             placeholder="Enter message subject..."
             required
             error={errors.subject}
@@ -306,7 +306,7 @@ export const CommunicationComposeTab: React.FC<CommunicationComposeTabProps> = (
           <Textarea
             label="Message"
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setMessage(e.target.value)}
             placeholder="Type your message here..."
             required
             autoResize
@@ -381,7 +381,7 @@ export const CommunicationComposeTab: React.FC<CommunicationComposeTabProps> = (
               <Checkbox
                 id="read-receipt"
                 checked={requestReadReceipt}
-                onChange={(e) => setRequestReadReceipt(e.target.checked)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRequestReadReceipt(e.target.checked)}
               />
               <label htmlFor="read-receipt" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                 Request read receipt
@@ -392,7 +392,7 @@ export const CommunicationComposeTab: React.FC<CommunicationComposeTabProps> = (
               <Checkbox
                 id="schedule-send"
                 checked={scheduleSend}
-                onChange={(e) => setScheduleSend(e.target.checked)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setScheduleSend(e.target.checked)}
               />
               <label htmlFor="schedule-send" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                 Schedule message for later
@@ -405,7 +405,7 @@ export const CommunicationComposeTab: React.FC<CommunicationComposeTabProps> = (
                   type="datetime-local"
                   label="Schedule Date & Time"
                   value={scheduledDate}
-                  onChange={(e) => setScheduledDate(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setScheduledDate(e.target.value)}
                   error={errors.scheduledDate}
                   size="sm"
                 />

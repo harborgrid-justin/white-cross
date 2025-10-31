@@ -1,9 +1,8 @@
 'use client';
 
 import type { Meta, StoryObj } from '@storybook/react';
-import { fn } from '@storybook/test';
 import { useState } from 'react';
-import { Modal, ModalHeader, ModalBody, ModalFooter, ModalTitle } from './Modal';
+import { Modal, ModalHeader, ModalBody, ModalFooter, ModalTitle, type ModalProps } from './Modal';
 import { Button } from '../buttons/Button';
 import { Input } from '../inputs/Input';
 
@@ -78,9 +77,6 @@ const meta = {
       description: 'Close callback function',
     },
   },
-  args: {
-    onClose: fn(),
-  },
 } satisfies Meta<typeof Modal>;
 
 export default meta;
@@ -90,13 +86,15 @@ type Story = StoryObj<typeof meta>;
  * Basic modal with title, body, and footer.
  */
 export const Default: Story = {
-  render: (args) => {
+  render: (args: ModalProps) => {
     const [open, setOpen] = useState(false);
 
     return (
       <>
         <Button onClick={() => setOpen(true)}>Open Modal</Button>
         <Modal {...args} open={open} onClose={() => setOpen(false)}>
+
+
           <ModalHeader>
             <ModalTitle>Modal Title</ModalTitle>
           </ModalHeader>

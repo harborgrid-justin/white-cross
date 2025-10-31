@@ -316,7 +316,7 @@ export const CommunicationBroadcastTab: React.FC<CommunicationBroadcastTabProps>
           <Input
             label="Subject"
             value={subject}
-            onChange={(e) => setSubject(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSubject(e.target.value)}
             placeholder="Enter broadcast subject..."
             required
             error={errors.subject}
@@ -326,7 +326,7 @@ export const CommunicationBroadcastTab: React.FC<CommunicationBroadcastTabProps>
           <Textarea
             label="Message"
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setMessage(e.target.value)}
             placeholder="Type your broadcast message here..."
             required
             autoResize
@@ -348,7 +348,7 @@ export const CommunicationBroadcastTab: React.FC<CommunicationBroadcastTabProps>
                 <Checkbox
                   id="delivery-email"
                   checked={deliveryMethod.includes('email')}
-                  onChange={(e) => {
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                     if (e.target.checked) {
                       setDeliveryMethod([...deliveryMethod, 'email']);
                     } else {
@@ -364,7 +364,7 @@ export const CommunicationBroadcastTab: React.FC<CommunicationBroadcastTabProps>
                 <Checkbox
                   id="delivery-sms"
                   checked={deliveryMethod.includes('sms')}
-                  onChange={(e) => {
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                     if (e.target.checked) {
                       setDeliveryMethod([...deliveryMethod, 'sms']);
                     } else {
@@ -380,7 +380,7 @@ export const CommunicationBroadcastTab: React.FC<CommunicationBroadcastTabProps>
                 <Checkbox
                   id="delivery-push"
                   checked={deliveryMethod.includes('push')}
-                  onChange={(e) => {
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                     if (e.target.checked) {
                       setDeliveryMethod([...deliveryMethod, 'push']);
                     } else {
@@ -404,7 +404,7 @@ export const CommunicationBroadcastTab: React.FC<CommunicationBroadcastTabProps>
               <Checkbox
                 id="schedule-broadcast"
                 checked={scheduleSend}
-                onChange={(e) => setScheduleSend(e.target.checked)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setScheduleSend(e.target.checked)}
               />
               <label htmlFor="schedule-broadcast" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                 Schedule broadcast for later
@@ -417,7 +417,7 @@ export const CommunicationBroadcastTab: React.FC<CommunicationBroadcastTabProps>
                   type="datetime-local"
                   label="Schedule Date & Time"
                   value={scheduledDate}
-                  onChange={(e) => setScheduledDate(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setScheduledDate(e.target.value)}
                   error={errors.scheduledDate}
                   size="sm"
                 />
@@ -429,7 +429,7 @@ export const CommunicationBroadcastTab: React.FC<CommunicationBroadcastTabProps>
                 <Checkbox
                   id="require-approval"
                   checked={requireApproval}
-                  onChange={(e) => setRequireApproval(e.target.checked)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRequireApproval(e.target.checked)}
                 />
                 <label htmlFor="require-approval" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                   Submit for administrative approval

@@ -210,6 +210,11 @@ export const API_ENDPOINTS = {
     EXPIRING: `/inventory/expiring`,
     REORDER: `/inventory/reorder`,
     AUDIT: `/inventory/audit`,
+    ITEMS: `/inventory/items`,
+    ALERTS: `/inventory/alerts`,
+    ANALYTICS: `/inventory/analytics`,
+    DASHBOARD: `/inventory/dashboard`,
+    REPORTS: `/inventory/reports`,
   },
 
   // ==========================================
@@ -383,6 +388,56 @@ export const API_ENDPOINTS = {
     RESTORE: `/system/restore`,
   },
 
+  // ==========================================
+  // ADMIN - District, School, User Management
+  // ==========================================
+  ADMIN: {
+    // System Settings
+    SETTINGS: `/admin/settings`,
+
+    // Users
+    USERS: `/admin/users`,
+    USER_BY_ID: (id: string) => `/admin/users/${id}`,
+
+    // Districts
+    DISTRICTS: `/admin/districts`,
+    DISTRICT_BY_ID: (id: string) => `/admin/districts/${id}`,
+
+    // Schools
+    SCHOOLS: `/admin/schools`,
+    SCHOOL_BY_ID: (id: string) => `/admin/schools/${id}`,
+
+    // System Health
+    SYSTEM_HEALTH: `/admin/system/health`,
+
+    // Backups
+    BACKUPS: `/admin/backups`,
+    BACKUP_BY_ID: (id: string) => `/admin/backups/${id}`,
+
+    // Licenses
+    LICENSES: `/admin/licenses`,
+    LICENSE_BY_ID: (id: string) => `/admin/licenses/${id}`,
+    LICENSE_DEACTIVATE: (id: string) => `/admin/licenses/${id}/deactivate`,
+
+    // Configurations
+    CONFIGURATIONS: `/admin/configurations`,
+    CONFIGURATION_BY_KEY: (key: string) => `/admin/configurations/${key}`,
+
+    // Performance Metrics
+    METRICS: `/admin/metrics`,
+    METRIC_BY_ID: (id: string) => `/admin/metrics/${id}`,
+
+    // Training
+    TRAINING: `/admin/training`,
+    TRAINING_BY_ID: (id: string) => `/admin/training/${id}`,
+    TRAINING_COMPLETE: (id: string) => `/admin/training/${id}/complete`,
+    TRAINING_PROGRESS: (userId: string) => `/admin/training/progress/${userId}`,
+
+    // Audit Logs
+    AUDIT_LOGS: `/admin/audit-logs`,
+    AUDIT_LOG_BY_ID: (id: string) => `/admin/audit-logs/${id}`,
+  },
+
   INTEGRATIONS: {
     BASE: `/integrations`,
     BY_ID: (id: string) => `/integrations/${id}`,
@@ -439,6 +494,29 @@ export const API_ENDPOINTS = {
     NOTIFICATIONS: `/billing/notifications`,
     SEND_REMINDER: `/billing/notifications/reminder`,
     SEND_STATEMENT: `/billing/notifications/statement`,
+  },
+
+  // ==========================================
+  // BUDGET MANAGEMENT
+  // ==========================================
+  BUDGET: {
+    // Budget Categories
+    CATEGORIES: `/budget/categories`,
+    CATEGORY_BY_ID: (id: string) => `/budget/categories/${id}`,
+
+    // Budget Summary
+    SUMMARY: `/budget/summary`,
+
+    // Budget Transactions
+    TRANSACTIONS: `/budget/transactions`,
+    TRANSACTION_BY_ID: (id: string) => `/budget/transactions/${id}`,
+
+    // Analytics & Reporting
+    TRENDS: `/budget/trends`,
+    YEAR_COMPARISON: `/budget/year-comparison`,
+    OVER_BUDGET: `/budget/over-budget`,
+    RECOMMENDATIONS: `/budget/recommendations`,
+    EXPORT: `/budget/export`,
   },
 
   // ==========================================

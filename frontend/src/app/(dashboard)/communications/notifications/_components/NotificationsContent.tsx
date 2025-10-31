@@ -55,8 +55,10 @@ export function NotificationsContent() {
     const result = await getNotifications({
       type: typeFilter !== 'all' ? typeFilter : undefined,
       limit: 100,
+      offset: 0,
       sortBy: 'createdAt',
-      sortOrder: 'desc'
+      sortOrder: 'desc',
+      grouped: false
     });
 
     if (result.success && result.data) {
@@ -179,7 +181,7 @@ export function NotificationsContent() {
       {/* Toolbar */}
       <div className="flex items-center gap-4">
         {/* Filter */}
-        <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as NotificationType | 'all')}>
+        <Select value={typeFilter} onValueChange={(v: string) => setTypeFilter(v as NotificationType | 'all')}>
           <SelectTrigger className="w-48">
             <Filter className="h-4 w-4 mr-2" />
             <SelectValue />
@@ -199,17 +201,17 @@ export function NotificationsContent() {
 
         {/* Actions */}
         <div className="flex items-center gap-2 ml-auto">
-          <Button variant="outline" size="sm" onClick={handleMarkAllAsRead}>
+          <Button variant="outline" size="sm" onClick={() => void handleMarkAllAsRead()}>
             <Check className="h-4 w-4 mr-2" />
             Mark All Read
           </Button>
           {selectedIds.length > 0 && (
             <>
-              <Button variant="outline" size="sm" onClick={handleArchive}>
+              <Button variant="outline" size="sm" onClick={() => void handleArchive()}>
                 <Archive className="h-4 w-4 mr-2" />
                 Archive ({selectedIds.length})
               </Button>
-              <Button variant="outline" size="sm" onClick={handleDelete}>
+              <Button variant="outline" size="sm" onClick={() => void handleDelete()}>
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete ({selectedIds.length})
               </Button>
@@ -278,9 +280,9 @@ export function NotificationsContent() {
                         {notification.actions.map((action, idx) => (
                           <Button
                             key={idx}
-                            variant={action.primary ? 'default' : 'outline'}
+                            variant={action.primary ? 'primary' : 'outline'}
                             size="sm"
-                            onClick={(e) => {
+                            onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                               e.stopPropagation();
                               if (action.url) {
                                 router.push(action.url);
