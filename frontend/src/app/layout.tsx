@@ -44,6 +44,8 @@
  * - System font fallback chain
  * - CSS bundling and optimization
  * - Optimized toast notification rendering
+ * - Core Web Vitals tracking with useReportWebVitals
+ * - Real-time performance monitoring and alerting
  *
  * @see {@link https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts | Next.js Layouts}
  * @see {@link https://nextjs.org/docs/app/api-reference/file-conventions/layout | Layout Convention}
@@ -74,6 +76,7 @@ import { Providers } from "./providers";
 import { Toaster } from "react-hot-toast";
 import { RouteAnnouncer } from "@/components/RouteAnnouncer";
 import { PageTitle } from "@/components/PageTitle";
+import { WebVitalsReporter } from "@/components/monitoring/WebVitalsReporter";
 
 /**
  * Self-hosted Inter font configuration for optimal performance and HIPAA compliance.
@@ -294,6 +297,9 @@ export default function RootLayout({
 
         {/* Route change announcements for screen readers - WCAG 4.1.3 Level AA */}
         <RouteAnnouncer />
+
+        {/* Core Web Vitals performance monitoring */}
+        <WebVitalsReporter />
 
         <Providers>
           {children}

@@ -10,8 +10,10 @@
  * LLM Context: Protected route wrapper component with role-based access control
  */
 
-import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+'use client';
+
+import React, { useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
 
 /**
@@ -73,7 +75,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   allowedRoles,
   redirectTo = '/auth/access-denied'
 }) => {
-  const location = useLocation();
+  const router = useRouter();
+  const pathname = usePathname();
   const { user, isAuthenticated, isLoading } = useAuth();
 
   // Show loading state while authentication is being verified
@@ -94,14 +97,14 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isLoading && (!isAuthenticated || !user)) {
+      router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
+    }
+  }, [isAuthenticated, user, isLoading, router, pathname]);
+
   if (!isAuthenticated || !user) {
-    return (
-      <Navigate
-        to="/login"
-        state={{ from: location }}
-        replace
-      />
-    );
+    return null; // Return null while redirecting
   }
 
   // Check role-based access if allowedRoles is specified
@@ -115,18 +118,16 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         userId: user.id,
         userRole: userRole,
         requiredRoles: allowedRoles,
-        attemptedPath: location.pathname,
+        attemptedPath: pathname,
         timestamp: new Date().toISOString()
       });
 
       // Redirect to access denied page with context
-      return (
-        <Navigate
-          to={`${redirectTo}?resource=${encodeURIComponent(location.pathname)}&reason=${encodeURIComponent('insufficient permissions')}`}
-          state={{ from: location }}
-          replace
-        />
-      );
+      useEffect(() => {
+        router.replace(`${redirectTo}?resource=${encodeURIComponent(pathname)}&reason=${encodeURIComponent('insufficient permissions')}`);
+      }, []);
+
+      return null; // Return null while redirecting
     }
   }
 

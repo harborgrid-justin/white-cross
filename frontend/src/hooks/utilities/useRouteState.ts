@@ -13,16 +13,22 @@
 /**
  * Enterprise Route-Level State Persistence Hooks
  *
+ * DEPRECATED: This file uses legacy react-router-dom patterns.
+ * Use useRouteState.tsx instead which is properly migrated to Next.js App Router.
+ *
  * Comprehensive hooks for managing and persisting state across route changes,
  * page reloads, and browser navigation. These hooks provide type-safe state
  * management synchronized with URL parameters and localStorage.
  *
  * @module hooks/useRouteState
  * @author White Cross Healthcare Platform
+ * @deprecated Use useRouteState.tsx instead
  */
 
+'use client';
+
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useSearchParams, useLocation, useNavigate } from 'react-router-dom';
+import { useSearchParams, usePathname, useRouter } from 'next/navigation';
 
 // =====================
 // TYPE DEFINITIONS
@@ -326,49 +332,42 @@ export function useRouteState<T>(options: RouteStateOptions<T>): [
           : newValue;
 
         // Update URL params
-        setSearchParams(
-          (params) => {
-            const newParams = new URLSearchParams(params);
+        const newParams = new URLSearchParams(searchParams.toString());
 
-            if (resolvedValue === defaultValue || resolvedValue === null || resolvedValue === undefined) {
-              // Remove param if value is default/null/undefined
-              newParams.delete(paramName);
+        if (resolvedValue === defaultValue || resolvedValue === null || resolvedValue === undefined) {
+          // Remove param if value is default/null/undefined
+          newParams.delete(paramName);
+        } else {
+          try {
+            const serialized = serialize(resolvedValue);
+            if (serialized) {
+              newParams.set(paramName, serialized);
             } else {
-              try {
-                const serialized = serialize(resolvedValue);
-                if (serialized) {
-                  newParams.set(paramName, serialized);
-                } else {
-                  newParams.delete(paramName);
-                }
-              } catch (error) {
-                console.error(`Failed to serialize "${paramName}":`, error);
-              }
+              newParams.delete(paramName);
             }
+          } catch (error) {
+            console.error(`Failed to serialize "${paramName}":`, error);
+          }
+        }
 
-            return newParams;
-          },
-          { replace }
-        );
+        const queryString = newParams.toString();
+        const method = replace ? router.replace : router.push;
+        method(queryString ? `${pathname}?${queryString}` : pathname);
 
         return resolvedValue;
       });
     },
-    [paramName, defaultValue, serialize, setSearchParams, replace]
+    [paramName, defaultValue, serialize, searchParams, router, pathname, replace]
   );
 
   // Clear value and remove from URL
   const clearValue = useCallback(() => {
     setValue(defaultValue);
-    setSearchParams(
-      (params) => {
-        const newParams = new URLSearchParams(params);
-        newParams.delete(paramName);
-        return newParams;
-      },
-      { replace: true }
-    );
-  }, [paramName, defaultValue, setSearchParams]);
+    const newParams = new URLSearchParams(searchParams.toString());
+    newParams.delete(paramName);
+    const queryString = newParams.toString();
+    router.replace(queryString ? `${pathname}?${queryString}` : pathname);
+  }, [paramName, defaultValue, searchParams, router, pathname]);
 
   // Sync from URL when search params change externally
   useEffect(() => {
@@ -462,7 +461,9 @@ export function usePersistedFilters<T extends Record<string, any>>(
     validate,
   } = config;
 
-  const [searchParams, setSearchParams] = useSearchParams();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
   const [isRestored, setIsRestored] = useState(false);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -551,28 +552,24 @@ export function usePersistedFilters<T extends Record<string, any>>(
 
         // Sync with URL if enabled
         if (syncWithUrl) {
-          setSearchParams(
-            (params) => {
-              const newParams = new URLSearchParams(params);
+          const newParams = new URLSearchParams(searchParams.toString());
 
-              Object.entries(resolved).forEach(([key, value]) => {
-                if (value === defaultFilters[key as keyof T] || value === null || value === undefined || value === '') {
-                  newParams.delete(key);
-                } else {
-                  newParams.set(key, defaultSerialize(value));
-                }
-              });
+          Object.entries(resolved).forEach(([key, value]) => {
+            if (value === defaultFilters[key as keyof T] || value === null || value === undefined || value === '') {
+              newParams.delete(key);
+            } else {
+              newParams.set(key, defaultSerialize(value));
+            }
+          });
 
-              return newParams;
-            },
-            { replace: true }
-          );
+          const queryString = newParams.toString();
+          router.replace(queryString ? `${pathname}?${queryString}` : pathname);
         }
 
         return resolved;
       });
     },
-    [validate, saveToStorage, syncWithUrl, setSearchParams, defaultFilters]
+    [validate, saveToStorage, syncWithUrl, searchParams, router, pathname, defaultFilters]
   );
 
   // Update a single filter property
@@ -591,7 +588,7 @@ export function usePersistedFilters<T extends Record<string, any>>(
     setFilters(defaultFilters);
 
     if (syncWithUrl) {
-      setSearchParams({}, { replace: true });
+      router.replace(pathname);
     }
 
     try {
@@ -599,7 +596,7 @@ export function usePersistedFilters<T extends Record<string, any>>(
     } catch (error) {
       console.error(`Failed to clear filters from localStorage:`, error);
     }
-  }, [defaultFilters, setFilters, syncWithUrl, setSearchParams, storageKey]);
+  }, [defaultFilters, setFilters, syncWithUrl, router, pathname, storageKey]);
 
   // Clean up debounce timer
   useEffect(() => {
@@ -658,8 +655,8 @@ export function usePersistedFilters<T extends Record<string, any>>(
  * ```
  */
 export function useNavigationState() {
-  const location = useLocation();
-  const navigate = useNavigate();
+  const pathname = usePathname();
+  const router = useRouter();
   const navigationHistoryRef = useRef<NavigationState[]>([]);
   const currentScrollRef = useRef({ x: 0, y: 0 });
 
@@ -679,7 +676,7 @@ export function useNavigationState() {
   // Track navigation changes
   useEffect(() => {
     const history = navigationHistoryRef.current;
-    const currentPath = location.pathname;
+    const currentPath = pathname;
 
     // Don't track if it's the same path (just param changes)
     if (history.length > 0 && history[history.length - 1].previousPath === currentPath) {
@@ -689,7 +686,7 @@ export function useNavigationState() {
     // Add to history
     const newEntry: NavigationState = {
       previousPath: history.length > 0 ? history[history.length - 1].previousPath : null,
-      previousState: location.state,
+      previousState: null, // Next.js doesn't support location.state in the same way
       scrollPosition: { ...currentScrollRef.current },
       timestamp: Date.now(),
     };
@@ -698,7 +695,7 @@ export function useNavigationState() {
       ...history.slice(-9), // Keep last 10 entries
       { ...newEntry, previousPath: currentPath },
     ];
-  }, [location.pathname, location.state]);
+  }, [pathname]);
 
   // Get previous navigation state
   const getPreviousState = useCallback((): NavigationState | null => {
@@ -707,11 +704,16 @@ export function useNavigationState() {
   }, []);
 
   // Navigate to a path with state
+  // Note: Next.js doesn't support state in the same way as React Router
+  // Consider using URL params or other state management instead
   const navigateWithState = useCallback(
     (path: string, state?: any) => {
-      navigate(path, { state });
+      if (state) {
+        console.warn('Next.js navigation does not support state parameter. Consider using URL params instead.');
+      }
+      router.push(path);
     },
-    [navigate]
+    [router]
   );
 
   // Navigate back with state restoration
@@ -720,9 +722,7 @@ export function useNavigationState() {
       const prevState = getPreviousState();
 
       if (prevState?.previousPath) {
-        navigate(prevState.previousPath, {
-          state: prevState.previousState,
-        });
+        router.push(prevState.previousPath);
 
         // Restore scroll position after navigation
         if (prevState.scrollPosition) {
@@ -734,10 +734,10 @@ export function useNavigationState() {
           }, 0);
         }
       } else {
-        navigate(fallbackPath);
+        router.push(fallbackPath);
       }
     },
-    [navigate, getPreviousState]
+    [router, getPreviousState]
   );
 
   // Get scroll position for a specific path
@@ -829,8 +829,9 @@ export function usePageState(config: PaginationConfig = {}) {
     resetOnFilterChange = true,
   } = config;
 
-  const location = useLocation();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   // Per-route page memory
   const pageMemoryRef = useRef<Map<string, PaginationState>>(new Map());
@@ -851,7 +852,7 @@ export function usePageState(config: PaginationConfig = {}) {
     }
 
     // Check memory for this route
-    const remembered = pageMemoryRef.current.get(location.pathname);
+    const remembered = pageMemoryRef.current.get(pathname);
     if (remembered) {
       return remembered;
     }
@@ -869,34 +870,30 @@ export function usePageState(config: PaginationConfig = {}) {
         const updated = { ...prev, ...newState };
 
         // Save to route memory
-        pageMemoryRef.current.set(location.pathname, updated);
+        pageMemoryRef.current.set(pathname, updated);
 
-        // Update URL
-        setSearchParams(
-          (params) => {
-            const newParams = new URLSearchParams(params);
+        // Update URL using router
+        const newParams = new URLSearchParams(searchParams.toString());
 
-            if (updated.page === defaultPage) {
-              newParams.delete(pageParam);
-            } else {
-              newParams.set(pageParam, String(updated.page));
-            }
+        if (updated.page === defaultPage) {
+          newParams.delete(pageParam);
+        } else {
+          newParams.set(pageParam, String(updated.page));
+        }
 
-            if (updated.pageSize === defaultPageSize) {
-              newParams.delete(pageSizeParam);
-            } else {
-              newParams.set(pageSizeParam, String(updated.pageSize));
-            }
+        if (updated.pageSize === defaultPageSize) {
+          newParams.delete(pageSizeParam);
+        } else {
+          newParams.set(pageSizeParam, String(updated.pageSize));
+        }
 
-            return newParams;
-          },
-          { replace: true }
-        );
+        const queryString = newParams.toString();
+        router.replace(queryString ? `${pathname}?${queryString}` : pathname);
 
         return updated;
       });
     },
-    [location.pathname, setSearchParams, pageParam, pageSizeParam, defaultPage, defaultPageSize]
+    [pathname, router, searchParams, pageParam, pageSizeParam, defaultPage, defaultPageSize]
   );
 
   // Set page number
@@ -1020,8 +1017,9 @@ export function useSortState<T extends string = string>(
     storageKey = 'sort-preference',
   } = config;
 
-  const [searchParams, setSearchParams] = useSearchParams();
-  const location = useLocation();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
 
   // Initialize sort state
   const [state, setState] = useState<SortState<T>>(() => {
@@ -1039,7 +1037,7 @@ export function useSortState<T extends string = string>(
     // Try localStorage if persistence enabled
     if (persistPreference) {
       try {
-        const stored = localStorage.getItem(`${storageKey}-${location.pathname}`);
+        const stored = localStorage.getItem(`${storageKey}-${pathname}`);
         if (stored) {
           const parsed = JSON.parse(stored) as SortState<T>;
           if (parsed.column && validColumns.includes(parsed.column)) {
@@ -1063,28 +1061,24 @@ export function useSortState<T extends string = string>(
       setState(newState);
 
       // Update URL
-      setSearchParams(
-        (params) => {
-          const newParams = new URLSearchParams(params);
+      const newParams = new URLSearchParams(searchParams.toString());
 
-          if (newState.column === null) {
-            newParams.delete(columnParam);
-            newParams.delete(directionParam);
-          } else {
-            newParams.set(columnParam, newState.column);
-            newParams.set(directionParam, newState.direction);
-          }
+      if (newState.column === null) {
+        newParams.delete(columnParam);
+        newParams.delete(directionParam);
+      } else {
+        newParams.set(columnParam, newState.column);
+        newParams.set(directionParam, newState.direction);
+      }
 
-          return newParams;
-        },
-        { replace: true }
-      );
+      const queryString = newParams.toString();
+      router.replace(queryString ? `${pathname}?${queryString}` : pathname);
 
       // Persist to localStorage if enabled
       if (persistPreference) {
         try {
           localStorage.setItem(
-            `${storageKey}-${location.pathname}`,
+            `${storageKey}-${pathname}`,
             JSON.stringify(newState)
           );
         } catch (error) {
@@ -1092,7 +1086,7 @@ export function useSortState<T extends string = string>(
         }
       }
     },
-    [setSearchParams, columnParam, directionParam, persistPreference, storageKey, location.pathname]
+    [searchParams, router, pathname, columnParam, directionParam, persistPreference, storageKey]
   );
 
   // Sort by a specific column
