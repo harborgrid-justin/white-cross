@@ -50,6 +50,16 @@ import { redirect } from 'next/navigation';
 // ==========================================
 
 /**
+ * Simple API client options for basic HTTP requests
+ * @deprecated Consider using NextFetchOptions for new code
+ */
+export interface ApiClientOptions {
+  method?: string
+  body?: unknown
+  headers?: Record<string, string>
+}
+
+/**
  * Next.js cache configuration options
  */
 export interface NextCacheConfig {
@@ -300,10 +310,18 @@ export async function nextFetch<T>(
     : `${getApiBaseUrl()}${endpoint}`;
 
   // Prepare headers
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...fetchOptions.headers,
   };
+
+  // Merge additional headers
+  if (fetchOptions.headers) {
+    Object.entries(fetchOptions.headers).forEach(([key, value]) => {
+      if (typeof value === 'string') {
+        headers[key] = value;
+      }
+    });
+  }
 
   // Add authentication if required
   if (requiresAuth) {
@@ -437,7 +455,6 @@ async function handleErrorResponse(response: Response): Promise<NextApiClientErr
       ? (details as { message: string }).message
       : response.statusText || 'Request failed',
     status: response.status,
-    statusText: response.statusText,
     code: typeof details === 'object' && details !== null && 'code' in details
       ? (details as { code: string }).code
       : undefined,
@@ -638,6 +655,65 @@ export function buildResourceTag(
 }
 
 // ==========================================
+// LEGACY CLIENT SUPPORT
+// ==========================================
+
+/**
+ * Simple API client for basic HTTP requests (legacy support)
+ * 
+ * @deprecated This is a legacy client merged from client.ts. 
+ * For new development, prefer the Next.js-specific methods:
+ * - serverGet() for GET requests
+ * - serverPost() for POST requests
+ * - serverPut() for PUT requests
+ * - serverPatch() for PATCH requests
+ * - serverDelete() for DELETE requests
+ * 
+ * @param endpoint - API endpoint (relative or absolute URL)
+ * @param options - Basic request options
+ * @returns Promise resolving to parsed JSON response
+ * 
+ * @example
+ * ```typescript
+ * // Legacy usage (consider migrating to serverGet/serverPost)
+ * const data = await apiClient('/api/users', {
+ *   method: 'POST',
+ *   body: { name: 'John' }
+ * });
+ * ```
+ */
+export async function apiClient(endpoint: string, options: ApiClientOptions = {}) {
+  const { method = 'GET', body, headers = {} } = options
+
+  const config: RequestInit = {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      ...headers
+    }
+  }
+
+  if (body) {
+    config.body = JSON.stringify(body)
+  }
+
+  const url = endpoint.startsWith('http') ? endpoint : `${getApiBaseUrl()}${endpoint}`
+  const response = await fetch(url, config)
+
+  if (!response.ok) {
+    throw new Error(`API Error: ${response.statusText}`)
+  }
+
+  return response.json()
+}
+
+/**
+ * Alias for apiClient (legacy support)
+ * @deprecated Use apiClient directly or migrate to Next.js-specific methods
+ */
+export const fetchApi = apiClient
+
+// ==========================================
 // EXPORTS
 // ==========================================
 
@@ -650,4 +726,7 @@ export default {
   serverDelete,
   buildCacheTags,
   buildResourceTag,
+  // Legacy exports
+  apiClient,
+  fetchApi,
 };

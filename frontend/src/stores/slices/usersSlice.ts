@@ -7,12 +7,12 @@
 
 import { createEntitySlice, EntityApiService } from '@/stores/sliceFactory';
 import { User, CreateUserData, UpdateUserData, UserFilters } from '@/types/administration';
-import { administrationApi } from '@/services/api';
+import { apiActions } from '@/lib/api';
 
 // Create API service adapter for users
 const usersApiService: EntityApiService<User, CreateUserData, UpdateUserData> = {
   async getAll(params?: UserFilters) {
-    const response = await administrationApi.getUsers(params);
+    const response = await apiActions.administration.getUsers(params);
     return {
       data: response.data?.users || [],
       total: response.data?.pagination?.total,
@@ -22,7 +22,7 @@ const usersApiService: EntityApiService<User, CreateUserData, UpdateUserData> = 
 
   async getById(id: string) {
     // For now, fetch all and filter - can be optimized with a dedicated endpoint
-    const response = await administrationApi.getUsers();
+    const response = await apiActions.administration.getUsers();
     const user = response.data?.users?.find((u: User) => u.id === id);
     if (!user) {
       throw new Error(`User with id ${id} not found`);
@@ -31,17 +31,17 @@ const usersApiService: EntityApiService<User, CreateUserData, UpdateUserData> = 
   },
 
   async create(data: CreateUserData) {
-    const response = await administrationApi.createUser(data);
+    const response = await apiActions.administration.createUser(data);
     return { data: response.data };
   },
 
   async update(id: string, data: UpdateUserData) {
-    const response = await administrationApi.updateUser(id, data);
+    const response = await apiActions.administration.updateUser(id, data);
     return { data: response.data };
   },
 
   async delete(id: string) {
-    await administrationApi.deleteUser(id);
+    await apiActions.administration.deleteUser(id);
     return { success: true };
   },
 };

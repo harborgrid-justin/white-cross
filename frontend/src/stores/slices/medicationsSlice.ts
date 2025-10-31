@@ -30,7 +30,7 @@
 
 import { createEntitySlice, EntityApiService } from '@/stores/sliceFactory';
 import { Medication } from '@/types/api';
-import { medicationsApi } from '@/services/api';
+import { apiActions } from '@/lib/api';
 
 /**
  * Data required to create a new student medication prescription.
@@ -151,7 +151,7 @@ const medicationsApiService: EntityApiService<Medication, CreateMedicationData, 
    * @returns {Promise<{data: Medication[], total?: number, pagination?: any}>} Medications and pagination info
    */
   async getAll(params?: MedicationFilters) {
-    const response = await medicationsApi.getAll(params);
+    const response = await apiActions.medications.getAll(params);
     return {
       data: response.medications || [],
       total: response.pagination?.total,
@@ -166,7 +166,7 @@ const medicationsApiService: EntityApiService<Medication, CreateMedicationData, 
    * @returns {Promise<{data: Medication}>} Single medication record
    */
   async getById(id: string) {
-    const response = await medicationsApi.getById(id);
+    const response = await apiActions.medications.getById(id);
     return { data: response };
   },
 
@@ -181,7 +181,7 @@ const medicationsApiService: EntityApiService<Medication, CreateMedicationData, 
    * contraindications, and allergy checks before saving.
    */
   async create(data: CreateMedicationData) {
-    const response = await medicationsApi.create(data as any);
+    const response = await apiActions.medications.create(data as any);
     return { data: response };
   },
 
@@ -197,7 +197,7 @@ const medicationsApiService: EntityApiService<Medication, CreateMedicationData, 
    * new physician orders depending on school policy.
    */
   async update(id: string, data: UpdateMedicationData) {
-    const response = await medicationsApi.update(id, data as any);
+    const response = await apiActions.medications.update(id, data as any);
     return { data: response };
   },
 
@@ -212,7 +212,7 @@ const medicationsApiService: EntityApiService<Medication, CreateMedicationData, 
    * audit trail. Physical deletion requires elevated permissions.
    */
   async delete(id: string) {
-    await medicationsApi.delete(id);
+    await apiActions.medications.delete(id);
     return { success: true };
   },
 };

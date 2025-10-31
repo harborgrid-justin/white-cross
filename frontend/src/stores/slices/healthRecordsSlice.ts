@@ -49,7 +49,7 @@
 
 import { createEntitySlice, EntityApiService } from '@/stores/sliceFactory';
 import { HealthRecord } from '@/types/student.types';
-import { healthRecordsApi } from '@/services/api';
+import { apiActions } from '@/lib/api';
 
 /**
  * Data required to create a new health record.
@@ -207,7 +207,7 @@ const healthRecordsApiService: EntityApiService<HealthRecord, CreateHealthRecord
     if (!studentId) {
       throw new Error('studentId is required for fetching health records');
     }
-    const response = await healthRecordsApi.getRecords(studentId, params);
+    const response = await apiActions.healthRecords.getRecords(studentId, params);
     return {
       data: response.data || [],
       total: response.total,
@@ -234,7 +234,7 @@ const healthRecordsApiService: EntityApiService<HealthRecord, CreateHealthRecord
    * ```
    */
   async getById(id: string) {
-    const response = await healthRecordsApi.getRecordById(id);
+    const response = await apiActions.healthRecords.getRecordById(id);
     return { data: response };
   },
 
@@ -267,7 +267,7 @@ const healthRecordsApiService: EntityApiService<HealthRecord, CreateHealthRecord
    * ```
    */
   async create(data: CreateHealthRecordData) {
-    const response = await healthRecordsApi.createRecord(data as any);
+    const response = await apiActions.healthRecords.createRecord(data as any);
     return { data: response };
   },
 
@@ -298,7 +298,7 @@ const healthRecordsApiService: EntityApiService<HealthRecord, CreateHealthRecord
    * ```
    */
   async update(id: string, data: UpdateHealthRecordData) {
-    const response = await healthRecordsApi.updateRecord(id, data as any);
+    const response = await apiActions.healthRecords.updateRecord(id, data as any);
     return { data: response };
   },
 
@@ -329,7 +329,7 @@ const healthRecordsApiService: EntityApiService<HealthRecord, CreateHealthRecord
    * ```
    */
   async delete(id: string) {
-    await healthRecordsApi.deleteRecord(id);
+    await apiActions.healthRecords.deleteRecord(id);
     return { success: true };
   },
 };

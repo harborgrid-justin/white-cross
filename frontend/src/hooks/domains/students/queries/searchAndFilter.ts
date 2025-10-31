@@ -18,7 +18,7 @@ import {
 import { useMemo, useCallback, useState, useEffect, useRef } from 'react';
 import { studentQueryKeys, type StudentFilters } from './queryKeys';
 import { cacheConfig } from './cacheConfig';
-import { studentsApi } from '@/services/modules/studentsApi';
+import { apiActions } from '@/lib/api';
 import type { Student } from '@/types/student.types';
 
 /**
@@ -187,7 +187,7 @@ export const useStudentSearch = (
       }
       
       // For now, use the existing API with search parameter
-      const response = await studentsApi.getAll({ 
+      const response = await apiActions.students.getAll({ 
         search: debouncedQuery,
         limit: maxResults,
       });
@@ -346,7 +346,7 @@ export const useAdvancedFilters = (
   const filteredQuery = useQuery({
     queryKey: studentQueryKeys.lists.filtered(appliedFilters),
     queryFn: async () => {
-      const response = await studentsApi.getAll(appliedFilters);
+      const response = await apiActions.students.getAll(appliedFilters);
       return response;
     },
     enabled: Object.keys(appliedFilters).length > 0,

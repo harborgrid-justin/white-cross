@@ -5,7 +5,7 @@
  */
 export const dynamic = 'force-dynamic';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   FileText,
   Plus,
@@ -34,6 +34,14 @@ import { Card } from '@/components/ui/layout/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { SearchInput } from '@/components/ui/SearchInput';
+
+// Import server actions
+import { 
+  getDocuments, 
+  getDocumentsDashboardData,
+  getDocumentStats,
+  type DocumentInfo 
+} from '@/app/documents/actions';
 
 // Document types and categories
 type DocumentType = 'medical_record' | 'immunization_record' | 'medication_record' | 'incident_report' | 'emergency_contact' | 'consent_form' | 'allergy_record' | 'insurance_card' | 'iep_504' | 'health_plan' | 'prescription' | 'lab_result' | 'x_ray' | 'photo' | 'video' | 'other';
@@ -101,12 +109,60 @@ const DocumentsContent: React.FC<DocumentsContentProps> = ({
   const [sortBy, setSortBy] = useState<'name' | 'date' | 'size' | 'type'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  // Initialize with mock data or props data
-  React.useEffect(() => {
+  // Load documents from server actions
+  useEffect(() => {
+    async function fetchDocuments() {
+      try {
+        setLoading(true);
+        
+        // Load documents from server actions
+        const documentInfos = await getDocuments();
+        
+        // Transform DocumentInfo[] to Document[] for UI compatibility
+        const transformedData: Document[] = documentInfos.map((doc: DocumentInfo) => ({
+          id: doc.id,
+          studentId: undefined, // Not available in DocumentInfo
+          studentName: 'Unknown Student',
+          fileName: doc.filename,
+          title: doc.title,
+          description: doc.description,
+          documentType: (doc.category as DocumentType) || 'other',
+          mimeType: doc.mimeType,
+          fileSize: doc.size,
+          status: 'active' as DocumentStatus,
+          accessLevel: doc.isPHI ? 'nurse_only' : 'staff_only' as AccessLevel,
+          tags: doc.category ? [doc.category] : [],
+          isStarred: false,
+          isEncrypted: doc.isPHI,
+          uploadedBy: 'System',
+          uploadedAt: doc.uploadedAt,
+          lastModified: doc.uploadedAt,
+          version: 1,
+          downloadCount: 0,
+          sharingEnabled: !doc.isPHI,
+          auditLog: []
+        }));
+        
+        setDocuments(transformedData);
+      } catch (error) {
+        console.error('Failed to load documents:', error);
+        setDocuments([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
     if (initialDocuments.length > 0) {
       setDocuments(initialDocuments);
       setLoading(false);
     } else {
+      fetchDocuments();
+    }
+  }, [initialDocuments]);
+
+  // Keep mock data as fallback for now
+  React.useEffect(() => {
+    if (initialDocuments.length === 0 && documents.length === 0 && !loading) {
       // Mock data for development - replace with real API calls
       const now = new Date();
       const mockDocuments: Document[] = [

@@ -128,7 +128,7 @@
  */
 
 import { createEntitySlice, EntityApiService } from '@/stores/sliceFactory';
-import { communicationApi } from '@/services/api';
+import { apiActions } from '@/lib/api';
 import type {
   Message,
   CreateMessageData,
@@ -212,7 +212,7 @@ const communicationApiService: EntityApiService<Message, CreateMessageData, Upda
    * @returns {Promise<{data: Message[], total?: number, pagination?: Object}>}
    */
   async getAll(params?: MessageFilters) {
-    const response = await communicationApi.getMessages(params);
+    const response = await apiActions.communication.getMessages(params);
     return {
       data: response.messages || [],
       total: response.pagination?.total,
@@ -228,7 +228,7 @@ const communicationApiService: EntityApiService<Message, CreateMessageData, Upda
    * @returns {Promise<{data: Message}>}
    */
   async getById(id: string) {
-    const response = await communicationApi.getMessageById(id);
+    const response = await apiActions.communication.getMessageById(id);
     return { data: response.message };
   },
 
@@ -240,7 +240,7 @@ const communicationApiService: EntityApiService<Message, CreateMessageData, Upda
    * @returns {Promise<{data: Message}>}
    */
   async create(data: CreateMessageData) {
-    const response = await communicationApi.sendMessage(data);
+    const response = await apiActions.communication.sendMessage(data);
     return { data: response.message };
   },
 

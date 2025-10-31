@@ -40,7 +40,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { createEntitySlice, EntityApiService } from '@/stores/sliceFactory';
 import { Student, CreateStudentData, UpdateStudentData, StudentFilters as StudentFiltersType } from '@/types/student.types';
-import { studentsApi } from '@/services/api';
+import { apiActions } from '@/lib/api';
 
 // Re-export StudentFilters type for external use
 export type { StudentFiltersType as StudentFilters };
@@ -134,7 +134,7 @@ const studentsApiService: EntityApiService<Student, CreateStudentData, UpdateStu
    * ```
    */
   async getAll(params?: StudentFiltersType) {
-    const response = await studentsApi.getAll(params);
+    const response = await apiActions.students.getAll(params);
     return {
       data: response?.students || [],
       total: response?.pagination?.total,
@@ -158,7 +158,7 @@ const studentsApiService: EntityApiService<Student, CreateStudentData, UpdateStu
    * ```
    */
   async getById(id: string) {
-    const response = await studentsApi.getById(id);
+    const response = await apiActions.students.getById(id);
     return { data: response };
   },
 
@@ -188,7 +188,7 @@ const studentsApiService: EntityApiService<Student, CreateStudentData, UpdateStu
    * ```
    */
   async create(data: CreateStudentData) {
-    const response = await studentsApi.create(data);
+    const response = await apiActions.students.create(data);
     return { data: response };
   },
 
@@ -217,7 +217,7 @@ const studentsApiService: EntityApiService<Student, CreateStudentData, UpdateStu
    * ```
    */
   async update(id: string, data: UpdateStudentData) {
-    const response = await studentsApi.update(id, data);
+    const response = await apiActions.students.update(id, data);
     return { data: response };
   },
 
@@ -244,7 +244,7 @@ const studentsApiService: EntityApiService<Student, CreateStudentData, UpdateStu
    * ```
    */
   async delete(id: string) {
-    await studentsApi.delete(id);
+    await apiActions.students.delete(id);
     return { success: true };
   },
 };

@@ -18,7 +18,7 @@ import {
 import { useCallback } from 'react';
 import { studentQueryKeys } from './queryKeys';
 import { cacheConfig, CACHE_INVALIDATION_STRATEGIES } from './cacheConfig';
-import { studentsApi } from '@/services/modules/studentsApi';
+import { apiActions } from '@/lib/api';
 import type {
   Student,
   CreateStudentData,
@@ -172,7 +172,7 @@ export const useCreateStudent = (
           });
         }
 
-        const student = await studentsApi.create(data);
+        const student = await apiActions.students.create(data);
         
         return {
           success: true,
@@ -274,7 +274,7 @@ export const useUpdateStudent = (
   return useMutation({
     mutationFn: async ({ id, data }): Promise<StudentMutationResult> => {
       try {
-        const updatedStudent = await studentsApi.update(id, data);
+        const updatedStudent = await apiActions.students.update(id, data);
 
         return {
           success: true,
@@ -401,7 +401,7 @@ export const useDeactivateStudent = (
   return useMutation({
     mutationFn: async (studentId: string): Promise<StudentMutationResult> => {
       try {
-        const updatedStudent = await studentsApi.update(studentId, { isActive: false });
+        const updatedStudent = await apiActions.students.update(studentId, { isActive: false });
         
         return {
           success: true,
@@ -473,7 +473,7 @@ export const useReactivateStudent = (
   return useMutation({
     mutationFn: async (studentId: string): Promise<StudentMutationResult> => {
       try {
-        const updatedStudent = await studentsApi.update(studentId, { isActive: true });
+        const updatedStudent = await apiActions.students.update(studentId, { isActive: true });
         
         return {
           success: true,
@@ -548,7 +548,7 @@ export const useTransferStudent = (
   return useMutation({
     mutationFn: async ({ id, data }): Promise<StudentMutationResult> => {
       try {
-        const updatedStudent = await studentsApi.update(id, { nurseId: data.nurseId });
+        const updatedStudent = await apiActions.students.update(id, { nurseId: data.nurseId });
         
         return {
           success: true,
@@ -637,7 +637,7 @@ export const useBulkUpdateStudents = (
           const batchResults = await Promise.allSettled(
             batch.map(async (id) => {
               try {
-                const student = await studentsApi.update(id, request.updateData);
+                const student = await apiActions.students.update(id, request.updateData);
                 return { id, success: true, student };
               } catch (error: any) {
                 return { id, success: false, error: error.message };
@@ -744,7 +744,7 @@ export const usePermanentDeleteStudent = (
           });
         }
 
-        await studentsApi.delete(id);
+        await apiActions.students.delete(id);
         
         return {
           success: true,
@@ -940,11 +940,3 @@ export default {
   usePermanentDeleteStudent,
   useStudentMutations,
 };
-
-
-
-
-
-
-
-

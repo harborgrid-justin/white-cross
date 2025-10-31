@@ -59,7 +59,7 @@
  */
 
 import { createEntitySlice, EntityApiService } from '@/stores/sliceFactory';
-import { appointmentsApi } from '@/services/api';
+import { apiActions } from '@/lib/api';
 import type {
   Appointment,
   AppointmentFilters,
@@ -127,7 +127,7 @@ const appointmentsApiService: EntityApiService<Appointment, CreateAppointmentDat
    * **HIPAA**: Triggers audit log for PHI access (appointment details)
    */
   async getAll(params?: AppointmentFilters) {
-    const response = await appointmentsApi.getAll(params as AppointmentFilters);
+    const response = await apiActions.appointments.getAll(params as AppointmentFilters);
     return {
       data: response.data || [],
       total: response.pagination?.total || 0,
@@ -161,7 +161,7 @@ const appointmentsApiService: EntityApiService<Appointment, CreateAppointmentDat
    * **HIPAA**: Audit log includes appointment reason (PHI)
    */
   async getById(id: string) {
-    const response = await appointmentsApi.getById(id);
+    const response = await apiActions.appointments.getById(id);
     return { data: response.appointment };
   },
 
@@ -207,7 +207,7 @@ const appointmentsApiService: EntityApiService<Appointment, CreateAppointmentDat
    * **HIPAA**: Audit log includes student ID and reason
    */
   async create(data: CreateAppointmentData) {
-    const response = await appointmentsApi.create(data);
+    const response = await apiActions.appointments.create(data);
     return { data: response.appointment };
   },
 
@@ -246,7 +246,7 @@ const appointmentsApiService: EntityApiService<Appointment, CreateAppointmentDat
    * **HIPAA**: Audit log tracks all changes
    */
   async update(id: string, data: UpdateAppointmentData) {
-    const response = await appointmentsApi.update(id, data);
+    const response = await apiActions.appointments.update(id, data);
     return { data: response.appointment };
   },
 
@@ -278,7 +278,7 @@ const appointmentsApiService: EntityApiService<Appointment, CreateAppointmentDat
    * **HIPAA**: Audit log tracks cancellation
    */
   async delete(id: string) {
-    await appointmentsApi.cancel(id, 'Deleted');
+    await apiActions.appointments.cancel(id, 'Deleted');
     return { success: true };
   },
 };

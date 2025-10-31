@@ -33,35 +33,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
+import { 
+  getBillingDashboardData,
+  getBillingStats,
+  type BillingRecord,
+  type BillingStats
+} from '@/app/billing/actions';
 
-// Healthcare billing types
-interface BillingRecord {
-  id: string;
-  studentId: string;
-  studentName: string;
-  serviceType: 'medical-consultation' | 'medication-dispensing' | 'emergency-care' | 'routine-checkup' | 'immunization';
-  description: string;
-  amount: number;
-  status: 'draft' | 'pending' | 'submitted' | 'approved' | 'paid' | 'denied' | 'partial' | 'overdue';
-  insuranceProvider?: string;
-  claimNumber?: string;
-  dateOfService: string;
-  billingDate: string;
-  dueDate: string;
-  paymentDate?: string;
-  notes?: string;
-  attachments?: string[];
-}
-
-interface BillingStats {
-  totalBilled: number;
-  totalPaid: number;
-  totalPending: number;
-  totalOverdue: number;
-  claimsPending: number;
-  claimsApproved: number;
-  claimsDenied: number;
-}
+// Healthcare billing types imported from server actions
 
 export default function BillingContent() {
   const [billingRecords, setBillingRecords] = useState<BillingRecord[]>([]);
@@ -79,102 +58,35 @@ export default function BillingContent() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [serviceFilter, setServiceFilter] = useState<string>('all');
 
-  // Mock data initialization
+  // Load billing data using server actions
   useEffect(() => {
-    const loadMockData = () => {
-      const mockBillingRecords: BillingRecord[] = [
-      {
-        id: 'BIL-2025-001',
-        studentId: 'STU-001',
-        studentName: 'Emma Johnson',
-        serviceType: 'medical-consultation',
-        description: 'Annual physical examination with hearing and vision screening',
-        amount: 125.00,
-        status: 'paid',
-        insuranceProvider: 'Blue Cross Blue Shield',
-        claimNumber: 'CLM-2025-0015',
-        dateOfService: '2025-10-15',
-        billingDate: '2025-10-16',
-        dueDate: '2025-11-15',
-        paymentDate: '2025-10-25',
-        notes: 'Routine physical - all results normal'
-      },
-      {
-        id: 'BIL-2025-002',
-        studentId: 'STU-002',
-        studentName: 'Michael Chen',
-        serviceType: 'immunization',
-        description: 'Flu vaccination - seasonal influenza vaccine',
-        amount: 35.00,
-        status: 'submitted',
-        insuranceProvider: 'Aetna Health',
-        claimNumber: 'CLM-2025-0016',
-        dateOfService: '2025-10-20',
-        billingDate: '2025-10-21',
-        dueDate: '2025-11-20',
-        notes: 'Seasonal flu vaccine administered per CDC guidelines'
-      },
-      {
-        id: 'BIL-2025-003',
-        studentId: 'STU-003',
-        studentName: 'Sarah Williams',
-        serviceType: 'emergency-care',
-        description: 'Emergency response - severe allergic reaction treatment',
-        amount: 285.00,
-        status: 'pending',
-        insuranceProvider: 'United Healthcare',
-        claimNumber: 'CLM-2025-0017',
-        dateOfService: '2025-10-28',
-        billingDate: '2025-10-29',
-        dueDate: '2025-11-28',
-        notes: 'Administered epinephrine and provided emergency care'
-      },
-      {
-        id: 'BIL-2025-004',
-        studentId: 'STU-004',
-        studentName: 'David Rodriguez',
-        serviceType: 'medication-dispensing',
-        description: 'Prescription medication dispensing - daily insulin',
-        amount: 45.00,
-        status: 'approved',
-        insuranceProvider: 'Cigna Health',
-        claimNumber: 'CLM-2025-0018',
-        dateOfService: '2025-10-30',
-        billingDate: '2025-10-30',
-        dueDate: '2025-11-29',
-        notes: 'Monthly insulin supply dispensed'
-      },
-      {
-        id: 'BIL-2025-005',
-        studentId: 'STU-005',
-        studentName: 'Jessica Brown',
-        serviceType: 'routine-checkup',
-        description: 'Routine health screening - vision and hearing check',
-        amount: 75.00,
-        status: 'overdue',
-        dateOfService: '2025-09-15',
-        billingDate: '2025-09-16',
-        dueDate: '2025-10-15',
-        notes: 'Vision correction recommendation provided'
+    const loadBillingData = async () => {
+      try {
+        setLoading(true);
+        const dashboardData = await getBillingDashboardData();
+        
+        setBillingRecords(dashboardData.billingRecords);
+        setStats(dashboardData.stats);
+      } catch (error) {
+        console.error('Error loading billing data:', error);
+        // Set empty data on error
+        setBillingRecords([]);
+        setStats({
+          totalBilled: 0,
+          totalPaid: 0,
+          totalPending: 0,
+          totalOverdue: 0,
+          claimsPending: 0,
+          claimsApproved: 0,
+          claimsDenied: 0,
+        });
+      } finally {
+        setLoading(false);
       }
-    ];
-
-    const mockStats: BillingStats = {
-      totalBilled: 12450.00,
-      totalPaid: 8920.00,
-      totalPending: 2100.00,
-      totalOverdue: 1430.00,
-      claimsPending: 15,
-      claimsApproved: 42,
-      claimsDenied: 3,
     };
-
-      setBillingRecords(mockBillingRecords);
-      setStats(mockStats);
       setLoading(false);
-    };
     
-    loadMockData();
+    loadBillingData();
   }, []);
 
   // Filter billing records

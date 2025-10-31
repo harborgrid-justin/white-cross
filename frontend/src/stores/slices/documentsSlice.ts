@@ -146,7 +146,7 @@
  */
 
 import { createEntitySlice, EntityApiService } from '@/stores/sliceFactory';
-import { documentsApi } from '@/services/api';
+import { apiActions } from '@/lib/api';
 import type { Document as DocumentType } from '@/types/documents';
 
 // Use the imported Document type instead of local interface
@@ -288,7 +288,7 @@ const documentsApiService: EntityApiService<Document, CreateDocumentData, Update
    * @returns {Promise<{data: Document[], total: number, pagination?: Object}>}
    */
   async getAll(params?: DocumentFilters) {
-    const response = await documentsApi.getDocuments(params);
+    const response = await apiActions.documents.getDocuments(params);
     return {
       data: response.documents || [],
       total: response.pagination?.total || 0,
@@ -309,7 +309,7 @@ const documentsApiService: EntityApiService<Document, CreateDocumentData, Update
    * @returns {Promise<{data: Document}>}
    */
   async getById(id: string) {
-    const response = await documentsApi.getDocumentById(id);
+    const response = await apiActions.documents.getDocumentById(id);
     return { data: response.document };
   },
 
@@ -321,7 +321,7 @@ const documentsApiService: EntityApiService<Document, CreateDocumentData, Update
    * @returns {Promise<{data: Document}>}
    */
   async create(data: CreateDocumentData) {
-    const response = await documentsApi.createDocument(data as any);
+    const response = await apiActions.documents.createDocument(data as any);
     return { data: response.document };
   },
 
@@ -334,7 +334,7 @@ const documentsApiService: EntityApiService<Document, CreateDocumentData, Update
    * @returns {Promise<{data: Document}>}
    */
   async update(id: string, data: UpdateDocumentData) {
-    const response = await documentsApi.updateDocument(id, data as any);
+    const response = await apiActions.documents.updateDocument(id, data as any);
     return { data: response.document };
   },
 
@@ -346,7 +346,7 @@ const documentsApiService: EntityApiService<Document, CreateDocumentData, Update
    * @returns {Promise<{success: boolean}>}
    */
   async delete(id: string) {
-    await documentsApi.deleteDocument(id);
+    await apiActions.documents.deleteDocument(id);
     return { success: true };
   },
 };

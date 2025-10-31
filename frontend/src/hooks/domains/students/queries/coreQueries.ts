@@ -19,7 +19,7 @@ import {
 import { useMemo, useCallback } from 'react';
 import { studentQueryKeys, type StudentFilters } from './queryKeys';
 import { cacheConfig } from './cacheConfig';
-import { studentsApi } from '@/services/modules/studentsApi';
+import { apiActions } from '@/lib/api';
 import type { 
   Student, 
   CreateStudentData, 
@@ -183,7 +183,7 @@ export const useStudents = (
   const queryResult = useQuery({
     queryKey: studentQueryKeys.lists.filtered(filters),
     queryFn: async () => {
-      const response = await studentsApi.getAll(filters);
+      const response = await apiActions.students.getAll(filters);
       
       // Validate response structure
       if (!response || typeof response !== 'object') {
@@ -305,7 +305,7 @@ export const useStudentDetail = (
     queryFn: async () => {
       if (!studentId) throw new Error('Student ID is required');
       
-      const response = await studentsApi.getById(studentId);
+      const response = await apiActions.students.getById(studentId);
       
       if (!response) {
         throw new Error(`Student with ID ${studentId} not found`);
@@ -379,7 +379,7 @@ export const useStudentProfile = (
       if (!studentId) throw new Error('Student ID is required');
       
       // For now, use regular getById - can be extended later
-      const response = await studentsApi.getById(studentId);
+      const response = await apiActions.students.getById(studentId);
       
       if (!response) {
         throw new Error(`Student profile for ID ${studentId} not found`);
@@ -457,7 +457,7 @@ export const useInfiniteStudents = (
   const queryResult = useInfiniteQuery({
     queryKey: studentQueryKeys.lists.filtered({ ...filters, limit: pageSize }),
     queryFn: async ({ pageParam = 1 }) => {
-      const response = await studentsApi.getAll({
+      const response = await apiActions.students.getAll({
         ...filters,
         page: pageParam,
         limit: pageSize,
@@ -539,7 +539,7 @@ export const useAssignedStudents = (
   const queryResult = useQuery({
     queryKey: studentQueryKeys.assignments.assigned(),
     queryFn: async () => {
-      const response = await studentsApi.getAssignedStudents();
+      const response = await apiActions.students.getAssignedStudents();
       
       return response;
     },
@@ -608,7 +608,7 @@ export const useRecentStudents = (
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - days);
       
-      const response = await studentsApi.getAll({
+      const response = await apiActions.students.getAll({
         // This would need backend support for enrollment date filtering
         // For now, return empty array as placeholder
       });
@@ -665,7 +665,7 @@ export const useStudentsByGrade = (
     queryFn: async () => {
       if (!grade) throw new Error('Grade is required');
       
-      const response = await studentsApi.getAll({ grade });
+      const response = await apiActions.students.getAll({ grade });
       return response;
     },
     enabled: !!grade && (options?.enabled !== false),

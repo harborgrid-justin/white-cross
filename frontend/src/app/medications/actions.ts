@@ -889,3 +889,111 @@ export const getMedicationHistory = cache(async (medicationId: string): Promise<
     return [];
   }
 });
+
+/**
+ * Get medication statistics for dashboard metrics
+ */
+export const getMedicationStats = cache(async (): Promise<{
+  totalMedications: number;
+  activePrescriptions: number;
+  administeredToday: number;
+  adverseReactions: number;
+  lowStockCount: number;
+  expiringCount: number;
+}> => {
+  try {
+    const response = await serverGet<ApiResponse<{
+      totalMedications: number;
+      activePrescriptions: number;
+      administeredToday: number;
+      adverseReactions: number;
+      lowStockCount: number;
+      expiringCount: number;
+    }>>(
+      `${API_ENDPOINTS.MEDICATIONS.BASE}/stats`,
+      undefined,
+      {
+        cache: 'force-cache',
+        next: { 
+          revalidate: CACHE_TTL.PHI_FREQUENT, // Frequent updates for dashboard stats
+          tags: ['medication-stats', CACHE_TAGS.MEDICATIONS] 
+        }
+      }
+    );
+
+    return response.data || {
+      totalMedications: 0,
+      activePrescriptions: 0,
+      administeredToday: 0,
+      adverseReactions: 0,
+      lowStockCount: 0,
+      expiringCount: 0
+    };
+  } catch (error) {
+    console.error('Failed to get medication stats:', error);
+    return {
+      totalMedications: 0,
+      activePrescriptions: 0,
+      administeredToday: 0,
+      adverseReactions: 0,
+      lowStockCount: 0,
+      expiringCount: 0
+    };
+  }
+});
+
+/**
+ * Fetch medications dashboard data combining medications and stats
+ */
+export async function getMedicationsDashboardData(options: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: string;
+  type?: string;
+} = {}) {
+  try {
+    const [medicationsResponse, statsResponse] = await Promise.allSettled([
+      getPaginatedMedications(options.page || 1, options.limit || 50, {
+        status: options.status as 'active' | 'inactive' | 'discontinued',
+        name: options.search,
+      }),
+      getMedicationStats()
+    ]);
+
+    const medications = medicationsResponse.status === 'fulfilled' && medicationsResponse.value
+      ? medicationsResponse.value.medications || []
+      : [];
+
+    const stats = statsResponse.status === 'fulfilled'
+      ? statsResponse.value
+      : {
+          totalMedications: 0,
+          activePrescriptions: 0,
+          administeredToday: 0,
+          adverseReactions: 0,
+          lowStockCount: 0,
+          expiringCount: 0
+        };
+
+    return {
+      medications,
+      stats,
+      error: null
+    };
+  } catch (error) {
+    console.error('Error fetching medications dashboard data:', error);
+    return {
+      medications: [],
+      stats: {
+        totalMedications: 0,
+        activePrescriptions: 0,
+        administeredToday: 0,
+        adverseReactions: 0,
+        lowStockCount: 0,
+        expiringCount: 0
+      },
+      error: error instanceof Error ? error.message : 'Failed to load medication data'
+    };
+  }
+}

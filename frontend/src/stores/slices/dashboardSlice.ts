@@ -67,7 +67,7 @@
  */
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { dashboardApi } from '@/services/api';
+import { apiActions } from '@/lib/api';
 import type {
   DashboardStats,
   DashboardRecentActivity,
@@ -111,7 +111,7 @@ class DashboardApiService {
    */
   async getDashboardStats(): Promise<DashboardStats> {
     try {
-      return await dashboardApi.getDashboardStats();
+      return await apiActions.dashboard.getDashboardStats();
     } catch (error: any) {
       throw new Error(error.message || 'Failed to fetch dashboard statistics');
     }
@@ -122,7 +122,7 @@ class DashboardApiService {
    */
   async getRecentActivities(params?: RecentActivitiesParams): Promise<DashboardRecentActivity[]> {
     try {
-      return await dashboardApi.getRecentActivities(params);
+      return await apiActions.dashboard.getRecentActivities(params);
     } catch (error: any) {
       throw new Error(error.message || 'Failed to fetch recent activities');
     }
@@ -133,7 +133,7 @@ class DashboardApiService {
    */
   async getUpcomingAppointments(params?: UpcomingAppointmentsParams): Promise<DashboardUpcomingAppointment[]> {
     try {
-      return await dashboardApi.getUpcomingAppointments(params);
+      return await apiActions.dashboard.getUpcomingAppointments(params);
     } catch (error: any) {
       throw new Error(error.message || 'Failed to fetch upcoming appointments');
     }
@@ -144,7 +144,7 @@ class DashboardApiService {
    */
   async getChartData(params?: ChartDataParams): Promise<DashboardChartData> {
     try {
-      return await dashboardApi.getChartData(params);
+      return await apiActions.dashboard.getChartData(params);
     } catch (error: any) {
       throw new Error(error.message || 'Failed to fetch chart data');
     }
@@ -158,7 +158,7 @@ class DashboardApiService {
     appointmentLimit?: number;
   }): Promise<Partial<CompleteDashboardData>> {
     try {
-      return await dashboardApi.getCompleteDashboardData(options);
+      return await apiActions.dashboard.getCompleteDashboardData(options);
     } catch (error: any) {
       throw new Error(error.message || 'Failed to fetch complete dashboard data');
     }
@@ -169,7 +169,7 @@ class DashboardApiService {
    */
   async refreshCache(): Promise<boolean> {
     try {
-      return await dashboardApi.refreshCache();
+      return await apiActions.dashboard.refreshCache();
     } catch (error: any) {
       throw new Error(error.message || 'Failed to refresh dashboard cache');
     }
@@ -180,7 +180,7 @@ class DashboardApiService {
    */
   async getDashboardStatsByDateRange(startDate: string, endDate: string): Promise<DashboardStats> {
     try {
-      return await dashboardApi.getDashboardStatsByDateRange(startDate, endDate);
+      return await apiActions.dashboard.getDashboardStatsByDateRange(startDate, endDate);
     } catch (error: any) {
       throw new Error(error.message || 'Failed to fetch dashboard stats by date range');
     }
@@ -194,7 +194,7 @@ class DashboardApiService {
     districtId?: string;
   }): Promise<DashboardStats> {
     try {
-      return await dashboardApi.getDashboardStatsByScope(scope);
+      return await apiActions.dashboard.getDashboardStatsByScope(scope);
     } catch (error: any) {
       throw new Error(error.message || 'Failed to fetch scoped dashboard stats');
     }

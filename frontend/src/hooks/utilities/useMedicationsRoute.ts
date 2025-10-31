@@ -26,7 +26,7 @@ import {
 } from '@/hooks/domains/medications/mutations/useOptimisticMedications';
 import { useToast } from '@/hooks/useToast';
 import { useMedicationToast } from '@/hooks/utilities/useMedicationToast';
-import { medicationsApi } from '@/services/modules/medicationsApi';
+import { apiActions } from '@/lib/api';
 import type {
   Medication,
   StudentMedication,
@@ -171,7 +171,7 @@ export function useMedicationsRoute() {
   const medicationsQuery = useQuery({
     queryKey: medicationKeys.list(state.filters),
     queryFn: async () => {
-      const response = await medicationsApi.getAll({
+      const response = await apiActions.medications.getAll({
         page: state.page,
         limit: state.pageSize,
         ...state.filters,
@@ -188,7 +188,7 @@ export function useMedicationsRoute() {
   const scheduleQuery = useQuery({
     queryKey: medicationKeys.schedule(state.dateRange.startDate, state.dateRange.endDate),
     queryFn: async () => {
-      const response = await medicationsApi.getSchedule(
+      const response = await apiActions.medications.getSchedule(
         state.dateRange.startDate,
         state.dateRange.endDate
       );
@@ -203,7 +203,7 @@ export function useMedicationsRoute() {
   const inventoryQuery = useQuery({
     queryKey: medicationKeys.inventory(),
     queryFn: async () => {
-      const response = await medicationsApi.getInventory();
+      const response = await apiActions.medications.getInventory();
       return response;
     },
     staleTime: 10 * 60 * 1000,
@@ -228,7 +228,7 @@ export function useMedicationsRoute() {
   const remindersQuery = useQuery({
     queryKey: medicationKeys.reminders(new Date().toISOString().split('T')[0]),
     queryFn: async () => {
-      const response = await medicationsApi.getReminders(new Date().toISOString().split('T')[0]);
+      const response = await apiActions.medications.getReminders(new Date().toISOString().split('T')[0]);
       return response;
     },
     refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes

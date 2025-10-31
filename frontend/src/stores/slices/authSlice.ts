@@ -84,7 +84,8 @@
  */
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { authApi, LoginCredentials, RegisterData } from '@/services/modules/authApi';
+import { apiActions } from '@/lib/api';
+import type { LoginCredentials, RegisterData } from '@/services/modules/authApi';
 import { User } from '@/types';
 import toast from 'react-hot-toast';
 import debug from 'debug';
@@ -212,7 +213,7 @@ export const loginUser = createAsyncThunk(
   'auth/loginUser',
   async (credentials: LoginCredentials, { rejectWithValue }) => {
     try {
-      const response = await authApi.login(credentials);
+      const response = await apiActions.auth.login(credentials);
       return response;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Login failed');
@@ -283,7 +284,7 @@ export const registerUser = createAsyncThunk(
   'auth/registerUser',
   async (userData: RegisterData, { rejectWithValue }) => {
     try {
-      const response = await authApi.register(userData);
+      const response = await apiActions.auth.register(userData);
       return response;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Registration failed');
@@ -351,7 +352,7 @@ export const logoutUser = createAsyncThunk(
   'auth/logoutUser',
   async (_, { rejectWithValue }) => {
     try {
-      await authApi.logout();
+      await apiActions.auth.logout();
     } catch (error: any) {
       // Even if server logout fails, we still want to clear local state
       return rejectWithValue(error.message || 'Logout failed');
@@ -424,7 +425,7 @@ export const refreshUser = createAsyncThunk(
   'auth/refreshUser',
   async (_, { rejectWithValue }) => {
     try {
-      const user = await authApi.verifyToken();
+      const user = await apiActions.auth.verifyToken();
       return user;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Token verification failed');

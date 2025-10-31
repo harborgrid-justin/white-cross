@@ -64,7 +64,7 @@
  */
 
 import { useMutation, useQueryClient, UseMutationOptions } from '@tanstack/react-query';
-import { studentsApi } from '@/services/modules/studentsApi';
+import { apiActions } from '@/lib/api';
 import type {
   Student,
   CreateStudentData,
@@ -268,7 +268,7 @@ export function useOptimisticStudentCreate(
   const dispatch = useAppDispatch();
 
   return useMutation({
-    mutationFn: (data: CreateStudentData) => studentsApi.create(data),
+    mutationFn: (data: CreateStudentData) => apiActions.students.create(data),
 
     onMutate: async (newStudent) => {
       // Cancel outgoing refetches
@@ -378,7 +378,7 @@ export function useOptimisticStudentUpdate(
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateStudentData }) => 
-      studentsApi.update(id, data),
+      apiActions.students.update(id, data),
 
     onMutate: async ({ id, data }: { id: string; data: UpdateStudentData }) => {
       // Cancel outgoing refetches
@@ -483,7 +483,7 @@ export function useOptimisticStudentDeactivate(
   const dispatch = useAppDispatch();
 
   return useMutation({
-    mutationFn: (id: string) => studentsApi.deactivate(id),
+    mutationFn: (id: string) => apiActions.students.update(id, { isActive: false }),
 
     onMutate: async (id) => {
       // Cancel outgoing refetches
@@ -570,7 +570,7 @@ export function useOptimisticStudentReactivate(
   const dispatch = useAppDispatch();
 
   return useMutation({
-    mutationFn: (id: string) => studentsApi.reactivate(id),
+    mutationFn: (id: string) => apiActions.students.update(id, { isActive: true }),
 
     onMutate: async (id) => {
       // Cancel outgoing refetches
@@ -655,7 +655,7 @@ export function useOptimisticStudentTransfer(
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: TransferStudentRequest }) => 
-      studentsApi.transfer(id, data),
+      apiActions.students.update(id, { nurseId: data.nurseId }),
 
     onMutate: async ({ id, data }: { id: string; data: TransferStudentRequest }) => {
       // Cancel outgoing refetches
@@ -747,7 +747,7 @@ export function useOptimisticStudentPermanentDelete(
   const dispatch = useAppDispatch();
 
   return useMutation({
-    mutationFn: (id: string) => studentsApi.delete(id),
+    mutationFn: (id: string) => apiActions.students.delete(id),
 
     onMutate: async (id) => {
       // Cancel outgoing refetches

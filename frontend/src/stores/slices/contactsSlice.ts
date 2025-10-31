@@ -6,7 +6,8 @@
  */
 
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { emergencyContactsApi, CreateEmergencyContactData, UpdateEmergencyContactData } from '@/services/modules/emergencyContactsApi';
+import { apiActions } from '@/lib/api';
+import { CreateEmergencyContactData, UpdateEmergencyContactData } from '@/services/modules/emergencyContactsApi';
 import {
   EmergencyContact,
   EmergencyNotificationData,
@@ -19,38 +20,38 @@ import {
 export class ContactsApiService {
   // Emergency contacts
   async getContactsByStudent(studentId: string) {
-    return emergencyContactsApi.getByStudent(studentId);
+    return apiActions.emergencyContacts.getByStudent(studentId);
   }
 
   async createEmergencyContact(data: CreateEmergencyContactData) {
-    return emergencyContactsApi.create(data);
+    return apiActions.emergencyContacts.create(data);
   }
 
   async updateEmergencyContact(id: string, data: UpdateEmergencyContactData) {
-    return emergencyContactsApi.update(id, data);
+    return apiActions.emergencyContacts.update(id, data);
   }
 
   async deleteEmergencyContact(id: string) {
-    return emergencyContactsApi.delete(id);
+    return apiActions.emergencyContacts.delete(id);
   }
 
   // Notifications
   async notifyStudent(studentId: string, notification: Omit<EmergencyNotificationData, 'studentId'>) {
-    return emergencyContactsApi.notifyStudent(studentId, notification);
+    return apiActions.emergencyContacts.notifyStudent(studentId, notification);
   }
 
   async notifyContact(contactId: string, notification: Omit<EmergencyNotificationData, 'studentId'>) {
-    return emergencyContactsApi.notifyContact(contactId, notification);
+    return apiActions.emergencyContacts.notifyContact(contactId, notification);
   }
 
   // Verification
   async verifyContact(contactId: string, method: 'sms' | 'email' | 'voice') {
-    return emergencyContactsApi.verify(contactId, method);
+    return apiActions.emergencyContacts.verify(contactId, method);
   }
 
   // Statistics
   async getStatistics() {
-    return emergencyContactsApi.getStatistics();
+    return apiActions.emergencyContacts.getStatistics();
   }
 }
 

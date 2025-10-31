@@ -51,7 +51,7 @@
 
 import { createEntitySlice, EntityApiService } from '@/stores/sliceFactory';
 import { EmergencyContact, CreateEmergencyContactData, UpdateEmergencyContactData } from '@/types/student.types';
-import { emergencyContactsApi } from '@/services/api';
+import { apiActions } from '@/lib/api';
 
 /**
  * Filter parameters for querying emergency contacts.
@@ -137,7 +137,7 @@ const emergencyContactsApiService: EntityApiService<EmergencyContact, CreateEmer
    * ```
    */
   async getAll(params?: EmergencyContactFilters) {
-    const response = await emergencyContactsApi.getAll(params);
+    const response = await apiActions.emergencyContacts.getAll(params);
     return {
       data: response.data?.contacts || [],
       total: response.data?.pagination?.total,
@@ -161,7 +161,7 @@ const emergencyContactsApiService: EntityApiService<EmergencyContact, CreateEmer
    * ```
    */
   async getById(id: string) {
-    const response = await emergencyContactsApi.getById(id);
+    const response = await apiActions.emergencyContacts.getById(id);
     return { data: response.data };
   },
 
@@ -198,7 +198,7 @@ const emergencyContactsApiService: EntityApiService<EmergencyContact, CreateEmer
    * ```
    */
   async create(data: CreateEmergencyContactData) {
-    const response = await emergencyContactsApi.create(data);
+    const response = await apiActions.emergencyContacts.create(data);
     return { data: response.data };
   },
 
@@ -228,7 +228,7 @@ const emergencyContactsApiService: EntityApiService<EmergencyContact, CreateEmer
    * ```
    */
   async update(id: string, data: UpdateEmergencyContactData) {
-    const response = await emergencyContactsApi.update(id, data);
+    const response = await apiActions.emergencyContacts.update(id, data);
     return { data: response.data };
   },
 
@@ -255,7 +255,7 @@ const emergencyContactsApiService: EntityApiService<EmergencyContact, CreateEmer
    * ```
    */
   async delete(id: string) {
-    await emergencyContactsApi.delete(id);
+    await apiActions.emergencyContacts.delete(id);
     return { success: true };
   },
 };

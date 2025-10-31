@@ -166,6 +166,34 @@ export interface PaymentFilters {
   dateTo?: string;
 }
 
+export interface BillingRecord {
+  id: string;
+  studentId: string;
+  studentName: string;
+  serviceType: 'medical-consultation' | 'medication-dispensing' | 'emergency-care' | 'routine-checkup' | 'immunization';
+  description: string;
+  amount: number;
+  status: 'draft' | 'pending' | 'submitted' | 'approved' | 'paid' | 'denied' | 'partial' | 'overdue';
+  insuranceProvider?: string;
+  claimNumber?: string;
+  dateOfService: string;
+  billingDate: string;
+  dueDate: string;
+  paymentDate?: string;
+  notes?: string;
+  attachments?: string[];
+}
+
+export interface BillingStats {
+  totalBilled: number;
+  totalPaid: number;
+  totalPending: number;
+  totalOverdue: number;
+  claimsPending: number;
+  claimsApproved: number;
+  claimsDenied: number;
+}
+
 // ==========================================
 // CACHED DATA FUNCTIONS
 // ==========================================
@@ -908,6 +936,127 @@ export async function getRevenueSummary(): Promise<{
     };
   }
 }
+
+// ==========================================
+// DASHBOARD DATA FUNCTIONS
+// ==========================================
+
+/**
+ * Get billing statistics for dashboard
+ * Provides comprehensive billing metrics with proper caching
+ */
+export const getBillingStats = cache(async (): Promise<BillingStats> => {
+  try {
+    // Fetch invoices for stats calculation
+    const invoices = await serverGet<Invoice[]>(
+      `${API_ENDPOINTS.BILLING?.BASE || '/api/billing'}/invoices`,
+      {
+        next: { 
+          revalidate: 300, // 5 minutes
+          tags: ['billing-stats', 'billing-dashboard'] 
+        }
+      }
+    );
+
+    // Calculate stats from invoices 
+    const paidInvoices = invoices.filter(inv => inv.status === 'paid');
+    const pendingInvoices = invoices.filter(inv => inv.status === 'sent');
+    const overdueInvoices = invoices.filter(inv => inv.status === 'overdue');
+
+    const stats: BillingStats = {
+      totalBilled: invoices.reduce((sum, inv) => sum + inv.totalAmount, 0),
+      totalPaid: paidInvoices.reduce((sum, inv) => sum + inv.totalAmount, 0),
+      totalPending: pendingInvoices.reduce((sum, inv) => sum + inv.totalAmount, 0),
+      totalOverdue: overdueInvoices.reduce((sum, inv) => sum + inv.totalAmount, 0),
+      claimsPending: pendingInvoices.length,
+      claimsApproved: paidInvoices.length,
+      claimsDenied: invoices.filter(inv => inv.status === 'cancelled').length,
+    };
+
+    // PHI protection audit log
+    await auditLog({
+      action: AUDIT_ACTIONS.EXPORT_DATA,
+      resource: 'billing_stats',
+      resourceId: 'dashboard-stats',
+      details: 'Retrieved billing statistics for dashboard display'
+    });
+
+    return stats;
+  } catch (error) {
+    console.error('Error fetching billing stats:', error);
+    // Return default stats on error
+    return {
+      totalBilled: 0,
+      totalPaid: 0,
+      totalPending: 0,
+      totalOverdue: 0,
+      claimsPending: 0,
+      claimsApproved: 0,
+      claimsDenied: 0,
+    };
+  }
+});
+
+/**
+ * Get comprehensive billing dashboard data
+ * Combines billing records and statistics for dashboard display
+ */
+export const getBillingDashboardData = cache(async () => {
+  try {
+    // Fetch both billing records and stats in parallel for optimal performance
+    const [billingRecords, stats] = await Promise.all([
+      getInvoices(),
+      getBillingStats()
+    ]);
+
+    // Transform invoices to billing records format
+    const records: BillingRecord[] = billingRecords.map(invoice => ({
+      id: invoice.id,
+      studentId: invoice.customerId,
+      studentName: invoice.customerName,
+      serviceType: 'medical-consultation' as const,
+      description: invoice.description,
+      amount: invoice.totalAmount,
+      status: invoice.status === 'paid' ? 'paid' : 
+             invoice.status === 'sent' ? 'pending' :
+             invoice.status === 'overdue' ? 'overdue' : 'draft',
+      dateOfService: invoice.issueDate,
+      billingDate: invoice.issueDate,
+      dueDate: invoice.dueDate,
+      paymentDate: invoice.paidDate,
+      notes: `Invoice #${invoice.invoiceNumber}`,
+    }));
+
+    // HIPAA compliance audit logging
+    await auditLog({
+      action: AUDIT_ACTIONS.EXPORT_DATA,
+      resource: 'billing_dashboard',
+      resourceId: 'dashboard-view',
+      details: `Retrieved ${records.length} billing records for dashboard`
+    });
+
+    return {
+      billingRecords: records,
+      stats
+    };
+  } catch (error) {
+    console.error('Error fetching billing dashboard data:', error);
+    
+    // Return empty data structure on error
+    return {
+      billingRecords: [] as BillingRecord[],
+      stats: {
+        totalBilled: 0,
+        totalPaid: 0,
+        totalPending: 0,
+        totalOverdue: 0,
+        claimsPending: 0,
+        claimsApproved: 0,
+        claimsDenied: 0,
+      } as BillingStats
+    };
+  }
+});
 
 /**
  * Clear billing cache

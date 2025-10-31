@@ -17,7 +17,7 @@ import {
 import { useCallback, useEffect, useRef } from 'react';
 import { studentQueryKeys, type StudentFilters } from './queryKeys';
 import { cacheConfig } from './cacheConfig';
-import { studentsApi } from '@/services/modules/studentsApi';
+import { apiActions } from '@/lib/api';
 import type { Student } from '@/types/student.types';
 
 /**
@@ -337,7 +337,7 @@ export const useCacheManager = () => {
         prefetchPromises.push(
           queryClient.prefetchQuery({
             queryKey: studentQueryKeys.lists.byGrade(grade),
-            queryFn: () => studentsApi.getAll({ grade, limit }),
+            queryFn: () => apiActions.students.getAll({ grade, limit }),
             staleTime: cacheConfig.lists.staleTime,
           })
         );
@@ -348,7 +348,7 @@ export const useCacheManager = () => {
     prefetchPromises.push(
       queryClient.prefetchQuery({
         queryKey: studentQueryKeys.lists.active(),
-        queryFn: () => studentsApi.getAll({ isActive: true, limit }),
+        queryFn: () => apiActions.students.getAll({ isActive: true, limit }),
         staleTime: cacheConfig.lists.staleTime,
       })
     );
@@ -357,7 +357,7 @@ export const useCacheManager = () => {
     prefetchPromises.push(
       queryClient.prefetchQuery({
         queryKey: studentQueryKeys.statistics.overview(),
-        queryFn: () => studentsApi.getAll({}),
+        queryFn: () => apiActions.students.getAll({}),
         staleTime: cacheConfig.statistics.staleTime,
       })
     );
@@ -392,7 +392,7 @@ export const useCacheManager = () => {
           warmingPromises.push(
             queryClient.prefetchQuery({
               queryKey: studentQueryKeys.statistics.overview(),
-              queryFn: () => studentsApi.getAll({}),
+              queryFn: () => apiActions.students.getAll({}),
               staleTime: cacheConfig.statistics.staleTime,
             })
           );

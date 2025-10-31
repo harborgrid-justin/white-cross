@@ -7,12 +7,12 @@
 
 import { createEntitySlice, EntityApiService } from '@/stores/sliceFactory';
 import { SystemConfiguration, ConfigurationData, ConfigCategory } from '@/types/administration';
-import { administrationApi } from '@/services/api';
+import { apiActions } from '@/lib/api';
 
 // Create API service adapter for settings
 const settingsApiService: EntityApiService<SystemConfiguration, ConfigurationData, ConfigurationData> = {
   async getAll() {
-    const response = await administrationApi.getSettings();
+    const response = await apiActions.administration.getSettings();
     // Convert settings object to array of configuration items
     const configurations: SystemConfiguration[] = [];
     
@@ -46,7 +46,7 @@ const settingsApiService: EntityApiService<SystemConfiguration, ConfigurationDat
   },
 
   async getById(id: string) {
-    const response = await administrationApi.getSettings();
+    const response = await apiActions.administration.getSettings();
     let foundConfig: SystemConfiguration | null = null;
     
     if (response.data) {
@@ -81,12 +81,12 @@ const settingsApiService: EntityApiService<SystemConfiguration, ConfigurationDat
   },
 
   async create(data: ConfigurationData) {
-    const response = await administrationApi.setConfiguration(data);
+    const response = await apiActions.administration.setConfiguration(data);
     return { data: response.data };
   },
 
   async update(id: string, data: ConfigurationData) {
-    const response = await administrationApi.setConfiguration({ ...data, id });
+    const response = await apiActions.administration.setConfiguration({ ...data, id });
     return { data: response.data };
   },
 

@@ -5,7 +5,7 @@
  */
 export const dynamic = 'force-dynamic';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Calendar,
   Plus,
@@ -30,6 +30,14 @@ import { Card } from '@/components/ui/layout/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { SearchInput } from '@/components/ui/SearchInput';
+
+// Import server actions
+import { 
+  getImmunizationRecords, 
+  getImmunizationsDashboardData,
+  getImmunizationStats,
+  type ImmunizationRecord 
+} from '@/app/immunizations/actions';
 
 // Healthcare immunization types and statuses
 type ImmunizationType = 'covid19' | 'flu' | 'hepatitis_b' | 'measles' | 'mumps' | 'rubella' | 'polio' | 'tetanus' | 'diphtheria' | 'pertussis' | 'varicella' | 'meningococcal' | 'hpv' | 'pneumococcal';
@@ -87,12 +95,57 @@ const ImmunizationsContent: React.FC<ImmunizationsContentProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [selectedImmunizations, setSelectedImmunizations] = useState<Set<string>>(new Set());
-  // Initialize with mock data or props data
-  React.useEffect(() => {
+  // Load immunization data from server actions
+  useEffect(() => {
+    async function fetchImmunizations() {
+      try {
+        setLoading(true);
+        
+        // Load immunizations from server actions
+        const immunizationRecords = await getImmunizationRecords();
+        
+        // Transform ImmunizationRecord[] to Immunization[] for UI compatibility
+        const transformedData: Immunization[] = immunizationRecords.map((record: ImmunizationRecord) => ({
+          id: record.id,
+          studentId: record.studentId,
+          studentName: record.studentName || 'Unknown Student',
+          vaccineName: record.vaccineName,
+          immunizationType: (record.vaccineType?.toLowerCase() || 'covid19') as ImmunizationType,
+          scheduledDate: undefined, // Not available in ImmunizationRecord
+          administeredDate: record.administeredDate,
+          dueDate: record.nextDueDate || new Date().toISOString().split('T')[0],
+          status: record.administeredDate ? 'administered' : 'scheduled' as ImmunizationStatus,
+          priority: 'medium' as ImmunizationPriority, // Default priority
+          seriesPosition: record.doseNumber ? `${record.doseNumber}` : '1',
+          notes: record.notes,
+          lotNumber: record.lotNumber,
+          manufacturer: record.manufacturer,
+          administeredBy: record.administeredByName || record.administeredBy,
+          nextDue: record.nextDueDate,
+          createdAt: record.createdAt,
+          updatedAt: record.updatedAt
+        }));
+        
+        setImmunizations(transformedData);
+      } catch (error) {
+        console.error('Failed to load immunizations:', error);
+        setImmunizations([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
     if (initialImmunizations.length > 0) {
       setImmunizations(initialImmunizations);
       setLoading(false);
     } else {
+      fetchImmunizations();
+    }
+  }, [initialImmunizations]);
+
+  // Keep mock data as fallback for now
+  React.useEffect(() => {
+    if (initialImmunizations.length === 0 && immunizations.length === 0 && !loading) {
       // Mock data for development - replace with real API calls
       const now = new Date();
       const mockImmunizations: Immunization[] = [

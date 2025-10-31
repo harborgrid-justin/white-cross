@@ -7,105 +7,105 @@
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '@/stores/reduxStore';
-import { accessControlApi } from '@/services/api';
+import { apiActions } from '@/lib/api';
 import { User } from '@/types';
 
 // API Service Adapter
 class AccessControlApiService {
   async getRoles() {
-    return accessControlApi.getRoles();
+    return apiActions.administration.getRoles();
   }
 
   async getRoleById(id: string) {
-    return accessControlApi.getRoleById(id);
+    return apiActions.administration.getRoleById(id);
   }
 
   async createRole(data: any) {
-    return accessControlApi.createRole(data);
+    return apiActions.administration.createRole(data);
   }
 
   async updateRole(id: string, data: any) {
-    return accessControlApi.updateRole(id, data);
+    return apiActions.administration.updateRole(id, data);
   }
 
   async deleteRole(id: string) {
-    return accessControlApi.deleteRole(id);
+    return apiActions.administration.deleteRole(id);
   }
 
   async getPermissions() {
-    return accessControlApi.getPermissions();
+    return apiActions.administration.getPermissions();
   }
 
   async createPermission(data: any) {
-    return accessControlApi.createPermission(data);
+    return apiActions.administration.createPermission(data);
   }
 
   async assignPermissionToRole(roleId: string, permissionId: string) {
-    return accessControlApi.assignPermissionToRole(roleId, permissionId);
+    return apiActions.administration.assignPermissionToRole(roleId, permissionId);
   }
 
   async removePermissionFromRole(roleId: string, permissionId: string) {
-    return accessControlApi.removePermissionFromRole(roleId, permissionId);
+    return apiActions.administration.removePermissionFromRole(roleId, permissionId);
   }
 
   async assignRoleToUser(userId: string, roleId: string) {
-    return accessControlApi.assignRoleToUser(userId, roleId);
+    return apiActions.administration.assignRoleToUser(userId, roleId);
   }
 
   async removeRoleFromUser(userId: string, roleId: string) {
-    return accessControlApi.removeRoleFromUser(userId, roleId);
+    return apiActions.administration.removeRoleFromUser(userId, roleId);
   }
 
   async getUserPermissions(userId: string) {
-    return accessControlApi.getUserPermissions(userId);
+    return apiActions.administration.getUserPermissions(userId);
   }
 
   async checkPermission(userId: string, resource: string, action: string) {
-    return accessControlApi.checkPermission(userId, resource, action);
+    return apiActions.administration.checkPermission(userId, resource, action);
   }
 
   async getUserSessions(userId: string) {
-    return accessControlApi.getUserSessions(userId);
+    return apiActions.administration.getUserSessions(userId);
   }
 
   async deleteSession(token: string) {
-    return accessControlApi.deleteSession(token);
+    return apiActions.administration.deleteSession(token);
   }
 
   async deleteAllUserSessions(userId: string) {
-    return accessControlApi.deleteAllUserSessions(userId);
+    return apiActions.administration.deleteAllUserSessions(userId);
   }
 
   async getSecurityIncidents(params?: any) {
-    return accessControlApi.getSecurityIncidents(params);
+    return apiActions.administration.getSecurityIncidents(params);
   }
 
   async createSecurityIncident(data: any) {
-    return accessControlApi.createSecurityIncident(data);
+    return apiActions.administration.createSecurityIncident(data);
   }
 
   async updateSecurityIncident(id: string, data: any) {
-    return accessControlApi.updateSecurityIncident(id, data);
+    return apiActions.administration.updateSecurityIncident(id, data);
   }
 
   async getIpRestrictions() {
-    return accessControlApi.getIpRestrictions();
+    return apiActions.administration.getIpRestrictions();
   }
 
   async addIpRestriction(data: any) {
-    return accessControlApi.addIpRestriction(data);
+    return apiActions.administration.addIpRestriction(data);
   }
 
   async removeIpRestriction(id: string) {
-    return accessControlApi.removeIpRestriction(id);
+    return apiActions.administration.removeIpRestriction(id);
   }
 
   async getStatistics() {
-    return accessControlApi.getStatistics();
+    return apiActions.administration.getStatistics();
   }
 
   async initializeDefaultRoles() {
-    return accessControlApi.initializeDefaultRoles();
+    return apiActions.administration.initializeDefaultRoles();
   }
 }
 

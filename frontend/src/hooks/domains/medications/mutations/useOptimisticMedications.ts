@@ -22,7 +22,8 @@
  */
 
 import { useMutation, useQueryClient, UseMutationOptions } from '@tanstack/react-query';
-import { medicationsApi, CreateMedicationRequest, CreateInventoryRequest, UpdateInventoryRequest } from '@/services/modules/medicationsApi';
+import { apiActions } from '@/lib/api';
+import { CreateMedicationRequest, CreateInventoryRequest, UpdateInventoryRequest } from '@/services/modules/medicationsApi';
 import type {
   Medication,
   StudentMedication,
@@ -102,7 +103,7 @@ export function useOptimisticMedicationCreate(
     { updateId: string; tempId: string; tempEntity: Medication } | undefined
   >({
     mutationFn: async (data: CreateMedicationRequest) => {
-      const response = await medicationsApi.create(data);
+      const response = await apiActions.medications.create(data);
       return (response as any).medication || response;
     },
 
@@ -185,7 +186,7 @@ export function useOptimisticMedicationUpdate(
     { updateId: string } | undefined
   >({
     mutationFn: ({ id, data }: { id: string; data: Partial<CreateMedicationRequest> }) =>
-      medicationsApi.update(id, data).then((res: any) => res.medication || res),
+      apiActions.medications.update(id, data).then((res: any) => res.medication || res),
 
     onMutate: async ({ id, data }: { id: string; data: Partial<CreateMedicationRequest> }) => {
       // Cancel outgoing refetches
@@ -251,7 +252,7 @@ export function useOptimisticMedicationDelete(
     string,
     { updateId: string } | undefined
   >({
-    mutationFn: (id: string) => medicationsApi.delete(id),
+    mutationFn: (id: string) => apiActions.medications.delete(id),
 
     onMutate: async (id: string) => {
       // Cancel outgoing refetches
@@ -316,7 +317,7 @@ export function useOptimisticPrescriptionCreate(
     StudentMedicationFormData,
     { updateId: string; tempId: string; tempEntity: StudentMedication } | undefined
   >({
-    mutationFn: (data: StudentMedicationFormData) => medicationsApi.assignToStudent(data).then((res: any) => res.studentMedication || res),
+    mutationFn: (data: StudentMedicationFormData) => apiActions.medications.assignToStudent(data).then((res: any) => res.studentMedication || res),
 
     onMutate: async (newPrescription: StudentMedicationFormData) => {
       const queryKey = medicationKeys.studentMedications(newPrescription.studentId);
@@ -391,7 +392,7 @@ export function useOptimisticPrescriptionDeactivate(
     { updateId: string; studentId?: string } | undefined
   >({
     mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
-      medicationsApi.deactivateStudentMedication(id, reason).then((res: any) => res.studentMedication || res),
+      apiActions.medications.deactivateStudentMedication(id, reason).then((res: any) => res.studentMedication || res),
 
     onMutate: async ({ id }: { id: string; reason?: string }) => {
       // Find the student medication in cache to get studentId
@@ -474,7 +475,7 @@ export function useOptimisticMedicationAdministration(
     MedicationAdministrationData,
     { updateId: string; tempId: string; tempEntity: any; studentId?: string } | undefined
   >({
-    mutationFn: (data: MedicationAdministrationData) => medicationsApi.logAdministration(data).then((res: any) => res.log || res),
+    mutationFn: (data: MedicationAdministrationData) => apiActions.medications.logAdministration(data).then((res: any) => res.log || res),
 
     onMutate: async (newLog: MedicationAdministrationData) => {
       // Get the student medication to find student ID
@@ -566,7 +567,7 @@ export function useOptimisticInventoryAdd(
     CreateInventoryRequest,
     { updateId: string; tempId: string; tempEntity: InventoryItem } | undefined
   >({
-    mutationFn: (data: CreateInventoryRequest) => medicationsApi.addToInventory(data).then((res: any) => res.inventory || res),
+    mutationFn: (data: CreateInventoryRequest) => apiActions.medications.addToInventory(data).then((res: any) => res.inventory || res),
 
     onMutate: async (newInventory: CreateInventoryRequest) => {
       await queryClient.cancelQueries({ queryKey: medicationKeys.inventory() });
@@ -636,7 +637,7 @@ export function useOptimisticInventoryUpdate(
     { updateId: string } | undefined
   >({
     mutationFn: ({ id, data }: { id: string; data: UpdateInventoryRequest }) =>
-      medicationsApi.updateInventoryQuantity(id, data).then((res: any) => res.inventory || res),
+      apiActions.medications.updateInventoryQuantity(id, data).then((res: any) => res.inventory || res),
 
     onMutate: async ({ id, data }: { id: string; data: UpdateInventoryRequest }) => {
       await queryClient.cancelQueries({ queryKey: medicationKeys.inventoryItem(id) });
@@ -698,7 +699,7 @@ export function useOptimisticAdverseReactionReport(
     AdverseReactionData,
     { updateId: string; tempId: string; tempEntity: AdverseReaction } | undefined
   >({
-    mutationFn: (data: AdverseReactionData) => medicationsApi.reportAdverseReaction(data).then((res: any) => res.reaction || res),
+    mutationFn: (data: AdverseReactionData) => apiActions.medications.reportAdverseReaction(data).then((res: any) => res.reaction || res),
 
     onMutate: async (newReaction: AdverseReactionData) => {
       const queryKey = medicationKeys.adverseReactions();

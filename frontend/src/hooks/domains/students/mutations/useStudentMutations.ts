@@ -11,7 +11,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
-import { studentsApi } from '@/services/modules/studentsApi';
+import { apiActions } from '@/lib/api';
 import { useApiError } from '@/hooks/shared/useApiError';
 import { useCacheManager } from '@/hooks/shared/useCacheManager';
 import { useHealthcareCompliance } from '@/hooks/shared/useHealthcareCompliance';
@@ -110,7 +110,7 @@ export function useStudentMutations(
           context: { operation: 'create_student' }
         });
 
-        const student = await studentsApi.create(studentData);
+        const student = await apiActions.students.create(studentData);
 
         if (!student) {
           throw new Error(STUDENT_ERROR_CODES.CREATE_FAILED);
@@ -156,7 +156,7 @@ export function useStudentMutations(
           context: { operation: 'update_student', studentId: id }
         });
 
-        const updatedStudent = await studentsApi.update(id, student);
+        const updatedStudent = await apiActions.students.update(id, student);
 
         if (!updatedStudent) {
           throw new Error(STUDENT_ERROR_CODES.UPDATE_FAILED);
@@ -233,7 +233,7 @@ export function useStudentMutations(
           context: { operation: 'delete_student', studentId: id }
         });
 
-        const result = await studentsApi.delete(id);
+        const result = await apiActions.students.delete(id);
 
         if (!result.success) {
           throw new Error(result.message || STUDENT_ERROR_CODES.DELETE_FAILED);

@@ -62,7 +62,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { PageHeader } from '@/components/layouts/PageHeader';
-import { fetchMedicationsDashboardData } from './data';
+import { getMedicationsDashboardData } from '@/app/medications/actions';
 import { Button } from '@/components/ui/Button';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import { useToast } from '@/hooks/useToast';
@@ -159,9 +159,9 @@ export default function MedicationsPage() {
         setLoading(true);
         setError(null);
 
-        // Use separated data layer function
+        // Use server actions from medications actions
         const { medications: medicationsData, stats: statsData, error: dataError } = 
-          await fetchMedicationsDashboardData({ page: 1, limit: 50 });
+          await getMedicationsDashboardData({ page: 1, limit: 50 });
 
         setMedications(medicationsData);
         setStats(statsData);

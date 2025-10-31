@@ -1,39 +1,51 @@
 /**
- * @fileoverview Broadcasts Page - Main broadcasts management page
+ * @fileoverview Broadcasts Page - Mass communication management for healthcare environments
  * @module app/broadcasts/page
  * @version 1.0.0
  *
- * Broadcast management system for healthcare communication supporting:
- * - Broadcast creation and scheduling
- * - Message templates with variable substitution
- * - Recipient group management
- * - Broadcast history and analytics
- * - Emergency broadcast protocols
+ * Mass communication system supporting:
+ * - Emergency broadcasts and alerts
+ * - Health notifications and reminders
+ * - Staff communication management
+ * - Parent and guardian messaging
+ * - Multi-channel delivery (email, SMS, push notifications)
  */
 
-import React from 'react'
-import { Metadata } from 'next'
-import BroadcastsHub from '@/components/features/broadcasts/BroadcastsHub'
+import React from 'react';
+import { Metadata } from 'next';
+import BroadcastsContent from './_components/BroadcastsContent';
+import BroadcastsSidebar from './_components/BroadcastsSidebar';
 
 export const metadata: Metadata = {
-  title: 'Broadcasts | White Cross',
-  description: 'Broadcast message management and communication tools',
-}
+  title: 'Broadcasts | White Cross Healthcare',
+  description: 'Mass communication and emergency broadcast management system',
+};
 
-// Force dynamic rendering due to client-side data requirements
+// Dynamic rendering for real-time broadcast status
 export const dynamic = 'force-dynamic';
 
 /**
  * Broadcasts Page
  *
- * Server component that renders the broadcast management interface.
- * Tabs include: Create, History, Templates, Recipients, Emergency
+ * Server component that renders the mass communication interface with
+ * main content area and sidebar for quick actions and statistics.
  *
  * @remarks
- * - Uses Client Component for interactive features
+ * - Split layout with BroadcastsContent and BroadcastsSidebar
  * - Server Actions for broadcast operations
- * - Real-time updates via WebSocket for emergency broadcasts
+ * - Real-time updates for emergency broadcasts
  */
 export default function BroadcastsPage() {
-  return <BroadcastsHub />
+  return (
+    <div className="flex h-full">
+      <div className="flex-1 overflow-auto">
+        <BroadcastsContent />
+      </div>
+      <div className="w-80 border-l bg-gray-50/50 overflow-auto">
+        <div className="p-6">
+          <BroadcastsSidebar />
+        </div>
+      </div>
+    </div>
+  );
 }

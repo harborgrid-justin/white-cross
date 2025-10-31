@@ -36,7 +36,7 @@ import {
 } from '@/hooks/useOptimisticStudents';
 import { usePersistedFilters, usePageState, useSortState } from '@/hooks/useRouteState';
 import { useToast } from '@/hooks/useToast';
-import { studentsApi } from '@/services/modules/studentsApi';
+import { apiActions } from '@/lib/api';
 import type { 
   Student, 
   CreateStudentData, 
@@ -185,7 +185,7 @@ export function useStudentsRouteEnhanced() {
    */
   const studentsQuery = useQuery({
     queryKey: studentKeys.list(filters),
-    queryFn: () => studentsApi.getAll({
+    queryFn: () => apiActions.students.getAll({
       page,
       limit: pageSize,
       ...filters,
@@ -206,7 +206,7 @@ export function useStudentsRouteEnhanced() {
    */
   const statisticsQuery = useQuery({
     queryKey: [...studentKeys.all, 'statistics'],
-    queryFn: () => studentsApi.getStatistics(),
+    queryFn: () => apiActions.students.getStatistics(),
     staleTime: 15 * 60 * 1000,
   });
 
