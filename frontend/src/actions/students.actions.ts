@@ -25,9 +25,10 @@
 'use server';
 
 import { revalidatePath, revalidateTag } from 'next/cache';
-import { apiClient } from '@/services/core/ApiClient';
+import { serverGet, serverPost, serverPut, serverDelete, NextApiClientError } from '@/lib/api/nextjs-client';
 import { API_ENDPOINTS } from '@/constants/api';
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
+import { CACHE_TAGS } from '@/lib/cache/constants';
 import type {
   Student,
   CreateStudentData,
@@ -57,9 +58,13 @@ export interface ActionResult<T = unknown> {
  */
 export async function createStudent(data: CreateStudentData): Promise<ActionResult<Student>> {
   try {
-    const response = await apiClient.post<Student>(
+    const response = await serverPost<{ data: Student }>(
       API_ENDPOINTS.STUDENTS.BASE,
-      data
+      data,
+      {
+        cache: 'no-store',
+        next: { tags: [CACHE_TAGS.STUDENTS, CACHE_TAGS.PHI] }
+      }
     );
 
     // HIPAA AUDIT LOG - Mandatory for PHI creation
@@ -72,7 +77,7 @@ export async function createStudent(data: CreateStudentData): Promise<ActionResu
     });
 
     // Revalidate student list pages
-    revalidateTag('students');
+    revalidateTag(CACHE_TAGS.STUDENTS);
     revalidatePath('/students');
 
     return {
@@ -81,7 +86,11 @@ export async function createStudent(data: CreateStudentData): Promise<ActionResu
       message: 'Student created successfully'
     };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to create student';
+    const errorMessage = error instanceof NextApiClientError
+      ? error.message
+      : error instanceof Error
+      ? error.message
+      : 'Failed to create student';
 
     // HIPAA AUDIT LOG - Log failed attempt
     await auditLog({
@@ -104,12 +113,16 @@ export async function createStudent(data: CreateStudentData): Promise<ActionResu
  */
 export async function createStudentsBulk(students: CreateStudentData[]): Promise<ActionResult<Student[]>> {
   try {
-    const response = await apiClient.post<Student[]>(
+    const response = await serverPost<{ data: Student[] }>(
       `${API_ENDPOINTS.STUDENTS.BASE}/bulk`,
-      { students }
+      { students },
+      {
+        cache: 'no-store',
+        next: { tags: [CACHE_TAGS.STUDENTS, CACHE_TAGS.PHI] }
+      }
     );
 
-    revalidateTag('students');
+    revalidateTag(CACHE_TAGS.STUDENTS);
     revalidatePath('/students');
 
     return {
@@ -118,7 +131,11 @@ export async function createStudentsBulk(students: CreateStudentData[]): Promise
       message: `Successfully created ${response.data.length} students`
     };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to create students';
+    const errorMessage = error instanceof NextApiClientError
+      ? error.message
+      : error instanceof Error
+      ? error.message
+      : 'Failed to create students';
     return {
       success: false,
       error: errorMessage
@@ -139,9 +156,13 @@ export async function updateStudent(
   data: UpdateStudentData
 ): Promise<ActionResult<Student>> {
   try {
-    const response = await apiClient.put<Student>(
+    const response = await serverPut<{ data: Student }>(
       API_ENDPOINTS.STUDENTS.BY_ID(studentId),
-      data
+      data,
+      {
+        cache: 'no-store',
+        next: { tags: [CACHE_TAGS.STUDENTS, `student-${studentId}`, CACHE_TAGS.PHI] }
+      }
     );
 
     // HIPAA AUDIT LOG - Mandatory for PHI modification
@@ -154,7 +175,7 @@ export async function updateStudent(
       success: true
     });
 
-    revalidateTag('students');
+    revalidateTag(CACHE_TAGS.STUDENTS);
     revalidateTag(`student-${studentId}`);
     revalidatePath('/students');
     revalidatePath(`/students/${studentId}`);
@@ -165,7 +186,11 @@ export async function updateStudent(
       message: 'Student updated successfully'
     };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to update student';
+    const errorMessage = error instanceof NextApiClientError
+      ? error.message
+      : error instanceof Error
+      ? error.message
+      : 'Failed to update student';
 
     // HIPAA AUDIT LOG - Log failed attempt
     await auditLog({
@@ -189,12 +214,16 @@ export async function updateStudent(
  */
 export async function updateStudentsBulk(request: BulkUpdateStudentsRequest): Promise<ActionResult<{ updated: number }>> {
   try {
-    const response = await apiClient.put<{ updated: number }>(
+    const response = await serverPut<{ data: { updated: number } }>(
       `${API_ENDPOINTS.STUDENTS.BASE}/bulk`,
-      request
+      request,
+      {
+        cache: 'no-store',
+        next: { tags: [CACHE_TAGS.STUDENTS, CACHE_TAGS.PHI] }
+      }
     );
 
-    revalidateTag('students');
+    revalidateTag(CACHE_TAGS.STUDENTS);
     revalidatePath('/students');
 
     return {
@@ -203,7 +232,11 @@ export async function updateStudentsBulk(request: BulkUpdateStudentsRequest): Pr
       message: `Successfully updated ${response.data.updated} students`
     };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to update students';
+    const errorMessage = error instanceof NextApiClientError
+      ? error.message
+      : error instanceof Error
+      ? error.message
+      : 'Failed to update students';
     return {
       success: false,
       error: errorMessage
@@ -221,7 +254,13 @@ export async function updateStudentsBulk(request: BulkUpdateStudentsRequest): Pr
  */
 export async function deleteStudent(studentId: string): Promise<ActionResult<void>> {
   try {
-    await apiClient.delete(API_ENDPOINTS.STUDENTS.BY_ID(studentId));
+    await serverDelete(
+      API_ENDPOINTS.STUDENTS.BY_ID(studentId),
+      {
+        cache: 'no-store',
+        next: { tags: [CACHE_TAGS.STUDENTS, `student-${studentId}`, CACHE_TAGS.PHI] }
+      }
+    );
 
     // HIPAA AUDIT LOG - Mandatory for PHI deletion
     await auditLog({
@@ -232,7 +271,7 @@ export async function deleteStudent(studentId: string): Promise<ActionResult<voi
       success: true
     });
 
-    revalidateTag('students');
+    revalidateTag(CACHE_TAGS.STUDENTS);
     revalidateTag(`student-${studentId}`);
     revalidatePath('/students');
 
@@ -241,7 +280,11 @@ export async function deleteStudent(studentId: string): Promise<ActionResult<voi
       message: 'Student deleted successfully'
     };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to delete student';
+    const errorMessage = error instanceof NextApiClientError
+      ? error.message
+      : error instanceof Error
+      ? error.message
+      : 'Failed to delete student';
 
     // HIPAA AUDIT LOG - Log failed attempt
     await auditLog({
@@ -265,12 +308,16 @@ export async function deleteStudent(studentId: string): Promise<ActionResult<voi
  */
 export async function deactivateStudent(studentId: string, reason?: string): Promise<ActionResult<Student>> {
   try {
-    const response = await apiClient.post<Student>(
+    const response = await serverPost<{ data: Student }>(
       API_ENDPOINTS.STUDENTS.DEACTIVATE(studentId),
-      { reason }
+      { reason },
+      {
+        cache: 'no-store',
+        next: { tags: [CACHE_TAGS.STUDENTS, `student-${studentId}`, CACHE_TAGS.PHI] }
+      }
     );
 
-    revalidateTag('students');
+    revalidateTag(CACHE_TAGS.STUDENTS);
     revalidateTag(`student-${studentId}`);
     revalidatePath('/students');
     revalidatePath(`/students/${studentId}`);
@@ -281,7 +328,11 @@ export async function deactivateStudent(studentId: string, reason?: string): Pro
       message: 'Student deactivated successfully'
     };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to deactivate student';
+    const errorMessage = error instanceof NextApiClientError
+      ? error.message
+      : error instanceof Error
+      ? error.message
+      : 'Failed to deactivate student';
     return {
       success: false,
       error: errorMessage
@@ -294,12 +345,16 @@ export async function deactivateStudent(studentId: string, reason?: string): Pro
  */
 export async function reactivateStudent(studentId: string): Promise<ActionResult<Student>> {
   try {
-    const response = await apiClient.post<Student>(
+    const response = await serverPost<{ data: Student }>(
       `${API_ENDPOINTS.STUDENTS.BY_ID(studentId)}/reactivate`,
-      {}
+      {},
+      {
+        cache: 'no-store',
+        next: { tags: [CACHE_TAGS.STUDENTS, `student-${studentId}`, CACHE_TAGS.PHI] }
+      }
     );
 
-    revalidateTag('students');
+    revalidateTag(CACHE_TAGS.STUDENTS);
     revalidateTag(`student-${studentId}`);
     revalidatePath('/students');
     revalidatePath(`/students/${studentId}`);
@@ -310,7 +365,11 @@ export async function reactivateStudent(studentId: string): Promise<ActionResult
       message: 'Student reactivated successfully'
     };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to reactivate student';
+    const errorMessage = error instanceof NextApiClientError
+      ? error.message
+      : error instanceof Error
+      ? error.message
+      : 'Failed to reactivate student';
     return {
       success: false,
       error: errorMessage
@@ -327,12 +386,16 @@ export async function reactivateStudent(studentId: string): Promise<ActionResult
  */
 export async function transferStudent(request: TransferStudentRequest): Promise<ActionResult<Student>> {
   try {
-    const response = await apiClient.post<Student>(
+    const response = await serverPost<{ data: Student }>(
       `${API_ENDPOINTS.STUDENTS.BY_ID(request.studentId)}/transfer`,
-      request
+      request,
+      {
+        cache: 'no-store',
+        next: { tags: [CACHE_TAGS.STUDENTS, `student-${request.studentId}`, CACHE_TAGS.PHI] }
+      }
     );
 
-    revalidateTag('students');
+    revalidateTag(CACHE_TAGS.STUDENTS);
     revalidateTag(`student-${request.studentId}`);
     revalidatePath('/students');
     revalidatePath(`/students/${request.studentId}`);
@@ -343,7 +406,11 @@ export async function transferStudent(request: TransferStudentRequest): Promise<
       message: 'Student transferred successfully'
     };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to transfer student';
+    const errorMessage = error instanceof NextApiClientError
+      ? error.message
+      : error instanceof Error
+      ? error.message
+      : 'Failed to transfer student';
     return {
       success: false,
       error: errorMessage
@@ -359,12 +426,16 @@ export async function assignStudentToNurse(
   nurseId: string
 ): Promise<ActionResult<Student>> {
   try {
-    const response = await apiClient.post<Student>(
+    const response = await serverPost<{ data: Student }>(
       `${API_ENDPOINTS.STUDENTS.BY_ID(studentId)}/assign`,
-      { nurseId }
+      { nurseId },
+      {
+        cache: 'no-store',
+        next: { tags: [CACHE_TAGS.STUDENTS, `student-${studentId}`, CACHE_TAGS.PHI] }
+      }
     );
 
-    revalidateTag('students');
+    revalidateTag(CACHE_TAGS.STUDENTS);
     revalidateTag(`student-${studentId}`);
     revalidatePath('/students');
     revalidatePath(`/students/${studentId}`);
@@ -375,7 +446,11 @@ export async function assignStudentToNurse(
       message: 'Student assigned to nurse successfully'
     };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to assign student';
+    const errorMessage = error instanceof NextApiClientError
+      ? error.message
+      : error instanceof Error
+      ? error.message
+      : 'Failed to assign student';
     return {
       success: false,
       error: errorMessage
@@ -391,12 +466,16 @@ export async function assignStudentsToNurseBulk(
   nurseId: string
 ): Promise<ActionResult<{ assigned: number }>> {
   try {
-    const response = await apiClient.post<{ assigned: number }>(
+    const response = await serverPost<{ data: { assigned: number } }>(
       `${API_ENDPOINTS.STUDENTS.BASE}/assign-bulk`,
-      { studentIds, nurseId }
+      { studentIds, nurseId },
+      {
+        cache: 'no-store',
+        next: { tags: [CACHE_TAGS.STUDENTS, CACHE_TAGS.PHI] }
+      }
     );
 
-    revalidateTag('students');
+    revalidateTag(CACHE_TAGS.STUDENTS);
     revalidatePath('/students');
 
     return {
@@ -405,7 +484,11 @@ export async function assignStudentsToNurseBulk(
       message: `Successfully assigned ${response.data.assigned} students`
     };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to assign students';
+    const errorMessage = error instanceof NextApiClientError
+      ? error.message
+      : error instanceof Error
+      ? error.message
+      : 'Failed to assign students';
     return {
       success: false,
       error: errorMessage
@@ -464,8 +547,13 @@ export async function exportStudentData(
   format: 'pdf' | 'csv' | 'json' = 'pdf'
 ): Promise<ActionResult<{ downloadUrl: string }>> {
   try {
-    const response = await apiClient.get<{ downloadUrl: string }>(
-      `${API_ENDPOINTS.STUDENTS.BY_ID(studentId)}/export?format=${format}`
+    const response = await serverGet<{ data: { downloadUrl: string } }>(
+      `${API_ENDPOINTS.STUDENTS.BY_ID(studentId)}/export`,
+      { format },
+      {
+        cache: 'no-store',
+        next: { tags: [`student-${studentId}`, CACHE_TAGS.PHI] }
+      }
     );
 
     return {
@@ -474,7 +562,11 @@ export async function exportStudentData(
       message: 'Export ready for download'
     };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to export data';
+    const errorMessage = error instanceof NextApiClientError
+      ? error.message
+      : error instanceof Error
+      ? error.message
+      : 'Failed to export data';
     return {
       success: false,
       error: errorMessage
@@ -489,9 +581,13 @@ export async function generateStudentReportCard(
   studentId: string
 ): Promise<ActionResult<{ reportUrl: string }>> {
   try {
-    const response = await apiClient.post<{ reportUrl: string }>(
+    const response = await serverPost<{ data: { reportUrl: string } }>(
       `${API_ENDPOINTS.STUDENTS.BY_ID(studentId)}/report-card`,
-      {}
+      {},
+      {
+        cache: 'no-store',
+        next: { tags: [`student-${studentId}`, CACHE_TAGS.PHI] }
+      }
     );
 
     return {
@@ -500,7 +596,11 @@ export async function generateStudentReportCard(
       message: 'Report card generated successfully'
     };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to generate report card';
+    const errorMessage = error instanceof NextApiClientError
+      ? error.message
+      : error instanceof Error
+      ? error.message
+      : 'Failed to generate report card';
     return {
       success: false,
       error: errorMessage
@@ -515,8 +615,16 @@ export async function verifyStudentEligibility(
   studentId: string
 ): Promise<ActionResult<{ eligible: boolean; reasons?: string[] }>> {
   try {
-    const response = await apiClient.get<{ eligible: boolean; reasons?: string[] }>(
-      `${API_ENDPOINTS.STUDENTS.BY_ID(studentId)}/verify-eligibility`
+    const response = await serverGet<{ data: { eligible: boolean; reasons?: string[] } }>(
+      `${API_ENDPOINTS.STUDENTS.BY_ID(studentId)}/verify-eligibility`,
+      undefined,
+      {
+        cache: 'force-cache',
+        next: {
+          revalidate: 300, // Cache for 5 minutes
+          tags: [`student-${studentId}`, CACHE_TAGS.PHI]
+        }
+      }
     );
 
     return {
@@ -524,7 +632,11 @@ export async function verifyStudentEligibility(
       data: response.data
     };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to verify eligibility';
+    const errorMessage = error instanceof NextApiClientError
+      ? error.message
+      : error instanceof Error
+      ? error.message
+      : 'Failed to verify eligibility';
     return {
       success: false,
       error: errorMessage

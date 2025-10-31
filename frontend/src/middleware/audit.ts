@@ -8,7 +8,7 @@
  * @since 2025-10-26
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, userAgent } from 'next/server';
 
 /**
  * PHI-sensitive routes requiring audit logging
@@ -92,6 +92,9 @@ export function auditMiddleware(request: NextRequest): void {
   const method = request.method;
   const clientIP = getClientIP(request);
 
+  // Parse user agent using Next.js helper for better performance and accuracy
+  const { device, browser, os } = userAgent(request);
+
   // Log PHI access
   if (requiresPHIAudit(pathname) && userId) {
     const auditLog = {
@@ -102,7 +105,15 @@ export function auditMiddleware(request: NextRequest): void {
       resource: extractResource(pathname),
       resourceId: extractResourceId(pathname),
       ipAddress: clientIP,
-      userAgent: request.headers.get('user-agent') || undefined,
+      userAgent: {
+        browser: browser.name || 'unknown',
+        browserVersion: browser.version || 'unknown',
+        os: os.name || 'unknown',
+        osVersion: os.version || 'unknown',
+        device: device.type || 'desktop',
+        deviceVendor: device.vendor || 'unknown',
+        deviceModel: device.model || 'unknown',
+      },
       details: `${method} request to ${pathname}`,
       isPHI: true,
       severity: 'HIGH',
@@ -121,7 +132,15 @@ export function auditMiddleware(request: NextRequest): void {
       resource: extractResource(pathname),
       resourceId: extractResourceId(pathname),
       ipAddress: clientIP,
-      userAgent: request.headers.get('user-agent') || undefined,
+      userAgent: {
+        browser: browser.name || 'unknown',
+        browserVersion: browser.version || 'unknown',
+        os: os.name || 'unknown',
+        osVersion: os.version || 'unknown',
+        device: device.type || 'desktop',
+        deviceVendor: device.vendor || 'unknown',
+        deviceModel: device.model || 'unknown',
+      },
       details: `Admin ${method} request to ${pathname}`,
       isPHI: false,
       severity: 'CRITICAL',

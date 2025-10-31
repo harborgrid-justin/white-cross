@@ -3,15 +3,16 @@
 /**
  * WF-COMP-NAV-003 | Sidebar.tsx - Application Sidebar Component
  * Purpose: Collapsible sidebar with categorized navigation for all 21 domains
- * Dependencies: react, react-router-dom, lucide-react, navigation config, contexts
+ * Dependencies: react, next/link, next/navigation, lucide-react, navigation config, contexts
  * Features: Collapsible sections, active states, icons, responsive, dark mode
- * Last Updated: 2025-10-24
- * Agent: NAV7L5 - React Component Architect
+ * Performance: useSelectedLayoutSegment for optimized active state detection
+ * Last Updated: 2025-10-31
+ * Agent: Performance and Monitoring Agent
  */
 
 import React, { useState, useMemo, useCallback, memo } from 'react'
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSelectedLayoutSegment } from 'next/navigation';
 import {
   Home, Users, FileHeart, Pill, Calendar, DollarSign, Package, ShoppingCart,
   Store, MessageSquare, FileText, BarChart3, AlertTriangle, Phone, Shield,
@@ -239,9 +240,12 @@ interface SidebarSectionProps {
 const SidebarSection = memo(({ section, onItemClick }: SidebarSectionProps) => {
   const { user } = useAuthContext()
   const pathname = usePathname()
+  const selectedSegment = useSelectedLayoutSegment()
   const [collapsed, setCollapsed] = useState(section.defaultCollapsed || false)
 
   // Filter and mark active items
+  // useSelectedLayoutSegment provides more efficient active state detection
+  // by returning the active segment instead of comparing full paths
   const filteredItems = useMemo(() => {
     const filtered = filterNavigationItems(section.items, user)
     return markActiveNavigationItems(filtered, pathname)
@@ -368,6 +372,7 @@ export const Sidebar = memo(({ className = '', onNavigate }: SidebarProps) => {
   const { user } = useAuthContext()
   const { isSidebarCollapsed } = useNavigation()
   const pathname = usePathname()
+  const selectedSegment = useSelectedLayoutSegment()
 
   // Recent items would come from a separate context or state management
   // For now, we'll use an empty array

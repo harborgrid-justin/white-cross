@@ -28,8 +28,10 @@
  * @version 1.0.0
  */
 
+'use client';
+
 import { z } from 'zod';
-import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback } from 'react';
 import {
   IncidentType,
@@ -860,22 +862,21 @@ export function handleValidationError(
  *
  * @param error - RouteValidationError that occurred
  * @param fallbackRoute - Route to redirect to (default: '/')
- * @param navigate - React Router navigate function
+ * @param router - Next.js router instance
  *
  * @example
- * const navigate = useNavigate();
- * redirectOnInvalidParams(error, '/incidents', navigate);
+ * const router = useRouter();
+ * redirectOnInvalidParams(error, '/incidents', router);
  */
 export function redirectOnInvalidParams(
   error: RouteValidationError,
   fallbackRoute: string = '/',
-  navigate: ReturnType<typeof useNavigate>
+  router: ReturnType<typeof useRouter>
 ): void {
   handleValidationError(error, 'Redirect');
-  navigate(fallbackRoute, {
-    replace: true,
-    state: { error: error.userMessage },
-  });
+  // In Next.js, we can't pass state directly, so we encode error in URL
+  const errorParam = encodeURIComponent(error.userMessage);
+  router.replace(`${fallbackRoute}?error=${errorParam}`);
 }
 
 // =====================
@@ -912,7 +913,7 @@ export function useValidatedParams<T>(
   error: RouteValidationError | null;
 } {
   const params = useParams();
-  const navigate = useNavigate();
+  const router = useRouter();
   const [state, setState] = useState<{
     data: T | null;
     loading: boolean;
@@ -924,7 +925,7 @@ export function useValidatedParams<T>(
   });
 
   useEffect(() => {
-    const result = validateRouteParams(params, schema);
+    const result = validateRouteParams(params as Record<string, string | undefined>, schema);
 
     if (result.success && result.data) {
       setState({
@@ -952,11 +953,11 @@ export function useValidatedParams<T>(
         redirectOnInvalidParams(
           result.error,
           options.fallbackRoute || options.redirect || '/',
-          navigate
+          router
         );
       }
     }
-  }, [params, schema, options, navigate]);
+  }, [params, schema, options, router]);
 
   return state;
 }
@@ -991,8 +992,8 @@ export function useValidatedQueryParams<T>(
   loading: boolean;
   error: RouteValidationError | null;
 } {
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [state, setState] = useState<{
     data: T | null;
     loading: boolean;
@@ -1032,11 +1033,11 @@ export function useValidatedQueryParams<T>(
         redirectOnInvalidParams(
           result.error,
           options.fallbackRoute || options.redirect || '/',
-          navigate
+          router
         );
       }
     }
-  }, [searchParams, schema, options, navigate]);
+  }, [searchParams, schema, options, router]);
 
   return state;
 }
@@ -1079,7 +1080,7 @@ export function useParamValidator<T>(
   revalidate: () => void;
 } {
   const params = useParams();
-  const navigate = useNavigate();
+  const router = useRouter();
   const [state, setState] = useState<{
     data: T | null;
     loading: boolean;
@@ -1093,7 +1094,7 @@ export function useParamValidator<T>(
   const validate = useCallback(() => {
     setState((prev) => ({ ...prev, loading: true }));
 
-    const result = validator(params);
+    const result = validator(params as Record<string, string | undefined>);
 
     if (result.success && result.data) {
       setState({
@@ -1121,11 +1122,11 @@ export function useParamValidator<T>(
         redirectOnInvalidParams(
           result.error,
           options.fallbackRoute || options.redirect || '/',
-          navigate
+          router
         );
       }
     }
-  }, [params, validator, options, navigate]);
+  }, [params, validator, options, router]);
 
   useEffect(() => {
     validate();

@@ -22,7 +22,8 @@
  */
 
 import React from 'react';
-import { Link, useLocation, useParams } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname, useParams } from 'next/navigation';
 import { ChevronRight, Home } from 'lucide-react';
 import { useAuthContext } from '../../../contexts/AuthContext';
 import { buildBreadcrumbs } from '../../../routes/routeUtils';
@@ -91,7 +92,7 @@ export default function Breadcrumbs({
   separator,
   showOnMobile = false,
 }: BreadcrumbsProps) {
-  const location = useLocation();
+  const pathname = usePathname();
   const params = useParams();
   const { user } = useAuthContext();
 
@@ -115,8 +116,8 @@ export default function Breadcrumbs({
     }
 
     // Generate from current route
-    return buildBreadcrumbs(location.pathname, params);
-  }, [customItems, location.pathname, params]);
+    return buildBreadcrumbs(pathname, params);
+  }, [customItems, pathname, params]);
 
   // Handle truncation if too many items
   const displayBreadcrumbs = React.useMemo(() => {
@@ -180,7 +181,7 @@ export default function Breadcrumbs({
                 ) : crumb.path && !isLast ? (
                   // Clickable breadcrumb link
                   <Link
-                    to={crumb.path}
+                    href={crumb.path}
                     className="
                       flex items-center gap-1.5
                       text-gray-600 hover:text-gray-900
@@ -293,7 +294,7 @@ export function BreadcrumbItemComponent({
   if (item.path && !isLast && item.isClickable !== false) {
     return (
       <Link
-        to={item.path}
+        href={item.path}
         onClick={handleClick}
         className="
           flex items-center gap-1.5

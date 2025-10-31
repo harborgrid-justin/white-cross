@@ -137,10 +137,47 @@ import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 
-export const metadata: Metadata = {
-  title: 'Incident Details | White Cross',
-  description: 'View incident report details',
-};
+/**
+ * Generate dynamic metadata for incident detail page
+ *
+ * Creates page title and description based on incident data, improving browser
+ * tab UX and navigation history. Note: robots noindex prevents search indexing
+ * to protect PHI, so this is primarily for user experience, not SEO.
+ */
+export async function generateMetadata({
+  params,
+}: {
+  params: { id: string };
+}): Promise<Metadata> {
+  // Fetch incident data to populate metadata
+  const result = await getIncident(params.id);
+
+  // Handle not found or error cases
+  if (!result.success || !result.data) {
+    return {
+      title: 'Incident Not Found | White Cross',
+      description: 'The requested incident could not be found.',
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
+  }
+
+  const incident = result.data;
+
+  // Create incident identifier for title (avoid PHI in title)
+  const incidentIdentifier = incident.incidentNumber || `Incident #${incident.id?.substring(0, 8)}`;
+
+  return {
+    title: `${incidentIdentifier} | Incidents | White Cross`,
+    description: `${incident.type.replace('_', ' ')} incident - ${incident.severity} severity at ${incident.location.replace('_', ' ')}`,
+    robots: {
+      index: false, // HIPAA compliance - prevent search indexing
+      follow: false,
+    },
+  };
+}
 
 // Force dynamic rendering due to auth requirements and real-time incident data
 export const dynamic = 'force-dynamic';
