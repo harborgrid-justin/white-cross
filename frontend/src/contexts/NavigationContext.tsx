@@ -42,6 +42,8 @@ export interface NavigationState {
   navigationHistory: NavigationHistoryEntry[];
   /** Sidebar collapsed state (mini sidebar) */
   isSidebarCollapsed: boolean;
+  /** Notification center open/closed state */
+  notificationOpen: boolean;
 }
 
 /**
@@ -70,6 +72,10 @@ export interface NavigationActions {
   setSidebarCollapsed: (collapsed: boolean) => void;
   /** Navigate back to previous route in history */
   navigateBack: () => NavigationHistoryEntry | null;
+  /** Toggle notification center open/closed */
+  toggleNotificationCenter: () => void;
+  /** Set notification center open/closed explicitly */
+  setNotificationOpen: (open: boolean) => void;
 }
 
 /**
@@ -177,6 +183,7 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
   const [breadcrumbs, setBreadcrumbsState] = useState<BreadcrumbItem[]>([]);
   const [navigationHistory, setNavigationHistory] = useState<NavigationHistoryEntry[]>([]);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(getInitialSidebarCollapsed);
+  const [notificationOpen, setNotificationOpenState] = useState<boolean>(false);
 
   // Persist sidebar state to localStorage
   useEffect(() => {
@@ -343,6 +350,20 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
     return previousEntry;
   }, [navigationHistory]);
 
+  /**
+   * Toggle notification center open/closed
+   */
+  const toggleNotificationCenter = useCallback(() => {
+    setNotificationOpenState((prev) => !prev);
+  }, []);
+
+  /**
+   * Set notification center open/closed explicitly
+   */
+  const setNotificationOpen = useCallback((open: boolean) => {
+    setNotificationOpenState(open);
+  }, []);
+
   // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo<NavigationContextType>(
     () => ({
@@ -353,6 +374,7 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
       breadcrumbs,
       navigationHistory,
       isSidebarCollapsed,
+      notificationOpen,
       // Actions
       toggleSidebar,
       setSidebarOpen,
@@ -365,11 +387,14 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
       toggleSidebarCollapsed,
       setSidebarCollapsed,
       navigateBack,
+      toggleNotificationCenter,
+      setNotificationOpen,
     }),
     [
       isSidebarOpen,
       isMobileSidebarOpen,
       activeRoute,
+      notificationOpen,
       breadcrumbs,
       navigationHistory,
       isSidebarCollapsed,

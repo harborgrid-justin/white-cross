@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { Alert } from './Alert';
-import { AlertCircle, CheckCircle, Info, XCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle, Info as InfoIcon, XCircle } from 'lucide-react';
 
 const meta = {
   title: 'UI/Feedback/Alert',

@@ -356,7 +356,7 @@ export async function createUserAction(
 
     // 8. Revalidate cache
     revalidateTag('users');
-    revalidatePath('/admin/users');
+    revalidatePath('/admin/users', 'page');
 
     return {
       success: true,
@@ -499,8 +499,8 @@ export async function updateUserAction(
     // 8. Revalidate cache
     revalidateTag('users');
     revalidateTag(`user-${userId}`);
-    revalidatePath('/admin/users');
-    revalidatePath(`/admin/users/${userId}`);
+    revalidatePath('/admin/users', 'page');
+    revalidatePath(`/admin/users/${userId}`, 'page');
 
     return {
       success: true,
@@ -604,7 +604,7 @@ export async function deleteUserAction(
     // 7. Revalidate cache
     revalidateTag('users');
     revalidateTag(`user-${userId}`);
-    revalidatePath('/admin/users');
+    revalidatePath('/admin/users', 'page');
 
     return { success: true };
   } catch (error) {
@@ -686,7 +686,7 @@ export async function assignRoleAction(
 
     revalidateTag('users');
     revalidateTag(`user-${userId}`);
-    revalidatePath('/admin/users');
+    revalidatePath('/admin/users', 'page');
 
     return { success: true };
   } catch (error) {
@@ -758,7 +758,7 @@ export async function suspendUserAction(
 
     revalidateTag('users');
     revalidateTag(`user-${userId}`);
-    revalidatePath('/admin/users');
+    revalidatePath('/admin/users', 'page');
 
     return { success: true };
   } catch (error) {
@@ -823,7 +823,7 @@ export async function reactivateUserAction(
 
     revalidateTag('users');
     revalidateTag(`user-${userId}`);
-    revalidatePath('/admin/users');
+    revalidatePath('/admin/users', 'page');
 
     return { success: true };
   } catch (error) {
@@ -979,7 +979,7 @@ export async function createRoleAction(
     });
 
     revalidateTag('roles');
-    revalidatePath('/admin/roles');
+    revalidatePath('/admin/roles', 'page');
 
     return {
       success: true,
@@ -1098,7 +1098,7 @@ export async function updateRoleAction(
 
     revalidateTag('roles');
     revalidateTag(`role-${roleId}`);
-    revalidatePath('/admin/roles');
+    revalidatePath('/admin/roles', 'page');
 
     return {
       success: true,
@@ -1166,7 +1166,7 @@ export async function deleteRoleAction(
     });
 
     revalidateTag('roles');
-    revalidatePath('/admin/roles');
+    revalidatePath('/admin/roles', 'page');
 
     return { success: true };
   } catch (error) {

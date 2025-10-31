@@ -83,7 +83,7 @@ export default function NotificationHistoryPage() {
               notifications={notifications}
               grouped
               onMarkAsRead={markAsRead}
-              onSnooze={snooze}
+              onSnooze={(id: string, until: Date) => snooze({ id, snoozedUntil: until })}
               onArchive={archive}
               onDelete={deleteNotification}
             />

@@ -7,6 +7,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { PermissionGate } from '../PermissionGate';
 import { useAuth } from '@/contexts/AuthContext';
+import { createMockAuthContext } from '@tests/utils/test-mocks';
 
 // Mock the useAuth hook
 jest.mock('@/contexts/AuthContext', () => ({
@@ -22,16 +23,12 @@ describe('PermissionGate', () => {
 
   describe('Single Permission Check', () => {
     it('should render children when user has required permission', () => {
-      mockUseAuth.mockReturnValue({
-        hasPermission: jest.fn((perm) => perm === 'students:edit'),
-        hasRole: jest.fn(),
-        user: null,
-        isAuthenticated: true,
-        isLoading: false,
-        login: jest.fn(),
-        logout: jest.fn(),
-        refreshToken: jest.fn(),
-      });
+      mockUseAuth.mockReturnValue(
+        createMockAuthContext({
+          hasPermission: jest.fn<boolean, [string]>((perm) => perm === 'students:edit'),
+          isAuthenticated: true,
+        })
+      );
 
       render(
         <PermissionGate permission="students:edit">
@@ -43,16 +40,12 @@ describe('PermissionGate', () => {
     });
 
     it('should not render children when user lacks required permission', () => {
-      mockUseAuth.mockReturnValue({
-        hasPermission: jest.fn(() => false),
-        hasRole: jest.fn(),
-        user: null,
-        isAuthenticated: true,
-        isLoading: false,
-        login: jest.fn(),
-        logout: jest.fn(),
-        refreshToken: jest.fn(),
-      });
+      mockUseAuth.mockReturnValue(
+        createMockAuthContext({
+          hasPermission: jest.fn<boolean, [string]>(() => false),
+          isAuthenticated: true,
+        })
+      );
 
       render(
         <PermissionGate permission="students:edit">
@@ -64,16 +57,12 @@ describe('PermissionGate', () => {
     });
 
     it('should render fallback when user lacks permission', () => {
-      mockUseAuth.mockReturnValue({
-        hasPermission: jest.fn(() => false),
-        hasRole: jest.fn(),
-        user: null,
-        isAuthenticated: true,
-        isLoading: false,
-        login: jest.fn(),
-        logout: jest.fn(),
-        refreshToken: jest.fn(),
-      });
+      mockUseAuth.mockReturnValue(
+        createMockAuthContext({
+          hasPermission: jest.fn<boolean, [string]>(() => false),
+          isAuthenticated: true,
+        })
+      );
 
       render(
         <PermissionGate
@@ -91,18 +80,14 @@ describe('PermissionGate', () => {
 
   describe('Multiple Permissions Check', () => {
     it('should render children when user has all required permissions (requireAll=true)', () => {
-      mockUseAuth.mockReturnValue({
-        hasPermission: jest.fn((perm) =>
-          ['students:view', 'students:edit'].includes(perm)
-        ),
-        hasRole: jest.fn(),
-        user: null,
-        isAuthenticated: true,
-        isLoading: false,
-        login: jest.fn(),
-        logout: jest.fn(),
-        refreshToken: jest.fn(),
-      });
+      mockUseAuth.mockReturnValue(
+        createMockAuthContext({
+          hasPermission: jest.fn<boolean, [string]>((perm) =>
+            ['students:view', 'students:edit'].includes(perm)
+          ),
+          isAuthenticated: true,
+        })
+      );
 
       render(
         <PermissionGate
@@ -117,16 +102,12 @@ describe('PermissionGate', () => {
     });
 
     it('should not render children when user lacks one required permission (requireAll=true)', () => {
-      mockUseAuth.mockReturnValue({
-        hasPermission: jest.fn((perm) => perm === 'students:view'),
-        hasRole: jest.fn(),
-        user: null,
-        isAuthenticated: true,
-        isLoading: false,
-        login: jest.fn(),
-        logout: jest.fn(),
-        refreshToken: jest.fn(),
-      });
+      mockUseAuth.mockReturnValue(
+        createMockAuthContext({
+          hasPermission: jest.fn<boolean, [string]>((perm) => perm === 'students:view'),
+          isAuthenticated: true,
+        })
+      );
 
       render(
         <PermissionGate
@@ -141,16 +122,12 @@ describe('PermissionGate', () => {
     });
 
     it('should render children when user has any required permission (requireAll=false)', () => {
-      mockUseAuth.mockReturnValue({
-        hasPermission: jest.fn((perm) => perm === 'students:view'),
-        hasRole: jest.fn(),
-        user: null,
-        isAuthenticated: true,
-        isLoading: false,
-        login: jest.fn(),
-        logout: jest.fn(),
-        refreshToken: jest.fn(),
-      });
+      mockUseAuth.mockReturnValue(
+        createMockAuthContext({
+          hasPermission: jest.fn<boolean, [string]>((perm) => perm === 'students:view'),
+          isAuthenticated: true,
+        })
+      );
 
       render(
         <PermissionGate
@@ -165,16 +142,12 @@ describe('PermissionGate', () => {
     });
 
     it('should not render children when user has none of the required permissions', () => {
-      mockUseAuth.mockReturnValue({
-        hasPermission: jest.fn(() => false),
-        hasRole: jest.fn(),
-        user: null,
-        isAuthenticated: true,
-        isLoading: false,
-        login: jest.fn(),
-        logout: jest.fn(),
-        refreshToken: jest.fn(),
-      });
+      mockUseAuth.mockReturnValue(
+        createMockAuthContext({
+          hasPermission: jest.fn<boolean, [string]>(() => false),
+          isAuthenticated: true,
+        })
+      );
 
       render(
         <PermissionGate
@@ -191,16 +164,12 @@ describe('PermissionGate', () => {
 
   describe('Role-Based Check', () => {
     it('should render children when user has required role', () => {
-      mockUseAuth.mockReturnValue({
-        hasPermission: jest.fn(),
-        hasRole: jest.fn((r) => r === 'ADMIN'),
-        user: null,
-        isAuthenticated: true,
-        isLoading: false,
-        login: jest.fn(),
-        logout: jest.fn(),
-        refreshToken: jest.fn(),
-      });
+      mockUseAuth.mockReturnValue(
+        createMockAuthContext({
+          hasRole: jest.fn<boolean, [string | string[]]>((r) => r === 'ADMIN'),
+          isAuthenticated: true,
+        })
+      );
 
       render(
         <PermissionGate role="ADMIN">
@@ -212,16 +181,12 @@ describe('PermissionGate', () => {
     });
 
     it('should not render children when user lacks required role', () => {
-      mockUseAuth.mockReturnValue({
-        hasPermission: jest.fn(),
-        hasRole: jest.fn(() => false),
-        user: null,
-        isAuthenticated: true,
-        isLoading: false,
-        login: jest.fn(),
-        logout: jest.fn(),
-        refreshToken: jest.fn(),
-      });
+      mockUseAuth.mockReturnValue(
+        createMockAuthContext({
+          hasRole: jest.fn<boolean, [string | string[]]>(() => false),
+          isAuthenticated: true,
+        })
+      );
 
       render(
         <PermissionGate role="ADMIN">
@@ -233,21 +198,17 @@ describe('PermissionGate', () => {
     });
 
     it('should accept array of roles and match any', () => {
-      mockUseAuth.mockReturnValue({
-        hasPermission: jest.fn(),
-        hasRole: jest.fn((r) => {
-          if (Array.isArray(r)) {
-            return r.includes('NURSE');
-          }
-          return r === 'NURSE';
-        }),
-        user: null,
-        isAuthenticated: true,
-        isLoading: false,
-        login: jest.fn(),
-        logout: jest.fn(),
-        refreshToken: jest.fn(),
-      });
+      mockUseAuth.mockReturnValue(
+        createMockAuthContext({
+          hasRole: jest.fn<boolean, [string | string[]]>((r) => {
+            if (Array.isArray(r)) {
+              return r.includes('NURSE');
+            }
+            return r === 'NURSE';
+          }),
+          isAuthenticated: true,
+        })
+      );
 
       render(
         <PermissionGate role={['ADMIN', 'NURSE']}>
@@ -261,16 +222,12 @@ describe('PermissionGate', () => {
 
   describe('Inverse Logic', () => {
     it('should render children when user does NOT have permission (inverse=true)', () => {
-      mockUseAuth.mockReturnValue({
-        hasPermission: jest.fn(() => false),
-        hasRole: jest.fn(),
-        user: null,
-        isAuthenticated: true,
-        isLoading: false,
-        login: jest.fn(),
-        logout: jest.fn(),
-        refreshToken: jest.fn(),
-      });
+      mockUseAuth.mockReturnValue(
+        createMockAuthContext({
+          hasPermission: jest.fn<boolean, [string]>(() => false),
+          isAuthenticated: true,
+        })
+      );
 
       render(
         <PermissionGate permission="admin:users" inverse>
@@ -282,16 +239,12 @@ describe('PermissionGate', () => {
     });
 
     it('should not render children when user has permission (inverse=true)', () => {
-      mockUseAuth.mockReturnValue({
-        hasPermission: jest.fn(() => true),
-        hasRole: jest.fn(),
-        user: null,
-        isAuthenticated: true,
-        isLoading: false,
-        login: jest.fn(),
-        logout: jest.fn(),
-        refreshToken: jest.fn(),
-      });
+      mockUseAuth.mockReturnValue(
+        createMockAuthContext({
+          hasPermission: jest.fn<boolean, [string]>(() => true),
+          isAuthenticated: true,
+        })
+      );
 
       render(
         <PermissionGate permission="admin:users" inverse>
@@ -305,16 +258,12 @@ describe('PermissionGate', () => {
 
   describe('Minimum Role Check', () => {
     it('should render children when user meets minimum role requirement', () => {
-      mockUseAuth.mockReturnValue({
-        hasPermission: jest.fn(),
-        hasRole: jest.fn((r) => r === 'ADMIN'),
-        user: null,
-        isAuthenticated: true,
-        isLoading: false,
-        login: jest.fn(),
-        logout: jest.fn(),
-        refreshToken: jest.fn(),
-      });
+      mockUseAuth.mockReturnValue(
+        createMockAuthContext({
+          hasRole: jest.fn<boolean, [string | string[]]>((r) => r === 'ADMIN'),
+          isAuthenticated: true,
+        })
+      );
 
       render(
         <PermissionGate minRole="ADMIN">
@@ -328,16 +277,11 @@ describe('PermissionGate', () => {
 
   describe('Empty/No Restrictions', () => {
     it('should render children when no restrictions are specified', () => {
-      mockUseAuth.mockReturnValue({
-        hasPermission: jest.fn(),
-        hasRole: jest.fn(),
-        user: null,
-        isAuthenticated: true,
-        isLoading: false,
-        login: jest.fn(),
-        logout: jest.fn(),
-        refreshToken: jest.fn(),
-      });
+      mockUseAuth.mockReturnValue(
+        createMockAuthContext({
+          isAuthenticated: true,
+        })
+      );
 
       render(
         <PermissionGate>
@@ -351,16 +295,12 @@ describe('PermissionGate', () => {
 
   describe('Accessibility', () => {
     it('should maintain proper DOM structure when rendering', () => {
-      mockUseAuth.mockReturnValue({
-        hasPermission: jest.fn(() => true),
-        hasRole: jest.fn(),
-        user: null,
-        isAuthenticated: true,
-        isLoading: false,
-        login: jest.fn(),
-        logout: jest.fn(),
-        refreshToken: jest.fn(),
-      });
+      mockUseAuth.mockReturnValue(
+        createMockAuthContext({
+          hasPermission: jest.fn<boolean, [string]>(() => true),
+          isAuthenticated: true,
+        })
+      );
 
       const { container } = render(
         <PermissionGate permission="students:view">
@@ -374,16 +314,12 @@ describe('PermissionGate', () => {
     });
 
     it('should maintain accessibility of children elements', () => {
-      mockUseAuth.mockReturnValue({
-        hasPermission: jest.fn(() => true),
-        hasRole: jest.fn(),
-        user: null,
-        isAuthenticated: true,
-        isLoading: false,
-        login: jest.fn(),
-        logout: jest.fn(),
-        refreshToken: jest.fn(),
-      });
+      mockUseAuth.mockReturnValue(
+        createMockAuthContext({
+          hasPermission: jest.fn<boolean, [string]>(() => true),
+          isAuthenticated: true,
+        })
+      );
 
       render(
         <PermissionGate permission="students:edit">
@@ -398,16 +334,12 @@ describe('PermissionGate', () => {
 
   describe('Edge Cases', () => {
     it('should handle null children gracefully', () => {
-      mockUseAuth.mockReturnValue({
-        hasPermission: jest.fn(() => true),
-        hasRole: jest.fn(),
-        user: null,
-        isAuthenticated: true,
-        isLoading: false,
-        login: jest.fn(),
-        logout: jest.fn(),
-        refreshToken: jest.fn(),
-      });
+      mockUseAuth.mockReturnValue(
+        createMockAuthContext({
+          hasPermission: jest.fn<boolean, [string]>(() => true),
+          isAuthenticated: true,
+        })
+      );
 
       const { container } = render(
         <PermissionGate permission="students:view">
@@ -419,16 +351,12 @@ describe('PermissionGate', () => {
     });
 
     it('should handle undefined fallback', () => {
-      mockUseAuth.mockReturnValue({
-        hasPermission: jest.fn(() => false),
-        hasRole: jest.fn(),
-        user: null,
-        isAuthenticated: true,
-        isLoading: false,
-        login: jest.fn(),
-        logout: jest.fn(),
-        refreshToken: jest.fn(),
-      });
+      mockUseAuth.mockReturnValue(
+        createMockAuthContext({
+          hasPermission: jest.fn<boolean, [string]>(() => false),
+          isAuthenticated: true,
+        })
+      );
 
       const { container } = render(
         <PermissionGate permission="students:view">
@@ -440,16 +368,12 @@ describe('PermissionGate', () => {
     });
 
     it('should handle empty permissions array', () => {
-      mockUseAuth.mockReturnValue({
-        hasPermission: jest.fn(() => true),
-        hasRole: jest.fn(),
-        user: null,
-        isAuthenticated: true,
-        isLoading: false,
-        login: jest.fn(),
-        logout: jest.fn(),
-        refreshToken: jest.fn(),
-      });
+      mockUseAuth.mockReturnValue(
+        createMockAuthContext({
+          hasPermission: jest.fn<boolean, [string]>(() => true),
+          isAuthenticated: true,
+        })
+      );
 
       render(
         <PermissionGate permissions={[]}>
@@ -463,19 +387,15 @@ describe('PermissionGate', () => {
 
   describe('HIPAA Compliance', () => {
     it('should properly gate access to PHI (Protected Health Information)', () => {
-      mockUseAuth.mockReturnValue({
-        hasPermission: jest.fn((perm) => perm === 'health-records:view'),
-        hasRole: jest.fn(),
-        user: null,
-        isAuthenticated: true,
-        isLoading: false,
-        login: jest.fn(),
-        logout: jest.fn(),
-        refreshToken: jest.fn(),
-      });
+      mockUseAuth.mockReturnValue(
+        createMockAuthContext({
+          hasPermission: jest.fn<boolean, [string]>((perm) => perm === 'health_records:view'),
+          isAuthenticated: true,
+        })
+      );
 
       render(
-        <PermissionGate permission="health-records:view">
+        <PermissionGate permission="health_records:view">
           <div>Student Health Records</div>
         </PermissionGate>
       );
@@ -484,20 +404,16 @@ describe('PermissionGate', () => {
     });
 
     it('should prevent unauthorized PHI access', () => {
-      mockUseAuth.mockReturnValue({
-        hasPermission: jest.fn(() => false),
-        hasRole: jest.fn(),
-        user: null,
-        isAuthenticated: true,
-        isLoading: false,
-        login: jest.fn(),
-        logout: jest.fn(),
-        refreshToken: jest.fn(),
-      });
+      mockUseAuth.mockReturnValue(
+        createMockAuthContext({
+          hasPermission: jest.fn<boolean, [string]>(() => false),
+          isAuthenticated: true,
+        })
+      );
 
       render(
         <PermissionGate
-          permission="health-records:view"
+          permission="health_records:view"
           fallback={<div>Access Restricted - HIPAA</div>}
         >
           <div>Student Health Records</div>
@@ -509,16 +425,12 @@ describe('PermissionGate', () => {
     });
 
     it('should require proper permissions for medication administration', () => {
-      mockUseAuth.mockReturnValue({
-        hasPermission: jest.fn((perm) => perm === 'medications:administer'),
-        hasRole: jest.fn(),
-        user: null,
-        isAuthenticated: true,
-        isLoading: false,
-        login: jest.fn(),
-        logout: jest.fn(),
-        refreshToken: jest.fn(),
-      });
+      mockUseAuth.mockReturnValue(
+        createMockAuthContext({
+          hasPermission: jest.fn<boolean, [string]>((perm) => perm === 'medications:administer'),
+          isAuthenticated: true,
+        })
+      );
 
       render(
         <PermissionGate permission="medications:administer">

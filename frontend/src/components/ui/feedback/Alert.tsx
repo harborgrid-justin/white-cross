@@ -21,6 +21,8 @@ import { cn } from '../../../utils/cn';
  * @interface AlertProps
  * @extends {React.HTMLAttributes<HTMLDivElement>}
  *
+ * @property {React.ReactNode} [children] - Alert content (message or elements)
+ * @property {string} [title] - Alert title text
  * @property {('default' | 'primary' | 'success' | 'warning' | 'error' | 'danger' | 'info')} [variant='default'] - Visual style variant indicating alert severity/type
  * @property {('sm' | 'md' | 'lg')} [size='md'] - Alert size affecting padding and text size
  * @property {boolean} [dismissible=false] - Whether alert can be dismissed by user
@@ -29,6 +31,8 @@ import { cn } from '../../../utils/cn';
  * @property {boolean} [showIcon=true] - Whether to display icon in alert
  */
 interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
+  children?: React.ReactNode;
+  title?: string;
   variant?: 'default' | 'primary' | 'success' | 'warning' | 'error' | 'danger' | 'info';
   size?: 'sm' | 'md' | 'lg';
   dismissible?: boolean;
@@ -42,16 +46,24 @@ interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
  *
  * @interface AlertTitleProps
  * @extends {React.HTMLAttributes<HTMLHeadingElement>}
+ *
+ * @property {React.ReactNode} [children] - Title content
  */
-interface AlertTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {}
+interface AlertTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {
+  children?: React.ReactNode;
+}
 
 /**
  * Props for the AlertDescription component.
  *
  * @interface AlertDescriptionProps
  * @extends {React.HTMLAttributes<HTMLParagraphElement>}
+ *
+ * @property {React.ReactNode} [children] - Description content
  */
-interface AlertDescriptionProps extends React.HTMLAttributes<HTMLParagraphElement> {}
+interface AlertDescriptionProps extends React.HTMLAttributes<HTMLParagraphElement> {
+  children?: React.ReactNode;
+}
 
 /**
  * Alert component for displaying important messages to users.

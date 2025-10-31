@@ -95,10 +95,18 @@ export function useOptimisticMedicationCreate(
 ) {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (data: CreateMedicationRequest) => medicationsApi.create(data),
+  return useMutation<
+    Medication,
+    Error,
+    CreateMedicationRequest,
+    { updateId: string; tempId: string; tempEntity: Medication } | undefined
+  >({
+    mutationFn: async (data: CreateMedicationRequest) => {
+      const response = await medicationsApi.create(data);
+      return (response as any).medication || response;
+    },
 
-    onMutate: async (newMedication) => {
+    onMutate: async (newMedication: CreateMedicationRequest) => {
       // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: medicationKeys.lists() });
 
@@ -121,7 +129,7 @@ export function useOptimisticMedicationCreate(
       return { updateId, tempId, tempEntity };
     },
 
-    onSuccess: (response, variables, context) => {
+    onSuccess: (response: Medication, variables: CreateMedicationRequest, context) => {
       if (context) {
         // Replace temp ID with real server ID
         confirmCreate(
@@ -137,10 +145,10 @@ export function useOptimisticMedicationCreate(
       queryClient.invalidateQueries({ queryKey: medicationKeys.lists() });
       queryClient.invalidateQueries({ queryKey: medicationKeys.stats() });
 
-      options?.onSuccess?.(response, variables, context, queryClient);
+      options?.onSuccess?.(response, variables, context);
     },
 
-    onError: (error, variables, context) => {
+    onError: (error: Error, variables: CreateMedicationRequest, context) => {
       if (context) {
         // Rollback optimistic update
         rollbackUpdate(queryClient, context.updateId, {
@@ -149,7 +157,7 @@ export function useOptimisticMedicationCreate(
         });
       }
 
-      options?.onError?.(error, variables, context, queryClient);
+      options?.onError?.(error, variables, context);
     },
   });
 }
@@ -170,10 +178,16 @@ export function useOptimisticMedicationUpdate(
 ) {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({ id, data }) => medicationsApi.update(id, data),
+  return useMutation<
+    Medication,
+    Error,
+    { id: string; data: Partial<CreateMedicationRequest> },
+    { updateId: string } | undefined
+  >({
+    mutationFn: ({ id, data }: { id: string; data: Partial<CreateMedicationRequest> }) =>
+      medicationsApi.update(id, data).then((res: any) => res.medication || res),
 
-    onMutate: async ({ id, data }) => {
+    onMutate: async ({ id, data }: { id: string; data: Partial<CreateMedicationRequest> }) => {
       // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: medicationKeys.detail(id) });
 
@@ -192,7 +206,7 @@ export function useOptimisticMedicationUpdate(
       return { updateId };
     },
 
-    onSuccess: (response, variables, context) => {
+    onSuccess: (response: Medication, variables: { id: string; data: Partial<CreateMedicationRequest> }, context) => {
       if (context?.updateId) {
         // Confirm with server data
         confirmUpdate(context.updateId, response, queryClient);
@@ -202,10 +216,10 @@ export function useOptimisticMedicationUpdate(
       queryClient.invalidateQueries({ queryKey: medicationKeys.lists() });
       queryClient.setQueryData(medicationKeys.detail(variables.id), response);
 
-      options?.onSuccess?.(response, variables, context, queryClient);
+      options?.onSuccess?.(response, variables, context);
     },
 
-    onError: (error, variables, context) => {
+    onError: (error: Error, variables: { id: string; data: Partial<CreateMedicationRequest> }, context) => {
       if (context?.updateId) {
         // Rollback optimistic update
         rollbackUpdate(queryClient, context.updateId, {
@@ -214,7 +228,7 @@ export function useOptimisticMedicationUpdate(
         });
       }
 
-      options?.onError?.(error, variables, context, queryClient);
+      options?.onError?.(error, variables, context);
     },
   });
 }
@@ -231,10 +245,15 @@ export function useOptimisticMedicationDelete(
 ) {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useMutation<
+    { id: string },
+    Error,
+    string,
+    { updateId: string } | undefined
+  >({
     mutationFn: (id: string) => medicationsApi.delete(id),
 
-    onMutate: async (id) => {
+    onMutate: async (id: string) => {
       // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: medicationKeys.detail(id) });
 
@@ -251,7 +270,7 @@ export function useOptimisticMedicationDelete(
       return { updateId };
     },
 
-    onSuccess: (response, id, context) => {
+    onSuccess: (response: { id: string }, id: string, context) => {
       if (context?.updateId) {
         // Confirm deletion
         confirmUpdate(context.updateId, null as any, queryClient);
@@ -262,10 +281,10 @@ export function useOptimisticMedicationDelete(
       queryClient.invalidateQueries({ queryKey: medicationKeys.lists() });
       queryClient.invalidateQueries({ queryKey: medicationKeys.stats() });
 
-      options?.onSuccess?.(response, id, context, queryClient);
+      options?.onSuccess?.(response, id, context);
     },
 
-    onError: (error, id, context) => {
+    onError: (error: Error, id: string, context) => {
       if (context?.updateId) {
         // Rollback - restore the deleted medication
         rollbackUpdate(queryClient, context.updateId, {
@@ -274,7 +293,7 @@ export function useOptimisticMedicationDelete(
         });
       }
 
-      options?.onError?.(error, id, context, queryClient);
+      options?.onError?.(error, id, context);
     },
   });
 }
@@ -291,10 +310,15 @@ export function useOptimisticPrescriptionCreate(
 ) {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (data: StudentMedicationFormData) => medicationsApi.assignToStudent(data),
+  return useMutation<
+    StudentMedication,
+    Error,
+    StudentMedicationFormData,
+    { updateId: string; tempId: string; tempEntity: StudentMedication } | undefined
+  >({
+    mutationFn: (data: StudentMedicationFormData) => medicationsApi.assignToStudent(data).then((res: any) => res.studentMedication || res),
 
-    onMutate: async (newPrescription) => {
+    onMutate: async (newPrescription: StudentMedicationFormData) => {
       const queryKey = medicationKeys.studentMedications(newPrescription.studentId);
       await queryClient.cancelQueries({ queryKey });
 
@@ -315,7 +339,7 @@ export function useOptimisticPrescriptionCreate(
       return { updateId, tempId, tempEntity };
     },
 
-    onSuccess: (response, variables, context) => {
+    onSuccess: (response: StudentMedication, variables: StudentMedicationFormData, context) => {
       if (context) {
         confirmCreate(
           queryClient,
@@ -333,17 +357,17 @@ export function useOptimisticPrescriptionCreate(
         queryKey: medicationKeys.detail(variables.medicationId),
       });
 
-      options?.onSuccess?.(response, variables, context, queryClient);
+      options?.onSuccess?.(response, variables, context);
     },
 
-    onError: (error, variables, context) => {
+    onError: (error: Error, variables: StudentMedicationFormData, context) => {
       if (context) {
         rollbackUpdate(queryClient, context.updateId, {
           message: error.message,
         });
       }
 
-      options?.onError?.(error, variables, context, queryClient);
+      options?.onError?.(error, variables, context);
     },
   });
 }
@@ -360,19 +384,26 @@ export function useOptimisticPrescriptionDeactivate(
 ) {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({ id, reason }) => medicationsApi.deactivateStudentMedication(id, reason),
+  return useMutation<
+    StudentMedication,
+    Error,
+    { id: string; reason?: string },
+    { updateId: string; studentId?: string } | undefined
+  >({
+    mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
+      medicationsApi.deactivateStudentMedication(id, reason).then((res: any) => res.studentMedication || res),
 
-    onMutate: async ({ id }) => {
+    onMutate: async ({ id }: { id: string; reason?: string }) => {
       // Find the student medication in cache to get studentId
-      const allQueries = queryClient.getQueriesData<{ data: StudentMedication[] }>({
-        queryKey: medicationKeys.all,
-      });
+      // We'll check all student medication queries
+      const cache = queryClient.getQueryCache();
+      const queries = cache.findAll({ queryKey: medicationKeys.all });
 
       let studentId: string | undefined;
-      for (const [key, value] of allQueries) {
-        if (value?.data) {
-          const prescription = value.data.find((p: StudentMedication) => p.id === id);
+      for (const query of queries) {
+        const data = query.state.data as any;
+        if (data?.data && Array.isArray(data.data)) {
+          const prescription = data.data.find((p: StudentMedication) => p.id === id);
           if (prescription) {
             studentId = prescription.studentId;
             break;
@@ -380,7 +411,7 @@ export function useOptimisticPrescriptionDeactivate(
         }
       }
 
-      if (!studentId) return { updateId: '' };
+      if (!studentId) return { updateId: '', studentId: undefined };
 
       const updateId = optimisticUpdate<StudentMedication>(
         queryClient,
@@ -395,7 +426,7 @@ export function useOptimisticPrescriptionDeactivate(
       return { updateId, studentId };
     },
 
-    onSuccess: (response, variables, context) => {
+    onSuccess: (response: StudentMedication, variables: { id: string; reason?: string }, context) => {
       if (context?.updateId) {
         confirmUpdate(context.updateId, response, queryClient);
       }
@@ -409,17 +440,17 @@ export function useOptimisticPrescriptionDeactivate(
       queryClient.invalidateQueries({ queryKey: medicationKeys.schedule() });
       queryClient.invalidateQueries({ queryKey: medicationKeys.stats() });
 
-      options?.onSuccess?.(response, variables, context, queryClient);
+      options?.onSuccess?.(response, variables, context);
     },
 
-    onError: (error, variables, context) => {
+    onError: (error: Error, variables: { id: string; reason?: string }, context) => {
       if (context?.updateId) {
         rollbackUpdate(queryClient, context.updateId, {
           message: error.message,
         });
       }
 
-      options?.onError?.(error, variables, context, queryClient);
+      options?.onError?.(error, variables, context);
     },
   });
 }
@@ -437,19 +468,24 @@ export function useOptimisticMedicationAdministration(
 ) {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (data: MedicationAdministrationData) => medicationsApi.logAdministration(data),
+  return useMutation<
+    MedicationLog,
+    Error,
+    MedicationAdministrationData,
+    { updateId: string; tempId: string; tempEntity: any; studentId?: string } | undefined
+  >({
+    mutationFn: (data: MedicationAdministrationData) => medicationsApi.logAdministration(data).then((res: any) => res.log || res),
 
-    onMutate: async (newLog) => {
+    onMutate: async (newLog: MedicationAdministrationData) => {
       // Get the student medication to find student ID
-      const allQueries = queryClient.getQueriesData<{ data: StudentMedication[] }>({
-        queryKey: medicationKeys.all,
-      });
+      const cache = queryClient.getQueryCache();
+      const queries = cache.findAll({ queryKey: medicationKeys.all });
 
       let studentId: string | undefined;
-      for (const [key, value] of allQueries) {
-        if (value?.data) {
-          const prescription = value.data.find(
+      for (const query of queries) {
+        const data = query.state.data as any;
+        if (data?.data && Array.isArray(data.data)) {
+          const prescription = data.data.find(
             (p: StudentMedication) => p.id === newLog.studentMedicationId
           );
           if (prescription) {
@@ -459,13 +495,13 @@ export function useOptimisticMedicationAdministration(
         }
       }
 
-      if (!studentId) return { updateId: '', studentId: undefined };
+      if (!studentId) return { updateId: '', tempId: '', tempEntity: null, studentId: undefined };
 
       const queryKey = medicationKeys.administrationLogs(studentId);
       await queryClient.cancelQueries({ queryKey });
 
-      // Create optimistic update
-      const { updateId, tempId, tempEntity } = optimisticCreate<MedicationLog>(
+      // Create optimistic update - use any to bypass BaseEntity constraint
+      const { updateId, tempId, tempEntity } = optimisticCreate<any>(
         queryClient,
         queryKey,
         {
@@ -481,14 +517,14 @@ export function useOptimisticMedicationAdministration(
       return { updateId, tempId, tempEntity, studentId };
     },
 
-    onSuccess: (response, variables, context) => {
+    onSuccess: (response: MedicationLog, variables: MedicationAdministrationData, context) => {
       if (context && context.studentId) {
         confirmCreate(
           queryClient,
           medicationKeys.administrationLogs(context.studentId),
           context.updateId,
           context.tempId,
-          response
+          response as any
         );
       }
 
@@ -497,17 +533,17 @@ export function useOptimisticMedicationAdministration(
       queryClient.invalidateQueries({ queryKey: medicationKeys.reminders() });
       queryClient.invalidateQueries({ queryKey: medicationKeys.stats() });
 
-      options?.onSuccess?.(response, variables, context, queryClient);
+      options?.onSuccess?.(response, variables, context);
     },
 
-    onError: (error, variables, context) => {
+    onError: (error: Error, variables: MedicationAdministrationData, context) => {
       if (context) {
         rollbackUpdate(queryClient, context.updateId, {
           message: error.message,
         });
       }
 
-      options?.onError?.(error, variables, context, queryClient);
+      options?.onError?.(error, variables, context);
     },
   });
 }
@@ -524,10 +560,15 @@ export function useOptimisticInventoryAdd(
 ) {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (data: CreateInventoryRequest) => medicationsApi.addToInventory(data),
+  return useMutation<
+    InventoryItem,
+    Error,
+    CreateInventoryRequest,
+    { updateId: string; tempId: string; tempEntity: InventoryItem } | undefined
+  >({
+    mutationFn: (data: CreateInventoryRequest) => medicationsApi.addToInventory(data).then((res: any) => res.inventory || res),
 
-    onMutate: async (newInventory) => {
+    onMutate: async (newInventory: CreateInventoryRequest) => {
       await queryClient.cancelQueries({ queryKey: medicationKeys.inventory() });
 
       // Create optimistic update
@@ -543,7 +584,7 @@ export function useOptimisticInventoryAdd(
       return { updateId, tempId, tempEntity };
     },
 
-    onSuccess: (response, variables, context) => {
+    onSuccess: (response: InventoryItem, variables: CreateInventoryRequest, context) => {
       if (context) {
         confirmCreate(
           queryClient,
@@ -561,17 +602,17 @@ export function useOptimisticInventoryAdd(
         queryKey: medicationKeys.detail(variables.medicationId),
       });
 
-      options?.onSuccess?.(response, variables, context, queryClient);
+      options?.onSuccess?.(response, variables, context);
     },
 
-    onError: (error, variables, context) => {
+    onError: (error: Error, variables: CreateInventoryRequest, context) => {
       if (context) {
         rollbackUpdate(queryClient, context.updateId, {
           message: error.message,
         });
       }
 
-      options?.onError?.(error, variables, context, queryClient);
+      options?.onError?.(error, variables, context);
     },
   });
 }
@@ -588,10 +629,16 @@ export function useOptimisticInventoryUpdate(
 ) {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({ id, data }) => medicationsApi.updateInventoryQuantity(id, data),
+  return useMutation<
+    InventoryItem,
+    Error,
+    { id: string; data: UpdateInventoryRequest },
+    { updateId: string } | undefined
+  >({
+    mutationFn: ({ id, data }: { id: string; data: UpdateInventoryRequest }) =>
+      medicationsApi.updateInventoryQuantity(id, data).then((res: any) => res.inventory || res),
 
-    onMutate: async ({ id, data }) => {
+    onMutate: async ({ id, data }: { id: string; data: UpdateInventoryRequest }) => {
       await queryClient.cancelQueries({ queryKey: medicationKeys.inventoryItem(id) });
 
       // Create optimistic update
@@ -608,7 +655,7 @@ export function useOptimisticInventoryUpdate(
       return { updateId };
     },
 
-    onSuccess: (response, variables, context) => {
+    onSuccess: (response: InventoryItem, variables: { id: string; data: UpdateInventoryRequest }, context) => {
       if (context?.updateId) {
         confirmUpdate(context.updateId, response, queryClient);
       }
@@ -618,17 +665,17 @@ export function useOptimisticInventoryUpdate(
       queryClient.invalidateQueries({ queryKey: medicationKeys.alerts() });
       queryClient.setQueryData(medicationKeys.inventoryItem(variables.id), response);
 
-      options?.onSuccess?.(response, variables, context, queryClient);
+      options?.onSuccess?.(response, variables, context);
     },
 
-    onError: (error, variables, context) => {
+    onError: (error: Error, variables: { id: string; data: UpdateInventoryRequest }, context) => {
       if (context?.updateId) {
         rollbackUpdate(queryClient, context.updateId, {
           message: error.message,
         });
       }
 
-      options?.onError?.(error, variables, context, queryClient);
+      options?.onError?.(error, variables, context);
     },
   });
 }
@@ -645,10 +692,15 @@ export function useOptimisticAdverseReactionReport(
 ) {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (data: AdverseReactionData) => medicationsApi.reportAdverseReaction(data),
+  return useMutation<
+    AdverseReaction,
+    Error,
+    AdverseReactionData,
+    { updateId: string; tempId: string; tempEntity: AdverseReaction } | undefined
+  >({
+    mutationFn: (data: AdverseReactionData) => medicationsApi.reportAdverseReaction(data).then((res: any) => res.reaction || res),
 
-    onMutate: async (newReaction) => {
+    onMutate: async (newReaction: AdverseReactionData) => {
       const queryKey = medicationKeys.adverseReactions();
       await queryClient.cancelQueries({ queryKey });
 
@@ -665,7 +717,7 @@ export function useOptimisticAdverseReactionReport(
       return { updateId, tempId, tempEntity };
     },
 
-    onSuccess: (response, variables, context) => {
+    onSuccess: (response: AdverseReaction, variables: AdverseReactionData, context) => {
       if (context) {
         confirmCreate(
           queryClient,
@@ -680,17 +732,17 @@ export function useOptimisticAdverseReactionReport(
       queryClient.invalidateQueries({ queryKey: medicationKeys.adverseReactions() });
       queryClient.invalidateQueries({ queryKey: medicationKeys.stats() });
 
-      options?.onSuccess?.(response, variables, context, queryClient);
+      options?.onSuccess?.(response, variables, context);
     },
 
-    onError: (error, variables, context) => {
+    onError: (error: Error, variables: AdverseReactionData, context) => {
       if (context) {
         rollbackUpdate(queryClient, context.updateId, {
           message: error.message,
         });
       }
 
-      options?.onError?.(error, variables, context, queryClient);
+      options?.onError?.(error, variables, context);
     },
   });
 }
@@ -745,15 +797,15 @@ export function useOptimisticMedications() {
     reportAdverseReactionWithOptimism: reportAdverseReaction.mutate,
 
     // Loading states
-    isCreatingMedication: createMedication.isPending,
-    isUpdatingMedication: updateMedication.isPending,
-    isDeletingMedication: deleteMedication.isPending,
-    isCreatingPrescription: createPrescription.isPending,
-    isDeactivatingPrescription: deactivatePrescription.isPending,
-    isLoggingAdministration: logAdministration.isPending,
-    isAddingInventory: addInventory.isPending,
-    isUpdatingInventory: updateInventory.isPending,
-    isReportingAdverseReaction: reportAdverseReaction.isPending,
+    isCreatingMedication: (createMedication as any).isPending || createMedication.isLoading,
+    isUpdatingMedication: (updateMedication as any).isPending || updateMedication.isLoading,
+    isDeletingMedication: (deleteMedication as any).isPending || deleteMedication.isLoading,
+    isCreatingPrescription: (createPrescription as any).isPending || createPrescription.isLoading,
+    isDeactivatingPrescription: (deactivatePrescription as any).isPending || deactivatePrescription.isLoading,
+    isLoggingAdministration: (logAdministration as any).isPending || logAdministration.isLoading,
+    isAddingInventory: (addInventory as any).isPending || addInventory.isLoading,
+    isUpdatingInventory: (updateInventory as any).isPending || updateInventory.isLoading,
+    isReportingAdverseReaction: (reportAdverseReaction as any).isPending || reportAdverseReaction.isLoading,
 
     // Error states
     medicationCreateError: createMedication.error,

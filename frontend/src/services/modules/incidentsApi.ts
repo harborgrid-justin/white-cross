@@ -123,7 +123,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       const response = await this.client.get(`/incidents?${queryParams}`)
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -149,7 +149,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       const response = await this.client.get(`/incidents/${id}`)
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -272,7 +272,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       const response = await this.client.post('/incidents', data)
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -302,7 +302,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       const response = await this.client.put(`/incidents/${id}`, data)
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -323,7 +323,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       const response = await this.client.delete(`/incidents/${id}`)
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -361,7 +361,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       const response = await this.client.get(`/incidents/search?${queryParams}`)
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -396,7 +396,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       const response = await this.client.get(`/incidents/statistics${queryString}`)
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -415,7 +415,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       const response = await this.client.get('/incidents?followUpRequired=true&status=OPEN')
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -441,7 +441,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       const response = await this.client.get(`/incidents/student/${studentId}?limit=${limit}`)
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -466,7 +466,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       const response = await this.client.put(`/incidents/${id}/notify`, data)
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -494,7 +494,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       const response = await this.client.post(`/incidents/${id}/notify`, data)
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -521,7 +521,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       })
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -552,7 +552,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       const response = await this.client.post(`/incidents/${data.incidentReportId}/follow-ups`, data)
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -573,7 +573,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       const response = await this.client.put(`/incidents/follow-ups/${id}`, data)
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -597,7 +597,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       })
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -614,7 +614,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       const response = await this.client.get(`/incidents/${incidentReportId}/follow-ups`)
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -631,7 +631,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       const response = await this.client.delete(`/incidents/follow-ups/${id}`)
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -767,7 +767,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       const response = await this.client.post(`/incidents/${data.incidentReportId}/witnesses`, data)
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -788,7 +788,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       const response = await this.client.put(`/incidents/witnesses/${id}`, data)
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -808,7 +808,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       const response = await this.client.put(`/incidents/witnesses/${statementId}/verify`)
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -825,7 +825,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       const response = await this.client.get(`/incidents/${incidentReportId}/witnesses`)
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -842,7 +842,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       const response = await this.client.delete(`/incidents/witnesses/${id}`)
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -867,7 +867,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       const response = await this.client.post(`/incidents/${id}/evidence`, data)
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -994,7 +994,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       })
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -1015,7 +1015,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       const response = await this.client.delete(`/incidents/${incidentReportId}/evidence/${fileName}`)
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -1043,7 +1043,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       })
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -1059,12 +1059,12 @@ class IncidentsApiImpl implements IIncidentsApi {
    *
    * Backend: POST /incidents/{id}/insurance-submission
    */
-  async submitToInsurance(id: string, insuranceData: any): Promise<InsuranceSubmissionResponse> {
+  async submitToInsurance(id: string, insuranceData: Record<string, unknown>): Promise<InsuranceSubmissionResponse> {
     try {
       const response = await this.client.post(`/incidents/${id}/insurance-submission`, insuranceData)
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -1084,7 +1084,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       const response = await this.client.get(`/incidents/${incidentReportId}/insurance-submissions`)
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -1107,7 +1107,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       })
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -1131,7 +1131,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       const response = await this.client.get(`/incidents/${id}/document`)
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -1161,7 +1161,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       const response = await this.client.get(`/incidents/${id}/generate`, { responseType: 'blob' })
       return response.data
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -1191,7 +1191,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       const response = await this.client.get(`/incidents/export${queryParams}`, { responseType: 'blob' })
       return response.data
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -1227,7 +1227,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       const response = await this.client.get(`/incidents/${incidentReportId}/comments${queryString}`)
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -1257,7 +1257,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       })
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -1278,7 +1278,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       const response = await this.client.put(`/incidents/comments/${commentId}`, data)
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 
@@ -1298,7 +1298,7 @@ class IncidentsApiImpl implements IIncidentsApi {
       const response = await this.client.delete(`/incidents/comments/${commentId}`)
       return extractApiData(response)
     } catch (error) {
-      throw handleApiError(error as any)
+      throw handleApiError(error as Error)
     }
   }
 }

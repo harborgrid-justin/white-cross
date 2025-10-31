@@ -21,6 +21,7 @@ import { cn } from '../../../utils/cn';
  * @interface CardProps
  * @extends {React.HTMLAttributes<HTMLDivElement>}
  *
+ * @property {React.ReactNode} [children] - Card content
  * @property {('default' | 'outlined' | 'elevated' | 'flat')} [variant='default'] - Visual style variant
  *   - default: Standard white card with soft shadow and border
  *   - outlined: Prominent 2px border without elevation
@@ -38,6 +39,7 @@ import { cn } from '../../../utils/cn';
  *   - full: Fully rounded (pill shape)
  */
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  children?: React.ReactNode;
   variant?: 'default' | 'outlined' | 'elevated' | 'flat';
   padding?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
   rounded?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | 'full';
@@ -49,9 +51,11 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
  * @interface CardHeaderProps
  * @extends {React.HTMLAttributes<HTMLDivElement>}
  *
+ * @property {React.ReactNode} [children] - Header content
  * @property {boolean} [divider=false] - Whether to show bottom border divider
  */
 interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
+  children?: React.ReactNode;
   divider?: boolean;
 }
 
@@ -60,8 +64,12 @@ interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
  *
  * @interface CardContentProps
  * @extends {React.HTMLAttributes<HTMLDivElement>}
+ *
+ * @property {React.ReactNode} [children] - Content area content
  */
-interface CardContentProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface CardContentProps extends React.HTMLAttributes<HTMLDivElement> {
+  children?: React.ReactNode;
+}
 
 /**
  * Props for the CardFooter component.
@@ -69,9 +77,11 @@ interface CardContentProps extends React.HTMLAttributes<HTMLDivElement> {}
  * @interface CardFooterProps
  * @extends {React.HTMLAttributes<HTMLDivElement>}
  *
+ * @property {React.ReactNode} [children] - Footer content
  * @property {boolean} [divider=false] - Whether to show top border divider
  */
 interface CardFooterProps extends React.HTMLAttributes<HTMLDivElement> {
+  children?: React.ReactNode;
   divider?: boolean;
 }
 

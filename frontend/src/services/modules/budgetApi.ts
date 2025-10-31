@@ -20,6 +20,7 @@ import { apiClient } from '../core/ApiClient';
 import { API_ENDPOINTS } from '../config/apiConfig';
 import { ApiResponse, PaginatedResponse } from '../types';
 import { z } from 'zod';
+import { createApiError, createValidationError } from '../core/errors';
 import type {
   BudgetCategory,
   BudgetTransaction,
@@ -42,8 +43,8 @@ import type {
   CategoryComparisonResponse,
   OverBudgetCategoriesResponse,
   BudgetRecommendationsResponse,
-  BudgetRecommendation,
 } from '../../types/budget';
+import { BudgetRecommendation } from '../../types/budget';
 
 // =====================
 // VALIDATION SCHEMAS
@@ -102,6 +103,9 @@ export class BudgetApi {
         `${API_ENDPOINTS.BUDGET.CATEGORIES}?${queryParams.toString()}`
       );
 
+      if (!response.data.data) {
+        throw new Error('Invalid response from server');
+      }
       return response.data.data.categories;
     } catch (error) {
       throw createApiError(error, 'Failed to fetch budget categories');
@@ -119,6 +123,9 @@ export class BudgetApi {
         API_ENDPOINTS.BUDGET.CATEGORY_BY_ID(id)
       );
 
+      if (!response.data.data) {
+        throw new Error('Invalid response from server');
+      }
       return response.data.data.category;
     } catch (error) {
       throw createApiError(error, 'Failed to fetch budget category');
@@ -137,10 +144,23 @@ export class BudgetApi {
         data
       );
 
+      if (!response.data.data) {
+        throw new Error('Invalid response from server');
+      }
       return response.data.data.category;
     } catch (error) {
-      if (error.name === 'ZodError') {
-        throw new Error(`Validation error: ${error.errors[0].message}`);
+      if (error instanceof z.ZodError) {
+        throw createValidationError(
+          error.issues[0]?.message || 'Validation error',
+          error.issues[0]?.path.join('.'),
+          error.issues.reduce((acc: Record<string, string[]>, err: z.ZodIssue) => {
+            const path = err.path.join('.');
+            if (!acc[path]) acc[path] = [];
+            acc[path].push(err.message);
+            return acc;
+          }, {} as Record<string, string[]>),
+          error
+        );
       }
       throw createApiError(error, 'Failed to create budget category');
     }
@@ -159,10 +179,23 @@ export class BudgetApi {
         data
       );
 
+      if (!response.data.data) {
+        throw new Error('Invalid response from server');
+      }
       return response.data.data.category;
     } catch (error) {
-      if (error.name === 'ZodError') {
-        throw new Error(`Validation error: ${error.errors[0].message}`);
+      if (error instanceof z.ZodError) {
+        throw createValidationError(
+          error.issues[0]?.message || 'Validation error',
+          error.issues[0]?.path.join('.'),
+          error.issues.reduce((acc: Record<string, string[]>, err: z.ZodIssue) => {
+            const path = err.path.join('.');
+            if (!acc[path]) acc[path] = [];
+            acc[path].push(err.message);
+            return acc;
+          }, {} as Record<string, string[]>),
+          error
+        );
       }
       throw createApiError(error, 'Failed to update budget category');
     }
@@ -196,6 +229,9 @@ export class BudgetApi {
         `${API_ENDPOINTS.BUDGET.SUMMARY}${params}`
       );
 
+      if (!response.data.data) {
+        throw new Error('Invalid response from server');
+      }
       return response.data.data.summary;
     } catch (error) {
       throw createApiError(error, 'Failed to fetch budget summary');
@@ -224,6 +260,9 @@ export class BudgetApi {
         `${API_ENDPOINTS.BUDGET.TRANSACTIONS}?${params.toString()}`
       );
 
+      if (!response.data.data) {
+        throw new Error('Invalid response from server');
+      }
       return response.data.data;
     } catch (error) {
       throw createApiError(error, 'Failed to fetch budget transactions');
@@ -242,10 +281,23 @@ export class BudgetApi {
         data
       );
 
+      if (!response.data.data) {
+        throw new Error('Invalid response from server');
+      }
       return response.data.data.transaction;
     } catch (error) {
-      if (error.name === 'ZodError') {
-        throw new Error(`Validation error: ${error.errors[0].message}`);
+      if (error instanceof z.ZodError) {
+        throw createValidationError(
+          error.issues[0]?.message || 'Validation error',
+          error.issues[0]?.path.join('.'),
+          error.issues.reduce((acc: Record<string, string[]>, err: z.ZodIssue) => {
+            const path = err.path.join('.');
+            if (!acc[path]) acc[path] = [];
+            acc[path].push(err.message);
+            return acc;
+          }, {} as Record<string, string[]>),
+          error
+        );
       }
       throw createApiError(error, 'Failed to create budget transaction');
     }
@@ -267,10 +319,23 @@ export class BudgetApi {
         data
       );
 
+      if (!response.data.data) {
+        throw new Error('Invalid response from server');
+      }
       return response.data.data.transaction;
     } catch (error) {
-      if (error.name === 'ZodError') {
-        throw new Error(`Validation error: ${error.errors[0].message}`);
+      if (error instanceof z.ZodError) {
+        throw createValidationError(
+          error.issues[0]?.message || 'Validation error',
+          error.issues[0]?.path.join('.'),
+          error.issues.reduce((acc: Record<string, string[]>, err: z.ZodIssue) => {
+            const path = err.path.join('.');
+            if (!acc[path]) acc[path] = [];
+            acc[path].push(err.message);
+            return acc;
+          }, {} as Record<string, string[]>),
+          error
+        );
       }
       throw createApiError(error, 'Failed to update budget transaction');
     }
@@ -310,6 +375,9 @@ export class BudgetApi {
         `${API_ENDPOINTS.BUDGET.TRENDS}?${params.toString()}`
       );
 
+      if (!response.data.data) {
+        throw new Error('Invalid response from server');
+      }
       return response.data.data.trends;
     } catch (error) {
       throw createApiError(error, 'Failed to fetch spending trends');
@@ -332,6 +400,9 @@ export class BudgetApi {
         { categoryName, years }
       );
 
+      if (!response.data.data) {
+        throw new Error('Invalid response from server');
+      }
       return response.data.data.comparison;
     } catch (error) {
       throw createApiError(error, 'Failed to fetch category year comparison');
@@ -349,6 +420,9 @@ export class BudgetApi {
         `${API_ENDPOINTS.BUDGET.OVER_BUDGET}${params}`
       );
 
+      if (!response.data.data) {
+        throw new Error('Invalid response from server');
+      }
       return response.data.data;
     } catch (error) {
       throw createApiError(error, 'Failed to fetch over-budget categories');
@@ -366,6 +440,9 @@ export class BudgetApi {
         `${API_ENDPOINTS.BUDGET.RECOMMENDATIONS}${params}`
       );
 
+      if (!response.data.data) {
+        throw new Error('Invalid response from server');
+      }
       return response.data.data.recommendations;
     } catch (error) {
       throw createApiError(error, 'Failed to fetch budget recommendations');
@@ -383,6 +460,9 @@ export class BudgetApi {
         `${API_ENDPOINTS.BUDGET.EXPORT}${params}`
       );
 
+      if (!response.data.data) {
+        throw new Error('Invalid response from server');
+      }
       return response.data.data;
     } catch (error) {
       throw createApiError(error, 'Failed to export budget data');

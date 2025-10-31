@@ -21,12 +21,14 @@ import { cn } from '../../../utils/cn';
  * @interface BadgeProps
  * @extends {React.HTMLAttributes<HTMLSpanElement>}
  *
+ * @property {React.ReactNode} [children] - Badge content (text or elements)
  * @property {('default' | 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'danger' | 'info')} [variant='default'] - Color variant
  * @property {('sm' | 'md' | 'lg')} [size='md'] - Badge size
  * @property {('rounded' | 'pill' | 'square')} [shape='rounded'] - Border radius shape
  * @property {boolean} [dot=false] - Show as status dot instead of filled badge
  */
 interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
+  children?: React.ReactNode;
   variant?: 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'danger' | 'info';
   size?: 'sm' | 'md' | 'lg';
   shape?: 'rounded' | 'pill' | 'square';

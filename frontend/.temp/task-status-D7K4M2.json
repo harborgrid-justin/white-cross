@@ -1,0 +1,54 @@
+{
+  "agentId": "typescript-architect",
+  "taskId": "fix-health-records-typescript-errors",
+  "relatedAgentFiles": [
+    ".temp/plan-A1B2C3.md",
+    ".temp/task-status-A1B2C3.json",
+    ".temp/completion-summary-X7Y3Z9.md"
+  ],
+  "description": "Fix all TypeScript errors in health-related files (195 total errors across 3 files)",
+  "startedAt": "2025-10-31T01:02:00Z",
+  "workstreams": [
+    {
+      "id": "phase-1-core-types",
+      "name": "Phase 1: Core Type Fixes",
+      "status": "in-progress",
+      "tasks": [
+        "Update AuditLogEntry.userId type",
+        "Fix ActionResult interface",
+        "Verify type imports"
+      ]
+    },
+    {
+      "id": "phase-2-zoderror",
+      "name": "Phase 2: ZodError Property Fixes",
+      "status": "pending",
+      "tasks": [
+        "Replace error.errors with error.issues",
+        "Add ZodIssue type annotations",
+        "Verify error handling"
+      ]
+    },
+    {
+      "id": "phase-3-api-methods",
+      "name": "Phase 3: API Service Method Fixes",
+      "status": "pending",
+      "tasks": [
+        "Audit healthRecordsApi methods",
+        "Fix useHealthRecords hook calls",
+        "Ensure type compatibility"
+      ]
+    },
+    {
+      "id": "phase-4-validation",
+      "name": "Phase 4: Validation",
+      "status": "pending",
+      "tasks": [
+        "Run type-check on all files",
+        "Verify error reduction",
+        "Confirm no new errors"
+      ]
+    }
+  ],
+  "decisions": []
+}

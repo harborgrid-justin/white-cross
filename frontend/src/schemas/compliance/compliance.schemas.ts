@@ -355,3 +355,9 @@ export const HIPAAReportSchema = z.object({
 });
 
 export type HIPAAReport = z.infer<typeof HIPAAReportSchema>;
+
+// ==========================================
+// RE-EXPORTS FROM POLICY SCHEMAS
+// ==========================================
+
+export { Policy as PolicyDocument, PolicyAcknowledgment } from './policy.schemas';

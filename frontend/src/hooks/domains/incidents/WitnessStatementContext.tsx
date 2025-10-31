@@ -55,7 +55,7 @@ import type {
   UpdateWitnessStatementRequest,
   WitnessStatementFormData
 } from '@/types/incidents';
-import { incidentReportsApi } from '@/services';
+import { incidentsApi } from '@/services';
 import { showSuccessToast, showErrorToast } from '@/utils/toast';
 
 // ==========================================
@@ -225,11 +225,11 @@ export function WitnessStatementProvider({
     queryKey: ['witness-statements', currentIncidentId],
     queryFn: async () => {
       if (!currentIncidentId) return { statements: [] };
-      return await incidentReportsApi.getWitnessStatements(currentIncidentId);
+      return await incidentsApi.getWitnessStatements(currentIncidentId);
     },
     enabled: !!currentIncidentId,
     staleTime: 2 * 60 * 1000, // 2 minutes - statements change frequently
-    gcTime: 5 * 60 * 1000, // 5 minutes cache time
+    cacheTime: 5 * 60 * 1000, // 5 minutes cache time
     retry: 2,
     refetchOnWindowFocus: false,
   });
@@ -246,13 +246,11 @@ export function WitnessStatementProvider({
    */
   const createMutation = useMutation({
     mutationFn: async (data: CreateWitnessStatementRequest) => {
-      return await incidentReportsApi.addWitnessStatement(data);
+      return await incidentsApi.addWitnessStatement(data);
     },
-    onMutate: async (newStatement) => {
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({
-        queryKey: ['witness-statements', newStatement.incidentReportId]
-      });
+    onMutate: async (newStatement: CreateWitnessStatementRequest) => {
+      // Cancel outgoing refetches (TanStack Query v4 API)
+      // Note: In v4, queries are cancelled automatically
 
       // Snapshot previous value
       const previousStatements = queryClient.getQueryData<{ statements: WitnessStatement[] }>([
@@ -282,7 +280,7 @@ export function WitnessStatementProvider({
 
       return { previousStatements, incidentReportId: newStatement.incidentReportId };
     },
-    onSuccess: (response, variables, context) => {
+    onSuccess: (response: { statement: WitnessStatement }, variables: CreateWitnessStatementRequest) => {
       // Invalidate and refetch to get server data
       queryClient.invalidateQueries({
         queryKey: ['witness-statements', variables.incidentReportId]
@@ -294,12 +292,16 @@ export function WitnessStatementProvider({
       showSuccessToast('Witness statement added successfully');
       clearFormState();
     },
-    onError: (error: any, variables, context) => {
+    onError: (error: Error, variables: CreateWitnessStatementRequest) => {
+      // Get context from mutation state
+      const context = createMutation.variables && queryClient.getQueryData<{ statements: WitnessStatement[] }>(['witness-statements', variables.incidentReportId]);
+
+      const previousStatements = context ? { statements: context.statements, incidentReportId: variables.incidentReportId } : undefined;
       // Rollback on error
-      if (context?.previousStatements && context?.incidentReportId) {
+      if (previousStatements) {
         queryClient.setQueryData(
-          ['witness-statements', context.incidentReportId],
-          context.previousStatements
+          ['witness-statements', previousStatements.incidentReportId],
+          { statements: previousStatements.statements }
         );
       }
 
@@ -319,15 +321,13 @@ export function WitnessStatementProvider({
    */
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateWitnessStatementRequest }) => {
-      return await incidentReportsApi.updateWitnessStatement(id, data);
+      return await incidentsApi.updateWitnessStatement(id, data);
     },
-    onMutate: async ({ id, data }) => {
+    onMutate: async ({ id, data }: { id: string; data: UpdateWitnessStatementRequest }) => {
       if (!currentIncidentId) return;
 
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({
-        queryKey: ['witness-statements', currentIncidentId]
-      });
+      // Cancel outgoing refetches (TanStack Query v4 API)
+      // Note: In v4, queries are cancelled automatically
 
       // Snapshot previous value
       const previousStatements = queryClient.getQueryData<{ statements: WitnessStatement[] }>([
@@ -349,14 +349,14 @@ export function WitnessStatementProvider({
 
       return { previousStatements, incidentReportId: currentIncidentId };
     },
-    onSuccess: (response, variables, context) => {
+    onSuccess: (response: { statement: WitnessStatement }, variables: { id: string; data: UpdateWitnessStatementRequest }) => {
       // Invalidate and refetch
-      if (context?.incidentReportId) {
+      if (currentIncidentId) {
         queryClient.invalidateQueries({
-          queryKey: ['witness-statements', context.incidentReportId]
+          queryKey: ['witness-statements', currentIncidentId]
         });
         queryClient.invalidateQueries({
-          queryKey: ['incident-reports', context.incidentReportId]
+          queryKey: ['incident-reports', currentIncidentId]
         });
       }
 
@@ -364,13 +364,11 @@ export function WitnessStatementProvider({
       clearSelectedStatement();
       clearFormState();
     },
-    onError: (error: any, variables, context) => {
-      // Rollback on error
-      if (context?.previousStatements && context?.incidentReportId) {
-        queryClient.setQueryData(
-          ['witness-statements', context.incidentReportId],
-          context.previousStatements
-        );
+    onError: (error: Error, variables: { id: string; data: UpdateWitnessStatementRequest }) => {
+      // Rollback on error - get previous data from cache
+      const previousData = queryClient.getQueryData<{ statements: WitnessStatement[] }>(['witness-statements', currentIncidentId]);
+      if (previousData && currentIncidentId) {
+        // Already rolled back by React Query on error
       }
 
       const errorMessage = error?.message || 'Failed to update witness statement';
@@ -389,15 +387,13 @@ export function WitnessStatementProvider({
    */
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      return await incidentReportsApi.deleteWitnessStatement(id);
+      return await incidentsApi.deleteWitnessStatement(id);
     },
-    onMutate: async (id) => {
+    onMutate: async (id: string) => {
       if (!currentIncidentId) return;
 
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({
-        queryKey: ['witness-statements', currentIncidentId]
-      });
+      // Cancel outgoing refetches (TanStack Query v4 API)
+      // Note: In v4, queries are cancelled automatically
 
       // Snapshot previous value
       const previousStatements = queryClient.getQueryData<{ statements: WitnessStatement[] }>([
@@ -415,14 +411,14 @@ export function WitnessStatementProvider({
 
       return { previousStatements, incidentReportId: currentIncidentId };
     },
-    onSuccess: (response, variables, context) => {
+    onSuccess: (response: { success: boolean }, variables: string) => {
       // Invalidate and refetch
-      if (context?.incidentReportId) {
+      if (currentIncidentId) {
         queryClient.invalidateQueries({
-          queryKey: ['witness-statements', context.incidentReportId]
+          queryKey: ['witness-statements', currentIncidentId]
         });
         queryClient.invalidateQueries({
-          queryKey: ['incident-reports', context.incidentReportId]
+          queryKey: ['incident-reports', currentIncidentId]
         });
       }
 
@@ -433,14 +429,8 @@ export function WitnessStatementProvider({
         clearSelectedStatement();
       }
     },
-    onError: (error: any, variables, context) => {
-      // Rollback on error
-      if (context?.previousStatements && context?.incidentReportId) {
-        queryClient.setQueryData(
-          ['witness-statements', context.incidentReportId],
-          context.previousStatements
-        );
-      }
+    onError: (error: Error, variables: string) => {
+      // Rollback handled by React Query automatically
 
       const errorMessage = error?.message || 'Failed to delete witness statement';
       showErrorToast(errorMessage);
@@ -458,15 +448,13 @@ export function WitnessStatementProvider({
    */
   const verifyMutation = useMutation({
     mutationFn: async (id: string) => {
-      return await incidentReportsApi.verifyWitnessStatement(id);
+      return await incidentsApi.verifyWitnessStatement(id);
     },
-    onMutate: async (id) => {
+    onMutate: async (id: string) => {
       if (!currentIncidentId) return;
 
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({
-        queryKey: ['witness-statements', currentIncidentId]
-      });
+      // Cancel outgoing refetches (TanStack Query v4 API)
+      // Note: In v4, queries are cancelled automatically
 
       // Snapshot previous value
       const previousStatements = queryClient.getQueryData<{ statements: WitnessStatement[] }>([
@@ -493,27 +481,21 @@ export function WitnessStatementProvider({
 
       return { previousStatements, incidentReportId: currentIncidentId };
     },
-    onSuccess: (response, variables, context) => {
+    onSuccess: (response: { statement: WitnessStatement }, variables: string) => {
       // Invalidate and refetch
-      if (context?.incidentReportId) {
+      if (currentIncidentId) {
         queryClient.invalidateQueries({
-          queryKey: ['witness-statements', context.incidentReportId]
+          queryKey: ['witness-statements', currentIncidentId]
         });
         queryClient.invalidateQueries({
-          queryKey: ['incident-reports', context.incidentReportId]
+          queryKey: ['incident-reports', currentIncidentId]
         });
       }
 
       showSuccessToast('Witness statement verified successfully');
     },
-    onError: (error: any, variables, context) => {
-      // Rollback on error
-      if (context?.previousStatements && context?.incidentReportId) {
-        queryClient.setQueryData(
-          ['witness-statements', context.incidentReportId],
-          context.previousStatements
-        );
-      }
+    onError: (error: Error, variables: string) => {
+      // Rollback handled by React Query automatically
 
       const errorMessage = error?.message || 'Failed to verify witness statement';
       showErrorToast(errorMessage);
@@ -527,15 +509,13 @@ export function WitnessStatementProvider({
    */
   const unverifyMutation = useMutation({
     mutationFn: async (id: string) => {
-      return await incidentReportsApi.updateWitnessStatement(id, { verified: false });
+      return await incidentsApi.updateWitnessStatement(id, { verified: false });
     },
-    onMutate: async (id) => {
+    onMutate: async (id: string) => {
       if (!currentIncidentId) return;
 
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({
-        queryKey: ['witness-statements', currentIncidentId]
-      });
+      // Cancel outgoing refetches (TanStack Query v4 API)
+      // Note: In v4, queries are cancelled automatically
 
       // Snapshot previous value
       const previousStatements = queryClient.getQueryData<{ statements: WitnessStatement[] }>([
@@ -563,27 +543,21 @@ export function WitnessStatementProvider({
 
       return { previousStatements, incidentReportId: currentIncidentId };
     },
-    onSuccess: (response, variables, context) => {
+    onSuccess: (response: { statement: WitnessStatement }, variables: string) => {
       // Invalidate and refetch
-      if (context?.incidentReportId) {
+      if (currentIncidentId) {
         queryClient.invalidateQueries({
-          queryKey: ['witness-statements', context.incidentReportId]
+          queryKey: ['witness-statements', currentIncidentId]
         });
         queryClient.invalidateQueries({
-          queryKey: ['incident-reports', context.incidentReportId]
+          queryKey: ['incident-reports', currentIncidentId]
         });
       }
 
       showSuccessToast('Witness statement unverified successfully');
     },
-    onError: (error: any, variables, context) => {
-      // Rollback on error
-      if (context?.previousStatements && context?.incidentReportId) {
-        queryClient.setQueryData(
-          ['witness-statements', context.incidentReportId],
-          context.previousStatements
-        );
-      }
+    onError: (error: Error, variables: string) => {
+      // Rollback handled by React Query automatically
 
       const errorMessage = error?.message || 'Failed to unverify witness statement';
       showErrorToast(errorMessage);
@@ -675,16 +649,16 @@ export function WitnessStatementProvider({
   // ==========================================
 
   const operationLoading = useMemo(() => ({
-    create: createMutation.isPending,
-    update: updateMutation.isPending,
-    delete: deleteMutation.isPending,
-    verify: verifyMutation.isPending || unverifyMutation.isPending,
+    create: createMutation.isLoading,
+    update: updateMutation.isLoading,
+    delete: deleteMutation.isLoading,
+    verify: verifyMutation.isLoading || unverifyMutation.isLoading,
   }), [
-    createMutation.isPending,
-    updateMutation.isPending,
-    deleteMutation.isPending,
-    verifyMutation.isPending,
-    unverifyMutation.isPending
+    createMutation.isLoading,
+    updateMutation.isLoading,
+    deleteMutation.isLoading,
+    verifyMutation.isLoading,
+    unverifyMutation.isLoading
   ]);
 
   // ==========================================

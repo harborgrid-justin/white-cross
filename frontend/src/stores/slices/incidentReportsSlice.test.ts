@@ -50,6 +50,7 @@ import type {
   IncidentType,
   IncidentSeverity,
   IncidentStatus,
+  IncidentReportFilters,
 } from '../../types/incidents';
 
 // =====================
@@ -254,7 +255,7 @@ describe('incidentReportsSlice - Reducers', () => {
             pagination: { page: 1, limit: 20, total: 1, pages: 1 },
           },
           '',
-          undefined
+          {} as IncidentReportFilters
         )
       );
 
@@ -313,7 +314,7 @@ describe('incidentReportsSlice - Async Thunks', () => {
         fetchIncidentReports.fulfilled(
           { reports, pagination },
           '',
-          undefined
+          {} as IncidentReportFilters
         )
       );
 
@@ -337,7 +338,7 @@ describe('incidentReportsSlice - Async Thunks', () => {
         fetchIncidentReports.rejected(
           new Error(errorMessage),
           '',
-          undefined,
+          {} as IncidentReportFilters,
           errorMessage
         )
       );
@@ -356,9 +357,9 @@ describe('incidentReportsSlice - Async Thunks', () => {
 
       store.dispatch(
         createIncidentReport.fulfilled(
-          newReport,
+          { report: newReport },
           '',
-          {} as any
+          {} as Parameters<typeof createIncidentReport>[0]
         )
       );
 
@@ -386,7 +387,7 @@ describe('incidentReportsSlice - Async Thunks', () => {
             pagination: { page: 1, limit: 20, total: 1, pages: 1 },
           },
           '',
-          undefined
+          {} as IncidentReportFilters
         )
       );
 
@@ -394,7 +395,7 @@ describe('incidentReportsSlice - Async Thunks', () => {
       const updatedReport = { ...report, status: IncidentStatus.RESOLVED };
       store.dispatch(
         updateIncidentReport.fulfilled(
-          updatedReport,
+          { report: updatedReport },
           '',
           { id: 'incident-1', data: { status: IncidentStatus.RESOLVED } }
         )
@@ -421,13 +422,13 @@ describe('incidentReportsSlice - Async Thunks', () => {
             pagination: { page: 1, limit: 20, total: 2, pages: 1 },
           },
           '',
-          undefined
+          {} as IncidentReportFilters
         )
       );
 
       // Delete one report
       store.dispatch(
-        deleteIncidentReport.fulfilled('incident-1', '', 'incident-1')
+        deleteIncidentReport.fulfilled({ success: true }, '', 'incident-1')
       );
 
       const stateReports = selectIncidentReports(store.getState());
@@ -443,7 +444,7 @@ describe('incidentReportsSlice - Async Thunks', () => {
 
       store.dispatch(setSelectedIncidentReport(report));
       store.dispatch(
-        deleteIncidentReport.fulfilled('incident-1', '', 'incident-1')
+        deleteIncidentReport.fulfilled({ success: true }, '', 'incident-1')
       );
 
       const selected = selectCurrentIncident(store.getState());
@@ -473,7 +474,7 @@ describe('incidentReportsSlice - Selectors', () => {
             pagination: { page: 1, limit: 20, total: 3, pages: 1 },
           },
           '',
-          undefined
+          {} as IncidentReportFilters
         )
       );
 
@@ -500,7 +501,7 @@ describe('incidentReportsSlice - Selectors', () => {
             pagination: { page: 1, limit: 20, total: 3, pages: 1 },
           },
           '',
-          undefined
+          {} as IncidentReportFilters
         )
       );
 
@@ -529,7 +530,7 @@ describe('incidentReportsSlice - Selectors', () => {
             pagination: { page: 1, limit: 20, total: 3, pages: 1 },
           },
           '',
-          undefined
+          {} as IncidentReportFilters
         )
       );
 
@@ -555,7 +556,7 @@ describe('incidentReportsSlice - Selectors', () => {
             pagination: { page: 1, limit: 20, total: 3, pages: 1 },
           },
           '',
-          undefined
+          {} as IncidentReportFilters
         )
       );
 
@@ -581,7 +582,7 @@ describe('incidentReportsSlice - Selectors', () => {
             pagination: { page: 1, limit: 20, total: 3, pages: 1 },
           },
           '',
-          undefined
+          {} as IncidentReportFilters
         )
       );
 
@@ -607,7 +608,7 @@ describe('incidentReportsSlice - Selectors', () => {
             pagination: { page: 1, limit: 20, total: 3, pages: 1 },
           },
           '',
-          undefined
+          {} as IncidentReportFilters
         )
       );
 
@@ -634,7 +635,7 @@ describe('incidentReportsSlice - Selectors', () => {
             pagination: { page: 1, limit: 20, total: 4, pages: 1 },
           },
           '',
-          undefined
+          {} as IncidentReportFilters
         )
       );
 
@@ -682,7 +683,7 @@ describe('incidentReportsSlice - Selectors', () => {
             pagination: { page: 1, limit: 20, total: 3, pages: 1 },
           },
           '',
-          undefined
+          {} as IncidentReportFilters
         )
       );
 

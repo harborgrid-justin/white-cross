@@ -18,7 +18,7 @@
 import type { ApiClient } from '../core/ApiClient';
 import { apiClient } from '../core/ApiClient';
 import { API_ENDPOINTS } from '../config/apiConfig';
-import { z } from 'zod';
+import { z, type ZodIssue } from 'zod';
 import {
   ApiResponse,
   PaginationParams,
@@ -775,7 +775,7 @@ const screeningCreateSchema = z.object({
   performedBy: z.string().min(1, 'Performed by is required').max(255),
   outcome: z.nativeEnum(ScreeningOutcome),
   results: z.string().max(5000).optional(),
-  measurements: z.record(z.any()).optional(),
+  measurements: z.record(z.string(), z.any()).optional(),
   referralRequired: z.boolean().optional(),
   referralTo: z.string().max(255).optional(),
   followUpRequired: z.boolean().optional(),
@@ -918,9 +918,9 @@ export class HealthRecordsApi {
     } catch (error) {
       if (error instanceof z.ZodError) {
         throw createValidationError(
-          error.errors[0]?.message || 'Validation error',
-          error.errors[0]?.path.join('.'),
-          error.errors.reduce((acc, err) => {
+          error.issues[0]?.message || 'Validation error',
+          error.issues[0]?.path.join('.'),
+          error.issues.reduce((acc: Record<string, string[]>, err: ZodIssue) => {
             const path = err.path.join('.');
             if (!acc[path]) acc[path] = [];
             acc[path].push(err.message);
@@ -1010,7 +1010,7 @@ export class HealthRecordsApi {
    */
   async exportRecords(studentId: string, format: 'pdf' | 'json' | 'csv' = 'pdf'): Promise<Blob> {
     try {
-      const response = await this.client.get(
+      const response = await this.client.get<Blob>(
         `${this.baseEndpoint}/student/${studentId}/export?format=${format}`,
         { responseType: 'blob' }
       );
@@ -1049,9 +1049,9 @@ export class HealthRecordsApi {
     } catch (error) {
       if (error instanceof z.ZodError) {
         throw createValidationError(
-          error.errors[0]?.message || 'Validation error',
-          error.errors[0]?.path.join('.'),
-          error.errors.reduce((acc, err) => {
+          error.issues[0]?.message || 'Validation error',
+          error.issues[0]?.path.join('.'),
+          error.issues.reduce((acc: Record<string, string[]>, err: ZodIssue) => {
             const path = err.path.join('.');
             if (!acc[path]) acc[path] = [];
             acc[path].push(err.message);
@@ -1122,9 +1122,9 @@ export class HealthRecordsApi {
     } catch (error) {
       if (error instanceof z.ZodError) {
         throw createValidationError(
-          error.errors[0]?.message || 'Validation error',
-          error.errors[0]?.path.join('.'),
-          error.errors.reduce((acc, err) => {
+          error.issues[0]?.message || 'Validation error',
+          error.issues[0]?.path.join('.'),
+          error.issues.reduce((acc: Record<string, string[]>, err: ZodIssue) => {
             const path = err.path.join('.');
             if (!acc[path]) acc[path] = [];
             acc[path].push(err.message);
@@ -1244,9 +1244,9 @@ export class HealthRecordsApi {
     } catch (error) {
       if (error instanceof z.ZodError) {
         throw createValidationError(
-          error.errors[0]?.message || 'Validation error',
-          error.errors[0]?.path.join('.'),
-          error.errors.reduce((acc, err) => {
+          error.issues[0]?.message || 'Validation error',
+          error.issues[0]?.path.join('.'),
+          error.issues.reduce((acc: Record<string, string[]>, err: ZodIssue) => {
             const path = err.path.join('.');
             if (!acc[path]) acc[path] = [];
             acc[path].push(err.message);
@@ -1297,9 +1297,9 @@ export class HealthRecordsApi {
     } catch (error) {
       if (error instanceof z.ZodError) {
         throw createValidationError(
-          error.errors[0]?.message || 'Validation error',
-          error.errors[0]?.path.join('.'),
-          error.errors.reduce((acc, err) => {
+          error.issues[0]?.message || 'Validation error',
+          error.issues[0]?.path.join('.'),
+          error.issues.reduce((acc: Record<string, string[]>, err: ZodIssue) => {
             const path = err.path.join('.');
             if (!acc[path]) acc[path] = [];
             acc[path].push(err.message);
@@ -1383,9 +1383,9 @@ export class HealthRecordsApi {
     } catch (error) {
       if (error instanceof z.ZodError) {
         throw createValidationError(
-          error.errors[0]?.message || 'Validation error',
-          error.errors[0]?.path.join('.'),
-          error.errors.reduce((acc, err) => {
+          error.issues[0]?.message || 'Validation error',
+          error.issues[0]?.path.join('.'),
+          error.issues.reduce((acc: Record<string, string[]>, err: ZodIssue) => {
             const path = err.path.join('.');
             if (!acc[path]) acc[path] = [];
             acc[path].push(err.message);
@@ -1505,9 +1505,9 @@ export class HealthRecordsApi {
     } catch (error) {
       if (error instanceof z.ZodError) {
         throw createValidationError(
-          error.errors[0]?.message || 'Validation error',
-          error.errors[0]?.path.join('.'),
-          error.errors.reduce((acc, err) => {
+          error.issues[0]?.message || 'Validation error',
+          error.issues[0]?.path.join('.'),
+          error.issues.reduce((acc: Record<string, string[]>, err: ZodIssue) => {
             const path = err.path.join('.');
             if (!acc[path]) acc[path] = [];
             acc[path].push(err.message);
@@ -1563,7 +1563,13 @@ export class HealthRecordsApi {
     daysOverdue: number;
   }>> {
     try {
-      const response = await this.client.get<ApiResponse<{ screenings: any[] }>>(
+      const response = await this.client.get<ApiResponse<{ screenings: Array<{
+        student: { id: string; firstName: string; lastName: string; studentNumber: string };
+        screeningType: ScreeningType;
+        lastScreeningDate?: string;
+        dueDate: string;
+        daysOverdue: number;
+      }> }>>(
         `${this.baseEndpoint}/screenings/due`
       );
 
@@ -1631,9 +1637,9 @@ export class HealthRecordsApi {
     } catch (error) {
       if (error instanceof z.ZodError) {
         throw createValidationError(
-          error.errors[0]?.message || 'Validation error',
-          error.errors[0]?.path.join('.'),
-          error.errors.reduce((acc, err) => {
+          error.issues[0]?.message || 'Validation error',
+          error.issues[0]?.path.join('.'),
+          error.issues.reduce((acc: Record<string, string[]>, err: ZodIssue) => {
             const path = err.path.join('.');
             if (!acc[path]) acc[path] = [];
             acc[path].push(err.message);
@@ -1762,9 +1768,9 @@ export class HealthRecordsApi {
     } catch (error) {
       if (error instanceof z.ZodError) {
         throw createValidationError(
-          error.errors[0]?.message || 'Validation error',
-          error.errors[0]?.path.join('.'),
-          error.errors.reduce((acc, err) => {
+          error.issues[0]?.message || 'Validation error',
+          error.issues[0]?.path.join('.'),
+          error.issues.reduce((acc: Record<string, string[]>, err: ZodIssue) => {
             const path = err.path.join('.');
             if (!acc[path]) acc[path] = [];
             acc[path].push(err.message);

@@ -54,7 +54,7 @@ import {
 export const incidentKeys = {
   all: ['incidents'] as const,
   lists: () => [...incidentKeys.all, 'list'] as const,
-  list: (filters?: any) => [...incidentKeys.lists(), filters] as const,
+  list: (filters?: Record<string, unknown>) => [...incidentKeys.lists(), filters] as const,
   details: () => [...incidentKeys.all, 'detail'] as const,
   detail: (id: string) => [...incidentKeys.details(), id] as const,
   witnesses: (incidentId: string) => [...incidentKeys.all, incidentId, 'witnesses'] as const,
@@ -127,7 +127,7 @@ export function useOptimisticIncidentCreate(
       // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: incidentKeys.lists() });
 
-      options?.onSuccess?.(response, variables, context, queryClient);
+      options?.onSuccess?.(response, variables, context);
     },
 
     onError: (error, variables, context) => {
@@ -135,11 +135,11 @@ export function useOptimisticIncidentCreate(
         // Rollback optimistic update
         rollbackUpdate(queryClient, context.updateId, {
           message: error.message,
-          statusCode: (error as any).statusCode,
+          statusCode: (error as Error & { statusCode?: number }).statusCode,
         });
       }
 
-      options?.onError?.(error, variables, context, queryClient);
+      options?.onError?.(error, variables, context);
     },
   });
 }
@@ -200,7 +200,7 @@ export function useOptimisticIncidentUpdate(
       queryClient.invalidateQueries({ queryKey: incidentKeys.lists() });
       queryClient.setQueryData(incidentKeys.detail(variables.id), response.report);
 
-      options?.onSuccess?.(response, variables, context, queryClient);
+      options?.onSuccess?.(response, variables, context);
     },
 
     onError: (error, variables, context) => {
@@ -208,11 +208,11 @@ export function useOptimisticIncidentUpdate(
         // Rollback optimistic update
         rollbackUpdate(queryClient, context.updateId, {
           message: error.message,
-          statusCode: (error as any).statusCode,
+          statusCode: (error as Error & { statusCode?: number }).statusCode,
         });
       }
 
-      options?.onError?.(error, variables, context, queryClient);
+      options?.onError?.(error, variables, context);
     },
   });
 }
@@ -261,7 +261,7 @@ export function useOptimisticIncidentDelete(
       queryClient.removeQueries({ queryKey: incidentKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: incidentKeys.lists() });
 
-      options?.onSuccess?.(response, id, context, queryClient);
+      options?.onSuccess?.(response, id, context);
     },
 
     onError: (error, id, context) => {
@@ -269,11 +269,11 @@ export function useOptimisticIncidentDelete(
         // Rollback - restore the deleted incident
         rollbackUpdate(queryClient, context.updateId, {
           message: error.message,
-          statusCode: (error as any).statusCode,
+          statusCode: (error as Error & { statusCode?: number }).statusCode,
         });
       }
 
-      options?.onError?.(error, id, context, queryClient);
+      options?.onError?.(error, id, context);
     },
   });
 }
@@ -342,7 +342,7 @@ export function useOptimisticWitnessCreate(
         queryKey: incidentKeys.detail(variables.incidentReportId),
       });
 
-      options?.onSuccess?.(response, variables, context, queryClient);
+      options?.onSuccess?.(response, variables, context);
     },
 
     onError: (error, variables, context) => {
@@ -352,7 +352,7 @@ export function useOptimisticWitnessCreate(
         });
       }
 
-      options?.onError?.(error, variables, context, queryClient);
+      options?.onError?.(error, variables, context);
     },
   });
 }
@@ -409,7 +409,7 @@ export function useOptimisticWitnessUpdate(
         confirmUpdate(context.updateId, response.statement, queryClient);
       }
 
-      options?.onSuccess?.(response, variables, context, queryClient);
+      options?.onSuccess?.(response, variables, context);
     },
 
     onError: (error, variables, context) => {
@@ -419,7 +419,7 @@ export function useOptimisticWitnessUpdate(
         });
       }
 
-      options?.onError?.(error, variables, context, queryClient);
+      options?.onError?.(error, variables, context);
     },
   });
 }
@@ -473,7 +473,7 @@ export function useOptimisticWitnessVerify(
         confirmUpdate(context.updateId, response.statement, queryClient);
       }
 
-      options?.onSuccess?.(response, statementId, context, queryClient);
+      options?.onSuccess?.(response, statementId, context);
     },
 
     onError: (error, statementId, context) => {
@@ -483,7 +483,7 @@ export function useOptimisticWitnessVerify(
         });
       }
 
-      options?.onError?.(error, statementId, context, queryClient);
+      options?.onError?.(error, statementId, context);
     },
   });
 }
@@ -552,7 +552,7 @@ export function useOptimisticFollowUpCreate(
         queryKey: incidentKeys.detail(variables.incidentReportId),
       });
 
-      options?.onSuccess?.(response, variables, context, queryClient);
+      options?.onSuccess?.(response, variables, context);
     },
 
     onError: (error, variables, context) => {
@@ -562,7 +562,7 @@ export function useOptimisticFollowUpCreate(
         });
       }
 
-      options?.onError?.(error, variables, context, queryClient);
+      options?.onError?.(error, variables, context);
     },
   });
 }
@@ -619,7 +619,7 @@ export function useOptimisticFollowUpUpdate(
         confirmUpdate(context.updateId, response.action, queryClient);
       }
 
-      options?.onSuccess?.(response, variables, context, queryClient);
+      options?.onSuccess?.(response, variables, context);
     },
 
     onError: (error, variables, context) => {
@@ -629,7 +629,7 @@ export function useOptimisticFollowUpUpdate(
         });
       }
 
-      options?.onError?.(error, variables, context, queryClient);
+      options?.onError?.(error, variables, context);
     },
   });
 }
@@ -690,7 +690,7 @@ export function useOptimisticFollowUpComplete(
         confirmUpdate(context.updateId, response.action, queryClient);
       }
 
-      options?.onSuccess?.(response, variables, context, queryClient);
+      options?.onSuccess?.(response, variables, context);
     },
 
     onError: (error, variables, context) => {
@@ -700,7 +700,7 @@ export function useOptimisticFollowUpComplete(
         });
       }
 
-      options?.onError?.(error, variables, context, queryClient);
+      options?.onError?.(error, variables, context);
     },
   });
 }

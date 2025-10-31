@@ -37,6 +37,7 @@ const cn = (...inputs: (string | undefined)[]) => twMerge(clsx(inputs));
  * @interface ButtonProps
  * @extends {React.ButtonHTMLAttributes<HTMLButtonElement>}
  *
+ * @property {React.ReactNode} [children] - Button content (text or elements)
  * @property {('primary' | 'secondary' | 'outline' | 'outline-primary' | 'ghost' | 'link' | 'destructive' | 'danger' | 'success' | 'warning' | 'info')} [variant='primary'] - Visual style variant
  * @property {('xs' | 'sm' | 'md' | 'lg' | 'xl')} [size='md'] - Button size (affects padding and text size)
  * @property {boolean} [loading=false] - Loading state showing spinner animation
@@ -48,6 +49,7 @@ const cn = (...inputs: (string | undefined)[]) => twMerge(clsx(inputs));
  * @property {boolean} [asChild=false] - Render as child component (composition pattern)
  */
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  children?: React.ReactNode;
   variant?: 'primary' | 'secondary' | 'outline' | 'outline-primary' | 'ghost' | 'link' | 'destructive' | 'danger' | 'success' | 'warning' | 'info';
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   loading?: boolean;

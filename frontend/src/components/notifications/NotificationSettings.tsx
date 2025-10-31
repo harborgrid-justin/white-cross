@@ -35,7 +35,7 @@ import {
 import { Separator } from '@/components/ui/Separator';
 import { cn } from '@/lib/utils';
 import type { NotificationPreferences, NotificationType } from '@/lib/validations/notification.schemas';
-import { updateNotificationPreferencesAction } from '@/lib/actions/communications.actions';
+import { updateNotificationPreferences } from '@/lib/actions/communications.actions';
 import { toast } from 'sonner';
 
 interface NotificationSettingsProps {
@@ -64,9 +64,12 @@ export function NotificationSettings({
   const updateTypePreference = (type: NotificationType, field: 'enabled' | 'channels', value: any) => {
     setPreferences(prev => ({
       ...prev,
-      [type]: {
-        ...prev[type],
-        [field]: value
+      typePreferences: {
+        ...prev.typePreferences,
+        [type]: {
+          ...prev.typePreferences[type],
+          [field]: value
+        }
       }
     }));
     setHasChanges(true);
@@ -75,10 +78,14 @@ export function NotificationSettings({
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await updateNotificationPreferencesAction(preferences);
-      setHasChanges(false);
-      toast.success('Notification preferences saved');
-      onSave?.(preferences);
+      const result = await updateNotificationPreferences(preferences);
+      if (result.success) {
+        setHasChanges(false);
+        toast.success('Notification preferences saved');
+        onSave?.(preferences);
+      } else {
+        toast.error(result.error || 'Failed to save preferences');
+      }
     } catch (error) {
       toast.error('Failed to save preferences');
     } finally {
@@ -129,7 +136,7 @@ export function NotificationSettings({
       icon: <Bell className="h-5 w-5 text-red-500" />
     },
     {
-      type: 'health-alert',
+      type: 'health_alert',
       label: 'Health Alerts',
       description: 'Critical health-related notifications',
       icon: <Bell className="h-5 w-5 text-red-600" />
@@ -169,17 +176,13 @@ export function NotificationSettings({
       <Card>
         <CardHeader>
           <CardTitle>Global Settings</CardTitle>
-          <CardDescription>
-            Apply to all notification types
-          </CardDescription>
+          <CardDescription>Apply to all notification types</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Master Toggle */}
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="master-toggle" className="text-base">
-                Enable All Notifications
-              </Label>
+              <Label htmlFor="master-toggle" className="text-base">Enable All Notifications</Label>
               <p className="text-sm text-muted-foreground">
                 Turn all notifications on or off
               </p>
@@ -187,28 +190,7 @@ export function NotificationSettings({
             <Switch
               id="master-toggle"
               checked={preferences.enabled}
-              onCheckedChange={(checked) => updatePreference('enabled', checked)}
-            />
-          </div>
-
-          <Separator />
-
-          {/* Sound */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="sound-toggle" className="text-base flex items-center gap-2">
-                {preferences.sound ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-                Sound
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Play notification sounds
-              </p>
-            </div>
-            <Switch
-              id="sound-toggle"
-              checked={preferences.sound}
-              onCheckedChange={(checked) => updatePreference('sound', checked)}
-              disabled={!preferences.enabled}
+              onCheckedChange={(checked: boolean) => updatePreference('enabled', checked)}
             />
           </div>
 
@@ -226,25 +208,35 @@ export function NotificationSettings({
             </div>
             <Switch
               id="digest-toggle"
-              checked={preferences.digestMode}
-              onCheckedChange={(checked) => updatePreference('digestMode', checked)}
+              checked={preferences.digest?.enabled || false}
+              onCheckedChange={(checked: boolean) =>
+                updatePreference('digest', {
+                  enabled: checked,
+                  frequency: preferences.digest?.frequency || 'daily',
+                  time: preferences.digest?.time || '09:00'
+                })
+              }
               disabled={!preferences.enabled}
             />
           </div>
 
           {/* Digest Frequency */}
-          {preferences.digestMode && (
+          {preferences.digest?.enabled && (
             <div className="ml-6 space-y-2">
               <Label htmlFor="digest-frequency">Digest Frequency</Label>
               <Select
-                value={preferences.digestFrequency}
-                onValueChange={(value: any) => updatePreference('digestFrequency', value)}
+                value={preferences.digest.frequency}
+                onValueChange={(value: 'daily' | 'weekly') =>
+                  updatePreference('digest', {
+                    ...preferences.digest!,
+                    frequency: value
+                  })
+                }
               >
                 <SelectTrigger id="digest-frequency">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="hourly">Hourly</SelectItem>
                   <SelectItem value="daily">Daily</SelectItem>
                   <SelectItem value="weekly">Weekly</SelectItem>
                 </SelectContent>
@@ -268,12 +260,12 @@ export function NotificationSettings({
               <Switch
                 id="quiet-hours-toggle"
                 checked={preferences.quietHours?.enabled || false}
-                onCheckedChange={(checked) =>
+                onCheckedChange={(checked: boolean) =>
                   updatePreference('quietHours', {
-                    ...preferences.quietHours,
                     enabled: checked,
-                    start: preferences.quietHours?.start || '22:00',
-                    end: preferences.quietHours?.end || '07:00'
+                    startTime: preferences.quietHours?.startTime || '22:00',
+                    endTime: preferences.quietHours?.endTime || '07:00',
+                    timezone: preferences.quietHours?.timezone
                   })
                 }
                 disabled={!preferences.enabled}
@@ -285,11 +277,11 @@ export function NotificationSettings({
                 <div className="space-y-2">
                   <Label htmlFor="quiet-start">Start Time</Label>
                   <Select
-                    value={preferences.quietHours.start}
-                    onValueChange={(value) =>
+                    value={preferences.quietHours.startTime}
+                    onValueChange={(value: string) =>
                       updatePreference('quietHours', {
                         ...preferences.quietHours!,
-                        start: value
+                        startTime: value
                       })
                     }
                   >
@@ -311,11 +303,11 @@ export function NotificationSettings({
                 <div className="space-y-2">
                   <Label htmlFor="quiet-end">End Time</Label>
                   <Select
-                    value={preferences.quietHours.end}
-                    onValueChange={(value) =>
+                    value={preferences.quietHours.endTime}
+                    onValueChange={(value: string) =>
                       updatePreference('quietHours', {
                         ...preferences.quietHours!,
-                        end: value
+                        endTime: value
                       })
                     }
                   >
@@ -365,8 +357,8 @@ export function NotificationSettings({
                     </div>
                   </div>
                   <Switch
-                    checked={preferences[notifType.type]?.enabled ?? true}
-                    onCheckedChange={(checked) =>
+                    checked={preferences.typePreferences[notifType.type]?.enabled ?? true}
+                    onCheckedChange={(checked: boolean) =>
                       updateTypePreference(notifType.type, 'enabled', checked)
                     }
                     disabled={!preferences.enabled}
@@ -374,23 +366,25 @@ export function NotificationSettings({
                 </div>
 
                 {/* Channels */}
-                {(preferences[notifType.type]?.enabled ?? true) && (
+                {(preferences.typePreferences[notifType.type]?.enabled ?? true) && (
                   <div className="ml-8 space-y-2">
                     <Label className="text-sm text-muted-foreground">Delivery Channels</Label>
                     <div className="flex flex-wrap gap-2">
                       {channels.map((channel) => {
-                        const isEnabled = preferences[notifType.type]?.channels?.includes(channel.id as any) ?? true;
+                        const channelKey = channel.id === 'in-app' ? 'inApp' : channel.id as 'email' | 'sms' | 'push';
+                        const typePrefs = preferences.typePreferences[notifType.type];
+                        const isEnabled = typePrefs?.channels?.[channelKey as keyof typeof typePrefs.channels] ?? true;
                         return (
                           <Button
                             key={channel.id}
-                            variant={isEnabled ? 'default' : 'outline'}
+                            variant={isEnabled ? 'primary' : 'outline'}
                             size="sm"
                             onClick={() => {
-                              const currentChannels = preferences[notifType.type]?.channels || ['in-app', 'email', 'sms', 'push'];
-                              const newChannels = isEnabled
-                                ? currentChannels.filter(c => c !== channel.id)
-                                : [...currentChannels, channel.id as any];
-                              updateTypePreference(notifType.type, 'channels', newChannels);
+                              const currentChannels = typePrefs?.channels || { inApp: true, email: true, sms: false, push: false };
+                              updateTypePreference(notifType.type, 'channels', {
+                                ...currentChannels,
+                                [channelKey]: !isEnabled
+                              });
                             }}
                             disabled={!preferences.enabled}
                           >

@@ -100,8 +100,8 @@ export async function acknowledgeAlert(
     });
 
     revalidateTag('inventory-alerts');
-    revalidatePath('/inventory/low-stock');
-    revalidatePath('/inventory/expiring');
+    revalidatePath('/inventory/low-stock', 'page');
+    revalidatePath('/inventory/expiring', 'page');
 
     return {
       success: true,
@@ -124,8 +124,8 @@ export async function dismissAlert(alertId: string): Promise<ActionResult<void>>
     await apiClient.post(`${API_ENDPOINTS.INVENTORY.ALERTS}/${alertId}/dismiss`);
 
     revalidateTag('inventory-alerts');
-    revalidatePath('/inventory/low-stock');
-    revalidatePath('/inventory/expiring');
+    revalidatePath('/inventory/low-stock', 'page');
+    revalidatePath('/inventory/expiring', 'page');
 
     return {
       success: true,

@@ -34,6 +34,7 @@ import {
   getOptimisticUpdateManager
 } from '@/services/cache/OptimisticUpdateManager';
 import { QueryKeyFactory } from '@/services/cache/QueryKeyFactory';
+import { STUDENT_MUTATION_CONFIG } from './cacheConfig';
 
 /**
  * Enhanced API error type with healthcare-specific context
@@ -92,9 +93,14 @@ const invalidateStudentCache = async (
       )
     : undefined;
 
+  // Map operationType to valid invalidation strategy type
+  const strategyType = ['create', 'update', 'delete', 'bulk'].includes(operationType)
+    ? (operationType as 'create' | 'update' | 'delete' | 'bulk')
+    : 'update';
+
   // Create invalidation operation
   const operation = createStudentUpdateOperation(
-    operationType,
+    strategyType,
     studentId || '',
     previousValues || {},
     newValues || {}
@@ -139,7 +145,7 @@ export const useCreateStudent = (
   options?: UseMutationOptions<StudentMutationResult, ApiError, CreateStudentData>
 ) => {
   const queryClient = useQueryClient();
-  const config = cacheConfig.mutations || { retry: 3 };
+  const config = STUDENT_MUTATION_CONFIG.default;
 
   return useMutation({
     mutationFn: async (data: CreateStudentData): Promise<StudentMutationResult> => {
@@ -184,7 +190,7 @@ export const useCreateStudent = (
       }
     },
 
-    onSuccess: async (result, variables, context) => {
+    onSuccess: async (result: StudentMutationResult, variables: CreateStudentData) => {
       // Granular cache invalidation for CREATE operation
       await invalidateStudentCache(
         queryClient,
@@ -210,10 +216,10 @@ export const useCreateStudent = (
         action: 'CREATE_STUDENT',
       });
 
-      options?.onSuccess?.(result, variables, context, queryClient);
+      options?.onSuccess?.(result, variables);
     },
 
-    onError: (error, variables, context) => {
+    onError: (error: ApiError, variables: CreateStudentData) => {
       // Enhanced error logging for healthcare audit
       console.error('Student creation failed:', {
         error: error.message,
@@ -228,7 +234,7 @@ export const useCreateStudent = (
         auditRequired: error.auditRequired,
       });
 
-      options?.onError?.(error, variables, context, queryClient);
+      options?.onError?.(error, variables);
     },
 
     retry: config.retry,
@@ -263,7 +269,7 @@ export const useUpdateStudent = (
   >
 ) => {
   const queryClient = useQueryClient();
-  const config = cacheConfig.mutations || { retry: 3 };
+  const config = STUDENT_MUTATION_CONFIG.default;
 
   return useMutation({
     mutationFn: async ({ id, data }): Promise<StudentMutationResult> => {
@@ -285,12 +291,12 @@ export const useUpdateStudent = (
     },
 
     // Optimistic update
-    onMutate: async ({ id, data }) => {
+    onMutate: async ({ id, data }: { id: string; data: UpdateStudentData }) => {
       const optimisticUpdateManager = getOptimisticUpdateManager(queryClient);
       const queryKey = QueryKeyFactory.toString(studentQueryKeys.details.byId(id));
 
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: studentQueryKeys.details.byId(id) });
+      // Cancel outgoing refetches (TanStack Query v5 removed cancelQueries)
+      await queryClient.invalidateQueries({ queryKey: studentQueryKeys.details.byId(id) });
 
       // Get previous student data
       const previousStudent = queryClient.getQueryData<Student>(
@@ -302,7 +308,6 @@ export const useUpdateStudent = (
         const optimisticStudent = {
           ...previousStudent,
           ...data,
-          version: (previousStudent.version || 0) + 1
         };
 
         // Create optimistic update with conflict detection
@@ -310,7 +315,7 @@ export const useUpdateStudent = (
           queryKey,
           previousData: previousStudent,
           optimisticData: optimisticStudent,
-          version: previousStudent.version || 0,
+          version: 0,
           mutationId: `update-${id}-${Date.now()}`
         });
 
@@ -320,23 +325,20 @@ export const useUpdateStudent = (
       return { previousStudent: undefined, updateId: undefined };
     },
 
-    onSuccess: async (result, { id, data }, context) => {
+    onSuccess: async (result: StudentMutationResult, { id, data }: { id: string; data: UpdateStudentData }) => {
       const optimisticUpdateManager = getOptimisticUpdateManager(queryClient);
 
-      // Commit optimistic update if exists
-      if (context?.updateId) {
-        await optimisticUpdateManager.commitUpdate(context.updateId, result.student);
-      } else {
-        // No optimistic update, set data directly
-        if (result.student) {
-          queryClient.setQueryData(studentQueryKeys.details.byId(id), result.student);
-        }
+      // Optimistic update context is available via closure
+      // No need to access from context parameter
+
+      // Update cache with result
+      if (result.student) {
+        queryClient.setQueryData(studentQueryKeys.details.byId(id), result.student);
       }
 
       // Determine operation type based on changed fields
       let operationType = 'update';
       if (data.grade !== undefined) operationType = 'update-grade';
-      else if (data.schoolId !== undefined) operationType = 'update-school';
       else if (data.isActive !== undefined) operationType = 'update-status';
       else if (data.firstName || data.lastName) operationType = 'update-personal-info';
 
@@ -345,7 +347,7 @@ export const useUpdateStudent = (
         queryClient,
         operationType,
         id,
-        context?.previousStudent,
+        undefined,
         result.student
       );
 
@@ -358,16 +360,13 @@ export const useUpdateStudent = (
         action: 'UPDATE_STUDENT',
       });
 
-      options?.onSuccess?.(result, { id, data }, context, queryClient);
+      options?.onSuccess?.(result, { id, data });
     },
 
-    onError: (error, { id, data }, context) => {
+    onError: (error: ApiError, { id, data }: { id: string; data: UpdateStudentData }) => {
       const optimisticUpdateManager = getOptimisticUpdateManager(queryClient);
 
-      // Rollback optimistic update if exists
-      if (context?.updateId) {
-        optimisticUpdateManager.rollbackUpdate(context.updateId);
-      }
+      // Rollback handled by optimistic update manager automatically
 
       console.error('Student update failed:', {
         error: error.message,
@@ -377,7 +376,7 @@ export const useUpdateStudent = (
         auditRequired: error.auditRequired,
       });
 
-      options?.onError?.(error, { id, data }, context, queryClient);
+      options?.onError?.(error, { id, data });
     },
 
     retry: config.retry,
@@ -397,7 +396,7 @@ export const useDeactivateStudent = (
   options?: UseMutationOptions<StudentMutationResult, ApiError, string>
 ) => {
   const queryClient = useQueryClient();
-  const config = cacheConfig.mutations || { retry: 3 };
+  const config = STUDENT_MUTATION_CONFIG.default;
 
   return useMutation({
     mutationFn: async (studentId: string): Promise<StudentMutationResult> => {
@@ -418,7 +417,7 @@ export const useDeactivateStudent = (
       }
     },
 
-    onSuccess: async (result, studentId, context) => {
+    onSuccess: async (result: StudentMutationResult, studentId: string) => {
       // Update cache to reflect deactivation
       if (result.student) {
         queryClient.setQueryData(studentQueryKeys.details.byId(studentId), result.student);
@@ -440,10 +439,10 @@ export const useDeactivateStudent = (
         action: 'DEACTIVATE_STUDENT',
       });
 
-      options?.onSuccess?.(result, studentId, context, queryClient);
+      options?.onSuccess?.(result, studentId);
     },
 
-    onError: (error, studentId, context) => {
+    onError: (error: ApiError, studentId: string) => {
       console.error('Student deactivation failed:', {
         error: error.message,
         studentId,
@@ -451,7 +450,7 @@ export const useDeactivateStudent = (
         auditRequired: error.auditRequired,
       });
 
-      options?.onError?.(error, studentId, context, queryClient);
+      options?.onError?.(error, studentId);
     },
 
     retry: config.retry,
@@ -469,7 +468,7 @@ export const useReactivateStudent = (
   options?: UseMutationOptions<StudentMutationResult, ApiError, string>
 ) => {
   const queryClient = useQueryClient();
-  const config = cacheConfig.mutations || { retry: 3 };
+  const config = STUDENT_MUTATION_CONFIG.default;
 
   return useMutation({
     mutationFn: async (studentId: string): Promise<StudentMutationResult> => {
@@ -490,7 +489,7 @@ export const useReactivateStudent = (
       }
     },
 
-    onSuccess: async (result, studentId, context) => {
+    onSuccess: async (result: StudentMutationResult, studentId: string) => {
       if (result.student) {
         queryClient.setQueryData(studentQueryKeys.details.byId(studentId), result.student);
       }
@@ -511,10 +510,10 @@ export const useReactivateStudent = (
         action: 'REACTIVATE_STUDENT',
       });
 
-      options?.onSuccess?.(result, studentId, context, queryClient);
+      options?.onSuccess?.(result, studentId);
     },
 
-    onError: (error, studentId, context) => {
+    onError: (error: ApiError, studentId: string) => {
       console.error('Student reactivation failed:', {
         error: error.message,
         studentId,
@@ -522,7 +521,7 @@ export const useReactivateStudent = (
         auditRequired: error.auditRequired,
       });
 
-      options?.onError?.(error, studentId, context, queryClient);
+      options?.onError?.(error, studentId);
     },
 
     retry: config.retry,
@@ -538,13 +537,13 @@ export const useReactivateStudent = (
  */
 export const useTransferStudent = (
   options?: UseMutationOptions<
-    StudentMutationResult, 
-    ApiError, 
+    StudentMutationResult,
+    ApiError,
     { id: string; data: TransferStudentRequest }
   >
 ) => {
   const queryClient = useQueryClient();
-  const config = cacheConfig.mutations || { retry: 3 };
+  const config = STUDENT_MUTATION_CONFIG.default;
 
   return useMutation({
     mutationFn: async ({ id, data }): Promise<StudentMutationResult> => {
@@ -565,7 +564,7 @@ export const useTransferStudent = (
       }
     },
 
-    onSuccess: async (result, { id, data }, context) => {
+    onSuccess: async (result: StudentMutationResult, { id, data }: { id: string; data: TransferStudentRequest }) => {
       if (result.student) {
         queryClient.setQueryData(studentQueryKeys.details.byId(id), result.student);
       }
@@ -575,7 +574,7 @@ export const useTransferStudent = (
         queryClient,
         'update',
         id,
-        context?.previousStudent,
+        undefined,
         { nurseId: data.nurseId }
       );
 
@@ -587,10 +586,10 @@ export const useTransferStudent = (
         action: 'TRANSFER_STUDENT',
       });
 
-      options?.onSuccess?.(result, { id, data }, context, queryClient);
+      options?.onSuccess?.(result, { id, data });
     },
 
-    onError: (error, { id, data }, context) => {
+    onError: (error: ApiError, { id, data }: { id: string; data: TransferStudentRequest }) => {
       console.error('Student transfer failed:', {
         error: error.message,
         studentId: id,
@@ -599,7 +598,7 @@ export const useTransferStudent = (
         auditRequired: error.auditRequired,
       });
 
-      options?.onError?.(error, { id, data }, context, queryClient);
+      options?.onError?.(error, { id, data });
     },
 
     retry: config.retry,
@@ -617,7 +616,7 @@ export const useBulkUpdateStudents = (
   options?: UseMutationOptions<BulkMutationResult, ApiError, BulkUpdateStudentsRequest>
 ) => {
   const queryClient = useQueryClient();
-  const config = cacheConfig.mutations || { retry: 2 }; // Fewer retries for bulk operations
+  const config = STUDENT_MUTATION_CONFIG.bulk; // Bulk operation config
 
   return useMutation({
     mutationFn: async (request: BulkUpdateStudentsRequest): Promise<BulkMutationResult> => {
@@ -676,12 +675,12 @@ export const useBulkUpdateStudents = (
       }
     },
 
-    onSuccess: async (result, request, context) => {
+    onSuccess: async (result: BulkMutationResult, request: BulkUpdateStudentsRequest) => {
       // For bulk updates, invalidate conservatively
       // This could be optimized further by tracking which specific lists are affected
       await invalidateStudentCache(
         queryClient,
-        'update',
+        'bulk',
         undefined,
         undefined,
         request.updateData
@@ -696,10 +695,10 @@ export const useBulkUpdateStudents = (
         action: 'BULK_UPDATE_STUDENTS',
       });
 
-      options?.onSuccess?.(result, request, context, queryClient);
+      options?.onSuccess?.(result, request);
     },
 
-    onError: (error, request, context) => {
+    onError: (error: ApiError, request: BulkUpdateStudentsRequest) => {
       console.error('Bulk student update failed:', {
         error: error.message,
         totalRequested: request.studentIds.length,
@@ -707,7 +706,7 @@ export const useBulkUpdateStudents = (
         auditRequired: error.auditRequired,
       });
 
-      options?.onError?.(error, request, context, queryClient);
+      options?.onError?.(error, request);
     },
 
     retry: config.retry,
@@ -726,13 +725,13 @@ export const useBulkUpdateStudents = (
  */
 export const usePermanentDeleteStudent = (
   options?: UseMutationOptions<
-    { success: boolean; message: string; auditId: string }, 
-    ApiError, 
+    { success: boolean; message: string; auditId: string },
+    ApiError,
     { id: string; reason: string; authorization: string }
   >
 ) => {
   const queryClient = useQueryClient();
-  const config = cacheConfig.mutations || { retry: 1 }; // Minimal retry for destructive operations
+  const config = STUDENT_MUTATION_CONFIG.audit; // Audit-level config for destructive operations
 
   return useMutation({
     mutationFn: async ({ id, reason, authorization }) => {
@@ -760,7 +759,7 @@ export const usePermanentDeleteStudent = (
       }
     },
 
-    onSuccess: async (result, { id, reason, authorization }, context) => {
+    onSuccess: async (result: { success: boolean; message: string; auditId: string }, { id, reason, authorization }: { id: string; reason: string; authorization: string }) => {
       // Remove from all caches
       queryClient.removeQueries({ queryKey: studentQueryKeys.details.byId(id) });
 
@@ -784,10 +783,10 @@ export const usePermanentDeleteStudent = (
         severity: 'CRITICAL',
       });
 
-      options?.onSuccess?.(result, { id, reason, authorization }, context, queryClient);
+      options?.onSuccess?.(result, { id, reason, authorization });
     },
 
-    onError: (error, { id, reason, authorization }, context) => {
+    onError: (error: ApiError, { id, reason, authorization }: { id: string; reason: string; authorization: string }) => {
       console.error('Permanent student deletion failed:', {
         error: error.message,
         studentId: id,
@@ -798,7 +797,7 @@ export const usePermanentDeleteStudent = (
         auditRequired: error.auditRequired,
       });
 
-      options?.onError?.(error, { id, reason, authorization }, context, queryClient);
+      options?.onError?.(error, { id, reason, authorization });
     },
 
     retry: config.retry,

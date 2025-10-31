@@ -416,3 +416,45 @@ export const exportUsersSchema = z.object({
 });
 
 export type ExportUsersInput = z.infer<typeof exportUsersSchema>;
+
+// ==========================================
+// ADDITIONAL SCHEMAS (For backward compatibility)
+// ==========================================
+
+/**
+ * Enable MFA schema (simplified version)
+ */
+export const enableMFASchema = z.object({
+  userId: z.string().uuid('Invalid user ID'),
+  method: mfaMethodEnum,
+  phoneNumber: phoneSchema.optional(),
+}).refine((data) => {
+  // If SMS method, phone number is required
+  if (data.method === 'sms' && !data.phoneNumber) {
+    return false;
+  }
+  return true;
+}, {
+  message: 'Phone number is required for SMS MFA',
+  path: ['phoneNumber'],
+});
+
+export type EnableMFAInput = z.infer<typeof enableMFASchema>;
+
+/**
+ * Suspend user schema
+ */
+export const suspendUserSchema = z.object({
+  userId: z.string().uuid('Invalid user ID'),
+  reason: z.string().min(10, 'Suspension reason must be at least 10 characters'),
+  suspendUntil: z.string().datetime().optional(),
+  notifyUser: z.boolean().default(true),
+});
+
+export type SuspendUserInput = z.infer<typeof suspendUserSchema>;
+
+/**
+ * Reset password schema (alias for resetUserPasswordSchema)
+ */
+export const resetPasswordSchema = resetUserPasswordSchema;
+export type ResetPasswordInput = ResetUserPasswordInput;

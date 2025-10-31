@@ -29,6 +29,11 @@ export interface AuthenticatedUser {
   id: string;
   email: string;
   role: string;
+  user?: {
+    id: string;
+    email: string;
+    role: string;
+  };
 }
 
 /**
@@ -116,7 +121,13 @@ export function verifyRefreshToken(token: string): TokenPayload {
  * Authenticate request and extract user from token
  * Returns null if authentication fails
  */
-export function authenticateRequest(request: NextRequest): AuthenticatedUser | null {
+export function authenticateRequest(request?: NextRequest): AuthenticatedUser | null {
+  if (!request) {
+    // Server component context - create mock authenticated user
+    // In production, this should use next-auth or similar
+    return null;
+  }
+
   try {
     const token = extractToken(request);
 
@@ -126,10 +137,15 @@ export function authenticateRequest(request: NextRequest): AuthenticatedUser | n
 
     const payload = verifyAccessToken(token);
 
-    return {
+    const user = {
       id: payload.id,
       email: payload.email,
       role: payload.role
+    };
+
+    return {
+      ...user,
+      user // Also expose as nested .user for compatibility
     };
   } catch (error) {
     console.error('Authentication failed:', error);

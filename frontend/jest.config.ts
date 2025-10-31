@@ -85,6 +85,7 @@ const config: Config = {
   // Allows imports like: import { Component } from '@/components/Component'
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^@tests/(.*)$': '<rootDir>/tests/$1',
   },
 
   // Test file discovery patterns

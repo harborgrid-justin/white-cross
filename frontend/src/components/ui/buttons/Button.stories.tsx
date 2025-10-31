@@ -1,7 +1,6 @@
 'use client';
 
 import type { Meta, StoryObj } from '@storybook/react';
-import { fn } from '@storybook/test';
 import { Button } from './Button';
 import { Plus, Save, Trash2, Download, ChevronRight } from 'lucide-react';
 
@@ -69,9 +68,6 @@ const meta = {
       action: 'clicked',
       description: 'Click event handler',
     },
-  },
-  args: {
-    onClick: fn(),
   },
 } satisfies Meta<typeof Button>;
 

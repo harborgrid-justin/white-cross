@@ -1,7 +1,6 @@
 'use client';
 
 import type { Meta, StoryObj } from '@storybook/react';
-import { fn } from '@storybook/test';
 import { Input } from './Input';
 import { Search, Mail, Lock, User } from 'lucide-react';
 
@@ -82,9 +81,6 @@ const meta = {
       action: 'changed',
       description: 'Change event handler',
     },
-  },
-  args: {
-    onChange: fn(),
   },
 } satisfies Meta<typeof Input>;
 

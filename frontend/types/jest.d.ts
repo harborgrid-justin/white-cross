@@ -10,7 +10,62 @@
 
 import '@testing-library/jest-dom';
 
+/**
+ * Custom matcher type definitions for healthcare-specific validations
+ */
 declare global {
+  namespace jest {
+    interface Matchers<R> {
+      /**
+       * Validates that a string is a properly formatted email address
+       * @example expect('test@example.com').toBeValidEmail()
+       */
+      toBeValidEmail(): R;
+
+      /**
+       * Validates that a string represents a valid date
+       * @example expect('2024-01-15').toBeValidDate()
+       */
+      toBeValidDate(): R;
+
+      /**
+       * Validates that a string is a properly formatted phone number
+       * @example expect('555-123-4567').toBeValidPhoneNumber()
+       */
+      toBeValidPhoneNumber(): R;
+
+      /**
+       * Validates that a number falls within a specified range (inclusive)
+       * @param min - Minimum value (inclusive)
+       * @param max - Maximum value (inclusive)
+       * @example expect(5).toBeWithinRange(1, 10)
+       */
+      toBeWithinRange(min: number, max: number): R;
+    }
+
+    interface Expect {
+      /**
+       * Validates that a string is a properly formatted email address
+       */
+      toBeValidEmail(): any;
+
+      /**
+       * Validates that a string represents a valid date
+       */
+      toBeValidDate(): any;
+
+      /**
+       * Validates that a string is a properly formatted phone number
+       */
+      toBeValidPhoneNumber(): any;
+
+      /**
+       * Validates that a number falls within a specified range (inclusive)
+       */
+      toBeWithinRange(min: number, max: number): any;
+    }
+  }
+
   namespace NodeJS {
     interface Global {
       React: typeof import('react');

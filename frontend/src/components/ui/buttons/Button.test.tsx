@@ -3,8 +3,8 @@
  * Comprehensive tests for the Button component
  */
 
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@/test/utils/test-utils';
+import React from 'react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Button } from './Button';
 
@@ -100,7 +100,7 @@ describe('Button Component', () => {
   describe('User Interactions', () => {
     it('should call onClick when clicked', async () => {
       const user = userEvent.setup();
-      const handleClick = vi.fn();
+      const handleClick = jest.fn();
 
       render(<Button onClick={handleClick}>Click me</Button>);
       const button = screen.getByRole('button', { name: /click me/i });
@@ -111,7 +111,7 @@ describe('Button Component', () => {
 
     it('should not call onClick when disabled', async () => {
       const user = userEvent.setup();
-      const handleClick = vi.fn();
+      const handleClick = jest.fn();
 
       render(<Button onClick={handleClick} disabled>Disabled</Button>);
       const button = screen.getByRole('button', { name: /disabled/i });
@@ -122,7 +122,7 @@ describe('Button Component', () => {
 
     it('should not call onClick when loading', async () => {
       const user = userEvent.setup();
-      const handleClick = vi.fn();
+      const handleClick = jest.fn();
 
       render(<Button onClick={handleClick} loading>Loading</Button>);
       const button = screen.getByRole('button', { name: /loading/i });
@@ -133,7 +133,7 @@ describe('Button Component', () => {
 
     it('should handle keyboard navigation (Enter)', async () => {
       const user = userEvent.setup();
-      const handleClick = vi.fn();
+      const handleClick = jest.fn();
 
       render(<Button onClick={handleClick}>Press Enter</Button>);
       const button = screen.getByRole('button', { name: /press enter/i });
@@ -145,7 +145,7 @@ describe('Button Component', () => {
 
     it('should handle keyboard navigation (Space)', async () => {
       const user = userEvent.setup();
-      const handleClick = vi.fn();
+      const handleClick = jest.fn();
 
       render(<Button onClick={handleClick}>Press Space</Button>);
       const button = screen.getByRole('button', { name: /press space/i });
@@ -307,7 +307,7 @@ describe('Button Component', () => {
 
   describe('Ref Forwarding', () => {
     it('should forward ref to button element', () => {
-      const ref = vi.fn();
+      const ref = jest.fn();
       render(<Button ref={ref}>Button</Button>);
       expect(ref).toHaveBeenCalled();
     });

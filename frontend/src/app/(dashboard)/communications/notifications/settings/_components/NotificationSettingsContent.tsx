@@ -94,7 +94,7 @@ export function NotificationSettingsContent() {
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
-            size="icon"
+            size="sm"
             onClick={() => router.back()}
           >
             <ArrowLeft className="h-5 w-5" />
@@ -106,7 +106,7 @@ export function NotificationSettingsContent() {
             </p>
           </div>
         </div>
-        <Button onClick={handleSave} disabled={isSaving}>
+        <Button onClick={() => void handleSave()} disabled={isSaving}>
           <Save className="h-4 w-4 mr-2" />
           Save Changes
         </Button>
@@ -116,9 +116,7 @@ export function NotificationSettingsContent() {
       <Card>
         <CardHeader>
           <CardTitle>General</CardTitle>
-          <CardDescription>
-            Control overall notification behavior
-          </CardDescription>
+          <CardDescription>Control overall notification behavior</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
@@ -126,7 +124,7 @@ export function NotificationSettingsContent() {
             <Switch
               id="enabled"
               checked={preferences.enabled}
-              onCheckedChange={(checked) =>
+              onCheckedChange={(checked: boolean) =>
                 setPreferences({ ...preferences, enabled: checked })
               }
             />
@@ -138,9 +136,7 @@ export function NotificationSettingsContent() {
       <Card>
         <CardHeader>
           <CardTitle>Delivery Channels</CardTitle>
-          <CardDescription>
-            Choose how you want to receive notifications
-          </CardDescription>
+          <CardDescription>Choose how you want to receive notifications</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
@@ -153,7 +149,7 @@ export function NotificationSettingsContent() {
             <Switch
               id="in-app"
               checked={preferences.channels.inApp}
-              onCheckedChange={(checked) =>
+              onCheckedChange={(checked: boolean) =>
                 setPreferences({
                   ...preferences,
                   channels: { ...preferences.channels, inApp: checked }
@@ -172,7 +168,7 @@ export function NotificationSettingsContent() {
             <Switch
               id="email"
               checked={preferences.channels.email}
-              onCheckedChange={(checked) =>
+              onCheckedChange={(checked: boolean) =>
                 setPreferences({
                   ...preferences,
                   channels: { ...preferences.channels, email: checked }
@@ -191,7 +187,7 @@ export function NotificationSettingsContent() {
             <Switch
               id="sms"
               checked={preferences.channels.sms}
-              onCheckedChange={(checked) =>
+              onCheckedChange={(checked: boolean) =>
                 setPreferences({
                   ...preferences,
                   channels: { ...preferences.channels, sms: checked }
@@ -210,7 +206,7 @@ export function NotificationSettingsContent() {
             <Switch
               id="push"
               checked={preferences.channels.push}
-              onCheckedChange={(checked) =>
+              onCheckedChange={(checked: boolean) =>
                 setPreferences({
                   ...preferences,
                   channels: { ...preferences.channels, push: checked }
@@ -225,9 +221,7 @@ export function NotificationSettingsContent() {
       <Card>
         <CardHeader>
           <CardTitle>Notification Types</CardTitle>
-          <CardDescription>
-            Customize notifications for different events
-          </CardDescription>
+          <CardDescription>Customize notifications for different events</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Messages */}
@@ -236,7 +230,7 @@ export function NotificationSettingsContent() {
               <Label>Messages</Label>
               <Switch
                 checked={preferences.typePreferences.message.enabled}
-                onCheckedChange={(checked) =>
+                onCheckedChange={(checked: boolean) =>
                   setPreferences({
                     ...preferences,
                     typePreferences: {
@@ -254,7 +248,7 @@ export function NotificationSettingsContent() {
               <div className="flex items-center gap-2">
                 <Switch
                   checked={preferences.typePreferences.message.channels.email}
-                  onCheckedChange={(checked) =>
+                  onCheckedChange={(checked: boolean) =>
                     setPreferences({
                       ...preferences,
                       typePreferences: {
@@ -284,7 +278,7 @@ export function NotificationSettingsContent() {
               <Label>Broadcasts</Label>
               <Switch
                 checked={preferences.typePreferences.broadcast.enabled}
-                onCheckedChange={(checked) =>
+                onCheckedChange={(checked: boolean) =>
                   setPreferences({
                     ...preferences,
                     typePreferences: {
@@ -308,7 +302,7 @@ export function NotificationSettingsContent() {
               <Label>Health Alerts</Label>
               <Switch
                 checked={preferences.typePreferences.health_alert.enabled}
-                onCheckedChange={(checked) =>
+                onCheckedChange={(checked: boolean) =>
                   setPreferences({
                     ...preferences,
                     typePreferences: {
