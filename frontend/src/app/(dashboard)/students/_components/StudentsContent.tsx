@@ -25,6 +25,12 @@ import {
   UserCheck,
   UserX
 } from 'lucide-react';
+import { 
+  getStudents, 
+  getStudentCount,
+  getStudentStatistics,
+  exportStudentData
+} from '../../students/actions';
 
 export interface Student {
   id: string;
@@ -247,13 +253,35 @@ export function StudentsContent({ searchParams }: StudentsContentProps) {
   const [selectedStudents, setSelectedStudents] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    // Simulate API call
-    const timer = setTimeout(() => {
-      setStudents(mockStudents);
-      setLoading(false);
-    }, 1000);
+    async function fetchStudents() {
+      try {
+        setLoading(true);
+        
+        // Build filters from searchParams
+        const filters = {
+          search: searchParams.search,
+          grade: searchParams.grade,
+          status: searchParams.status,
+          hasHealthAlerts: searchParams.hasHealthAlerts === 'true',
+        };
 
-    return () => clearTimeout(timer);
+        // Remove undefined values
+        const cleanFilters = Object.fromEntries(
+          Object.entries(filters).filter(([_, value]) => value !== undefined && value !== '')
+        );
+
+        const studentsData = await getStudents(cleanFilters);
+        setStudents(studentsData);
+      } catch (error) {
+        console.error('Failed to fetch students:', error);
+        // Fall back to mock data on error
+        setStudents(mockStudents);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchStudents();
   }, [searchParams]);
 
   const handleSelectStudent = (studentId: string) => {

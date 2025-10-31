@@ -741,14 +741,62 @@ export async function studentExists(studentId: string): Promise<boolean> {
 /**
  * Get student count
  */
-export async function getStudentCount(filters?: StudentFilters): Promise<number> {
+export const getStudentCount = cache(async (filters?: StudentFilters): Promise<number> => {
   try {
     const students = await getStudents(filters);
     return students.length;
   } catch {
     return 0;
   }
-}
+});
+
+/**
+ * Get student statistics
+ */
+export const getStudentStatistics = cache(async (studentId: string) => {
+  try {
+    const response = await serverGet<ApiResponse<any>>(
+      API_ENDPOINTS.STUDENTS.BY_ID(studentId) + '/statistics',
+      undefined,
+      {
+        cache: 'force-cache',
+        next: { 
+          revalidate: CACHE_TTL.PHI_STANDARD,
+          tags: [`student-${studentId}`, CACHE_TAGS.STUDENTS, CACHE_TAGS.PHI] 
+        }
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error('Failed to get student statistics:', error);
+    return null;
+  }
+});
+
+/**
+ * Export student data
+ */
+export const exportStudentData = cache(async (studentId: string) => {
+  try {
+    const response = await serverGet<ApiResponse<any>>(
+      API_ENDPOINTS.STUDENTS.EXPORT(studentId),
+      undefined,
+      {
+        cache: 'force-cache',
+        next: { 
+          revalidate: CACHE_TTL.PHI_STANDARD,
+          tags: [`student-${studentId}`, CACHE_TAGS.STUDENTS, CACHE_TAGS.PHI] 
+        }
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error('Failed to export student data:', error);
+    return null;
+  }
+});
 
 /**
  * Clear student cache

@@ -14,39 +14,23 @@
  * - Emergency medication quick access
  * - HIPAA-compliant audit trail integration
  *
- * **Medication Administration Features:**
- * - Five Rights verification workflow
- * - Barcode scanning for medication identification  
- * - Dosage calculation and verification
- * - Administration witness requirements
- * - Adverse reaction reporting
- * - Parent notification automation
- *
- * **Compliance & Safety:**
- * - FDA NDC code validation and verification
- * - DEA controlled substance tracking (Schedules I-V)
- * - State pharmacy board regulation compliance
- * - Joint Commission medication safety standards
- * - Automated allergy contraindication alerts
- *
  * @since 1.0.0
  */
 
 'use client';
 
-import React, { useState, useCallback, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/Badge';
+import { Input } from '@/components/ui/Input';
 import { 
-  Medication, 
-  MedicationFilters, 
-  MedicationSummary,
-  medicationUtils,
-  type MedicationType,
-  type MedicationStatus
-} from '../types';
+  getMedications,
+  getDueMedications,
+  getOverdueMedications,
+  administerMedication,
+  type AdministerMedicationData
+} from '@/app/medications/actions';
 import { 
   Pill, 
   Clock, 
@@ -66,35 +50,100 @@ import {
   Printer
 } from 'lucide-react';
 
-interface MedicationsContentProps {
-  medications: Medication[];
-  summary: MedicationSummary;
-  onMedicationAdminister?: (medicationId: string) => void;
-  onMedicationEdit?: (medicationId: string) => void;
-  onMedicationView?: (medicationId: string) => void;
-  onExportData?: () => void;
-  className?: string;
+// Type definitions
+interface Medication {
+  id: string;
+  name: string;
+  genericName?: string;
+  type: 'prescription' | 'over_the_counter' | 'supplement' | 'emergency' | 'inhaler' | 'epipen' | 'insulin' | 'controlled_substance';
+  status: 'active' | 'discontinued' | 'expired' | 'on_hold' | 'completed' | 'cancelled';
+  strength: string;
+  administrationRoute: string;
+  frequency: string;
+  studentId: string;
+  lastAdministered?: string;
+  nextDue?: string;
+  isControlled: boolean;
+  warnings?: string[];
 }
 
-export function MedicationsContent({
-  medications,
-  summary,
-  onMedicationAdminister,
-  onMedicationEdit,
-  onMedicationView,
-  onExportData,
-  className
-}: MedicationsContentProps) {
-  const [searchQuery, setSearchQuery] = useState('');
+interface MedicationFilters {
+  status?: string[];
+  type?: string[];
+  isControlled?: boolean;
+  searchQuery?: string;
+}
+
+interface MedicationsContentProps {
+  searchParams: {
+    page?: string;
+    limit?: string;
+    status?: string;
+    type?: string;
+    studentId?: string;
+    search?: string;
+  };
+}
+
+export function MedicationsContent({ searchParams }: MedicationsContentProps) {
+  const [medications, setMedications] = useState<Medication[]>([]);
+  const [dueMedications, setDueMedications] = useState<Medication[]>([]);
+  const [overdueMedications, setOverdueMedications] = useState<Medication[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState(searchParams.search || '');
   const [filters, setFilters] = useState<MedicationFilters>({});
   const [sortBy, setSortBy] = useState<'name' | 'nextDue' | 'student' | 'type'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
+  useEffect(() => {
+    const fetchMedications = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Build filters from search params
+        const medicationFilters = {
+          status: searchParams.status,
+          type: searchParams.type,
+          studentId: searchParams.studentId,
+          searchQuery: searchParams.search,
+        };
+
+        const [medicationsData, dueData, overdueData] = await Promise.all([
+          getMedications(medicationFilters),
+          getDueMedications(),
+          getOverdueMedications()
+        ]);
+
+        setMedications(medicationsData);
+        setDueMedications(dueData);
+        setOverdueMedications(overdueData);
+      } catch (error) {
+        console.error('Failed to fetch medications:', error);
+        // Fallback to mock data
+        setMedications([]);
+        setDueMedications([]);
+        setOverdueMedications([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMedications();
+  }, [searchParams]);
+
   // Filter and search logic
   const filteredMedications = useMemo(() => {
-    let result = medicationUtils.applyFilters(medications, {
-      ...filters,
-      searchQuery
+    let result = medications.filter(med => {
+      if (filters.status && !filters.status.includes(med.status)) return false;
+      if (filters.type && !filters.type.includes(med.type)) return false;
+      if (filters.isControlled !== undefined && med.isControlled !== filters.isControlled) return false;
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        return med.name.toLowerCase().includes(query) ||
+               med.genericName?.toLowerCase().includes(query) ||
+               med.studentId.toLowerCase().includes(query);
+      }
+      return true;
     });
 
     // Sort medications
@@ -121,15 +170,6 @@ export function MedicationsContent({
     return result;
   }, [medications, filters, searchQuery, sortBy, sortOrder]);
 
-  // Due medications (for priority display)
-  const dueMedications = useMemo(() => {
-    return filteredMedications.filter(med => medicationUtils.isDue(med));
-  }, [filteredMedications]);
-
-  const overdueMedications = useMemo(() => {
-    return filteredMedications.filter(med => medicationUtils.isOverdue(med));
-  }, [filteredMedications]);
-
   const handleFilterChange = useCallback((newFilters: Partial<MedicationFilters>) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
   }, []);
@@ -139,7 +179,25 @@ export function MedicationsContent({
     setSearchQuery('');
   }, []);
 
-  const getMedicationIcon = (type: MedicationType) => {
+  const handleAdministerMedication = async (medicationId: string) => {
+    try {
+      const adminData: AdministerMedicationData = {
+        medicationId,
+        studentId: medications.find(m => m.id === medicationId)?.studentId || '',
+        administeredBy: 'current-user', // Replace with actual user
+        administeredAt: new Date().toISOString(),
+        dosageGiven: 'Standard dose', // Replace with actual dosage
+      };
+
+      await administerMedication(adminData);
+      // Refresh data
+      window.location.reload();
+    } catch (error) {
+      console.error('Failed to administer medication:', error);
+    }
+  };
+
+  const getMedicationIcon = (type: Medication['type']) => {
     const iconMap = {
       prescription: Pill,
       over_the_counter: Pill,
@@ -154,7 +212,7 @@ export function MedicationsContent({
     return <IconComponent className="h-5 w-5" />;
   };
 
-  const getStatusIcon = (status: MedicationStatus) => {
+  const getStatusIcon = (status: Medication['status']) => {
     const iconMap = {
       active: CheckCircle2,
       discontinued: XCircle,
@@ -167,8 +225,39 @@ export function MedicationsContent({
     return <IconComponent className="h-4 w-4" />;
   };
 
+  const formatDateTime = (dateTime: string) => {
+    return new Date(dateTime).toLocaleString();
+  };
+
+  const isDue = (medication: Medication) => {
+    if (!medication.nextDue) return false;
+    const now = new Date();
+    const due = new Date(medication.nextDue);
+    return due <= now;
+  };
+
+  const isOverdue = (medication: Medication) => {
+    if (!medication.nextDue) return false;
+    const now = new Date();
+    const due = new Date(medication.nextDue);
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+    return due <= oneHourAgo;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
+          <div className="h-32 bg-gray-200 rounded mb-4"></div>
+          <div className="h-64 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className={`space-y-6 ${className || ''}`}>
+    <div className="space-y-6">
       {/* Critical Alerts Section */}
       {overdueMedications.length > 0 && (
         <Card className="border-red-200 bg-red-50">
@@ -187,14 +276,14 @@ export function MedicationsContent({
                     <div>
                       <p className="font-medium text-red-900">{medication.name}</p>
                       <p className="text-sm text-red-700">
-                        Due: {medication.nextDue ? medicationUtils.formatDateTime(medication.nextDue) : 'N/A'}
+                        Due: {medication.nextDue ? formatDateTime(medication.nextDue) : 'N/A'}
                       </p>
                     </div>
                   </div>
                   <Button
                     size="sm"
                     variant="destructive"
-                    onClick={() => onMedicationAdminister?.(medication.id)}
+                    onClick={() => handleAdministerMedication(medication.id)}
                   >
                     Administer Now
                   </Button>
@@ -228,13 +317,13 @@ export function MedicationsContent({
                     <div>
                       <p className="font-medium text-orange-900">{medication.name}</p>
                       <p className="text-sm text-orange-700">
-                        Due: {medication.nextDue ? medicationUtils.formatDateTime(medication.nextDue) : 'N/A'}
+                        Due: {medication.nextDue ? formatDateTime(medication.nextDue) : 'N/A'}
                       </p>
                     </div>
                   </div>
                   <Button
                     size="sm"
-                    onClick={() => onMedicationAdminister?.(medication.id)}
+                    onClick={() => handleAdministerMedication(medication.id)}
                   >
                     Administer
                   </Button>
@@ -251,7 +340,7 @@ export function MedicationsContent({
           <CardTitle className="flex items-center justify-between">
             <span>Medications ({filteredMedications.length})</span>
             <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm" onClick={onExportData}>
+              <Button variant="outline" size="sm">
                 <Download className="mr-2 h-4 w-4" />
                 Export
               </Button>
@@ -287,7 +376,7 @@ export function MedicationsContent({
           {/* Quick Filters */}
           <div className="flex flex-wrap gap-2 mb-4">
             <Button
-              variant={filters.status?.includes('active') ? 'default' : 'outline'}
+              variant={filters.status?.includes('active') ? 'primary' : 'outline'}
               size="sm"
               onClick={() => handleFilterChange({ 
                 status: filters.status?.includes('active') ? [] : ['active'] 
@@ -296,7 +385,7 @@ export function MedicationsContent({
               Active Only
             </Button>
             <Button
-              variant={filters.isControlled === true ? 'default' : 'outline'}
+              variant={filters.isControlled === true ? 'primary' : 'outline'}
               size="sm"
               onClick={() => handleFilterChange({ 
                 isControlled: filters.isControlled === true ? undefined : true 
@@ -306,7 +395,7 @@ export function MedicationsContent({
               Controlled
             </Button>
             <Button
-              variant={filters.type?.includes('emergency') ? 'default' : 'outline'}
+              variant={filters.type?.includes('emergency') ? 'primary' : 'outline'}
               size="sm"
               onClick={() => handleFilterChange({ 
                 type: filters.type?.includes('emergency') ? [] : ['emergency'] 
@@ -316,7 +405,7 @@ export function MedicationsContent({
               Emergency
             </Button>
             <Button
-              variant={filters.type?.includes('epipen') ? 'default' : 'outline'}
+              variant={filters.type?.includes('epipen') ? 'primary' : 'outline'}
               size="sm"
               onClick={() => handleFilterChange({ 
                 type: filters.type?.includes('epipen') ? [] : ['epipen'] 
@@ -332,8 +421,9 @@ export function MedicationsContent({
             <span className="text-sm font-medium text-gray-700">Sort by:</span>
             <select 
               value={sortBy} 
-              onChange={(e) => setSortBy(e.target.value as any)}
+              onChange={(e) => setSortBy(e.target.value as 'name' | 'nextDue' | 'student' | 'type')}
               className="text-sm border border-gray-300 rounded px-2 py-1"
+              aria-label="Sort medications by"
             >
               <option value="name">Medication Name</option>
               <option value="nextDue">Next Due</option>
@@ -367,7 +457,7 @@ export function MedicationsContent({
                 >
                   {/* Medication Icon */}
                   <div className="flex-shrink-0">
-                    <div className={`p-2 rounded-lg ${medicationUtils.getTypeColor(medication.type)}`}>
+                    <div className="p-2 rounded-lg bg-blue-100">
                       {getMedicationIcon(medication.type)}
                     </div>
                   </div>
@@ -378,14 +468,14 @@ export function MedicationsContent({
                       <h3 className="text-sm font-medium text-gray-900 truncate">
                         {medication.name}
                       </h3>
-                      <Badge variant="outline" className={medicationUtils.getTypeColor(medication.type)}>
+                      <Badge variant="secondary">
                         {medication.type.replace('_', ' ').toUpperCase()}
                       </Badge>
                       <div className="flex items-center">
                         {getStatusIcon(medication.status)}
                         <Badge 
-                          variant={medication.status === 'active' ? 'default' : 'secondary'}
-                          className={`ml-1 ${medicationUtils.getStatusColor(medication.status)}`}
+                          variant={medication.status === 'active' ? 'primary' : 'secondary'}
+                          className="ml-1"
                         >
                           {medication.status.replace('_', ' ').toUpperCase()}
                         </Badge>
@@ -394,10 +484,10 @@ export function MedicationsContent({
                     
                     <div className="flex items-center space-x-4 text-sm text-gray-500">
                       <span>{medication.strength}</span>
-                      <span>{medicationUtils.formatAdministrationRoute(medication.administrationRoute)}</span>
-                      <span>{medicationUtils.formatFrequency(medication.frequency)}</span>
+                      <span>{medication.administrationRoute}</span>
+                      <span>{medication.frequency}</span>
                       {medication.isControlled && (
-                        <Badge variant="destructive" className="text-xs">
+                        <Badge variant="danger" className="text-xs">
                           <Shield className="mr-1 h-3 w-3" />
                           CONTROLLED
                         </Badge>
@@ -412,13 +502,13 @@ export function MedicationsContent({
                       {medication.lastAdministered && (
                         <span className="flex items-center">
                           <Calendar className="mr-1 h-3 w-3" />
-                          Last: {medicationUtils.formatDateTime(medication.lastAdministered)}
+                          Last: {formatDateTime(medication.lastAdministered)}
                         </span>
                       )}
                       {medication.nextDue && (
-                        <span className={`flex items-center ${medicationUtils.isDue(medication) ? 'text-orange-600 font-medium' : medicationUtils.isOverdue(medication) ? 'text-red-600 font-medium' : ''}`}>
+                        <span className={`flex items-center ${isDue(medication) ? 'text-orange-600 font-medium' : isOverdue(medication) ? 'text-red-600 font-medium' : ''}`}>
                           <Clock className="mr-1 h-3 w-3" />
-                          Next: {medicationUtils.formatDateTime(medication.nextDue)}
+                          Next: {formatDateTime(medication.nextDue)}
                         </span>
                       )}
                     </div>
@@ -443,11 +533,11 @@ export function MedicationsContent({
 
                   {/* Actions */}
                   <div className="flex items-center space-x-2">
-                    {medicationUtils.isActive(medication) && (
+                    {medication.status === 'active' && (
                       <Button
                         size="sm"
-                        onClick={() => onMedicationAdminister?.(medication.id)}
-                        disabled={!medicationUtils.isDue(medication) && medication.frequency !== 'as_needed'}
+                        onClick={() => handleAdministerMedication(medication.id)}
+                        disabled={!isDue(medication) && medication.frequency !== 'as_needed'}
                       >
                         <Syringe className="mr-1 h-4 w-4" />
                         Administer
@@ -456,7 +546,6 @@ export function MedicationsContent({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => onMedicationView?.(medication.id)}
                     >
                       <Eye className="mr-1 h-4 w-4" />
                       View
@@ -464,7 +553,6 @@ export function MedicationsContent({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => onMedicationEdit?.(medication.id)}
                     >
                       <Edit className="mr-1 h-4 w-4" />
                       Edit

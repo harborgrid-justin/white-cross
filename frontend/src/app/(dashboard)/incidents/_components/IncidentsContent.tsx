@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { getIncidents } from '@/app/incidents/actions';
 import { 
   AlertTriangle, 
   FileText, 
@@ -447,17 +448,17 @@ export function IncidentsContent({ searchParams }: IncidentsContentProps) {
               <div className="flex items-center justify-between">
                 <div className="flex gap-2">
                   {incident.followUpRequired && (
-                    <Badge variant="outline" className="text-blue-600">
+                    <Badge variant="info" className="text-blue-600">
                       Follow-up Required
                     </Badge>
                   )}
                   {incident.medicalAttentionRequired && (
-                    <Badge variant="outline" className="text-red-600">
+                    <Badge variant="danger" className="text-red-600">
                       Medical Attention
                     </Badge>
                   )}
                   {incident.parentsNotified && (
-                    <Badge variant="outline" className="text-green-600">
+                    <Badge variant="success" className="text-green-600">
                       Parents Notified
                     </Badge>
                   )}
