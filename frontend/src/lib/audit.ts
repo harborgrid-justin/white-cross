@@ -18,7 +18,7 @@ export interface AuditLogEntry {
   userAgent?: string;
   success?: boolean;
   errorMessage?: string;
-  changes?: Record<string, any>;
+  changes?: Record<string, unknown>;
 }
 
 /**
@@ -132,6 +132,26 @@ export const AUDIT_ACTIONS = {
   UPLOAD_DOCUMENT: 'UPLOAD_DOCUMENT',
   DOWNLOAD_DOCUMENT: 'DOWNLOAD_DOCUMENT',
   DELETE_DOCUMENT: 'DELETE_DOCUMENT',
+  CREATE_DOCUMENT: 'CREATE_DOCUMENT',
+  UPDATE_DOCUMENT: 'UPDATE_DOCUMENT',
+  SIGN_DOCUMENT: 'SIGN_DOCUMENT',
+  SHARE_DOCUMENT: 'SHARE_DOCUMENT',
+
+  // PHI Records
+  CREATE_PHI_RECORD: 'CREATE_PHI_RECORD',
+  ACCESS_PHI_RECORD: 'ACCESS_PHI_RECORD',
+
+  // User Management
+  CREATE_USER: 'CREATE_USER',
+  UPDATE_USER: 'UPDATE_USER',
+  DELETE_USER: 'DELETE_USER',
+
+  // Organization Management
+  CREATE_ORGANIZATION: 'CREATE_ORGANIZATION',
+  UPDATE_ORGANIZATION: 'UPDATE_ORGANIZATION',
+
+  // Configuration
+  UPDATE_CONFIGURATION: 'UPDATE_CONFIGURATION',
 
   // Reports
   GENERATE_REPORT: 'GENERATE_REPORT',
@@ -270,7 +290,7 @@ export async function getUserAgent(): Promise<string | undefined> {
  * }
  * ```
  */
-export async function createAuditContextFromServer(userId?: string) {
+export async function createAuditContextFromServer(userId?: string | null) {
   return {
     userId,
     ipAddress: await getClientIP(),

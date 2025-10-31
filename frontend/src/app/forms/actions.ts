@@ -1,35 +1,60 @@
-'use server';
-'use cache';
-
 /**
- * Forms Server Actions - Next.js v16 App Router
- *
+ * @fileoverview Form Builder Server Actions - Next.js v14+ Compatible
  * @module app/forms/actions
- * @description Secure server actions for form builder with HIPAA compliance
+ *
+ * HIPAA-compliant server actions for form builder with comprehensive
+ * caching, audit logging, and error handling.
  *
  * Features:
- * - JWT-based authentication and authorization
- * - Role-based access control (RBAC)
- * - Dynamic Zod schema generation and validation
- * - XSS prevention via sanitization
- * - PHI detection and audit logging
- * - Form versioning for change tracking
+ * - Server actions with proper 'use server' directive
+ * - Next.js cache integration with revalidateTag/revalidatePath
+ * - HIPAA audit logging for all form operations  
+ * - Type-safe CRUD operations
+ * - Form data handling for UI integration
+ * - Comprehensive error handling and validation
+ * - Dynamic form building with schema validation
+ * - PHI detection and compliance logging
  */
 
-import { revalidatePath, revalidateTag } from 'next/cache';
-import { headers, cookies } from 'next/headers';
+'use server';
 
-// ============================================================================
-// Configuration
-// ============================================================================
+import { cache } from 'react';
+import { revalidateTag, revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 
-const BACKEND_URL = process.env.BACKEND_URL || process.env.API_BASE_URL || 'http://localhost:3001';
+// Core API integrations
+import { serverGet, serverPost, serverPut, serverDelete, NextApiClientError } from '@/lib/api/nextjs-client';
+import { API_ENDPOINTS } from '@/constants/api';
+import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
+import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache/constants';
 
-// ============================================================================
 // Types
-// ============================================================================
+import type { ApiResponse } from '@/types/api';
 
-export interface ActionResult<T> {
+// Utils
+import { formatDate } from '@/utils/dateUtils';
+import { validateEmail, validatePhone } from '@/utils/validation/userValidation';
+import { generateId } from '@/utils/generators';
+import { formatName } from '@/utils/formatters';
+
+// ==========================================
+// CONFIGURATION
+// ==========================================
+
+// Custom cache tags for forms
+export const FORMS_CACHE_TAGS = {
+  FORMS: 'forms',
+  FORM_RESPONSES: 'form-responses',
+  FORM_TEMPLATES: 'form-templates',
+  FORM_BUILDER: 'form-builder',
+  FORM_ANALYTICS: 'form-analytics',
+} as const;
+
+// ==========================================
+// TYPE DEFINITIONS
+// ==========================================
+
+export interface ActionResult<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
@@ -37,887 +62,912 @@ export interface ActionResult<T> {
   validationErrors?: string | Record<string, string[]>;
 }
 
-interface FormField {
+export interface FormField {
   id: string;
-  type: string;
+  type: 'text' | 'email' | 'phone' | 'number' | 'textarea' | 'select' | 'checkbox' | 'radio' | 'date' | 'file' | 'signature' | 'ssn' | 'medical';
   label: string;
   name: string;
   required: boolean;
-  validation?: Record<string, unknown>;
+  placeholder?: string;
+  description?: string;
+  validation?: {
+    minLength?: number;
+    maxLength?: number;
+    pattern?: string;
+    min?: number;
+    max?: number;
+  };
   options?: { label: string; value: string }[];
+  isPHI?: boolean;
+  order: number;
 }
 
-interface FormSchema {
-  id?: string;
+export interface FormDefinition {
+  id: string;
   name: string;
   description?: string;
+  category: string;
+  status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
   fields: FormField[];
-  metadata?: {
-    category?: string;
-    isPHI?: boolean;
+  settings: {
+    allowAnonymous: boolean;
+    requireSignature: boolean;
+    enableSaveProgress: boolean;
+    maxSubmissions?: number;
+    expiresAt?: string;
+    notificationEmail?: string;
+    redirectUrl?: string;
+  };
+  metadata: {
+    isPHI: boolean;
+    version: number;
+    totalSubmissions: number;
+    lastSubmissionAt?: string;
+  };
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateFormData {
+  name: string;
+  description?: string;
+  category: string;
+  fields: FormField[];
+  settings: {
+    allowAnonymous: boolean;
+    requireSignature: boolean;
+    enableSaveProgress: boolean;
+    maxSubmissions?: number;
+    expiresAt?: string;
+    notificationEmail?: string;
+    redirectUrl?: string;
   };
 }
 
-interface FormDefinition {
-  id?: string;
-  name: string;
+export interface UpdateFormData {
+  name?: string;
   description?: string;
-  fields: FormField[];
-  zodSchema?: string;
-  createdBy: string;
+  category?: string;
+  status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+  fields?: FormField[];
+  settings?: {
+    allowAnonymous?: boolean;
+    requireSignature?: boolean;
+    enableSaveProgress?: boolean;
+    maxSubmissions?: number;
+    expiresAt?: string;
+    notificationEmail?: string;
+    redirectUrl?: string;
+  };
   metadata?: {
-    category?: string;
     isPHI?: boolean;
     version?: number;
+    totalSubmissions?: number;
+    lastSubmissionAt?: string;
   };
 }
 
-interface PaginatedResult<T> {
-  data: T[];
-  pagination: {
-    page: number;
-    pageSize: number;
-    total: number;
-    pages: number;
-  };
+export interface FormResponse {
+  id: string;
+  formId: string;
+  data: Record<string, unknown>;
+  submittedBy?: string;
+  submissionId: string;
+  status: 'DRAFT' | 'SUBMITTED' | 'REVIEWED' | 'APPROVED' | 'REJECTED';
+  phiFields: string[];
+  ipAddress: string;
+  userAgent: string;
+  submittedAt: string;
+  reviewedAt?: string;
+  reviewedBy?: string;
+  notes?: string;
 }
 
-// ============================================================================
-// Form Management Actions
-// ============================================================================
+export interface CreateFormResponseData {
+  formId: string;
+  data: Record<string, unknown>;
+  status?: 'DRAFT' | 'SUBMITTED';
+  notes?: string;
+}
+
+// ==========================================
+// CACHED DATA FUNCTIONS
+// ==========================================
+
+/**
+ * Get form by ID with caching
+ * Uses Next.js cache() for automatic memoization
+ */
+export const getForm = cache(async (id: string): Promise<FormDefinition | null> => {
+  try {
+    const response = await serverGet<ApiResponse<FormDefinition>>(
+      API_ENDPOINTS.FORMS.BY_ID(id),
+      undefined,
+      {
+        cache: 'force-cache',
+        next: { 
+          revalidate: CACHE_TTL.STATIC,
+          tags: [`form-${id}`, FORMS_CACHE_TAGS.FORMS] 
+        }
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error('Failed to get form:', error);
+    return null;
+  }
+});
+
+/**
+ * Get all forms with caching
+ * Uses shorter TTL for frequently updated data
+ */
+export const getForms = cache(async (filters?: Record<string, unknown>): Promise<FormDefinition[]> => {
+  try {
+    const response = await serverGet<ApiResponse<FormDefinition[]>>(
+      API_ENDPOINTS.FORMS.BASE,
+      filters as Record<string, string | number | boolean>,
+      {
+        cache: 'force-cache',
+        next: { 
+          revalidate: CACHE_TTL.STATIC,
+          tags: [FORMS_CACHE_TAGS.FORMS, 'forms-list'] 
+        }
+      }
+    );
+
+    return response.data || [];
+  } catch (error) {
+    console.error('Failed to get forms:', error);
+    return [];
+  }
+});
+
+// ==========================================
+// FORM OPERATIONS
+// ==========================================
 
 /**
  * Create form action
- * Cache: 10 minutes for created forms
+ * Includes HIPAA audit logging and cache invalidation
  */
-export async function createFormAction(formData: FormSchema): Promise<ActionResult<{ formId: string }>> {
-  'use cache';
-  // cacheLife({ revalidate: 600 }); // 10 minutes cache - Available in Next.js v16
-
+export async function createFormAction(data: CreateFormData): Promise<ActionResult<FormDefinition>> {
   try {
-    // Log HIPAA compliance audit entry
-    await logHIPAAAuditEntry({
-      action: 'FORM_CREATE_ATTEMPT',
-      resourceType: 'FORM',
-      details: {
-        name: formData.name,
-        fieldCount: formData.fields.length,
-        isPHI: formData.metadata?.isPHI || false,
-        category: formData.metadata?.category
-      }
-    });
-
-    // 1. Verify authentication
-    const session = await getServerSession();
-    if (!session) {
-      return { success: false, error: 'Authentication required' };
+    // Validate required fields
+    if (!data.name || !data.category || !data.fields || data.fields.length === 0) {
+      return {
+        success: false,
+        error: 'Missing required fields: name, category, and at least one field'
+      };
     }
 
-    // 2. Verify permission
-    const hasPermission = await checkPermission(
-      session.user.id,
-      session.user.role,
-      'forms:create'
+    // Validate each field
+    for (const field of data.fields) {
+      if (!field.name || !field.type || !field.label) {
+        return {
+          success: false,
+          error: 'Invalid field configuration: name, type, and label are required'
+        };
+      }
+    }
+
+    // Detect PHI fields
+    const phiFields = data.fields.filter(field => 
+      field.isPHI || 
+      field.type === 'ssn' || 
+      field.type === 'medical' ||
+      field.name.toLowerCase().includes('ssn') ||
+      field.name.toLowerCase().includes('medical') ||
+      field.name.toLowerCase().includes('health')
     );
 
-    if (!hasPermission) {
-      return { success: false, error: 'Permission denied: Cannot create forms' };
-    }
+    const isPHI = phiFields.length > 0;
 
-    // 3. Validate form schema
-    if (!formData.name || formData.name.trim().length === 0) {
-      return { success: false, error: 'Form name is required' };
-    }
-
-    if (!formData.fields || formData.fields.length === 0) {
-      return { success: false, error: 'Form must have at least one field' };
-    }
-
-    // 4. Validate each field
-    for (const field of formData.fields) {
-      if (!field.name || !field.type || !field.label) {
-        return { success: false, error: 'Invalid field configuration' };
-      }
-    }
-
-    // 5. Generate Zod schema from fields
-    const zodSchema = generateZodSchema(formData.fields);
-    const zodSchemaString = serializeZodSchema(zodSchema);
-
-    // 6. Detect if form contains PHI
-    const containsPHI = formContainsPHI(formData.fields);
-    const isPHI = formData.metadata?.isPHI || containsPHI;
-
-    // 7. Enhanced fetch to backend with Next.js v16 capabilities
-    const response = await fetch(`${BACKEND_URL}/forms`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${await getAuthToken()}`,
-        'X-Request-ID': crypto.randomUUID(),
-        'X-Source': 'form-actions'
-      },
-      body: JSON.stringify({
-        name: formData.name,
-        description: formData.description,
-        fields: formData.fields,
-        zodSchema: zodSchemaString,
-        createdBy: session.user.id,
-        metadata: {
-          ...formData.metadata,
-          isPHI,
-          version: 1
-        }
-      }),
-      next: {
-        revalidate: 600,
-        tags: ['forms', 'forms-list']
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const createdForm = await response.json() as { id: string };
-    const formId = createdForm.id;
-
-    // Revalidate form caches
-    revalidateTag('forms', 'forms');
-    revalidateTag('forms-list', 'forms');
-    revalidatePath('/forms');
-
-    // Log successful creation
-    await logHIPAAAuditEntry({
-      action: 'FORM_CREATE',
-      resourceType: 'FORM',
-      resourceId: formId,
-      details: {
-        formName: formData.name,
-        fieldCount: formData.fields.length,
+    const formData = {
+      ...data,
+      status: 'DRAFT',
+      metadata: {
         isPHI,
-        category: formData.metadata?.category
+        version: 1,
+        totalSubmissions: 0
       }
+    };
+
+    const response = await serverPost<ApiResponse<FormDefinition>>(
+      API_ENDPOINTS.FORMS.BASE,
+      formData,
+      {
+        cache: 'no-store',
+        next: { tags: [FORMS_CACHE_TAGS.FORMS, CACHE_TAGS.GENERAL] }
+      }
+    );
+
+    if (!response.success || !response.data) {
+      throw new Error(response.message || 'Failed to create form');
+    }
+
+    // HIPAA AUDIT LOG - Form creation
+    await auditLog({
+      action: isPHI ? AUDIT_ACTIONS.CREATE_PHI_RECORD : AUDIT_ACTIONS.CREATE_DOCUMENT,
+      resource: 'Form',
+      resourceId: response.data.id,
+      details: `Created form "${data.name}" with ${data.fields.length} fields${isPHI ? ' (contains PHI)' : ''}`,
+      success: true
     });
+
+    // Cache invalidation
+    revalidateTag(FORMS_CACHE_TAGS.FORMS);
+    revalidateTag('forms-list');
+    revalidatePath('/forms', 'page');
+    revalidatePath('/forms/builder', 'page');
 
     return {
       success: true,
-      data: { formId },
+      data: response.data,
       message: 'Form created successfully'
     };
   } catch (error) {
-    console.error('[Forms] Creation error:', error);
+    const errorMessage = error instanceof NextApiClientError
+      ? error.message
+      : error instanceof Error
+      ? error.message
+      : 'Failed to create form';
 
-    // Log failed attempt
-    await logHIPAAAuditEntry({
-      action: 'FORM_CREATE',
-      resourceType: 'FORM',
-      details: {
-        formName: formData.name,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      }
+    // HIPAA AUDIT LOG - Log failed attempt
+    await auditLog({
+      action: AUDIT_ACTIONS.CREATE_DOCUMENT,
+      resource: 'Form',
+      details: `Failed to create form "${data.name}": ${errorMessage}`,
+      success: false,
+      errorMessage
     });
 
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Form creation failed'
+      error: errorMessage
     };
   }
 }
 
 /**
  * Update form action
- * Cache: 10 minutes for updated forms
+ * Includes HIPAA audit logging and cache invalidation
  */
 export async function updateFormAction(
-  formId: string, 
-  formData: Partial<FormSchema>
-): Promise<ActionResult<void>> {
-  'use cache';
-  // cacheLife({ revalidate: 600 }); // 10 minutes cache - Available in Next.js v16
-
+  formId: string,
+  data: UpdateFormData
+): Promise<ActionResult<FormDefinition>> {
   try {
-    // 1. Verify authentication
-    const session = await getServerSession();
-    if (!session) {
-      return { success: false, error: 'Authentication required' };
-    }
-
-    // 2. Verify access
-    const canEdit = await checkFormAccess(
-      session.user.id,
-      session.user.role,
-      formId,
-      'edit'
-    );
-
-    if (!canEdit) {
-      return { success: false, error: 'Access denied: Cannot edit this form' };
-    }
-
-    // 3. Create new version before updating
-    try {
-      await createFormVersion(formId);
-    } catch (versionError) {
-      console.warn('[Forms] Version creation failed, continuing with update:', versionError);
-    }
-
-    // 4. Update Zod schema if fields changed
-    let updatedData: Partial<FormDefinition> = { ...formData };
-
-    if (formData.fields && formData.fields.length > 0) {
-      const zodSchema = generateZodSchema(formData.fields);
-      const zodSchemaString = serializeZodSchema(zodSchema);
-      updatedData.zodSchema = zodSchemaString;
-
-      // Re-detect PHI if fields changed
-      const containsPHI = formContainsPHI(formData.fields);
-      updatedData.metadata = {
-        ...formData.metadata,
-        isPHI: formData.metadata?.isPHI || containsPHI
+    if (!formId) {
+      return {
+        success: false,
+        error: 'Form ID is required'
       };
     }
 
-    // 5. Enhanced fetch to backend with Next.js v16 capabilities
-    const response = await fetch(`${BACKEND_URL}/forms/${formId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${await getAuthToken()}`,
-        'X-Request-ID': crypto.randomUUID()
-      },
-      body: JSON.stringify(updatedData),
-      next: {
-        revalidate: 600,
-        tags: ['forms', `form-${formId}`, 'forms-list']
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    // Get existing form to check for PHI changes
+    const existingForm = await getForm(formId);
+    if (!existingForm) {
+      return {
+        success: false,
+        error: 'Form not found'
+      };
     }
 
-    // Revalidate form caches
-    revalidateTag('forms', 'forms');
-    revalidateTag(`form-${formId}`, 'forms');
-    revalidateTag('forms-list', 'forms');
-    revalidatePath(`/forms/${formId}/edit`);
-    revalidatePath('/forms');
+    let updateData = { ...data };
 
-    // Log successful update
-    await logHIPAAAuditEntry({
-      action: 'FORM_UPDATE',
-      resourceType: 'FORM',
-      resourceId: formId,
-      details: {
-        updatedFields: Object.keys(formData)
+    // If fields are being updated, re-evaluate PHI status
+    if (data.fields) {
+      const phiFields = data.fields.filter(field => 
+        field.isPHI || 
+        field.type === 'ssn' || 
+        field.type === 'medical' ||
+        field.name.toLowerCase().includes('ssn') ||
+        field.name.toLowerCase().includes('medical') ||
+        field.name.toLowerCase().includes('health')
+      );
+
+      const isPHI = phiFields.length > 0;
+      
+      updateData = {
+        ...updateData,
+        metadata: {
+          ...existingForm.metadata,
+          isPHI,
+          version: existingForm.metadata.version + 1
+        }
+      };
+    }
+
+    const response = await serverPut<ApiResponse<FormDefinition>>(
+      API_ENDPOINTS.FORMS.BY_ID(formId),
+      updateData,
+      {
+        cache: 'no-store',
+        next: { tags: [FORMS_CACHE_TAGS.FORMS, `form-${formId}`, CACHE_TAGS.GENERAL] }
       }
+    );
+
+    if (!response.success || !response.data) {
+      throw new Error(response.message || 'Failed to update form');
+    }
+
+    // HIPAA AUDIT LOG - Form modification
+    await auditLog({
+      action: response.data.metadata.isPHI ? AUDIT_ACTIONS.UPDATE_DOCUMENT : AUDIT_ACTIONS.UPDATE_DOCUMENT,
+      resource: 'Form',
+      resourceId: formId,
+      details: `Updated form "${existingForm.name}"${response.data.metadata.isPHI ? ' (contains PHI)' : ''}`,
+      changes: data,
+      success: true
     });
+
+    // Cache invalidation
+    revalidateTag(FORMS_CACHE_TAGS.FORMS);
+    revalidateTag(`form-${formId}`);
+    revalidateTag('forms-list');
+    revalidatePath('/forms', 'page');
+    revalidatePath(`/forms/${formId}`, 'page');
+    revalidatePath(`/forms/${formId}/edit`, 'page');
 
     return {
       success: true,
+      data: response.data,
       message: 'Form updated successfully'
     };
   } catch (error) {
-    console.error('[Forms] Update error:', error);
+    const errorMessage = error instanceof NextApiClientError
+      ? error.message
+      : error instanceof Error
+      ? error.message
+      : 'Failed to update form';
 
-    // Log failed attempt
-    await logHIPAAAuditEntry({
-      action: 'FORM_UPDATE',
-      resourceType: 'FORM',
+    // HIPAA AUDIT LOG - Log failed attempt
+    await auditLog({
+      action: AUDIT_ACTIONS.UPDATE_DOCUMENT,
+      resource: 'Form',
       resourceId: formId,
-      details: {
-        error: error instanceof Error ? error.message : 'Unknown error'
-      }
+      details: `Failed to update form: ${errorMessage}`,
+      success: false,
+      errorMessage
     });
 
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Form update failed'
+      error: errorMessage
     };
   }
 }
 
 /**
- * Submit form response action
- * Cache: 5 minutes for form responses
+ * Delete form action (soft delete)
+ * Includes HIPAA audit logging and cache invalidation
  */
-export async function submitFormResponseAction(
-  formId: string,
-  responseData: Record<string, unknown>
-): Promise<ActionResult<{ responseId: string }>> {
-  'use cache';
-  // cacheLife({ revalidate: 300 }); // 5 minutes cache - Available in Next.js v16
-
+export async function deleteFormAction(formId: string, force: boolean = false): Promise<ActionResult<void>> {
   try {
-    // 1. Verify authentication (optional for public forms)
-    const user = await getServerAuthOptional();
-
-    // 2. Fetch form definition
-    const form = await getForm(formId);
-
-    // 3. Validate response data with Zod schema
-    const zodSchema = generateZodSchema(form.fields);
-
-    let validatedData: Record<string, unknown>;
-    try {
-      validatedData = validateFormData(zodSchema, responseData);
-    } catch (validationError: unknown) {
+    if (!formId) {
       return {
         success: false,
-        error: 'Validation failed',
-        validationErrors: validationError instanceof Error ? validationError.message : 'Validation error'
+        error: 'Form ID is required'
       };
     }
 
-    // 4. Sanitize input to prevent XSS
-    const sanitizedData = sanitizeFormData(validatedData);
-
-    // 5. Detect PHI fields
-    const phiFields = detectPHI(sanitizedData, form.fields);
-
-    // 6. Extract client information for audit
-    const requestContext = await getRequestContext();
-
-    // 7. Enhanced fetch to backend with Next.js v16 capabilities
-    const response = await fetch(`${BACKEND_URL}/forms/${formId}/responses`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': user ? `Bearer ${await getAuthToken()}` : '',
-        'X-Request-ID': crypto.randomUUID(),
-        'X-Client-IP': requestContext.ipAddress,
-        'X-User-Agent': requestContext.userAgent
-      },
-      body: JSON.stringify({
-        formId,
-        data: sanitizedData,
-        submittedBy: user?.id,
-        ipAddress: requestContext.ipAddress,
-        userAgent: requestContext.userAgent,
-        phiFields
-      }),
-      next: {
-        revalidate: 300,
-        tags: ['forms', `form-${formId}`, 'form-responses']
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    // Get form details for audit logging
+    const form = await getForm(formId);
+    if (!form) {
+      return {
+        success: false,
+        error: 'Form not found'
+      };
     }
 
-    const storedResponse = await response.json() as { id: string };
-    const responseId = storedResponse.id;
+    // Check if form has responses and force flag
+    if (!force && form.metadata.totalSubmissions > 0) {
+      return {
+        success: false,
+        error: `Cannot delete form with ${form.metadata.totalSubmissions} submission(s). Use force delete or archive instead.`,
+        validationErrors: { submissions: form.metadata.totalSubmissions.toString() }
+      };
+    }
 
-    // Revalidate form response caches
-    revalidateTag('form-responses', 'forms');
-    revalidateTag(`form-${formId}`, 'forms');
+    const endpoint = force 
+      ? API_ENDPOINTS.FORMS.FORCE_DELETE(formId)
+      : API_ENDPOINTS.FORMS.BY_ID(formId);
 
-    // Log form submission
-    await logHIPAAAuditEntry({
-      action: phiFields.length > 0 ? 'FORM_SUBMIT_PHI' : 'FORM_SUBMIT',
-      resourceType: 'FORM_RESPONSE',
-      resourceId: responseId,
-      details: {
-        formId,
-        containsPHI: phiFields.length > 0,
-        phiFieldCount: phiFields.length,
-        submittedBy: user?.id || 'anonymous'
+    await serverDelete<ApiResponse<void>>(
+      endpoint,
+      {
+        cache: 'no-store',
+        next: { tags: [FORMS_CACHE_TAGS.FORMS, `form-${formId}`, CACHE_TAGS.GENERAL] }
       }
+    );
+
+    // HIPAA AUDIT LOG - Form deletion
+    await auditLog({
+      action: AUDIT_ACTIONS.DELETE_DOCUMENT,
+      resource: 'Form',
+      resourceId: formId,
+      details: `${force ? 'Force deleted' : 'Deleted'} form "${form.name}"${form.metadata.isPHI ? ' (contained PHI)' : ''}`,
+      success: true
     });
+
+    // Cache invalidation
+    revalidateTag(FORMS_CACHE_TAGS.FORMS);
+    revalidateTag(`form-${formId}`);
+    revalidateTag('forms-list');
+    revalidatePath('/forms', 'page');
 
     return {
       success: true,
-      data: { responseId },
-      message: 'Form submitted successfully'
+      message: `Form ${force ? 'permanently deleted' : 'deleted'} successfully`
     };
   } catch (error) {
-    console.error('[Forms] Submission error:', error);
+    const errorMessage = error instanceof NextApiClientError
+      ? error.message
+      : error instanceof Error
+      ? error.message
+      : 'Failed to delete form';
 
-    // Log failed attempt
-    await logHIPAAAuditEntry({
-      action: 'FORM_SUBMIT',
-      resourceType: 'FORM_RESPONSE',
+    // HIPAA AUDIT LOG - Log failed attempt
+    await auditLog({
+      action: AUDIT_ACTIONS.DELETE_DOCUMENT,
+      resource: 'Form',
       resourceId: formId,
-      details: {
-        formId,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      }
+      details: `Failed to delete form: ${errorMessage}`,
+      success: false,
+      errorMessage
     });
 
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Form submission failed'
+      error: errorMessage
+    };
+  }
+}
+
+/**
+ * Get form action with caching
+ */
+export async function getFormAction(formId: string): Promise<ActionResult<FormDefinition>> {
+  try {
+    if (!formId) {
+      return {
+        success: false,
+        error: 'Form ID is required'
+      };
+    }
+
+    const response = await serverGet<ApiResponse<FormDefinition>>(
+      API_ENDPOINTS.FORMS.BY_ID(formId),
+      undefined,
+      {
+        cache: 'force-cache',
+        next: { 
+          revalidate: CACHE_TTL.STANDARD,
+          tags: [`form-${formId}`, FORMS_CACHE_TAGS.FORMS, CACHE_TAGS.GENERAL] 
+        }
+      }
+    );
+
+    if (!response.success || !response.data) {
+      throw new Error(response.message || 'Failed to get form');
+    }
+
+    // HIPAA AUDIT LOG - Log form access (only if contains PHI)
+    if (response.data.metadata.isPHI) {
+      await auditLog({
+        action: AUDIT_ACTIONS.ACCESS_PHI_RECORD,
+        resource: 'Form',
+        resourceId: formId,
+        details: `Accessed PHI form "${response.data.name}"`,
+        success: true
+      });
+    }
+
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    const errorMessage = error instanceof NextApiClientError
+      ? error.message
+      : error instanceof Error
+      ? error.message
+      : 'Failed to get form';
+
+    return {
+      success: false,
+      error: errorMessage
+    };
+  }
+}
+
+// ==========================================
+// FORM RESPONSE OPERATIONS
+// ==========================================
+
+/**
+ * Submit form response action
+ * Includes HIPAA audit logging and PHI detection
+ */
+export async function submitFormResponseAction(data: CreateFormResponseData): Promise<ActionResult<FormResponse>> {
+  try {
+    // Validate required fields
+    if (!data.formId || !data.data) {
+      return {
+        success: false,
+        error: 'Missing required fields: formId and data'
+      };
+    }
+
+    // Get form definition to validate response
+    const form = await getForm(data.formId);
+    if (!form) {
+      return {
+        success: false,
+        error: 'Form not found'
+      };
+    }
+
+    // Check if form is published and accepting responses
+    if (form.status !== 'PUBLISHED') {
+      return {
+        success: false,
+        error: 'Form is not published and accepting responses'
+      };
+    }
+
+    // Check form expiration
+    if (form.settings.expiresAt && new Date(form.settings.expiresAt) < new Date()) {
+      return {
+        success: false,
+        error: 'Form has expired'
+      };
+    }
+
+    // Check max submissions
+    if (form.settings.maxSubmissions && form.metadata.totalSubmissions >= form.settings.maxSubmissions) {
+      return {
+        success: false,
+        error: 'Form has reached maximum submissions'
+      };
+    }
+
+    // Validate required fields
+    const missingFields = form.fields
+      .filter(field => field.required && !data.data[field.name])
+      .map(field => field.label);
+
+    if (missingFields.length > 0) {
+      return {
+        success: false,
+        error: `Missing required fields: ${missingFields.join(', ')}`,
+        validationErrors: missingFields.reduce((acc, field) => {
+          acc[field] = ['This field is required'];
+          return acc;
+        }, {} as Record<string, string[]>)
+      };
+    }
+
+    // Detect PHI fields in response
+    const phiFields = form.fields
+      .filter(field => 
+        (field.isPHI || field.type === 'ssn' || field.type === 'medical') && 
+        data.data[field.name]
+      )
+      .map(field => field.name);
+
+    const responseData = {
+      ...data,
+      status: data.status || 'SUBMITTED',
+      submissionId: generateId(),
+      phiFields
+    };
+
+    const response = await serverPost<ApiResponse<FormResponse>>(
+      API_ENDPOINTS.FORMS.RESPONSES(data.formId),
+      responseData,
+      {
+        cache: 'no-store',
+        next: { tags: [FORMS_CACHE_TAGS.FORM_RESPONSES, FORMS_CACHE_TAGS.FORMS] }
+      }
+    );
+
+    if (!response.success || !response.data) {
+      throw new Error(response.message || 'Failed to submit form response');
+    }
+
+    // HIPAA AUDIT LOG - Response submission
+    await auditLog({
+      action: phiFields.length > 0 ? AUDIT_ACTIONS.CREATE_PHI_RECORD : AUDIT_ACTIONS.CREATE_DOCUMENT,
+      resource: 'FormResponse',
+      resourceId: response.data.id,
+      details: `Submitted response to form "${form.name}"${phiFields.length > 0 ? ` (contains ${phiFields.length} PHI fields)` : ''}`,
+      success: true
+    });
+
+    // Cache invalidation
+    revalidateTag(FORMS_CACHE_TAGS.FORM_RESPONSES);
+    revalidateTag(FORMS_CACHE_TAGS.FORMS);
+    revalidateTag(`form-${data.formId}`);
+    revalidateTag(`form-responses-${data.formId}`);
+    revalidatePath(`/forms/${data.formId}/responses`, 'page');
+
+    return {
+      success: true,
+      data: response.data,
+      message: 'Form response submitted successfully'
+    };
+  } catch (error) {
+    const errorMessage = error instanceof NextApiClientError
+      ? error.message
+      : error instanceof Error
+      ? error.message
+      : 'Failed to submit form response';
+
+    // HIPAA AUDIT LOG - Log failed attempt
+    await auditLog({
+      action: AUDIT_ACTIONS.CREATE_DOCUMENT,
+      resource: 'FormResponse',
+      details: `Failed to submit form response: ${errorMessage}`,
+      success: false,
+      errorMessage
+    });
+
+    return {
+      success: false,
+      error: errorMessage
     };
   }
 }
 
 /**
  * Get form responses action
- * Cache: 15 minutes for form responses
+ * Includes HIPAA audit logging for PHI access
  */
 export async function getFormResponsesAction(
   formId: string,
-  options?: {
-    limit?: number;
-    offset?: number;
-    startDate?: string;
-    endDate?: string;
-  }
-): Promise<ActionResult<{ responses: Record<string, unknown>[]; count: number }>> {
-  'use cache';
-  // cacheLife({ revalidate: 900 }); // 15 minutes cache - Available in Next.js v16
-
+  filters?: Record<string, unknown>
+): Promise<ActionResult<FormResponse[]>> {
   try {
-    // 1. Verify authentication
-    const session = await getServerSession();
-    if (!session) {
-      return { success: false, error: 'Authentication required' };
+    if (!formId) {
+      return {
+        success: false,
+        error: 'Form ID is required'
+      };
     }
 
-    // 2. Verify access
-    const canView = await checkFormAccess(
-      session.user.id,
-      session.user.role,
-      formId,
-      'view_responses'
-    );
-
-    if (!canView) {
-      return { success: false, error: 'Access denied: Cannot view form responses' };
-    }
-
-    // 3. Build query parameters
-    const params = new URLSearchParams();
-    if (options?.limit) params.append('limit', String(options.limit));
-    if (options?.offset) params.append('offset', String(options.offset));
-    if (options?.startDate) params.append('startDate', options.startDate);
-    if (options?.endDate) params.append('endDate', options.endDate);
-
-    // 4. Enhanced fetch to backend with Next.js v16 capabilities
-    const response = await fetch(`${BACKEND_URL}/forms/${formId}/responses?${params}`, {
-      headers: {
-        'Authorization': `Bearer ${await getAuthToken()}`,
-        'X-Request-ID': crypto.randomUUID()
-      },
-      next: {
-        revalidate: 900,
-        tags: ['forms', `form-${formId}`, 'form-responses']
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const responsesData = await response.json() as { responses: Record<string, unknown>[]; count: number };
-
-    // 5. Check if form contains PHI and log access
-    const form = await getForm(formId);
-    if (form.metadata?.isPHI) {
-      await logHIPAAAuditEntry({
-        action: 'FORM_VIEW_RESPONSES_PHI',
-        resourceType: 'FORM',
-        resourceId: formId,
-        details: {
-          isPHI: true,
-          responseCount: responsesData.responses.length
-        }
-      });
-    } else {
-      await logHIPAAAuditEntry({
-        action: 'FORM_VIEW_RESPONSES',
-        resourceType: 'FORM',
-        resourceId: formId,
-        details: {
-          responseCount: responsesData.responses.length
-        }
-      });
-    }
-
-    return {
-      success: true,
-      data: responsesData
-    };
-  } catch (error) {
-    console.error('[Forms] Responses fetch error:', error);
-
-    // Log failed attempt
-    await logHIPAAAuditEntry({
-      action: 'FORM_VIEW_RESPONSES',
-      resourceType: 'FORM',
-      resourceId: formId,
-      details: {
-        error: error instanceof Error ? error.message : 'Unknown error'
-      }
-    });
-
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to fetch responses'
-    };
-  }
-}
-
-/**
- * Delete form action
- * No cache for deletion (always fresh)
- */
-export async function deleteFormAction(formId: string, force: boolean = false): Promise<ActionResult<void>> {
-  try {
-    // 1. Verify authentication
-    const session = await getServerSession();
-    if (!session) {
-      return { success: false, error: 'Authentication required' };
-    }
-
-    // 2. Verify permission
-    const canDelete = await checkFormAccess(
-      session.user.id,
-      session.user.role,
-      formId,
-      'delete'
-    );
-
-    if (!canDelete) {
-      return { success: false, error: 'Access denied: Cannot delete this form' };
-    }
-
-    // 3. Check for responses unless force delete
-    if (!force) {
-      const responseCount = await getFormResponseCount(formId);
-
-      if (responseCount > 0) {
-        return {
-          success: false,
-          error: `Cannot delete form with ${responseCount} response(s). Archive instead or use force delete.`,
-          validationErrors: { responseCount: responseCount.toString() }
-        };
-      }
-    }
-
-    // 4. Enhanced fetch to backend for soft delete
-    const response = await fetch(`${BACKEND_URL}/forms/${formId}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${await getAuthToken()}`,
-        'X-Request-ID': crypto.randomUUID(),
-        'X-Force-Delete': force.toString()
-      },
-      next: {
-        tags: ['forms', `form-${formId}`, 'forms-list']
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    // Soft delete local record
-    await softDeleteForm(formId);
-
-    // Revalidate form caches
-    revalidateTag('forms', 'forms');
-    revalidateTag(`form-${formId}`, 'forms');
-    revalidateTag('forms-list', 'forms');
-    revalidatePath('/forms');
-
-    // Log form deletion
-    await logHIPAAAuditEntry({
-      action: 'FORM_DELETE',
-      resourceType: 'FORM',
-      resourceId: formId,
-      details: {
-        force,
-        deletedBy: session.user.id
-      }
-    });
-
-    return {
-      success: true,
-      message: 'Form deleted successfully'
-    };
-  } catch (error) {
-    console.error('[Forms] Deletion error:', error);
-
-    // Log failed attempt
-    await logHIPAAAuditEntry({
-      action: 'FORM_DELETE',
-      resourceType: 'FORM',
-      resourceId: formId,
-      details: {
-        error: error instanceof Error ? error.message : 'Unknown error'
-      }
-    });
-
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Form deletion failed'
-    };
-  }
-}
-
-// ============================================================================
-// Helper Functions
-// ============================================================================
-
-/**
- * Get authentication token from cookies
- */
-async function getAuthToken(): Promise<string> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('auth_token')?.value;
-  if (!token) {
-    throw new Error('Authentication token not found');
-  }
-  return token;
-}
-
-/**
- * Get server session (required)
- */
-async function getServerSession(): Promise<{ user: { id: string; email: string; role: string } } | null> {
-  try {
-    const token = await getAuthToken();
-    const payload = await verifyAccessToken(token);
-    return {
-      user: {
-        id: payload.id,
-        email: payload.email,
-        role: payload.role
-      }
-    };
-  } catch (error) {
-    return null;
-  }
-}
-
-/**
- * Get optional server session (for public forms)
- */
-async function getServerAuthOptional(): Promise<{ id: string; email: string; role: string } | null> {
-  try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('auth_token')?.value;
-    if (!token) return null;
-    
-    const payload = await verifyAccessToken(token);
-    return {
-      id: payload.id,
-      email: payload.email,
-      role: payload.role
-    };
-  } catch (error) {
-    return null;
-  }
-}
-
-/**
- * Get request context for audit logging
- */
-async function getRequestContext(): Promise<{ ipAddress: string; userAgent: string }> {
-  const headersList = await headers();
-  const mockRequest = createMockRequest(headersList);
-  
-  return {
-    ipAddress: extractIPAddress(mockRequest) || '0.0.0.0',
-    userAgent: extractUserAgent(mockRequest) || 'Unknown'
-  };
-}
-
-/**
- * Create mock request from Next.js headers
- */
-function createMockRequest(headersList: Headers): Request {
-  return {
-    headers: {
-      get: (name: string) => headersList.get(name)
-    }
-  } as Request;
-}
-
-/**
- * Extract IP address from request
- */
-function extractIPAddress(request: Request): string | null {
-  return request.headers.get('x-forwarded-for') || 
-         request.headers.get('x-real-ip') || 
-         request.headers.get('cf-connecting-ip') || 
-         '0.0.0.0';
-}
-
-/**
- * Extract user agent from request
- */
-function extractUserAgent(request: Request): string | null {
-  return request.headers.get('user-agent') || 'Unknown';
-}
-
-/**
- * HIPAA-compliant audit logging
- */
-async function logHIPAAAuditEntry(entry: {
-  action: string;
-  resourceType: string;
-  resourceId?: string;
-  details?: Record<string, unknown>;
-}): Promise<void> {
-  try {
-    const session = await getServerSession();
-    const requestContext = await getRequestContext();
-    
-    console.log('[HIPAA Audit]', {
-      timestamp: new Date().toISOString(),
-      userId: session?.user.id || 'anonymous',
-      action: entry.action,
-      resourceType: entry.resourceType,
-      resourceId: entry.resourceId,
-      ipAddress: requestContext.ipAddress,
-      userAgent: requestContext.userAgent,
-      details: entry.details
-    });
-  } catch (error) {
-    // Never throw - audit logging is fire-and-forget
-    console.warn('HIPAA audit logging failed:', error);
-  }
-}
-
-/**
- * Mock implementations for form operations
- * These would be replaced with actual implementations in production
- */
-
-async function checkPermission(
-  userId: string,
-  userRole: string,
-  permission: string
-): Promise<boolean> {
-  // Mock implementation - replace with actual RBAC logic
-  return true;
-}
-
-async function checkFormAccess(
-  userId: string,
-  userRole: string,
-  formId: string,
-  action: string
-): Promise<boolean> {
-  // Mock implementation - replace with actual access control logic
-  return true;
-}
-
-function generateZodSchema(fields: FormField[]): Record<string, unknown> {
-  // Mock Zod schema generation - replace with actual Zod schema builder
-  const schema: Record<string, unknown> = {};
-  fields.forEach(field => {
-    schema[field.name] = {
-      type: field.type,
-      required: field.required,
-      validation: field.validation || {}
-    };
-  });
-  return schema;
-}
-
-function serializeZodSchema(schema: Record<string, unknown>): string {
-  // Mock schema serialization - replace with actual Zod schema serialization
-  return JSON.stringify(schema);
-}
-
-function formContainsPHI(fields: FormField[]): boolean {
-  // Mock PHI detection - replace with actual PHI field detection logic
-  return fields.some(field => 
-    field.name.toLowerCase().includes('ssn') ||
-    field.name.toLowerCase().includes('medical') ||
-    field.name.toLowerCase().includes('health') ||
-    field.type === 'ssn' ||
-    field.type === 'medical'
-  );
-}
-
-async function createFormVersion(formId: string): Promise<void> {
-  // Mock versioning - replace with actual form versioning logic
-  console.log(`[Forms] Created version for form ${formId}`);
-}
-
-async function getForm(formId: string): Promise<FormDefinition> {
-  // Mock form retrieval - replace with actual database query
-  return {
-    id: formId,
-    name: 'Mock Form',
-    description: 'Mock form description',
-    fields: [
+    const response = await serverGet<ApiResponse<FormResponse[]>>(
+      API_ENDPOINTS.FORMS.RESPONSES(formId),
+      filters as Record<string, string | number | boolean>,
       {
-        id: '1',
-        type: 'text',
-        label: 'Name',
-        name: 'name',
-        required: true
+        cache: 'force-cache',
+        next: { 
+          revalidate: CACHE_TTL.PHI_STANDARD,
+          tags: [`form-responses-${formId}`, FORMS_CACHE_TAGS.FORM_RESPONSES, CACHE_TAGS.PHI] 
+        }
       }
-    ],
-    createdBy: 'user-123',
-    metadata: {
-      isPHI: false,
-      version: 1
+    );
+
+    if (!response.success || !response.data) {
+      throw new Error(response.message || 'Failed to get form responses');
     }
+
+    // Check if any responses contain PHI
+    const phiResponsesCount = response.data.filter(r => r.phiFields.length > 0).length;
+
+    // HIPAA AUDIT LOG - PHI access logging
+    if (phiResponsesCount > 0) {
+      await auditLog({
+        action: AUDIT_ACTIONS.ACCESS_PHI_RECORD,
+        resource: 'FormResponse',
+        resourceId: formId,
+        details: `Accessed ${response.data.length} form responses (${phiResponsesCount} contain PHI)`,
+        success: true
+      });
+    }
+
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    const errorMessage = error instanceof NextApiClientError
+      ? error.message
+      : error instanceof Error
+      ? error.message
+      : 'Failed to get form responses';
+
+    return {
+      success: false,
+      error: errorMessage
+    };
+  }
+}
+
+// ==========================================
+// FORM HANDLING OPERATIONS
+// ==========================================
+
+/**
+ * Create form from form data
+ * Form-friendly wrapper for createFormAction
+ */
+export async function createFormFromForm(formData: FormData): Promise<ActionResult<FormDefinition>> {
+  const fieldsJson = formData.get('fields') as string;
+  const settingsJson = formData.get('settings') as string;
+
+  let fields: FormField[];
+  let settings: CreateFormData['settings'];
+
+  try {
+    fields = JSON.parse(fieldsJson);
+    settings = JSON.parse(settingsJson);
+  } catch (error) {
+    return {
+      success: false,
+      error: 'Invalid fields or settings JSON'
+    };
+  }
+
+  const createData: CreateFormData = {
+    name: formData.get('name') as string,
+    description: formData.get('description') as string || undefined,
+    category: formData.get('category') as string,
+    fields,
+    settings
   };
+
+  const result = await createFormAction(createData);
+  
+  if (result.success && result.data) {
+    redirect(`/forms/${result.data.id}`);
+  }
+  
+  return result;
 }
 
-function validateFormData(schema: Record<string, unknown>, data: Record<string, unknown>): Record<string, unknown> {
-  // Mock validation - replace with actual Zod validation
-  return data;
-}
+/**
+ * Update form from form data
+ * Form-friendly wrapper for updateFormAction
+ */
+export async function updateFormFromForm(
+  formId: string,
+  formData: FormData
+): Promise<ActionResult<FormDefinition>> {
+  const fieldsJson = formData.get('fields') as string;
+  const settingsJson = formData.get('settings') as string;
 
-function sanitizeFormData(data: Record<string, unknown>): Record<string, unknown> {
-  // Mock sanitization - replace with actual XSS prevention logic
-  const sanitized: Record<string, unknown> = {};
-  Object.entries(data).forEach(([key, value]) => {
-    if (typeof value === 'string') {
-      // Basic HTML escape - replace with comprehensive sanitization
-      sanitized[key] = value
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#x27;');
-    } else {
-      sanitized[key] = value;
-    }
-  });
-  return sanitized;
-}
+  let fields: FormField[] | undefined;
+  let settings: UpdateFormData['settings'] | undefined;
 
-function detectPHI(data: Record<string, unknown>, fields: FormField[]): string[] {
-  // Mock PHI detection - replace with actual PHI detection logic
-  const phiFields: string[] = [];
-  fields.forEach(field => {
-    if (data[field.name] && (
-      field.name.toLowerCase().includes('ssn') ||
-      field.name.toLowerCase().includes('medical') ||
-      field.name.toLowerCase().includes('health')
-    )) {
-      phiFields.push(field.name);
-    }
-  });
-  return phiFields;
-}
+  try {
+    if (fieldsJson) fields = JSON.parse(fieldsJson);
+    if (settingsJson) settings = JSON.parse(settingsJson);
+  } catch (error) {
+    return {
+      success: false,
+      error: 'Invalid fields or settings JSON'
+    };
+  }
 
-async function getFormResponseCount(formId: string): Promise<number> {
-  // Mock response count - replace with actual database query
-  return 0;
-}
-
-async function softDeleteForm(formId: string): Promise<void> {
-  // Mock soft delete - replace with actual database operation
-  console.log(`[Forms] Soft deleted form ${formId}`);
-}
-
-async function verifyAccessToken(token: string): Promise<{ id: string; email: string; role: string }> {
-  // Mock token verification - replace with actual JWT verification
-  return {
-    id: 'user-123',
-    email: 'user@example.com',
-    role: 'USER'
+  const updateData: UpdateFormData = {
+    name: formData.get('name') as string || undefined,
+    description: formData.get('description') as string || undefined,
+    category: formData.get('category') as string || undefined,
+    status: formData.get('status') as 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' || undefined,
+    fields,
+    settings
   };
+
+  // Filter out undefined values
+  const filteredData = Object.entries(updateData).reduce((acc, [key, value]) => {
+    if (value !== undefined) {
+      acc[key as keyof UpdateFormData] = value;
+    }
+    return acc;
+  }, {} as UpdateFormData);
+
+  const result = await updateFormAction(formId, filteredData);
+  
+  if (result.success && result.data) {
+    redirect(`/forms/${result.data.id}`);
+  }
+  
+  return result;
+}
+
+/**
+ * Submit form response from form data
+ * Form-friendly wrapper for submitFormResponseAction
+ */
+export async function submitFormResponseFromForm(formData: FormData): Promise<ActionResult<FormResponse>> {
+  const formId = formData.get('formId') as string;
+  const dataJson = formData.get('data') as string;
+
+  let responseData: Record<string, unknown>;
+
+  try {
+    responseData = JSON.parse(dataJson);
+  } catch (error) {
+    // Fallback: extract form data manually
+    responseData = {};
+    for (const [key, value] of formData.entries()) {
+      if (key !== 'formId' && key !== 'data') {
+        responseData[key] = value;
+      }
+    }
+  }
+
+  const submitData: CreateFormResponseData = {
+    formId,
+    data: responseData,
+    status: 'SUBMITTED',
+    notes: formData.get('notes') as string || undefined
+  };
+
+  const result = await submitFormResponseAction(submitData);
+  
+  if (result.success && result.data) {
+    // Get form to check for redirect URL
+    const form = await getForm(formId);
+    const redirectUrl = form?.settings.redirectUrl || `/forms/${formId}/success`;
+    redirect(redirectUrl);
+  }
+  
+  return result;
+}
+
+// ==========================================
+// UTILITY FUNCTIONS
+// ==========================================
+
+/**
+ * Check if form exists
+ */
+export async function formExists(formId: string): Promise<boolean> {
+  const form = await getForm(formId);
+  return form !== null;
+}
+
+/**
+ * Get form count
+ */
+export async function getFormCount(filters?: Record<string, unknown>): Promise<number> {
+  try {
+    const forms = await getForms(filters);
+    return forms.length;
+  } catch {
+    return 0;
+  }
+}
+
+/**
+ * Clear form cache
+ */
+export async function clearFormCache(formId?: string): Promise<void> {
+  if (formId) {
+    revalidateTag(`form-${formId}`);
+    revalidateTag(`form-responses-${formId}`);
+  }
+  revalidateTag(FORMS_CACHE_TAGS.FORMS);
+  revalidateTag(FORMS_CACHE_TAGS.FORM_RESPONSES);
+  revalidateTag('forms-list');
+  revalidatePath('/forms', 'page');
+}
+
+/**
+ * Publish form action
+ */
+export async function publishFormAction(formId: string): Promise<ActionResult<FormDefinition>> {
+  return updateFormAction(formId, { status: 'PUBLISHED' });
+}
+
+/**
+ * Archive form action
+ */
+export async function archiveFormAction(formId: string): Promise<ActionResult<FormDefinition>> {
+  return updateFormAction(formId, { status: 'ARCHIVED' });
 }

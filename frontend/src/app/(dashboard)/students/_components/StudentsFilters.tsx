@@ -1,100 +1,271 @@
 /**
- * Students Filters Component
- *
- * Client-side filtering with URL state management
- *
- * @module app/students/components/StudentsFilters
- * @version 1.0.0
+ * @fileoverview Students Filters Component - Advanced filtering for student management
+ * @module app/(dashboard)/students/_components/StudentsFilters
+ * @category Students - Components
  */
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Search, Users } from 'lucide-react';
-import { Card } from '@/components/ui/layout/Card';
-
-const GRADES = ['9th', '10th', '11th', '12th'];
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
+import { 
+  Search,
+  Filter,
+  X,
+  Users,
+  GraduationCap,
+  UserCheck,
+  UserX,
+  AlertTriangle
+} from 'lucide-react';
 
 interface StudentsFiltersProps {
-  initialParams?: {
-    search?: string;
-    grade?: string;
-  };
+  totalCount: number;
 }
 
-export function StudentsFilters({ initialParams = {} }: StudentsFiltersProps) {
+const GRADES = ['9th', '10th', '11th', '12th'];
+const STATUSES = [
+  { value: 'ACTIVE', label: 'Active', icon: UserCheck },
+  { value: 'INACTIVE', label: 'Inactive', icon: UserX },
+  { value: 'GRADUATED', label: 'Graduated', icon: GraduationCap },
+  { value: 'TRANSFERRED', label: 'Transferred', icon: Users }
+];
+
+export function StudentsFilters({ totalCount }: StudentsFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const [searchQuery, setSearchQuery] = useState(initialParams.search || '');
-  const [selectedGrade, setSelectedGrade] = useState(initialParams.grade || 'all');
+  const currentSearch = searchParams.get('search') || '';
+  const currentGrade = searchParams.get('grade') || '';
+  const currentStatus = searchParams.get('status') || '';
+  const currentHasHealthAlerts = searchParams.get('hasHealthAlerts') || '';
 
-  // Update URL when filters change
-  useEffect(() => {
-    const params = new URLSearchParams(searchParams);
-
-    if (searchQuery) {
-      params.set('search', searchQuery);
+  const updateFilters = useCallback((key: string, value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    
+    if (value) {
+      params.set(key, value);
     } else {
-      params.delete('search');
+      params.delete(key);
     }
-
-    if (selectedGrade && selectedGrade !== 'all') {
-      params.set('grade', selectedGrade);
-    } else {
-      params.delete('grade');
-    }
-
-    // Reset to page 1 when filters change
+    
+    // Reset pagination when filters change
     params.delete('page');
+    
+    router.push(`/students?${params.toString()}`);
+  }, [router, searchParams]);
 
-    // Use a debounce for search
-    const timeoutId = setTimeout(() => {
-      router.push(`?${params.toString()}`, { scroll: false });
-    }, 300);
+  const clearAllFilters = useCallback(() => {
+    router.push('/students');
+  }, [router]);
 
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery, selectedGrade, router, searchParams]);
+  const activeFiltersCount = [currentGrade, currentStatus, currentHasHealthAlerts].filter(Boolean).length;
+
+  const getFilterTags = () => {
+    const tags = [];
+    
+    if (currentGrade) {
+      tags.push({
+        key: 'grade',
+        label: `${currentGrade} Grade`,
+        value: currentGrade
+      });
+    }
+    
+    if (currentStatus) {
+      const status = STATUSES.find(s => s.value === currentStatus);
+      tags.push({
+        key: 'status',
+        label: status?.label || currentStatus,
+        value: currentStatus
+      });
+    }
+    
+    if (currentHasHealthAlerts === 'true') {
+      tags.push({
+        key: 'hasHealthAlerts',
+        label: 'Has Health Alerts',
+        value: currentHasHealthAlerts
+      });
+    }
+    
+    return tags;
+  };
 
   return (
-    <Card className="p-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Search */}
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-gray-400" />
+    <Card>
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Users className="h-5 w-5 text-gray-600" />
+            <h2 className="text-lg font-semibold text-gray-900">
+              Students
+              {totalCount > 0 && (
+                <span className="ml-2 text-sm font-normal text-gray-500">
+                  ({totalCount.toLocaleString()} total)
+                </span>
+              )}
+            </h2>
           </div>
+          <div className="flex items-center gap-2">
+            {activeFiltersCount > 0 && (
+              <Button variant="ghost" size="sm" onClick={clearAllFilters}>
+                <X className="h-4 w-4 mr-1" />
+                Clear All
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+            >
+              <Filter className="h-4 w-4 mr-1" />
+              Filters
+              {activeFiltersCount > 0 && (
+                <Badge variant="secondary" className="ml-2 text-xs">
+                  {activeFiltersCount}
+                </Badge>
+              )}
+            </Button>
+          </div>
+        </div>
+
+        {/* Search Bar */}
+        <div className="relative mb-4">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Search students..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Search students by name, ID, or grade..."
+            defaultValue={currentSearch}
+            onChange={(e) => updateFilters('search', e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            aria-label="Search students"
           />
         </div>
 
-        {/* Grade Filter */}
-        <div>
-          <select
-            value={selectedGrade}
-            onChange={(e) => setSelectedGrade(e.target.value)}
-            className="block w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="all">All Grades</option>
-            {GRADES.map((grade) => (
-              <option key={grade} value={grade}>
-                {grade} Grade
-              </option>
+        {/* Filter Tags */}
+        {getFilterTags().length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-4">
+            {getFilterTags().map((tag) => (
+              <Badge
+                key={`${tag.key}-${tag.value}`}
+                variant="secondary"
+                className="flex items-center gap-1 px-3 py-1"
+              >
+                {tag.label}
+                <button
+                  onClick={() => updateFilters(tag.key, '')}
+                  className="ml-1 hover:text-gray-700"
+                  aria-label={`Remove ${tag.label} filter`}
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
             ))}
-          </select>
-        </div>
+          </div>
+        )}
 
-        {/* Results Count (populated by parent) */}
-        <div className="flex items-center text-sm text-gray-500">
-          <Users className="h-4 w-4 mr-2" />
-          <span id="student-count">Loading...</span>
-        </div>
+        {/* Advanced Filters */}
+        {showAdvanced && (
+          <div className="border-t pt-4 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Grade Filter */}
+              <div>
+                <label htmlFor="grade-filter" className="block text-sm font-medium text-gray-700 mb-1">
+                  Grade Level
+                </label>
+                <select
+                  id="grade-filter"
+                  value={currentGrade}
+                  onChange={(e) => updateFilters('grade', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">All Grades</option>
+                  {GRADES.map((grade) => (
+                    <option key={grade} value={grade}>
+                      {grade} Grade
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Status Filter */}
+              <div>
+                <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 mb-1">
+                  Status
+                </label>
+                <select
+                  id="status-filter"
+                  value={currentStatus}
+                  onChange={(e) => updateFilters('status', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">All Statuses</option>
+                  {STATUSES.map((status) => (
+                    <option key={status.value} value={status.value}>
+                      {status.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Health Alerts Filter */}
+              <div>
+                <label htmlFor="health-filter" className="block text-sm font-medium text-gray-700 mb-1">
+                  Health Alerts
+                </label>
+                <select
+                  id="health-filter"
+                  value={currentHasHealthAlerts}
+                  onChange={(e) => updateFilters('hasHealthAlerts', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">All Students</option>
+                  <option value="true">With Health Alerts</option>
+                  <option value="false">No Health Alerts</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Quick Filters */}
+            <div>
+              <p className="text-sm font-medium text-gray-700 mb-2">Quick Filters</p>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => updateFilters('status', 'ACTIVE')}
+                  className={currentStatus === 'ACTIVE' ? 'bg-blue-50 border-blue-200' : ''}
+                >
+                  <UserCheck className="h-4 w-4 mr-1" />
+                  Active Students
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => updateFilters('hasHealthAlerts', 'true')}
+                  className={currentHasHealthAlerts === 'true' ? 'bg-orange-50 border-orange-200' : ''}
+                >
+                  <AlertTriangle className="h-4 w-4 mr-1" />
+                  Health Alerts
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => updateFilters('grade', '12th')}
+                  className={currentGrade === '12th' ? 'bg-purple-50 border-purple-200' : ''}
+                >
+                  <GraduationCap className="h-4 w-4 mr-1" />
+                  Seniors (12th)
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </Card>
   );
