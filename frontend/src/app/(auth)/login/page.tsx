@@ -1,6 +1,12 @@
 'use client';
 
 /**
+ * Force dynamic rendering for authentication
+ * Login requires access to request headers, cookies, and real-time authentication state
+ */
+export const dynamic = 'force-dynamic';
+
+/**
  * @fileoverview Login Page - Primary Authentication Interface
  *
  * This page implements the main authentication interface for White Cross Healthcare Platform.

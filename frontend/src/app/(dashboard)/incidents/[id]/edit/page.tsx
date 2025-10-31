@@ -155,7 +155,7 @@ export const metadata: Metadata = {
 };
 
 // Force dynamic rendering due to auth requirements and CSRF protection
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * Edit Incident Page Component

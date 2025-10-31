@@ -126,7 +126,7 @@ export const metadata: Metadata = {
  *
  * @type {string}
  */
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * Secure Document Upload Page Component

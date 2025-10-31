@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/Button';
 import { ClockIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 
 // Force dynamic rendering due to auth requirements
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 
 interface AdministrationsPageProps {

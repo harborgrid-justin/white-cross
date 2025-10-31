@@ -1,5 +1,11 @@
 'use client';
 
+/**
+ * Force dynamic rendering for real-time appointment data
+ * Appointment schedules change frequently and require current information
+ */
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect } from 'react';
 import { fetchAppointmentsDashboardData } from './data';
 import { type Appointment } from '@/types/appointments';

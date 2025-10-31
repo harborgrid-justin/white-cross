@@ -97,7 +97,7 @@ export const metadata: Metadata = {
 /**
  * Force dynamic rendering for real-time count data and variance calculation.
  */
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * Physical Inventory Counts Page Component

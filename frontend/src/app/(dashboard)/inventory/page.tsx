@@ -40,14 +40,23 @@ import { InventoryDashboardContent } from './_components/InventoryDashboardConte
  */
 export const metadata: Metadata = {
   title: 'Inventory Dashboard | White Cross',
-  description: 'Inventory management overview and statistics',
+  description: 'Medical supply and medication inventory management with stock tracking, expiration monitoring, and automated alerts',
+  robots: {
+    index: false,
+    follow: false,
+  },
+  openGraph: {
+    title: 'Inventory Management | White Cross Healthcare',
+    description: 'Healthcare inventory tracking system with real-time stock levels, expiration alerts, and supply management',
+    type: 'website',
+  },
 };
 
 /**
  * Force dynamic rendering to ensure fresh authentication and real-time inventory data.
  * Required for accurate stock levels and alert counts.
  */
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * Inventory Dashboard Page Component

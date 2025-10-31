@@ -81,7 +81,7 @@ export const metadata: Metadata = {
  *
  * @type {string}
  */
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * Document Templates Library Page Component

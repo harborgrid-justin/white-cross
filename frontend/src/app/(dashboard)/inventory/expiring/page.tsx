@@ -87,7 +87,7 @@ export const metadata: Metadata = {
 /**
  * Force dynamic rendering for real-time expiration tracking.
  */
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * Expiring Items Monitoring Page Component

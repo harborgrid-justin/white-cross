@@ -62,7 +62,16 @@ import {
  */
 export const metadata: Metadata = {
   title: 'Analytics Dashboard | White Cross',
-  description: 'Comprehensive analytics and reporting dashboard',
+  description: 'Comprehensive analytics and reporting dashboard with health metrics, medication compliance, appointment tracking, and incident trends',
+  robots: {
+    index: false,
+    follow: false,
+  },
+  openGraph: {
+    title: 'Analytics Dashboard | White Cross Healthcare',
+    description: 'Real-time healthcare analytics for student health, medication compliance, and operational insights',
+    type: 'website',
+  },
 };
 
 /**
@@ -75,7 +84,7 @@ export const metadata: Metadata = {
  *
  * @type {"force-dynamic"}
  */
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 const analyticsModules = [
   {

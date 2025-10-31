@@ -1,6 +1,12 @@
 'use client';
 
 /**
+ * Force dynamic rendering for session expiration handling
+ * Requires access to authentication state and URL parameters
+ */
+export const dynamic = 'force-dynamic';
+
+/**
  * @fileoverview Session Expired Page - Session Timeout and Token Expiration Handler
  *
  * This page is displayed when a user's authentication session expires or becomes invalid.

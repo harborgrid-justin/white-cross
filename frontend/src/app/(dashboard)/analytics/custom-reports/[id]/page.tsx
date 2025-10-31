@@ -65,7 +65,7 @@ import { toast } from 'sonner';
  *
  * @type {"force-dynamic"}
  */
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * Custom Report Detail Page Component

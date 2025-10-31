@@ -118,7 +118,7 @@ export const metadata: Metadata = {
 };
 
 // Force dynamic rendering due to auth requirements and real-time action status
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * Follow-Up Actions List Component

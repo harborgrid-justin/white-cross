@@ -83,6 +83,12 @@
  * @see {@link https://www.hhs.gov/hipaa/for-professionals/privacy/laws-regulations/index.html|HIPAA Privacy Rule}
  */
 
+/**
+ * Force dynamic rendering for form editing - requires current form data
+ */
+export const dynamic = 'force-dynamic';
+
+
 import { Metadata } from 'next'
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'

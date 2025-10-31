@@ -1,3 +1,8 @@
+/**
+ * Force dynamic rendering for user-specific billing notifications
+ */
+export const dynamic = 'force-dynamic';
+
 import { BillingNotifications } from '@/components/pages/Billing';
 
 /**

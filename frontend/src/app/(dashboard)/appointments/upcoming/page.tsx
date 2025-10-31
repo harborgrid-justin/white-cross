@@ -89,7 +89,7 @@ export const metadata: Metadata = {
  *
  * Must be dynamic because date range is calculated from "today".
  */
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * Grouped Appointments Type Definition

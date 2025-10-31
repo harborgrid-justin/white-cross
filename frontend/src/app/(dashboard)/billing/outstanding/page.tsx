@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * Force dynamic rendering for outstanding balances - financial data changes frequently
+ */
+export const dynamic = 'force-dynamic';
+
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Card } from '@/components/ui/layout/Card';
 

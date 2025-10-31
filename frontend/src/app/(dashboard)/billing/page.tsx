@@ -1,8 +1,26 @@
+import { Metadata } from 'next';
 import { BillingHeader, BillingList } from '@/components/pages/Billing';
 
 /**
+ * Page metadata for SEO and browser display
+ */
+export const metadata: Metadata = {
+  title: 'Billing & Invoices | White Cross',
+  description: 'Manage invoices, track payments, and monitor billing operations for healthcare services',
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
+/**
+ * Force dynamic rendering for real-time financial data
+ */
+export const dynamic = 'force-dynamic';
+
+/**
  * Billing Dashboard Page
- * 
+ *
  * Main billing and invoicing dashboard with financial metrics,
  * invoice management, and billing operations overview.
  */

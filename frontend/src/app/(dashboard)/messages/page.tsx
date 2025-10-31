@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * Force dynamic rendering for real-time messages - communication data requires current state
+ */
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Card } from '@/components/ui/layout/Card';

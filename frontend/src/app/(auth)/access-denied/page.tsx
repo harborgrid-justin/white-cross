@@ -55,7 +55,7 @@
  */
 
 // Force dynamic rendering due to auth context
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 export const runtime = 'edge';
 
 import { useRouter } from 'next/navigation';

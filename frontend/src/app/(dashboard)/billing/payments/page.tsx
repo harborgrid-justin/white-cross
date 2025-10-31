@@ -1,5 +1,11 @@
 'use client';
 
+/**
+ * Force dynamic rendering for user-specific payment data
+ * Payment records are sensitive financial information that requires real-time accuracy
+ */
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect } from 'react';
 import { BillingPayment } from '@/components/pages/Billing';
 import { BillingPaymentRecord } from '@/components/pages/Billing/BillingPayment';

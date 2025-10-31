@@ -99,11 +99,20 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Incident Reports | White Cross',
-  description: 'Manage and track incident reports',
+  description: 'Track and manage student health and safety incidents with comprehensive reporting and investigation tools',
+  robots: {
+    index: false,
+    follow: false,
+  },
+  openGraph: {
+    title: 'Incident Reports | White Cross Healthcare',
+    description: 'Student health and safety incident tracking system with real-time monitoring and compliance reporting',
+    type: 'website',
+  },
 };
 
 // Force dynamic rendering due to auth requirements and real-time incident data
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * Incidents List Page Component

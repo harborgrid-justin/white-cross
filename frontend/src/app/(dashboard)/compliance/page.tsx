@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * Force dynamic rendering for compliance monitoring - requires current data
+ */
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect } from 'react';
 import { fetchComplianceDashboardData } from './data';
 import { type ComplianceReport } from '@/types/reports';

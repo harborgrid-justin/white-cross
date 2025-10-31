@@ -93,7 +93,7 @@ export const metadata: Metadata = {
  *
  * @constant {string} dynamic - Disables static generation
  */
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * Recurring Appointments Page Component

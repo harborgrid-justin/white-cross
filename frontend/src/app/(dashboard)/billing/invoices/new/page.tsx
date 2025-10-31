@@ -1,3 +1,8 @@
+/**
+ * Force dynamic rendering for invoice creation - requires current billing data
+ */
+export const dynamic = 'force-dynamic';
+
 import { BillingInvoiceBuilder } from '@/components/pages/Billing';
 
 /**

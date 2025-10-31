@@ -5,6 +5,12 @@
  * Calendar view of medication administrations with filtering and navigation.
  */
 
+/**
+ * Force dynamic rendering for medication calendar - schedule changes frequently
+ */
+export const dynamic = 'force-dynamic';
+
+
 'use client';
 
 import { useState, useEffect } from 'react';

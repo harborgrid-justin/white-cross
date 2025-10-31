@@ -115,7 +115,7 @@ import { FollowUpForm } from '@/components/incidents/FollowUpForm';
 import { useRouter } from 'next/navigation';
 
 // Force dynamic rendering due to auth requirements and CSRF protection
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * New Follow-Up Action Page Component

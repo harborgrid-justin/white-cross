@@ -73,7 +73,7 @@ import { WitnessStatementForm } from '@/components/incidents/WitnessStatementFor
 import { useRouter } from 'next/navigation';
 
 // Force dynamic rendering due to auth requirements and CSRF protection
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * Witness Statement Collection Page Component

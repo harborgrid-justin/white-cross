@@ -1,5 +1,11 @@
 'use client';
 
+/**
+ * Force dynamic rendering for user-specific profile data
+ * Profile information requires authentication and varies per user
+ */
+export const dynamic = 'force-dynamic';
+
 import { useAuthContext } from '@/contexts/AuthContext';
 import { Card } from '@/components/ui/layout/Card';
 import { PageHeader } from '@/components/shared/PageHeader';

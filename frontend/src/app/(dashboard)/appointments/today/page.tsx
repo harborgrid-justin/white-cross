@@ -76,7 +76,7 @@ export const metadata: Metadata = {
  * Must be dynamic because "today" changes every day.
  * Static generation would cache a specific date permanently.
  */
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * Today's Appointments Page Component
