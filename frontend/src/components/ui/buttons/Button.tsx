@@ -14,23 +14,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-/**
- * Utility function for merging Tailwind CSS class names.
- * Combines clsx for conditional classes with tailwind-merge for deduplication.
- *
- * @param inputs - Array of class name strings or undefined values
- * @returns Merged and deduplicated class name string
- *
- * @example
- * ```typescript
- * cn('bg-blue-500', 'bg-red-500') // Returns 'bg-red-500' (last wins)
- * cn('px-4', undefined, 'py-2') // Returns 'px-4 py-2' (filters undefined)
- * ```
- */
-const cn = (...inputs: (string | undefined)[]) => twMerge(clsx(inputs));
+import { cn } from '@/lib/utils';
 
 /**
  * Button component props extending native HTML button attributes.
@@ -228,7 +212,7 @@ export const Button = React.memo(React.forwardRef<HTMLButtonElement, ButtonProps
       'motion-reduce:transition-none motion-reduce:transform-none',
       buttonVariants[variant],
       buttonSizes[size],
-      fullWidth && 'w-full',
+      fullWidth ? 'w-full' : '',
       className
     );
 
@@ -240,7 +224,7 @@ export const Button = React.memo(React.forwardRef<HTMLButtonElement, ButtonProps
             <svg
               className={cn(
                 'animate-spin h-4 w-4',
-                children && 'mr-2'
+                children ? 'mr-2' : ''
               )}
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -267,7 +251,7 @@ export const Button = React.memo(React.forwardRef<HTMLButtonElement, ButtonProps
         )}
 
         {!loading && finalIcon && finalIconPosition === 'left' && (
-          <span className={cn(children && 'mr-2')}>
+          <span className={cn(children ? 'mr-2' : '')}>
             {finalIcon}
           </span>
         )}
@@ -275,7 +259,7 @@ export const Button = React.memo(React.forwardRef<HTMLButtonElement, ButtonProps
         {children}
 
         {!loading && finalIcon && finalIconPosition === 'right' && (
-          <span className={cn(children && 'ml-2')}>
+          <span className={cn(children ? 'ml-2' : '')}>
             {finalIcon}
           </span>
         )}

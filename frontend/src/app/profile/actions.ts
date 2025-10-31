@@ -72,6 +72,10 @@ export interface UserProfile {
   role: 'admin' | 'nurse' | 'staff' | 'viewer';
   permissions: string[];
   avatar?: string;
+  profileImage?: string;
+  employeeId: string;
+  hireDate: string;
+  lastLogin: string;
   timezone: string;
   locale: string;
   dateFormat: string;
@@ -84,6 +88,46 @@ export interface UserProfile {
   lastLoginAt?: string;
   createdAt: string;
   updatedAt: string;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+  };
+  emergencyContact: {
+    name: string;
+    relationship: string;
+    phone: string;
+  };
+  security: {
+    twoFactorEnabled: boolean;
+    lastPasswordChange: string;
+    sessionTimeout: number;
+  };
+  certifications: Array<{
+    id: string;
+    name: string;
+    issuer: string;
+    status: 'active' | 'expiring' | 'expired';
+    issueDate: string;
+    expiryDate: string;
+  }>;
+  recentActivity: Array<{
+    id: string;
+    action: string;
+    resource: string;
+    device: string;
+    timestamp: string;
+    ipAddress: string;
+  }>;
+  preferences: {
+    emailNotifications: boolean;
+    smsNotifications: boolean;
+    desktopNotifications: boolean;
+    language: string;
+    timezone: string;
+    theme: 'light' | 'dark' | 'auto';
+  };
 }
 
 export interface UpdateProfileData {

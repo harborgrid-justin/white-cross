@@ -13,10 +13,7 @@
  */
 
 import React from 'react';
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-const cn = (...inputs: (string | undefined)[]) => twMerge(clsx(inputs));
+import { cn } from '@/lib/utils';
 
 /**
  * Props for the Pagination component.

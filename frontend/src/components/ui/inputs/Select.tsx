@@ -13,18 +13,7 @@
  */
 
 import React, { useState, useRef, useEffect } from 'react';
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-/**
- * Utility function for merging Tailwind CSS class names.
- *
- * @param inputs - Array of class name strings or undefined values
- * @returns Merged and deduplicated class name string
- *
- * @internal
- */
-const cn = (...inputs: (string | undefined)[]) => twMerge(clsx(inputs));
+import { cn } from '@/lib/utils';
 
 /**
  * Option object for Select component.

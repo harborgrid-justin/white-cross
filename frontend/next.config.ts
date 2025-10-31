@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 /**
- * Next.js 15 Production Configuration - White Cross Healthcare Platform
+ * Next.js 16 Production Configuration - White Cross Healthcare Platform
  *
  * Enterprise-grade configuration optimized for healthcare environments with comprehensive
  * security, performance, and compliance features. This configuration serves as the main
@@ -124,11 +124,14 @@ const nextConfig: NextConfig = {
       'react-hook-form',
     ],
 
-    // Enable partial pre-rendering (Next.js 15+)
+    // Enable partial pre-rendering (Next.js 16+)
     // ppr: true,
 
     // Optimize CSS
     optimizeCss: true,
+
+    // Enable Next.js v16 cache features
+    cacheComponents: true,
   },
 
   // ==========================================
@@ -509,6 +512,7 @@ const nextConfig: NextConfig = {
 
     // Bundle analyzer (enable with ANALYZE=true environment variable)
     if (process.env.ANALYZE === 'true') {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
       config.plugins.push(
         new BundleAnalyzerPlugin({

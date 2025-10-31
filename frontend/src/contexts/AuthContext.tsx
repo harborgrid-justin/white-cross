@@ -15,7 +15,7 @@
  * @module contexts/AuthContext
  */
 
-import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -82,9 +82,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const authState = useSelector((state: RootState) => state.auth);
   const { user, isAuthenticated, isLoading, error, sessionExpiresAt } = authState;
 
-  // Local state for activity tracking
-  const [lastActivityAt, setLastActivityAt] = useState<number>(Date.now());
+  // Local state for activity tracking - initialize with 0 to avoid SSR hydration mismatch
+  const [lastActivityAt, setLastActivityAt] = useState<number>(0);
   const [showSessionWarning, setShowSessionWarning] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   // Refs for intervals and broadcast channel
   const activityCheckInterval = useRef<NodeJS.Timeout>();
@@ -93,10 +94,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const isBroadcastChannelSupported = useRef<boolean>(false);
 
   // ==========================================
+  // HYDRATION HANDLING
+  // ==========================================
+
+  // Handle client-side hydration to avoid SSR mismatch
+  useEffect(() => {
+    setIsHydrated(true);
+    setLastActivityAt(Date.now());
+  }, []);
+
+  // ==========================================
   // ACTIVITY TRACKING
   // ==========================================
 
   const updateActivity = useCallback(() => {
+    if (!isHydrated) return; // Don't update activity until hydrated
+    
     const now = Date.now();
     setLastActivityAt(now);
 
@@ -111,7 +124,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         console.warn('[Auth] Failed to broadcast activity:', error);
       }
     }
-  }, []);
+  }, [isHydrated]);
 
   // Track user activity events
   useEffect(() => {
@@ -135,10 +148,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // ==========================================
 
   const checkSession = useCallback((): boolean => {
-    if (!isAuthenticated) return false;
+    if (!isAuthenticated || !isHydrated) return false;
 
     const now = Date.now();
     const idleTime = now - lastActivityAt;
+
+    // Don't check session until we have a valid lastActivityAt
+    if (lastActivityAt === 0) return true;
 
     // Check HIPAA idle timeout
     if (idleTime >= HIPAA_IDLE_TIMEOUT) {
@@ -164,7 +180,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     return true;
-  }, [isAuthenticated, lastActivityAt, sessionExpiresAt, showSessionWarning, dispatch, router]);
+  }, [isAuthenticated, isHydrated, lastActivityAt, sessionExpiresAt, showSessionWarning, dispatch, router]);
 
   // Periodic session checking
   useEffect(() => {
@@ -222,7 +238,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Check if BroadcastChannel is available via window (not available in Edge Runtime)
     // Using window/globalThis reference prevents static analysis issues
     const BroadcastChannelConstructor = (typeof window !== 'undefined' && 'BroadcastChannel' in window)
-      ? (window as any).BroadcastChannel
+      ? (window as typeof globalThis & { BroadcastChannel: typeof BroadcastChannel }).BroadcastChannel
       : undefined;
 
     if (!BroadcastChannelConstructor) {
@@ -412,7 +428,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
             setShowSessionWarning(false);
           }}
           onLogout={logout}
-          timeRemaining={HIPAA_IDLE_TIMEOUT - (Date.now() - lastActivityAt)}
+          lastActivityAt={lastActivityAt}
+          isHydrated={isHydrated}
         />
       )}
     </AuthContext.Provider>
@@ -426,11 +443,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
 interface SessionWarningModalProps {
   onExtend: () => void;
   onLogout: () => void;
-  timeRemaining: number;
+  lastActivityAt: number;
+  isHydrated: boolean;
 }
 
-function SessionWarningModal({ onExtend, onLogout, timeRemaining }: SessionWarningModalProps) {
-  const [countdown, setCountdown] = useState(Math.floor(timeRemaining / 1000));
+function SessionWarningModal({ onExtend, onLogout, lastActivityAt, isHydrated }: SessionWarningModalProps) {
+  const [countdown, setCountdown] = useState(120); // Default to 2 minutes
+
+  useEffect(() => {
+    // Calculate initial countdown based on lastActivityAt
+    if (isHydrated && lastActivityAt > 0) {
+      const timeRemaining = HIPAA_IDLE_TIMEOUT - (Date.now() - lastActivityAt);
+      setCountdown(Math.floor(Math.max(0, timeRemaining) / 1000));
+    }
+  }, [lastActivityAt, isHydrated]);
 
   useEffect(() => {
     const interval = setInterval(() => {

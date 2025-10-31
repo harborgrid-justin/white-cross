@@ -11,6 +11,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 interface TemplateProps {
   children: React.ReactNode;
@@ -18,9 +19,21 @@ interface TemplateProps {
 
 /**
  * Page transition template with fade animation
+ * Handles hydration properly to avoid SSR mismatches
  */
 export default function Template({ children }: TemplateProps) {
   const pathname = usePathname();
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Handle client-side hydration to avoid SSR mismatch with animations
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
+  // Don't render animations until hydration is complete
+  if (!isHydrated) {
+    return <div>{children}</div>;
+  }
 
   return (
     <AnimatePresence mode="wait">

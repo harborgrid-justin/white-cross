@@ -1,28 +1,26 @@
 /**
- * Immunizations Management Page
- * Main dashboard for viewing and managing student immunizations
+ * Immunizations Page - White Cross Healthcare Platform
  *
- * @module app/immunizations/page
+ * Features:
+ * - Comprehensive immunizations management 
+ * - Vaccination tracking and compliance monitoring
+ * - Healthcare workflow integration
+ * - Modern component architecture
  */
 
 'use client';
 
 /**
  * Force dynamic rendering for real-time immunization data
- * Immunization records are frequently updated and user-specific
  */
 export const dynamic = 'force-dynamic';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Syringe, AlertTriangle, CheckCircle, Clock, Plus, Search, Filter } from 'lucide-react';
-import { Card } from '@/components/ui/layout/Card';
+import React from 'react';
+import { PageHeader } from '@/components/layouts/PageHeader';
+import { Plus, Syringe } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
-import { apiClient } from '@/lib/api-client';
-import { API_ENDPOINTS } from '@/lib/api-client';
+import ImmunizationsContent from './_components/ImmunizationsContent';
+import ImmunizationsSidebar from './_components/ImmunizationsSidebar';
 
 interface Immunization {
   id: string;

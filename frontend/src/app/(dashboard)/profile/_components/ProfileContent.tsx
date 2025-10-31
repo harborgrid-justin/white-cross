@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   User, 
   Settings, 
@@ -24,31 +24,95 @@ import {
   Award,
   Clock,
   Check,
-  Camera
+  Camera,
+  AlertTriangle,
+  Download,
+  Upload,
+  FileText,
+  Trash2,
+  Eye,
+  EyeOff,
+  MapPin
 } from 'lucide-react';
+
+// Import server actions
+import { 
+  getCurrentUserProfile, 
+  getProfileSettings,
+  getSecurityLogs,
+  getActiveSessions,
+  updateProfileFromForm,
+  changePasswordFromForm,
+  uploadAvatarAction,
+  enableTwoFactorAction,
+  disableTwoFactorAction,
+  type UserProfile,
+  type ProfileSettings,
+  type SecurityLog,
+  type ActiveSession
+} from '@/app/profile/actions';
 
 interface ProfileContentProps {
   searchParams: { [key: string]: string | string[] | undefined };
 }
 
 export function ProfileContent({ }: ProfileContentProps) {
-  // Mock user profile data
-  const [profile] = useState({
-    id: 'user-001',
-    firstName: 'Sarah',
-    lastName: 'Johnson',
-    email: 'sarah.johnson@whitecross.edu',
-    phone: '+1 (555) 123-4567',
-    role: 'School Nurse',
-    department: 'Health Services',
-    title: 'Senior School Nurse',
-    employeeId: 'WC-NS-2021-001',
-    hireDate: '2021-08-15',
-    lastLogin: '2024-01-15T10:30:00Z'
-  });
+  // Profile data state
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [settings, setSettings] = useState<ProfileSettings | null>(null);
+  const [securityLogs, setSecurityLogs] = useState<SecurityLog[]>([]);
+  const [sessions, setSessions] = useState<ActiveSession[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // State for editing modes
   const [editingPersonal, setEditingPersonal] = useState(false);
+  const [editingContact, setEditingContact] = useState(false);
+  const [editingEmergency, setEditingEmergency] = useState(false);
+  
+  // Form states
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+    showCurrent: false,
+    showNew: false,
+    showConfirm: false
+  });
+
+  // Submitting states
+  const [submitting, setSubmitting] = useState(false);
+
+  // Load profile data on component mount
+  useEffect(() => {
+    const loadProfileData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Load all profile data concurrently
+        const [profileData, settingsData, logsData, sessionsData] = await Promise.all([
+          getCurrentUserProfile(),
+          getProfileSettings('current'), // Use 'current' for current user
+          getSecurityLogs('current', 10),
+          getActiveSessions('current')
+        ]);
+
+        setProfile(profileData);
+        setSettings(settingsData);
+        setSecurityLogs(logsData);
+        setSessions(sessionsData);
+      } catch (err) {
+        console.error('Failed to load profile data:', err);
+        setError('Failed to load profile data. Please refresh the page.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProfileData();
+  }, []);
 
   // Helper functions
   const formatDate = (dateString: string) => {
@@ -68,6 +132,139 @@ export function ProfileContent({ }: ProfileContentProps) {
       minute: '2-digit'
     });
   };
+
+  const getCertificationStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'bg-green-100 text-green-800';
+      case 'expiring':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'expired':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  // Handle profile update
+  const handleProfileUpdate = async (formData: FormData) => {
+    if (!profile) return;
+    
+    try {
+      setSubmitting(true);
+      const result = await updateProfileFromForm(profile.userId, formData);
+      
+      if (result.success && result.data) {
+        setProfile(result.data);
+        setEditingPersonal(false);
+        setError(null);
+      } else {
+        setError(result.error || 'Failed to update profile');
+      }
+    } catch (err) {
+      setError('Failed to update profile. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Handle password change
+  const handlePasswordChange = async () => {
+    if (!profile) return;
+    
+    try {
+      setSubmitting(true);
+      const formData = new FormData();
+      formData.append('currentPassword', passwordForm.currentPassword);
+      formData.append('newPassword', passwordForm.newPassword);
+      formData.append('confirmPassword', passwordForm.confirmPassword);
+      
+      const result = await changePasswordFromForm(profile.userId, formData);
+      
+      if (result.success) {
+        setShowPasswordForm(false);
+        setPasswordForm({
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: '',
+          showCurrent: false,
+          showNew: false,
+          showConfirm: false
+        });
+        setError(null);
+      } else {
+        setError(result.error || 'Failed to change password');
+      }
+    } catch (err) {
+      setError('Failed to change password. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Handle 2FA toggle
+  const handleTwoFactorToggle = async () => {
+    if (!profile) return;
+    
+    try {
+      setSubmitting(true);
+      const result = profile.twoFactorEnabled 
+        ? await disableTwoFactorAction(profile.userId)
+        : await enableTwoFactorAction(profile.userId);
+      
+      if (result.success) {
+        // Reload profile to get updated 2FA status
+        const updatedProfile = await getCurrentUserProfile();
+        if (updatedProfile) {
+          setProfile(updatedProfile);
+        }
+        setError(null);
+      } else {
+        setError(result.error || 'Failed to update two-factor authentication');
+      }
+    } catch (err) {
+      setError('Failed to update two-factor authentication. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span className="ml-3 text-gray-600">Loading profile...</span>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error && !profile) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <AlertTriangle className="h-12 w-12 text-red-600 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Profile</h3>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-600">No profile data available.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

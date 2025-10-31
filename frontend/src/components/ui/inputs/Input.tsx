@@ -13,19 +13,7 @@
  */
 
 import React from 'react';
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-/**
- * Utility function for merging Tailwind CSS class names.
- * Combines clsx for conditional classes with tailwind-merge for deduplication.
- *
- * @param inputs - Array of class name strings or undefined values
- * @returns Merged and deduplicated class name string
- *
- * @internal
- */
-const cn = (...inputs: (string | undefined)[]) => twMerge(clsx(inputs));
+import { cn } from '@/lib/utils';
 
 /**
  * Props for the Input component.

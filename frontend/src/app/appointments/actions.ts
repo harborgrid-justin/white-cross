@@ -115,19 +115,18 @@ export const getAppointments = cache(async (filters?: {
 
 /**
  * Get appointment by ID with caching
- * Uses Next.js v16 cacheLife with 10-minute expiration
+ * Uses Next.js standard caching with 10-minute expiration
  */
 export const getAppointment = cache(async (id: string): Promise<Appointment | null> => {
-  'use cache';
-  cacheLife(600); // 10 minutes
-  cacheTag(`appointment-${id}`, 'appointments', CACHE_TAGS.PHI);
-  
   try {
     const response = await serverGet<{ data: Appointment }>(
       API_ENDPOINTS.APPOINTMENTS.BY_ID(id),
       undefined,
       {
-        next: { tags: [`appointment-${id}`, 'appointments', CACHE_TAGS.PHI] }
+        next: { 
+          revalidate: 600, // 10 minutes
+          tags: [`appointment-${id}`, 'appointments', CACHE_TAGS.PHI] 
+        }
       }
     );
 
@@ -140,17 +139,13 @@ export const getAppointment = cache(async (id: string): Promise<Appointment | nu
 
 /**
  * Get upcoming appointments with caching
- * Uses Next.js v16 cacheLife with 2-minute expiration for real-time updates
+ * Uses Next.js standard caching with 2-minute expiration for real-time updates
  */
 export const getUpcomingAppointments = cache(async (limit = 10): Promise<Appointment[]> => {
-  'use cache';
-  cacheLife(120); // 2 minutes for upcoming appointments
-  cacheTag('upcoming-appointments', 'appointments');
-  
   try {
     const response = await fetch(`${API_ENDPOINTS.APPOINTMENTS.BASE}/upcoming?limit=${limit}`, {
       next: { 
-        revalidate: 120,
+        revalidate: 120, // 2 minutes
         tags: ['upcoming-appointments', 'appointments'] 
       }
     });
