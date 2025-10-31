@@ -10,6 +10,8 @@
 
 import { Metadata } from 'next';
 import { Container } from '@/components/layouts/Container';
+import { PageHeader } from '@/components/layouts/PageHeader';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/layout/Card';
 import {
   Users,
   Pill,
@@ -75,26 +77,18 @@ export default function DashboardPage() {
   return (
     <Container>
       <div className="space-y-6">
-        {/* Page Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            Dashboard
-          </h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Welcome back! Here's what's happening in your healthcare facility.
-          </p>
-        </div>
+        <PageHeader
+          title="Dashboard"
+          description="Welcome back! Here's what's happening in your healthcare facility."
+        />
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat) => {
             const Icon = stat.icon;
             return (
-              <div
-                key={stat.name}
-                className="relative bg-white dark:bg-gray-800 overflow-hidden rounded-lg shadow hover:shadow-md transition-shadow"
-              >
-                <div className="p-5">
+              <Card key={stat.name} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-5">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
                       <Icon
@@ -126,8 +120,8 @@ export default function DashboardPage() {
                       </dl>
                     </div>
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             );
           })}
         </div>
@@ -135,11 +129,11 @@ export default function DashboardPage() {
         {/* Recent Activity & Quick Actions Grid */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {/* Recent Activity */}
-          <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
-            <div className="p-6">
-              <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
-                Recent Activity
-              </h2>
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Activity</CardTitle>
+            </CardHeader>
+            <CardContent>
               <div className="space-y-4">
                 {[
                   {
@@ -179,15 +173,15 @@ export default function DashboardPage() {
                   </div>
                 ))}
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
           {/* Quick Actions */}
-          <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
-            <div className="p-6">
-              <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
-                Quick Actions
-              </h2>
+          <Card>
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent>
               <div className="grid grid-cols-2 gap-3">
                 {[
                   { name: 'Add Student', href: '/students/new', icon: Users },
@@ -218,8 +212,8 @@ export default function DashboardPage() {
                   );
                 })}
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Alerts/Notices */}

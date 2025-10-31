@@ -699,6 +699,11 @@ export class AuditService implements IAuditService {
    * Load failed events from localStorage
    */
   private loadFailedEvents(): void {
+    // Only access localStorage in browser environment
+    if (typeof window === 'undefined') {
+      return;
+    }
+
     try {
       const stored = localStorage.getItem(this.config.localStorageKey);
       if (stored) {

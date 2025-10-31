@@ -90,12 +90,6 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { listIncidents } from '@/actions/incidents.actions';
-import { IncidentCard } from '@/components/incidents/IncidentCard';
-import { Card } from '@/components/ui/layout/Card';
-import { Badge } from '@/components/ui/display/Badge';
-import { Button } from '@/components/ui/Button';
-import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Incident Reports | White Cross',
@@ -117,167 +111,97 @@ export const dynamic = 'force-dynamic';
 /**
  * Incidents List Page Component
  *
- * Server component that renders the main incident management dashboard with real-time
- * statistics, filtering options, and incident cards. Fetches incident data server-side
- * for optimal performance and SEO.
+ * Server component that renders the main incident management dashboard using Next.js v16
+ * patterns with local components and modern architecture.
  *
  * @component
  * @async
  *
- * @returns {Promise<JSX.Element>} Rendered incidents dashboard with statistics, filters, and incident grid
+ * @returns {Promise<JSX.Element>} Rendered incidents dashboard with filtering and content
  *
  * @description
- * Displays comprehensive incident dashboard with:
- * - Statistics cards showing incident counts by status
- * - Quick filter badges for incident types and statuses
- * - Grid layout of incident cards with severity and status indicators
- * - Navigation to analytics, reports, and incident creation
- *
- * Data is fetched server-side with:
- * - 50 incidents per page (pagination supported)
- * - Sorted by incident date descending (most recent first)
- * - Filtered by user permissions (handled in listIncidents action)
+ * Modern Next.js v16 implementation with:
+ * - Local _components for feature-specific UI logic
+ * - Search params integration for filtering
+ * - Parallel routes support (@modal, @sidebar)
+ * - Responsive design with proper loading states
  *
  * @example
  * ```tsx
  * // Rendered automatically at route /incidents
- * // No props required - server component fetches own data
- * <IncidentsListPage />
+ * // Search params automatically passed for filtering
+ * <IncidentsListPage searchParams={{ type: 'INJURY', status: 'PENDING_REVIEW' }} />
  * ```
  */
-export default async function IncidentsListPage() {
-  // Fetch incidents with pagination and sorting
-  // listIncidents action handles authentication and authorization
-  const result = await listIncidents({ limit: 50, sortBy: 'incidentDate', sortOrder: 'desc' });
-  const incidents = result.data?.incidents || [];
 
-  // Calculate real-time statistics from current incident set
-  // These stats reflect only incidents visible to the current user based on their role
-  const stats = result.data
-    ? {
-        total: result.data.total,
-        // Count incidents by status for dashboard cards
-        pending: incidents.filter((i) => i.status === 'PENDING_REVIEW').length,
-        investigating: incidents.filter((i) => i.status === 'UNDER_INVESTIGATION').length,
-        requiresAction: incidents.filter((i) => i.status === 'REQUIRES_ACTION').length,
-      }
-    : { total: 0, pending: 0, investigating: 0, requiresAction: 0 };
+import { Suspense } from 'react';
+import { IncidentsContent } from './_components/IncidentsContent';
+import { IncidentsFilters } from './_components/IncidentsFilters';
+import { Skeleton } from '@/components/ui/Skeleton';
 
+interface IncidentsListPageProps {
+  searchParams: {
+    page?: string;
+    limit?: string;
+    type?: string;
+    status?: string;
+    severity?: string;
+    search?: string;
+    dateFrom?: string;
+    dateTo?: string;
+    reportedBy?: string;
+    studentId?: string;
+  };
+}
+
+export default async function IncidentsListPage({ searchParams }: IncidentsListPageProps) {
   return (
-    <div className="p-6">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Incident Reports</h1>
-        <div className="flex gap-2">
-          <Link href="/incidents/analytics">
-            <Button variant="secondary">Analytics</Button>
-          </Link>
-          <Link href="/incidents/reports">
-            <Button variant="secondary">Reports</Button>
-          </Link>
-          <Link href="/incidents/new">
-            <Button>Create Incident</Button>
-          </Link>
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <Card className="p-6">
-          <h3 className="text-sm font-medium text-gray-600 mb-2">Total Incidents</h3>
-          <p className="text-3xl font-bold">{stats.total}</p>
-        </Card>
-        <Card className="p-6">
-          <h3 className="text-sm font-medium text-gray-600 mb-2">Pending Review</h3>
-          <div className="flex items-center gap-2">
-            <p className="text-3xl font-bold">{stats.pending}</p>
-            <Badge color="yellow">Pending</Badge>
+    <div className="space-y-6">
+      {/* Filters */}
+      <Suspense
+        fallback={
+          <div className="bg-white rounded-lg border p-6">
+            <Skeleton className="h-8 w-48 mb-4" />
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {Array.from({ length: 4 }, (_, i) => (
+                <Skeleton key={i} className="h-10" />
+              ))}
+            </div>
           </div>
-        </Card>
-        <Card className="p-6">
-          <h3 className="text-sm font-medium text-gray-600 mb-2">Under Investigation</h3>
-          <div className="flex items-center gap-2">
-            <p className="text-3xl font-bold">{stats.investigating}</p>
-            <Badge color="blue">Active</Badge>
-          </div>
-        </Card>
-        <Card className="p-6">
-          <h3 className="text-sm font-medium text-gray-600 mb-2">Requires Action</h3>
-          <div className="flex items-center gap-2">
-            <p className="text-3xl font-bold">{stats.requiresAction}</p>
-            <Badge color="orange">Action Needed</Badge>
-          </div>
-        </Card>
-      </div>
+        }
+      >
+        <IncidentsFilters totalCount={247} />
+      </Suspense>
 
-      {/* Quick Filters */}
-      <div className="mb-6">
-        <h2 className="text-sm font-medium text-gray-700 mb-3">Quick Filters</h2>
-        <div className="flex flex-wrap gap-2">
-          <Link href="/incidents/injury">
-            <Badge color="gray" className="cursor-pointer hover:bg-gray-200">
-              Injury
-            </Badge>
-          </Link>
-          <Link href="/incidents/illness">
-            <Badge color="gray" className="cursor-pointer hover:bg-gray-200">
-              Illness
-            </Badge>
-          </Link>
-          <Link href="/incidents/behavioral">
-            <Badge color="gray" className="cursor-pointer hover:bg-gray-200">
-              Behavioral
-            </Badge>
-          </Link>
-          <Link href="/incidents/safety">
-            <Badge color="gray" className="cursor-pointer hover:bg-gray-200">
-              Safety
-            </Badge>
-          </Link>
-          <Link href="/incidents/emergency">
-            <Badge color="gray" className="cursor-pointer hover:bg-gray-200">
-              Emergency
-            </Badge>
-          </Link>
-          <span className="mx-2 text-gray-400">|</span>
-          <Link href="/incidents/pending-review">
-            <Badge color="yellow" className="cursor-pointer">
-              Pending Review
-            </Badge>
-          </Link>
-          <Link href="/incidents/under-investigation">
-            <Badge color="blue" className="cursor-pointer">
-              Under Investigation
-            </Badge>
-          </Link>
-          <Link href="/incidents/requires-action">
-            <Badge color="orange" className="cursor-pointer">
-              Requires Action
-            </Badge>
-          </Link>
-          <Link href="/incidents/resolved">
-            <Badge color="green" className="cursor-pointer">
-              Resolved
-            </Badge>
-          </Link>
-        </div>
-      </div>
-
-      {/* Incidents List */}
-      {result.success && incidents.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {incidents.map((incident) => (
-            <IncidentCard key={incident.id} incident={incident} />
-          ))}
-        </div>
-      ) : (
-        <Card className="p-12 text-center">
-          <p className="text-gray-500 mb-4">No incidents found</p>
-          <Link href="/incidents/new">
-            <Button>Create First Incident</Button>
-          </Link>
-        </Card>
-      )}
+      {/* Main Content */}
+      <Suspense
+        fallback={
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <Skeleton className="h-8 w-48 mb-2" />
+                <Skeleton className="h-4 w-32" />
+              </div>
+              <div className="flex gap-2">
+                <Skeleton className="h-10 w-24" />
+                <Skeleton className="h-10 w-28" />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {Array.from({ length: 4 }, (_, i) => (
+                <Skeleton key={i} className="h-24" />
+              ))}
+            </div>
+            <div className="space-y-4">
+              {Array.from({ length: 5 }, (_, i) => (
+                <Skeleton key={i} className="h-32" />
+              ))}
+            </div>
+          </div>
+        }
+      >
+        <IncidentsContent searchParams={searchParams} />
+      </Suspense>
     </div>
   );
 }

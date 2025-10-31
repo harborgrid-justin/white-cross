@@ -6,6 +6,8 @@
  * FullCalendar is ~200KB gzipped, so we lazy load it to reduce initial bundle size.
  */
 
+'use client';
+
 import dynamic from 'next/dynamic';
 import CalendarSkeleton from './CalendarSkeleton';
 
@@ -34,4 +36,7 @@ export const AppointmentCalendar = dynamic(
 export { default as CalendarSkeleton } from './CalendarSkeleton';
 
 // Re-export other appointment components normally (not heavy)
-// Add more exports here as needed
+export { AppointmentCard } from './AppointmentCard';
+export { AppointmentList } from './AppointmentList';
+export { default as SchedulingForm } from './SchedulingForm';
+export { RecurringAppointmentManager } from './RecurringAppointmentManager';

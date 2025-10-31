@@ -1,95 +1,111 @@
 'use client';
 
-/**
- * @fileoverview Appointments Route Error Boundary Component
- * @module app/appointments/error
- *
- * Provides a specialized error boundary for the appointments section of the application.
- * This component handles runtime errors that occur during appointment data fetching,
- * scheduling operations, or calendar rendering. It displays user-friendly error messages
- * with healthcare-specific recovery guidance.
- *
- * **Healthcare Context:**
- * - Ensures appointment scheduling errors don't disrupt critical healthcare workflows
- * - Provides clear recovery steps for school nurses to maintain appointment tracking
- * - Integrates with the broader error handling strategy for HIPAA-compliant operations
- *
- * **Error Scenarios Handled:**
- * - Appointment data fetch failures (API errors, network issues)
- * - Calendar rendering errors (date calculation, timezone issues)
- * - Permission/authorization errors for appointment access
- * - Database connection failures affecting appointment retrieval
- *
- * @see {@link GenericDomainError} for the base error component implementation
- *
- * @example
- * ```tsx
- * // This component is automatically used by Next.js error boundaries
- * // in the /appointments route segment. No manual instantiation needed.
- *
- * // To test error boundary:
- * // 1. Navigate to /appointments/calendar
- * // 2. Simulate API failure or throw error in page component
- * // 3. Error boundary will catch and display this component
- * ```
- */
+import { useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Container } from '@/components/layouts/Container';
 
-import { GenericDomainError } from '@/components/errors/GenericDomainError';
-import { Calendar } from 'lucide-react';
-
-/**
- * Appointments Error Boundary Component
- *
- * Next.js automatically invokes this component when an error occurs in any
- * route under the /appointments path. It provides appointment-specific
- * error messaging and recovery options.
- *
- * **Implementation Details:**
- * - Client-side component (requires 'use client' directive)
- * - Receives error object with optional digest for error tracking
- * - Provides reset function to attempt recovery without full page reload
- *
- * **Accessibility:**
- * - Error message is announced by screen readers
- * - Recovery actions are keyboard-navigable
- * - Color coding uses accessible contrast ratios
- *
- * @param {Object} props - Component props following Next.js error boundary contract
- * @param {Error & { digest?: string }} props.error - Error object with optional digest hash for tracking
- * @param {Function} props.reset - Function to reset error boundary and retry rendering
- *
- * @returns {JSX.Element} Rendered error boundary UI with recovery options
- *
- * @example
- * ```tsx
- * // Error boundary is automatically used by Next.js
- * // Props are provided by the framework:
- * <AppointmentsError
- *   error={new Error("Failed to fetch appointments")}
- *   reset={() => window.location.reload()}
- * />
- * ```
- */
-export default function AppointmentsError({
-  error,
-  reset,
-}: {
+interface ErrorPageProps {
   error: Error & { digest?: string };
   reset: () => void;
-}) {
+}
+
+export default function Error({ error, reset }: ErrorPageProps) {
+  useEffect(() => {
+    // Log the error to an error reporting service
+    console.error('Appointments page error:', error);
+  }, [error]);
+
+  const getErrorMessage = (error: Error): string => {
+    if (error.message.includes('fetch')) {
+      return 'Unable to connect to the server. Please check your internet connection and try again.';
+    }
+    if (error.message.includes('404')) {
+      return 'The requested appointment data could not be found.';
+    }
+    if (error.message.includes('403')) {
+      return 'You do not have permission to view this appointment data.';
+    }
+    if (error.message.includes('500')) {
+      return 'A server error occurred. Please try again later.';
+    }
+    return 'An unexpected error occurred while loading appointment data.';
+  };
+
+  const getErrorIcon = (error: Error): string => {
+    if (error.message.includes('fetch') || error.message.includes('network')) {
+      return '🌐';
+    }
+    if (error.message.includes('404')) {
+      return '🔍';
+    }
+    if (error.message.includes('403')) {
+      return '🔒';
+    }
+    if (error.message.includes('500')) {
+      return '⚠️';
+    }
+    return '❌';
+  };
+
   return (
-    <GenericDomainError
-      error={error}
-      reset={reset}
-      domain="Appointments"
-      domainIcon={<Calendar className="h-8 w-8 text-red-600 dark:text-red-400" />}
-      customMessage="Unable to load appointment information. Scheduled appointments may not be visible."
-      customRecoverySteps={[
-        'Click "Try Again" to reload appointments',
-        'Check your calendar permissions',
-        'Verify network connection',
-        'Contact IT support if error persists',
-      ]}
-    />
+    <Container>
+      <div className="min-h-96 flex items-center justify-center">
+        <Card className="w-full max-w-lg">
+          <CardHeader className="text-center">
+            <div className="text-6xl mb-4">{getErrorIcon(error)}</div>
+            <CardTitle className="text-xl text-red-600">
+              Something went wrong
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-center space-y-6">
+            <p className="text-gray-600">
+              {getErrorMessage(error)}
+            </p>
+
+            {process.env.NODE_ENV === 'development' && (
+              <details className="text-left bg-gray-100 p-4 rounded-lg">
+                <summary className="font-medium text-sm cursor-pointer text-gray-700">
+                  Technical Details (Development)
+                </summary>
+                <div className="mt-2 text-xs text-gray-600 font-mono">
+                  <p><strong>Error:</strong> {error.message}</p>
+                  {error.digest && <p><strong>Digest:</strong> {error.digest}</p>}
+                  {error.stack && (
+                    <pre className="mt-2 whitespace-pre-wrap text-xs">
+                      {error.stack}
+                    </pre>
+                  )}
+                </div>
+              </details>
+            )}
+
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <button
+                onClick={reset}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+              >
+                Try Again
+              </button>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
+              >
+                Refresh Page
+              </button>
+              <a
+                href="/appointments"
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors text-center"
+              >
+                Go to Appointments
+              </a>
+            </div>
+
+            <div className="text-sm text-gray-500">
+              <p>If this problem persists, please contact support.</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </Container>
   );
 }

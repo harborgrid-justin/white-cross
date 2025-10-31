@@ -49,95 +49,60 @@ async function proxyRequest(
   { path }: { path: string[] }
 ) {
   try {
-    const backendPath = path.join('/');
+    // Ensure path is properly handled - path should be an array of strings
+    const backendPath = Array.isArray(path) && path.length > 0 ? path.join('/') : '';
     const searchParams = request.nextUrl.searchParams.toString();
-    // Backend doesn't use /api/v1 prefix
-    const backendUrl = `${API_BASE_URL}/${backendPath}${
-      searchParams ? `?${searchParams}` : ''
-    }`;
-
-    // Get the request body if it exists
-    let body: string | undefined;
-    if (request.method !== 'GET' && request.method !== 'DELETE') {
-      try {
-        body = await request.text();
-      } catch (error) {
-        // Body might not exist or be readable
-      }
-    }
-
-    // Forward headers from the original request
-    const headers: Record<string, string> = {};
     
-    // Copy relevant headers
-    request.headers.forEach((value, key) => {
-      if (
-        key.toLowerCase() !== 'host' &&
-        key.toLowerCase() !== 'content-length' &&
-        !key.toLowerCase().startsWith('x-forwarded') &&
-        !key.toLowerCase().startsWith('x-real-ip')
-      ) {
-        headers[key] = value;
-      }
-    });
+    // Construct backend URL with proper path handling
+    const backendUrl = backendPath 
+      ? `${API_BASE_URL}/${backendPath}${searchParams ? `?${searchParams}` : ''}`
+      : `${API_BASE_URL}${searchParams ? `?${searchParams}` : ''}`;
 
-    // Set content-type if we have a body
-    if (body && !headers['content-type']) {
-      headers['content-type'] = 'application/json';
-    }
+    // Streamlined body handling
+    const body = (request.method !== 'GET' && request.method !== 'DELETE') 
+      ? await request.text().catch(() => undefined)
+      : undefined;
 
-    console.log(`Proxying ${request.method} request to:`, backendUrl);
+    // Minimal header forwarding - only essential headers
+    const headers: HeadersInit = {
+      'content-type': request.headers.get('content-type') || 'application/json',
+      ...(request.headers.get('authorization') && { 
+        'authorization': request.headers.get('authorization')! 
+      }),
+    };
 
+    // Direct fetch with minimal processing
     const response = await fetch(backendUrl, {
       method: request.method,
       headers,
       body,
     });
 
-    // Get response body
-    const responseBody = await response.text();
-    
-    // Create response headers
+    // Stream response directly without text conversion for better performance
     const responseHeaders = new Headers();
     
-    // Copy response headers from backend
-    response.headers.forEach((value, key) => {
-      // Skip certain headers that Next.js should handle
-      if (
-        !key.toLowerCase().startsWith('x-powered-by') &&
-        key.toLowerCase() !== 'server' &&
-        key.toLowerCase() !== 'date'
-      ) {
-        responseHeaders.set(key, value);
-      }
-    });
-
-    // Add CORS headers for development
+    // Copy only essential headers
+    const contentType = response.headers.get('content-type');
+    if (contentType) responseHeaders.set('content-type', contentType);
+    
+    // Essential CORS headers for development
     if (process.env.NODE_ENV === 'development') {
       responseHeaders.set('Access-Control-Allow-Origin', '*');
       responseHeaders.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
       responseHeaders.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     }
 
-    return new NextResponse(responseBody, {
+    // Return response body as stream for better performance
+    return new NextResponse(response.body, {
       status: response.status,
       statusText: response.statusText,
       headers: responseHeaders,
     });
   } catch (error) {
-    console.error('Proxy error:', error);
-    
+    // Minimal error response
     return new NextResponse(
-      JSON.stringify({
-        error: 'Proxy error',
-        message: error instanceof Error ? error.message : 'Unknown error',
-      }),
-      {
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
+      JSON.stringify({ error: 'Proxy error', message: error instanceof Error ? error.message : 'Unknown error' }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
 }

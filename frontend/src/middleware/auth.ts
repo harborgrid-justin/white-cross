@@ -86,9 +86,11 @@ export function verifyTokenSignature(token: string): boolean {
  * Extract token from request
  */
 export function extractToken(request: NextRequest): string | null {
-  // Try cookie first
-  const cookieToken = request.cookies.get('auth_token')?.value ||
-                      request.cookies.get('token')?.value;
+  // Try cookie first - check common cookie names
+  const cookieToken = request.cookies.get('access_token')?.value ||
+                      request.cookies.get('auth_token')?.value ||
+                      request.cookies.get('token')?.value ||
+                      request.cookies.get('jwt')?.value;
 
   if (cookieToken) {
     return cookieToken;
@@ -143,8 +145,10 @@ export function authMiddleware(request: NextRequest): {
 
   // No token - redirect to login
   if (!token) {
+    // Prevent redirect loops by defaulting root to dashboard
+    const redirectTarget = pathname === '/' ? '/dashboard' : pathname;
     const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('redirect', pathname);
+    loginUrl.searchParams.set('redirect', redirectTarget);
     loginUrl.searchParams.set('error', 'unauthorized');
 
     console.warn(`[AUTH] No token found for ${pathname}`);
@@ -160,8 +164,10 @@ export function authMiddleware(request: NextRequest): {
 
   // Invalid token - redirect to login
   if (!payload) {
+    // Prevent redirect loops by defaulting root to dashboard
+    const redirectTarget = pathname === '/' ? '/dashboard' : pathname;
     const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('redirect', pathname);
+    loginUrl.searchParams.set('redirect', redirectTarget);
     loginUrl.searchParams.set('error', 'invalid_token');
 
     console.warn(`[AUTH] Invalid token for ${pathname}`);
@@ -174,9 +180,11 @@ export function authMiddleware(request: NextRequest): {
 
   // Check expiration
   if (isTokenExpired(payload)) {
+    // Prevent redirect loops by defaulting root to dashboard
+    const redirectTarget = pathname === '/' ? '/dashboard' : pathname;
     const sessionExpiredUrl = new URL('/session-expired', request.url);
     sessionExpiredUrl.searchParams.set('reason', 'token_expired');
-    sessionExpiredUrl.searchParams.set('redirect', pathname);
+    sessionExpiredUrl.searchParams.set('redirect', redirectTarget);
 
     console.warn(`[AUTH] Token expired for user ${payload.userId}`);
 

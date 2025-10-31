@@ -12,14 +12,19 @@
 
 import Link from 'next/link';
 import { useAppSelector } from '@/stores/hooks';
+import { useMemo } from 'react';
 
 /**
  * Hero Section Component
  * 
  * Renders the main hero section with title, description, and conditional CTA.
+ * Uses client-side only rendering for authentication-dependent content to prevent hydration mismatches.
  */
 export function HeroSection() {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
+  
+  // Check if we're running on the client to prevent hydration mismatch
+  const isClient = useMemo(() => typeof window !== 'undefined', []);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -32,7 +37,8 @@ export function HeroSection() {
           medications, and emergency communications with HIPAA compliance.
         </p>
         
-        {!isAuthenticated && (
+        {/* Only render authentication-dependent content on client side */}
+        {isClient && !isAuthenticated && (
           <div className="mt-8">
             <Link
               href="/login"

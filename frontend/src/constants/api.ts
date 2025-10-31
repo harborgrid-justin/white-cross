@@ -246,20 +246,20 @@ export const API_ENDPOINTS = {
   // INCIDENTS
   // ==========================================
   INCIDENTS: {
-    BASE: `/incidents`,
-    BY_ID: (id: string) => `/incidents/${id}`,
-    WITNESSES: (incidentId: string) => `/incidents/${incidentId}/witnesses`,
+    BASE: `/incident-report`,
+    BY_ID: (id: string) => `/incident-report/${id}`,
+    WITNESSES: (incidentId: string) => `/incident-report/${incidentId}/witnesses`,
     WITNESS_STATEMENT: (incidentId: string, witnessId: string) =>
-      `/incidents/${incidentId}/witnesses/${witnessId}/statement`,
-    VERIFY_STATEMENT: (statementId: string) => `/incidents/statements/${statementId}/verify`,
-    FOLLOW_UP: (incidentId: string) => `/incidents/${incidentId}/follow-up`,
-    FOLLOW_UP_PROGRESS: (followUpId: string) => `/incidents/follow-up/${followUpId}/progress`,
-    FOLLOW_UP_COMPLETE: (followUpId: string) => `/incidents/follow-up/${followUpId}/complete`,
-    ANALYTICS: `/incidents/analytics`,
-    TRENDING: `/incidents/trending`,
+      `/incident-report/${incidentId}/witnesses/${witnessId}/statement`,
+    VERIFY_STATEMENT: (statementId: string) => `/incident-report/statements/${statementId}/verify`,
+    FOLLOW_UP: (incidentId: string) => `/incident-report/${incidentId}/follow-up`,
+    FOLLOW_UP_PROGRESS: (followUpId: string) => `/incident-report/follow-up/${followUpId}/progress`,
+    FOLLOW_UP_COMPLETE: (followUpId: string) => `/incident-report/follow-up/${followUpId}/complete`,
+    ANALYTICS: `/incident-report/analytics`,
+    TRENDING: `/incident-report/trending`,
     BY_STUDENT: (studentId: string) => `/students/${studentId}/incidents`,
-    BY_TYPE: (type: string) => `/incidents/type/${type}`,
-    BY_SEVERITY: (severity: string) => `/incidents/severity/${severity}`,
+    BY_TYPE: (type: string) => `/incident-report/type/${type}`,
+    BY_SEVERITY: (severity: string) => `/incident-report/severity/${severity}`,
   },
 
   // ==========================================

@@ -1,78 +1,88 @@
 'use client';
 
 /**
- * @fileoverview Root 401 Unauthorized Page
+ * @fileoverview Dashboard 401 Unauthorized Page
  *
- * Custom unauthorized page displayed when users attempt to access protected resources
- * without proper authentication. This page provides clear messaging about authentication
- * requirements and guides users to sign in or return to accessible areas.
+ * Dashboard-specific unauthorized page displayed when users attempt to access protected
+ * dashboard features without proper authentication. This page provides dashboard-context
+ * aware messaging and guides users to sign in or return to accessible areas.
  *
- * @module app/unauthorized
+ * @module app/(dashboard)/unauthorized
  * @category Error Pages
  * @subcategory 401 Unauthorized
  *
  * **When This Displays:**
- * - User attempts to access protected route without authentication
- * - Session token has expired or is invalid
- * - Programmatic redirect to /unauthorized route
- * - API returns 401 status and redirects
+ * - User attempts to access dashboard routes without authentication
+ * - Session expires while on dashboard
+ * - Token becomes invalid during dashboard session
+ * - Middleware redirects from protected dashboard routes
  *
- * **Unauthorized vs Forbidden:**
- * - **401 Unauthorized (this page)**: User is not authenticated (not logged in)
- * - **403 Forbidden**: User is authenticated but lacks required permissions
+ * **Dashboard Context:**
+ * This unauthorized page is specific to the dashboard route group and provides:
+ * - Dashboard-aware messaging
+ * - Links to dashboard home (after authentication)
+ * - Context about dashboard features requiring authentication
+ * - Healthcare-specific guidance
+ *
+ * **Unauthorized Hierarchy:**
+ * ```
+ * /unauthorized.tsx (root - general authentication)
+ * └── (dashboard)/unauthorized.tsx (this file - dashboard-specific)
+ * ```
  *
  * **Key Features:**
- * - Clear authentication status messaging
- * - Sign-in call-to-action button
- * - Navigation options to public areas
- * - HIPAA-compliant (no sensitive data exposure)
+ * - Dashboard-specific authentication messaging
+ * - Sign-in with return-to-dashboard flow
+ * - Navigation to public areas
+ * - HIPAA-compliant messaging
  * - Healthcare-themed styling
- * - Client component for navigation handling
+ * - Client component for navigation
  *
  * **Navigation Options:**
- * 1. Primary: Sign In (authentication flow)
- * 2. Secondary: Return to Home (public homepage)
+ * 1. Primary: Sign In (redirects back to dashboard after auth)
+ * 2. Secondary: View Public Pages
  * 3. Tertiary: Contact Support
  *
  * **Security Considerations:**
- * - Does not expose system architecture
- * - Does not reveal which resources exist
- * - Provides generic messaging for security
- * - Maintains HIPAA compliance
+ * - Does not expose dashboard structure
+ * - Generic messaging for security
+ * - No indication of available features
+ * - HIPAA-compliant error handling
  *
  * **Accessibility:**
  * - Semantic HTML structure
  * - Clear visual hierarchy
- * - Keyboard-accessible buttons and links
+ * - Keyboard-accessible buttons
  * - Screen reader compatible
- * - High-contrast warning indicator
+ * - High-contrast warning colors
  *
  * @requires Client Component - Uses navigation and interactive elements
  *
- * @see {@link https://nextjs.org/docs/app/building-your-application/routing/error-handling | Next.js Error Handling}
+ * @see {@link https://nextjs.org/docs/app/building-your-application/routing/route-groups | Next.js Route Groups}
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401 | HTTP 401 Status}
  *
  * @example
  * ```tsx
- * // Redirect to unauthorized page:
- * import { redirect } from 'next/navigation';
- *
- * export default async function ProtectedPage() {
- *   const session = await getSession();
- *   if (!session) {
- *     redirect('/unauthorized');
+ * // Dashboard middleware redirect:
+ * export function middleware(request: NextRequest) {
+ *   if (request.nextUrl.pathname.startsWith('/dashboard')) {
+ *     const session = await getSession();
+ *     if (!session) {
+ *       return NextResponse.redirect(new URL('/dashboard/unauthorized', request.url));
+ *     }
  *   }
  * }
  * ```
  *
  * @example
  * ```tsx
- * // Middleware redirect:
- * export function middleware(request: NextRequest) {
- *   const token = request.cookies.get('auth-token');
- *   if (!token) {
- *     return NextResponse.redirect(new URL('/unauthorized', request.url));
+ * // Dashboard layout authentication check:
+ * export default async function DashboardLayout({ children }) {
+ *   const session = await getSession();
+ *   if (!session) {
+ *     redirect('/dashboard/unauthorized');
  *   }
+ *   return <>{children}</>;
  * }
  * ```
  *
@@ -84,51 +94,52 @@ import { useRouter } from 'next/navigation';
 import { Metadata } from 'next';
 
 /**
- * Metadata configuration for the 401 Unauthorized page.
+ * Metadata configuration for the dashboard unauthorized page.
  *
  * Provides SEO-optimized metadata while maintaining security by not exposing
- * sensitive system information.
+ * dashboard structure or features.
  *
  * @constant
  * @type {Metadata}
  *
- * @property {string} title - Page title for browser tab and SEO
- * @property {string} description - Meta description for search engines
+ * @property {string} title - Page title for browser tab
+ * @property {string} description - Meta description
  */
 export const metadata: Metadata = {
-  title: '401 - Unauthorized | White Cross Healthcare',
-  description: 'Authentication required to access this resource.',
+  title: 'Authentication Required - Dashboard | White Cross Healthcare',
+  description: 'Please sign in to access the White Cross Healthcare dashboard.',
 };
 
 /**
- * Unauthorized Page Component
+ * Dashboard Unauthorized Page Component
  *
- * Displays a centered card with clear authentication messaging and sign-in call-to-action.
- * Uses warning colors (orange) to indicate authentication requirement without being
- * alarming like error red.
+ * Displays a centered card with dashboard-specific authentication messaging.
+ * Emphasizes that the user needs to authenticate to access healthcare management
+ * features while maintaining a professional, non-alarming tone.
  *
  * **Visual Design:**
  * - Centered card layout (max-w-md)
- * - Orange warning icon (not threatening red)
+ * - Orange warning icon (authentication needed)
  * - "401" status code display
- * - Clear heading and description
+ * - Dashboard-contextualized messaging
  * - Prominent sign-in button
- * - Secondary navigation options
+ * - Alternative navigation options
  *
  * **User Flow:**
- * 1. User attempts to access protected resource
+ * 1. User attempts to access dashboard feature
  * 2. Lands on this unauthorized page
- * 3. Sees clear message about authentication need
- * 4. Primary action: Sign in
+ * 3. Sees message about dashboard authentication
+ * 4. Primary action: Sign in (returns to dashboard)
  * 5. Alternative: Return to public areas
  *
- * **Security Features:**
- * - Generic messaging (doesn't reveal system details)
- * - No indication of valid/invalid resources
- * - HIPAA-compliant error handling
- * - No sensitive data in UI
+ * **Dashboard Features Mentioned:**
+ * - Student health records
+ * - Medication management
+ * - Appointment scheduling
+ * - Compliance tracking
+ * - Health incident reporting
  *
- * @returns {JSX.Element} Centered unauthorized page with authentication CTA
+ * @returns {JSX.Element} Centered dashboard unauthorized page
  *
  * @example
  * ```tsx
@@ -137,10 +148,10 @@ export const metadata: Metadata = {
  *   <div className="card">
  *     <div className="orange-icon">🔒</div>
  *     <h1>401</h1>
- *     <h2>Authentication Required</h2>
- *     <p>You must be signed in to access this resource</p>
- *     <button>Sign In</button>
- *     <Link href="/">Return to Home</Link>
+ *     <h2>Dashboard Authentication Required</h2>
+ *     <p>Sign in to access healthcare management features</p>
+ *     <button>Sign In to Dashboard</button>
+ *     <Link href="/">View Public Pages</Link>
  *     <Link href="/support">Contact Support</Link>
  *   </div>
  * </div>
@@ -149,20 +160,21 @@ export const metadata: Metadata = {
  * @remarks
  * This is a Client Component (requires 'use client' directive) because it uses:
  * - `useRouter` hook for navigation
- * - `onClick` handlers for sign-in action
+ * - `onClick` handlers for authentication
  * - Interactive button elements
  */
-export default function Unauthorized() {
+export default function DashboardUnauthorized() {
   const router = useRouter();
 
   /**
-   * Handles sign-in navigation.
-   * Redirects user to authentication flow (sign-in page).
+   * Handles dashboard sign-in navigation.
+   * Redirects to authentication flow with return URL to dashboard.
    *
    * @function
    */
   const handleSignIn = () => {
-    router.push('/login');
+    // After sign-in, user should be redirected back to dashboard
+    router.push('/login?returnTo=/dashboard');
   };
 
   return (
@@ -191,12 +203,16 @@ export default function Unauthorized() {
 
           {/* Title */}
           <h2 className="text-2xl font-semibold text-gray-700 mb-4">
-            Authentication Required
+            Dashboard Authentication Required
           </h2>
 
           {/* Description */}
-          <p className="text-gray-600 mb-8">
-            You must be signed in to access this resource. Please authenticate to continue.
+          <p className="text-gray-600 mb-4">
+            You must be signed in to access the White Cross Healthcare dashboard.
+          </p>
+          <p className="text-gray-500 text-sm mb-8">
+            The dashboard provides access to student health records, medication management,
+            appointments, and compliance tracking.
           </p>
 
           {/* Action Buttons */}
@@ -205,14 +221,14 @@ export default function Unauthorized() {
               onClick={handleSignIn}
               className="w-full healthcare-button-primary"
             >
-              Sign In
+              Sign In to Dashboard
             </button>
 
             <Link
               href="/"
               className="block w-full healthcare-button-secondary text-center"
             >
-              Return to Home
+              View Public Pages
             </Link>
 
             <Link
@@ -225,9 +241,15 @@ export default function Unauthorized() {
 
           {/* Additional Information */}
           <div className="mt-8 pt-6 border-t border-gray-200">
-            <p className="text-xs text-gray-500">
-              If you believe you should have access to this resource, please contact your administrator.
+            <p className="text-xs text-gray-500 mb-2">
+              Need a dashboard account?
             </p>
+            <Link
+              href="/request-access"
+              className="text-sm text-blue-600 hover:text-blue-800 underline"
+            >
+              Request Dashboard Access
+            </Link>
           </div>
         </div>
       </div>

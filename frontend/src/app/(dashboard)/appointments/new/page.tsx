@@ -1,226 +1,138 @@
+/**
+ * New Appointment Page
+ * 
+ * Route: /appointments/new
+ * Form for creating a new appointment
+ */
+
 'use client';
 
-/**
- * Force dynamic rendering for appointment creation form
- * Requires real-time availability checking and user authentication
- */
-export const dynamic = 'force-dynamic';
-
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { PageHeader } from '@/components/shared/PageHeader';
-import { Card } from '@/components/ui/layout/Card';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { PageHeader } from '@/components/layouts/PageHeader';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/layout/Card';
 import { Button } from '@/components/ui/Button';
-import { Calendar, Clock, User, FileText } from 'lucide-react';
+import { Calendar, Clock, User, AlertTriangle } from 'lucide-react';
+import { SchedulingForm } from '@/components/appointments';
+import { apiClient, API_ENDPOINTS } from '@/lib/api-client';
+import { Appointment, defaultAppointment, appointmentTypes } from '../data';
 
 export default function NewAppointmentPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    studentId: '',
-    appointmentType: 'checkup',
-    date: '',
-    time: '',
-    duration: '30',
-    reason: '',
-    notes: '',
-  });
+  const searchParams = useSearchParams();
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  // Pre-fill with student ID if provided in query params
+  const preselectedStudentId = searchParams.get('studentId');
 
+  const handleSubmit = async (appointmentData: Partial<Appointment>) => {
     try {
-      // TODO: Implement API call to create appointment
-      console.log('Creating appointment:', formData);
+      setSaving(true);
+      setError(null);
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await apiClient.post<{ data: Appointment }>(
+        API_ENDPOINTS.APPOINTMENTS.BASE,
+        appointmentData
+      );
 
-      alert('Appointment created successfully!');
-      router.push('/appointments');
-    } catch (error) {
-      console.error('Error creating appointment:', error);
-      alert('Failed to create appointment. Please try again.');
-    } finally {
-      setLoading(false);
+      const newAppointment = response.data || response;
+      
+      // Redirect to the new appointment's detail page
+      router.push(`/appointments/${(newAppointment as Appointment).id}`);
+    } catch (err: unknown) {
+      console.error('Error creating appointment:', err);
+      let errorMessage = 'Failed to create appointment';
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (err && typeof err === 'object') {
+        const errorObj = err as Record<string, unknown>;
+        errorMessage = (errorObj.message as string) || (errorObj.error as string) || JSON.stringify(err);
+      }
+      setError(errorMessage);
+      setSaving(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
+  const handleCancel = () => {
+    router.back();
   };
 
   return (
-    <div className="space-y-6">
+    <>
       <PageHeader
         title="Schedule New Appointment"
         description="Create a new appointment for a student"
-        backLink="/appointments"
-        backLabel="Back to Appointments"
+        actions={
+          <Button onClick={handleCancel} variant="outline" size="sm">
+            Cancel
+          </Button>
+        }
       />
 
-      <form onSubmit={handleSubmit}>
-        <Card>
-          <div className="p-6 space-y-6">
-            {/* Student Selection */}
-            <div>
-              <label htmlFor="studentId" className="block text-sm font-medium text-gray-700 mb-2">
-                <User className="inline h-4 w-4 mr-1" />
-                Student
-              </label>
-              <select
-                id="studentId"
-                name="studentId"
-                required
-                value={formData.studentId}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-              >
-                <option value="">Select a student</option>
-                {/* TODO: Load students from API */}
-                <option value="1">Student 1</option>
-                <option value="2">Student 2</option>
-              </select>
+      {error && (
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="pt-6">
+            <div className="flex items-center">
+              <AlertTriangle className="h-5 w-5 text-red-600 mr-2" />
+              <p className="text-red-700">{error}</p>
             </div>
+          </CardContent>
+        </Card>
+      )}
 
-            {/* Appointment Type */}
-            <div>
-              <label htmlFor="appointmentType" className="block text-sm font-medium text-gray-700 mb-2">
-                <FileText className="inline h-4 w-4 mr-1" />
-                Appointment Type
-              </label>
-              <select
-                id="appointmentType"
-                name="appointmentType"
-                required
-                value={formData.appointmentType}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-              >
-                <option value="checkup">General Checkup</option>
-                <option value="vaccination">Vaccination</option>
-                <option value="injury">Injury Assessment</option>
-                <option value="medication">Medication Review</option>
-                <option value="consultation">Consultation</option>
-                <option value="follow-up">Follow-up</option>
-              </select>
-            </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Calendar className="h-5 w-5 mr-2" />
+            Appointment Details
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <SchedulingForm
+            initialData={{
+              ...defaultAppointment,
+              ...(preselectedStudentId && { studentId: preselectedStudentId }),
+            }}
+            onSubmit={handleSubmit}
+            onCancel={handleCancel}
+            isSubmitting={saving}
+            submitLabel="Schedule Appointment"
+          />
+        </CardContent>
+      </Card>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Date */}
+      {/* Quick Tips */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Scheduling Tips</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3 text-sm text-gray-600">
+            <div className="flex items-start">
+              <Clock className="h-4 w-4 mr-2 mt-0.5 text-blue-500" />
               <div>
-                <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
-                  <Calendar className="inline h-4 w-4 mr-1" />
-                  Date
-                </label>
-                <input
-                  type="date"
-                  id="date"
-                  name="date"
-                  required
-                  value={formData.date}
-                  onChange={handleChange}
-                  min={new Date().toISOString().split('T')[0]}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                />
-              </div>
-
-              {/* Time */}
-              <div>
-                <label htmlFor="time" className="block text-sm font-medium text-gray-700 mb-2">
-                  <Clock className="inline h-4 w-4 mr-1" />
-                  Time
-                </label>
-                <input
-                  type="time"
-                  id="time"
-                  name="time"
-                  required
-                  value={formData.time}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                />
-              </div>
-
-              {/* Duration */}
-              <div>
-                <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-2">
-                  Duration (minutes)
-                </label>
-                <select
-                  id="duration"
-                  name="duration"
-                  required
-                  value={formData.duration}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                >
-                  <option value="15">15 minutes</option>
-                  <option value="30">30 minutes</option>
-                  <option value="45">45 minutes</option>
-                  <option value="60">1 hour</option>
-                </select>
+                <p className="font-medium text-gray-900">Duration Guidelines</p>
+                <p>Health checks: 30 min, Medication: 15 min, Injury assessment: 45 min</p>
               </div>
             </div>
-
-            {/* Reason */}
-            <div>
-              <label htmlFor="reason" className="block text-sm font-medium text-gray-700 mb-2">
-                Reason for Visit
-              </label>
-              <input
-                type="text"
-                id="reason"
-                name="reason"
-                required
-                value={formData.reason}
-                onChange={handleChange}
-                placeholder="Brief description of the visit reason"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-              />
+            <div className="flex items-start">
+              <User className="h-4 w-4 mr-2 mt-0.5 text-green-500" />
+              <div>
+                <p className="font-medium text-gray-900">Student Selection</p>
+                <p>Start typing the student&apos;s name to search and select</p>
+              </div>
             </div>
-
-            {/* Notes */}
-            <div>
-              <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-2">
-                Additional Notes (Optional)
-              </label>
-              <textarea
-                id="notes"
-                name="notes"
-                rows={4}
-                value={formData.notes}
-                onChange={handleChange}
-                placeholder="Any additional information..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-              />
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex justify-end space-x-3 pt-4 border-t">
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => router.back()}
-                disabled={loading}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                variant="primary"
-                disabled={loading}
-              >
-                {loading ? 'Creating...' : 'Schedule Appointment'}
-              </Button>
+            <div className="flex items-start">
+              <Calendar className="h-4 w-4 mr-2 mt-0.5 text-purple-500" />
+              <div>
+                <p className="font-medium text-gray-900">Availability</p>
+                <p>The system will show available time slots based on your schedule</p>
+              </div>
             </div>
           </div>
-        </Card>
-      </form>
-    </div>
+        </CardContent>
+      </Card>
+    </>
   );
 }

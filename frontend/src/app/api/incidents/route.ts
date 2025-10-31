@@ -16,7 +16,7 @@ import { auditLog, AUDIT_ACTIONS, createAuditContext } from '@/lib/audit';
 export const GET = withAuth(async (request: NextRequest, context, auth) => {
   try {
     // Proxy request to backend with caching
-    const response = await proxyToBackend(request, '/incidents', {
+    const response = await proxyToBackend(request, '/incident-report', {
       cache: {
         revalidate: 60,
         tags: ['incidents']
@@ -52,7 +52,7 @@ export const GET = withAuth(async (request: NextRequest, context, auth) => {
 export const POST = withAuth(async (request: NextRequest, context, auth) => {
   try {
     // Proxy request to backend
-    const response = await proxyToBackend(request, '/incidents');
+    const response = await proxyToBackend(request, '/incident-report');
 
     const data = await response.json();
 

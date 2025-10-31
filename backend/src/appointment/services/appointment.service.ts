@@ -994,6 +994,96 @@ export class AppointmentService {
   }
 
   /**
+   * Get appointments by a specific date
+   */
+  async getAppointmentsByDate(dateStr: string): Promise<{ data: AppointmentEntity[] }> {
+    this.logger.log(`Fetching appointments for date: ${dateStr}`);
+
+    try {
+      // Parse the date string and create start/end of day boundaries
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) {
+        throw new BadRequestException('Invalid date format. Expected YYYY-MM-DD');
+      }
+
+      const dayStart = new Date(date);
+      dayStart.setHours(0, 0, 0, 0);
+
+      const dayEnd = new Date(date);
+      dayEnd.setHours(23, 59, 59, 999);
+
+      const appointments = await this.appointmentModel.findAll({
+        where: {
+          scheduledAt: {
+            [Op.gte]: dayStart,
+            [Op.lte]: dayEnd,
+          },
+        },
+        order: [['scheduledAt', 'ASC']],
+        include: [
+          {
+            model: User,
+            as: 'nurse',
+            attributes: ['id', 'firstName', 'lastName', 'email', 'role'],
+          },
+        ],
+      });
+
+      const data = appointments.map(apt => this.mapToEntity(apt));
+      return { data };
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      this.logger.error(`Error fetching appointments by date: ${error.message}`, error.stack);
+      throw new BadRequestException('Failed to fetch appointments by date');
+    }
+  }
+
+  /**
+   * Get upcoming appointments for the next N days (not nurse-specific)
+   */
+  async getGeneralUpcomingAppointments(
+    days: number = 7,
+    limit: number = 50,
+  ): Promise<{ data: AppointmentEntity[] }> {
+    this.logger.log(`Fetching upcoming appointments for next ${days} days`);
+
+    try {
+      const now = new Date();
+      const futureDate = new Date();
+      futureDate.setDate(now.getDate() + days);
+
+      const appointments = await this.appointmentModel.findAll({
+        where: {
+          scheduledAt: {
+            [Op.gte]: now,
+            [Op.lte]: futureDate,
+          },
+          status: {
+            [Op.in]: [ModelAppointmentStatus.SCHEDULED, ModelAppointmentStatus.IN_PROGRESS],
+          },
+        },
+        order: [['scheduledAt', 'ASC']],
+        limit,
+        include: [
+          {
+            model: User,
+            as: 'nurse',
+            attributes: ['id', 'firstName', 'lastName', 'email', 'role'],
+          },
+        ],
+      });
+
+      const data = appointments.map(apt => this.mapToEntity(apt));
+      return { data };
+    } catch (error) {
+      this.logger.error(`Error fetching general upcoming appointments: ${error.message}`, error.stack);
+      throw new BadRequestException('Failed to fetch upcoming appointments');
+    }
+  }
+
+  /**
    * Map Sequelize model to entity
    */
   private mapToEntity(appointment: Appointment): AppointmentEntity {

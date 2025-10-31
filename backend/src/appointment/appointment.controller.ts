@@ -223,6 +223,82 @@ export class AppointmentController {
   }
 
   /**
+   * Get appointments by date
+   */
+  @Get('by-date')
+  @ApiOperation({
+    summary: 'Get appointments by date',
+    description: 'Retrieve all appointments for a specific date',
+  })
+  @ApiQuery({
+    name: 'date',
+    required: true,
+    description: 'Date to filter appointments (YYYY-MM-DD)',
+    example: '2025-10-31',
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Successfully retrieved appointments for the specified date',
+    schema: {
+      type: 'object',
+      properties: {
+        data: {
+          type: 'array',
+          items: { $ref: '#/components/schemas/Appointment' }
+        }
+      }
+    }
+  })
+  async getAppointmentsByDate(@Query('date') dateStr: string) {
+    this.logger.log(`GET /appointments/by-date?date=${dateStr}`);
+    return this.appointmentService.getAppointmentsByDate(dateStr);
+  }
+
+  /**
+   * Get upcoming appointments (general - not nurse-specific)
+   */
+  @Get('upcoming')
+  @ApiOperation({
+    summary: 'Get upcoming appointments',
+    description: 'Retrieve upcoming appointments for the next N days',
+  })
+  @ApiQuery({
+    name: 'days',
+    required: false,
+    description: 'Number of days to look ahead',
+    example: 7,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Maximum number of appointments to return',
+    example: 50,
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Successfully retrieved upcoming appointments',
+    schema: {
+      type: 'object',
+      properties: {
+        data: {
+          type: 'array',
+          items: { $ref: '#/components/schemas/Appointment' }
+        }
+      }
+    }
+  })
+  async getGeneralUpcomingAppointments(
+    @Query('days') days?: number,
+    @Query('limit') limit?: number,
+  ) {
+    this.logger.log(`GET /appointments/upcoming?days=${days}&limit=${limit}`);
+    return this.appointmentService.getGeneralUpcomingAppointments(
+      days ? parseInt(days.toString(), 10) : 7,
+      limit ? parseInt(limit.toString(), 10) : 50,
+    );
+  }
+
+  /**
    * Get upcoming appointments for a nurse
    */
   @Get('nurse/:nurseId/upcoming')

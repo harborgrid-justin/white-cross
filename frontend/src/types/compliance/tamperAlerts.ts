@@ -302,7 +302,7 @@ export const CreateTamperAlertSchema = z.object({
   description: z.string().min(1).max(1000),
   evidence: z.record(z.any()),
   suspectedUser: z.string().uuid().optional(),
-  suspectedIp: z.string().ip().optional(),
+  suspectedIp: z.string().regex(/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/).optional(),
   affectedRecords: z.string().optional(),
   isSecurityIncident: z.boolean(),
 });

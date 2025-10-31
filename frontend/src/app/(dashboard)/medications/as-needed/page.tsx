@@ -1,19 +1,16 @@
+'use client';
+
 /**
  * @fileoverview PRN (As-Needed) Medications Page
  * @module app/(dashboard)/medications/as-needed
  *
  * Manage PRN medications with symptom-based administration triggers.
- */
-
-/**
  * Force dynamic rendering for as-needed medications - real-time tracking required
  */
+
 export const dynamic = 'force-dynamic';
 
-
-'use client';
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import PRNMedicationsList from '@/components/medications/PRNMedicationsList';
 import { PageHeader } from '@/components/shared/PageHeader';
@@ -82,7 +79,6 @@ export default function PRNMedicationsPage() {
       <div className="space-y-6">
         <PageHeader
           title="PRN (As-Needed) Medications"
-          description="Medications administered based on symptoms or specific triggers"
           backLink="/medications"
           backLabel="Back to Medications"
         />
@@ -97,7 +93,6 @@ export default function PRNMedicationsPage() {
     <div className="space-y-6">
       <PageHeader
         title="PRN (As-Needed) Medications"
-        description="Medications administered based on symptoms or specific triggers"
         backLink="/medications"
         backLabel="Back to Medications"
       >

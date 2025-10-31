@@ -173,7 +173,7 @@ export const useHealthRecordsData = () => {
     try {
       switch (tab) {
         case 'records': {
-          const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.HEALTH_RECORDS.STUDENT(studentId)}${searchQuery ? `?search=${searchQuery}` : ''}`
+          const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.STUDENTS.HEALTH_RECORDS(studentId)}${searchQuery ? `?search=${searchQuery}` : ''}`
           const response = await fetch(url)
           if (response.ok) {
             const data = await response.json()
@@ -182,7 +182,7 @@ export const useHealthRecordsData = () => {
           break
         }
         case 'allergies': {
-          const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.HEALTH_RECORDS.ALLERGIES(studentId)}`
+          const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.STUDENTS.ALLERGIES(studentId)}`
           const allergyResponse = await fetch(url)
           if (allergyResponse.ok) {
             const allergyData = await allergyResponse.json()
@@ -191,7 +191,7 @@ export const useHealthRecordsData = () => {
           break
         }
         case 'chronic': {
-          const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.HEALTH_RECORDS.CHRONIC_CONDITIONS(studentId)}`
+          const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.CHRONIC_CONDITIONS.BY_STUDENT(studentId)}`
           const conditionResponse = await fetch(url)
           if (conditionResponse.ok) {
             const conditionData = await conditionResponse.json()
@@ -200,7 +200,7 @@ export const useHealthRecordsData = () => {
           break
         }
         case 'vaccinations': {
-          const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.HEALTH_RECORDS.VACCINATIONS(studentId)}`
+          const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.STUDENTS.IMMUNIZATIONS(studentId)}`
           const vaccinationResponse = await fetch(url)
           if (vaccinationResponse.ok) {
             const vaccinationData = await vaccinationResponse.json()
@@ -209,7 +209,7 @@ export const useHealthRecordsData = () => {
           break
         }
         case 'growth': {
-          const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.HEALTH_RECORDS.GROWTH_CHART(studentId)}`
+          const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.VITAL_SIGNS.BY_STUDENT(studentId)}`
           const growthResponse = await fetch(url)
           if (growthResponse.ok) {
             const growthData = await growthResponse.json()
@@ -218,7 +218,7 @@ export const useHealthRecordsData = () => {
           break
         }
         case 'screenings': {
-          const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.HEALTH_RECORDS.VITALS(studentId)}`
+          const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.VITAL_SIGNS.BY_STUDENT(studentId)}`
           const screeningResponse = await fetch(url)
           if (screeningResponse.ok) {
             const screeningData = await screeningResponse.json()

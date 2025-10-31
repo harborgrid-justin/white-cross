@@ -15,7 +15,7 @@
  * - Data sanitization for PHI
  */
 
-import { UserRole } from '@/middleware'
+import { UserRole } from '@/types/common'
 
 // ============================================================================
 // Audit Logging
@@ -260,7 +260,7 @@ export function hasRole(requiredRoles: UserRole[]): boolean {
  */
 export function isAdmin(): boolean {
   const role = getCurrentUserRole()
-  return role === UserRole.ADMIN || role === UserRole.DISTRICT_ADMIN
+  return role === 'ADMIN' || role === 'DISTRICT_ADMIN'
 }
 
 /**
@@ -271,9 +271,9 @@ function getCurrentUserRole(): UserRole {
   // For now, returning a default value
   if (typeof window !== 'undefined') {
     const storedRole = localStorage.getItem('user_role')
-    return (storedRole as UserRole) || UserRole.STAFF
+    return (storedRole as UserRole) || 'VIEWER'
   }
-  return UserRole.STAFF
+  return 'VIEWER'
 }
 
 /**

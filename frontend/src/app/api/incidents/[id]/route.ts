@@ -19,7 +19,7 @@ export const GET = withAuth(
       const { id } = params;
 
       // Proxy request to backend with caching
-      const response = await proxyToBackend(request, `/incidents/${id}`, {
+      const response = await proxyToBackend(request, `/incident-report/${id}`, {
         cache: {
           revalidate: 60,
           tags: [`incident-${id}`, 'incidents']
@@ -62,7 +62,7 @@ export const PUT = withAuth(
       const { id } = params;
 
       // Proxy request to backend
-      const response = await proxyToBackend(request, `/incidents/${id}`);
+      const response = await proxyToBackend(request, `/incident-report/${id}`);
 
       const data = await response.json();
 
@@ -104,7 +104,7 @@ export const DELETE = withAuth(
       const { id } = params;
 
       // Proxy request to backend
-      const response = await proxyToBackend(request, `/incidents/${id}`);
+      const response = await proxyToBackend(request, `/incident-report/${id}`);
 
       const data = await response.json();
 

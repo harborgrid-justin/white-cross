@@ -34,6 +34,12 @@ class ApiClient {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
+    // Validate endpoint
+    if (!endpoint || endpoint === 'undefined' || typeof endpoint !== 'string') {
+      console.error('[API Client] Invalid endpoint:', endpoint);
+      throw new Error(`Invalid API endpoint: ${endpoint}`);
+    }
+    
     const url = `${this.baseUrl}${endpoint}`;
 
     const defaultHeaders: HeadersInit = {

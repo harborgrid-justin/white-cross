@@ -277,8 +277,8 @@ export default function MedicationsLayout({ children }: MedicationsLayoutProps) 
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto bg-gray-50">
-        <div className="mx-auto max-w-7xl p-6">{children}</div>
+      <main className="flex-1 overflow-auto">
+        <div className="p-6">{children}</div>
       </main>
     </div>
   );

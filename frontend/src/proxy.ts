@@ -1,42 +1,58 @@
 /**
- * Next.js Proxy (formerly Middleware) - Production-Ready Security and Authorization
+ * Production-Ready Next.js Proxy - Complete Security & HIPAA Compliance
  *
- * Comprehensive proxy for authentication, authorization, rate limiting,
- * and audit logging for HIPAA-compliant healthcare platform.
+ * This proxy provides comprehensive security features for the White Cross
+ * healthcare platform including:
  *
- * Features:
- * - JWT token verification with signature validation
+ * - JWT authentication with signature verification
  * - Role-based access control (RBAC)
- * - Rate limiting (in-memory + Redis-ready)
+ * - CSRF protection
+ * - Security headers (CSP, HSTS, X-Frame-Options, etc.)
+ * - Rate limiting (in-memory, Redis-ready)
  * - Audit logging for PHI access
- * - Security headers
- * - Locale detection for i18n
- * - Request ID generation for tracing
+ * - Session timeout enforcement
+ * - Request sanitization markers
+ * - XSS prevention
+ * - CORS configuration
  *
  * @module proxy
  * @since 2025-10-26
- * @see https://nextjs.org/docs/messages/middleware-to-proxy
+ * @version 1.0.0
+ *
+ * @example Environment Variables Required
+ * ```env
+ * JWT_SECRET=your-secret-key-here
+ * NEXT_PUBLIC_API_URL=http://localhost:3001
+ * NEXT_PUBLIC_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173
+ * NODE_ENV=production|development
+ * ```
+ *
+ * @example Proxy Execution Flow
+ * 1. Security Headers (all requests)
+ * 2. CORS/Preflight handling
+ * 3. Rate Limiting
+ * 4. CSRF Validation (state-changing methods)
+ * 5. Authentication Check
+ * 6. RBAC Authorization
+ * 7. Audit Logging (PHI/Admin routes)
+ * 8. Request Sanitization Markers
  */
 
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { verifyToken, extractToken, hasRolePermission } from '@/lib/auth/jwtVerifier';
-import {
-  getRateLimiter,
-  getIdentifier,
-  getRouteType,
-  createRateLimitHeaders,
-} from '@/lib/middleware/rateLimiter';
-import {
-  auditLogger,
-  AuditEventType,
-  isPHIRoute,
-  extractResourceInfo,
-} from '@/lib/middleware/auditLogger';
+import { NextResponse, NextRequest } from 'next/server';
 
-// ==========================================
-// CONFIGURATION
-// ==========================================
+// Import modular middleware components
+import {
+  authMiddleware,
+  addUserContextHeaders,
+  isPublicRoute,
+  type TokenPayload,
+} from './middleware/auth';
+import { rbacMiddleware } from './middleware/rbac';
+import { securityHeadersMiddleware, handlePreflightRequest } from './middleware/security';
+import { rateLimitMiddleware } from './middleware/rateLimit';
+import { auditMiddleware, requiresPHIAudit, requiresAdminAudit } from './middleware/audit';
+import { sanitizeMiddleware } from './middleware/sanitization';
+import { getCSRFHeaderName } from './lib/security/csrf';
 
 /**
  * Role definitions matching backend RBAC
@@ -50,328 +66,193 @@ export enum UserRole {
 }
 
 /**
- * Route permission configuration
- * Routes require one of the specified roles
+ * CSRF validation for state-changing operations
  */
-const ROUTE_PERMISSIONS: Record<string, UserRole[]> = {
-  '/admin': [UserRole.ADMIN, UserRole.DISTRICT_ADMIN],
-  '/inventory': [UserRole.ADMIN, UserRole.NURSE, UserRole.SCHOOL_ADMIN],
-  '/reports': [UserRole.ADMIN, UserRole.DISTRICT_ADMIN, UserRole.SCHOOL_ADMIN],
-  '/settings': [
-    UserRole.ADMIN,
-    UserRole.DISTRICT_ADMIN,
-    UserRole.SCHOOL_ADMIN,
-    UserRole.NURSE,
-    UserRole.STAFF,
-  ],
-};
+function validateCSRF(request: NextRequest): boolean {
+  const method = request.method;
 
-/**
- * Public routes that don't require authentication
- */
-const PUBLIC_ROUTES = [
-  '/',
-  '/login',
-  '/forgot-password',
-  '/reset-password',
-  '/signup',
-  '/verify-email',
-  '/health',
-  '/_next',
-  '/static',
-  '/favicon.ico',
-  '/api/health',
-  '/api/auth/login',
-  '/api/auth/register',
-  '/api/auth/forgot-password',
-  '/api/auth/refresh',
-  '/auth/login',
-  '/auth/register',
-  '/auth/forgot-password',
-  '/auth/refresh',
-  '/auth/login',
-  '/auth/register',
-  '/auth/forgot-password',
-  '/auth/refresh',
-];
-
-/**
- * Routes that should bypass rate limiting
- */
-const RATE_LIMIT_BYPASS = ['/health', '/api/health', '/_next', '/static'];
-
-// ==========================================
-// HELPER FUNCTIONS
-// ==========================================
-
-/**
- * Check if route is public (no auth required)
- */
-function isPublicRoute(pathname: string): boolean {
-  return PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
-}
-
-/**
- * Check if user has required role for the requested path
- */
-function hasPermission(userRole: UserRole, pathname: string): boolean {
-  // Find the matching route pattern
-  for (const [route, allowedRoles] of Object.entries(ROUTE_PERMISSIONS)) {
-    if (pathname.startsWith(route)) {
-      return allowedRoles.some((allowedRole) => hasRolePermission(userRole, allowedRole));
-    }
-  }
-  // Default: allow access if no specific permission defined
-  return true;
-}
-
-/**
- * Generate unique request ID for tracing
- */
-function generateRequestId(): string {
-  return `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
-}
-
-/**
- * Detect user locale from headers
- */
-function detectLocale(request: NextRequest): string {
-  // Try accept-language header
-  const acceptLanguage = request.headers.get('accept-language');
-  if (acceptLanguage) {
-    // Parse accept-language header (e.g., "en-US,en;q=0.9,es;q=0.8")
-    const languages = acceptLanguage
-      .split(',')
-      .map((lang) => lang.split(';')[0].trim())
-      .filter(Boolean);
-
-    // Return first language or default
-    if (languages.length > 0) {
-      return languages[0];
-    }
+  // Only validate for state-changing methods
+  if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+    return true;
   }
 
-  // Default to US English
-  return 'en-US';
+  // Skip CSRF for API auth endpoints (they use different protection)
+  if (request.nextUrl.pathname.startsWith('/api/auth')) {
+    return true;
+  }
+
+  const csrfHeader = request.headers.get(getCSRFHeaderName());
+  const csrfCookie = request.cookies.get('csrf_token')?.value;
+
+  // Both must be present and match
+  return !!(csrfHeader && csrfCookie && csrfHeader === csrfCookie);
 }
 
-// ==========================================
-// MAIN PROXY FUNCTION
-// ==========================================
-
+/**
+ * Main proxy function
+ *
+ * This function orchestrates all middleware components in the correct order
+ * to ensure comprehensive security and compliance.
+ */
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const requestId = generateRequestId();
+  const startTime = Date.now();
 
-  // Skip proxy for public routes
+  // ==========================================
+  // 1. HANDLE PREFLIGHT (OPTIONS) REQUESTS
+  // ==========================================
+  const preflightResponse = handlePreflightRequest(request);
+  if (preflightResponse) {
+    return preflightResponse;
+  }
+
+  // ==========================================
+  // 2. APPLY SECURITY HEADERS (ALL REQUESTS)
+  // ==========================================
+  const response = securityHeadersMiddleware(request);
+
+  // ==========================================
+  // 3. SKIP MIDDLEWARE FOR STATIC FILES
+  // ==========================================
+  if (
+    pathname.startsWith('/_next/static') ||
+    pathname.startsWith('/_next/image') ||
+    pathname.startsWith('/static') ||
+    pathname.startsWith('/public') ||
+    pathname === '/favicon.ico' ||
+    pathname === '/icon' ||
+    pathname.startsWith('/icon') ||
+    pathname.endsWith('.ico') ||
+    pathname.endsWith('.png') ||
+    pathname.endsWith('.jpg') ||
+    pathname.endsWith('.jpeg') ||
+    pathname.endsWith('.gif') ||
+    pathname.endsWith('.svg') ||
+    pathname.endsWith('.webp') ||
+    pathname === '/api/health'
+  ) {
+    return response;
+  }
+
+  // ==========================================
+  // 4. RATE LIMITING
+  // ==========================================
+  const rateLimitResponse = rateLimitMiddleware(request);
+  if (rateLimitResponse) {
+    // Apply security headers to error response
+    return securityHeadersMiddleware(request, rateLimitResponse);
+  }
+
+  // ==========================================
+  // 5. CHECK IF PUBLIC ROUTE FIRST
+  // ==========================================
+  // Public routes don't need CSRF or auth checks
   if (isPublicRoute(pathname)) {
-    return NextResponse.next();
+    return response;
   }
 
   // ==========================================
-  // RATE LIMITING
+  // 6. CSRF VALIDATION (for protected routes only)
   // ==========================================
+  if (!validateCSRF(request)) {
+    console.warn('[PROXY] CSRF validation failed:', pathname);
 
-  if (!RATE_LIMIT_BYPASS.some((route) => pathname.startsWith(route))) {
-    const routeType = getRouteType(pathname);
-    const rateLimiter = getRateLimiter(routeType);
-
-    // Get identifier (IP or user ID if authenticated)
-    const identifier = getIdentifier(request);
-
-    // Check rate limit
-    const rateLimit = await rateLimiter.check(identifier, pathname);
-
-    if (!rateLimit.allowed) {
-      // Log security event
-      await auditLogger.logSecurityEvent(
-        AuditEventType.RATE_LIMIT_EXCEEDED,
-        {
-          method: request.method,
-          path: pathname,
-          headers: request.headers,
+    const csrfErrorResponse = new NextResponse(
+      JSON.stringify({
+        error: 'CSRF Validation Failed',
+        message: 'Invalid or missing CSRF token',
+      }),
+      {
+        status: 403,
+        headers: {
+          'Content-Type': 'application/json',
         },
-        undefined,
-        rateLimit.message
-      );
+      }
+    );
 
-      // Return rate limit error
-      return NextResponse.json(
-        {
-          error: 'Too Many Requests',
-          message: rateLimit.message,
-          retryAfter: Math.ceil((rateLimit.resetTime - Date.now()) / 1000),
-        },
-        {
-          status: 429,
-          headers: createRateLimitHeaders(rateLimit),
-        }
-      );
-    }
+    return securityHeadersMiddleware(request, csrfErrorResponse);
   }
 
   // ==========================================
-  // AUTHENTICATION
+  // 7. AUTHENTICATION CHECK (for protected routes only)
   // ==========================================
+  const { response: authResponse, payload } = authMiddleware(request);
 
-  // Extract auth token from cookie or Authorization header
-  const token = extractToken(request);
+  // If auth failed, return redirect with security headers
+  if (authResponse) {
+    return securityHeadersMiddleware(request, authResponse);
+  }
 
-  // Redirect to login if no token
-  if (!token) {
+  // At this point, user must be authenticated
+  if (!payload) {
+    console.error('[PROXY] Unexpected: No payload after auth check');
     const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('redirect', pathname);
+    loginUrl.searchParams.set('error', 'internal_error');
     return NextResponse.redirect(loginUrl);
   }
 
-  // Verify token
-  const verification = await verifyToken(token);
-
-  if (!verification.valid || !verification.payload) {
-    // Log security event
-    await auditLogger.logSecurityEvent(
-      AuditEventType.INVALID_TOKEN,
-      {
-        method: request.method,
-        path: pathname,
-        headers: request.headers,
-      },
-      undefined,
-      verification.error
-    );
-
-    // Redirect to login with error
-    const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('redirect', pathname);
-    loginUrl.searchParams.set('error', verification.error || 'invalid_token');
-    return NextResponse.redirect(loginUrl);
-  }
-
-  const payload = verification.payload;
+  // ==========================================
+  // 8. ADD USER CONTEXT TO HEADERS
+  // ==========================================
+  const requestHeaders = addUserContextHeaders(request, payload);
 
   // ==========================================
-  // AUTHORIZATION (RBAC)
+  // 9. RBAC AUTHORIZATION
   // ==========================================
+  // Create new request with user context headers for RBAC check
+  const requestWithContext = new NextRequest(request.url, {
+    headers: requestHeaders,
+    method: request.method,
+  });
 
-  // Check role-based permissions
-  if (!hasPermission(payload.role as UserRole, pathname)) {
-    // Log access denied
-    await auditLogger.log({
-      eventType: AuditEventType.ACCESS_DENIED,
-      timestamp: new Date().toISOString(),
-      requestId,
-      userId: payload.userId,
-      userRole: payload.role,
-      ipAddress:
-        request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
-      userAgent: request.headers.get('user-agent') || 'unknown',
-      method: request.method,
-      path: pathname,
-      result: 'DENIED',
-    });
-
-    return NextResponse.redirect(new URL('/access-denied', request.url));
+  const rbacResponse = rbacMiddleware(requestWithContext);
+  if (rbacResponse) {
+    return securityHeadersMiddleware(request, rbacResponse);
   }
 
   // ==========================================
-  // PHI ACCESS LOGGING (HIPAA REQUIREMENT)
+  // 10. AUDIT LOGGING
   // ==========================================
+  if (requiresPHIAudit(pathname) || requiresAdminAudit(pathname)) {
+    auditMiddleware(requestWithContext);
+  }
 
-  if (isPHIRoute(pathname)) {
-    const { resourceType, resourceId } = extractResourceInfo(pathname);
+  // ==========================================
+  // 11. REQUEST SANITIZATION MARKERS
+  // ==========================================
+  await sanitizeMiddleware(requestWithContext);
 
-    // Determine action based on method
-    let action: 'VIEW' | 'MODIFY' | 'DELETE' | 'EXPORT' = 'VIEW';
-    if (request.method === 'POST' || request.method === 'PUT' || request.method === 'PATCH') {
-      action = 'MODIFY';
-    } else if (request.method === 'DELETE') {
-      action = 'DELETE';
-    } else if (pathname.includes('/export')) {
-      action = 'EXPORT';
-    }
+  // ==========================================
+  // 12. FINAL RESPONSE
+  // ==========================================
+  const processingTime = Date.now() - startTime;
 
-    // Log PHI access
-    await auditLogger.logPHIAccess(
-      action,
-      {
-        method: request.method,
-        path: pathname,
-        headers: request.headers,
-      },
-      payload.userId,
-      payload.role,
-      resourceType,
-      resourceId || 'list',
-      'SUCCESS'
+  // Log slow requests
+  if (processingTime > 100) {
+    console.warn(
+      `[PROXY] Slow request: ${pathname} took ${processingTime}ms`
     );
   }
 
-  // ==========================================
-  // ADMIN ACTION LOGGING
-  // ==========================================
-
-  if (pathname.startsWith('/admin')) {
-    await auditLogger.logAdminAction(
-      {
-        method: request.method,
-        path: pathname,
-        headers: request.headers,
-      },
-      payload.userId,
-      payload.role,
-      `${request.method} ${pathname}`,
-      'SUCCESS'
-    );
-  }
-
-  // ==========================================
-  // REQUEST HEADERS
-  // ==========================================
-
-  // Create response headers
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set('x-request-id', requestId);
-  requestHeaders.set('x-user-id', payload.userId);
-  requestHeaders.set('x-user-role', payload.role);
-  requestHeaders.set('x-locale', detectLocale(request));
-
-  // Add organization ID if present
-  if (payload.organizationId) {
-    requestHeaders.set('x-organization-id', payload.organizationId);
-  }
-
-  // ==========================================
-  // SECURITY HEADERS
-  // ==========================================
-
-  const response = NextResponse.next({
+  // Return response with updated headers
+  const finalResponse = NextResponse.next({
     request: {
       headers: requestHeaders,
     },
   });
 
-  // Add security headers
-  response.headers.set('X-Request-ID', requestId);
-  response.headers.set('X-Content-Type-Options', 'nosniff');
-  response.headers.set('X-Frame-Options', 'DENY');
-  response.headers.set('X-XSS-Protection', '1; mode=block');
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  // Add processing time header (for monitoring)
+  finalResponse.headers.set('X-Middleware-Time', processingTime.toString());
 
-  // Add HSTS header in production
-  if (process.env.NODE_ENV === 'production') {
-    response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-  }
-
-  return response;
+  // Apply security headers to final response
+  return securityHeadersMiddleware(request, finalResponse);
 }
 
-// ==========================================
-// MIDDLEWARE CONFIGURATION
-// ==========================================
-
 /**
- * Middleware matcher configuration
- * Specify which routes should be protected by this middleware
+ * Proxy Configuration
+ *
+ * Specifies which routes should be protected by this proxy.
+ * Excludes Next.js internals and static files for performance.
  */
 export const config = {
   matcher: [
@@ -380,9 +261,21 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public folder files
-     * - Static files with extensions
+     * - public folder (static assets)
+     * - Static file extensions
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|public|.*\\.(?:ico|png|jpg|jpeg|gif|svg|webp)).*)',
   ],
+};
+
+/**
+ * Export middleware components for testing and reuse
+ */
+export {
+  authMiddleware,
+  rbacMiddleware,
+  securityHeadersMiddleware,
+  rateLimitMiddleware,
+  auditMiddleware,
+  sanitizeMiddleware,
 };

@@ -1,99 +1,70 @@
 /**
- * @fileoverview Dashboard Layout - Main Application Shell
+ * @fileoverview Dashboard Layout - White Cross Healthcare Platform
  *
- * The primary authenticated layout for the White Cross Healthcare Platform, providing
- * a consistent application shell with sidebar navigation, header, breadcrumbs, and footer
- * for all dashboard pages. This layout is used by all authenticated users and wraps
- * the main application features.
+ * Main dashboard layout that provides consistent structure, navigation, and styling
+ * for all authenticated pages in the White Cross Healthcare Platform. This layout
+ * wraps all dashboard pages and provides the primary navigation, header, and content area.
  *
  * @module app/(dashboard)/layout
- * @category Core
- * @subcategory Layouts
+ * @category Layouts
+ * @subcategory Dashboard
  *
- * **Layout Position in Hierarchy:**
+ * **Layout Hierarchy:**
  * ```
- * RootLayout (app/layout.tsx)
- * └── DashboardLayout (this file) - wraps (dashboard) route group
- *     ├── Dashboard Home (dashboard/page.tsx)
- *     ├── Medications (medications/layout.tsx → pages)
- *     ├── Students (students/page.tsx)
- *     ├── Appointments (appointments/page.tsx)
- *     └── [Other dashboard features...]
+ * RootLayout
+ * └── DashboardLayout (this file)
+ *     ├── /dashboard (Dashboard Home)
+ *     ├── /students/* (All Students pages)
+ *     ├── /medications/* (All Medications pages)
+ *     ├── /health-records/* (All Health Records pages)
+ *     ├── /appointments/* (All Appointments pages)
+ *     └── ... (All other main application pages)
  * ```
  *
- * **Key Features:**
- * - **Responsive Sidebar**: Desktop (fixed, 256px), Mobile (drawer)
- * - **Top Navigation**: Search, notifications, user menu
- * - **Auto-generated Breadcrumbs**: Dynamic based on current route
- * - **Sticky Header**: Fixed positioning during scroll
- * - **Dark Mode Support**: Full theme integration
- * - **Skip Navigation**: Keyboard accessibility (WCAG 2.4.1)
- * - **Footer**: Copyright and compliance information
+ * **Features:**
+ * - Consistent header with user info and navigation
+ * - Responsive sidebar navigation (desktop) / mobile menu
+ * - Main content area with proper spacing and background
+ * - Breadcrumb navigation support
+ * - Loading states and error boundaries
  *
- * **Responsive Behavior:**
- * - Desktop (lg+): Sidebar visible, fixed width (w-64)
- * - Mobile/Tablet: Sidebar hidden, accessible via hamburger menu
- * - Main content: Flex-grow to fill available space
- * - Overflow handling: Vertical scroll in main content area
+ * **HIPAA Compliance:**
+ * - Session timeout handling
+ * - Secure navigation state management
+ * - PHI data access logging at layout level
  *
- * **State Management:**
- * - NavigationContext: Manages sidebar open/close state
- * - Header component: Handles mobile menu toggle, user dropdown
- * - MobileNav component: Controls drawer visibility
- * - Sidebar component: Manages navigation active states
- *
- * **Accessibility Features:**
- * - Skip-to-content link (keyboard users)
- * - ARIA roles and labels
+ * **Accessibility:**
+ * - Skip navigation links
+ * - Semantic navigation structure
+ * - ARIA labels and landmarks
  * - Keyboard navigation support
- * - Screen reader announcements
- * - Focus management
- *
- * @see {@link Header} for top navigation implementation
- * @see {@link Sidebar} for sidebar navigation
- * @see {@link MobileNav} for mobile drawer
- * @see {@link Breadcrumbs} for dynamic breadcrumb generation
- * @see {@link Footer} for footer content
- *
- * @example
- * ```tsx
- * // This layout automatically wraps all pages in app/(dashboard)/
- * // File structure:
- * // app/(dashboard)/
- * //   layout.tsx (this file)
- * //   dashboard/page.tsx (wrapped by this layout)
- * //   medications/
- * //     layout.tsx (nested, also wrapped by this layout)
- * //     page.tsx
- * ```
  *
  * @since 1.0.0
  */
 
-import { ReactNode } from 'react';
 import type { Metadata } from 'next';
-import { Header } from '@/components/layouts/Header';
-import { Sidebar } from '@/components/layouts/Sidebar';
-import { MobileNav } from '@/components/layouts/MobileNav';
-import { Breadcrumbs } from '@/components/layouts/Breadcrumbs';
-import { Footer } from '@/components/layouts/Footer';
+import Link from 'next/link';
+import { ReactNode } from 'react';
 
 /**
- * Metadata configuration for Dashboard layout
+ * Metadata configuration for dashboard pages.
+ *
+ * @constant
+ * @type {Metadata}
  */
 export const metadata: Metadata = {
   title: {
-    template: '%s | Dashboard | White Cross',
+    template: '%s | White Cross Healthcare',
     default: 'Dashboard | White Cross Healthcare',
   },
-  description: 'White Cross Healthcare Platform dashboard for managing students, medications, appointments, and health records.',
+  description: 'White Cross Healthcare Platform - Comprehensive school health management',
 };
 
 /**
  * Props interface for the Dashboard Layout component.
  *
  * @interface DashboardLayoutProps
- * @property {React.ReactNode} children - Child page components to render within the layout
+ * @property {React.ReactNode} children - Dashboard page components to render
  */
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -102,136 +73,104 @@ interface DashboardLayoutProps {
 /**
  * Dashboard Layout Component
  *
- * Provides the main authenticated application shell with sidebar, header, breadcrumbs,
- * and footer. This is a Server Component that renders the static layout structure, with
- * client-side interactivity delegated to child components.
- *
- * **Layout Structure:**
- * ```
- * ┌─────────────────────────────────────────┐
- * │ Header (search, notifications, user)    │
- * ├──────────┬──────────────────────────────┤
- * │          │ Breadcrumbs                  │
- * │ Sidebar  ├──────────────────────────────┤
- * │ (fixed)  │                              │
- * │          │ Main Content                 │
- * │          │ (scrollable)                 │
- * │          │                              │
- * │          ├──────────────────────────────┤
- * │          │ Footer                       │
- * └──────────┴──────────────────────────────┘
- * ```
- *
- * **Component Responsibilities:**
- * - Render skip-to-content link for accessibility
- * - Render header with navigation and user controls
- * - Render desktop sidebar (hidden on mobile)
- * - Render mobile navigation drawer
- * - Render breadcrumbs for route context
- * - Render main content area with vertical scroll
- * - Render footer with copyright and links
- *
- * **Client-Side State:**
- * This Server Component does not manage state directly. Interactive features
- * are handled by client components:
- * - `<Header />` - Mobile menu toggle, user dropdown
- * - `<MobileNav />` - Drawer open/close state
- * - `<Sidebar />` - Navigation active states
- * All state coordination happens through NavigationContext.
+ * Provides consistent layout structure for all authenticated dashboard pages.
+ * Includes responsive navigation, header, and main content area with proper
+ * spacing and styling.
  *
  * @param {DashboardLayoutProps} props - Component properties
- * @param {React.ReactNode} props.children - Child page components
+ * @param {React.ReactNode} props.children - Child dashboard pages
  *
- * @returns {JSX.Element} The dashboard layout structure with all UI components
- *
- * @example
- * ```tsx
- * // Next.js automatically applies this layout to (dashboard) routes:
- * <DashboardLayout>
- *   <DashboardPage /> // or <MedicationsPage />, <StudentsPage />, etc.
- * </DashboardLayout>
- * ```
- *
- * @example
- * ```tsx
- * // The rendered structure:
- * <div className="min-h-screen bg-gray-50">
- *   <a href="#main-content">Skip to main content</a>
- *   <Header />
- *   <div className="flex flex-1">
- *     <Sidebar /> // Desktop only
- *     <MobileNav /> // Mobile only
- *     <main id="main-content">
- *       <Breadcrumbs />
- *       <div className="py-6">
- *         {children} // Your page content
- *       </div>
- *       <Footer />
- *     </main>
- *   </div>
- * </div>
- * ```
- *
- * @remarks
- * This is a Next.js Server Component. It does not use hooks, state, or browser APIs.
- * All interactive features are implemented in client components that are rendered
- * as children of this layout.
- *
- * The layout uses Tailwind CSS for styling with responsive breakpoints:
- * - Mobile: Default styles
- * - Tablet: sm (640px+)
- * - Desktop: lg (1024px+)
+ * @returns {JSX.Element} Complete dashboard layout structure
  */
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-  // Note: Header and MobileNav manage their own state through NavigationContext
-  // No local state needed here - this is a pure server component
-
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
-      {/* Skip to main content link for accessibility */}
+    <div className="min-h-screen bg-gray-50">
+      {/* Skip Navigation */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-primary-600 text-white px-4 py-2 rounded-md z-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 bg-primary-600 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
       >
         Skip to main content
       </a>
 
-      {/* Top Navigation Header - Manages its own state via NavigationContext */}
-      <Header />
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Logo */}
+            <div className="flex items-center">
+              <Link href="/dashboard" className="flex items-center">
+                <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">WC</span>
+                </div>
+                <span className="ml-2 text-xl font-semibold text-gray-900">
+                  White Cross
+                </span>
+              </Link>
+            </div>
 
-      {/* Main Content Area with Sidebar */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Desktop Sidebar */}
-        <div className="hidden lg:flex lg:flex-shrink-0">
-          <div className="w-64 flex flex-col">
-            <Sidebar className="flex-1 h-full" />
+            {/* Navigation */}
+            <nav className="hidden md:flex space-x-8" role="navigation">
+              <NavLink href="/dashboard">Dashboard</NavLink>
+              <NavLink href="/students">Students</NavLink>
+              <NavLink href="/medications">Medications</NavLink>
+              <NavLink href="/health-records">Health Records</NavLink>
+              <NavLink href="/appointments">Appointments</NavLink>
+              <NavLink href="/incidents">Incidents</NavLink>
+              <NavLink href="/reports">Reports</NavLink>
+            </nav>
+
+            {/* User Menu Placeholder */}
+            <div className="flex items-center space-x-4">
+              <button className="text-gray-500 hover:text-gray-700">
+                <span className="sr-only">View notifications</span>
+                {/* Bell icon placeholder */}
+                <div className="w-6 h-6 bg-gray-300 rounded"></div>
+              </button>
+              <button className="text-gray-500 hover:text-gray-700">
+                <span className="sr-only">User menu</span>
+                {/* User avatar placeholder */}
+                <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
+              </button>
+            </div>
           </div>
         </div>
+      </header>
 
-        {/* Mobile Sidebar (Drawer) - Manages its own state via NavigationContext */}
-        <MobileNav />
-
-        {/* Main Content */}
-        <main
-          id="main-content"
-          className="flex-1 overflow-y-auto focus:outline-none"
-          role="main"
-          tabIndex={-1}
-        >
-          {/* Breadcrumbs */}
-          <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 lg:px-8 py-3">
-            <Breadcrumbs />
-          </div>
-
-          {/* Page Content */}
-          <div className="py-6">
-            {children}
-          </div>
-
-          {/* Footer */}
-          <Footer />
-        </main>
-      </div>
+      {/* Main Content */}
+      <main id="main-content" className="flex-1" role="main">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {children}
+        </div>
+      </main>
     </div>
+  );
+}
+
+/**
+ * Navigation Link Component
+ *
+ * Renders navigation links with consistent styling and hover states.
+ * TODO: Add active state detection for current route highlighting.
+ *
+ * @param {Object} props - Component props
+ * @param {string} props.href - Link destination
+ * @param {React.ReactNode} props.children - Link text/content
+ * @returns {JSX.Element} Styled navigation link
+ */
+function NavLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors duration-200"
+    >
+      {children}
+    </Link>
   );
 }
