@@ -10,7 +10,7 @@
  */
 
 import React, { memo, useState, useEffect, useRef, useCallback } from 'react'
-import { useNavigate } from 'next/link' // Migrated from react-router-dom
+import { useRouter } from 'next/navigation'
 import {
   Bell, X, Check, CheckCheck, AlertCircle, Info, CheckCircle,
   AlertTriangle, Clock
@@ -195,7 +195,7 @@ export const NotificationCenter = memo(() => {
       router.push(notification.actionUrl)
       setNotificationOpen(false)
     }
-  }, [navigate, setNotificationOpen, markAsRead])
+  }, [router, setNotificationOpen, markAsRead])
 
   const filteredNotifications = filter === 'unread'
     ? notifications.filter(n => !n.read)

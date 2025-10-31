@@ -10,7 +10,7 @@
  */
 
 import React, { memo, useState, useEffect, useCallback, useRef } from 'react'
-import { useNavigate } from 'next/link' // Migrated from react-router-dom
+import { useRouter } from 'next/navigation'
 import { Search, X, Clock, TrendingUp, ArrowRight } from 'lucide-react'
 import { useNavigation } from '../../contexts/NavigationContext'
 
@@ -194,7 +194,7 @@ export const SearchBar = memo(({ className = '' }: SearchBarProps) => {
     router.push(result.path)
     setSearchOpen(false)
     setQuery('')
-  }, [query, navigate, setSearchOpen, handleSearch])
+  }, [query, router, setSearchOpen, handleSearch])
 
   const handleRecentSearchClick = useCallback((search: string) => {
     setQuery(search)

@@ -7,7 +7,7 @@
 
 import { Suspense } from 'react';
 import { Metadata } from 'next';
-import { Link } from 'next/link';
+import Link from 'next/link';
 import EmergencyMedicationsList from '@/components/medications/EmergencyMedicationsList';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { fetchWithAuth } from '@/lib/server/fetch';

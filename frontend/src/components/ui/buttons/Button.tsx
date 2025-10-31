@@ -13,6 +13,7 @@
  */
 
 import React from 'react';
+import Link from 'next/link';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -34,10 +35,17 @@ const cn = (...inputs: (string | undefined)[]) => twMerge(clsx(inputs));
 /**
  * Button component props extending native HTML button attributes.
  *
+ * When `href` is provided, the button renders as a Next.js Link with button styling.
+ * This prevents nested interactive elements and maintains accessibility.
+ *
  * @interface ButtonProps
  * @extends {React.ButtonHTMLAttributes<HTMLButtonElement>}
  *
  * @property {React.ReactNode} [children] - Button content (text or elements)
+ * @property {string} [href] - If provided, renders as Next.js Link instead of button
+ * @property {boolean} [prefetch] - Link prefetch behavior (only used when href is provided)
+ * @property {boolean} [replace] - Replace browser history (only used when href is provided)
+ * @property {boolean} [scroll] - Scroll to top on navigation (only used when href is provided)
  * @property {('primary' | 'secondary' | 'outline' | 'outline-primary' | 'ghost' | 'link' | 'destructive' | 'danger' | 'success' | 'warning' | 'info')} [variant='primary'] - Visual style variant
  * @property {('xs' | 'sm' | 'md' | 'lg' | 'xl')} [size='md'] - Button size (affects padding and text size)
  * @property {boolean} [loading=false] - Loading state showing spinner animation
@@ -46,10 +54,14 @@ const cn = (...inputs: (string | undefined)[]) => twMerge(clsx(inputs));
  * @property {React.ReactNode} [leftIcon] - Left-aligned icon (backward compatibility)
  * @property {React.ReactNode} [rightIcon] - Right-aligned icon (backward compatibility)
  * @property {boolean} [fullWidth=false] - Expand button to full container width
- * @property {boolean} [asChild=false] - Render as child component (composition pattern)
+ * @property {boolean} [asChild=false] - Reserved for future Radix UI integration
  */
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children?: React.ReactNode;
+  href?: string;
+  prefetch?: boolean;
+  replace?: boolean;
+  scroll?: boolean;
   variant?: 'primary' | 'secondary' | 'outline' | 'outline-primary' | 'ghost' | 'link' | 'destructive' | 'danger' | 'success' | 'warning' | 'info';
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   loading?: boolean;
@@ -184,6 +196,10 @@ const buttonSizes = {
 export const Button = React.memo(React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({
     className,
+    href,
+    prefetch,
+    replace,
+    scroll,
     variant = 'primary',
     size = 'md',
     loading = false,
@@ -194,6 +210,7 @@ export const Button = React.memo(React.forwardRef<HTMLButtonElement, ButtonProps
     fullWidth = false,
     disabled,
     children,
+    onClick,
     ...props
   }, ref) => {
     const isDisabled = disabled || loading;
@@ -202,25 +219,22 @@ export const Button = React.memo(React.forwardRef<HTMLButtonElement, ButtonProps
     const finalIcon = icon || leftIcon || rightIcon;
     const finalIconPosition = icon ? iconPosition : leftIcon ? 'left' : rightIcon ? 'right' : iconPosition;
 
-    return (
-      <button
-        ref={ref}
-        className={cn(
-          'inline-flex items-center justify-center font-medium transition-all duration-200 ease-in-out',
-          'transform active:scale-[0.98]',
-          'focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900',
-          'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
-          'motion-reduce:transition-none motion-reduce:transform-none',
-          buttonVariants[variant],
-          buttonSizes[size],
-          fullWidth && 'w-full',
-          className
-        )}
-        disabled={isDisabled}
-        aria-busy={loading}
-        aria-disabled={isDisabled}
-        {...props}
-      >
+    // Common className for both button and link
+    const commonClassName = cn(
+      'inline-flex items-center justify-center font-medium transition-all duration-200 ease-in-out',
+      'transform active:scale-[0.98]',
+      'focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900',
+      'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
+      'motion-reduce:transition-none motion-reduce:transform-none',
+      buttonVariants[variant],
+      buttonSizes[size],
+      fullWidth && 'w-full',
+      className
+    );
+
+    // Common content for both button and link
+    const content = (
+      <>
         {loading && (
           <>
             <svg
@@ -265,6 +279,39 @@ export const Button = React.memo(React.forwardRef<HTMLButtonElement, ButtonProps
             {finalIcon}
           </span>
         )}
+      </>
+    );
+
+    // Render as Link if href is provided
+    if (href && !isDisabled) {
+      return (
+        <Link
+          href={href}
+          prefetch={prefetch}
+          replace={replace}
+          scroll={scroll}
+          className={commonClassName}
+          onClick={onClick as any}
+          aria-disabled={isDisabled}
+          {...(props as any)}
+        >
+          {content}
+        </Link>
+      );
+    }
+
+    // Render as button
+    return (
+      <button
+        ref={ref}
+        className={commonClassName}
+        disabled={isDisabled}
+        aria-busy={loading}
+        aria-disabled={isDisabled}
+        onClick={onClick}
+        {...props}
+      >
+        {content}
       </button>
     );
   }

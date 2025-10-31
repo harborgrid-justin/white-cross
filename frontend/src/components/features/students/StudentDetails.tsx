@@ -153,12 +153,10 @@ export const StudentDetails: React.FC<StudentDetailsProps> = ({
                       Edit
                     </Button>
                   )}
-                  <Link href={`/students/${student.id}/health-records`}>
-                    <Button variant="secondary" size="sm">
-                      <FileText className="h-4 w-4 mr-2" />
-                      Health Records
-                    </Button>
-                  </Link>
+                  <Button href={`/students/${student.id}/health-records`} variant="secondary" size="sm">
+                    <FileText className="h-4 w-4 mr-2" />
+                    Health Records
+                  </Button>
                 </div>
               </div>
 
@@ -242,11 +240,9 @@ export const StudentDetails: React.FC<StudentDetailsProps> = ({
                   <Phone className="h-5 w-5 mr-2" />
                   Emergency Contacts
                 </span>
-                <Link href={`/students/${student.id}/emergency-contacts`}>
-                  <Button variant="ghost" size="sm">
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                </Link>
+                <Button href={`/students/${student.id}/emergency-contacts`} variant="ghost" size="sm">
+                  <Edit className="h-4 w-4" />
+                </Button>
               </h2>
 
               {student.emergencyContacts && student.emergencyContacts.length > 0 ? (
@@ -282,11 +278,9 @@ export const StudentDetails: React.FC<StudentDetailsProps> = ({
                   ))}
 
                   {student.emergencyContacts.length > 3 && (
-                    <Link href={`/students/${student.id}/emergency-contacts`}>
-                      <Button variant="ghost" size="sm" className="w-full">
-                        View all {student.emergencyContacts.length} contacts
-                      </Button>
-                    </Link>
+                    <Button href={`/students/${student.id}/emergency-contacts`} variant="ghost" size="sm" className="w-full">
+                      View all {student.emergencyContacts.length} contacts
+                    </Button>
                   )}
                 </div>
               ) : (
@@ -295,11 +289,9 @@ export const StudentDetails: React.FC<StudentDetailsProps> = ({
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                     No emergency contacts added
                   </p>
-                  <Link href={`/students/${student.id}/emergency-contacts/new`}>
-                    <Button variant="secondary" size="sm">
-                      Add Contact
-                    </Button>
-                  </Link>
+                  <Button href={`/students/${student.id}/emergency-contacts/new`} variant="secondary" size="sm">
+                    Add Contact
+                  </Button>
                 </div>
               )}
             </div>
