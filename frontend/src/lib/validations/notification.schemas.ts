@@ -55,7 +55,7 @@ export const NotificationMetadataSchema = z.object({
   senderId: z.string().uuid().optional(),
   senderName: z.string().optional(),
   senderAvatarUrl: z.string().url().optional(),
-  additionalData: z.record(z.unknown()).optional()
+  additionalData: z.record(z.string(), z.unknown()).optional()
 });
 export type NotificationMetadata = z.infer<typeof NotificationMetadataSchema>;
 

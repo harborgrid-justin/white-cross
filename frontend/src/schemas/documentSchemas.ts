@@ -20,7 +20,7 @@ export const createDocumentSchema = z.object({
   category: z.string().optional(),
   tags: z.array(z.string()).optional(),
   isPublic: z.boolean().optional().default(false),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const updateDocumentSchema = z.object({
@@ -29,14 +29,14 @@ export const updateDocumentSchema = z.object({
   category: z.string().optional(),
   tags: z.array(z.string()).optional(),
   isPublic: z.boolean().optional(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const createFromTemplateSchema = z.object({
   templateId: z.string().min(1, 'Template ID is required'),
   title: z.string().min(1, 'Title is required').max(255),
   description: z.string().optional(),
-  variables: z.record(z.unknown()).optional(),
+  variables: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const shareDocumentSchema = z.object({
@@ -81,7 +81,7 @@ export const signDocumentSchema = z.object({
   documentId: z.string().min(1, 'Document ID is required'),
   signatureData: z.string().min(1, 'Signature data is required'),
   signatureType: z.enum(['electronic', 'digital', 'biometric']).default('electronic'),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 // ============================================================================

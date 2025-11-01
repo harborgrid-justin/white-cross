@@ -166,8 +166,8 @@ export const TagSelector: React.FC<TagSelectorProps> = ({
             : variant === 'filled'
             ? 'border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-700'
             : 'border-gray-300 dark:border-gray-600',
-          isOpen && !readOnly && 'ring-2 ring-primary-500 border-primary-500',
-          readOnly && 'bg-gray-50 dark:bg-gray-900 cursor-not-allowed',
+          isOpen && !readOnly ? 'ring-2 ring-primary-500 border-primary-500' : undefined,
+          readOnly ? 'bg-gray-50 dark:bg-gray-900 cursor-not-allowed' : undefined,
           'p-2'
         )}
         onClick={() => !readOnly && inputRef.current?.focus()}
@@ -180,7 +180,7 @@ export const TagSelector: React.FC<TagSelectorProps> = ({
               size={size === 'lg' ? 'md' : 'sm'}
               className={cn(
                 'group transition-all duration-150',
-                !readOnly && 'pr-1 hover:pr-0'
+                !readOnly ? 'pr-1 hover:pr-0' : undefined
               )}
             >
               {tag.color && (

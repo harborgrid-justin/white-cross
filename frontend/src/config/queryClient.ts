@@ -16,7 +16,7 @@
  * Last Updated: 2025-10-26 | File Type: .ts
  */
 
-import { QueryClient, QueryCache, MutationCache, DefaultOptions } from '@tanstack/react-query';
+import { QueryClient, QueryCache, MutationCache, DefaultOptions, Query, Mutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 
 // ==========================================
@@ -94,7 +94,7 @@ const defaultOptions: DefaultOptions = {
     refetchOnMount: true,
     
     // Retry configuration for transient failures
-    retry: (failureCount, error) => {
+    retry: (failureCount: number, error: any) => {
       // Don't retry on 4xx client errors except 408, 429
       if (error && typeof error === 'object' && 'status' in error) {
         const status = (error as any).status;
@@ -102,12 +102,12 @@ const defaultOptions: DefaultOptions = {
           return false;
         }
       }
-      
+
       // Retry up to 3 times with exponential backoff
       return failureCount < 3;
     },
-    
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+
+    retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
     
     // Network mode for offline support
     networkMode: 'online',
@@ -126,23 +126,23 @@ const defaultOptions: DefaultOptions = {
  * Query cache with error handling and audit logging
  */
 const queryCache = new QueryCache({
-  onError: (error, query) => {
+  onError: (error: any, query: Query<any, any, any>) => {
     const meta = query.meta as QueryMeta | undefined;
-    
+
     console.error('[QueryCache] Query failed:', {
       queryKey: query.queryKey,
       error,
       meta,
     });
-    
+
     // Display user-friendly error message
     const errorMessage = meta?.errorMessage || 'Failed to load data. Please try again.';
-    
+
     // Don't show toast for background refetches of successful queries
     if (query.state.data === undefined) {
       toast.error(errorMessage);
     }
-    
+
     // Log audit trail for PHI-related queries
     if (meta?.auditLog && typeof window !== 'undefined') {
       console.log('[Audit] Query failed', {
@@ -152,10 +152,10 @@ const queryCache = new QueryCache({
       });
     }
   },
-  
-  onSuccess: (data, query) => {
+
+  onSuccess: (data: any, query: Query<any, any, any>) => {
     const meta = query.meta as QueryMeta | undefined;
-    
+
     // Log audit trail for PHI-related queries
     if (meta?.auditLog && meta?.containsPHI && typeof window !== 'undefined') {
       console.log('[Audit] PHI data accessed', {
@@ -170,14 +170,14 @@ const queryCache = new QueryCache({
  * Mutation cache with success/error handling and audit logging
  */
 const mutationCache = new MutationCache({
-  onSuccess: (data, variables, context, mutation) => {
+  onSuccess: (data: any, variables: any, context: any, mutation: Mutation<any, any, any, any>) => {
     const meta = mutation.meta as MutationMeta | undefined;
-    
+
     // Show success message
     if (meta?.successMessage) {
       toast.success(meta.successMessage);
     }
-    
+
     // Log audit trail for PHI-affecting mutations
     if (meta?.affectsPHI && typeof window !== 'undefined') {
       console.log('[Audit] PHI data modified', {
@@ -187,21 +187,21 @@ const mutationCache = new MutationCache({
       });
     }
   },
-  
-  onError: (error, variables, context, mutation) => {
+
+  onError: (error: any, variables: any, context: any, mutation: Mutation<any, any, any, any>) => {
     const meta = mutation.meta as MutationMeta | undefined;
-    
+
     console.error('[MutationCache] Mutation failed:', {
       mutationKey: mutation.options.mutationKey,
       error,
       variables,
       meta,
     });
-    
+
     // Display user-friendly error message
     const errorMessage = meta?.errorMessage || 'Operation failed. Please try again.';
     toast.error(errorMessage);
-    
+
     // Log audit trail for failed PHI mutations
     if (meta?.affectsPHI && typeof window !== 'undefined') {
       console.log('[Audit] PHI mutation failed', {
@@ -266,15 +266,15 @@ export async function invalidateByTags(tags: string[]): Promise<void> {
   
   // Find all queries that match any of the provided tags
   const queriesToInvalidate = client.getQueryCache().findAll({
-    predicate: (query) => {
+    predicate: (query: Query<any, any, any>) => {
       const meta = query.meta as QueryMeta | undefined;
       const queryTags = meta?.cacheTags || [];
       return tags.some(tag => queryTags.includes(tag));
     },
   });
-  
+
   // Invalidate matching queries
-  const invalidationPromises = queriesToInvalidate.map(query =>
+  const invalidationPromises = queriesToInvalidate.map((query: Query<any, any, any>) =>
     client.invalidateQueries({ queryKey: query.queryKey })
   );
   
@@ -298,9 +298,9 @@ export function getCacheStats() {
   
   return {
     totalQueries: queries.length,
-    activeQueries: queries.filter(q => q.getObserversCount() > 0).length,
-    staleQueries: queries.filter(q => q.isStale()).length,
-    phiQueries: queries.filter(q => (q.meta as QueryMeta)?.containsPHI).length,
+    activeQueries: queries.filter((q: Query<any, any, any>) => q.getObserversCount() > 0).length,
+    staleQueries: queries.filter((q: Query<any, any, any>) => q.isStale()).length,
+    phiQueries: queries.filter((q: Query<any, any, any>) => (q.meta as QueryMeta)?.containsPHI).length,
   };
 }
 

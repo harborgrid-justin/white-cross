@@ -206,8 +206,8 @@ export async function createInventoryItemAction(
     }
 
     // Enhanced cache invalidation
-    revalidateTag('inventory');
-    revalidateTag('inventory-items');
+    revalidateTag('inventory', {});
+    revalidateTag('inventory-items', {});
     revalidatePath('/inventory/items');
 
     return {
@@ -374,9 +374,9 @@ export async function updateInventoryItemAction(
     }
 
     // Enhanced cache invalidation
-    revalidateTag('inventory');
-    revalidateTag('inventory-items');
-    revalidateTag(`inventory-item-${itemId}`);
+    revalidateTag('inventory', {});
+    revalidateTag('inventory-items', {});
+    revalidateTag(`inventory-item-${itemId}`, {});
     revalidatePath('/inventory/items');
     revalidatePath(`/inventory/items/${itemId}`);
 
@@ -430,9 +430,9 @@ export async function deleteInventoryItemAction(itemId: string): Promise<ActionR
     });
 
     // Enhanced cache invalidation
-    revalidateTag('inventory');
-    revalidateTag('inventory-items');
-    revalidateTag(`inventory-item-${itemId}`);
+    revalidateTag('inventory', {});
+    revalidateTag('inventory-items', {});
+    revalidateTag(`inventory-item-${itemId}`, {});
     revalidatePath('/inventory/items');
 
     return {
@@ -551,10 +551,10 @@ export async function createStockLevelAction(
     });
 
     // Enhanced cache invalidation
-    revalidateTag('inventory');
-    revalidateTag('stock-levels');
-    revalidateTag(`stock-item-${rawData.itemId}`);
-    revalidateTag(`stock-location-${rawData.locationId}`);
+    revalidateTag('inventory', {});
+    revalidateTag('stock-levels', {});
+    revalidateTag(`stock-item-${rawData.itemId}`, {});
+    revalidateTag(`stock-location-${rawData.locationId}`, {});
     revalidatePath('/inventory/stock');
 
     return {
@@ -668,8 +668,8 @@ export async function createInventoryLocationAction(
     });
 
     // Enhanced cache invalidation
-    revalidateTag('inventory');
-    revalidateTag('inventory-locations');
+    revalidateTag('inventory', {});
+    revalidateTag('inventory-locations', {});
     revalidatePath('/inventory/locations');
 
     return {
@@ -788,9 +788,9 @@ export async function createBatchAction(
     });
 
     // Enhanced cache invalidation
-    revalidateTag('inventory');
-    revalidateTag('inventory-batches');
-    revalidateTag(`item-batches-${rawData.itemId}`);
+    revalidateTag('inventory', {});
+    revalidateTag('inventory-batches', {});
+    revalidateTag(`item-batches-${rawData.itemId}`, {});
     revalidatePath('/inventory/stock');
 
     return {

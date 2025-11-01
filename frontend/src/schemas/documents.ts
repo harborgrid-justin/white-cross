@@ -28,7 +28,7 @@ export const fileUploadSchema = z.object({
     category: z.nativeEnum(DocumentCategory),
     accessLevel: z.nativeEnum(DocumentAccessLevel),
     tags: z.array(z.string()).default([]),
-    customFields: z.record(z.unknown()).default({}),
+    customFields: z.record(z.string(), z.unknown()).default({}),
     studentId: z.string().uuid().optional(),
     schoolId: z.string().uuid().optional(),
     districtId: z.string().uuid().optional(),
@@ -70,7 +70,7 @@ export const documentMetadataSchema = z.object({
   category: z.nativeEnum(DocumentCategory),
   accessLevel: z.nativeEnum(DocumentAccessLevel),
   tags: z.array(z.string()).default([]),
-  customFields: z.record(z.unknown()).default({}),
+  customFields: z.record(z.string(), z.unknown()).default({}),
   retentionDays: z.number().int().positive().optional(),
   autoDelete: z.boolean().default(false),
   requiresSignature: z.boolean().default(false),
@@ -312,7 +312,7 @@ export type DocumentTemplateFormData = z.infer<typeof documentTemplateSchema>;
  */
 export const templateInstanceSchema = z.object({
   templateId: z.string().uuid(),
-  fieldValues: z.record(z.unknown()),
+  fieldValues: z.record(z.string(), z.unknown()),
   studentId: z.string().uuid().optional(),
   folderId: z.string().uuid().optional(),
   isDraft: z.boolean().default(false)

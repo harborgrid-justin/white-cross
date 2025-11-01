@@ -78,10 +78,10 @@ export const PUT = withAuth(
         });
 
         // Revalidate cache
-        revalidateTag('health-records');
-        revalidateTag(`health-record-${id}`);
+        revalidateTag('health-records', {});
+        revalidateTag(`health-record-${id}`, {});
         if (data.data?.studentId) {
-          revalidateTag(`student-${data.data.studentId}-health-records`);
+          revalidateTag(`student-${data.data.studentId}-health-records`, {});
         }
       }
 
@@ -123,8 +123,8 @@ export const DELETE = withAuth(
         });
 
         // Revalidate cache
-        revalidateTag('health-records');
-        revalidateTag(`health-record-${id}`);
+        revalidateTag('health-records', {});
+        revalidateTag(`health-record-${id}`, {});
       }
 
       return NextResponse.json(data || { success: true }, { status: response.status });

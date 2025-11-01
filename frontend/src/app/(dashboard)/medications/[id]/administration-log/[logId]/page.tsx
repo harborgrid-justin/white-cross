@@ -36,14 +36,14 @@ async function getAdministrationRecord(medicationId: string, logId: string) {
     const response = await fetchWithAuth(
       `${API_ENDPOINTS.MEDICATIONS.BY_ID(medicationId)}/administration-log/${logId}`,
       { next: { tags: [`admin-record-${logId}`] } }
-    );
+    ) as Response;
 
-    if (!response.ok) {
-      if (response.status === 404) return null;
+    if (!(response as Response).ok) {
+      if ((response as Response).status === 404) return null;
       throw new Error('Failed to fetch administration record');
     }
 
-    return response.json();
+    return (response as Response).json();
   } catch (error) {
     console.error('Error fetching administration record:', error);
     return null;

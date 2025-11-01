@@ -28,13 +28,13 @@ async function getDueMedications() {
     const response = await fetchWithAuth(
       `${API_ENDPOINTS.MEDICATIONS.BASE}/due-now`,
       { next: { revalidate: 60 } } // 1 min cache - frequent updates
-    );
+    ) as Response;
 
-    if (!response.ok) {
+    if (!(response as Response).ok) {
       throw new Error('Failed to fetch due medications');
     }
 
-    return response.json();
+    return (response as Response).json();
   } catch (error) {
     console.error('Error fetching due medications:', error);
     return { due: [], upcoming: [], stats: {} };

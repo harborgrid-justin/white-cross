@@ -145,7 +145,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   // Determine base classes based on variant
   const baseClasses = cn(
     'bg-gray-200 dark:bg-gray-700',
-    !noAnimation && animationSpeeds[animation],
+    !noAnimation ? animationSpeeds[animation] : undefined,
     {
       'rounded-full': variant === 'circular',
       'rounded-md': variant === 'rounded',

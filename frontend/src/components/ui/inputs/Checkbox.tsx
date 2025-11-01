@@ -46,6 +46,7 @@ interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>
   size?: 'sm' | 'md' | 'lg';
   variant?: 'default' | 'success' | 'warning' | 'error';
   indeterminate?: boolean;
+  onCheckedChange?: (checked: boolean) => void; // Alias for onChange for compatibility with shadcn/ui
 }
 
 /**
@@ -148,9 +149,17 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
     variant = 'default',
     indeterminate = false,
     disabled,
+    onChange,
+    onCheckedChange,
     ...props
   }, ref) => {
     const checkboxRef = React.useRef<HTMLInputElement>(null);
+
+    // Create a unified change handler
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      onChange?.(e);
+      onCheckedChange?.(e.target.checked);
+    };
 
     // Set indeterminate state via DOM manipulation (React doesn't support indeterminate prop)
     React.useEffect(() => {
@@ -189,6 +198,7 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
               className
             )}
             disabled={disabled}
+            onChange={handleChange}
             aria-describedby={
               description ? `${props.id}-description` : error ? `${props.id}-error` : undefined
             }

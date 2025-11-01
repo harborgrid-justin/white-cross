@@ -185,6 +185,9 @@ export interface ImmunizationAnalytics {
   pendingDoses: number;
   reactionsReported: number;
   complianceRate: number;
+  overdueCount?: number;
+  exemptionCount?: number;
+  recentCount?: number;
   vaccineBreakdown: {
     vaccineId: string;
     vaccineName: string;

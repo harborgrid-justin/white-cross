@@ -74,10 +74,15 @@ export interface BudgetCategory extends BaseEntity {
  * Transactions are immutable once created.
  */
 export interface BudgetTransaction extends BaseEntity {
+  budgetId?: string; // Optional budget identifier for transaction tracking
   categoryId: string;
   amount: number;
   description: string;
   transactionDate: string;
+  date?: string; // Alias for transactionDate (for UI compatibility)
+  type?: 'debit' | 'credit' | 'adjustment' | 'transfer' | string;
+  status?: 'pending' | 'approved' | 'completed' | 'cancelled' | string;
+  createdBy?: string; // User ID who created the transaction
   referenceId?: string;
   referenceType?: string;
   notes?: string;
@@ -413,6 +418,16 @@ export interface BudgetVarianceAnalysis {
   variance: number;
   variancePercentage: number;
   isFavorable: boolean;
+}
+
+/**
+ * Budget Variance - Simplified variance type
+ */
+export interface BudgetVariance {
+  planned: number;
+  actual: number;
+  variance: number;
+  variancePercentage: number;
 }
 
 /**

@@ -395,7 +395,7 @@ export const CommunicationHistoryTab: React.FC<CommunicationHistoryTabProps> = (
               key={record.id}
               className={cn(
                 'p-4 cursor-pointer transition-all hover:shadow-md',
-                selectedRecord?.id === record.id && 'ring-2 ring-primary-500'
+                selectedRecord?.id === record.id ? 'ring-2 ring-primary-500' : undefined
               )}
               onClick={() => setSelectedRecord(selectedRecord?.id === record.id ? null : record)}
             >

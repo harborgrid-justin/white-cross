@@ -12,8 +12,8 @@
 
 import { useCallback, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { 
-  useAppDispatch, 
+import {
+  useAppDispatch,
   useAppSelector,
   studentsActions,
   studentsThunks,
@@ -24,6 +24,7 @@ import {
   selectStudentsWithAllergies,
   selectStudentsWithMedications,
   selectStudentByNumber,
+  RootState,
 } from '@/stores';
 import { 
   useOptimisticStudentCreate,
@@ -108,8 +109,8 @@ export function useStudentsRouteEnhanced() {
   const dispatch = useAppDispatch();
   
   // Core state from Redux
-  const studentsState = useAppSelector(state => state.students);
-  const studentsUI = useAppSelector(state => state.studentUI);
+  const studentsState = useAppSelector((state: RootState) => state.students);
+  const studentsUI = useAppSelector((state: RootState) => state.studentUI);
   
   // Computed selectors
   const activeStudents = useAppSelector(selectActiveStudents);
@@ -141,7 +142,7 @@ export function useStudentsRouteEnhanced() {
       showArchived: false,
     },
     syncWithUrl: true,
-    validate: (filters): filters is StudentFilters => {
+    validate: (filters: any): filters is StudentFilters => {
       return typeof filters === 'object' && 'searchTerm' in filters;
     },
   });
@@ -215,76 +216,76 @@ export function useStudentsRouteEnhanced() {
   // ===============================
   
   const createMutation = useOptimisticStudentCreate({
-    onSuccess: (student) => {
+    onSuccess: (student: Student) => {
       showSuccess(`Student ${student.firstName} ${student.lastName} created successfully`);
       // Sync with Redux store
       dispatch(studentsActions.addEntity(student));
       // Clear selections
       dispatch(studentsActions.clearSelection());
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       showError(`Failed to create student: ${error.message}`);
     },
   });
 
   const updateMutation = useOptimisticStudentUpdate({
-    onSuccess: (student) => {
+    onSuccess: (student: Student) => {
       showSuccess(`Student ${student.firstName} ${student.lastName} updated successfully`);
       // Update Redux store
       dispatch(studentsActions.updateEntity({ id: student.id, changes: student }));
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       showError(`Failed to update student: ${error.message}`);
     },
   });
 
   const deactivateMutation = useOptimisticStudentDeactivate({
-    onSuccess: (student) => {
+    onSuccess: (student: Student) => {
       showSuccess(`Student ${student.firstName} ${student.lastName} deactivated`);
       // Update Redux store
-      dispatch(studentsActions.updateEntity({ 
-        id: student.id, 
-        changes: { isActive: false } 
+      dispatch(studentsActions.updateEntity({
+        id: student.id,
+        changes: { isActive: false }
       }));
       // Clear from selection if selected
       dispatch(studentsActions.deselectStudent(student.id));
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       showError(`Failed to deactivate student: ${error.message}`);
     },
   });
 
   const reactivateMutation = useOptimisticStudentReactivate({
-    onSuccess: (student) => {
+    onSuccess: (student: Student) => {
       showSuccess(`Student ${student.firstName} ${student.lastName} reactivated`);
-      dispatch(studentsActions.updateEntity({ 
-        id: student.id, 
-        changes: { isActive: true } 
+      dispatch(studentsActions.updateEntity({
+        id: student.id,
+        changes: { isActive: true }
       }));
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       showError(`Failed to reactivate student: ${error.message}`);
     },
   });
 
   const transferMutation = useOptimisticStudentTransfer({
-    onSuccess: (student) => {
+    onSuccess: (student: Student) => {
       showSuccess(`Student ${student.firstName} ${student.lastName} transferred successfully`);
       // Remove from current store or update with transfer status
       dispatch(studentsActions.removeEntity(student.id));
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       showError(`Failed to transfer student: ${error.message}`);
     },
   });
 
   const deleteMutation = useOptimisticStudentPermanentDelete({
-    onSuccess: (student) => {
+    onSuccess: (student: Student) => {
       showSuccess('Student permanently deleted');
       dispatch(studentsActions.removeEntity(student.id));
       dispatch(studentsActions.deselectStudent(student.id));
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       showError(`Failed to delete student: ${error.message}`);
     },
   });
@@ -307,7 +308,7 @@ export function useStudentsRouteEnhanced() {
     let students = queryStudents.length > 0 ? queryStudents : storeStudents;
     
     // Apply filters (from persisted route state)
-    let filtered = students.filter((student) => {
+    let filtered = students.filter((student: Student) => {
       const searchLower = filters.searchTerm.toLowerCase();
       const matchesSearch = !filters.searchTerm || (
         student.firstName.toLowerCase().includes(searchLower) ||
@@ -328,7 +329,7 @@ export function useStudentsRouteEnhanced() {
 
     // Apply sorting (from persisted route state)
     if (sortColumn) {
-      filtered.sort((a, b) => {
+      filtered.sort((a: Student, b: Student) => {
         let valueA = a[sortColumn];
         let valueB = b[sortColumn];
         
@@ -403,7 +404,7 @@ export function useStudentsRouteEnhanced() {
 
     // Filters (Route state + Redux sync)
     updateFilters: useCallback((newFilters: Partial<StudentFilters>) => {
-      setFilters(prev => ({ ...prev, ...newFilters }));
+      setFilters((prev: StudentFilters) => ({ ...prev, ...newFilters }));
       resetPage(); // Reset pagination when filtering
       
       // Sync with Redux for UI state
@@ -480,7 +481,7 @@ export function useStudentsRouteEnhanced() {
     }, [dispatch]),
 
     selectAll: useCallback(() => {
-      const allIds = studentsData.filtered.map(s => s.id);
+      const allIds = studentsData.filtered.map((s: Student) => s.id);
       dispatch(studentsActions.selectAllStudents(allIds));
     }, [dispatch, studentsData.filtered]),
 

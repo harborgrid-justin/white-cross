@@ -68,8 +68,8 @@ export const StudentCard: React.FC<StudentCardProps> = ({
     <Card
       className={cn(
         'transition-all duration-200 hover:shadow-lg hover:-translate-y-1',
-        selected && 'ring-2 ring-primary-500 border-primary-500',
-        onView && 'cursor-pointer',
+        selected ? 'ring-2 ring-primary-500 border-primary-500' : undefined,
+        onView ? 'cursor-pointer' : undefined,
         className
       )}
       onClick={onView ? () => onView(student) : undefined}

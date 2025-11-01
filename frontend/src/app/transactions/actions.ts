@@ -660,19 +660,19 @@ export async function getTransactionsStats(): Promise<{
 
     // Calculate statistics based on transaction schema properties
     const totalTransactions = transactions.length;
-    const receivedStock = transactions.filter(t => t.type === 'receive').length;
-    const issuedStock = transactions.filter(t => t.type === 'issue').length;
-    const adjustedStock = transactions.filter(t => t.type === 'adjustment').length;
-    const transferredStock = transactions.filter(t => t.type === 'transfer').length;
-    const pendingTransfers = transactions.filter(t => t.type === 'transfer' && t.status === 'pending').length;
-    const completedTransfers = transactions.filter(t => t.type === 'transfer' && t.status === 'completed').length;
-    
+    const receivedStock = transactions.filter((t: Transaction) => t.type === 'receive').length;
+    const issuedStock = transactions.filter((t: Transaction) => t.type === 'issue').length;
+    const adjustedStock = transactions.filter((t: Transaction) => t.type === 'adjustment').length;
+    const transferredStock = transactions.filter((t: Transaction) => t.type === 'transfer').length;
+    const pendingTransfers = transactions.filter((t: Transaction) => t.type === 'transfer' && t.status === 'pending').length;
+    const completedTransfers = transactions.filter((t: Transaction) => t.type === 'transfer' && t.status === 'completed').length;
+
     // Calculate total value
-    const totalValue = transactions.reduce((sum, t) => sum + (t.totalValue || 0), 0);
+    const totalValue = transactions.reduce((sum: number, t: Transaction) => sum + (t.totalValue || 0), 0);
     const averageTransactionValue = totalTransactions > 0 ? totalValue / totalTransactions : 0;
 
     // Today's transactions
-    const todayTransactions = transactions.filter(t => {
+    const todayTransactions = transactions.filter((t: Transaction) => {
       const transactionDate = new Date(t.createdAt);
       transactionDate.setHours(0, 0, 0, 0);
       return transactionDate.getTime() === today.getTime();
@@ -684,7 +684,7 @@ export async function getTransactionsStats(): Promise<{
       issue: issuedStock,
       adjust: adjustedStock,
       transfer: transferredStock,
-      count: transactions.filter(t => t.type === 'count').length,
+      count: transactions.filter((t: Transaction) => t.type === 'count').length,
     };
 
     const stats = {
@@ -812,10 +812,10 @@ export async function getTransactionsDashboardData(): Promise<{
 
     // Sort transactions by date descending and get recent transactions (last 10)
     const sortedTransactions = transactions
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .sort((a: Transaction, b: Transaction) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(0, 10);
 
-    const recentTransactions = sortedTransactions.map(transaction => ({
+    const recentTransactions = sortedTransactions.map((transaction: Transaction) => ({
       id: transaction.id,
       type: transaction.type,
       status: transaction.status,
@@ -828,10 +828,10 @@ export async function getTransactionsDashboardData(): Promise<{
 
     // Get high value transactions (top 5 by value)
     const highValueTransactions = transactions
-      .filter(t => (t.totalValue || 0) > 0)
-      .sort((a, b) => (b.totalValue || 0) - (a.totalValue || 0))
+      .filter((t: Transaction) => (t.totalValue || 0) > 0)
+      .sort((a: Transaction, b: Transaction) => (b.totalValue || 0) - (a.totalValue || 0))
       .slice(0, 5)
-      .map(transaction => ({
+      .map((transaction: Transaction) => ({
         id: transaction.id,
         type: transaction.type,
         totalValue: transaction.totalValue || 0,
@@ -842,9 +842,9 @@ export async function getTransactionsDashboardData(): Promise<{
 
     // Get pending transfers
     const pendingTransfers = transactions
-      .filter(t => t.type === 'transfer' && t.status === 'pending')
+      .filter((t: Transaction) => t.type === 'transfer' && t.status === 'pending')
       .slice(0, 5)
-      .map(transaction => ({
+      .map((transaction: Transaction) => ({
         id: transaction.id,
         fromLocation: transaction.fromLocation?.name || 'Unknown',
         toLocation: transaction.toLocation?.name || 'Unknown',
@@ -855,11 +855,11 @@ export async function getTransactionsDashboardData(): Promise<{
       }));
 
     // Calculate financial summary
-    const inboundTransactions = transactions.filter(t => ['receive', 'transfer-in'].includes(t.type));
-    const outboundTransactions = transactions.filter(t => ['issue', 'transfer-out'].includes(t.type));
-    
-    const totalInbound = inboundTransactions.reduce((sum, t) => sum + (t.totalValue || 0), 0);
-    const totalOutbound = outboundTransactions.reduce((sum, t) => sum + (t.totalValue || 0), 0);
+    const inboundTransactions = transactions.filter((t: Transaction) => ['receive', 'transfer-in'].includes(t.type));
+    const outboundTransactions = transactions.filter((t: Transaction) => ['issue', 'transfer-out'].includes(t.type));
+
+    const totalInbound = inboundTransactions.reduce((sum: number, t: Transaction) => sum + (t.totalValue || 0), 0);
+    const totalOutbound = outboundTransactions.reduce((sum: number, t: Transaction) => sum + (t.totalValue || 0), 0);
     const netFlow = totalInbound - totalOutbound;
     const averageDailyValue = transactions.length > 0 ? stats.totalValue / 30 : 0; // Mock 30-day average
 
@@ -871,7 +871,7 @@ export async function getTransactionsDashboardData(): Promise<{
     };
 
     // Calculate location activity
-    const locationActivity = transactions.reduce((acc, transaction) => {
+    const locationActivity = transactions.reduce((acc: any, transaction: Transaction) => {
       const locationId = transaction.location?.id || 'unknown';
       const locationName = transaction.location?.name || 'Unknown Location';
       const value = transaction.totalValue || 0;

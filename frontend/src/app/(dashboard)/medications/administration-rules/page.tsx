@@ -28,13 +28,13 @@ async function getAdministrationRules() {
     const response = await fetchWithAuth(
       `${API_ENDPOINTS.MEDICATIONS.BASE}/administration-rules`,
       { next: { tags: ['administration-rules'], revalidate: 600 } }
-    );
+    ) as Response;
 
-    if (!response.ok) {
+    if (!(response as Response).ok) {
       throw new Error('Failed to fetch administration rules');
     }
 
-    return response.json();
+    return (response as Response).json();
   } catch (error) {
     console.error('Error fetching administration rules:', error);
     return { rules: [], defaults: {} };

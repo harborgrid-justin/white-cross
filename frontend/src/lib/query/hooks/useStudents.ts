@@ -161,12 +161,12 @@ export function useCreateStudent(
       toast.success('Student created successfully');
 
       // Call custom success handler
-      options?.onSuccess?.(newStudent, variables, context);
+      options?.onSuccess?.(newStudent, variables);
     },
     onError: (error, variables, context) => {
       toast.error('Failed to create student');
       console.error('Create student error:', error);
-      options?.onError?.(error, variables, context);
+      options?.onError?.(error, variables);
     },
     meta: {
       affectsPHI: true,
@@ -222,7 +222,7 @@ export function useUpdateStudent(
 
       toast.error('Failed to update student');
       console.error('Update student error:', error);
-      options?.onError?.(error, variables, context);
+      options?.onError?.(error, variables);
     },
     onSuccess: (updatedStudent, variables, context) => {
       // Update the cache with server response
@@ -235,7 +235,7 @@ export function useUpdateStudent(
       queryClient.invalidateQueries({ queryKey: studentsKeys.lists() });
 
       toast.success('Student updated successfully');
-      options?.onSuccess?.(updatedStudent, variables, context);
+      options?.onSuccess?.(updatedStudent, variables);
     },
     meta: {
       affectsPHI: true,
@@ -267,12 +267,12 @@ export function useDeleteStudent(
       queryClient.removeQueries({ queryKey: studentsKeys.detail(id) });
 
       toast.success('Student deactivated successfully');
-      options?.onSuccess?.(data, id, context);
+      options?.onSuccess?.(data, id);
     },
     onError: (error, variables, context) => {
       toast.error('Failed to deactivate student');
       console.error('Delete student error:', error);
-      options?.onError?.(error, variables, context);
+      options?.onError?.(error, variables);
     },
     meta: {
       affectsPHI: true,

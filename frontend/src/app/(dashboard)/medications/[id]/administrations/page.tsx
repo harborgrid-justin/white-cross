@@ -56,16 +56,16 @@ async function getMedication(id: string) {
     const response = await fetchWithAuth(
       API_ENDPOINTS.MEDICATIONS.DETAIL(id),
       { next: { revalidate: 300 } }
-    );
+    ) as Response;
 
-    if (!response.ok) {
-      if (response.status === 404) {
+    if (!(response as Response).ok) {
+      if ((response as Response).status === 404) {
         return null;
       }
       throw new Error('Failed to fetch medication');
     }
 
-    return response.json();
+    return (response as Response).json();
   } catch (error) {
     console.error('Error fetching medication:', error);
     return null;
@@ -88,13 +88,13 @@ async function getAdministrations(medicationId: string, searchParams: any) {
     const response = await fetchWithAuth(
       `${API_ENDPOINTS.ADMINISTRATION_LOG.BY_MEDICATION(medicationId)}?${params}`,
       { next: { revalidate: 30 } } // 30 sec cache for real-time feel
-    );
+    ) as Response;
 
-    if (!response.ok) {
+    if (!(response as Response).ok) {
       throw new Error('Failed to fetch administrations');
     }
 
-    return response.json();
+    return (response as Response).json();
   } catch (error) {
     console.error('Error fetching administrations:', error);
     return {
@@ -113,13 +113,13 @@ async function getAdherenceData(medicationId: string) {
     const response = await fetchWithAuth(
       `${API_ENDPOINTS.MEDICATIONS.DETAIL(medicationId)}/adherence`,
       { next: { revalidate: 60 } }
-    );
+    ) as Response;
 
-    if (!response.ok) {
+    if (!(response as Response).ok) {
       return { rate: 0, streak: 0, missed: 0 };
     }
 
-    return response.json();
+    return (response as Response).json();
   } catch (error) {
     console.error('Error fetching adherence:', error);
     return { rate: 0, streak: 0, missed: 0 };

@@ -156,11 +156,11 @@ export function useCreateAppointment(
       );
 
       toast.success('Appointment scheduled successfully');
-      options?.onSuccess?.(newAppointment, variables, context);
+      options?.onSuccess?.(newAppointment, variables);
     },
     onError: (error, variables, context) => {
       toast.error('Failed to schedule appointment');
-      options?.onError?.(error, variables, context);
+      options?.onError?.(error, variables);
     },
     meta: {
       affectsPHI: true,
@@ -191,11 +191,11 @@ export function useUpdateAppointment(
       queryClient.invalidateQueries({ queryKey: appointmentsKeys.lists() });
 
       toast.success('Appointment updated successfully');
-      options?.onSuccess?.(updatedAppointment, variables, context);
+      options?.onSuccess?.(updatedAppointment, variables);
     },
     onError: (error, variables, context) => {
       toast.error('Failed to update appointment');
-      options?.onError?.(error, variables, context);
+      options?.onError?.(error, variables);
     },
     meta: {
       affectsPHI: true,
@@ -224,11 +224,11 @@ export function useCancelAppointment(
       queryClient.invalidateQueries({ queryKey: appointmentsKeys.detail(id) });
 
       toast.success('Appointment cancelled successfully');
-      options?.onSuccess?.(data, id, context);
+      options?.onSuccess?.(data, id);
     },
     onError: (error, variables, context) => {
       toast.error('Failed to cancel appointment');
-      options?.onError?.(error, variables, context);
+      options?.onError?.(error, variables);
     },
     meta: {
       affectsPHI: true,

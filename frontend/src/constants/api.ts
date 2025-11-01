@@ -338,6 +338,9 @@ export const API_ENDPOINTS = {
   ANALYTICS: {
     METRICS: `/analytics/metrics`,
     DASHBOARD: `/analytics/dashboard`,
+    DASHBOARD_WIDGETS: (dashboardId: string) => `/analytics/dashboard/${dashboardId}/widgets`,
+    REPORTS: `/analytics/reports`,
+    CHART_DATA: `/analytics/chart-data`,
     HEALTH_METRICS: `/analytics/health-metrics`,
     MEDICATION_COMPLIANCE: `/analytics/medication-compliance`,
     APPOINTMENT_METRICS: `/analytics/appointment-metrics`,

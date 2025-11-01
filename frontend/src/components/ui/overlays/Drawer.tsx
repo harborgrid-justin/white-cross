@@ -386,7 +386,7 @@ export const DrawerHeader = React.forwardRef<HTMLDivElement, DrawerHeaderProps>(
         ref={ref}
         className={cn(
           'px-6 py-4',
-          divider && 'border-b border-gray-200 dark:border-gray-700',
+          divider ? 'border-b border-gray-200 dark:border-gray-700' : undefined,
           className
         )}
         {...props}
@@ -424,7 +424,7 @@ export const DrawerFooter = React.forwardRef<HTMLDivElement, DrawerFooterProps>(
         ref={ref}
         className={cn(
           'px-6 py-4 flex items-center justify-end space-x-3',
-          divider && 'border-t border-gray-200 dark:border-gray-700',
+          divider ? 'border-t border-gray-200 dark:border-gray-700' : undefined,
           className
         )}
         {...props}

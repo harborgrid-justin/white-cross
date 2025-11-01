@@ -177,7 +177,7 @@ export const StatusTimeline: React.FC<StatusTimelineProps> = ({
               'relative flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center border-2',
               config.bgColor,
               config.borderColor,
-              event.status === 'current' && 'ring-4 ring-blue-100 dark:ring-blue-900/20 animate-pulse'
+              event.status === 'current' ? 'ring-4 ring-blue-100 dark:ring-blue-900/20 animate-pulse' : undefined
             )}>
               <Icon className={cn('h-5 w-5', config.iconColor)} aria-hidden="true" />
             </div>

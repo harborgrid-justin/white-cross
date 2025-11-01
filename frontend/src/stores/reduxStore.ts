@@ -1,13 +1,17 @@
 /**
  * Redux Store Utilities
- * 
- * Utility functions for managing Redux persisted state
+ *
+ * Re-exports store types and utilities for backwards compatibility
  * Provides cleanup functions for logout and session management
  */
+
+// Re-export store, types, and utilities from the main store file
+export { store, type RootState, type AppDispatch, type AppStore, isValidRootState, getStorageStats, clearPersistedState as clearPersistedStateFromStore } from './store';
 
 /**
  * Clear all persisted Redux state from localStorage
  * Called during logout to ensure clean state
+ * @deprecated Use clearPersistedStateFromStore from './store' instead
  */
 export function clearPersistedState(): void {
   if (typeof window === 'undefined') return;

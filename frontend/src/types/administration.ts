@@ -496,19 +496,52 @@ export interface PerformanceMetric {
 export interface SystemHealth {
   status: string;
   timestamp: Date | string;
-  metrics: {
-    cpu: number;
-    memory: number;
-    disk: number;
-    database: string;
-    apiResponseTime: number;
-    uptime: string;
-    connections: number;
-    errorRate: number;
-    queuedJobs: number;
-    cacheHitRate: number;
+  overall?: {
+    uptime: number;
+    lastRestart: Date | string;
+    version: string;
   };
-  statistics: {
+  services?: Array<{
+    name: string;
+    status: 'operational' | 'degraded' | 'down';
+    responseTime: number;
+    uptime: number;
+    lastCheck: Date | string;
+    errorRate?: number;
+  }>;
+  alerts?: Array<{
+    id: string;
+    severity: 'info' | 'warning' | 'error' | 'critical';
+    service: string;
+    message: string;
+    timestamp: Date | string;
+    acknowledged: boolean;
+  }>;
+  metrics: {
+    cpu?: number | {
+      usage: number;
+      cores: number;
+      temperature?: number;
+    };
+    memory?: number | {
+      used: number;
+      total: number;
+      percentage: number;
+    };
+    disk?: number | {
+      used: number;
+      total: number;
+      percentage: number;
+    };
+    database?: string;
+    apiResponseTime?: number;
+    uptime?: string;
+    connections?: number;
+    errorRate?: number;
+    queuedJobs?: number;
+    cacheHitRate?: number;
+  };
+  statistics?: {
     totalUsers: number;
     activeUsers: number;
     totalDistricts: number;

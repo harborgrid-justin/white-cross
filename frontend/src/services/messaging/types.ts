@@ -4,6 +4,7 @@
 
 export interface MessageDto {
   id: string;
+  _tempId?: string; // Temporary ID for optimistic updates before server response
   conversationId: string;
   senderId: string;
   content: string;

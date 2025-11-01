@@ -49,7 +49,7 @@ export const POST = withMinimumRole('NURSE', async (request: NextRequest, contex
         details: 'Broadcast message sent'
       });
 
-      revalidateTag('broadcasts');
+      revalidateTag('broadcasts', {});
     }
 
     return NextResponse.json(data, { status: response.status });

@@ -28,13 +28,13 @@ async function getOverdueMedications() {
     const response = await fetchWithAuth(
       `${API_ENDPOINTS.MEDICATIONS.BASE}/overdue`,
       { next: { revalidate: 60 } } // 1 min cache
-    );
+    ) as Response;
 
-    if (!response.ok) {
+    if (!(response as Response).ok) {
       throw new Error('Failed to fetch overdue medications');
     }
 
-    return response.json();
+    return (response as Response).json();
   } catch (error) {
     console.error('Error fetching overdue medications:', error);
     return { overdue: [], stats: {} };

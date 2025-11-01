@@ -113,3 +113,35 @@ export function sleep(ms: number): Promise<void> {
 export function generateId(length: number = 8): string {
   return Math.random().toString(36).substring(2, 2 + length)
 }
+
+/**
+ * Converts a value to string, handling undefined safely
+ *
+ * @param value - Value to convert to string
+ * @param fallback - Fallback value if undefined (default: '')
+ * @returns String value
+ */
+export function ensureString(value: string | undefined | null, fallback: string = ''): string {
+  return value ?? fallback
+}
+
+/**
+ * Converts a conditional class expression to undefined if false
+ * Useful for className props that don't accept false
+ *
+ * @param value - Conditional class value
+ * @returns String or undefined
+ */
+export function conditionalClass(value: string | false): string | undefined {
+  return value || undefined
+}
+
+/**
+ * Ensures an array type is returned, filtering out undefined values
+ *
+ * @param value - Array that may contain undefined
+ * @returns Filtered array without undefined values
+ */
+export function ensureArray<T>(value: (T | undefined)[] | undefined): T[] {
+  return (value ?? []).filter((item): item is T => item !== undefined)
+}

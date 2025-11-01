@@ -354,16 +354,16 @@ export class QueryHooksFactory<
 
     return useMutation<TEntity, ApiClientError, TCreateDto>({
       mutationFn: (data: TCreateDto) => this.service.create(data),
-      onMutate: optimistic ? (data) => this.handleOptimisticCreate(queryClient, data) : undefined,
-      onSuccess: (data, variables, context) => {
+      onMutate: optimistic ? (data: TCreateDto) => this.handleOptimisticCreate(queryClient, data) : undefined,
+      onSuccess: (data: TEntity, variables: TCreateDto, context: any) => {
         if (invalidateList) {
           queryClient.invalidateQueries({ queryKey: this.createQueryKey('list') });
         }
-        options?.onSuccess?.(data, variables, context);
+        options?.onSuccess?.(data, variables);
       },
-      onError: (error, variables, context) => {
+      onError: (error: ApiClientError, variables: TCreateDto, context: any) => {
         this.handleMutationError(queryClient, error, context);
-        options?.onError?.(error, variables, context);
+        options?.onError?.(error, variables);
       },
       ...mutationOptions,
     });
@@ -388,8 +388,8 @@ export class QueryHooksFactory<
 
     return useMutation<TEntity, ApiClientError, { id: string; data: TUpdateDto }>({
       mutationFn: ({ id, data }) => this.service.update(id, data),
-      onMutate: optimistic ? (variables) => this.handleOptimisticUpdate(queryClient, variables) : undefined,
-      onSuccess: (data, variables, context) => {
+      onMutate: optimistic ? (variables: { id: string; data: TUpdateDto }) => this.handleOptimisticUpdate(queryClient, variables) : undefined,
+      onSuccess: (data: TEntity, variables: { id: string; data: TUpdateDto }, context: any) => {
         if (invalidateQueries) {
           queryClient.invalidateQueries({ queryKey: this.createQueryKey('list') });
           queryClient.invalidateQueries({ queryKey: this.createQueryKey('detail', variables.id) });
@@ -397,11 +397,11 @@ export class QueryHooksFactory<
 
         // Update cache with fresh data
         queryClient.setQueryData(this.createQueryKey('detail', variables.id), data);
-        options?.onSuccess?.(data, variables, context);
+        options?.onSuccess?.(data, variables);
       },
-      onError: (error, variables, context) => {
+      onError: (error: ApiClientError, variables: { id: string; data: TUpdateDto }, context: any) => {
         this.handleMutationError(queryClient, error, context);
-        options?.onError?.(error, variables, context);
+        options?.onError?.(error, variables);
       },
       ...mutationOptions,
     });
@@ -425,17 +425,17 @@ export class QueryHooksFactory<
 
     return useMutation<void, ApiClientError, string>({
       mutationFn: (id: string) => this.service.delete(id),
-      onMutate: optimistic ? (id) => this.handleOptimisticDelete(queryClient, id) : undefined,
-      onSuccess: (data, id, context) => {
+      onMutate: optimistic ? (id: string) => this.handleOptimisticDelete(queryClient, id) : undefined,
+      onSuccess: (data: void, id: string, context: any) => {
         if (invalidateQueries) {
           queryClient.invalidateQueries({ queryKey: this.createQueryKey('list') });
           queryClient.removeQueries({ queryKey: this.createQueryKey('detail', id) });
         }
-        options?.onSuccess?.(data, id, context);
+        options?.onSuccess?.(data, id);
       },
-      onError: (error, variables, context) => {
+      onError: (error: ApiClientError, variables: string, context: any) => {
         this.handleMutationError(queryClient, error, context);
-        options?.onError?.(error, variables, context);
+        options?.onError?.(error, variables);
       },
       ...mutationOptions,
     });
@@ -452,15 +452,15 @@ export class QueryHooksFactory<
 
     return useMutation<TEntity[], ApiClientError, TCreateDto[]>({
       mutationFn: (data: TCreateDto[]) => this.service.bulkCreate(data),
-      onSuccess: (data, variables, context) => {
+      onSuccess: (data: TEntity[], variables: TCreateDto[], context: any) => {
         if (invalidateQueries) {
           queryClient.invalidateQueries({ queryKey: this.createQueryKey('list') });
         }
-        options?.onSuccess?.(data, variables, context);
+        options?.onSuccess?.(data, variables);
       },
-      onError: (error, variables, context) => {
+      onError: (error: ApiClientError, variables: TCreateDto[], context: any) => {
         this.config.onError(error);
-        options?.onError?.(error, variables, context);
+        options?.onError?.(error, variables);
       },
       ...mutationOptions,
     });
@@ -477,18 +477,18 @@ export class QueryHooksFactory<
 
     return useMutation<void, ApiClientError, string[]>({
       mutationFn: (ids: string[]) => this.service.bulkDelete(ids),
-      onSuccess: (data, ids, context) => {
+      onSuccess: (data: void, ids: string[], context: any) => {
         if (invalidateQueries) {
           queryClient.invalidateQueries({ queryKey: this.createQueryKey('list') });
-          ids.forEach(id => {
+          ids.forEach((id: string) => {
             queryClient.removeQueries({ queryKey: this.createQueryKey('detail', id) });
           });
         }
-        options?.onSuccess?.(data, ids, context);
+        options?.onSuccess?.(data, ids);
       },
-      onError: (error, variables, context) => {
+      onError: (error: ApiClientError, variables: string[], context: any) => {
         this.config.onError(error);
-        options?.onError?.(error, variables, context);
+        options?.onError?.(error, variables);
       },
       ...mutationOptions,
     });

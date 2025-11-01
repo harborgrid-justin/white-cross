@@ -367,6 +367,7 @@ interface SwitchProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 
   size?: 'sm' | 'md' | 'lg';
   variant?: 'default' | 'success' | 'warning' | 'error';
   labelPosition?: 'left' | 'right';
+  onCheckedChange?: (checked: boolean) => void; // Alias for onChange for compatibility with shadcn/ui
 }
 
 /**
@@ -456,8 +457,15 @@ const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
     labelPosition = 'right',
     disabled,
     checked,
+    onChange,
+    onCheckedChange,
     ...props
   }, ref) => {
+    // Create a unified change handler
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      onChange?.(e);
+      onCheckedChange?.(e.target.checked);
+    };
     const sizeClasses = {
       sm: {
         container: 'h-5 w-9',
@@ -512,6 +520,7 @@ const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
           className="sr-only"
           disabled={disabled}
           checked={checked}
+          onChange={handleChange}
           aria-checked={checked ? 'true' : 'false'}
           aria-required={props.required ? 'true' : undefined}
           aria-describedby={description ? `${props.id}-description` : undefined}

@@ -1,0 +1,77 @@
+{
+  "agentId": "typescript-architect",
+  "taskId": "fix-ts2345-errors-F6G8H2",
+  "relatedAgentFiles": [
+    ".temp/task-status-A1B2C3.json",
+    ".temp/task-status-X7Y3Z9.json",
+    ".temp/architecture-notes-A1B2C3.md"
+  ],
+  "description": "Fix all 276 TS2345 (Argument not assignable to parameter) errors by adding type conversion functions, wrapper functions, and type guards without deleting existing code",
+  "startedAt": "2025-11-01T05:41:00Z",
+  "workstreams": [
+    {
+      "id": "workstream-1-conditional-classnames",
+      "name": "Fix conditional className errors (false | string)",
+      "status": "pending",
+      "errorCount": 20,
+      "crossAgentReferences": []
+    },
+    {
+      "id": "workstream-2-missing-properties",
+      "name": "Fix missing required properties in API call objects",
+      "status": "pending",
+      "errorCount": 5,
+      "crossAgentReferences": []
+    },
+    {
+      "id": "workstream-3-react-hook-form",
+      "name": "Fix React Hook Form SubmitHandler type mismatches",
+      "status": "pending",
+      "errorCount": 6,
+      "crossAgentReferences": []
+    },
+    {
+      "id": "workstream-4-query-client",
+      "name": "Fix QueryClient setQueryData updater functions",
+      "status": "pending",
+      "errorCount": 12,
+      "crossAgentReferences": []
+    },
+    {
+      "id": "workstream-5-type-narrowing",
+      "name": "Fix type narrowing issues (string | undefined to string)",
+      "status": "pending",
+      "errorCount": 5,
+      "crossAgentReferences": []
+    },
+    {
+      "id": "workstream-6-setstate",
+      "name": "Fix setState incompatibilities",
+      "status": "pending",
+      "errorCount": 5,
+      "crossAgentReferences": []
+    },
+    {
+      "id": "workstream-7-literal-types",
+      "name": "Fix enum/literal type mismatches",
+      "status": "pending",
+      "errorCount": 20,
+      "crossAgentReferences": []
+    },
+    {
+      "id": "workstream-8-usequery-options",
+      "name": "Fix UseQueryOptions type mismatches",
+      "status": "pending",
+      "errorCount": 15,
+      "crossAgentReferences": []
+    },
+    {
+      "id": "workstream-9-misc-conversions",
+      "name": "Fix miscellaneous type conversions",
+      "status": "pending",
+      "errorCount": 188,
+      "crossAgentReferences": []
+    }
+  ],
+  "decisions": []
+}

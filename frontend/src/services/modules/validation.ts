@@ -105,7 +105,7 @@ const customReportRequestSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   description: z.string().max(1000).optional(),
   filters: customReportFiltersSchema.optional(),
-  parameters: z.record(z.unknown()).optional(),
+  parameters: z.record(z.string(), z.unknown()).optional(),
   schedule: z.object({
     frequency: z.enum(['DAILY', 'WEEKLY', 'MONTHLY']),
     time: z.string().optional(),

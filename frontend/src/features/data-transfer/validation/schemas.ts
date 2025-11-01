@@ -276,7 +276,7 @@ export const exportFiltersSchema = z.object({
     })
     .optional(),
   searchQuery: z.string().optional(),
-  customFilters: z.record(z.unknown()).optional(),
+  customFilters: z.record(z.string(), z.unknown()).optional(),
 });
 
 // ============================================================================
@@ -332,7 +332,7 @@ export const importResultSchema = z.object({
   errors: z.array(importErrorSchema),
   warnings: z.array(importWarningSchema),
   checkpoints: z.array(importCheckpointSchema),
-  metadata: z.record(z.unknown()),
+  metadata: z.record(z.string(), z.unknown()),
 });
 
 export const exportErrorSchema = z.object({
@@ -411,7 +411,7 @@ export const importHistorySchema = z.object({
   completedAt: z.date().optional(),
   duration: z.number().int().min(0).optional(),
   templateId: z.string().uuid().optional(),
-  metadata: z.record(z.unknown()),
+  metadata: z.record(z.string(), z.unknown()),
 });
 
 export const exportHistorySchema = z.object({
@@ -431,7 +431,7 @@ export const exportHistorySchema = z.object({
   templateId: z.string().uuid().optional(),
   downloadUrl: z.string().url().optional(),
   expiresAt: z.date().optional(),
-  metadata: z.record(z.unknown()),
+  metadata: z.record(z.string(), z.unknown()),
 });
 
 // ============================================================================

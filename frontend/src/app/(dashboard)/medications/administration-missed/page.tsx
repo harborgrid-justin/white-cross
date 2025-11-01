@@ -45,13 +45,13 @@ async function getMissedDoses(searchParams: any) {
     const response = await fetchWithAuth(
       `${API_ENDPOINTS.MEDICATIONS.BASE}/missed-doses?${params}`,
       { next: { revalidate: 120 } } // 2 min cache
-    );
+    ) as Response;
 
-    if (!response.ok) {
+    if (!(response as Response).ok) {
       throw new Error('Failed to fetch missed doses');
     }
 
-    return response.json();
+    return (response as Response).json();
   } catch (error) {
     console.error('Error fetching missed doses:', error);
     return { missedDoses: [], stats: {}, total: 0 };

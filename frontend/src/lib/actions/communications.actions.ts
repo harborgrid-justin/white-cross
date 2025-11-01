@@ -1180,3 +1180,41 @@ export async function renderTemplate(
     };
   }
 }
+
+// ============================================================================
+// ADDITIONAL EXPORTS FOR BACKWARDS COMPATIBILITY
+// ============================================================================
+
+/**
+ * Mark message as read (alias for markMessagesAsRead)
+ */
+export async function markAsReadAction(messageId: string): Promise<ActionResponse<void>> {
+  return markMessagesAsRead([messageId]);
+}
+
+/**
+ * Delete broadcast (alias for deleteBroadcast)
+ */
+export async function deleteBroadcastAction(broadcastId: string): Promise<ActionResponse<void>> {
+  try {
+    const response = await fetchApi(
+      `/communications/broadcasts/${broadcastId}`,
+      { method: 'DELETE' }
+    );
+
+    if (!response.success) {
+      return {
+        success: false,
+        error: response.error || 'Failed to delete broadcast'
+      };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting broadcast:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to delete broadcast'
+    };
+  }
+}

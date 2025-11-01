@@ -240,7 +240,7 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
         className={className}
         aria-label={ariaLabel}
       >
-        <Download className={cn('h-4 w-4', !iconOnly && 'mr-2')} aria-hidden="true" />
+        <Download className={cn('h-4 w-4', !iconOnly ? 'mr-2' : undefined)} aria-hidden="true" />
         {!iconOnly && 'Export'}
       </Button>
 
@@ -267,8 +267,8 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
                     'hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/10',
                     'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
                     'disabled:opacity-50 disabled:cursor-not-allowed',
-                    isExportingThis && 'border-primary-500 bg-primary-50 dark:bg-primary-900/10',
-                    !isExportingThis && 'border-gray-200 dark:border-gray-700'
+                    isExportingThis ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/10' : undefined,
+                    !isExportingThis ? 'border-gray-200 dark:border-gray-700' : undefined
                   )}
                   aria-label={`Export as ${config.label}`}
                 >
