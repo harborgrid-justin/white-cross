@@ -45,7 +45,7 @@
 /**
  * Force dynamic rendering for specific document access - requires authentication and access logging
  */
-export const dynamic = 'force-dynamic';
+
 
 
 import { Metadata } from 'next'

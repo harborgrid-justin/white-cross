@@ -65,7 +65,7 @@ import Link from 'next/link';
  *
  * @type {"force-dynamic"}
  */
-export const dynamic = 'force-dynamic';
+
 
 /**
  * New Custom Report Page Component

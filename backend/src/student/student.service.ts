@@ -13,8 +13,8 @@ import {
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
+import { InjectModel, InjectConnection } from '@nestjs/sequelize';
+import { Op, Sequelize } from 'sequelize';
 import { Student } from '../database/models/student.model';
 import { User, UserRole } from '../database/models/user.model';
 import { HealthRecord } from '../database/models/health-record.model';
@@ -68,6 +68,8 @@ export class StudentService {
     @InjectModel(MentalHealthRecord)
     private readonly mentalHealthRecordModel: typeof MentalHealthRecord,
     private readonly academicTranscriptService: AcademicTranscriptService,
+    @InjectConnection()
+    private readonly sequelize: Sequelize,
   ) {}
 
   // ==================== CRUD Operations ====================

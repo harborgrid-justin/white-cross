@@ -69,7 +69,7 @@
 /**
  * Force dynamic rendering for template editing - requires current template data
  */
-export const dynamic = 'force-dynamic';
+
 
 
 import { Metadata } from 'next'

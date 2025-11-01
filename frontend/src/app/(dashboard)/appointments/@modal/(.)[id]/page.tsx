@@ -130,6 +130,12 @@ function PriorityBadge({ priority }: { priority?: AppointmentData['priority'] })
 }
 
 export default async function ModalAppointmentPage({ params }: ModalAppointmentPageProps) {
+  // Validate the id parameter
+  if (!params.id || params.id === 'undefined') {
+    console.error('[ModalAppointmentPage] Invalid appointment ID:', params.id);
+    notFound();
+  }
+
   const appointment = await fetchAppointmentDetails(params.id);
 
   if (!appointment) {

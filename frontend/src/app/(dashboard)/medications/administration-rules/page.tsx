@@ -17,8 +17,7 @@ export const metadata: Metadata = {
   description: 'Configure medication administration rules and safety protocols'
 };
 
-// Force dynamic rendering due to auth requirements
-export const dynamic = 'force-dynamic';
+
 
 /**
  * Fetch administration rules

@@ -3,7 +3,7 @@
 /**
  * Force dynamic rendering for real-time appointment data
  */
-export const dynamic = 'force-dynamic';
+
 
 import React, { useState, useEffect, useMemo, useTransition } from 'react';
 import { 
@@ -102,6 +102,8 @@ const AppointmentsContent: React.FC<AppointmentsContentProps> = ({
         setAppointments(result.appointments);
       } catch (error) {
         console.error('Failed to load appointments:', error);
+        // Set empty array on error to avoid infinite loading state
+        setAppointments([]);
       } finally {
         setLoading(false);
       }
@@ -110,117 +112,32 @@ const AppointmentsContent: React.FC<AppointmentsContentProps> = ({
     loadAppointments();
   }, [selectedDate, statusFilter, typeFilter]);
 
-  // Mock data for development - replace with real API calls
+  // Set initial appointments if provided (from server-side props)
   useEffect(() => {
-    const mockAppointments: Appointment[] = [
-      {
-        id: 'apt-001',
-        studentId: 'student-001',
-        appointmentType: 'routine_checkup',
-        scheduledDate: new Date().toISOString().split('T')[0],
-        scheduledTime: '09:00',
-        duration: 30,
-        status: 'scheduled',
-        priority: 'medium',
-        reason: 'Annual physical examination',
-        notes: 'Student reports feeling well, no concerns',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: 'apt-002',
-        studentId: 'student-002',
-        appointmentType: 'medication_administration',
-        scheduledDate: new Date().toISOString().split('T')[0],
-        scheduledTime: '10:30',
-        duration: 15,
-        status: 'confirmed',
-        priority: 'high',
-        reason: 'Daily insulin administration',
-        notes: 'Type 1 diabetes, requires supervision',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: 'apt-003',
-        studentId: 'student-003',
-        appointmentType: 'injury_assessment',
-        scheduledDate: new Date().toISOString().split('T')[0],
-        scheduledTime: '14:00',
-        duration: 20,
-        status: 'completed',
-        priority: 'urgent',
-        reason: 'Playground injury - knee scrape',
-        notes: 'Cleaned wound, applied bandage, parent notified',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: 'apt-004',
-        studentId: 'student-004',
-        appointmentType: 'health_screening',
-        scheduledDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        scheduledTime: '11:00',
-        duration: 25,
-        status: 'scheduled',
-        priority: 'medium',
-        reason: 'Vision and hearing screening',
-        notes: 'Annual screening required for grade advancement',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: 'apt-005',
-        studentId: 'student-005',
-        appointmentType: 'immunization',
-        scheduledDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        scheduledTime: '13:30',
-        duration: 15,
-        status: 'scheduled',
-        priority: 'high',
-        reason: 'Required vaccinations for school entry',
-        notes: 'HPV vaccine series - dose 2 of 3',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: 'apt-006',
-        studentId: 'student-006',
-        appointmentType: 'counseling',
-        scheduledDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        scheduledTime: '15:00',
-        duration: 45,
-        status: 'scheduled',
-        priority: 'medium',
-        reason: 'Academic stress counseling session',
-        notes: 'Follow-up from previous session, student showing improvement',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }
-    ];
-
-    if (initialAppointments.length === 0) {
-      setAppointments(mockAppointments);
+    if (initialAppointments.length > 0) {
+      setAppointments(initialAppointments);
       setLoading(false);
     }
-  }, [initialAppointments]);
+  }, [initialAppointments.length]);
 
   // Calculate appointment statistics
   const stats: AppointmentStats = useMemo(() => {
+    // Defensive check: ensure appointments is an array
+    const appts = Array.isArray(appointments) ? appointments : [];
     const today = new Date().toISOString().split('T')[0];
-    const todayAppts = appointments.filter(apt => apt.scheduledDate === today);
+    const todayAppts = appts.filter(apt => apt?.scheduledDate === today);
     
     return {
-      totalAppointments: appointments.length,
+      totalAppointments: appts.length,
       todayAppointments: todayAppts.length,
-      upcomingAppointments: appointments.filter(apt => 
-        new Date(apt.scheduledDate) > new Date() && apt.status !== 'cancelled'
+      upcomingAppointments: appts.filter(apt => 
+        apt && new Date(apt.scheduledDate) > new Date() && apt.status !== 'cancelled'
       ).length,
-      completedToday: todayAppts.filter(apt => apt.status === 'completed').length,
-      cancelledToday: todayAppts.filter(apt => apt.status === 'cancelled').length,
-      noShowRate: appointments.filter(apt => apt.status === 'no-show').length / Math.max(appointments.length, 1) * 100,
-      averageDuration: appointments.length > 0 
-        ? appointments.reduce((sum, apt) => sum + (apt.duration || 30), 0) / appointments.length 
+      completedToday: todayAppts.filter(apt => apt?.status === 'completed').length,
+      cancelledToday: todayAppts.filter(apt => apt?.status === 'cancelled').length,
+      noShowRate: appts.filter(apt => apt?.status === 'no-show').length / Math.max(appts.length, 1) * 100,
+      averageDuration: appts.length > 0 
+        ? appts.reduce((sum, apt) => sum + (apt?.duration || 30), 0) / appts.length 
         : 30,
       busyHours: ['09:00', '10:00', '11:00', '14:00', '15:00'] // Mock busy hours
     };
@@ -228,31 +145,36 @@ const AppointmentsContent: React.FC<AppointmentsContentProps> = ({
 
   // Filter and search appointments
   const filteredAppointments = useMemo(() => {
-    let filtered = appointments;
+    // Defensive check: ensure appointments is an array
+    const appts = Array.isArray(appointments) ? appointments : [];
+    let filtered = appts;
 
     // Apply status filter
     if (statusFilter !== 'all') {
-      filtered = filtered.filter(apt => apt.status === statusFilter);
+      filtered = filtered.filter(apt => apt?.status === statusFilter);
     }
 
     // Apply type filter
     if (typeFilter !== 'all') {
-      filtered = filtered.filter(apt => apt.appointmentType === typeFilter);
+      filtered = filtered.filter(apt => apt?.appointmentType === typeFilter);
     }
 
     // Apply search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(apt =>
-        apt.reason?.toLowerCase().includes(query) ||
-        apt.notes?.toLowerCase().includes(query) ||
-        apt.studentId.toLowerCase().includes(query) ||
-        apt.appointmentType.toLowerCase().includes(query)
+        apt && (
+          apt.reason?.toLowerCase().includes(query) ||
+          apt.notes?.toLowerCase().includes(query) ||
+          apt.studentId?.toLowerCase().includes(query) ||
+          apt.appointmentType?.toLowerCase().includes(query)
+        )
       );
     }
 
     // Sort by date and time
     return filtered.sort((a, b) => {
+      if (!a || !b) return 0;
       const dateCompare = new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime();
       if (dateCompare !== 0) return dateCompare;
       

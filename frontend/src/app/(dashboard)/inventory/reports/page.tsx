@@ -125,7 +125,7 @@ export const metadata: Metadata = {
 /**
  * Force dynamic rendering for real-time report generation and data access.
  */
-export const dynamic = 'force-dynamic';
+
 
 /**
  * Inventory Reports Page Component

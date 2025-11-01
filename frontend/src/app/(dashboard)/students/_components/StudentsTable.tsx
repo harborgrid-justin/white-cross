@@ -178,7 +178,7 @@ export function StudentsTable({ initialData, searchParams }: StudentsTableProps)
                         <Eye className="h-4 w-4" />
                       </Link>
                       <Link
-                        href={`/health-records?studentId=${student.id}`}
+                        href={`/students/${student.id}/health-records`}
                         className="text-purple-600 hover:text-purple-900"
                         title="Health Records"
                       >

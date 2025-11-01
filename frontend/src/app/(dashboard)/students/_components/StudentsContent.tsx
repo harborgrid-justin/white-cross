@@ -25,7 +25,7 @@ import {
   UserCheck,
   UserX
 } from 'lucide-react';
-import { getStudents } from '../actions';
+import { getStudents } from '@/app/students/actions';
 import type { Student } from '@/types/student.types';
 
 interface StudentsContentProps {
@@ -79,12 +79,19 @@ export function StudentsContent({ searchParams }: StudentsContentProps) {
         setLoading(true);
         
         // Build filters from searchParams
-        const filters = {
+        const filters: any = {
           search: searchParams.search,
           grade: searchParams.grade,
-          isActive: searchParams.status === 'ACTIVE' || searchParams.status === undefined,
           hasAllergies: searchParams.hasHealthAlerts === 'true',
         };
+
+        // Only add isActive filter if a specific status is requested
+        if (searchParams.status === 'ACTIVE') {
+          filters.isActive = true;
+        } else if (searchParams.status === 'INACTIVE') {
+          filters.isActive = false;
+        }
+        // If no status specified, don't filter by isActive (show all students)
 
         // Remove undefined values
         const cleanFilters = Object.fromEntries(
@@ -92,7 +99,7 @@ export function StudentsContent({ searchParams }: StudentsContentProps) {
         );
 
         const studentsData = await getStudents(cleanFilters);
-        setStudents(studentsData.students);
+        setStudents(studentsData);
       } catch (error) {
         console.error('Failed to fetch students:', error);
         // Set empty array on error instead of using mock data

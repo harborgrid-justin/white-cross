@@ -58,7 +58,7 @@ import { Calendar, Download, RefreshCw, TrendingUp, Clock, XCircle, CheckCircle 
  *
  * @type {"force-dynamic"}
  */
-export const dynamic = 'force-dynamic';
+
 
 /**
  * Appointment Analytics Page Component

@@ -14,8 +14,7 @@ export const metadata: Metadata = {
   description: 'View incident analytics and insights',
 };
 
-// Force dynamic rendering due to auth requirements
-export const dynamic = 'force-dynamic';
+
 
 export default async function IncidentAnalyticsPage() {
   const analyticsResult = await getIncidentAnalytics();

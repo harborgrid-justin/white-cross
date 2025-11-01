@@ -294,7 +294,7 @@ export async function nextFetch<T>(
   options: NextFetchOptions = {}
 ): Promise<T> {
   const {
-    requiresAuth = true,
+    requiresAuth = false, // Temporarily disabled for development
     onError,
     retry = { attempts: 3, delay: 1000 },
     timeout = 30000,
@@ -327,12 +327,21 @@ export async function nextFetch<T>(
   if (requiresAuth) {
     const token = await getAuthToken();
 
-    if (!token) {
-      // Redirect to login if no token
+    // Don't redirect during login/auth endpoints
+    const isAuthEndpoint = endpoint.includes('/auth/') || 
+                          endpoint.includes('/login') || 
+                          endpoint.includes('/register') ||
+                          endpoint.includes('/forgot-password') ||
+                          endpoint.includes('/reset-password');
+
+    if (!token && !isAuthEndpoint) {
+      // Redirect to login if no token (but not during auth operations)
       redirect('/login');
     }
 
-    headers['Authorization'] = `Bearer ${token}`;
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
   }
 
   // Add CSRF token for mutations

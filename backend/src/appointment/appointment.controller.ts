@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Appointment Controller
+ * @module appointment/appointment.controller
+ * @description HTTP endpoints for appointment management with comprehensive healthcare workflow support
+ */
+
 import {
   Controller,
   Get,
@@ -9,7 +15,7 @@ import {
   Query,
   HttpCode,
   HttpStatus,
-  UseGuards,
+  ParseUUIDPipe,
   Logger,
 } from '@nestjs/common';
 import {
@@ -19,27 +25,43 @@ import {
   ApiParam,
   ApiBody,
   ApiQuery,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
-import { AppointmentService } from './services/appointment.service';
+import { AppointmentService } from './appointment.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { AppointmentFiltersDto } from './dto/appointment-filters.dto';
+import {
+  CreateWaitlistEntryDto,
+  WaitlistFiltersDto,
+  UpdateWaitlistPriorityDto,
+  RemoveFromWaitlistDto,
+  NotifyWaitlistEntryDto,
+} from './dto/waitlist.dto';
+import {
+  CreateReminderDto,
+  ReminderProcessingResultDto,
+} from './dto/reminder.dto';
+import {
+  StatisticsFiltersDto,
+  SearchAppointmentsDto,
+  BulkCancelDto,
+  DateRangeDto,
+} from './dto/statistics.dto';
+import { CreateRecurringAppointmentDto } from './dto/recurring.dto';
 
 /**
  * Appointment Controller
- * Handles HTTP endpoints for appointment management
  *
- * Endpoints:
- * - GET /appointments - List appointments with pagination and filters
- * - GET /appointments/:id - Get single appointment
- * - POST /appointments - Create new appointment
- * - PATCH /appointments/:id - Update appointment
- * - DELETE /appointments/:id - Cancel appointment
- * - POST /appointments/:id/start - Start appointment
- * - POST /appointments/:id/complete - Complete appointment
- * - POST /appointments/:id/no-show - Mark as no-show
- * - GET /appointments/nurse/:nurseId/upcoming - Get upcoming appointments
- * - GET /appointments/availability - Check availability
+ * Handles all HTTP endpoints for appointment management:
+ * - CRUD operations for appointments
+ * - Scheduling with conflict detection and availability checking
+ * - Status lifecycle management (scheduled → in-progress → completed)
+ * - Recurring appointment support
+ * - Waitlist management integration
+ * - Healthcare workflow optimization
+ * - Business hours and schedule validation
+ * - Reminder scheduling and notification
  */
 @ApiTags('appointments')
 @Controller('appointments')
@@ -359,5 +381,481 @@ export class AppointmentController {
       date,
       duration ? parseInt(duration.toString(), 10) : 30,
     );
+  }
+
+  // ==================== WAITLIST ENDPOINTS ====================
+
+  /**
+   * Add student to appointment waitlist
+   */
+  @Post('waitlist')
+  @ApiOperation({
+    summary: 'Add to waitlist',
+    description: 'Add student to appointment waitlist when no slots are available',
+  })
+  @ApiBody({ type: CreateWaitlistEntryDto })
+  @ApiResponse({ status: 201, description: 'Successfully added to waitlist' })
+  @ApiResponse({ status: 400, description: 'Validation failed' })
+  async addToWaitlist(@Body() createDto: CreateWaitlistEntryDto) {
+    this.logger.log('POST /appointments/waitlist');
+    return this.appointmentService.addToWaitlist(createDto);
+  }
+
+  /**
+   * Get appointment waitlist
+   */
+  @Get('waitlist')
+  @ApiOperation({
+    summary: 'Get waitlist',
+    description: 'Retrieve appointment waitlist with filtering and pagination',
+  })
+  @ApiResponse({ status: 200, description: 'Successfully retrieved waitlist' })
+  async getWaitlist(@Query() filters: WaitlistFiltersDto) {
+    this.logger.log('GET /appointments/waitlist');
+    return this.appointmentService.getWaitlist(filters);
+  }
+
+  /**
+   * Update waitlist entry priority
+   */
+  @Patch('waitlist/:id/priority')
+  @ApiOperation({
+    summary: 'Update waitlist priority',
+    description: 'Update the priority level of a waitlist entry',
+  })
+  @ApiParam({ name: 'id', description: 'Waitlist entry UUID' })
+  @ApiBody({ type: UpdateWaitlistPriorityDto })
+  @ApiResponse({ status: 200, description: 'Priority updated successfully' })
+  @ApiResponse({ status: 404, description: 'Waitlist entry not found' })
+  async updateWaitlistPriority(
+    @Param('id') id: string,
+    @Body() updateDto: UpdateWaitlistPriorityDto,
+  ) {
+    this.logger.log(`PATCH /appointments/waitlist/${id}/priority`);
+    return this.appointmentService.updateWaitlistPriority(id, updateDto.priority);
+  }
+
+  /**
+   * Get waitlist position
+   */
+  @Get('waitlist/:id/position')
+  @ApiOperation({
+    summary: 'Get waitlist position',
+    description: 'Get the current position of a student in the waitlist',
+  })
+  @ApiParam({ name: 'id', description: 'Waitlist entry UUID' })
+  @ApiResponse({ status: 200, description: 'Position retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Waitlist entry not found' })
+  async getWaitlistPosition(@Param('id') id: string) {
+    this.logger.log(`GET /appointments/waitlist/${id}/position`);
+    return this.appointmentService.getWaitlistPosition(id);
+  }
+
+  /**
+   * Notify waitlist entry
+   */
+  @Post('waitlist/:id/notify')
+  @ApiOperation({
+    summary: 'Notify waitlist entry',
+    description: 'Send notification to waitlisted student about available slot',
+  })
+  @ApiParam({ name: 'id', description: 'Waitlist entry UUID' })
+  @ApiBody({ type: NotifyWaitlistEntryDto, required: false })
+  @ApiResponse({ status: 200, description: 'Notification sent successfully' })
+  @ApiResponse({ status: 404, description: 'Waitlist entry not found' })
+  async notifyWaitlistEntry(
+    @Param('id') id: string,
+    @Body() notifyDto?: NotifyWaitlistEntryDto,
+  ) {
+    this.logger.log(`POST /appointments/waitlist/${id}/notify`);
+    return this.appointmentService.notifyWaitlistEntry(id, notifyDto?.message);
+  }
+
+  /**
+   * Remove from waitlist
+   */
+  @Delete('waitlist/:id')
+  @ApiOperation({
+    summary: 'Remove from waitlist',
+    description: 'Remove student from appointment waitlist',
+  })
+  @ApiParam({ name: 'id', description: 'Waitlist entry UUID' })
+  @ApiBody({ type: RemoveFromWaitlistDto, required: false })
+  @ApiResponse({ status: 200, description: 'Removed from waitlist successfully' })
+  @ApiResponse({ status: 404, description: 'Waitlist entry not found' })
+  async removeFromWaitlist(
+    @Param('id') id: string,
+    @Body() removeDto?: RemoveFromWaitlistDto,
+  ) {
+    this.logger.log(`DELETE /appointments/waitlist/${id}`);
+    return this.appointmentService.removeFromWaitlist(id, removeDto?.reason);
+  }
+
+  // ==================== REMINDER ENDPOINTS ====================
+
+  /**
+   * Process pending reminders
+   */
+  @Post('reminders/process')
+  @ApiOperation({
+    summary: 'Process pending reminders',
+    description: 'Process all pending appointment reminders for delivery',
+  })
+  @ApiResponse({ status: 200, description: 'Reminders processed successfully' })
+  async processPendingReminders(): Promise<ReminderProcessingResultDto> {
+    this.logger.log('POST /appointments/reminders/process');
+    return this.appointmentService.processPendingReminders();
+  }
+
+  /**
+   * Get appointment reminders
+   */
+  @Get(':id/reminders')
+  @ApiOperation({
+    summary: 'Get appointment reminders',
+    description: 'Retrieve all reminders for a specific appointment',
+  })
+  @ApiParam({ name: 'id', description: 'Appointment UUID' })
+  @ApiResponse({ status: 200, description: 'Reminders retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Appointment not found' })
+  async getAppointmentReminders(@Param('id') id: string) {
+    this.logger.log(`GET /appointments/${id}/reminders`);
+    return this.appointmentService.getAppointmentReminders(id);
+  }
+
+  /**
+   * Schedule custom reminder
+   */
+  @Post('reminders')
+  @ApiOperation({
+    summary: 'Schedule reminder',
+    description: 'Schedule a custom reminder for an appointment',
+  })
+  @ApiBody({ type: CreateReminderDto })
+  @ApiResponse({ status: 201, description: 'Reminder scheduled successfully' })
+  @ApiResponse({ status: 400, description: 'Validation failed' })
+  @ApiResponse({ status: 404, description: 'Appointment not found' })
+  async scheduleReminder(@Body() createDto: CreateReminderDto) {
+    this.logger.log('POST /appointments/reminders');
+    return this.appointmentService.scheduleReminder(createDto);
+  }
+
+  /**
+   * Cancel reminder
+   */
+  @Delete('reminders/:reminderId')
+  @ApiOperation({
+    summary: 'Cancel reminder',
+    description: 'Cancel a scheduled appointment reminder',
+  })
+  @ApiParam({ name: 'reminderId', description: 'Reminder UUID' })
+  @ApiResponse({ status: 200, description: 'Reminder cancelled successfully' })
+  @ApiResponse({ status: 404, description: 'Reminder not found' })
+  async cancelReminder(@Param('reminderId') reminderId: string) {
+    this.logger.log(`DELETE /appointments/reminders/${reminderId}`);
+    return this.appointmentService.cancelReminder(reminderId);
+  }
+
+  // ==================== STATISTICS ENDPOINTS ====================
+
+  /**
+   * Get appointment statistics
+   */
+  @Get('statistics')
+  @ApiOperation({
+    summary: 'Get appointment statistics',
+    description: 'Retrieve comprehensive appointment statistics and metrics',
+  })
+  @ApiResponse({ status: 200, description: 'Statistics retrieved successfully' })
+  async getStatistics(@Query() filters: StatisticsFiltersDto) {
+    this.logger.log('GET /appointments/statistics');
+    return this.appointmentService.getStatistics(filters);
+  }
+
+  /**
+   * Search appointments
+   */
+  @Get('search')
+  @ApiOperation({
+    summary: 'Search appointments',
+    description: 'Search appointments by various criteria with full-text search',
+  })
+  @ApiResponse({ status: 200, description: 'Search results retrieved successfully' })
+  async searchAppointments(@Query() searchDto: SearchAppointmentsDto) {
+    this.logger.log('GET /appointments/search');
+    return this.appointmentService.searchAppointments(searchDto);
+  }
+
+  /**
+   * Get appointments by date range
+   */
+  @Get('range')
+  @ApiOperation({
+    summary: 'Get appointments by date range',
+    description: 'Retrieve appointments within a specific date range',
+  })
+  @ApiResponse({ status: 200, description: 'Appointments retrieved successfully' })
+  async getAppointmentsByDateRange(@Query() dateRange: DateRangeDto) {
+    this.logger.log('GET /appointments/range');
+    return this.appointmentService.getAppointmentsByDateRange(dateRange);
+  }
+
+  /**
+   * Get appointment trends
+   */
+  @Get('trends')
+  @ApiOperation({
+    summary: 'Get appointment trends',
+    description: 'Retrieve appointment trends over time with analytics',
+  })
+  @ApiQuery({
+    name: 'dateFrom',
+    required: true,
+    description: 'Start date for trend analysis',
+    example: '2025-10-01',
+  })
+  @ApiQuery({
+    name: 'dateTo',
+    required: true,
+    description: 'End date for trend analysis',
+    example: '2025-10-31',
+  })
+  @ApiQuery({
+    name: 'groupBy',
+    required: false,
+    description: 'Grouping interval',
+    enum: ['day', 'week', 'month'],
+    example: 'day',
+  })
+  @ApiResponse({ status: 200, description: 'Trends retrieved successfully' })
+  async getAppointmentTrends(
+    @Query('dateFrom') dateFrom: string,
+    @Query('dateTo') dateTo: string,
+    @Query('groupBy') groupBy?: 'day' | 'week' | 'month',
+  ) {
+    this.logger.log('GET /appointments/trends');
+    return this.appointmentService.getAppointmentTrends(dateFrom, dateTo, groupBy || 'day');
+  }
+
+  /**
+   * Get no-show statistics
+   */
+  @Get('stats/no-show')
+  @ApiOperation({
+    summary: 'Get no-show statistics',
+    description: 'Retrieve no-show rates and statistics',
+  })
+  @ApiQuery({
+    name: 'nurseId',
+    required: false,
+    description: 'Filter by nurse UUID',
+    example: '987fcdeb-51a2-43d1-b456-426614174001',
+  })
+  @ApiQuery({
+    name: 'dateFrom',
+    required: false,
+    description: 'Start date for statistics',
+    example: '2025-10-01',
+  })
+  @ApiQuery({
+    name: 'dateTo',
+    required: false,
+    description: 'End date for statistics',
+    example: '2025-10-31',
+  })
+  @ApiResponse({ status: 200, description: 'No-show statistics retrieved successfully' })
+  async getNoShowStats(
+    @Query('nurseId') nurseId?: string,
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+  ) {
+    this.logger.log('GET /appointments/stats/no-show');
+    return this.appointmentService.getNoShowStats(nurseId, dateFrom, dateTo);
+  }
+
+  /**
+   * Get utilization statistics
+   */
+  @Get('stats/utilization')
+  @ApiOperation({
+    summary: 'Get utilization statistics',
+    description: 'Retrieve appointment slot utilization statistics',
+  })
+  @ApiQuery({
+    name: 'nurseId',
+    required: true,
+    description: 'Nurse UUID',
+    example: '987fcdeb-51a2-43d1-b456-426614174001',
+  })
+  @ApiQuery({
+    name: 'dateFrom',
+    required: true,
+    description: 'Start date for statistics',
+    example: '2025-10-01',
+  })
+  @ApiQuery({
+    name: 'dateTo',
+    required: true,
+    description: 'End date for statistics',
+    example: '2025-10-31',
+  })
+  @ApiResponse({ status: 200, description: 'Utilization statistics retrieved successfully' })
+  async getUtilizationStats(
+    @Query('nurseId') nurseId: string,
+    @Query('dateFrom') dateFrom: string,
+    @Query('dateTo') dateTo: string,
+  ) {
+    this.logger.log('GET /appointments/stats/utilization');
+    return this.appointmentService.getUtilizationStats(nurseId, dateFrom, dateTo);
+  }
+
+  // ==================== RECURRING APPOINTMENTS ====================
+
+  /**
+   * Create recurring appointments
+   */
+  @Post('recurring')
+  @ApiOperation({
+    summary: 'Create recurring appointments',
+    description: 'Create a series of recurring appointments based on a pattern',
+  })
+  @ApiBody({ type: CreateRecurringAppointmentDto })
+  @ApiResponse({ status: 201, description: 'Recurring appointments created successfully' })
+  @ApiResponse({ status: 400, description: 'Validation failed or scheduling conflicts' })
+  async createRecurringAppointments(@Body() createDto: CreateRecurringAppointmentDto) {
+    this.logger.log('POST /appointments/recurring');
+    return this.appointmentService.createRecurringAppointments(createDto);
+  }
+
+  // ==================== BULK OPERATIONS ====================
+
+  /**
+   * Bulk cancel appointments
+   */
+  @Post('bulk/cancel')
+  @ApiOperation({
+    summary: 'Bulk cancel appointments',
+    description: 'Cancel multiple appointments at once',
+  })
+  @ApiBody({ type: BulkCancelDto })
+  @ApiResponse({ status: 200, description: 'Bulk cancellation completed' })
+  async bulkCancelAppointments(@Body() bulkCancelDto: BulkCancelDto) {
+    this.logger.log('POST /appointments/bulk/cancel');
+    return this.appointmentService.bulkCancelAppointments(bulkCancelDto);
+  }
+
+  /**
+   * Get appointments for multiple students
+   */
+  @Get('students')
+  @ApiOperation({
+    summary: 'Get appointments for students',
+    description: 'Retrieve appointments for multiple students',
+  })
+  @ApiQuery({
+    name: 'studentIds',
+    required: true,
+    description: 'Comma-separated list of student UUIDs',
+    example: '123e4567-e89b-12d3-a456-426614174000,987fcdeb-51a2-43d1-b456-426614174001',
+  })
+  @ApiResponse({ status: 200, description: 'Appointments retrieved successfully' })
+  async getAppointmentsForStudents(
+    @Query('studentIds') studentIds: string,
+    @Query() filters?: Partial<AppointmentFiltersDto>,
+  ) {
+    this.logger.log('GET /appointments/students');
+    const studentIdArray = studentIds.split(',');
+    return this.appointmentService.getAppointmentsForStudents(studentIdArray, filters);
+  }
+
+  // ==================== CONFLICT CHECKING ====================
+
+  /**
+   * Check for scheduling conflicts
+   */
+  @Get('conflicts')
+  @ApiOperation({
+    summary: 'Check conflicts',
+    description: 'Check for scheduling conflicts before booking an appointment',
+  })
+  @ApiQuery({
+    name: 'nurseId',
+    required: true,
+    description: 'Nurse UUID',
+    example: '987fcdeb-51a2-43d1-b456-426614174001',
+  })
+  @ApiQuery({
+    name: 'startTime',
+    required: true,
+    description: 'Proposed start time (ISO 8601)',
+    example: '2025-10-28T10:30:00Z',
+  })
+  @ApiQuery({
+    name: 'duration',
+    required: true,
+    description: 'Appointment duration in minutes',
+    example: 30,
+  })
+  @ApiQuery({
+    name: 'excludeAppointmentId',
+    required: false,
+    description: 'Appointment ID to exclude from conflict check (for updates)',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+  })
+  @ApiResponse({ status: 200, description: 'Conflict check completed' })
+  async checkConflicts(
+    @Query('nurseId') nurseId: string,
+    @Query('startTime') startTime: string,
+    @Query('duration') duration: string,
+    @Query('excludeAppointmentId') excludeAppointmentId?: string,
+  ) {
+    this.logger.log('GET /appointments/conflicts');
+    return this.appointmentService.checkConflicts(
+      nurseId,
+      startTime,
+      parseInt(duration, 10),
+      excludeAppointmentId,
+    );
+  }
+
+  // ==================== CALENDAR EXPORT ====================
+
+  /**
+   * Export calendar
+   */
+  @Get('calendar/:nurseId')
+  @ApiOperation({
+    summary: 'Export calendar',
+    description: 'Export nurse calendar in iCal format',
+  })
+  @ApiParam({ name: 'nurseId', description: 'Nurse UUID' })
+  @ApiQuery({
+    name: 'dateFrom',
+    required: false,
+    description: 'Start date for export',
+    example: '2025-10-01',
+  })
+  @ApiQuery({
+    name: 'dateTo',
+    required: false,
+    description: 'End date for export',
+    example: '2025-10-31',
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Calendar exported successfully',
+    content: {
+      'text/calendar': {
+        schema: { type: 'string', format: 'binary' }
+      }
+    }
+  })
+  async exportCalendar(
+    @Param('nurseId') nurseId: string,
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+  ) {
+    this.logger.log(`GET /appointments/calendar/${nurseId}`);
+    return this.appointmentService.exportCalendar(nurseId, dateFrom, dateTo);
   }
 }

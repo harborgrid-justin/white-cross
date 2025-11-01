@@ -21,7 +21,6 @@
  */
 
 'use server';
-'use cache';
 
 import { cookies } from 'next/headers';
 import { headers } from 'next/headers';
@@ -176,8 +175,8 @@ export async function createHealthRecordAction(
 
     const validatedData = healthRecordCreateSchema.parse(rawData);
 
-    // Create health record via backend API with enhanced fetch
-    const response = await enhancedFetch(`${BACKEND_URL}/health-records`, {
+    // Create health record via backend API with enhanced fetch (backend uses /health-record singular)
+    const response = await enhancedFetch(`${BACKEND_URL}/health-record`, {
       method: 'POST',
       body: JSON.stringify(validatedData)
     });
@@ -249,25 +248,55 @@ export async function createHealthRecordAction(
  * Get health records with enhanced caching
  */
 export async function getHealthRecordsAction(studentId?: string, recordType?: string) {
-  cacheLife('max');
-  cacheTag('health-records', studentId ? `student-${studentId}-health-records` : '', 'phi-data');
-
   try {
     const token = await getAuthToken();
     if (!token) {
-      throw new Error('Authentication required');
+      console.error('[Health Records] Authentication token not found');
+      throw new Error('Authentication required. Please log in.');
     }
 
-    const params = new URLSearchParams();
-    if (studentId) params.append('studentId', studentId);
-    if (recordType) params.append('recordType', recordType);
+    // Backend uses /health-record/student/:studentId endpoint (singular, not plural)
+    let url: string;
+    if (studentId) {
+      url = `${BACKEND_URL}/health-record/student/${studentId}`;
+      // Add recordType as query param if provided
+      if (recordType) {
+        url += `?recordType=${recordType}`;
+      }
+    } else {
+      // If no studentId, we can't fetch records (backend requires it)
+      console.warn('[Health Records] No studentId provided, returning empty results');
+      return {
+        success: true,
+        data: []
+      };
+    }
 
-    const response = await enhancedFetch(`${BACKEND_URL}/health-records?${params.toString()}`, {
+    console.log('[Health Records] Fetching from:', url);
+
+    const response = await enhancedFetch(url, {
       method: 'GET'
     });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch health records');
+      const errorText = await response.text();
+      let errorMessage = `Backend error (${response.status}): ${response.statusText}`;
+      
+      try {
+        const errorJson = JSON.parse(errorText);
+        errorMessage = errorJson.message || errorMessage;
+      } catch {
+        // If not JSON, use the text or default message
+        errorMessage = errorText || errorMessage;
+      }
+      
+      console.error('[Health Records] Backend error:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorMessage
+      });
+      
+      throw new Error(errorMessage);
     }
 
     const result = await response.json();
@@ -278,18 +307,31 @@ export async function getHealthRecordsAction(studentId?: string, recordType?: st
       ...auditContext,
       action: AUDIT_ACTIONS.VIEW_HEALTH_RECORD,
       resource: 'HealthRecord',
-      details: `Accessed health records${studentId ? ` for student ${studentId}` : ''}`,
+      details: `Accessed health records for student ${studentId}`,
       success: true
     });
+
+    console.log('[Health Records] Successfully fetched records:', result.data?.length || result?.length || 0);
 
     return {
       success: true,
       data: result.data || result
     };
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Failed to fetch health records';
+    console.error('[Health Records] Error in getHealthRecordsAction:', errorMessage);
+    
+    // Check if it's a network/connection error
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      return {
+        success: false,
+        error: `Cannot connect to backend server at ${BACKEND_URL}. Please ensure the backend is running.`
+      };
+    }
+    
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to fetch health records'
+      error: errorMessage
     };
   }
 }
@@ -335,8 +377,8 @@ export async function updateHealthRecordAction(
 
     const validatedData = healthRecordUpdateSchema.parse(rawData);
 
-    const response = await enhancedFetch(`${BACKEND_URL}/health-records/${id}`, {
-      method: 'PUT',
+    const response = await enhancedFetch(`${BACKEND_URL}/health-record/${id}`, {
+      method: 'PATCH',
       body: JSON.stringify(validatedData)
     });
 
@@ -421,7 +463,7 @@ export async function deleteHealthRecordAction(id: string): Promise<ActionResult
   }
 
   try {
-    const response = await enhancedFetch(`${BACKEND_URL}/health-records/${id}`, {
+    const response = await enhancedFetch(`${BACKEND_URL}/health-record/${id}`, {
       method: 'DELETE'
     });
 
@@ -717,9 +759,6 @@ export async function createAllergyAction(
  * Get student allergies with enhanced caching for emergency access
  */
 export async function getStudentAllergiesAction(studentId: string) {
-  cacheLife('max'); // Cache indefinitely until explicitly invalidated
-  cacheTag('allergies', `student-${studentId}-allergies`, 'emergency-phi-data', 'phi-data');
-
   try {
     const token = await getAuthToken();
     if (!token) {

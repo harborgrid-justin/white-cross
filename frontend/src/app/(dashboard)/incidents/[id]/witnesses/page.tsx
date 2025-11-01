@@ -86,8 +86,7 @@ export const metadata: Metadata = {
   description: 'View and manage incident witnesses',
 };
 
-// Force dynamic rendering due to auth requirements and real-time witness data
-export const dynamic = 'force-dynamic';
+
 
 /**
  * Witnesses List Page Component

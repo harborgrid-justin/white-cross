@@ -31,7 +31,6 @@ export class ConsentService {
     private readonly consentFormModel: typeof ConsentForm,
     @InjectModel(ConsentSignature)
     private readonly consentSignatureModel: typeof ConsentSignature,
-    @Inject('SEQUELIZE')
     private readonly sequelize: Sequelize,
   ) {}
 

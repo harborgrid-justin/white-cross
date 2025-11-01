@@ -47,8 +47,7 @@ export const metadata: Metadata = {
   description: 'View witness details',
 };
 
-// Force dynamic rendering due to auth requirements and statement data protection
-export const dynamic = 'force-dynamic';
+
 
 /**
  * Witness Details Page Component

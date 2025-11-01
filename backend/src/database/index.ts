@@ -23,8 +23,16 @@ export * from './uow/sequelize-unit-of-work.service';
 
 // Services
 export * from './services/cache.service';
-export * from './services/audit.service';
+export { AuditService } from './services/audit.service';
 
-// Sample Repository (add more as migrated)
-export * from './repositories/interfaces/student.repository.interface';
-export * from './repositories/impl/student.repository';
+// All Models (exported from centralized index to prevent circular dependencies)
+export * from './models';
+
+// Repository Interfaces
+export type { IStudentRepository } from './repositories/interfaces/student.repository.interface';
+
+// Repository Implementations (primary ones used by appointment system)
+export { StudentRepository } from './repositories/impl/student.repository';
+export { AppointmentRepository } from './repositories/impl/appointment.repository';
+export { AppointmentReminderRepository } from './repositories/impl/appointment-reminder.repository';
+export { AppointmentWaitlistRepository } from './repositories/impl/appointment-waitlist.repository';

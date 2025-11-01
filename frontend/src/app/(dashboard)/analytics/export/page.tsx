@@ -68,7 +68,7 @@ import { Download, Calendar, Database, Filter } from 'lucide-react';
  *
  * @type {"force-dynamic"}
  */
-export const dynamic = 'force-dynamic';
+
 
 /**
  * Analytics Export Page Component

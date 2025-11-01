@@ -48,7 +48,7 @@ export const metadata: Metadata = {
 /**
  * Force dynamic rendering for authentication and real-time validation.
  */
-export const dynamic = 'force-dynamic';
+
 
 /**
  * Stock Adjustment Page Component

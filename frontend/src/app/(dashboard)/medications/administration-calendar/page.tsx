@@ -8,7 +8,7 @@
  * Force dynamic rendering for medication calendar - schedule changes frequently
  */
 
-export const dynamic = 'force-dynamic';
+
 
 import { useState, useEffect } from 'react';
 import MedicationCalendar from '@/components/medications/MedicationCalendar';

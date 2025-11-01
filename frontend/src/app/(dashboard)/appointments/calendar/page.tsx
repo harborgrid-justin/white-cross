@@ -297,13 +297,14 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
  * Force dynamic rendering for this page to ensure fresh data
  * Remove this if you want static generation with revalidation
  */
-export const dynamic = 'force-dynamic';
+
 
 /**
- * Revalidate the page every 5 minutes
- * Only used if dynamic = 'force-static' or removed
+ * Revalidate every 5 minutes for appointment data freshness
+ * Removed due to incompatibility with nextConfig.cacheComponents
+ * TODO: Consider alternative caching strategy if needed
  */
-export const revalidate = 300;
+// export const revalidate = 300;
 
 export const metadata = {
   title: 'Appointments Calendar',

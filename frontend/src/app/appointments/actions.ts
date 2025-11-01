@@ -44,7 +44,9 @@ export interface CreateAppointmentData {
   reminderEnabled?: boolean;
 }
 
-export interface UpdateAppointmentData extends Partial<CreateAppointmentData> {}
+export interface UpdateAppointmentData extends Partial<CreateAppointmentData> {
+  // Additional fields that can be updated but weren't in create
+}
 
 export interface RescheduleAppointmentData {
   appointmentId: string;
@@ -101,21 +103,20 @@ export const getAppointments = cache(async (filters?: {
     if (filters?.limit) params.append('limit', String(filters.limit));
 
     const queryString = params.toString();
-    const url = `${API_ENDPOINTS.APPOINTMENTS.BASE}${queryString ? `?${queryString}` : ''}`;
+    const endpoint = queryString ? `${API_ENDPOINTS.APPOINTMENTS.BASE}?${queryString}` : API_ENDPOINTS.APPOINTMENTS.BASE;
     
-    const response = await fetch(url, {
-      next: { 
-        revalidate: 300, // 5 minutes
-        tags: ['appointments', 'calendar-appointments'] 
+    const response = await serverGet<{ appointments: Appointment[]; total: number }>(
+      endpoint,
+      undefined,
+      {
+        next: { 
+          revalidate: 300, // 5 minutes
+          tags: ['appointments', 'calendar-appointments'] 
+        }
       }
-    });
+    );
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch appointments');
-    }
-
-    const data = await response.json();
-    return data;
+    return response;
   } catch (error) {
     console.error('Failed to get appointments:', error);
     return { appointments: [], total: 0 };
@@ -152,19 +153,18 @@ export const getAppointment = cache(async (id: string): Promise<Appointment | nu
  */
 export const getUpcomingAppointments = cache(async (limit = 10): Promise<Appointment[]> => {
   try {
-    const response = await fetch(`${API_ENDPOINTS.APPOINTMENTS.BASE}/upcoming?limit=${limit}`, {
-      next: { 
-        revalidate: 120, // 2 minutes
-        tags: ['upcoming-appointments', 'appointments'] 
+    const response = await serverGet<{ appointments: Appointment[] }>(
+      `${API_ENDPOINTS.APPOINTMENTS.BASE}/upcoming?limit=${limit}`,
+      undefined,
+      {
+        next: { 
+          revalidate: 120, // 2 minutes
+          tags: ['upcoming-appointments', 'appointments'] 
+        }
       }
-    });
+    );
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch upcoming appointments');
-    }
-
-    const data = await response.json();
-    return data.appointments || [];
+    return response.appointments || [];
   } catch (error) {
     console.error('Failed to get upcoming appointments:', error);
     return [];

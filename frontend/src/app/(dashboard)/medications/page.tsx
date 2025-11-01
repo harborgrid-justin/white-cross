@@ -72,7 +72,7 @@ import type {
   MedicationsResponse 
 } from '@/types/medications';
 
-export const dynamic = 'force-dynamic';
+
 
 /**
  * Medications Main Page Component - Client-Side Rendered Dashboard

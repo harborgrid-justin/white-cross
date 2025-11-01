@@ -60,7 +60,7 @@ export const metadata: Metadata = {
  * Force dynamic rendering for this route
  * Required for real-time training status and user-specific assignments
  */
-export const dynamic = 'force-dynamic';
+
 
 /**
  * Training Compliance Page Component

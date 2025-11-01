@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 };
 
 // Dynamic rendering for real-time broadcast status
-export const dynamic = 'force-dynamic';
+
 
 /**
  * Broadcasts Page

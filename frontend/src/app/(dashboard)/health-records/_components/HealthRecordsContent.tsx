@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -84,12 +85,41 @@ interface HealthRecordsContentProps {
 }
 
 export function HealthRecordsContent({ searchParams }: HealthRecordsContentProps) {
+  const router = useRouter();
   const [records, setRecords] = useState<HealthRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
   
   const page = parseInt(searchParams.page || '1');
   const limit = parseInt(searchParams.limit || '20');
+
+  // Handler functions
+  const handleExport = () => {
+    // TODO: Implement export functionality
+    console.log('Export health records');
+    alert('Export functionality coming soon');
+  };
+
+  const handleNewRecord = () => {
+    // Navigate to new record creation page
+    router.push('/health-records/new');
+  };
+
+  const handleView = (recordId: string) => {
+    // Navigate to view record page
+    router.push(`/health-records/${recordId}`);
+  };
+
+  const handleEdit = (recordId: string) => {
+    // Navigate to edit record page
+    router.push(`/health-records/${recordId}/edit`);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams as Record<string, string>);
+    params.set('page', newPage.toString());
+    router.push(`/health-records?${params.toString()}`);
+  };
 
   useEffect(() => {
     const fetchHealthRecords = async () => {
@@ -245,11 +275,11 @@ export function HealthRecordsContent({ searchParams }: HealthRecordsContentProps
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleExport}>
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          <Button>
+          <Button onClick={handleNewRecord}>
             <Plus className="h-4 w-4 mr-2" />
             New Record
           </Button>
@@ -318,7 +348,7 @@ export function HealthRecordsContent({ searchParams }: HealthRecordsContentProps
             <p className="text-gray-600 mb-4">
               No health records match your current filters.
             </p>
-            <Button>
+            <Button onClick={handleNewRecord}>
               <Plus className="h-4 w-4 mr-2" />
               Create First Record
             </Button>
@@ -421,11 +451,11 @@ export function HealthRecordsContent({ searchParams }: HealthRecordsContentProps
                   )}
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" onClick={() => handleView(record.id)}>
                     <Eye className="h-4 w-4 mr-1" />
                     View
                   </Button>
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" onClick={() => handleEdit(record.id)}>
                     <Edit className="h-4 w-4 mr-1" />
                     Edit
                   </Button>
@@ -447,6 +477,7 @@ export function HealthRecordsContent({ searchParams }: HealthRecordsContentProps
               variant="outline" 
               size="sm" 
               disabled={page === 1}
+              onClick={() => handlePageChange(page - 1)}
             >
               Previous
             </Button>
@@ -454,6 +485,7 @@ export function HealthRecordsContent({ searchParams }: HealthRecordsContentProps
               variant="outline" 
               size="sm" 
               disabled={page * limit >= totalCount}
+              onClick={() => handlePageChange(page + 1)}
             >
               Next
             </Button>

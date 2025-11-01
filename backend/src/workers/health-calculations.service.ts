@@ -108,7 +108,19 @@ export class HealthCalculationsService implements OnModuleInit, OnModuleDestroy 
    * Initialize worker pool on module init
    */
   async onModuleInit(): Promise<void> {
-    const workerScript = join(__dirname, 'healthCalculations.worker.js');
+    // Determine the correct worker script path based on environment
+    // In development (ts-node), __dirname points to src/workers
+    // In production, __dirname points to dist/workers
+    let workerScript: string;
+    
+    // Check if we're in development mode (TypeScript source)
+    if (__dirname.includes('src')) {
+      // Development mode - use the compiled version from dist
+      workerScript = join(__dirname.replace('src', 'dist'), 'healthCalculations.worker.js');
+    } else {
+      // Production mode - already in dist
+      workerScript = join(__dirname, 'healthCalculations.worker.js');
+    }
 
     this.logger.log(`Initializing health calculations worker pool with script: ${workerScript}`);
 

@@ -16,8 +16,7 @@ export const metadata: Metadata = {
   description: 'View incidents pending review',
 };
 
-// Force dynamic rendering due to auth requirements
-export const dynamic = 'force-dynamic';
+
 
 export default async function PendingReviewPage() {
   const result = await listIncidents({ status: 'PENDING_REVIEW' });

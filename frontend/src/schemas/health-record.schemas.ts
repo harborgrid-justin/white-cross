@@ -69,7 +69,7 @@ export type HealthRecordCreateFormData = z.infer<typeof healthRecordCreateSchema
  * Health record update schema
  */
 export const healthRecordUpdateSchema = z.object({
-  recordType: z.nativeEnum(HealthRecordType).optional(),
+  recordType: z.string().optional(),
   title: z.string()
     .min(1, 'Title is required')
     .max(255, 'Title must be less than 255 characters')
@@ -131,10 +131,10 @@ export const medicalConditionCreateSchema = z.object({
   }, 'Invalid diagnosis date'),
   diagnosedBy: z.string().max(255).optional(),
   severity: z.enum(['MILD', 'MODERATE', 'SEVERE', 'CRITICAL'], {
-    errorMap: () => ({ message: 'Invalid severity level' })
+    message: 'Invalid severity level'
   }),
   status: z.enum(['ACTIVE', 'MANAGED', 'RESOLVED', 'MONITORING', 'INACTIVE'], {
-    errorMap: () => ({ message: 'Invalid status' })
+    message: 'Invalid status'
   }),
   treatments: z.string().max(2000).optional(),
   accommodationsRequired: z.boolean().default(false),
@@ -210,7 +210,7 @@ export type MedicalConditionUpdateFormData = z.infer<typeof medicalConditionUpda
  */
 export const healthRecordSearchSchema = z.object({
   studentId: z.string().uuid().optional(),
-  recordType: z.array(z.nativeEnum(HealthRecordType)).optional(),
+  recordType: z.array(z.string()).optional(),
   dateFrom: z.string().optional().refine((date) => {
     if (!date) return true;
     const d = new Date(date);

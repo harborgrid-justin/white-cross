@@ -3,7 +3,7 @@
 /**
  * Force dynamic rendering for real-time immunization data
  */
-export const dynamic = 'force-dynamic';
+
 
 import React, { useState, useEffect } from 'react';
 import { 

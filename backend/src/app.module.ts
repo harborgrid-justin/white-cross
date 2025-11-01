@@ -53,7 +53,9 @@ import { CoreMiddlewareModule } from './middleware/core/core-middleware.module';
 import { WorkersModule } from './workers/workers.module';
 import { MedicationModule } from './medication/medication.module';
 import { StudentModule } from './student/student.module';
+import { AppointmentModule } from './appointment/appointment.module';
 import { DiscoveryExampleModule } from './discovery/discovery.module';
+import { CommandsModule } from './commands/commands.module';
 
 @Module({
   imports: [
@@ -163,9 +165,13 @@ import { DiscoveryExampleModule } from './discovery/discovery.module';
     // Feature modules
     MedicationModule,
     StudentModule,
+    AppointmentModule,
 
     // Discovery module (for runtime introspection and metadata discovery)
     DiscoveryExampleModule,
+
+    // Commands module (for CLI commands like seeding)
+    CommandsModule,
   ],
   controllers: [],
   providers: [],

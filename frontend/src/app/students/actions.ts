@@ -91,7 +91,8 @@ export const getStudent = cache(async (id: string): Promise<Student | null> => {
  */
 export const getStudents = cache(async (filters?: StudentFilters): Promise<Student[]> => {
   try {
-    const response = await serverGet<ApiResponse<Student[]>>(
+    // Backend returns: { data: Student[], meta: {...} }
+    const response = await serverGet<{ data: Student[], meta: any }>(
       API_ENDPOINTS.STUDENTS.BASE,
       filters as Record<string, string | number | boolean>,
       {
@@ -103,6 +104,7 @@ export const getStudents = cache(async (filters?: StudentFilters): Promise<Stude
       }
     );
 
+    // Extract the students array from response.data
     return response.data || [];
   } catch (error) {
     console.error('Failed to get students:', error);

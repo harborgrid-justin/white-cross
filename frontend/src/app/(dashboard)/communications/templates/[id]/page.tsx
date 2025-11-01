@@ -13,8 +13,7 @@ export const metadata: Metadata = {
   description: 'View template details'
 };
 
-// Force dynamic rendering due to auth requirements
-export const dynamic = 'force-dynamic';
+
 
 interface TemplateDetailPageProps {
   params: {

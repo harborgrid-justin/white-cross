@@ -16,8 +16,7 @@ export const metadata: Metadata = {
   description: 'Check for potential drug interactions between medications'
 };
 
-// Force dynamic rendering due to auth requirements
-export const dynamic = 'force-dynamic';
+
 
 interface InteractionsPageProps {
   searchParams: {

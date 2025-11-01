@@ -59,8 +59,7 @@ export const metadata: Metadata = {
   description: 'Add witness to incident',
 };
 
-// Force dynamic rendering due to auth requirements and CSRF protection
-export const dynamic = 'force-dynamic';
+
 
 /**
  * Add Witness Page Component

@@ -139,6 +139,12 @@ function calculateAge(dateOfBirth: string): number {
  */
 export default async function ModalStudentPage({ params }: ModalStudentPageProps) {
   const { id } = await params;
+
+  // Validate ID parameter
+  if (!id || id === 'undefined' || id === 'null') {
+    notFound();
+  }
+
   const student = await fetchStudentDetails(id);
 
   if (!student) {
@@ -288,7 +294,7 @@ export default async function ModalStudentPage({ params }: ModalStudentPageProps
                 </a>
 
                 <a
-                  href={`/health-records?studentId=${safeStudent.id}`}
+                  href={`/students/${safeStudent.id}/health-records`}
                   className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
                 >
                   Health Records

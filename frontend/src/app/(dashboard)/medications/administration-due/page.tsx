@@ -17,8 +17,7 @@ export const metadata: Metadata = {
   description: 'Medications requiring immediate administration'
 };
 
-// Force dynamic rendering due to auth requirements
-export const dynamic = 'force-dynamic';
+
 
 /**
  * Fetch due medications

@@ -135,8 +135,7 @@ export const metadata: Metadata = {
   description: 'Create a new incident report',
 };
 
-// Force dynamic rendering due to auth requirements and form CSRF token generation
-export const dynamic = 'force-dynamic';
+
 
 /**
  * New Incident Page Component

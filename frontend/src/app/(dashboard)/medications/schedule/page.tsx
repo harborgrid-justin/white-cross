@@ -20,8 +20,7 @@ export const metadata: Metadata = {
   description: 'Comprehensive medication schedule and upcoming administrations'
 };
 
-// Force dynamic rendering due to auth requirements
-export const dynamic = 'force-dynamic';
+
 
 interface SchedulePageProps {
   searchParams: {

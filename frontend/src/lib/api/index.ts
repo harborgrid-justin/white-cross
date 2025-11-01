@@ -25,30 +25,97 @@
  * @since 2025-10-31
  */
 
-// Export the unified client
+// Export client-side API functions (safe for Client Components)
 export { 
-  nextFetch, 
-  serverGet, 
-  serverPost, 
-  serverPut, 
-  serverPatch, 
-  serverDelete,
-  buildCacheTags,
-  buildResourceTag,
+  clientFetch,
+  clientGet, 
+  clientPost, 
+  clientPut, 
+  clientPatch, 
+  clientDelete,
   apiClient,
   fetchApi
-} from './nextjs-client';
+} from './client';
+
+// Re-export client functions with server naming for compatibility
+export { 
+  clientGet as serverGet,
+  clientPost as serverPost,
+  clientPut as serverPut,
+  clientPatch as serverPatch,
+  clientDelete as serverDelete,
+  clientFetch as nextFetch
+} from './client';
 
 // Export types
 export type {
-  NextFetchOptions,
+  ClientFetchOptions,
   ApiClientOptions,
-  NextCacheConfig,
-  CacheLifeConfig,
-  ApiResponse,
-  ApiErrorResponse,
-  NextApiClientError
-} from './nextjs-client';
+  ApiErrorResponse
+} from './client';
+
+// Import for internal use
+import type { ClientFetchOptions } from './client';
+
+// Provide stub functions for server-only functions to maintain compatibility
+export function buildCacheTags(
+  resourceType: string,
+  isPHI: boolean = true,
+  additionalTags: string[] = []
+): string[] {
+  const tags: string[] = [resourceType];
+  if (isPHI) {
+    tags.push('phi-data');
+  }
+  return [...tags, ...additionalTags];
+}
+
+export function buildResourceTag(
+  resourceType: string,
+  resourceId: string
+): string {
+  return `${resourceType}-${resourceId}`;
+}
+
+// Export additional types for compatibility
+export interface NextFetchOptions extends ClientFetchOptions {
+  cache?: RequestCache;
+  next?: {
+    revalidate?: number | false;
+    tags?: string[];
+  };
+}
+
+export interface NextCacheConfig {
+  cache?: RequestCache;
+  next?: {
+    revalidate?: number | false;
+    tags?: string[];
+  };
+}
+
+export interface CacheLifeConfig {
+  ttl: number;
+  stale?: number;
+  max?: number;
+}
+
+export interface ApiResponse<T = unknown> {
+  success: boolean;
+  data: T;
+  message?: string;
+  errors?: Record<string, string[]>;
+}
+
+export interface NextApiClientError extends Error {
+  code?: string;
+  status?: number;
+  details?: unknown;
+  traceId?: string;
+  isNetworkError?: boolean;
+  isServerError?: boolean;
+  isValidationError?: boolean;
+}
 
 // Import all API services
 import * as servicesApi from '@/services/api';

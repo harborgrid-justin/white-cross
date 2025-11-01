@@ -86,7 +86,7 @@
 /**
  * Force dynamic rendering for form editing - requires current form data
  */
-export const dynamic = 'force-dynamic';
+
 
 
 import { Metadata } from 'next'

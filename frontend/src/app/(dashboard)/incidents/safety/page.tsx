@@ -16,8 +16,7 @@ export const metadata: Metadata = {
   description: 'View all safety incidents',
 };
 
-// Force dynamic rendering due to auth requirements
-export const dynamic = 'force-dynamic';
+
 
 export default async function SafetyIncidentsPage() {
   const result = await listIncidents({ type: 'SAFETY' });

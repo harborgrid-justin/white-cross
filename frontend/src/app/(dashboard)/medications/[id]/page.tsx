@@ -100,8 +100,7 @@ import MedicationDetails from '@/components/medications/core/MedicationDetails';
 import AdministrationLog from '@/components/medications/administration/AdministrationLog';
 import { Button } from '@/components/ui/Button';
 
-// Force dynamic rendering due to auth requirements
-export const dynamic = 'force-dynamic';
+
 
 import {
   PencilIcon,

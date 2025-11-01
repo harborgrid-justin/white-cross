@@ -20,7 +20,6 @@ export class MedicationReportsService {
     private medicationLogModel: typeof MedicationLog,
     @InjectModel(StudentMedication)
     private studentMedicationModel: typeof StudentMedication,
-    @Inject('SEQUELIZE')
     private sequelize: Sequelize,
   ) {}
 

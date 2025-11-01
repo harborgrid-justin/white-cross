@@ -56,7 +56,7 @@ export const metadata: Metadata = {
  * Force dynamic rendering for this route
  * Required for real-time report generation status and user-specific access control
  */
-export const dynamic = 'force-dynamic';
+
 
 /**
  * Compliance Reports Page Component

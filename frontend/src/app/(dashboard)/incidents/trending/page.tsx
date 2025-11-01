@@ -30,8 +30,7 @@ export const metadata: Metadata = {
   description: 'View incident trends and patterns',
 };
 
-// Force dynamic rendering due to auth requirements
-export const dynamic = 'force-dynamic';
+
 
 export default async function TrendingIncidentsPage() {
   const trendingResult = await getTrendingIncidents('month');

@@ -88,9 +88,11 @@ export interface User {
 }
 
 export interface AuthResponse {
-  token: string;
-  refreshToken?: string;
+  accessToken: string;
+  refreshToken: string;
   user: User;
+  tokenType: string;
+  expiresIn: number;
 }
 
 export interface LoginFormState {
@@ -140,7 +142,7 @@ export async function loginAction(
     const { email, password } = validatedFields.data;
 
     // Call backend authentication endpoint
-    const response = await serverPost<ApiResponse<AuthResponse>>(
+    const response = await serverPost<AuthResponse>(
       API_ENDPOINTS.AUTH.LOGIN,
       { email, password },
       {
@@ -149,7 +151,8 @@ export async function loginAction(
       }
     );
 
-    if (!response.success || !response.data) {
+    // Backend returns AuthResponseDto directly, not wrapped in ApiResponse
+    if (!response || !response.accessToken) {
       // Audit failed login attempt
       const headersList = await headers();
       const mockRequest = {
@@ -166,18 +169,18 @@ export async function loginAction(
         ipAddress: extractIPAddress(mockRequest),
         userAgent: extractUserAgent(mockRequest),
         success: false,
-        errorMessage: response.message || 'Invalid credentials'
+        errorMessage: 'Invalid credentials'
       });
 
       return {
         errors: {
-          _form: [response.message || 'Invalid credentials'],
+          _form: ['Invalid credentials'],
         },
       };
     }
 
-    // Extract data from successful response
-    const { token, refreshToken, user } = response.data;
+    // Extract data from successful response (backend returns AuthResponseDto directly)
+    const { accessToken: token, refreshToken, user } = response;
 
     // Set HTTP-only cookies
     const cookieStore = await cookies();

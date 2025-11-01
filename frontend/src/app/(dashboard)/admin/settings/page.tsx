@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 /**
  * Force dynamic rendering for real-time system statistics
  */
-export const dynamic = 'force-dynamic';
+
 import {
   Users,
   Building2,

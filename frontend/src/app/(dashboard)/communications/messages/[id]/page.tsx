@@ -52,8 +52,7 @@ export async function generateMetadata({
   };
 }
 
-// Force dynamic rendering due to auth requirements
-export const dynamic = 'force-dynamic';
+
 
 interface MessageDetailPageProps {
   params: {

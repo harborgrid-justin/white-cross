@@ -17,8 +17,7 @@ export const metadata: Metadata = {
   description: 'Manage medication categories and classification'
 };
 
-// Force dynamic rendering due to auth requirements
-export const dynamic = 'force-dynamic';
+
 
 /**
  * Fetch categories

@@ -3,7 +3,7 @@
 /**
  * Force dynamic rendering for real-time document data
  */
-export const dynamic = 'force-dynamic';
+
 
 import React, { useState, useEffect } from 'react';
 import { 

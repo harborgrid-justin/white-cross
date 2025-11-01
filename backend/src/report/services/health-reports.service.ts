@@ -1,5 +1,5 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
+import { Injectable, Logger } from '@nestjs/common';
+import { InjectModel, InjectConnection } from '@nestjs/sequelize';
 import { Sequelize, Op, fn, col, literal, QueryTypes } from 'sequelize';
 import { HealthRecord } from '../../database/models/health-record.model';
 import { ChronicCondition } from '../../database/models/chronic-condition.model';
@@ -23,7 +23,7 @@ export class HealthReportsService {
     private chronicConditionModel: typeof ChronicCondition,
     @InjectModel(Allergy)
     private allergyModel: typeof Allergy,
-    @Inject('SEQUELIZE')
+    @InjectConnection()
     private sequelize: Sequelize,
   ) {}
 

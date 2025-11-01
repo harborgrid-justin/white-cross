@@ -20,7 +20,6 @@ export class AttendanceReportsService {
     private chronicConditionModel: typeof ChronicCondition,
     @InjectModel(Student)
     private studentModel: typeof Student,
-    @Inject('SEQUELIZE')
     private sequelize: Sequelize,
   ) {}
 

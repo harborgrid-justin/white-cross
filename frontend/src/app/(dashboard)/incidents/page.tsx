@@ -105,8 +105,7 @@ export const metadata: Metadata = {
   },
 };
 
-// Force dynamic rendering due to auth requirements and real-time incident data
-export const dynamic = 'force-dynamic';
+
 
 /**
  * Incidents List Page Component

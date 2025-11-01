@@ -3,7 +3,7 @@
 /**
  * Force dynamic rendering for real-time appointment data
  */
-export const dynamic = 'force-dynamic';
+
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
@@ -108,23 +108,25 @@ const AppointmentsSidebar: React.FC<AppointmentsSidebarProps> = ({
   });
 
   const calculateQuickStats = (aptList: Appointment[]) => {
+    // Defensive check: ensure aptList is an array
+    const appts = Array.isArray(aptList) ? aptList : [];
     const today = new Date().toISOString().split('T')[0];
-    const todayAppointments = aptList.filter(apt => apt.scheduledDate === today);
+    const todayAppointments = appts.filter(apt => apt?.scheduledDate === today);
     
     const stats: QuickStats = {
       todayTotal: todayAppointments.length,
-      todayCompleted: todayAppointments.filter(apt => apt.status === 'completed').length,
+      todayCompleted: todayAppointments.filter(apt => apt?.status === 'completed').length,
       todayPending: todayAppointments.filter(apt => 
-        ['scheduled', 'confirmed'].includes(apt.status)
+        apt?.status && ['scheduled', 'confirmed'].includes(apt.status)
       ).length,
-      todayUrgent: todayAppointments.filter(apt => apt.priority === 'urgent').length,
-      upcomingWeek: aptList.filter(apt => 
-        new Date(apt.scheduledDate) > new Date() && 
-        apt.status !== 'cancelled'
+      todayUrgent: todayAppointments.filter(apt => apt?.priority === 'urgent').length,
+      upcomingWeek: appts.filter(apt => 
+        apt?.scheduledDate && new Date(apt.scheduledDate) > new Date() && 
+        apt?.status !== 'cancelled'
       ).length,
-      overdueAppointments: aptList.filter(apt => 
-        new Date(apt.scheduledDate) < new Date() && 
-        ['scheduled', 'confirmed'].includes(apt.status)
+      overdueAppointments: appts.filter(apt => 
+        apt?.scheduledDate && new Date(apt.scheduledDate) < new Date() && 
+        apt?.status && ['scheduled', 'confirmed'].includes(apt.status)
       ).length
     };
     
@@ -152,10 +154,13 @@ const AppointmentsSidebar: React.FC<AppointmentsSidebarProps> = ({
   };
 
   const generateUpcomingAppointments = useCallback((aptList: Appointment[]) => {
-    const upcoming = aptList
+    // Defensive check: ensure aptList is an array
+    const appts = Array.isArray(aptList) ? aptList : [];
+    const upcoming = appts
       .filter(apt => 
+        apt?.scheduledDate && 
         new Date(apt.scheduledDate) >= new Date() && 
-        ['scheduled', 'confirmed'].includes(apt.status)
+        apt?.status && ['scheduled', 'confirmed'].includes(apt.status)
       )
       .sort((a, b) => {
         const dateCompare = new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime();
@@ -179,8 +184,11 @@ const AppointmentsSidebar: React.FC<AppointmentsSidebarProps> = ({
   }, []);
 
   const generateRecentActivity = useCallback((aptList: Appointment[]) => {
-    const activities: RecentActivity[] = aptList
+    // Defensive check: ensure aptList is an array
+    const appts = Array.isArray(aptList) ? aptList : [];
+    const activities: RecentActivity[] = appts
       .filter(apt => {
+        if (!apt?.updatedAt) return false;
         const aptDate = new Date(apt.updatedAt);
         const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
         return aptDate > dayAgo;

@@ -17,8 +17,7 @@ export const metadata: Metadata = {
   description: 'Track prescription refills and authorization status'
 };
 
-// Force dynamic rendering due to auth requirements
-export const dynamic = 'force-dynamic';
+
 
 /**
  * Fetch refills report data

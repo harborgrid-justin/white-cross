@@ -160,6 +160,23 @@ export class MedicationController {
   }
 
   /**
+   * Get medication statistics
+   */
+  @Get('stats')
+  @ApiOperation({
+    summary: 'Get medication statistics',
+    description: 'Retrieve aggregated statistics about medications across the system.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Medication statistics retrieved successfully',
+  })
+  async getStats() {
+    this.logger.log('GET /medications/stats');
+    return this.medicationService.getMedicationStats();
+  }
+
+  /**
    * Create a new medication record
    */
   @Post()

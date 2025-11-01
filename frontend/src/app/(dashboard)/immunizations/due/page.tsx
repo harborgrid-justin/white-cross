@@ -11,7 +11,7 @@
  * Force dynamic rendering for time-sensitive immunization due dates
  * Shows current due immunizations that change daily
  */
-export const dynamic = 'force-dynamic';
+
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';

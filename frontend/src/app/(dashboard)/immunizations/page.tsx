@@ -13,7 +13,7 @@
 /**
  * Force dynamic rendering for real-time immunization data
  */
-export const dynamic = 'force-dynamic';
+
 
 import React from 'react';
 import { PageHeader } from '@/components/layouts/PageHeader';

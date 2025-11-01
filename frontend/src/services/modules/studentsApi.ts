@@ -396,15 +396,14 @@ export class StudentsApi {
       if (filters.hasMedications !== undefined) queryString.append('hasMedications', String(filters.hasMedications));
       if (filters.gender) queryString.append('gender', filters.gender);
 
-      const response = await this.client.get<BackendApiResponse<PaginatedStudentsResponse>>(
-        `/api/students?${queryString.toString()}`
+      // ApiClient wraps the backend response: backend returns { data: [...], meta: {...} }
+      // ApiClient wraps it as { success: true, data: { data: [...], meta: {...} } }
+      const response = await this.client.get<PaginatedStudentsResponse>(
+        `/students?${queryString.toString()}`
       );
 
-      if (!response.data.success || !response.data.data) {
-        throw new Error(response.data.error?.message || 'Failed to fetch students');
-      }
-
-      return response.data.data;
+      // Extract the actual data from the ApiClient wrapper
+      return response.data;
     } catch (error: unknown) {
       if (error && typeof error === 'object' && 'name' in error && error.name === 'ZodError') {
         const zodError = error as unknown as { errors: Array<{ message: string }> };

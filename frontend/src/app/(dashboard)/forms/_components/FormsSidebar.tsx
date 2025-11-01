@@ -3,7 +3,7 @@
 /**
  * Force dynamic rendering for real-time form data
  */
-export const dynamic = 'force-dynamic';
+
 
 import React, { useState, useMemo } from 'react';
 import { 

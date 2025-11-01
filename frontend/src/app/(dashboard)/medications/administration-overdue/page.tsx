@@ -17,8 +17,7 @@ export const metadata: Metadata = {
   description: 'Medications that have not been administered on schedule'
 };
 
-// Force dynamic rendering due to auth requirements
-export const dynamic = 'force-dynamic';
+
 
 /**
  * Fetch overdue medications

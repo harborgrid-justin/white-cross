@@ -16,8 +16,7 @@ export const metadata: Metadata = {
   description: 'Generate and view medication reports and analytics'
 };
 
-// Force dynamic rendering due to auth requirements
-export const dynamic = 'force-dynamic';
+
 
 /**
  * Reports Dashboard Page

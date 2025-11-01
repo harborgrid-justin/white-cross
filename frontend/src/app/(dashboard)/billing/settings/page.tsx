@@ -1,7 +1,7 @@
 /**
  * Force dynamic rendering for user-specific billing settings
  */
-export const dynamic = 'force-dynamic';
+
 
 import { BillingSettings } from '@/components/pages/Billing';
 

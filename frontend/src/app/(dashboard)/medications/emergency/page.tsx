@@ -18,8 +18,7 @@ export const metadata: Metadata = {
   description: 'Life-saving emergency medications with quick access protocols'
 };
 
-// Force dynamic rendering due to auth requirements
-export const dynamic = 'force-dynamic';
+
 
 /**
  * Fetch emergency medications

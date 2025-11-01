@@ -18,8 +18,7 @@ export const metadata: Metadata = {
   description: 'Manage OTC medications with parental consent'
 };
 
-// Force dynamic rendering due to auth requirements
-export const dynamic = 'force-dynamic';
+
 
 /**
  * Fetch OTC medications

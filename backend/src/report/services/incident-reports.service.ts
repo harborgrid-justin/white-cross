@@ -1,5 +1,5 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
+import { Injectable, Logger } from '@nestjs/common';
+import { InjectModel, InjectConnection } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { Op, fn, col, QueryTypes } from 'sequelize';
 import { IncidentReport } from '../../database/models/incident-report.model';
@@ -17,7 +17,7 @@ export class IncidentReportsService {
   constructor(
     @InjectModel(IncidentReport)
     private incidentReportModel: typeof IncidentReport,
-    @Inject('SEQUELIZE')
+    @InjectConnection()
     private sequelize: Sequelize,
   ) {}
 

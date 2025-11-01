@@ -69,7 +69,7 @@ export const metadata: Metadata = {
 /**
  * Force dynamic rendering for authentication and real-time category data.
  */
-export const dynamic = 'force-dynamic';
+
 
 /**
  * Inventory Categories Management Page Component

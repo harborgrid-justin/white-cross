@@ -17,8 +17,7 @@ export const metadata: Metadata = {
   description: 'Documented missed medication doses requiring follow-up'
 };
 
-// Force dynamic rendering due to auth requirements
-export const dynamic = 'force-dynamic';
+
 
 interface MissedDosesPageProps {
   searchParams: {

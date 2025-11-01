@@ -3,7 +3,7 @@
 /**
  * Force dynamic rendering for specific invoice details - financial data requires real-time accuracy
  */
-export const dynamic = 'force-dynamic';
+
 
 import React, { useState, useEffect } from 'react';
 import { BillingDetail } from '@/components/pages/Billing';

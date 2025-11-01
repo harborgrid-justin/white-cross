@@ -154,8 +154,7 @@ export const metadata: Metadata = {
   description: 'Edit incident report',
 };
 
-// Force dynamic rendering due to auth requirements and CSRF protection
-export const dynamic = 'force-dynamic';
+
 
 /**
  * Edit Incident Page Component

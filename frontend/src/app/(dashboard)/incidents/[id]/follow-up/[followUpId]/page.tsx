@@ -98,8 +98,7 @@ export const metadata: Metadata = {
   description: 'View follow-up action details',
 };
 
-// Force dynamic rendering due to auth requirements and real-time progress updates
-export const dynamic = 'force-dynamic';
+
 
 /**
  * Follow-Up Action Details Component

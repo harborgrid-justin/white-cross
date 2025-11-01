@@ -78,8 +78,8 @@ export const immunizationCreateSchema = z.object({
   exemptionStatus: z.boolean().default(false),
   exemptionReason: z.enum(['MEDICAL', 'RELIGIOUS', 'PHILOSOPHICAL', 'OTHER']).optional(),
   exemptionDocument: z.string().optional(),
-  complianceStatus: z.nativeEnum(VaccinationComplianceStatus, {
-    errorMap: () => ({ message: 'Invalid compliance status' })
+  complianceStatus: z.enum(['COMPLIANT', 'NON_COMPLIANT', 'OVERDUE', 'EXEMPT', 'PENDING'], {
+    message: 'Invalid compliance status'
   }).default('COMPLIANT'),
   vfcEligibility: z.boolean().default(false),
   visProvided: z.boolean().default(false),
@@ -202,7 +202,7 @@ export const immunizationUpdateSchema = z.object({
   exemptionStatus: z.boolean().optional(),
   exemptionReason: z.enum(['MEDICAL', 'RELIGIOUS', 'PHILOSOPHICAL', 'OTHER']).optional(),
   exemptionDocument: z.string().optional(),
-  complianceStatus: z.nativeEnum(VaccinationComplianceStatus).optional(),
+  complianceStatus: z.enum(['COMPLIANT', 'NON_COMPLIANT', 'OVERDUE', 'EXEMPT', 'PENDING']).optional(),
   vfcEligibility: z.boolean().optional(),
   visProvided: z.boolean().optional(),
   visDate: z.string().optional().refine((date) => {
@@ -224,7 +224,7 @@ export const immunizationSearchSchema = z.object({
   studentId: z.string().uuid().optional(),
   vaccineName: z.string().optional(),
   vaccineType: z.string().optional(),
-  complianceStatus: z.array(z.nativeEnum(VaccinationComplianceStatus)).optional(),
+  complianceStatus: z.array(z.enum(['COMPLIANT', 'NON_COMPLIANT', 'OVERDUE', 'EXEMPT', 'PENDING'])).optional(),
   exemptionStatus: z.boolean().optional(),
   dateFrom: z.string().optional().refine((date) => {
     if (!date) return true;

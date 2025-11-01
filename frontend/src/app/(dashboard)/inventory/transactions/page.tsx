@@ -67,7 +67,7 @@ export const metadata: Metadata = {
 /**
  * Force dynamic rendering for real-time transaction data and authentication.
  */
-export const dynamic = 'force-dynamic';
+
 
 /**
  * Transaction History Page Component

@@ -13,8 +13,7 @@ export const metadata: Metadata = {
   description: 'View and manage your notifications'
 };
 
-// Force dynamic rendering due to auth requirements
-export const dynamic = 'force-dynamic';
+
 
 export default function NotificationsPage() {
   return <NotificationsContent />;

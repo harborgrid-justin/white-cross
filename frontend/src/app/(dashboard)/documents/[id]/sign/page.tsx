@@ -59,7 +59,7 @@
 /**
  * Force dynamic rendering for document signing - secure operation requires real-time validation
  */
-export const dynamic = 'force-dynamic';
+
 
 
 import { Metadata } from 'next'

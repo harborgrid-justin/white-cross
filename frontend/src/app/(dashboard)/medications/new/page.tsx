@@ -118,8 +118,7 @@ export const metadata: Metadata = {
   description: 'Add a new medication with prescription details and safety information'
 };
 
-// Force dynamic rendering due to auth requirements
-export const dynamic = 'force-dynamic';
+
 
 /**
  * New Medication Page Component - Medication Entry Form Container

@@ -20,7 +20,6 @@ export class DocumentService {
     private signatureModel: typeof DocumentSignature,
     @InjectModel(DocumentAuditTrail)
     private auditModel: typeof DocumentAuditTrail,
-    @Inject('SEQUELIZE')
     private sequelize: Sequelize,
   ) {}
 

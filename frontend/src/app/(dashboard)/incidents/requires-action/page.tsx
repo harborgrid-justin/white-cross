@@ -16,8 +16,7 @@ export const metadata: Metadata = {
   description: 'View incidents requiring action',
 };
 
-// Force dynamic rendering due to auth requirements
-export const dynamic = 'force-dynamic';
+
 
 export default async function RequiresActionPage() {
   const result = await listIncidents({ status: 'REQUIRES_ACTION' });

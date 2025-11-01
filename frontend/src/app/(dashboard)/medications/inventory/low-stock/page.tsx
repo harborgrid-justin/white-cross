@@ -17,8 +17,7 @@ export const metadata: Metadata = {
   description: 'Medications requiring reorder due to low stock levels'
 };
 
-// Force dynamic rendering due to auth requirements
-export const dynamic = 'force-dynamic';
+
 
 /**
  * Fetch low stock items

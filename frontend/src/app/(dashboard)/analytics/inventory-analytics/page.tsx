@@ -71,7 +71,7 @@ import { Package, AlertTriangle, Calendar, Download, TrendingDown } from 'lucide
  *
  * @type {"force-dynamic"}
  */
-export const dynamic = 'force-dynamic';
+
 
 /**
  * Inventory Analytics Page Component

@@ -32,7 +32,7 @@ export const metadata: Metadata = {
  * This page requires access to headers/cookies for user authentication,
  * and displays real-time health alerts and system status.
  */
-export const dynamic = 'force-dynamic';
+
 
 export default function DashboardPage() {
   return (

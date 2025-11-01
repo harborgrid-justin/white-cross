@@ -68,7 +68,7 @@ export const metadata: Metadata = {
  * - Con: Slightly slower than ISR cached responses
  * - Mitigation: Client-side caching and optimized queries minimize impact
  */
-export const dynamic = 'force-dynamic';
+
 
 /**
  * Inventory Items List Page Component

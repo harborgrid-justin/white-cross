@@ -14,6 +14,7 @@
 import { Module, Global } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { Sequelize } from 'sequelize-typescript';
 
 // Services
 import { CacheService } from './services/cache.service';
@@ -156,6 +157,8 @@ import { MedicationLogRepository } from './repositories/impl/medication-log.repo
 import { IncidentReportRepository } from './repositories/impl/incident-report.repository';
 import { AllergyRepository } from './repositories/impl/allergy.repository';
 import { ChronicConditionRepository } from './repositories/impl/chronic-condition.repository';
+import { AppointmentReminderRepository } from './repositories/impl/appointment-reminder.repository';
+import { AppointmentWaitlistRepository } from './repositories/impl/appointment-waitlist.repository';
 
 /**
  * Database Module
@@ -363,36 +366,6 @@ import { ChronicConditionRepository } from './repositories/impl/chronic-conditio
       provide: 'IUnitOfWork',
       useClass: SequelizeUnitOfWorkService
     },
-    {
-      provide: 'SEQUELIZE',
-      useFactory: (configService: ConfigService) => {
-        const databaseUrl = configService.get('DATABASE_URL');
-        
-        if (databaseUrl) {
-          return new (require('sequelize-typescript').Sequelize)(databaseUrl, {
-            dialect: 'postgres',
-            logging: configService.get('NODE_ENV') === 'development' ? console.log : false,
-            dialectOptions: databaseUrl.includes('sslmode=require') ? {
-              ssl: {
-                require: true,
-                rejectUnauthorized: false
-              }
-            } : {},
-          });
-        } else {
-          return new (require('sequelize-typescript').Sequelize)({
-            dialect: 'postgres',
-            host: configService.get('DB_HOST', 'localhost'),
-            port: configService.get<number>('DB_PORT', 5432),
-            username: configService.get('DB_USERNAME', 'postgres'),
-            password: configService.get('DB_PASSWORD'),
-            database: configService.get('DB_NAME', 'whitecross'),
-            logging: configService.get('NODE_ENV') === 'development' ? console.log : false,
-          });
-        }
-      },
-      inject: [ConfigService],
-    },
 
     // Repository Implementations
     // Add repositories as they are migrated following this pattern:
@@ -412,16 +385,20 @@ import { ChronicConditionRepository } from './repositories/impl/chronic-conditio
     IncidentReportRepository,
     AllergyRepository,
     ChronicConditionRepository,
+    AppointmentReminderRepository,
+    AppointmentWaitlistRepository,
     // MedicationRepository,
     // VaccinationRepository - TODO: Create this repository
     // etc.
   ],
   exports: [
+    // Export SequelizeModule to make Sequelize instance available for injection
+    SequelizeModule,
+    
     // Export services for use in other modules
     'ICacheManager',
     'IAuditLogger',
     'IUnitOfWork',
-    'SEQUELIZE',
 
     // Export repositories as they are added
     StudentRepository,
@@ -435,6 +412,8 @@ import { ChronicConditionRepository } from './repositories/impl/chronic-conditio
     ComplianceViolationRepository,
     EmergencyBroadcastRepository,
     AppointmentRepository,
+    AppointmentReminderRepository,
+    AppointmentWaitlistRepository,
     HealthRecordRepository,
     MedicationLogRepository,
     IncidentReportRepository,

@@ -1,7 +1,7 @@
 /**
  * Force dynamic rendering for real-time billing analytics
  */
-export const dynamic = 'force-dynamic';
+
 
 import { BillingAnalytics } from '@/components/pages/Billing';
 

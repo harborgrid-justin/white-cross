@@ -18,7 +18,7 @@ export const AllergySeverityEnum = z.enum([
   'SEVERE',
   'LIFE_THREATENING'
 ], {
-  errorMap: () => ({ message: 'Invalid allergy severity level' })
+  message: 'Invalid allergy severity level'
 });
 
 /**
@@ -29,8 +29,8 @@ export const allergyCreateSchema = z.object({
   allergen: z.string()
     .min(1, 'Allergen name is required')
     .max(255, 'Allergen name must be less than 255 characters'),
-  allergyType: z.nativeEnum(AllergyType, {
-    errorMap: () => ({ message: 'Invalid allergy type' })
+  allergyType: z.enum(['FOOD', 'MEDICATION', 'ENVIRONMENTAL', 'INSECT', 'LATEX', 'OTHER'], {
+    message: 'Invalid allergy type'
   }),
   severity: AllergySeverityEnum,
   symptoms: z.string()
@@ -123,7 +123,7 @@ export const allergyUpdateSchema = z.object({
     .min(1, 'Allergen name is required')
     .max(255, 'Allergen name must be less than 255 characters')
     .optional(),
-  allergyType: z.nativeEnum(AllergyType).optional(),
+  allergyType: z.enum(['FOOD', 'MEDICATION', 'ENVIRONMENTAL', 'INSECT', 'LATEX', 'OTHER']).optional(),
   severity: AllergySeverityEnum.optional(),
   symptoms: z.string().max(2000).optional(),
   treatment: z.string().max(2000).optional(),
@@ -164,7 +164,7 @@ export type AllergyUpdateFormData = z.infer<typeof allergyUpdateSchema>;
  */
 export const allergySearchSchema = z.object({
   studentId: z.string().uuid().optional(),
-  allergyType: z.array(z.nativeEnum(AllergyType)).optional(),
+  allergyType: z.array(z.enum(['FOOD', 'MEDICATION', 'ENVIRONMENTAL', 'INSECT', 'LATEX', 'OTHER'])).optional(),
   severity: z.array(AllergySeverityEnum).optional(),
   active: z.boolean().optional(),
   verified: z.boolean().optional(),

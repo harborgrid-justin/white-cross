@@ -56,7 +56,7 @@ export const metadata: Metadata = {
 /**
  * Force dynamic rendering for real-time PO matching and validation.
  */
-export const dynamic = 'force-dynamic';
+
 
 /**
  * Stock Receiving Page Component

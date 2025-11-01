@@ -16,8 +16,7 @@ export const metadata: Metadata = {
   description: 'View resolved incidents',
 };
 
-// Force dynamic rendering due to auth requirements
-export const dynamic = 'force-dynamic';
+
 
 export default async function ResolvedIncidentsPage() {
   const result = await listIncidents({ status: 'RESOLVED' });

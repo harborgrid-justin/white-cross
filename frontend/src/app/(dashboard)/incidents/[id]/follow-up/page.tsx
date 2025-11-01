@@ -117,8 +117,7 @@ export const metadata: Metadata = {
   description: 'View and manage follow-up actions',
 };
 
-// Force dynamic rendering due to auth requirements and real-time action status
-export const dynamic = 'force-dynamic';
+
 
 /**
  * Follow-Up Actions List Component

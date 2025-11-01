@@ -279,4 +279,55 @@ export class MedicationService {
     this.logger.log(`Activated medication: ${id}`);
     return medication;
   }
+
+  /**
+   * Get medication statistics
+   *
+   * Retrieves aggregated statistics about medications across the system.
+   * Includes counts by active status, total medications, and other metrics.
+   *
+   * @returns Medication statistics object
+   */
+  async getMedicationStats(): Promise<any> {
+    this.logger.log('Getting medication statistics');
+
+    const { medications, total } = await this.medicationRepository.findAll({
+      page: 1,
+      limit: 999999, // Get all medications for stats
+    });
+
+    // Calculate statistics
+    const activeMedications = medications.filter(
+      (med) => med.isActive === true,
+    ).length;
+
+    const inactiveMedications = medications.filter(
+      (med) => med.isActive === false,
+    ).length;
+
+    // Count by route
+    const routeCounts = medications.reduce(
+      (acc, med) => {
+        acc[med.route] = (acc[med.route] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+
+    // Count medications with end dates
+    const withEndDate = medications.filter((med) => med.endDate).length;
+    const withoutEndDate = total - withEndDate;
+
+    const stats = {
+      total,
+      active: activeMedications,
+      inactive: inactiveMedications,
+      byRoute: routeCounts,
+      withEndDate,
+      withoutEndDate,
+    };
+
+    this.logger.log(`Medication statistics: ${JSON.stringify(stats)}`);
+    return stats;
+  }
 }

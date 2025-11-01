@@ -18,8 +18,7 @@ export const metadata: Metadata = {
   description: 'Submit prescription refill request'
 };
 
-// Force dynamic rendering due to auth requirements
-export const dynamic = 'force-dynamic';
+
 
 interface RefillRequestPageProps {
   params: {
