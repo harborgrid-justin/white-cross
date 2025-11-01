@@ -64,6 +64,99 @@ export class HealthRecordController {
   // ==================== CRUD Endpoints ====================
 
   /**
+   * Get all health records with optional filtering and pagination
+   */
+  @Get()
+  @ApiOperation({
+    summary: 'Get all health records',
+    description:
+      'Retrieves all health records across all students with optional filtering and pagination.',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Page number for pagination',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Number of records per page',
+    example: 20,
+  })
+  @ApiQuery({
+    name: 'type',
+    required: false,
+    description: 'Filter by record type',
+    example: 'VACCINATION',
+  })
+  @ApiQuery({
+    name: 'studentId',
+    required: false,
+    description: 'Filter by student ID',
+    format: 'uuid',
+  })
+  @ApiQuery({
+    name: 'dateFrom',
+    required: false,
+    description: 'Filter records from this date (ISO string)',
+    example: '2024-01-01T00:00:00.000Z',
+  })
+  @ApiQuery({
+    name: 'dateTo',
+    required: false,
+    description: 'Filter records to this date (ISO string)',
+    example: '2024-12-31T23:59:59.999Z',
+  })
+  @ApiQuery({
+    name: 'provider',
+    required: false,
+    description: 'Filter by provider name',
+    example: 'Dr. Smith',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Health records retrieved successfully',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
+  })
+  async findAll(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('type') type?: string,
+    @Query('studentId') studentId?: string,
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+    @Query('provider') provider?: string,
+    @Req() req?: HealthRecordRequest,
+  ) {
+    const filters: any = {};
+    
+    if (type) filters.type = type;
+    if (studentId) filters.studentId = studentId;
+    if (provider) filters.provider = provider;
+    if (dateFrom) filters.dateFrom = new Date(dateFrom);
+    if (dateTo) filters.dateTo = new Date(dateTo);
+
+    const result = await this.healthRecordService.getAllHealthRecords(
+      page || 1,
+      limit || 20,
+      filters,
+    );
+
+    // Return in the format expected by frontend: { data: [...], meta: {...} }
+    return {
+      data: result.records,
+      meta: {
+        pagination: result.pagination,
+        filters,
+      },
+    };
+  }
+
+  /**
    * Create a new health record
    */
   @Post()
@@ -160,8 +253,15 @@ export class HealthRecordController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Req() req: HealthRecordRequest,
   ) {
-    // Service method needs to be added
-    return { message: 'Get by ID - pending service implementation', id };
+    const record = await this.healthRecordService.getHealthRecordById(id);
+    
+    return {
+      data: record,
+      meta: {
+        recordId: id,
+        timestamp: new Date().toISOString(),
+      },
+    };
   }
 
   /**

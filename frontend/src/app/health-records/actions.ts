@@ -255,21 +255,22 @@ export async function getHealthRecordsAction(studentId?: string, recordType?: st
       throw new Error('Authentication required. Please log in.');
     }
 
-    // Backend uses /health-record/student/:studentId endpoint (singular, not plural)
+    // Backend uses different endpoints based on whether studentId is provided
     let url: string;
     if (studentId) {
+      // Get records for a specific student
       url = `${BACKEND_URL}/health-record/student/${studentId}`;
       // Add recordType as query param if provided
       if (recordType) {
         url += `?recordType=${recordType}`;
       }
     } else {
-      // If no studentId, we can't fetch records (backend requires it)
-      console.warn('[Health Records] No studentId provided, returning empty results');
-      return {
-        success: true,
-        data: []
-      };
+      // Get all health records across all students
+      url = `${BACKEND_URL}/health-record`;
+      // Add recordType as query param if provided
+      if (recordType) {
+        url += `?type=${recordType}`;
+      }
     }
 
     console.log('[Health Records] Fetching from:', url);
@@ -313,9 +314,11 @@ export async function getHealthRecordsAction(studentId?: string, recordType?: st
 
     console.log('[Health Records] Successfully fetched records:', result.data?.length || result?.length || 0);
 
+    // Backend returns: { data: HealthRecord[], meta: {...} }
+    // Extract the health records array from result.data
     return {
       success: true,
-      data: result.data || result
+      data: result.data || []
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to fetch health records';

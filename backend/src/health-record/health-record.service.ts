@@ -1054,6 +1054,73 @@ export class HealthRecordService {
   }
 
   /**
+   * Get all health records with optional filtering and pagination
+   * @param page - Page number (default: 1)
+   * @param limit - Records per page (default: 20)
+   * @param filters - Optional filtering criteria
+   * @returns Paginated health records across all students
+   */
+  async getAllHealthRecords(
+    page: number = 1,
+    limit: number = 20,
+    filters: {
+      type?: string;
+      dateFrom?: Date;
+      dateTo?: Date;
+      provider?: string;
+      studentId?: string;
+    } = {},
+  ): Promise<PaginatedHealthRecords<HealthRecord>> {
+    const offset = (page - 1) * limit;
+
+    const whereClause: any = {};
+
+    // Apply filters
+    if (filters.type) {
+      whereClause.recordType = filters.type;
+    }
+    if (filters.studentId) {
+      whereClause.studentId = filters.studentId;
+    }
+    if (filters.dateFrom || filters.dateTo) {
+      whereClause.recordDate = {};
+      if (filters.dateFrom) {
+        whereClause.recordDate[Op.gte] = filters.dateFrom;
+      }
+      if (filters.dateTo) {
+        whereClause.recordDate[Op.lte] = filters.dateTo;
+      }
+    }
+    if (filters.provider) {
+      whereClause.provider = { [Op.iLike]: `%${filters.provider}%` };
+    }
+
+    // Execute query with pagination
+    const { rows: records, count: total } = await this.healthRecordModel.findAndCountAll({
+      where: whereClause,
+      include: [{ model: this.studentModel, as: 'student' }],
+      order: [['recordDate', 'DESC']],
+      limit,
+      offset,
+    });
+
+    // PHI Access Audit Log
+    this.logger.log(
+      `PHI Access: All health records retrieved, count: ${records.length}, filters: ${JSON.stringify(filters)}`,
+    );
+
+    return {
+      records,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  /**
    * Get health record statistics
    * @returns System-wide health record statistics
    */
@@ -1111,6 +1178,28 @@ export class HealthRecordService {
       where: { studentId },
       include: [{ model: this.studentModel, as: 'student' }],
     });
+  }
+
+  /**
+   * Get health record by its ID
+   * @param id - Health record identifier
+   * @returns Health record or null if not found
+   */
+  async getHealthRecordById(id: string): Promise<HealthRecord | null> {
+    const record = await this.healthRecordModel.findByPk(id, {
+      include: [{ model: this.studentModel, as: 'student' }],
+    });
+
+    if (!record) {
+      throw new NotFoundException(`Health record with ID ${id} not found`);
+    }
+
+    // PHI Access Audit Log
+    this.logger.log(
+      `PHI Access: Health record ${id} retrieved for student ${record.student?.firstName} ${record.student?.lastName}`,
+    );
+
+    return record;
   }
 
   /**
