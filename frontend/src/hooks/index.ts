@@ -148,17 +148,37 @@ export {
   useSortState
 } from './core/useRouteState';
 
+export { useRouteState as useRouteStateAlt } from './useRouteState';
+
 // ============================================================================
 // UI/UX HOOKS
 // ============================================================================
 
 export { default as useToast } from './ui/useToast';
+export { useToast as useToastAlt, type ToastProps } from './useToast';
 export * from './ui/useMedicationToast';
 
 // ============================================================================
 // SHARED UTILITY HOOKS
 // ============================================================================
 
+// Permission & Authorization
+export { usePermissions, type Permission } from './usePermissions';
+
+// Student Utilities
+export { useStudentAllergies, type StudentAllergy } from './useStudentAllergies';
+export { useStudentPhoto, type StudentPhoto } from './useStudentPhoto';
+
+// Optimistic Updates
+export { useOptimisticStudents } from './useOptimisticStudents';
+
+// Offline Queue
+export { useOfflineQueue as useOfflineQueueAlt, type QueuedRequest } from './useOfflineQueue';
+
+// Query Hooks
+export * from './queries';
+
+// API & Error Handling
 export {
   useApiError,
   type EnterpriseApiError,

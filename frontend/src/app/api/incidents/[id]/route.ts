@@ -78,8 +78,8 @@ export const PUT = withAuth(
         });
 
         // Revalidate cache
-        revalidateTag('incidents', {});
-        revalidateTag(`incident-${id}`, {});
+        revalidateTag('incidents');
+        revalidateTag(`incident-${id}`);
       }
 
       return NextResponse.json(data, { status: response.status });
@@ -120,8 +120,8 @@ export const DELETE = withAuth(
         });
 
         // Revalidate cache
-        revalidateTag('incidents', {});
-        revalidateTag(`incident-${id}`, {});
+        revalidateTag('incidents');
+        revalidateTag(`incident-${id}`);
       }
 
       return NextResponse.json(data || { success: true }, { status: response.status });

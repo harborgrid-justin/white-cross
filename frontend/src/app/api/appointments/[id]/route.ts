@@ -62,8 +62,8 @@ export const PUT = withAuth(
           details: 'Appointment record updated'
         });
 
-        revalidateTag('appointments', {});
-        revalidateTag(`appointment-${id}`, {});
+        revalidateTag('appointments');
+        revalidateTag(`appointment-${id}`);
       }
 
       return NextResponse.json(data, { status: response.status });
@@ -93,8 +93,8 @@ export const DELETE = withAuth(
           details: 'Appointment record deleted'
         });
 
-        revalidateTag('appointments', {});
-        revalidateTag(`appointment-${id}`, {});
+        revalidateTag('appointments');
+        revalidateTag(`appointment-${id}`);
       }
 
       return NextResponse.json(data || { success: true }, { status: response.status });

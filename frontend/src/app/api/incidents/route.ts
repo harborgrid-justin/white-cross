@@ -68,7 +68,7 @@ export const POST = withAuth(async (request: NextRequest, context, auth) => {
       });
 
       // Revalidate cache
-      revalidateTag('incidents', {});
+      revalidateTag('incidents');
     }
 
     return NextResponse.json(data, { status: response.status });

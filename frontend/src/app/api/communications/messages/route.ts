@@ -49,7 +49,7 @@ export const POST = withAuth(async (request: NextRequest, context, auth) => {
         details: 'Message sent'
       });
 
-      revalidateTag('messages', {});
+      revalidateTag('messages');
     }
 
     return NextResponse.json(data, { status: response.status });
