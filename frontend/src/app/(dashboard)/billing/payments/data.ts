@@ -15,7 +15,8 @@
  * @since 1.0.0
  */
 
-import { billingApi, type PaymentRecord, type PaymentFilters } from '@/services/api';
+import { apiActions } from '@/lib/api';
+import type { PaymentRecord, PaymentFilters } from '@/services/api';
 import { BillingPaymentRecord } from '@/components/pages/Billing/BillingPayment';
 
 /**
@@ -30,7 +31,7 @@ export async function fetchPayments(
   searchTerm?: string
 ): Promise<BillingPaymentRecord[]> {
   try {
-    const response = await billingApi.getPayments(1, 50, filters);
+    const response = await apiActions.billing.getPayments(1, 50, filters);
     
     // Convert API PaymentRecord to component BillingPaymentRecord format
     const convertedPayments: BillingPaymentRecord[] = response.data.map((payment: PaymentRecord) => ({
@@ -86,7 +87,7 @@ export async function processPaymentRefund(
   reason: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    await billingApi.processRefund({
+    await apiActions.billing.processRefund({
       paymentId,
       amount,
       reason
@@ -114,7 +115,7 @@ export async function voidPayment(
   reason: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    await billingApi.voidPayment(paymentId, reason);
+    await apiActions.billing.voidPayment(paymentId, reason);
     
     return { success: true };
   } catch (error) {

@@ -21,7 +21,7 @@
  */
 
 import { useMutation, useQueryClient, UseMutationOptions } from '@tanstack/react-query';
-import { incidentReportsApi } from '@/services/modules/incidentReportsApi';
+import { apiActions } from '@/lib/api';
 import type {
   IncidentReport,
   WitnessStatement,
@@ -91,7 +91,7 @@ export function useOptimisticIncidentCreate(
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateIncidentReportRequest) => incidentReportsApi.create(data),
+    mutationFn: (data: CreateIncidentReportRequest) => apiActions.incidents.create(data),
 
     onMutate: async (newIncident) => {
       // Cancel outgoing refetches

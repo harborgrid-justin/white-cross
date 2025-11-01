@@ -14,7 +14,7 @@
  * @since 1.0.0
  */
 
-import { reportsApi } from '@/services/modules/reportsApi';
+import { apiActions } from '@/lib/api';
 import { type ComplianceReport } from '@/types/reports';
 
 /**
@@ -50,7 +50,7 @@ export async function fetchComplianceData(filters: {
       endDate
     };
     
-    const response = await reportsApi.getComplianceReport(apiFilters);
+    const response = await apiActions.reports.getComplianceReport(apiFilters);
     return response;
   } catch (error) {
     console.error('Error fetching compliance data:', error);

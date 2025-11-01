@@ -30,7 +30,7 @@ import {
   type UseMutationResult,
   type QueryKey
 } from '@tanstack/react-query';
-import { studentsApi } from '@/services';
+import { apiActions } from '@/lib/api';
 import type {
   Student,
   StudentFilters,
@@ -276,7 +276,7 @@ export const useStudents = (filters: StudentFilters = {}): UseStudentsReturn => 
   // TanStack Query for server state
   const queryResult = useQuery({
     queryKey: studentKeys.list(filters),
-    queryFn: () => studentsApi.getAll(filters),
+    queryFn: () => apiActions.students.getAll(filters),
     staleTime: CACHE_CONFIG.LIST_STALE_TIME,
     gcTime: CACHE_CONFIG.DEFAULT_CACHE_TIME,
     // Keep previous data while fetching new page for better UX
@@ -430,7 +430,7 @@ export const useStudentDetail = (
 ): UseStudentDetailReturn => {
   const queryResult = useQuery({
     queryKey: studentKeys.detail(studentId || ''),
-    queryFn: () => studentsApi.getById(studentId!),
+    queryFn: () => apiActions.students.getById(studentId!),
     enabled: !!studentId && (options?.enabled !== false),
     staleTime: CACHE_CONFIG.DETAIL_STALE_TIME,
     gcTime: CACHE_CONFIG.DEFAULT_CACHE_TIME,
@@ -476,7 +476,7 @@ export const useStudentSearch = (
 
   const queryResult = useQuery({
     queryKey: studentKeys.search(trimmedQuery),
-    queryFn: () => studentsApi.search(trimmedQuery),
+    queryFn: () => apiActions.students.search(trimmedQuery),
     enabled: trimmedQuery.length > 0 && (options?.enabled !== false),
     staleTime: CACHE_CONFIG.SEARCH_STALE_TIME,
     gcTime: CACHE_CONFIG.DEFAULT_CACHE_TIME,
@@ -505,7 +505,7 @@ export const useStudentSearch = (
 export const useAssignedStudents = () => {
   const queryResult = useQuery({
     queryKey: studentKeys.assigned(),
-    queryFn: () => studentsApi.getAssignedStudents(),
+    queryFn: () => apiActions.students.getAssignedStudents(),
     staleTime: CACHE_CONFIG.LIST_STALE_TIME,
     gcTime: CACHE_CONFIG.DEFAULT_CACHE_TIME,
   });
@@ -595,7 +595,7 @@ export const useCreateStudent = () => {
   const dispatch = useAppDispatch();
 
   return useMutation({
-    mutationFn: (data: CreateStudentData) => studentsApi.create(data),
+    mutationFn: (data: CreateStudentData) => apiActions.students.create(data),
     onSuccess: (newStudent) => {
       // Invalidate all student list queries to refetch with new student
       queryClient.invalidateQueries({ queryKey: studentKeys.lists() });
@@ -644,7 +644,7 @@ export const useUpdateStudent = () => {
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateStudentData }) =>
-      studentsApi.update(id, data),
+      apiActions.students.update(id, data),
     onSuccess: (updatedStudent, variables) => {
       // Invalidate the specific student detail query
       queryClient.invalidateQueries({ queryKey: studentKeys.detail(variables.id) });
@@ -696,7 +696,7 @@ export const useDeleteStudent = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => studentsApi.delete(id),
+    mutationFn: (id: string) => apiActions.students.delete(id),
     onSuccess: (_, deletedId) => {
       // Remove from detail cache
       queryClient.removeQueries({ queryKey: studentKeys.detail(deletedId) });
@@ -743,7 +743,7 @@ export const useBulkImportStudents = () => {
     mutationFn: async (students: CreateStudentData[]) => {
       // Since bulkImport might not exist, we'll process them individually
       const results = await Promise.allSettled(
-        students.map(student => studentsApi.create(student))
+        students.map(student => apiActions.students.create(student))
       );
       
       const successful = results.filter(r => r.status === 'fulfilled').length;
@@ -784,7 +784,7 @@ export const useBulkImportStudents = () => {
 export const useExportStudents = () => {
   return useMutation({
     mutationFn: (studentId: string) =>
-      studentsApi.exportStudentData(studentId),
+      apiActions.students.exportStudentData(studentId),
     onError: (error: Error) => {
       console.error('Export failed:', error);
     },
@@ -866,7 +866,7 @@ export const useStudentPrefetch = () => {
     prefetchStudent: useCallback(async (studentId: string) => {
       await queryClient.prefetchQuery({
         queryKey: studentKeys.detail(studentId),
-        queryFn: () => studentsApi.getById(studentId),
+        queryFn: () => apiActions.students.getById(studentId),
         staleTime: CACHE_CONFIG.DETAIL_STALE_TIME,
       });
     }, [queryClient]),
@@ -875,7 +875,7 @@ export const useStudentPrefetch = () => {
     prefetchStudents: useCallback(async (filters: StudentFilters = {}) => {
       await queryClient.prefetchQuery({
         queryKey: studentKeys.list(filters),
-        queryFn: () => studentsApi.getAll(filters),
+        queryFn: () => apiActions.students.getAll(filters),
         staleTime: CACHE_CONFIG.LIST_STALE_TIME,
       });
     }, [queryClient]),

@@ -15,7 +15,7 @@
  * @since 1.0.0
  */
 
-import { medicationsApi } from '@/services/modules/medicationsApi';
+import { apiActions } from '@/lib/api';
 import type { 
   Medication, 
   MedicationStats,
@@ -36,7 +36,7 @@ export async function fetchMedications(options: {
   type?: string;
 } = {}): Promise<MedicationsResponse> {
   try {
-    const response = await medicationsApi.getAll({
+    const response = await apiActions.medications.getAll({
       page: options.page || 1,
       limit: options.limit || 50,
       search: options.search,
@@ -66,7 +66,7 @@ export async function fetchMedications(options: {
  */
 export async function fetchMedicationStats(): Promise<MedicationStats> {
   try {
-    const stats = await medicationsApi.getStats();
+    const stats = await apiActions.medications.getStats();
     return stats;
   } catch (error) {
     console.error('Error fetching medication stats:', error);

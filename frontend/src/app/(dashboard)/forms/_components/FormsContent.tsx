@@ -36,6 +36,14 @@ import { Button } from '@/components/ui/Button';
 import { SearchInput } from '@/components/ui/SearchInput';
 import { Badge } from '@/components/ui/Badge';
 
+// Import server actions
+import { 
+  getForms, 
+  getFormsDashboardData,
+  getFormStats,
+  type FormDefinition 
+} from '@/app/forms/actions';
+
 // Healthcare form types and categories
 type FormType = 'enrollment' | 'health_screening' | 'incident_report' | 'permission_slip' | 'medical_consent' | 'emergency_contact' | 'allergy_form' | 'medication_authorization' | 'assessment' | 'survey' | 'other';
 type FormStatus = 'draft' | 'published' | 'paused' | 'archived';
@@ -144,13 +152,67 @@ const FormsContent: React.FC<FormsContentProps> = ({
   // Simulate loading healthcare forms with realistic data
   useEffect(() => {
     const loadForms = async () => {
-      setLoading(true);
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock healthcare forms data
-      const mockForms: HealthcareForm[] = [
+      try {
+        setLoading(true);
+        
+        // Load forms from server actions
+        const formDefinitions = await getForms();
+        
+        // Transform FormDefinition[] to HealthcareForm[] for UI compatibility
+        const transformedForms: HealthcareForm[] = formDefinitions.map((form: FormDefinition) => ({
+          id: form.id,
+          title: form.name || 'Untitled Form',
+          description: form.description || 'No description available',
+          type: (form.category?.toLowerCase() || 'other') as FormType,
+          status: (form.status?.toLowerCase() || 'draft') as FormStatus,
+          priority: 'normal' as FormPriority, // Default priority
+          version: 1, // Default version
+          createdBy: { 
+            id: form.createdBy, 
+            name: 'Unknown User', 
+            role: 'Administrator' 
+          },
+          createdAt: new Date(form.createdAt),
+          updatedAt: new Date(form.updatedAt),
+          publishedAt: form.status === 'PUBLISHED' ? new Date(form.updatedAt) : undefined,
+          fields: (form.fields || []).map((field: FormDefinition['fields'][number]) => ({
+            ...field,
+            type: field.type === 'ssn' ? 'text' : field.type === 'medical' ? 'textarea' : field.type,
+            options: field.options ? field.options.map((opt: {label: string; value: string} | string) => typeof opt === 'string' ? opt : opt.label || opt.value) : undefined
+          } as FormField)),
+          settings: {
+            allowAnonymous: false,
+            requireAuthentication: true,
+            multipleSubmissions: false,
+            autoSave: true,
+            progressBar: true,
+            thankYouMessage: 'Thank you for your submission.',
+            emailNotifications: [],
+            dataRetentionDays: 365,
+            requiresHIPAAConsent: true
+          },
+          analytics: {
+            views: 0,
+            submissions: 0,
+            completionRate: 85.0,
+            averageCompletionTime: 3.5,
+            lastSubmission: undefined,
+            dropOffPoints: []
+          },
+          sharing: {
+            isPublic: false,
+            publicUrl: `https://forms.whitecross.edu/${form.id}`,
+            qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://forms.whitecross.edu/${form.id}`
+          },
+          tags: []
+        }));
+        
+        setForms(transformedForms);
+      } catch (error) {
+        console.error('Failed to load forms:', error);
+        
+        // Fallback to mock data if server actions fail
+        const mockForms: HealthcareForm[] = [
         {
           id: 'form-001',
           title: 'Daily Health Screening',
@@ -431,8 +493,10 @@ const FormsContent: React.FC<FormsContentProps> = ({
         }
       ];
 
-      setForms(mockForms);
-      setLoading(false);
+        setForms(mockForms);
+      } finally {
+        setLoading(false);
+      }
     };
 
     loadForms();

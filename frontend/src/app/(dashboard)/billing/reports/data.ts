@@ -14,7 +14,8 @@
  * @since 1.0.0
  */
 
-import { billingApi, type BillingAnalytics } from '@/services/api';
+import { apiActions } from '@/lib/api';
+import type { BillingAnalytics } from '@/services/api';
 
 /**
  * Report time period types
@@ -109,7 +110,7 @@ export async function fetchBillingAnalytics(
       return null;
     }
     
-    const billingAnalytics = await billingApi.getBillingAnalytics(startDate, endDate);
+    const billingAnalytics = await apiActions.billing.getBillingAnalytics(startDate, endDate);
     return billingAnalytics;
   } catch (error) {
     console.error('Error fetching billing analytics:', error);
@@ -135,7 +136,7 @@ export async function fetchPaymentAnalytics(
       return null;
     }
     
-    const paymentAnalytics = await billingApi.getPaymentAnalytics(startDate, endDate);
+    const paymentAnalytics = await apiActions.billing.getPaymentAnalytics(startDate, endDate);
     return paymentAnalytics;
   } catch (error) {
     console.error('Error fetching payment analytics:', error);

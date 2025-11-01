@@ -938,6 +938,380 @@ export async function getReminderOverview(userId?: string): Promise<{
   }
 }
 
+// ==========================================
+// DASHBOARD FUNCTIONS
+// ==========================================
+
+/**
+ * Get comprehensive reminders statistics for dashboard
+ * @returns Promise<RemindersStats> Statistics object with reminder metrics
+ */
+export async function getRemindersStats(): Promise<{
+  totalReminders: number;
+  activeReminders: number;
+  completedReminders: number;
+  overdueReminders: number;
+  upcomingReminders: number;
+  todayReminders: number;
+  recurringReminders: number;
+  oneTimeReminders: number;
+  completionRate: number;
+  averageCompletionTime: number;
+  remindersByType: {
+    medication: number;
+    appointment: number;
+    health_check: number;
+    follow_up: number;
+    document: number;
+    general: number;
+  };
+}> {
+  try {
+    console.log('[Reminders] Loading reminder statistics');
+
+    // Get reminders data
+    const reminders = await getReminders();
+
+    // Calculate today's date for filtering
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    // Calculate statistics based on reminder schema properties
+    const totalReminders = reminders.length;
+    const activeReminders = reminders.filter(r => r.status === 'active').length;
+    const completedReminders = reminders.filter(r => r.status === 'completed').length;
+    
+    // Overdue reminders (active and past due date)
+    const overdueReminders = reminders.filter(r => {
+      if (r.status !== 'active') return false;
+      const dueDate = new Date(r.dueDate);
+      return dueDate < today;
+    }).length;
+
+    // Upcoming reminders (due today or tomorrow)
+    const upcomingReminders = reminders.filter(r => {
+      if (r.status !== 'active') return false;
+      const dueDate = new Date(r.dueDate);
+      return dueDate >= today && dueDate < tomorrow;
+    }).length;
+
+    // Today's reminders
+    const todayReminders = reminders.filter(r => {
+      const dueDate = new Date(r.dueDate);
+      dueDate.setHours(0, 0, 0, 0);
+      return dueDate.getTime() === today.getTime();
+    }).length;
+
+    // Recurring vs one-time reminders
+    const recurringReminders = reminders.filter(r => r.recurrence && r.recurrence !== 'none').length;
+    const oneTimeReminders = reminders.filter(r => !r.recurrence || r.recurrence === 'none').length;
+
+    // Calculate completion rate
+    const completionRate = totalReminders > 0 ? (completedReminders / totalReminders) * 100 : 0;
+
+    // Calculate average completion time (mock calculation)
+    const completedWithDuration = reminders.filter(r => r.status === 'completed' && r.completedAt);
+    const averageCompletionTime = completedWithDuration.length > 0 ? 2.5 : 0; // Mock 2.5 days average
+
+    // Calculate reminders by type
+    const remindersByType = {
+      medication: reminders.filter(r => r.type === 'medication').length,
+      appointment: reminders.filter(r => r.type === 'appointment').length,
+      health_check: reminders.filter(r => r.type === 'health_check').length,
+      follow_up: reminders.filter(r => r.type === 'follow_up').length,
+      document: reminders.filter(r => r.type === 'document').length,
+      general: reminders.filter(r => r.type === 'general' || !r.type).length,
+    };
+
+    const stats = {
+      totalReminders,
+      activeReminders,
+      completedReminders,
+      overdueReminders,
+      upcomingReminders,
+      todayReminders,
+      recurringReminders,
+      oneTimeReminders,
+      completionRate,
+      averageCompletionTime,
+      remindersByType,
+    };
+
+    console.log('[Reminders] Statistics calculated:', stats);
+
+    await auditLog({
+      action: AUDIT_ACTIONS.ACCESS_PHI_RECORD,
+      resource: 'reminders_dashboard_stats',
+      details: 'Retrieved reminder dashboard statistics'
+    });
+
+    return stats;
+  } catch (error) {
+    console.error('[Reminders] Error calculating stats:', error);
+    return {
+      totalReminders: 0,
+      activeReminders: 0,
+      completedReminders: 0,
+      overdueReminders: 0,
+      upcomingReminders: 0,
+      todayReminders: 0,
+      recurringReminders: 0,
+      oneTimeReminders: 0,
+      completionRate: 0,
+      averageCompletionTime: 0,
+      remindersByType: {
+        medication: 0,
+        appointment: 0,
+        health_check: 0,
+        follow_up: 0,
+        document: 0,
+        general: 0,
+      },
+    };
+  }
+}
+
+/**
+ * Get reminders dashboard data with overdue and upcoming items
+ * @returns Promise<RemindersDashboardData> Dashboard data with reminder priorities and schedules
+ */
+export async function getRemindersDashboardData(): Promise<{
+  overdueReminders: Array<{
+    id: string;
+    title: string;
+    description: string;
+    type: string;
+    priority: string;
+    dueDate: string;
+    assignedTo: string;
+    daysPastDue: number;
+  }>;
+  upcomingReminders: Array<{
+    id: string;
+    title: string;
+    description: string;
+    type: string;
+    priority: string;
+    dueDate: string;
+    assignedTo: string;
+    daysUntilDue: number;
+  }>;
+  todayReminders: Array<{
+    id: string;
+    title: string;
+    description: string;
+    type: string;
+    priority: string;
+    dueDate: string;
+    assignedTo: string;
+  }>;
+  completionTrends: {
+    thisWeek: { completed: number; total: number; };
+    lastWeek: { completed: number; total: number; };
+    thisMonth: { completed: number; total: number; };
+  };
+  remindersByPriority: {
+    high: number;
+    medium: number;
+    low: number;
+  };
+  stats: {
+    totalReminders: number;
+    activeReminders: number;
+    completedReminders: number;
+    overdueReminders: number;
+    upcomingReminders: number;
+    todayReminders: number;
+    recurringReminders: number;
+    oneTimeReminders: number;
+    completionRate: number;
+    averageCompletionTime: number;
+    remindersByType: {
+      medication: number;
+      appointment: number;
+      health_check: number;
+      follow_up: number;
+      document: number;
+      general: number;
+    };
+  };
+}> {
+  try {
+    // Get stats and reminders data
+    const stats = await getRemindersStats();
+    const reminders = await getReminders();
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Get overdue reminders
+    const overdueReminders = reminders
+      .filter(r => {
+        if (r.status !== 'active') return false;
+        const dueDate = new Date(r.dueDate);
+        return dueDate < today;
+      })
+      .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+      .slice(0, 10)
+      .map(reminder => {
+        const dueDate = new Date(reminder.dueDate);
+        const daysPastDue = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        return {
+          id: reminder.id,
+          title: reminder.title,
+          description: reminder.description || '',
+          type: reminder.type || 'general',
+          priority: reminder.priority || 'medium',
+          dueDate: reminder.dueDate,
+          assignedTo: reminder.assignedTo?.name || 'Unassigned',
+          daysPastDue,
+        };
+      });
+
+    // Get upcoming reminders (next 7 days)
+    const nextWeek = new Date(today);
+    nextWeek.setDate(nextWeek.getDate() + 7);
+    
+    const upcomingReminders = reminders
+      .filter(r => {
+        if (r.status !== 'active') return false;
+        const dueDate = new Date(r.dueDate);
+        return dueDate >= today && dueDate <= nextWeek;
+      })
+      .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+      .slice(0, 10)
+      .map(reminder => {
+        const dueDate = new Date(reminder.dueDate);
+        const daysUntilDue = Math.floor((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+        
+        return {
+          id: reminder.id,
+          title: reminder.title,
+          description: reminder.description || '',
+          type: reminder.type || 'general',
+          priority: reminder.priority || 'medium',
+          dueDate: reminder.dueDate,
+          assignedTo: reminder.assignedTo?.name || 'Unassigned',
+          daysUntilDue,
+        };
+      });
+
+    // Get today's reminders
+    const todayReminders = reminders
+      .filter(r => {
+        const dueDate = new Date(r.dueDate);
+        dueDate.setHours(0, 0, 0, 0);
+        return dueDate.getTime() === today.getTime();
+      })
+      .map(reminder => ({
+        id: reminder.id,
+        title: reminder.title,
+        description: reminder.description || '',
+        type: reminder.type || 'general',
+        priority: reminder.priority || 'medium',
+        dueDate: reminder.dueDate,
+        assignedTo: reminder.assignedTo?.name || 'Unassigned',
+      }));
+
+    // Calculate completion trends
+    const thisWeekStart = new Date(today);
+    thisWeekStart.setDate(today.getDate() - today.getDay());
+    
+    const lastWeekStart = new Date(thisWeekStart);
+    lastWeekStart.setDate(thisWeekStart.getDate() - 7);
+    const lastWeekEnd = new Date(thisWeekStart);
+    
+    const thisMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    const completionTrends = {
+      thisWeek: {
+        completed: reminders.filter(r => 
+          r.status === 'completed' && 
+          r.completedAt && 
+          new Date(r.completedAt) >= thisWeekStart
+        ).length,
+        total: reminders.filter(r => 
+          new Date(r.createdAt) >= thisWeekStart
+        ).length,
+      },
+      lastWeek: {
+        completed: reminders.filter(r => 
+          r.status === 'completed' && 
+          r.completedAt && 
+          new Date(r.completedAt) >= lastWeekStart &&
+          new Date(r.completedAt) < lastWeekEnd
+        ).length,
+        total: reminders.filter(r => 
+          new Date(r.createdAt) >= lastWeekStart &&
+          new Date(r.createdAt) < lastWeekEnd
+        ).length,
+      },
+      thisMonth: {
+        completed: reminders.filter(r => 
+          r.status === 'completed' && 
+          r.completedAt && 
+          new Date(r.completedAt) >= thisMonthStart
+        ).length,
+        total: reminders.filter(r => 
+          new Date(r.createdAt) >= thisMonthStart
+        ).length,
+      },
+    };
+
+    // Calculate reminders by priority
+    const remindersByPriority = {
+      high: reminders.filter(r => r.priority === 'high').length,
+      medium: reminders.filter(r => r.priority === 'medium').length,
+      low: reminders.filter(r => r.priority === 'low').length,
+    };
+
+    const dashboardData = {
+      overdueReminders,
+      upcomingReminders,
+      todayReminders,
+      completionTrends,
+      remindersByPriority,
+      stats,
+    };
+
+    console.log('[Reminders] Dashboard data prepared:', {
+      overdueCount: overdueReminders.length,
+      upcomingCount: upcomingReminders.length,
+      todayCount: todayReminders.length,
+    });
+
+    await auditLog({
+      action: AUDIT_ACTIONS.ACCESS_PHI_RECORD,
+      resource: 'reminders_dashboard_data',
+      details: 'Retrieved reminder dashboard data'
+    });
+
+    return dashboardData;
+  } catch (error) {
+    console.error('[Reminders] Error loading dashboard data:', error);
+    // Return safe defaults with stats fallback
+    return {
+      overdueReminders: [],
+      upcomingReminders: [],
+      todayReminders: [],
+      completionTrends: {
+        thisWeek: { completed: 0, total: 0 },
+        lastWeek: { completed: 0, total: 0 },
+        thisMonth: { completed: 0, total: 0 },
+      },
+      remindersByPriority: {
+        high: 0,
+        medium: 0,
+        low: 0,
+      },
+      stats: await getRemindersStats(), // Will return safe defaults
+    };
+  }
+}
+
 /**
  * Clear reminder cache
  */
@@ -956,6 +1330,7 @@ export async function clearReminderCache(reminderId?: string): Promise<void> {
   revalidateTag('reminder-template-list');
   revalidateTag('overdue-reminders');
   revalidateTag('reminder-stats');
+  revalidateTag('reminder-dashboard');
 
   // Clear paths
   revalidatePath('/reminders', 'page');

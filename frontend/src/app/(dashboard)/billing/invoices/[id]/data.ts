@@ -15,7 +15,8 @@
  * @since 1.0.0
  */
 
-import { billingApi, type BillingInvoice as ApiBillingInvoice } from '@/services/api';
+import { apiActions } from '@/lib/api';
+import type { BillingInvoice as ApiBillingInvoice } from '@/services/api';
 import { BillingInvoice } from '@/components/pages/Billing/BillingCard';
 
 /**
@@ -26,7 +27,7 @@ import { BillingInvoice } from '@/components/pages/Billing/BillingCard';
  */
 export async function fetchInvoiceDetail(invoiceId: string): Promise<BillingInvoice | null> {
   try {
-    const apiInvoice = await billingApi.getInvoiceById(invoiceId);
+    const apiInvoice = await apiActions.billing.getInvoiceById(invoiceId);
     
     // Convert API invoice format to component format
     const convertedInvoice: BillingInvoice = {
@@ -83,7 +84,7 @@ export async function fetchInvoiceDetail(invoiceId: string): Promise<BillingInvo
  */
 export async function deleteInvoice(invoiceId: string): Promise<{ success: boolean; error?: string }> {
   try {
-    await billingApi.deleteInvoice(invoiceId);
+    await apiActions.billing.deleteInvoice(invoiceId);
     return { success: true };
   } catch (error) {
     console.error('Error deleting invoice:', error);
@@ -102,7 +103,7 @@ export async function deleteInvoice(invoiceId: string): Promise<{ success: boole
  */
 export async function downloadInvoicePDF(invoiceId: string): Promise<{ blob?: Blob; success: boolean; error?: string }> {
   try {
-    const pdfBlob = await billingApi.downloadInvoicePDF(invoiceId);
+    const pdfBlob = await apiActions.billing.downloadInvoicePDF(invoiceId);
     return { blob: pdfBlob, success: true };
   } catch (error) {
     console.error('Error downloading invoice PDF:', error);
@@ -122,7 +123,7 @@ export async function downloadInvoicePDF(invoiceId: string): Promise<{ blob?: Bl
  */
 export async function sendInvoice(invoiceId: string, email: string): Promise<{ success: boolean; error?: string }> {
   try {
-    await billingApi.sendInvoice(invoiceId, email);
+    await apiActions.billing.sendInvoice(invoiceId, email);
     return { success: true };
   } catch (error) {
     console.error('Error sending invoice:', error);

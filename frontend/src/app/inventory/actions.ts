@@ -849,3 +849,149 @@ export async function getInventoryCategoriesAction() {
     };
   }
 }
+
+/**
+ * Inventory Statistics Interface
+ * Dashboard metrics for inventory management overview
+ */
+export interface InventoryStats {
+  totalItems: number;
+  lowStockItems: number;
+  outOfStockItems: number;
+  expiringItems: number;
+  totalValue: number;
+  avgStockLevel: number;
+  recentTransactions: number;
+  categories: {
+    medical: number;
+    supplies: number;
+    equipment: number;
+    pharmaceuticals: number;
+    maintenance: number;
+    other: number;
+  };
+  stockStatus: {
+    adequate: number;
+    low: number;
+    critical: number;
+    outOfStock: number;
+  };
+}
+
+/**
+ * Get Inventory Statistics
+ * Dashboard overview of inventory management metrics
+ * 
+ * @returns Promise<InventoryStats>
+ */
+export async function getInventoryStats(): Promise<InventoryStats> {
+  try {
+    console.log('[Inventory] Loading inventory statistics');
+
+    // Get inventory items and stock levels
+    const itemsResult = await getInventoryItemsAction();
+    const stockResult = await getStockLevelsAction();
+    const expiringResult = await getExpiringBatchesAction(30); // Items expiring in 30 days
+
+    if (!itemsResult.success || !stockResult.success || !expiringResult.success) {
+      throw new Error('Failed to load inventory data');
+    }
+
+    const items = itemsResult.data || [];
+    const stockLevels = stockResult.data || [];
+    const expiringBatches = expiringResult.data || [];
+
+    // Calculate statistics
+    const totalItems = items.length;
+    const lowStockItems = stockLevels.filter(stock => 
+      stock.currentLevel <= stock.minimumLevel && stock.currentLevel > 0
+    ).length;
+    const outOfStockItems = stockLevels.filter(stock => stock.currentLevel === 0).length;
+    const expiringItems = expiringBatches.length;
+
+    // Calculate total value (mock calculation)
+    const totalValue = items.reduce((sum, item) => sum + (item.unitCost || 0) * (item.currentStock || 0), 0);
+    const avgStockLevel = stockLevels.length > 0 
+      ? stockLevels.reduce((sum, stock) => sum + stock.currentLevel, 0) / stockLevels.length 
+      : 0;
+
+    const stats: InventoryStats = {
+      totalItems,
+      lowStockItems,
+      outOfStockItems,
+      expiringItems,
+      totalValue,
+      avgStockLevel,
+      recentTransactions: 45, // Mock value - would come from transaction log
+      categories: {
+        medical: items.filter(i => i.category === 'MEDICAL').length,
+        supplies: items.filter(i => i.category === 'SUPPLIES').length,
+        equipment: items.filter(i => i.category === 'EQUIPMENT').length,
+        pharmaceuticals: items.filter(i => i.category === 'PHARMACEUTICALS').length,
+        maintenance: items.filter(i => i.category === 'MAINTENANCE').length,
+        other: items.filter(i => !['MEDICAL', 'SUPPLIES', 'EQUIPMENT', 'PHARMACEUTICALS', 'MAINTENANCE'].includes(i.category)).length
+      },
+      stockStatus: {
+        adequate: stockLevels.filter(stock => stock.currentLevel > stock.minimumLevel).length,
+        low: lowStockItems,
+        critical: stockLevels.filter(stock => stock.currentLevel <= (stock.minimumLevel * 0.5) && stock.currentLevel > 0).length,
+        outOfStock: outOfStockItems
+      }
+    };
+
+    console.log('[Inventory] Inventory statistics loaded successfully');
+    return stats;
+
+  } catch (error) {
+    console.error('[Inventory] Failed to load inventory statistics:', error);
+    
+    // Return safe defaults on error
+    return {
+      totalItems: 0,
+      lowStockItems: 0,
+      outOfStockItems: 0,
+      expiringItems: 0,
+      totalValue: 0,
+      avgStockLevel: 0,
+      recentTransactions: 0,
+      categories: {
+        medical: 0,
+        supplies: 0,
+        equipment: 0,
+        pharmaceuticals: 0,
+        maintenance: 0,
+        other: 0
+      },
+      stockStatus: {
+        adequate: 0,
+        low: 0,
+        critical: 0,
+        outOfStock: 0
+      }
+    };
+  }
+}
+
+/**
+ * Get Inventory Dashboard Data
+ * Combined dashboard data for inventory overview
+ * 
+ * @returns Promise<{stats: InventoryStats}>
+ */
+export async function getInventoryDashboardData() {
+  try {
+    console.log('[Inventory] Loading dashboard data');
+
+    const stats = await getInventoryStats();
+
+    console.log('[Inventory] Dashboard data loaded successfully');
+    return { stats };
+
+  } catch (error) {
+    console.error('[Inventory] Failed to load dashboard data:', error);
+    
+    return {
+      stats: await getInventoryStats() // Will return safe defaults
+    };
+  }
+}

@@ -1,35 +1,162 @@
 /**
- * @fileoverview Theme Slice - UI Theme and Preferences Management
+ * @fileoverview Theme and UI Preferences Redux Slice for White Cross Healthcare Platform
+ *
+ * Manages global UI theme, accessibility preferences, and user interface customizations
+ * for the healthcare platform. Provides comprehensive state management for visual
+ * preferences, accessibility compliance, and responsive design settings.
+ *
+ * **Key Features:**
+ * - Dark/light/system theme modes with automatic system preference detection
+ * - Healthcare-optimized color schemes (blue, teal, purple, green)
+ * - UI density settings for optimal healthcare workflow efficiency
+ * - Comprehensive accessibility preferences (high contrast, reduced motion, font scaling)
+ * - Sidebar and tooltip visibility controls
+ * - Cross-device preference synchronization
+ * - Real-time theme switching without page reload
+ * - SSR-compatible with hydration-safe theme detection
+ *
+ * **HIPAA Compliance:**
+ * - Theme preferences contain NO PHI data - safe for localStorage persistence
+ * - All preferences are user-specific and do not contain patient information
+ * - Theme settings do not affect data security or access controls
+ * - Accessibility preferences support compliance with ADA and Section 508 requirements
+ * - No audit logging required for theme changes (non-PHI preference data)
+ *
+ * **Healthcare UI Considerations:**
+ * - **High Contrast Mode**: Essential for medical professionals working in varied lighting
+ * - **Font Scaling**: Critical for readability of patient data and medication information
+ * - **Reduced Motion**: Important for users with vestibular disorders or motion sensitivity
+ * - **UI Density**: Optimized spacing for efficiency in clinical workflows
+ * - **Color Schemes**: Designed for medical environments with appropriate contrast ratios
+ *
+ * **Accessibility Features:**
+ * - WCAG 2.1 AA compliant color combinations
+ * - Keyboard navigation support indicators
+ * - Screen reader compatibility modes
+ * - Motion reduction for vestibular disorder accommodation
+ * - Font scaling from 80% to 150% for vision accommodation
+ * - High contrast mode with enhanced color separation
+ *
+ * **State Persistence:**
+ * - All preferences persisted to localStorage (non-PHI data)
+ * - Cross-browser tab synchronization via storage events
+ * - Server-side rendering safe with hydration protection
+ * - Preference export/import for user account migration
+ * - Default fallbacks for new users and corrupted preferences
+ *
+ * **Integration:**
+ * - CSS custom properties integration for real-time theme updates
+ * - Tailwind CSS theme configuration synchronization
+ * - Next.js App Router SSR compatibility
+ * - React Query integration for preference caching
+ * - WebSocket integration for cross-device synchronization (future)
+ *
  * @module stores/slices/themeSlice
- * @category Store
+ * @requires @reduxjs/toolkit
+ * @security Non-PHI user preferences, localStorage safe
+ * @compliance ADA and Section 508 accessibility compliance
  *
- * Manages global UI theme and user interface preferences.
- * Persisted to localStorage for consistent experience across sessions.
- *
- * Features:
- * - Dark/light mode toggle
- * - Color scheme preferences
- * - UI density settings
- * - Accessibility preferences
- * - SSR-compatible
- * - Persisted to localStorage (non-PHI)
- *
- * @example
+ * @example Complete theme management
  * ```typescript
  * import { useAppSelector, useAppDispatch } from '@/stores/hooks';
- * import { toggleTheme, setColorScheme } from '@/stores/slices/themeSlice';
+ * import { 
+ *   toggleTheme, 
+ *   setColorScheme, 
+ *   setFontSizeMultiplier,
+ *   toggleHighContrast 
+ * } from '@/stores/slices/themeSlice';
  *
- * function ThemeToggle() {
- *   const { mode } = useAppSelector(state => state.theme);
+ * function ThemeControls() {
+ *   const theme = useAppSelector(selectTheme);
  *   const dispatch = useAppDispatch();
  *
  *   return (
- *     <button onClick={() => dispatch(toggleTheme())}>
- *       {mode === 'dark' ? 'Light Mode' : 'Dark Mode'}
- *     </button>
+ *     <div className="theme-controls">
+ *       <button onClick={() => dispatch(toggleTheme())}>
+ *         {theme.mode === 'dark' ? '☀️ Light' : '🌙 Dark'}
+ *       </button>
+ *       
+ *       <select 
+ *         value={theme.colorScheme} 
+ *         onChange={(e) => dispatch(setColorScheme(e.target.value))}
+ *       >
+ *         <option value="blue">Healthcare Blue</option>
+ *         <option value="teal">Medical Teal</option>
+ *         <option value="purple">Wellness Purple</option>
+ *         <option value="green">Health Green</option>
+ *       </select>
+ *       
+ *       <label>
+ *         Font Size: {Math.round(theme.fontSizeMultiplier * 100)}%
+ *         <input 
+ *           type="range" 
+ *           min="0.8" 
+ *           max="1.5" 
+ *           step="0.1"
+ *           value={theme.fontSizeMultiplier}
+ *           onChange={(e) => dispatch(setFontSizeMultiplier(parseFloat(e.target.value)))}
+ *         />
+ *       </label>
+ *       
+ *       <button 
+ *         onClick={() => dispatch(toggleHighContrast())}
+ *         className={theme.highContrast ? 'active' : ''}
+ *       >
+ *         High Contrast: {theme.highContrast ? 'ON' : 'OFF'}
+ *       </button>
+ *     </div>
  *   );
  * }
  * ```
+ *
+ * @example Accessibility-aware component
+ * ```typescript
+ * function AccessibleComponent() {
+ *   const { reducedMotion, highContrast, fontSizeMultiplier } = useAppSelector(selectTheme);
+ *   
+ *   return (
+ *     <div 
+ *       className={`
+ *         ${reducedMotion ? 'motion-reduce' : 'motion-normal'}
+ *         ${highContrast ? 'high-contrast' : 'normal-contrast'}
+ *       `}
+ *       style={{ 
+ *         fontSize: `${fontSizeMultiplier}rem`,
+ *         transition: reducedMotion ? 'none' : 'all 0.3s ease'
+ *       }}
+ *     >
+ *       Content that respects accessibility preferences
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @example System theme detection with SSR safety
+ * ```typescript
+ * function ThemeProvider({ children }) {
+ *   const effectiveMode = useAppSelector(selectEffectiveThemeMode);
+ *   const [mounted, setMounted] = useState(false);
+ *
+ *   useEffect(() => {
+ *     setMounted(true);
+ *   }, []);
+ *
+ *   // Prevent hydration mismatch
+ *   if (!mounted) {
+ *     return <div className="theme-loading">{children}</div>;
+ *   }
+ *
+ *   return (
+ *     <div className={`theme-${effectiveMode}`} data-theme={effectiveMode}>
+ *       {children}
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @see {@link ../reduxStore.ts} for store configuration
+ * @see {@link ../../components/ThemeProvider.tsx} for theme context integration
+ * @since 1.0.0
  */
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';

@@ -14,8 +14,8 @@
  * @since 1.0.0
  */
 
-import { CommunicationsApi, type Message } from '@/services/modules/communicationsApi';
-import { apiClient } from '@/services/core/ApiClient';
+import { apiActions } from '@/lib/api';
+import type { Message } from '@/services/modules/communicationsApi';
 
 /**
  * Fetch communications/messages data with optional filtering
@@ -29,8 +29,6 @@ export async function fetchCommunications(filters: {
   status?: string;
 } = {}): Promise<Message[]> {
   try {
-    const communicationsApi = new CommunicationsApi(apiClient);
-    
     const apiFilters: Record<string, string | number> = {};
     
     if (filters.search?.trim()) {
@@ -45,7 +43,7 @@ export async function fetchCommunications(filters: {
       apiFilters.status = filters.status;
     }
     
-    const response = await communicationsApi.getMessages(apiFilters);
+    const response = await apiActions.communication.getMessages(apiFilters);
     return response.data || [];
   } catch (error) {
     console.error('Error fetching communications:', error);

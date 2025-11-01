@@ -14,7 +14,8 @@
  * @since 1.0.0
  */
 
-import { billingApi, type BillingInvoice, type InvoiceFilters } from '@/services/api';
+import { apiActions } from '@/lib/api';
+import type { BillingInvoice, InvoiceFilters } from '@/services/api';
 
 /**
  * Fetch invoices data with optional filtering and search
@@ -28,7 +29,7 @@ export async function fetchInvoices(
   searchTerm?: string
 ): Promise<BillingInvoice[]> {
   try {
-    const response = await billingApi.getInvoices(1, 50, filters);
+    const response = await apiActions.billing.getInvoices(1, 50, filters);
     
     // Apply client-side search filter if needed
     if (searchTerm?.trim()) {

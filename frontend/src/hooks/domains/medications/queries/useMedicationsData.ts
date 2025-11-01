@@ -12,7 +12,7 @@
 
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { medicationsApi } from '@/services'
+import { apiActions } from '@/lib/api'
 import type {
   Medication,
   MedicationInventory as InventoryItem,
@@ -46,24 +46,24 @@ export const useMedicationsData = (): UseMedicationsDataReturn => {
   // Queries
   const { data: medicationsData, isLoading: medicationsLoading } = useQuery({
     queryKey: ['medications', currentPage, searchTerm],
-    queryFn: () => medicationsApi.getAll({ page: currentPage, limit: 20, search: searchTerm })
+    queryFn: () => apiActions.medications.getAll({ page: currentPage, limit: 20, search: searchTerm })
   })
 
   const { data: inventoryData, isLoading: inventoryLoading } = useQuery({
     queryKey: ['medication-inventory'],
-    queryFn: () => medicationsApi.getInventory(),
+    queryFn: () => apiActions.medications.getInventory(),
     refetchInterval: 5 * 60 * 1000 // Refresh every 5 minutes
   })
 
   const { data: remindersData, isLoading: remindersLoading } = useQuery({
     queryKey: ['medication-reminders'],
-    queryFn: () => medicationsApi.getReminders(),
+    queryFn: () => apiActions.medications.getReminders(),
     refetchInterval: 60 * 1000 // Refresh every minute
   })
 
   const { data: adverseReactionsData, isLoading: adverseReactionsLoading } = useQuery({
     queryKey: ['adverse-reactions'],
-    queryFn: () => medicationsApi.getAdverseReactions('')
+    queryFn: () => apiActions.medications.getAdverseReactions('')
   })
 
   const { data: statsData, isLoading: statsLoading } = useQuery({
@@ -79,14 +79,14 @@ export const useMedicationsData = (): UseMedicationsDataReturn => {
 
   // Mutations - using existing API where available
   const createMedicationMutation = useMutation({
-    mutationFn: (data: MedicationFormData) => medicationsApi.create(data as any),
+    mutationFn: (data: MedicationFormData) => apiActions.medications.create(data as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['medications'] })
     }
   })
 
   const reportAdverseReactionMutation = useMutation({
-    mutationFn: (data: AdverseReactionFormData) => medicationsApi.reportAdverseReaction(data.studentMedicationId || '', {
+    mutationFn: (data: AdverseReactionFormData) => apiActions.medications.reportAdverseReaction(data.studentMedicationId || '', {
       description: data.reaction,
       severity: data.severity === 'HIGH' ? 'severe' : data.severity === 'MEDIUM' ? 'moderate' : 'mild',
       symptoms: [],
@@ -141,4 +141,3 @@ export const useMedicationsData = (): UseMedicationsDataReturn => {
     refetch
   }
 }
-

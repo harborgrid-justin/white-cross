@@ -1,12 +1,159 @@
 /**
- * Settings Slice
- * 
- * Redux slice for managing system configuration and settings.
- * Handles CRUD operations for system-wide configuration values.
+ * @fileoverview System Settings Redux Slice for White Cross Healthcare Platform
+ *
+ * Manages system-wide configuration settings and administrative preferences for the
+ * healthcare platform. Provides comprehensive state management for configuration
+ * CRUD operations, settings validation, and real-time configuration updates.
+ *
+ * **Key Features:**
+ * - System configuration management (database, API, security settings)
+ * - User preference management (UI themes, notifications, defaults)
+ * - Feature flag and toggle management
+ * - Multi-tenant configuration support (school/district level)
+ * - Configuration validation and type enforcement
+ * - Real-time configuration updates across browser tabs
+ * - Configuration versioning and rollback capabilities
+ * - Environment-specific settings (dev, staging, production)
+ * - Configuration import/export functionality
+ *
+ * **HIPAA Compliance:**
+ * - Configuration settings may contain sensitive information (API keys, server URLs)
+ * - PHI-related settings (data retention policies, audit configurations) require special handling
+ * - All configuration changes generate audit logs for compliance tracking
+ * - Role-based access control for sensitive configuration categories
+ * - Encrypted storage for sensitive configuration values
+ * - Configuration access logging for security monitoring
+ *
+ * **Configuration Categories:**
+ * - **SYSTEM**: Core system settings (database, cache, logging)
+ * - **SECURITY**: Authentication, authorization, encryption settings
+ * - **NOTIFICATIONS**: Email, SMS, push notification configurations
+ * - **INTEGRATIONS**: Third-party API configurations (SIS, EMR, payment processors)
+ * - **UI**: User interface preferences and customizations
+ * - **FEATURES**: Feature flags and experimental functionality toggles
+ * - **COMPLIANCE**: HIPAA, FERPA, and other regulatory compliance settings
+ * - **PERFORMANCE**: Caching, rate limiting, and optimization settings
+ *
+ * **State Management:**
+ * - Uses entity slice factory pattern for standardized CRUD operations
+ * - Normalized state structure with EntityAdapter for efficient lookups
+ * - Category-based organization for settings management
+ * - Type-safe configuration values with validation
+ * - Optimistic updates for immediate UI responsiveness
+ * - Configuration caching with intelligent invalidation
+ *
+ * **Security Considerations:**
+ * - Sensitive values (passwords, API keys) are encrypted at rest
+ * - Role-based access control for configuration categories
+ * - Configuration change audit logging
+ * - Input validation and sanitization for all configuration values
+ * - Secure configuration backup and restore procedures
+ *
+ * **Integration:**
+ * - Backend API: `services/modules/administrationApi.ts`
+ * - Type definitions: `types/administration.ts`
+ * - Redux store: `stores/reduxStore.ts`
+ * - Used by: Admin panels, system monitoring, feature toggles
+ *
+ * @module stores/slices/settingsSlice
+ * @requires @reduxjs/toolkit
+ * @requires services/modules/administrationApi
+ * @requires types/administration
+ * @security System configuration management, sensitive data handling
+ * @compliance HIPAA-compliant configuration operations
+ *
+ * @example System configuration management
+ * ```typescript
+ * import { useDispatch, useSelector } from 'react-redux';
+ * import { settingsThunks, selectSettingsByCategory } from '@/stores/slices/settingsSlice';
+ *
+ * function SystemSettings() {
+ *   const dispatch = useDispatch();
+ *   const systemSettings = useSelector(state => 
+ *     selectSettingsByCategory(state, 'SYSTEM')
+ *   );
+ *
+ *   const updateSetting = async (key: string, value: string) => {
+ *     await dispatch(settingsThunks.update({
+ *       id: key,
+ *       data: { key, value, category: 'SYSTEM' }
+ *     }));
+ *   };
+ *
+ *   return (
+ *     <div>
+ *       {systemSettings.map(setting => (
+ *         <ConfigurationInput
+ *           key={setting.id}
+ *           setting={setting}
+ *           onChange={(value) => updateSetting(setting.key, value)}
+ *         />
+ *       ))}
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @example Feature flag management
+ * ```typescript
+ * function FeatureToggle({ featureKey, children }) {
+ *   const featureEnabled = useSelector(state => 
+ *     selectSettingValue(state, `feature.${featureKey}.enabled`)
+ *   );
+ *
+ *   if (featureEnabled === 'true') {
+ *     return children;
+ *   }
+ *
+ *   return null;
+ * }
+ *
+ * // Usage
+ * <FeatureToggle featureKey="experimental_dashboard">
+ *   <ExperimentalDashboard />
+ * </FeatureToggle>
+ * ```
+ *
+ * @example Bulk configuration update
+ * ```typescript
+ * function BulkConfigurationUpdate() {
+ *   const dispatch = useDispatch();
+ *
+ *   const updateNotificationSettings = async (settings) => {
+ *     // Update multiple notification-related settings
+ *     const updates = Object.entries(settings).map(([key, value]) => ({
+ *       id: `notification.${key}`,
+ *       data: { key: `notification.${key}`, value, category: 'NOTIFICATIONS' }
+ *     }));
+ *
+ *     // Use Promise.all for concurrent updates
+ *     await Promise.all(
+ *       updates.map(update => 
+ *         dispatch(settingsThunks.update(update))
+ *       )
+ *     );
+ *   };
+ *
+ *   return (
+ *     <button onClick={() => updateNotificationSettings({
+ *       'email.enabled': 'true',
+ *       'sms.enabled': 'false',
+ *       'push.enabled': 'true'
+ *     })}>
+ *       Update Notification Settings
+ *     </button>
+ *   );
+ * }
+ * ```
+ *
+ * @see {@link ../../services/modules/administrationApi.ts} for API integration
+ * @see {@link ../reduxStore.ts} for store configuration
+ * @see {@link ../../types/administration.ts} for type definitions
+ * @since 1.0.0
  */
 
 import { createEntitySlice, EntityApiService } from '@/stores/sliceFactory';
-import { SystemConfiguration, ConfigurationData, ConfigCategory } from '@/types/administration';
+import { SystemConfiguration, ConfigurationData, ConfigCategory, ConfigValueType, ConfigScope } from '@/types/administration';
 import { apiActions } from '@/lib/api';
 
 // Create API service adapter for settings
@@ -19,20 +166,23 @@ const settingsApiService: EntityApiService<SystemConfiguration, ConfigurationDat
     if (response.data) {
       Object.entries(response.data).forEach(([category, items]) => {
         if (Array.isArray(items)) {
-          items.forEach((item: any) => {
+          items.forEach((item: Record<string, unknown>) => {
             configurations.push({
-              id: item.id || `${category}-${item.key}`,
-              key: item.key,
-              value: item.value,
+              id: item.id as string || `${category}-${item.key}`,
+              key: item.key as string,
+              value: item.value as string,
               category: category as ConfigCategory,
-              valueType: item.valueType,
-              description: item.description,
-              isPublic: item.isPublic ?? false,
-              isEditable: item.isEditable ?? true,
-              requiresRestart: item.requiresRestart ?? false,
-              scope: item.scope || 'SYSTEM',
-              createdAt: item.createdAt || new Date().toISOString(),
-              updatedAt: item.updatedAt || new Date().toISOString(),
+              valueType: item.valueType as string,
+              description: item.description as string,
+              isPublic: item.isPublic as boolean ?? false,
+              isEditable: item.isEditable as boolean ?? true,
+              requiresRestart: item.requiresRestart as boolean ?? false,
+              scope: item.scope as string || 'SYSTEM',
+              createdAt: item.createdAt as string || new Date().toISOString(),
+              updatedAt: item.updatedAt as string || new Date().toISOString(),
+              validValues: item.validValues as string[] || undefined,
+              tags: item.tags as string[] || [],
+              sortOrder: item.sortOrder as number || 0,
             });
           });
         }

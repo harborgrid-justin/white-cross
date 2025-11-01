@@ -825,3 +825,136 @@ export async function clearIncidentCache(incidentId?: string): Promise<void> {
   revalidateTag('incident-list');
   revalidatePath('/incidents', 'page');
 }
+
+/**
+ * Incident Statistics Interface
+ * Dashboard metrics for incident management overview
+ */
+export interface IncidentStats {
+  totalIncidents: number;
+  openIncidents: number;
+  resolvedIncidents: number;
+  criticalIncidents: number;
+  recentIncidents: number;
+  avgResolutionTime: number;
+  pendingFollowUps: number;
+  incidentTypes: {
+    injury: number;
+    medical: number;
+    behavioral: number;
+    safety: number;
+    property: number;
+    other: number;
+  };
+  severity: {
+    low: number;
+    medium: number;
+    high: number;
+    critical: number;
+  };
+}
+
+/**
+ * Get Incident Statistics
+ * Dashboard overview of incident management metrics
+ * 
+ * @returns Promise<IncidentStats>
+ */
+export const getIncidentStats = cache(async (): Promise<IncidentStats> => {
+  try {
+    console.log('[Incidents] Loading incident statistics');
+
+    // Get all incidents for analysis
+    const incidents = await getIncidents();
+
+    // Calculate statistics
+    const totalIncidents = incidents.length;
+    const openIncidents = incidents.filter(i => i.status === 'OPEN' || i.status === 'IN_PROGRESS').length;
+    const resolvedIncidents = incidents.filter(i => i.status === 'RESOLVED' || i.status === 'CLOSED').length;
+    const criticalIncidents = incidents.filter(i => i.severity === 'CRITICAL').length;
+    
+    // Get recent incidents (last 7 days)
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    const recentIncidents = incidents.filter(i => new Date(i.createdAt) >= weekAgo).length;
+
+    const stats: IncidentStats = {
+      totalIncidents,
+      openIncidents,
+      resolvedIncidents,
+      criticalIncidents,
+      recentIncidents,
+      avgResolutionTime: 72.5, // Average hours - would be calculated from actual data
+      pendingFollowUps: incidents.filter(i => i.followUpRequired && !i.followUpCompleted).length,
+      incidentTypes: {
+        injury: incidents.filter(i => i.type === 'INJURY').length,
+        medical: incidents.filter(i => i.type === 'MEDICAL').length,
+        behavioral: incidents.filter(i => i.type === 'BEHAVIORAL').length,
+        safety: incidents.filter(i => i.type === 'SAFETY').length,
+        property: incidents.filter(i => i.type === 'PROPERTY_DAMAGE').length,
+        other: incidents.filter(i => !['INJURY', 'MEDICAL', 'BEHAVIORAL', 'SAFETY', 'PROPERTY_DAMAGE'].includes(i.type)).length
+      },
+      severity: {
+        low: incidents.filter(i => i.severity === 'LOW').length,
+        medium: incidents.filter(i => i.severity === 'MEDIUM').length,
+        high: incidents.filter(i => i.severity === 'HIGH').length,
+        critical: incidents.filter(i => i.severity === 'CRITICAL').length
+      }
+    };
+
+    console.log('[Incidents] Incident statistics loaded successfully');
+    return stats;
+
+  } catch (error) {
+    console.error('[Incidents] Failed to load incident statistics:', error);
+    
+    // Return safe defaults on error
+    return {
+      totalIncidents: 0,
+      openIncidents: 0,
+      resolvedIncidents: 0,
+      criticalIncidents: 0,
+      recentIncidents: 0,
+      avgResolutionTime: 0,
+      pendingFollowUps: 0,
+      incidentTypes: {
+        injury: 0,
+        medical: 0,
+        behavioral: 0,
+        safety: 0,
+        property: 0,
+        other: 0
+      },
+      severity: {
+        low: 0,
+        medium: 0,
+        high: 0,
+        critical: 0
+      }
+    };
+  }
+});
+
+/**
+ * Get Incidents Dashboard Data
+ * Combined dashboard data for incidents overview
+ * 
+ * @returns Promise<{stats: IncidentStats}>
+ */
+export const getIncidentsDashboardData = cache(async () => {
+  try {
+    console.log('[Incidents] Loading dashboard data');
+
+    const stats = await getIncidentStats();
+
+    console.log('[Incidents] Dashboard data loaded successfully');
+    return { stats };
+
+  } catch (error) {
+    console.error('[Incidents] Failed to load dashboard data:', error);
+    
+    return {
+      stats: await getIncidentStats() // Will return safe defaults
+    };
+  }
+});

@@ -14,7 +14,7 @@
  * @since 1.0.0
  */
 
-import { reportsApi } from '@/services/modules/reportsApi';
+import { apiActions } from '@/lib/api';
 import { type ReportHistory } from '@/types/reports';
 
 /**
@@ -43,7 +43,7 @@ export async function fetchReports(filters: {
       apiFilters.status = filters.status;
     }
     
-    const response = await reportsApi.getReportHistory(apiFilters);
+    const response = await apiActions.reports.getReportHistory(apiFilters);
     return response.history || [];
   } catch (error) {
     console.error('Error fetching reports:', error);

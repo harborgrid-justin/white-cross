@@ -1,8 +1,120 @@
 /**
- * WF-COMP-280 | contactsSlice.ts - Contacts Redux slice
- * Purpose: Contacts page Redux slice with emergency contacts API integration
- * Related: emergencyContactsApi.ts
- * Last Updated: 2025-10-21 | File Type: .ts
+ * @fileoverview Emergency Contacts Redux Slice for White Cross Healthcare Platform
+ *
+ * Manages emergency contact information and communication workflows for student safety.
+ * Provides comprehensive state management for emergency contact CRUD operations,
+ * notification systems, and contact verification processes.
+ *
+ * **Key Features:**
+ * - Emergency contact CRUD operations with validation
+ * - Multi-channel notification system (SMS, email, voice)
+ * - Contact verification and authentication workflows
+ * - Student-contact relationship management
+ * - Real-time notification status tracking
+ * - Emergency communication statistics and reporting
+ * - Contact priority management (PRIMARY, SECONDARY)
+ * - Parent/guardian consent tracking
+ *
+ * **HIPAA Compliance:**
+ * - Emergency contact information is considered PHI (names, phones, relationships)
+ * - All operations generate audit logs for compliance tracking
+ * - State is NOT persisted to localStorage (memory-only for PHI protection)
+ * - Cross-tab synchronization uses BroadcastChannel API
+ * - Contact verification data expires after configured time limit
+ * - All communication attempts are logged with timestamps
+ *
+ * **Emergency Workflows:**
+ * - **Contact Cascade**: Automatic progression through contact priority levels
+ * - **Verification Required**: Contact authentication before sensitive communications
+ * - **Multi-Channel Delivery**: Simultaneous SMS, email, and voice notifications
+ * - **Delivery Confirmation**: Real-time status updates for all notification attempts
+ * - **Failed Contact Escalation**: Automatic escalation when contacts unreachable
+ *
+ * **State Management:**
+ * - Uses manual thunk pattern for specialized emergency contact API integration
+ * - Normalized state structure for efficient contact lookups and updates
+ * - Separate loading states for each operation type (CRUD, notifications, verification)
+ * - Comprehensive error handling with user-friendly messages
+ * - Optimistic updates for immediate UI responsiveness
+ *
+ * **Integration:**
+ * - Backend API: `services/modules/emergencyContactsApi.ts`
+ * - Type definitions: `types/student.types.ts`
+ * - Redux store: `stores/reduxStore.ts`
+ * - Used by: Emergency response systems, parent communication, incident reporting
+ *
+ * @module stores/slices/contactsSlice
+ * @requires @reduxjs/toolkit
+ * @requires services/modules/emergencyContactsApi
+ * @requires types/student.types
+ * @security Emergency contact management, PHI handling
+ * @compliance HIPAA-compliant emergency contact operations
+ *
+ * @example Emergency notification workflow
+ * ```typescript
+ * import { useDispatch, useSelector } from 'react-redux';
+ * import { notifyStudent, fetchContactsByStudent } from '@/stores/slices/contactsSlice';
+ *
+ * function EmergencyNotification({ studentId }) {
+ *   const dispatch = useDispatch();
+ *   const { contacts, notificationResults, notificationsLoading } = useSelector(
+ *     (state) => state.contacts
+ *   );
+ *
+ *   const sendEmergencyAlert = async () => {
+ *     // Send notification to all emergency contacts
+ *     await dispatch(notifyStudent({
+ *       studentId,
+ *       notification: {
+ *         subject: 'Emergency: Student Incident',
+ *         message: 'Your child requires immediate attention. Please contact the school.',
+ *         urgency: 'HIGH',
+ *         channels: ['SMS', 'EMAIL', 'VOICE']
+ *       }
+ *     }));
+ *   };
+ *
+ *   return (
+ *     <button onClick={sendEmergencyAlert} disabled={notificationsLoading}>
+ *       {notificationsLoading ? 'Notifying...' : 'Send Emergency Alert'}
+ *     </button>
+ *   );
+ * }
+ * ```
+ *
+ * @example Contact verification flow
+ * ```typescript
+ * function ContactVerification({ contactId }) {
+ *   const dispatch = useDispatch();
+ *   const { verificationResponse, verificationLoading } = useSelector(
+ *     (state) => state.contacts
+ *   );
+ *
+ *   const verifyContact = async (method) => {
+ *     const result = await dispatch(verifyContact({ contactId, method }));
+ *     
+ *     if (result.verified) {
+ *       // Proceed with sensitive communication
+ *       console.log('Contact verified, proceeding with communication');
+ *     } else {
+ *       // Request alternative verification
+ *       console.log('Verification failed, try alternative method');
+ *     }
+ *   };
+ *
+ *   return (
+ *     <div>
+ *       <button onClick={() => verifyContact('sms')}>Verify via SMS</button>
+ *       <button onClick={() => verifyContact('voice')}>Verify via Voice Call</button>
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @see {@link ../../services/modules/emergencyContactsApi.ts} for API integration
+ * @see {@link ../reduxStore.ts} for store configuration
+ * @see {@link ../../types/student.types.ts} for type definitions
+ * @since 1.0.0
  */
 
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
