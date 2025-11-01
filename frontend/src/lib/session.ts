@@ -558,5 +558,5 @@ export async function validateSessionOrRedirect(
     redirect(redirectUrl);
   }
 
-  return session.user;
+  return session!.user;
 }

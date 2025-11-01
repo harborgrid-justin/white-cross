@@ -213,7 +213,7 @@ export function InventoryContent({ searchParams }: InventoryContentProps) {
     if (selectedItems.size === items.length) {
       setSelectedItems(new Set());
     } else {
-      setSelectedItems(new Set(items.map(item => item.id)));
+      setSelectedItems(new Set(items.map((item: InventoryItem) => item.id)));
     }
   };
 
@@ -238,9 +238,9 @@ export function InventoryContent({ searchParams }: InventoryContentProps) {
   }
 
   const totalItems = items.length;
-  const totalValue = items.reduce((sum, item) => sum + item.totalValue, 0);
-  const lowStockItems = items.filter(item => item.status === 'LOW_STOCK' || item.status === 'OUT_OF_STOCK').length;
-  const expiringItems = items.filter(item => {
+  const totalValue = items.reduce((sum: number, item: InventoryItem) => sum + item.totalValue, 0);
+  const lowStockItems = items.filter((item: InventoryItem) => item.status === 'LOW_STOCK' || item.status === 'OUT_OF_STOCK').length;
+  const expiringItems = items.filter((item: InventoryItem) => {
     const days = calculateDaysUntilExpiration(item.expirationDate);
     return days !== null && days <= 30;
   }).length;

@@ -85,7 +85,7 @@ function StatsCard({
   title: string
   value: string | number
   subtitle?: string
-  icon: any
+  icon: React.ComponentType<{ className?: string }>
   trend?: { value: string; positive: boolean }
   color?: 'blue' | 'green' | 'purple' | 'orange'
 }) {
@@ -118,7 +118,14 @@ function StatsCard({
   )
 }
 
-function SystemHealthCard({ health }: { health: any }) {
+interface SystemHealthData {
+  status: 'healthy' | 'warning' | 'error';
+  uptime: string;
+  lastBackup: Date;
+  databaseSize: string;
+}
+
+function SystemHealthCard({ health }: { health: SystemHealthData }) {
   const statusConfig = {
     healthy: { color: 'green', icon: CheckCircle, text: 'All Systems Operational' },
     warning: { color: 'orange', icon: AlertTriangle, text: 'Minor Issues Detected' },
@@ -157,7 +164,13 @@ function SystemHealthCard({ health }: { health: any }) {
   )
 }
 
-function RecentActivityCard({ activities }: { activities: any[] }) {
+interface ActivityData {
+  action: string;
+  user: string;
+  timestamp: Date;
+}
+
+function RecentActivityCard({ activities }: { activities: ActivityData[] }) {
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>

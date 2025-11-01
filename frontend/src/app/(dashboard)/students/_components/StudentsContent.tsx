@@ -25,12 +25,7 @@ import {
   UserCheck,
   UserX
 } from 'lucide-react';
-import { 
-  getStudents, 
-  getStudentCount,
-  getStudentStatistics,
-  exportStudentData
-} from '@/app/students/actions';
+import { getStudents } from '../actions';
 import type { Student } from '@/types/student.types';
 
 interface StudentsContentProps {
@@ -97,7 +92,7 @@ export function StudentsContent({ searchParams }: StudentsContentProps) {
         );
 
         const studentsData = await getStudents(cleanFilters);
-        setStudents(studentsData);
+        setStudents(studentsData.students);
       } catch (error) {
         console.error('Failed to fetch students:', error);
         // Set empty array on error instead of using mock data
@@ -124,7 +119,7 @@ export function StudentsContent({ searchParams }: StudentsContentProps) {
     if (selectedStudents.size === students.length) {
       setSelectedStudents(new Set());
     } else {
-      setSelectedStudents(new Set(students.map(s => s.id)));
+      setSelectedStudents(new Set(students.map((s: Student) => s.id)));
     }
   };
 
@@ -149,9 +144,9 @@ export function StudentsContent({ searchParams }: StudentsContentProps) {
   }
 
   const totalStudents = students.length;
-  const activeStudents = students.filter(s => s.isActive).length;
-  const healthAlerts = students.filter(s => 
-    (s.allergies && s.allergies.length > 0) || 
+  const activeStudents = students.filter((s: Student) => s.isActive).length;
+  const healthAlerts = students.filter((s: Student) =>
+    (s.allergies && s.allergies.length > 0) ||
     (s.medications && s.medications.length > 0) ||
     (s.chronicConditions && s.chronicConditions.length > 0)
   ).length;
@@ -266,7 +261,7 @@ export function StudentsContent({ searchParams }: StudentsContentProps) {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {students.map((student) => (
+                {students.map((student: Student) => (
                   <tr key={student.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <input

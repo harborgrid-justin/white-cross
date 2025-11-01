@@ -141,7 +141,7 @@ export function StudentsFilters({ totalCount }: StudentsFiltersProps) {
             type="text"
             placeholder="Search students by name, ID, or grade..."
             defaultValue={currentSearch}
-            onChange={(e) => updateFilters('search', e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFilters('search', e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             aria-label="Search students"
           />
@@ -181,7 +181,7 @@ export function StudentsFilters({ totalCount }: StudentsFiltersProps) {
                 <select
                   id="grade-filter"
                   value={currentGrade}
-                  onChange={(e) => updateFilters('grade', e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateFilters('grade', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">All Grades</option>
@@ -201,7 +201,7 @@ export function StudentsFilters({ totalCount }: StudentsFiltersProps) {
                 <select
                   id="status-filter"
                   value={currentStatus}
-                  onChange={(e) => updateFilters('status', e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateFilters('status', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">All Statuses</option>
@@ -221,7 +221,7 @@ export function StudentsFilters({ totalCount }: StudentsFiltersProps) {
                 <select
                   id="health-filter"
                   value={currentHasHealthAlerts}
-                  onChange={(e) => updateFilters('hasHealthAlerts', e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateFilters('hasHealthAlerts', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">All Students</option>

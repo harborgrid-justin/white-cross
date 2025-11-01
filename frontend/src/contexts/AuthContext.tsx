@@ -24,10 +24,9 @@ import {
   refreshAuthToken,
   setUserFromSession,
   clearAuthError,
-  type User,
-  type AuthState,
 } from '@/stores/slices/authSlice';
 import { AppDispatch, RootState } from '@/stores/store';
+import type { User } from '@/types';
 
 // ==========================================
 // TYPES & INTERFACES
@@ -88,8 +87,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isHydrated, setIsHydrated] = useState(false);
 
   // Refs for intervals and broadcast channel
-  const activityCheckInterval = useRef<NodeJS.Timeout>();
-  const tokenRefreshInterval = useRef<NodeJS.Timeout>();
+  const activityCheckInterval = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const tokenRefreshInterval = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const broadcastChannel = useRef<BroadcastChannel | null>(null);
   const isBroadcastChannelSupported = useRef<boolean>(false);
 
@@ -159,7 +158,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Check HIPAA idle timeout
     if (idleTime >= HIPAA_IDLE_TIMEOUT) {
       console.warn('[Auth] Session timeout due to inactivity');
-      dispatch(logoutUser());
+      dispatch(logoutUser(undefined));
       router.push('/session-expired?reason=idle');
       return false;
     }
@@ -174,7 +173,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Check token expiration
     if (sessionExpiresAt && now >= sessionExpiresAt) {
       console.warn('[Auth] Session timeout due to token expiration');
-      dispatch(logoutUser());
+      dispatch(logoutUser(undefined));
       router.push('/session-expired?reason=token');
       return false;
     }
@@ -207,7 +206,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       updateActivity(); // Reset activity on successful refresh
     } catch (error) {
       console.error('[Auth] Token refresh failed:', error);
-      dispatch(logoutUser());
+      dispatch(logoutUser(undefined));
       router.push('/session-expired?reason=refresh_failed');
     }
   }, [dispatch, router, updateActivity]);
@@ -253,25 +252,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
       isBroadcastChannelSupported.current = true;
 
       // Handle messages from other tabs
-      broadcastChannel.current.onmessage = (event) => {
+      broadcastChannel.current.onmessage = (event: MessageEvent) => {
         const { type, timestamp } = event.data;
 
         switch (type) {
           case 'logout':
             // Sync logout across tabs
-            dispatch(logoutUser());
+            dispatch(logoutUser(undefined));
             router.push('/login');
             break;
 
           case 'login':
             // Sync login across tabs
-            if (event.data.user && event.data.token) {
-              dispatch(setUserFromSession({
-                user: event.data.user,
-                token: event.data.token,
-                refreshToken: event.data.refreshToken,
-                expiresIn: event.data.expiresIn,
-              }));
+            if (event.data.user) {
+              dispatch(setUserFromSession(event.data.user));
             }
             break;
 
@@ -335,9 +329,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
           broadcastChannel.current.postMessage({
             type: 'login',
             user: result.user,
-            token: result.token,
-            refreshToken: result.refreshToken,
-            expiresIn: result.expiresIn,
           });
         } catch (error) {
           console.warn('[Auth] Failed to broadcast login:', error);
@@ -354,7 +345,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = useCallback(async () => {
     try {
-      await dispatch(logoutUser()).unwrap();
+      await dispatch(logoutUser(undefined)).unwrap();
 
       // Broadcast logout to other tabs (only if supported)
       if (isBroadcastChannelSupported.current && broadcastChannel.current) {
@@ -460,7 +451,7 @@ function SessionWarningModal({ onExtend, onLogout, lastActivityAt, isHydrated }:
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCountdown(prev => {
+      setCountdown((prev: number) => {
         if (prev <= 1) {
           clearInterval(interval);
           onLogout();

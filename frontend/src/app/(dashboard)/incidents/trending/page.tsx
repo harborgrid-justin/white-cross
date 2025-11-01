@@ -9,6 +9,22 @@ import { getTrendingIncidents } from '@/actions/incidents.actions';
 import { Card } from '@/components/ui/layout/Card';
 import { Badge } from '@/components/ui/display/Badge';
 
+interface TrendItem {
+  type: string;
+  count: number;
+  change: number;
+}
+
+interface HotspotItem {
+  location: string;
+  count: number;
+}
+
+interface PatternItem {
+  pattern: string;
+  occurrences: number;
+}
+
 export const metadata: Metadata = {
   title: 'Trending Incidents | White Cross',
   description: 'View incident trends and patterns',
@@ -31,7 +47,7 @@ export default async function TrendingIncidentsPage() {
           <Card className="p-6">
             <h2 className="text-xl font-semibold mb-4">Increasing Types</h2>
             <div className="space-y-3">
-              {trending.increasingTypes.map((item) => (
+              {trending.increasingTypes.map((item: TrendItem) => (
                 <div key={item.type} className="flex justify-between items-center">
                   <div>
                     <p className="font-medium">{item.type.replace('_', ' ')}</p>
@@ -49,7 +65,7 @@ export default async function TrendingIncidentsPage() {
           <Card className="p-6">
             <h2 className="text-xl font-semibold mb-4">Location Hotspots</h2>
             <div className="space-y-3">
-              {trending.hotspots.map((item) => (
+              {trending.hotspots.map((item: HotspotItem) => (
                 <div key={item.location} className="flex justify-between items-center">
                   <p className="font-medium">{item.location.replace('_', ' ')}</p>
                   <Badge>{item.count}</Badge>
@@ -62,7 +78,7 @@ export default async function TrendingIncidentsPage() {
           <Card className="p-6">
             <h2 className="text-xl font-semibold mb-4">Identified Patterns</h2>
             <div className="space-y-3">
-              {trending.patterns.map((item, index) => (
+              {trending.patterns.map((item: PatternItem, index: number) => (
                 <div key={index} className="flex justify-between items-center">
                   <p className="font-medium text-sm">{item.pattern}</p>
                   <Badge>{item.occurrences}</Badge>

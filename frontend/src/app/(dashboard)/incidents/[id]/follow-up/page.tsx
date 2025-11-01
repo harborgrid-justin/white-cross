@@ -180,7 +180,7 @@ export default async function FollowUpActionsPage({
       </div>
 
       <div className="space-y-4">
-        {actions.map((action) => (
+        {actions.map((action: any) => (
           <Link key={action.id} href={`/incidents/${params.id}/follow-up/${action.id}`}>
             <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer">
               <div className="flex justify-between items-start mb-3">

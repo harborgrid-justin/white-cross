@@ -114,8 +114,8 @@ export async function InventoryDashboardContent() {
    *
    * These counts drive the critical alert banner display logic.
    */
-  const criticalLowStock = lowStockAlerts.filter(a => a.priority === 'critical').length;
-  const criticalExpiring = expiringItems.filter(a => a.priority === 'critical').length;
+  const criticalLowStock = lowStockAlerts.filter((a: { priority: string }) => a.priority === 'critical').length;
+  const criticalExpiring = expiringItems.filter((a: { priority: string }) => a.priority === 'critical').length;
 
   return (
     <div className="space-y-6">
@@ -232,7 +232,14 @@ export async function InventoryDashboardContent() {
               </p>
             ) : (
               <div className="space-y-3">
-                {lowStockAlerts.slice(0, 5).map((alert) => (
+                {lowStockAlerts.slice(0, 5).map((alert: {
+                  id: string;
+                  itemName: string;
+                  locationName: string;
+                  currentQuantity: number;
+                  reorderPoint: number;
+                  priority: string;
+                }) => (
                   <div
                     key={alert.id}
                     className="flex items-center justify-between border-b pb-3 last:border-0 last:pb-0"
@@ -281,7 +288,13 @@ export async function InventoryDashboardContent() {
               </p>
             ) : (
               <div className="space-y-3">
-                {expiringItems.slice(0, 5).map((alert) => (
+                {expiringItems.slice(0, 5).map((alert: {
+                  id: string;
+                  itemName: string;
+                  batchNumber: string;
+                  expirationDate: string;
+                  daysUntilExpiration: number;
+                }) => (
                   <div
                     key={alert.id}
                     className="flex items-center justify-between border-b pb-3 last:border-0 last:pb-0"
@@ -364,7 +377,11 @@ export async function InventoryDashboardContent() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {stats.categoryBreakdown.map((category) => (
+              {stats.categoryBreakdown.map((category: {
+                category: string;
+                itemCount: number;
+                totalValue: number;
+              }) => (
                 <div key={category.category} className="flex items-center justify-between">
                   <div className="space-y-1">
                     <p className="text-sm font-medium capitalize">

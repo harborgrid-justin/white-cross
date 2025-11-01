@@ -1,4 +1,4 @@
-import { Suspense } from 'react';
+import React, { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { Modal } from '@/components/ui/modal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';

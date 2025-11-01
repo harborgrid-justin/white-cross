@@ -74,7 +74,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   allowedRoles,
   redirectTo = '/auth/access-denied'
-}) => {
+}: ProtectedRouteProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const { user, isAuthenticated, isLoading } = useAuth();

@@ -58,13 +58,13 @@ export function StudentsTable({ initialData, searchParams }: StudentsTableProps)
   }, [totalStudents]);
 
   const handlePageChange = (newPage: number) => {
-    const params = new URLSearchParams(searchParams as any);
+    const params = new URLSearchParams(searchParams as Record<string, string>);
     params.set('page', newPage.toString());
     router.push(`?${params.toString()}`, { scroll: false });
   };
 
   if (error) {
-    return <ErrorDisplay error={error} onRetry={() => refetch()} />;
+    return <ErrorDisplay error={error instanceof Error ? error : { message: String(error), name: 'Error' }} onRetry={() => refetch()} />;
   }
 
   const currentPage = parseInt(searchParams.page || '1');

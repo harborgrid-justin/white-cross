@@ -454,7 +454,7 @@ export default async function IncidentDetailsPage({
             <Card className="p-6">
               <h3 className="font-semibold mb-4">Tags</h3>
               <div className="flex flex-wrap gap-2">
-                {incident.tags.map((tag) => (
+                {incident.tags.map((tag: string) => (
                   <Badge key={tag} color="gray">
                     {tag}
                   </Badge>

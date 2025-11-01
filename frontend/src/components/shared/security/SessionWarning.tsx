@@ -27,7 +27,7 @@ export const SessionWarning: React.FC<SessionWarningProps> = ({
   onExtend,
   onDismiss,
   minutesRemaining = 2
-}) => {
+}: SessionWarningProps) => {
   if (!isOpen) return null
 
   return (

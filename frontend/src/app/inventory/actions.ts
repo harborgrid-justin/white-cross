@@ -903,16 +903,16 @@ export async function getInventoryStats(): Promise<InventoryStats> {
 
     // Calculate statistics
     const totalItems = items.length;
-    const lowStockItems = stockLevels.filter(stock => 
+    const lowStockItems = stockLevels.filter((stock: StockLevel) =>
       stock.currentLevel <= stock.minimumLevel && stock.currentLevel > 0
     ).length;
-    const outOfStockItems = stockLevels.filter(stock => stock.currentLevel === 0).length;
+    const outOfStockItems = stockLevels.filter((stock: StockLevel) => stock.currentLevel === 0).length;
     const expiringItems = expiringBatches.length;
 
     // Calculate total value (mock calculation)
-    const totalValue = items.reduce((sum, item) => sum + (item.unitCost || 0) * (item.currentStock || 0), 0);
-    const avgStockLevel = stockLevels.length > 0 
-      ? stockLevels.reduce((sum, stock) => sum + stock.currentLevel, 0) / stockLevels.length 
+    const totalValue = items.reduce((sum: number, item: InventoryItem) => sum + (item.unitCost || 0) * (item.currentStock || 0), 0);
+    const avgStockLevel = stockLevels.length > 0
+      ? stockLevels.reduce((sum: number, stock: StockLevel) => sum + stock.currentLevel, 0) / stockLevels.length
       : 0;
 
     const stats: InventoryStats = {
@@ -924,17 +924,17 @@ export async function getInventoryStats(): Promise<InventoryStats> {
       avgStockLevel,
       recentTransactions: 45, // Mock value - would come from transaction log
       categories: {
-        medical: items.filter(i => i.category === 'MEDICAL').length,
-        supplies: items.filter(i => i.category === 'SUPPLIES').length,
-        equipment: items.filter(i => i.category === 'EQUIPMENT').length,
-        pharmaceuticals: items.filter(i => i.category === 'PHARMACEUTICALS').length,
-        maintenance: items.filter(i => i.category === 'MAINTENANCE').length,
-        other: items.filter(i => !['MEDICAL', 'SUPPLIES', 'EQUIPMENT', 'PHARMACEUTICALS', 'MAINTENANCE'].includes(i.category)).length
+        medical: items.filter((i: InventoryItem) => i.category === 'MEDICAL').length,
+        supplies: items.filter((i: InventoryItem) => i.category === 'SUPPLIES').length,
+        equipment: items.filter((i: InventoryItem) => i.category === 'EQUIPMENT').length,
+        pharmaceuticals: items.filter((i: InventoryItem) => i.category === 'PHARMACEUTICALS').length,
+        maintenance: items.filter((i: InventoryItem) => i.category === 'MAINTENANCE').length,
+        other: items.filter((i: InventoryItem) => !['MEDICAL', 'SUPPLIES', 'EQUIPMENT', 'PHARMACEUTICALS', 'MAINTENANCE'].includes(i.category)).length
       },
       stockStatus: {
-        adequate: stockLevels.filter(stock => stock.currentLevel > stock.minimumLevel).length,
+        adequate: stockLevels.filter((stock: StockLevel) => stock.currentLevel > stock.minimumLevel).length,
         low: lowStockItems,
-        critical: stockLevels.filter(stock => stock.currentLevel <= (stock.minimumLevel * 0.5) && stock.currentLevel > 0).length,
+        critical: stockLevels.filter((stock: StockLevel) => stock.currentLevel <= (stock.minimumLevel * 0.5) && stock.currentLevel > 0).length,
         outOfStock: outOfStockItems
       }
     };
