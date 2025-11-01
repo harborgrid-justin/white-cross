@@ -18,7 +18,7 @@ export interface LogEntry {
   level: LogLevel;
   message: string;
   context?: LogContext;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   error?: {
     name: string;
     message: string;
@@ -224,23 +224,23 @@ export class Logger {
   // Logging Methods
   // ============================================================================
 
-  public debug(message: string, metadata?: Record<string, any>): void {
+  public debug(message: string, metadata?: Record<string, unknown>): void {
     this.log('DEBUG', message, metadata);
   }
 
-  public info(message: string, metadata?: Record<string, any>): void {
+  public info(message: string, metadata?: Record<string, unknown>): void {
     this.log('INFO', message, metadata);
   }
 
-  public warn(message: string, metadata?: Record<string, any>): void {
+  public warn(message: string, metadata?: Record<string, unknown>): void {
     this.log('WARN', message, metadata);
   }
 
-  public error(message: string, error?: Error, metadata?: Record<string, any>): void {
+  public error(message: string, error?: Error, metadata?: Record<string, unknown>): void {
     this.log('ERROR', message, metadata, error);
   }
 
-  public fatal(message: string, error?: Error, metadata?: Record<string, any>): void {
+  public fatal(message: string, error?: Error, metadata?: Record<string, unknown>): void {
     this.log('FATAL', message, metadata, error);
     this.flush(); // Immediately flush fatal errors
   }
@@ -251,7 +251,7 @@ export class Logger {
   private log(
     level: LogLevel,
     message: string,
-    metadata?: Record<string, any>,
+    metadata?: Record<string, unknown>,
     error?: Error
   ): void {
     if (!this.config.enabled) return;
@@ -297,7 +297,7 @@ export class Logger {
    */
   public event(
     eventName: string,
-    properties?: Record<string, any>,
+    properties?: Record<string, unknown>,
     level: LogLevel = 'INFO'
   ): void {
     this.log(level, `Event: ${eventName}`, properties);
@@ -306,7 +306,7 @@ export class Logger {
   /**
    * Log a performance metric
    */
-  public performance(operation: string, durationMs: number, metadata?: Record<string, any>): void {
+  public performance(operation: string, durationMs: number, metadata?: Record<string, unknown>): void {
     this.log('INFO', `Performance: ${operation}`, {
       ...metadata,
       durationMs,
@@ -334,7 +334,7 @@ export class Logger {
   public security(
     event: string,
     severity: 'low' | 'medium' | 'high' | 'critical',
-    details?: Record<string, any>
+    details?: Record<string, unknown>
   ): void {
     const level: LogLevel = severity === 'critical' ? 'FATAL' : severity === 'high' ? 'ERROR' : 'WARN';
 
@@ -352,7 +352,7 @@ export class Logger {
     action: string,
     resource: string,
     result: 'success' | 'failure',
-    details?: Record<string, any>
+    details?: Record<string, unknown>
   ): void {
     this.log('INFO', `Audit: ${action} on ${resource}`, {
       ...details,
@@ -370,14 +370,14 @@ export class Logger {
   /**
    * Sanitize object to remove PHI
    */
-  private sanitizeObject(obj: any): any {
+  private sanitizeObject(obj: unknown): unknown {
     if (!obj || typeof obj !== 'object') return obj;
 
     if (Array.isArray(obj)) {
       return obj.map((item) => this.sanitizeValue(item));
     }
 
-    const sanitized: any = {};
+    const sanitized: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(obj)) {
       const isPHI = this.phiPatterns.some((pattern) => pattern.test(key));
       sanitized[key] = isPHI ? '[REDACTED]' : this.sanitizeValue(value);
@@ -388,7 +388,7 @@ export class Logger {
   /**
    * Sanitize a value
    */
-  private sanitizeValue(value: any): any {
+  private sanitizeValue(value: unknown): unknown {
     if (value === null || value === undefined) return value;
 
     if (typeof value === 'string') {
@@ -593,16 +593,16 @@ export const logger = Logger.getInstance();
 
 // Export convenience functions
 export const log = {
-  debug: (msg: string, meta?: Record<string, any>) => logger.debug(msg, meta),
-  info: (msg: string, meta?: Record<string, any>) => logger.info(msg, meta),
-  warn: (msg: string, meta?: Record<string, any>) => logger.warn(msg, meta),
-  error: (msg: string, err?: Error, meta?: Record<string, any>) => logger.error(msg, err, meta),
-  fatal: (msg: string, err?: Error, meta?: Record<string, any>) => logger.fatal(msg, err, meta),
-  event: (name: string, props?: Record<string, any>) => logger.event(name, props),
-  performance: (op: string, duration: number, meta?: Record<string, any>) =>
+  debug: (msg: string, meta?: Record<string, unknown>) => logger.debug(msg, meta),
+  info: (msg: string, meta?: Record<string, unknown>) => logger.info(msg, meta),
+  warn: (msg: string, meta?: Record<string, unknown>) => logger.warn(msg, meta),
+  error: (msg: string, err?: Error, meta?: Record<string, unknown>) => logger.error(msg, err, meta),
+  fatal: (msg: string, err?: Error, meta?: Record<string, unknown>) => logger.fatal(msg, err, meta),
+  event: (name: string, props?: Record<string, unknown>) => logger.event(name, props),
+  performance: (op: string, duration: number, meta?: Record<string, unknown>) =>
     logger.performance(op, duration, meta),
-  security: (event: string, severity: 'low' | 'medium' | 'high' | 'critical', details?: Record<string, any>) =>
+  security: (event: string, severity: 'low' | 'medium' | 'high' | 'critical', details?: Record<string, unknown>) =>
     logger.security(event, severity, details),
-  audit: (action: string, resource: string, result: 'success' | 'failure', details?: Record<string, any>) =>
+  audit: (action: string, resource: string, result: 'success' | 'failure', details?: Record<string, unknown>) =>
     logger.audit(action, resource, result, details),
 };

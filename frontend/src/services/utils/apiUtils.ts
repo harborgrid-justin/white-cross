@@ -25,7 +25,7 @@ import debug from 'debug';
 const log = debug('whitecross:api-utils');
 
 // Standard API response interface
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data: T;
   message?: string;
@@ -48,23 +48,35 @@ export interface ApiError {
   message: string;
   code?: string;
   status?: number;
-  details?: any;
+  details?: unknown;
 }
 
 // Error handling utilities
 export class ApiErrorHandler {
-  static handle(error: AxiosError | any): ApiError {
-    if (error.response) {
+  static handle(error: AxiosError | unknown): ApiError {
+    // Type guard to check if error is an AxiosError
+    const isAxiosError = (err: unknown): err is AxiosError => {
+      return err !== null && typeof err === 'object' && 'isAxiosError' in err;
+    };
+
+    if (isAxiosError(error) && error.response) {
       // Server responded with error status
       const { status, data } = error.response;
 
+      // Safely access data properties
+      const errorData = data as Record<string, unknown> | undefined;
+      const message = (errorData?.message as string) || `Request failed with status ${status}`;
+      const code = errorData?.code as string | undefined;
+      const errors = errorData?.errors as unknown;
+      const details = errors || errorData?.details as unknown;
+
       return {
-        message: data?.message || `Request failed with status ${status}`,
-        code: data?.code,
+        message,
+        code,
         status,
-        details: data?.errors || data?.details,
+        details,
       };
-    } else if (error.request) {
+    } else if (isAxiosError(error) && error.request) {
       // Network error
       return {
         message: 'Network error - please check your connection',
@@ -72,9 +84,10 @@ export class ApiErrorHandler {
         details: error.request,
       };
     } else {
-      // Other error
+      // Other error - safely access message if available
+      const message = (isAxiosError(error) && error.message) || 'An unexpected error occurred';
       return {
-        message: error.message || 'An unexpected error occurred',
+        message,
         code: 'UNKNOWN_ERROR',
         details: error,
       };
@@ -86,7 +99,7 @@ export class ApiErrorHandler {
   }
 
   static isValidationError(error: ApiError): boolean {
-    return error.status === 400 && error.details;
+    return error.status === 400 && !!error.details;
   }
 
   static isUnauthorizedError(error: ApiError): boolean {
@@ -125,7 +138,7 @@ export const extractApiDataOptional = <T>(
 };
 
 // URL and query parameter utilities
-export const buildUrlParams = (params: Record<string, any>): string => {
+export const buildUrlParams = (params: Record<string, unknown>): string => {
   const urlParams = new URLSearchParams();
 
   Object.entries(params).forEach(([key, value]) => {
@@ -144,7 +157,7 @@ export const buildPaginationParams = (
   sort?: string,
   order?: 'asc' | 'desc'
 ): string => {
-  const params: Record<string, any> = {
+  const params: Record<string, unknown> = {
     page,
     limit,
   };
@@ -296,7 +309,7 @@ export const withRetry = async <T>(
 };
 
 // Form data utility
-export const createFormData = (data: Record<string, any>): FormData => {
+export const createFormData = (data: Record<string, unknown>): FormData => {
   const formData = new FormData();
 
   Object.entries(data).forEach(([key, value]) => {
@@ -317,17 +330,17 @@ export const createFormData = (data: Record<string, any>): FormData => {
 };
 
 // Type guards
-export const isApiResponse = (obj: any): obj is ApiResponse => {
-  return obj && typeof obj === 'object' && 'success' in obj && 'data' in obj;
+export const isApiResponse = (obj: unknown): obj is ApiResponse => {
+  return obj !== null && typeof obj === 'object' && 'success' in obj && 'data' in obj;
 };
 
-export const isPaginatedResponse = <T>(obj: any): obj is PaginatedResponse<T> => {
-  return obj && typeof obj === 'object' && 'data' in obj && 'pagination' in obj;
+export const isPaginatedResponse = <T>(obj: unknown): obj is PaginatedResponse<T> => {
+  return obj !== null && typeof obj === 'object' && 'data' in obj && 'pagination' in obj;
 };
 
 // Cache utilities (simple in-memory cache)
 class ApiCache {
-  private cache = new Map<string, { data: any; timestamp: number; ttl: number }>();
+  private cache = new Map<string, { data: unknown; timestamp: number; ttl: number }>();
 
   set<T>(key: string, data: T, ttl: number = 5 * 60 * 1000): void {
     this.cache.set(key, {
@@ -359,7 +372,7 @@ class ApiCache {
   }
 
   // Generate cache key from URL and params
-  generateKey(url: string, params?: Record<string, any>): string {
+  generateKey(url: string, params?: Record<string, unknown>): string {
     const paramsString = params ? JSON.stringify(params) : '';
     return `${url}:${paramsString}`;
   }
@@ -368,7 +381,7 @@ class ApiCache {
 export const apiCache = new ApiCache();
 
 // Higher-order function to add caching to API calls
-export const withCache = <T extends any[], R>(
+export const withCache = <T extends unknown[], R>(
   fn: (...args: T) => Promise<R>
 ) => {
   return async (...args: T): Promise<R> => {
@@ -379,7 +392,7 @@ export const withCache = <T extends any[], R>(
 };
 
 // Debounce utility for search inputs
-export const debounce = <T extends (...args: any[]) => any>(
+export const debounce = <T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): ((...args: Parameters<T>) => void) => {

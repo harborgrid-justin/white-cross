@@ -403,9 +403,9 @@ export async function updateProfileAction(
     });
 
     // Cache invalidation
-    revalidateTag(PROFILE_CACHE_TAGS.PROFILES);
-    revalidateTag(`profile-${userId}`);
-    revalidateTag('current-profile');
+    revalidateTag(PROFILE_CACHE_TAGS.PROFILES, 'default');
+    revalidateTag(`profile-${userId}`, 'default');
+    revalidateTag('current-profile', 'default');
     revalidatePath('/profile', 'page');
 
     return {
@@ -477,8 +477,8 @@ export async function updateProfileSettingsAction(
     });
 
     // Cache invalidation
-    revalidateTag(PROFILE_CACHE_TAGS.SETTINGS);
-    revalidateTag(`profile-settings-${userId}`);
+    revalidateTag(PROFILE_CACHE_TAGS.SETTINGS, 'default');
+    revalidateTag(`profile-settings-${userId}`, 'default');
     revalidatePath('/profile/settings', 'page');
 
     return {
@@ -568,8 +568,8 @@ export async function changePasswordAction(
     });
 
     // Cache invalidation for security logs
-    revalidateTag(PROFILE_CACHE_TAGS.SECURITY);
-    revalidateTag(`security-logs-${userId}`);
+    revalidateTag(PROFILE_CACHE_TAGS.SECURITY, 'default');
+    revalidateTag(`security-logs-${userId}`, 'default');
     revalidatePath('/profile/security', 'page');
 
     return {
@@ -639,9 +639,9 @@ export async function uploadAvatarAction(
     });
 
     // Cache invalidation
-    revalidateTag(PROFILE_CACHE_TAGS.PROFILES);
-    revalidateTag(`profile-${userId}`);
-    revalidateTag('current-profile');
+    revalidateTag(PROFILE_CACHE_TAGS.PROFILES, 'default');
+    revalidateTag(`profile-${userId}`, 'default');
+    revalidateTag('current-profile', 'default');
     revalidatePath('/profile', 'page');
 
     return {
@@ -709,10 +709,10 @@ export async function enableTwoFactorAction(userId: string): Promise<ActionResul
     });
 
     // Cache invalidation
-    revalidateTag(PROFILE_CACHE_TAGS.PROFILES);
-    revalidateTag(PROFILE_CACHE_TAGS.SECURITY);
-    revalidateTag(`profile-${userId}`);
-    revalidateTag(`security-logs-${userId}`);
+    revalidateTag(PROFILE_CACHE_TAGS.PROFILES, 'default');
+    revalidateTag(PROFILE_CACHE_TAGS.SECURITY, 'default');
+    revalidateTag(`profile-${userId}`, 'default');
+    revalidateTag(`security-logs-${userId}`, 'default');
     revalidatePath('/profile/security', 'page');
 
     return {
@@ -780,10 +780,10 @@ export async function disableTwoFactorAction(userId: string): Promise<ActionResu
     });
 
     // Cache invalidation
-    revalidateTag(PROFILE_CACHE_TAGS.PROFILES);
-    revalidateTag(PROFILE_CACHE_TAGS.SECURITY);
-    revalidateTag(`profile-${userId}`);
-    revalidateTag(`security-logs-${userId}`);
+    revalidateTag(PROFILE_CACHE_TAGS.PROFILES, 'default');
+    revalidateTag(PROFILE_CACHE_TAGS.SECURITY, 'default');
+    revalidateTag(`profile-${userId}`, 'default');
+    revalidateTag(`security-logs-${userId}`, 'default');
     revalidatePath('/profile/security', 'page');
 
     return {
@@ -849,10 +849,10 @@ export async function revokeSessionAction(userId: string, sessionId: string): Pr
     });
 
     // Cache invalidation
-    revalidateTag(PROFILE_CACHE_TAGS.SESSIONS);
-    revalidateTag(PROFILE_CACHE_TAGS.SECURITY);
-    revalidateTag(`sessions-${userId}`);
-    revalidateTag(`security-logs-${userId}`);
+    revalidateTag(PROFILE_CACHE_TAGS.SESSIONS, 'default');
+    revalidateTag(PROFILE_CACHE_TAGS.SECURITY, 'default');
+    revalidateTag(`sessions-${userId}`, 'default');
+    revalidateTag(`security-logs-${userId}`, 'default');
     revalidatePath('/profile/security', 'page');
 
     return {
@@ -911,7 +911,8 @@ export async function updateProfileFromForm(
   // Filter out undefined values
   const filteredData = Object.entries(profileData).reduce((acc, [key, value]) => {
     if (value !== undefined) {
-      acc[key as keyof UpdateProfileData] = value;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (acc as any)[key] = value;
     }
     return acc;
   }, {} as UpdateProfileData);
@@ -998,19 +999,19 @@ export async function getProfileOverview(userId: string): Promise<{
  */
 export async function clearProfileCache(userId?: string): Promise<void> {
   if (userId) {
-    revalidateTag(`profile-${userId}`);
-    revalidateTag(`profile-settings-${userId}`);
-    revalidateTag(`security-logs-${userId}`);
-    revalidateTag(`sessions-${userId}`);
+    revalidateTag(`profile-${userId}`, 'default');
+    revalidateTag(`profile-settings-${userId}`, 'default');
+    revalidateTag(`security-logs-${userId}`, 'default');
+    revalidateTag(`sessions-${userId}`, 'default');
   }
   
   // Clear all profile caches
   Object.values(PROFILE_CACHE_TAGS).forEach(tag => {
-    revalidateTag(tag);
+    revalidateTag(tag, 'default');
   });
 
   // Clear current profile cache
-  revalidateTag('current-profile');
+  revalidateTag('current-profile', 'default');
 
   // Clear paths
   revalidatePath('/profile', 'page');

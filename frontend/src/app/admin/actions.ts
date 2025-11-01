@@ -361,8 +361,8 @@ export async function createAdminUserAction(data: CreateAdminUserData): Promise<
     });
 
     // Cache invalidation
-    revalidateTag(ADMIN_CACHE_TAGS.USERS);
-    revalidateTag('admin-user-list');
+    revalidateTag(ADMIN_CACHE_TAGS.USERS, 'default');
+    revalidateTag('admin-user-list', 'default');
     revalidatePath('/admin/users', 'page');
 
     return {
@@ -441,9 +441,9 @@ export async function updateAdminUserAction(
     });
 
     // Cache invalidation
-    revalidateTag(ADMIN_CACHE_TAGS.USERS);
-    revalidateTag(`admin-user-${userId}`);
-    revalidateTag('admin-user-list');
+    revalidateTag(ADMIN_CACHE_TAGS.USERS, 'default');
+    revalidateTag(`admin-user-${userId}`, 'default');
+    revalidateTag('admin-user-list', 'default');
     revalidatePath('/admin/users', 'page');
     revalidatePath(`/admin/users/${userId}`, 'page');
 
@@ -507,9 +507,9 @@ export async function deleteAdminUserAction(userId: string): Promise<ActionResul
     });
 
     // Cache invalidation
-    revalidateTag(ADMIN_CACHE_TAGS.USERS);
-    revalidateTag(`admin-user-${userId}`);
-    revalidateTag('admin-user-list');
+    revalidateTag(ADMIN_CACHE_TAGS.USERS, 'default');
+    revalidateTag(`admin-user-${userId}`, 'default');
+    revalidateTag('admin-user-list', 'default');
     revalidatePath('/admin/users', 'page');
 
     return {
@@ -597,8 +597,8 @@ export async function createDistrictAction(data: CreateDistrictData): Promise<Ac
     });
 
     // Cache invalidation
-    revalidateTag(ADMIN_CACHE_TAGS.DISTRICTS);
-    revalidateTag('district-list');
+    revalidateTag(ADMIN_CACHE_TAGS.DISTRICTS, 'default');
+    revalidateTag('district-list', 'default');
     revalidatePath('/admin/districts', 'page');
 
     return {
@@ -685,9 +685,9 @@ export async function updateDistrictAction(
     });
 
     // Cache invalidation
-    revalidateTag(ADMIN_CACHE_TAGS.DISTRICTS);
-    revalidateTag(`district-${districtId}`);
-    revalidateTag('district-list');
+    revalidateTag(ADMIN_CACHE_TAGS.DISTRICTS, 'default');
+    revalidateTag(`district-${districtId}`, 'default');
+    revalidateTag('district-list', 'default');
     revalidatePath('/admin/districts', 'page');
     revalidatePath(`/admin/districts/${districtId}`, 'page');
 
@@ -784,8 +784,8 @@ export async function createSchoolAction(data: CreateSchoolData): Promise<Action
     });
 
     // Cache invalidation
-    revalidateTag(ADMIN_CACHE_TAGS.SCHOOLS);
-    revalidateTag('school-list');
+    revalidateTag(ADMIN_CACHE_TAGS.SCHOOLS, 'default');
+    revalidateTag('school-list', 'default');
     revalidatePath('/admin/schools', 'page');
 
     return {
@@ -879,9 +879,9 @@ export async function updateSchoolAction(
     });
 
     // Cache invalidation
-    revalidateTag(ADMIN_CACHE_TAGS.SCHOOLS);
-    revalidateTag(`school-${schoolId}`);
-    revalidateTag('school-list');
+    revalidateTag(ADMIN_CACHE_TAGS.SCHOOLS, 'default');
+    revalidateTag(`school-${schoolId}`, 'default');
+    revalidateTag('school-list', 'default');
     revalidatePath('/admin/schools', 'page');
     revalidatePath(`/admin/schools/${schoolId}`, 'page');
 
@@ -958,7 +958,7 @@ export async function updateSystemSettingAction(
     });
 
     // Cache invalidation
-    revalidateTag(ADMIN_CACHE_TAGS.SETTINGS);
+    revalidateTag(ADMIN_CACHE_TAGS.SETTINGS, 'default');
     revalidatePath('/admin/settings', 'page');
 
     return {
@@ -1174,18 +1174,18 @@ export async function getSchoolCount(filters?: Record<string, unknown>): Promise
  */
 export async function clearAdminCache(resourceType?: string, resourceId?: string): Promise<void> {
   if (resourceType && resourceId) {
-    revalidateTag(`${resourceType}-${resourceId}`);
+    revalidateTag(`${resourceType}-${resourceId}`, 'default');
   }
   
   // Clear all admin caches
   Object.values(ADMIN_CACHE_TAGS).forEach(tag => {
-    revalidateTag(tag);
+    revalidateTag(tag, 'default');
   });
 
   // Clear list caches
-  revalidateTag('admin-user-list');
-  revalidateTag('district-list');
-  revalidateTag('school-list');
+  revalidateTag('admin-user-list', 'default');
+  revalidateTag('district-list', 'default');
+  revalidateTag('school-list', 'default');
 
   // Clear paths
   revalidatePath('/admin', 'page');

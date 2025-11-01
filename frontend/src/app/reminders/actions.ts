@@ -380,9 +380,9 @@ export async function createReminderAction(data: CreateReminderData): Promise<Ac
     });
 
     // Cache invalidation
-    revalidateTag(REMINDER_CACHE_TAGS.REMINDERS);
-    revalidateTag('reminder-list');
-    revalidateTag('overdue-reminders');
+    revalidateTag(REMINDER_CACHE_TAGS.REMINDERS, 'default');
+    revalidateTag('reminder-list', 'default');
+    revalidateTag('overdue-reminders', 'default');
     revalidatePath('/reminders', 'page');
 
     return {
@@ -464,10 +464,10 @@ export async function updateReminderAction(
     });
 
     // Cache invalidation
-    revalidateTag(REMINDER_CACHE_TAGS.REMINDERS);
-    revalidateTag(`reminder-${reminderId}`);
-    revalidateTag('reminder-list');
-    revalidateTag('overdue-reminders');
+    revalidateTag(REMINDER_CACHE_TAGS.REMINDERS, 'default');
+    revalidateTag(`reminder-${reminderId}`, 'default');
+    revalidateTag('reminder-list', 'default');
+    revalidateTag('overdue-reminders', 'default');
     revalidatePath('/reminders', 'page');
     revalidatePath(`/reminders/${reminderId}`, 'page');
 
@@ -539,10 +539,10 @@ export async function completeReminderAction(
     });
 
     // Cache invalidation
-    revalidateTag(REMINDER_CACHE_TAGS.REMINDERS);
-    revalidateTag(`reminder-${reminderId}`);
-    revalidateTag('reminder-list');
-    revalidateTag('overdue-reminders');
+    revalidateTag(REMINDER_CACHE_TAGS.REMINDERS, 'default');
+    revalidateTag(`reminder-${reminderId}`, 'default');
+    revalidateTag('reminder-list', 'default');
+    revalidateTag('overdue-reminders', 'default');
     revalidatePath('/reminders', 'page');
 
     return {
@@ -629,10 +629,10 @@ export async function snoozeReminderAction(
     });
 
     // Cache invalidation
-    revalidateTag(REMINDER_CACHE_TAGS.REMINDERS);
-    revalidateTag(`reminder-${reminderId}`);
-    revalidateTag('reminder-list');
-    revalidateTag('overdue-reminders');
+    revalidateTag(REMINDER_CACHE_TAGS.REMINDERS, 'default');
+    revalidateTag(`reminder-${reminderId}`, 'default');
+    revalidateTag('reminder-list', 'default');
+    revalidateTag('overdue-reminders', 'default');
     revalidatePath('/reminders', 'page');
 
     return {
@@ -699,10 +699,10 @@ export async function deleteReminderAction(reminderId: string): Promise<ActionRe
     });
 
     // Cache invalidation
-    revalidateTag(REMINDER_CACHE_TAGS.REMINDERS);
-    revalidateTag(`reminder-${reminderId}`);
-    revalidateTag('reminder-list');
-    revalidateTag('overdue-reminders');
+    revalidateTag(REMINDER_CACHE_TAGS.REMINDERS, 'default');
+    revalidateTag(`reminder-${reminderId}`, 'default');
+    revalidateTag('reminder-list', 'default');
+    revalidateTag('overdue-reminders', 'default');
     revalidatePath('/reminders', 'page');
 
     return {
@@ -774,8 +774,8 @@ export async function createReminderTemplateAction(data: CreateReminderTemplateD
     });
 
     // Cache invalidation
-    revalidateTag(REMINDER_CACHE_TAGS.TEMPLATES);
-    revalidateTag('reminder-template-list');
+    revalidateTag(REMINDER_CACHE_TAGS.TEMPLATES, 'default');
+    revalidateTag('reminder-template-list', 'default');
     revalidatePath('/reminders/templates', 'page');
 
     return {
@@ -1317,20 +1317,20 @@ export async function getRemindersDashboardData(): Promise<{
  */
 export async function clearReminderCache(reminderId?: string): Promise<void> {
   if (reminderId) {
-    revalidateTag(`reminder-${reminderId}`);
+    revalidateTag(`reminder-${reminderId}`, 'default');
   }
   
   // Clear all reminder caches
   Object.values(REMINDER_CACHE_TAGS).forEach(tag => {
-    revalidateTag(tag);
+    revalidateTag(tag, 'default');
   });
 
   // Clear list caches
-  revalidateTag('reminder-list');
-  revalidateTag('reminder-template-list');
-  revalidateTag('overdue-reminders');
-  revalidateTag('reminder-stats');
-  revalidateTag('reminder-dashboard');
+  revalidateTag('reminder-list', 'default');
+  revalidateTag('reminder-template-list', 'default');
+  revalidateTag('overdue-reminders', 'default');
+  revalidateTag('reminder-stats', 'default');
+  revalidateTag('reminder-dashboard', 'default');
 
   // Clear paths
   revalidatePath('/reminders', 'page');

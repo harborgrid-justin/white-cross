@@ -220,8 +220,8 @@ export async function createStudent(data: CreateStudentData): Promise<ActionResu
     });
 
     // Cache invalidation
-    revalidateTag(CACHE_TAGS.STUDENTS);
-    revalidateTag('student-list');
+    revalidateTag(CACHE_TAGS.STUDENTS, 'default');
+    revalidateTag('student-list', 'default');
     revalidatePath('/dashboard/students');
 
     return {
@@ -322,9 +322,9 @@ export async function updateStudent(
     });
 
     // Cache invalidation
-    revalidateTag(CACHE_TAGS.STUDENTS);
-    revalidateTag(`student-${studentId}`);
-    revalidateTag('student-list');
+    revalidateTag(CACHE_TAGS.STUDENTS, 'default');
+    revalidateTag(`student-${studentId}`, 'default');
+    revalidateTag('student-list', 'default');
     revalidatePath('/dashboard/students');
     revalidatePath(`/dashboard/students/${studentId}` as any);
 
@@ -427,9 +427,9 @@ export async function deleteStudent(studentId: string): Promise<ActionResult<voi
     });
 
     // Cache invalidation
-    revalidateTag(CACHE_TAGS.STUDENTS);
-    revalidateTag(`student-${studentId}`);
-    revalidateTag('student-list');
+    revalidateTag(CACHE_TAGS.STUDENTS, 'default');
+    revalidateTag(`student-${studentId}`, 'default');
+    revalidateTag('student-list', 'default');
     revalidatePath('/dashboard/students');
 
     return {
@@ -503,8 +503,8 @@ export async function transferStudent(
     });
 
     // Cache invalidation
-    revalidateTag(CACHE_TAGS.STUDENTS);
-    revalidateTag(`student-${studentId}`);
+    revalidateTag(CACHE_TAGS.STUDENTS, 'default');
+    revalidateTag(`student-${studentId}`, 'default');
     revalidatePath('/dashboard/students');
     revalidatePath(`/dashboard/students/${studentId}` as any);
 
@@ -573,10 +573,10 @@ export async function bulkUpdateStudents(
     });
 
     // Cache invalidation
-    revalidateTag(CACHE_TAGS.STUDENTS);
-    revalidateTag('student-list');
+    revalidateTag(CACHE_TAGS.STUDENTS, 'default');
+    revalidateTag('student-list', 'default');
     request.studentIds.forEach(id => {
-      revalidateTag(`student-${id}`);
+      revalidateTag(`student-${id}`, 'default');
     });
     revalidatePath('/dashboard/students');
 
@@ -634,8 +634,8 @@ export async function reactivateStudent(studentId: string): Promise<ActionResult
       success: true
     });
 
-    revalidateTag(CACHE_TAGS.STUDENTS);
-    revalidateTag(`student-${studentId}`);
+    revalidateTag(CACHE_TAGS.STUDENTS, 'default');
+    revalidateTag(`student-${studentId}`, 'default');
     revalidatePath('/dashboard/students');
     revalidatePath(`/dashboard/students/${studentId}` as any);
 
@@ -694,8 +694,8 @@ export async function deactivateStudent(studentId: string): Promise<ActionResult
       success: true
     });
 
-    revalidateTag(CACHE_TAGS.STUDENTS);
-    revalidateTag(`student-${studentId}`);
+    revalidateTag(CACHE_TAGS.STUDENTS, 'default');
+    revalidateTag(`student-${studentId}`, 'default');
     revalidatePath('/dashboard/students');
 
     return {
@@ -803,10 +803,10 @@ export const exportStudentData = cache(async (studentId: string) => {
  */
 export async function clearStudentCache(studentId?: string): Promise<void> {
   if (studentId) {
-    revalidateTag(`student-${studentId}`);
+    revalidateTag(`student-${studentId}`, 'default');
   }
-  revalidateTag(CACHE_TAGS.STUDENTS);
-  revalidateTag('student-list');
-  revalidateTag('student-search');
+  revalidateTag(CACHE_TAGS.STUDENTS, 'default');
+  revalidateTag('student-list', 'default');
+  revalidateTag('student-search', 'default');
   revalidatePath('/dashboard/students');
 }

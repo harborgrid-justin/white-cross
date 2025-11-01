@@ -1432,7 +1432,7 @@ export default incidentReportsSlice.reducer;
 // SELECTORS
 // =====================
 
-import type { RootState } from '@/stores/reduxStore';
+import type { RootState } from '@/stores/store';
 
 /**
  * Select all incident reports.

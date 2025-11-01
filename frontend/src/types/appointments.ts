@@ -20,6 +20,36 @@ import type { BaseEntity } from './common';
 import type { Student, User } from '../services/types';
 
 // =====================
+// ENUMS
+// =====================
+
+/**
+ * Appointment Type Enum
+ * Defines the various types of appointments that can be scheduled
+ */
+export enum AppointmentType {
+  ROUTINE_CHECKUP = 'ROUTINE_CHECKUP',
+  MEDICATION_ADMINISTRATION = 'MEDICATION_ADMINISTRATION',
+  INJURY_ASSESSMENT = 'INJURY_ASSESSMENT',
+  ILLNESS_EVALUATION = 'ILLNESS_EVALUATION',
+  FOLLOW_UP = 'FOLLOW_UP',
+  SCREENING = 'SCREENING',
+  EMERGENCY = 'EMERGENCY',
+}
+
+/**
+ * Appointment Status Enum
+ * Tracks the lifecycle status of an appointment
+ */
+export enum AppointmentStatus {
+  SCHEDULED = 'SCHEDULED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+  NO_SHOW = 'NO_SHOW',
+}
+
+// =====================
 // VALIDATION CONSTANTS
 // =====================
 
@@ -63,36 +93,6 @@ export const APPOINTMENT_STATUS_TRANSITIONS: Record<AppointmentStatus, Appointme
   [AppointmentStatus.CANCELLED]: [],
   [AppointmentStatus.NO_SHOW]: [],
 } as const;
-
-// =====================
-// ENUMS
-// =====================
-
-/**
- * Appointment Type Enum
- * Defines the various types of appointments that can be scheduled
- */
-export enum AppointmentType {
-  ROUTINE_CHECKUP = 'ROUTINE_CHECKUP',
-  MEDICATION_ADMINISTRATION = 'MEDICATION_ADMINISTRATION',
-  INJURY_ASSESSMENT = 'INJURY_ASSESSMENT',
-  ILLNESS_EVALUATION = 'ILLNESS_EVALUATION',
-  FOLLOW_UP = 'FOLLOW_UP',
-  SCREENING = 'SCREENING',
-  EMERGENCY = 'EMERGENCY',
-}
-
-/**
- * Appointment Status Enum
- * Tracks the lifecycle status of an appointment
- */
-export enum AppointmentStatus {
-  SCHEDULED = 'SCHEDULED',
-  IN_PROGRESS = 'IN_PROGRESS',
-  COMPLETED = 'COMPLETED',
-  CANCELLED = 'CANCELLED',
-  NO_SHOW = 'NO_SHOW',
-}
 
 /**
  * Waitlist Priority Enum

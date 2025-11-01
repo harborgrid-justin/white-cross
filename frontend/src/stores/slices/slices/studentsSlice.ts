@@ -41,7 +41,7 @@ export {
   selectStudentsWithAllergies,
   selectStudentsWithMedications,
   selectStudentByNumber,
-} from '../../pages/students/store/studentsSlice';
+} from '../studentsSlice';
 
 // Default export
-export { studentsReducer as default } from '../../pages/students/store/studentsSlice';
+export { studentsReducer as default } from '../studentsSlice';

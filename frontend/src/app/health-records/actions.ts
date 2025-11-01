@@ -200,9 +200,9 @@ export async function createHealthRecordAction(
     });
 
     // Enhanced cache invalidation with Next.js v16
-    revalidateTag('health-records');
-    revalidateTag(`student-${validatedData.studentId}-health-records`);
-    revalidateTag('phi-data');
+    revalidateTag('health-records', 'default');
+    revalidateTag(`student-${validatedData.studentId}-health-records`, 'default');
+    revalidateTag('phi-data', 'default');
     revalidatePath(`/students/${validatedData.studentId}/health-records`);
     revalidatePath('/health-records');
 
@@ -359,9 +359,9 @@ export async function updateHealthRecordAction(
     });
 
     // Enhanced cache invalidation
-    revalidateTag('health-records');
-    revalidateTag(`health-record-${id}`);
-    revalidateTag('phi-data');
+    revalidateTag('health-records', 'default');
+    revalidateTag(`health-record-${id}`, 'default');
+    revalidateTag('phi-data', 'default');
     revalidatePath(`/health-records/${id}`);
     revalidatePath('/health-records');
 
@@ -441,9 +441,9 @@ export async function deleteHealthRecordAction(id: string): Promise<ActionResult
     });
 
     // Enhanced cache invalidation
-    revalidateTag('health-records');
-    revalidateTag(`health-record-${id}`);
-    revalidateTag('phi-data');
+    revalidateTag('health-records', 'default');
+    revalidateTag(`health-record-${id}`, 'default');
+    revalidateTag('phi-data', 'default');
     revalidatePath('/health-records');
 
     return {
@@ -551,10 +551,10 @@ export async function createImmunizationAction(
     });
 
     // Enhanced cache invalidation
-    revalidateTag('health-records');
-    revalidateTag('immunizations');
-    revalidateTag(`student-${validatedData.studentId}-health-records`);
-    revalidateTag('phi-data');
+    revalidateTag('health-records', 'default');
+    revalidateTag('immunizations', 'default');
+    revalidateTag(`student-${validatedData.studentId}-health-records`, 'default');
+    revalidateTag('phi-data', 'default');
     revalidatePath(`/students/${validatedData.studentId}/health-records/immunizations`);
     revalidatePath('/health-records');
 
@@ -666,12 +666,12 @@ export async function createAllergyAction(
     });
 
     // Enhanced cache invalidation with immediate revalidation for emergency data
-    revalidateTag('health-records');
-    revalidateTag('allergies');
-    revalidateTag(`student-${validatedData.studentId}-allergies`);
-    revalidateTag(`student-${validatedData.studentId}-health-records`);
-    revalidateTag('emergency-phi-data');
-    revalidateTag('phi-data');
+    revalidateTag('health-records', 'default');
+    revalidateTag('allergies', 'default');
+    revalidateTag(`student-${validatedData.studentId}-allergies`, 'default');
+    revalidateTag(`student-${validatedData.studentId}-health-records`, 'default');
+    revalidateTag('emergency-phi-data', 'default');
+    revalidateTag('phi-data', 'default');
     revalidatePath(`/students/${validatedData.studentId}/health-records/allergies`);
     revalidatePath('/health-records');
 

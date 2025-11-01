@@ -242,8 +242,8 @@ export async function updateProfileAction(
     });
 
     // Enhanced cache invalidation
-    revalidateTag('user-settings');
-    revalidateTag(`user-${user.id}`);
+    revalidateTag('user-settings', 'default');
+    revalidateTag(`user-${user.id}`, 'default');
     revalidatePath('/settings/profile');
 
     return {
@@ -335,8 +335,8 @@ export async function uploadAvatarAction(
     });
 
     // Enhanced cache invalidation
-    revalidateTag('user-settings');
-    revalidateTag(`user-${user.id}`);
+    revalidateTag('user-settings', 'default');
+    revalidateTag(`user-${user.id}`, 'default');
     revalidatePath('/settings/profile');
 
     return {
@@ -655,8 +655,8 @@ export async function updateNotificationPreferencesAction(
     });
 
     // Enhanced cache invalidation
-    revalidateTag('user-settings');
-    revalidateTag(`user-${user.id}`);
+    revalidateTag('user-settings', 'default');
+    revalidateTag(`user-${user.id}`, 'default');
     revalidatePath('/settings/notifications');
 
     return {
@@ -735,8 +735,8 @@ export async function updatePrivacySettingsAction(
     });
 
     // Enhanced cache invalidation
-    revalidateTag('user-settings');
-    revalidateTag(`user-${user.id}`);
+    revalidateTag('user-settings', 'default');
+    revalidateTag(`user-${user.id}`, 'default');
     revalidatePath('/settings/privacy');
 
     return {

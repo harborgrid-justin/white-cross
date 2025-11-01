@@ -393,8 +393,8 @@ export async function createNotificationAction(data: CreateNotificationData): Pr
     });
 
     // Cache invalidation
-    revalidateTag(NOTIFICATION_CACHE_TAGS.NOTIFICATIONS);
-    revalidateTag('notification-list');
+    revalidateTag(NOTIFICATION_CACHE_TAGS.NOTIFICATIONS, 'default');
+    revalidateTag('notification-list', 'default');
     revalidatePath('/notifications', 'page');
 
     return {
@@ -455,9 +455,9 @@ export async function updateNotificationAction(
     }
 
     // Cache invalidation (minimal audit logging for read status)
-    revalidateTag(NOTIFICATION_CACHE_TAGS.NOTIFICATIONS);
-    revalidateTag(`notification-${notificationId}`);
-    revalidateTag('notification-list');
+    revalidateTag(NOTIFICATION_CACHE_TAGS.NOTIFICATIONS, 'default');
+    revalidateTag(`notification-${notificationId}`, 'default');
+    revalidateTag('notification-list', 'default');
     revalidatePath('/notifications', 'page');
 
     return {
@@ -506,9 +506,9 @@ export async function markNotificationReadAction(notificationId: string): Promis
     }
 
     // Cache invalidation (no audit log for read status)
-    revalidateTag(NOTIFICATION_CACHE_TAGS.NOTIFICATIONS);
-    revalidateTag(`notification-${notificationId}`);
-    revalidateTag('notification-list');
+    revalidateTag(NOTIFICATION_CACHE_TAGS.NOTIFICATIONS, 'default');
+    revalidateTag(`notification-${notificationId}`, 'default');
+    revalidateTag('notification-list', 'default');
     revalidatePath('/notifications', 'page');
 
     return {
@@ -557,8 +557,8 @@ export async function markAllNotificationsReadAction(userId: string): Promise<Ac
     }
 
     // Cache invalidation
-    revalidateTag(NOTIFICATION_CACHE_TAGS.NOTIFICATIONS);
-    revalidateTag('notification-list');
+    revalidateTag(NOTIFICATION_CACHE_TAGS.NOTIFICATIONS, 'default');
+    revalidateTag('notification-list', 'default');
     revalidatePath('/notifications', 'page');
 
     return {
@@ -623,8 +623,8 @@ export async function updateNotificationPreferencesAction(
     });
 
     // Cache invalidation
-    revalidateTag(NOTIFICATION_CACHE_TAGS.PREFERENCES);
-    revalidateTag(`notification-preferences-${userId}`);
+    revalidateTag(NOTIFICATION_CACHE_TAGS.PREFERENCES, 'default');
+    revalidateTag(`notification-preferences-${userId}`, 'default');
     revalidatePath('/notifications/preferences', 'page');
 
     return {
@@ -697,8 +697,8 @@ export async function createNotificationTemplateAction(data: CreateNotificationT
     });
 
     // Cache invalidation
-    revalidateTag(NOTIFICATION_CACHE_TAGS.TEMPLATES);
-    revalidateTag('notification-template-list');
+    revalidateTag(NOTIFICATION_CACHE_TAGS.TEMPLATES, 'default');
+    revalidateTag('notification-template-list', 'default');
     revalidatePath('/notifications/templates', 'page');
 
     return {
@@ -1181,19 +1181,19 @@ export async function getNotificationsDashboardData(): Promise<{
  */
 export async function clearNotificationCache(resourceType?: string, resourceId?: string): Promise<void> {
   if (resourceType && resourceId) {
-    revalidateTag(`${resourceType}-${resourceId}`);
+    revalidateTag(`${resourceType}-${resourceId}`, 'default');
   }
   
   // Clear all notification caches
   Object.values(NOTIFICATION_CACHE_TAGS).forEach(tag => {
-    revalidateTag(tag);
+    revalidateTag(tag, 'default');
   });
 
   // Clear list caches
-  revalidateTag('notification-list');
-  revalidateTag('notification-template-list');
-  revalidateTag('notification-stats');
-  revalidateTag('notification-dashboard');
+  revalidateTag('notification-list', 'default');
+  revalidateTag('notification-template-list', 'default');
+  revalidateTag('notification-stats', 'default');
+  revalidateTag('notification-dashboard', 'default');
 
   // Clear paths
   revalidatePath('/notifications', 'page');

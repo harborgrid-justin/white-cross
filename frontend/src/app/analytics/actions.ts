@@ -280,8 +280,8 @@ export async function generateReportAction(
     });
 
     // Cache invalidation
-    revalidateTag(ANALYTICS_CACHE_TAGS.REPORTS);
-    revalidateTag('reports-list');
+    revalidateTag(ANALYTICS_CACHE_TAGS.REPORTS, 'default');
+    revalidateTag('reports-list', 'default');
     revalidatePath('/analytics/reports', 'page');
 
     return {
@@ -356,8 +356,8 @@ export async function saveDashboardWidgetAction(
     });
 
     // Cache invalidation
-    revalidateTag(ANALYTICS_CACHE_TAGS.DASHBOARDS);
-    revalidateTag(`dashboard-${dashboardId}`);
+    revalidateTag(ANALYTICS_CACHE_TAGS.DASHBOARDS, 'default');
+    revalidateTag(`dashboard-${dashboardId}`, 'default');
     revalidatePath('/analytics/dashboard', 'page');
 
     return {
@@ -426,8 +426,8 @@ export async function createScheduledReportAction(
     });
 
     // Cache invalidation
-    revalidateTag(ANALYTICS_CACHE_TAGS.REPORTS);
-    revalidateTag('reports-list');
+    revalidateTag(ANALYTICS_CACHE_TAGS.REPORTS, 'default');
+    revalidateTag('reports-list', 'default');
     revalidatePath('/analytics/reports', 'page');
 
     return {
@@ -504,7 +504,7 @@ export async function exportAnalyticsDataAction(
     });
 
     // Cache invalidation
-    revalidateTag(ANALYTICS_CACHE_TAGS.EXPORTS);
+    revalidateTag(ANALYTICS_CACHE_TAGS.EXPORTS, 'default');
     revalidatePath('/analytics', 'page');
 
     return {
@@ -601,10 +601,10 @@ export async function getAnalyticsSummary(): Promise<{
  */
 export async function clearAnalyticsCache(): Promise<void> {
   Object.values(ANALYTICS_CACHE_TAGS).forEach(tag => {
-    revalidateTag(tag);
+    revalidateTag(tag, 'default');
   });
   
-  revalidateTag('metrics-list');
-  revalidateTag('reports-list');
+  revalidateTag('metrics-list', 'default');
+  revalidateTag('reports-list', 'default');
   revalidatePath('/analytics', 'page');
 }

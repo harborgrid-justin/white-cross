@@ -292,9 +292,9 @@ export async function createIncidentAction(data: CreateIncidentData): Promise<Ac
     });
 
     // Cache invalidation
-    revalidateTag(INCIDENT_CACHE_TAGS.INCIDENTS);
-    revalidateTag('incident-list');
-    revalidateTag(`student-${data.studentId}-incidents`);
+    revalidateTag(INCIDENT_CACHE_TAGS.INCIDENTS, 'default');
+    revalidateTag('incident-list', 'default');
+    revalidateTag(`student-${data.studentId}-incidents`, 'default');
     revalidatePath('/incidents', 'page');
     revalidatePath(`/students/${data.studentId}/incidents`, 'page');
 
@@ -366,11 +366,11 @@ export async function updateIncidentAction(
     });
 
     // Cache invalidation
-    revalidateTag(INCIDENT_CACHE_TAGS.INCIDENTS);
-    revalidateTag(`incident-${incidentId}`);
-    revalidateTag('incident-list');
+    revalidateTag(INCIDENT_CACHE_TAGS.INCIDENTS, 'default');
+    revalidateTag(`incident-${incidentId}`, 'default');
+    revalidateTag('incident-list', 'default');
     if (response.data.studentId) {
-      revalidateTag(`student-${response.data.studentId}-incidents`);
+      revalidateTag(`student-${response.data.studentId}-incidents`, 'default');
     }
     revalidatePath('/incidents', 'page');
     revalidatePath(`/incidents/${incidentId}`, 'page');
@@ -435,9 +435,9 @@ export async function deleteIncidentAction(incidentId: string): Promise<ActionRe
     });
 
     // Cache invalidation
-    revalidateTag(INCIDENT_CACHE_TAGS.INCIDENTS);
-    revalidateTag(`incident-${incidentId}`);
-    revalidateTag('incident-list');
+    revalidateTag(INCIDENT_CACHE_TAGS.INCIDENTS, 'default');
+    revalidateTag(`incident-${incidentId}`, 'default');
+    revalidateTag('incident-list', 'default');
     revalidatePath('/incidents', 'page');
 
     return {
@@ -580,10 +580,10 @@ export async function addWitnessAction(data: CreateWitnessData): Promise<ActionR
     });
 
     // Cache invalidation
-    revalidateTag(INCIDENT_CACHE_TAGS.WITNESSES);
-    revalidateTag(INCIDENT_CACHE_TAGS.INCIDENTS);
-    revalidateTag(`incident-${data.incidentId}`);
-    revalidateTag(`incident-witnesses-${data.incidentId}`);
+    revalidateTag(INCIDENT_CACHE_TAGS.WITNESSES, 'default');
+    revalidateTag(INCIDENT_CACHE_TAGS.INCIDENTS, 'default');
+    revalidateTag(`incident-${data.incidentId}`, 'default');
+    revalidateTag(`incident-witnesses-${data.incidentId}`, 'default');
     revalidatePath(`/incidents/${data.incidentId}/witnesses`, 'page');
 
     return {
@@ -655,10 +655,10 @@ export async function submitWitnessStatementAction(data: CreateStatementData): P
     });
 
     // Cache invalidation
-    revalidateTag(INCIDENT_CACHE_TAGS.STATEMENTS);
-    revalidateTag(INCIDENT_CACHE_TAGS.INCIDENTS);
-    revalidateTag(`incident-${data.incidentId}`);
-    revalidateTag(`witness-statement-${data.witnessId}`);
+    revalidateTag(INCIDENT_CACHE_TAGS.STATEMENTS, 'default');
+    revalidateTag(INCIDENT_CACHE_TAGS.INCIDENTS, 'default');
+    revalidateTag(`incident-${data.incidentId}`, 'default');
+    revalidateTag(`witness-statement-${data.witnessId}`, 'default');
     revalidatePath(`/incidents/${data.incidentId}/witnesses/${data.witnessId}`, 'page');
 
     return {
@@ -819,10 +819,10 @@ export async function getIncidentCount(filters?: Record<string, unknown>): Promi
  */
 export async function clearIncidentCache(incidentId?: string): Promise<void> {
   if (incidentId) {
-    revalidateTag(`incident-${incidentId}`);
+    revalidateTag(`incident-${incidentId}`, 'default');
   }
-  revalidateTag(INCIDENT_CACHE_TAGS.INCIDENTS);
-  revalidateTag('incident-list');
+  revalidateTag(INCIDENT_CACHE_TAGS.INCIDENTS, 'default');
+  revalidateTag('incident-list', 'default');
   revalidatePath('/incidents', 'page');
 }
 

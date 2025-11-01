@@ -430,8 +430,8 @@ export async function createVendorAction(data: CreateVendorData): Promise<Action
     });
 
     // Cache invalidation
-    revalidateTag(VENDOR_CACHE_TAGS.VENDORS);
-    revalidateTag('vendor-list');
+    revalidateTag(VENDOR_CACHE_TAGS.VENDORS, 'default');
+    revalidateTag('vendor-list', 'default');
     revalidatePath('/vendors', 'page');
 
     return {
@@ -518,9 +518,9 @@ export async function updateVendorAction(
     });
 
     // Cache invalidation
-    revalidateTag(VENDOR_CACHE_TAGS.VENDORS);
-    revalidateTag(`vendor-${vendorId}`);
-    revalidateTag('vendor-list');
+    revalidateTag(VENDOR_CACHE_TAGS.VENDORS, 'default');
+    revalidateTag(`vendor-${vendorId}`, 'default');
+    revalidateTag('vendor-list', 'default');
     revalidatePath('/vendors', 'page');
     revalidatePath(`/vendors/${vendorId}`, 'page');
 
@@ -584,9 +584,9 @@ export async function deleteVendorAction(vendorId: string): Promise<ActionResult
     });
 
     // Cache invalidation
-    revalidateTag(VENDOR_CACHE_TAGS.VENDORS);
-    revalidateTag(`vendor-${vendorId}`);
-    revalidateTag('vendor-list');
+    revalidateTag(VENDOR_CACHE_TAGS.VENDORS, 'default');
+    revalidateTag(`vendor-${vendorId}`, 'default');
+    revalidateTag('vendor-list', 'default');
     revalidatePath('/vendors', 'page');
 
     return {
@@ -657,9 +657,9 @@ export async function toggleVendorStatusAction(
     });
 
     // Cache invalidation
-    revalidateTag(VENDOR_CACHE_TAGS.VENDORS);
-    revalidateTag(`vendor-${vendorId}`);
-    revalidateTag('vendor-list');
+    revalidateTag(VENDOR_CACHE_TAGS.VENDORS, 'default');
+    revalidateTag(`vendor-${vendorId}`, 'default');
+    revalidateTag('vendor-list', 'default');
     revalidatePath('/vendors', 'page');
     revalidatePath(`/vendors/${vendorId}`, 'page');
 
@@ -731,9 +731,9 @@ export async function createVendorEvaluationAction(
     });
 
     // Cache invalidation
-    revalidateTag(VENDOR_CACHE_TAGS.EVALUATIONS);
-    revalidateTag(`vendor-evaluations-${vendorId}`);
-    revalidateTag(`vendor-${vendorId}`);
+    revalidateTag(VENDOR_CACHE_TAGS.EVALUATIONS, 'default');
+    revalidateTag(`vendor-evaluations-${vendorId}`, 'default');
+    revalidateTag(`vendor-${vendorId}`, 'default');
     revalidatePath('/vendors', 'page');
     revalidatePath(`/vendors/${vendorId}`, 'page');
 
@@ -930,19 +930,19 @@ export async function getVendorOverview(vendorId: string): Promise<{
  */
 export async function clearVendorCache(vendorId?: string): Promise<void> {
   if (vendorId) {
-    revalidateTag(`vendor-${vendorId}`);
-    revalidateTag(`vendor-contracts-${vendorId}`);
-    revalidateTag(`vendor-evaluations-${vendorId}`);
+    revalidateTag(`vendor-${vendorId}`, 'default');
+    revalidateTag(`vendor-contracts-${vendorId}`, 'default');
+    revalidateTag(`vendor-evaluations-${vendorId}`, 'default');
   }
   
   // Clear all vendor caches
   Object.values(VENDOR_CACHE_TAGS).forEach(tag => {
-    revalidateTag(tag);
+    revalidateTag(tag, 'default');
   });
 
   // Clear list caches
-  revalidateTag('vendor-list');
-  revalidateTag('vendor-stats');
+  revalidateTag('vendor-list', 'default');
+  revalidateTag('vendor-stats', 'default');
 
   // Clear paths
   revalidatePath('/vendors', 'page');

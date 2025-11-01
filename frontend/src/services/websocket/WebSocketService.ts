@@ -54,7 +54,7 @@ export enum WebSocketEvent {
 /**
  * Event handler type
  */
-type EventHandler = (data: any) => void;
+type EventHandler = (data: unknown) => void;
 
 /**
  * Connection state change listener
@@ -224,7 +224,7 @@ class WebSocketService {
   /**
    * Emit event to registered handlers
    */
-  private emit(event: string, data: any): void {
+  private emit(event: string, data: unknown): void {
     const handlers = this.eventHandlers.get(event);
     if (handlers) {
       handlers.forEach(handler => {

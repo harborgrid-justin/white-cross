@@ -52,7 +52,7 @@ export const arrayUtils = {
   /**
    * Deep flattens nested arrays
    */
-  flattenDeep: <T>(array: any[]) => _.flattenDeep(array),
+  flattenDeep: (array: readonly unknown[]) => _.flattenDeep(array),
 
   /**
    * Takes first N elements from array
@@ -211,8 +211,8 @@ export const functionUtils = {
   /**
    * Debounces function calls
    */
-  debounce: <T extends (...args: any[]) => any>(
-    func: T,
+  debounce: <TFunc extends (...args: readonly unknown[]) => unknown>(
+    func: TFunc,
     wait: number,
     options?: _.DebounceSettings
   ) => _.debounce(func, wait, options),
@@ -220,8 +220,8 @@ export const functionUtils = {
   /**
    * Throttles function calls
    */
-  throttle: <T extends (...args: any[]) => any>(
-    func: T,
+  throttle: <TFunc extends (...args: readonly unknown[]) => unknown>(
+    func: TFunc,
     wait: number,
     options?: _.ThrottleSettings
   ) => _.throttle(func, wait, options),
@@ -229,7 +229,7 @@ export const functionUtils = {
   /**
    * Memoizes function results
    */
-  memoize: <T extends (...args: any[]) => any>(func: T) => _.memoize(func),
+  memoize: <TFunc extends (...args: readonly unknown[]) => unknown>(func: TFunc) => _.memoize(func),
 
   /**
    * Creates a function that negates the result of the predicate
@@ -334,12 +334,12 @@ export const validationUtils = {
   /**
    * Checks if value is empty (null, undefined, empty string, empty array, empty object)
    */
-  isEmpty: (value: any) => _.isEmpty(value),
+  isEmpty: (value: unknown) => _.isEmpty(value),
 
   /**
    * Checks if value is not empty
    */
-  isNotEmpty: (value: any) => !_.isEmpty(value),
+  isNotEmpty: (value: unknown) => !_.isEmpty(value),
 
   /**
    * Checks if all values in array are unique
@@ -454,24 +454,24 @@ export const reactUtils = {
   /**
    * Debounces search input changes
    */
-  debounceSearch: <T extends (...args: any[]) => any>(
-    func: T,
+  debounceSearch: <TFunc extends (...args: readonly unknown[]) => unknown>(
+    func: TFunc,
     wait: number = 300
   ) => _.debounce(func, wait),
 
   /**
    * Throttles scroll events
    */
-  throttleScroll: <T extends (...args: any[]) => any>(
-    func: T,
+  throttleScroll: <TFunc extends (...args: readonly unknown[]) => unknown>(
+    func: TFunc,
     wait: number = 100
   ) => _.throttle(func, wait),
 
   /**
    * Groups form data by field categories
    */
-  groupFormFields: <T extends Record<string, any>>(data: T, groups: Record<string, string[]>) => {
-    const grouped: Record<string, Record<string, any>> = {};
+  groupFormFields: <T extends Record<string, unknown>>(data: T, groups: Record<string, string[]>) => {
+    const grouped: Record<string, Record<string, unknown>> = {};
 
     Object.entries(groups).forEach(([groupName, fieldNames]) => {
       grouped[groupName] = _.pick(data, fieldNames);
@@ -490,9 +490,9 @@ export const reactUtils = {
   /**
    * Validates form data against schema
    */
-  validateFormData: <T extends Record<string, any>>(
+  validateFormData: <T extends Record<string, unknown>>(
     data: T,
-    schema: Record<keyof T, (value: any) => boolean>
+    schema: Record<keyof T, (value: unknown) => boolean>
   ) => {
     const errors: Partial<Record<keyof T, string>> = {};
 
@@ -520,7 +520,7 @@ export const reactUtils = {
   /**
    * Sorts data for table display
    */
-  sortTableData: <T extends Record<string, any>>(
+  sortTableData: <T extends Record<string, unknown>>(
     data: T[],
     sortBy: keyof T,
     sortOrder: 'asc' | 'desc' = 'asc'

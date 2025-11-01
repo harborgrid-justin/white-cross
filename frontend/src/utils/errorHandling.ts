@@ -235,7 +235,7 @@ function isApiError(error: unknown): error is ApiError {
     typeof error === 'object' &&
     error !== null &&
     'message' in error &&
-    typeof (error as any).message === 'string'
+    typeof (error as { message: unknown }).message === 'string'
   );
 }
 
@@ -361,18 +361,18 @@ function getNotificationType(type: ErrorType): 'error' | 'warning' | 'info' {
 /**
  * Higher-order function for wrapping async operations with error handling
  */
-export function withErrorHandling<T extends (...args: any[]) => Promise<any>>(
-  fn: T,
+export function withErrorHandling<TFunc extends (...args: readonly unknown[]) => Promise<unknown>>(
+  fn: TFunc,
   context?: string,
   options: {
     logErrors?: boolean;
     showNotifications?: boolean;
     onError?: (error: ProcessedError) => void;
   } = {}
-): T {
+): TFunc {
   const { logErrors = true, showNotifications = false, onError } = options;
 
-  return (async (...args: Parameters<T>) => {
+  return (async (...args: Parameters<TFunc>) => {
     try {
       return await fn(...args);
     } catch (error) {
@@ -393,7 +393,7 @@ export function withErrorHandling<T extends (...args: any[]) => Promise<any>>(
 
       throw processedError;
     }
-  }) as T;
+  }) as TFunc;
 }
 
 /**

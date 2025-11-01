@@ -89,7 +89,7 @@ import type { LoginCredentials, RegisterData } from '@/services/modules/authApi'
 import { User } from '@/types';
 import toast from 'react-hot-toast';
 import debug from 'debug';
-import { clearPersistedState } from '@/stores/reduxStore';
+import { clearPersistedState } from '@/stores/store';
 
 const log = debug('whitecross:auth-slice');
 

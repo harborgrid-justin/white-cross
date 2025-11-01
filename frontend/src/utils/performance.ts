@@ -6,7 +6,7 @@
 /**
  * Debounce function to limit the rate at which a function can fire
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: readonly unknown[]) => unknown>(
   func: T,
   wait: number,
   immediate = false
@@ -34,13 +34,13 @@ export function debounce<T extends (...args: any[]) => any>(
 /**
  * Throttle function to limit the rate at which a function can fire
  */
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: readonly unknown[]) => unknown>(
   func: T,
   limit: number
 ): (...args: Parameters<T>) => void {
   let inThrottle: boolean;
   
-  return function executedFunction(...args: Parameters<T>) {
+  return function executedFunction(this: unknown, ...args: Parameters<T>) {
     if (!inThrottle) {
       func.apply(this, args);
       inThrottle = true;
@@ -52,52 +52,52 @@ export function throttle<T extends (...args: any[]) => any>(
 /**
  * Memoize function to cache function results
  */
-export function memoize<T extends (...args: any[]) => any>(
-  func: T,
-  getKey?: (...args: Parameters<T>) => string
-): T {
-  const cache = new Map<string, ReturnType<T>>();
+export function memoize<TFunc extends (...args: readonly unknown[]) => unknown>(
+  func: TFunc,
+  getKey?: (...args: Parameters<TFunc>) => string
+): TFunc {
+  const cache = new Map<string, ReturnType<TFunc>>();
   
-  return ((...args: Parameters<T>): ReturnType<T> => {
+  return ((...args: Parameters<TFunc>): ReturnType<TFunc> => {
     const key = getKey ? getKey(...args) : JSON.stringify(args);
     
     if (cache.has(key)) {
       return cache.get(key)!;
     }
     
-    const result = func(...args);
+    const result = func(...args) as ReturnType<TFunc>;
     cache.set(key, result);
     
     return result;
-  }) as T;
+  }) as TFunc;
 }
 
 /**
  * Create a function that can only be called once
  */
-export function once<T extends (...args: any[]) => any>(func: T): T {
+export function once<TFunc extends (...args: readonly unknown[]) => unknown>(func: TFunc): TFunc {
   let called = false;
-  let result: ReturnType<T>;
+  let result: ReturnType<TFunc>;
   
-  return ((...args: Parameters<T>): ReturnType<T> => {
+  return ((...args: Parameters<TFunc>): ReturnType<TFunc> => {
     if (!called) {
       called = true;
-      result = func(...args);
+      result = func(...args) as ReturnType<TFunc>;
     }
-    return result;
-  }) as T;
+    return result!;
+  }) as TFunc;
 }
 
 /**
  * Measure function execution time
  */
-export function measurePerformance<T extends (...args: any[]) => any>(
-  func: T,
+export function measurePerformance<TFunc extends (...args: readonly unknown[]) => unknown>(
+  func: TFunc,
   label?: string
-): T {
-  return ((...args: Parameters<T>): ReturnType<T> => {
+): TFunc {
+  return ((...args: Parameters<TFunc>): ReturnType<TFunc> => {
     const startTime = performance.now();
-    const result = func(...args);
+    const result = func(...args) as ReturnType<TFunc>;
     const endTime = performance.now();
     
     const executionTime = endTime - startTime;
@@ -106,22 +106,22 @@ export function measurePerformance<T extends (...args: any[]) => any>(
     console.log(`${functionName} executed in ${executionTime.toFixed(2)}ms`);
     
     return result;
-  }) as T;
+  }) as TFunc;
 }
 
 /**
  * Async debounce for promise-returning functions
  */
-export function debounceAsync<T extends (...args: any[]) => Promise<any>>(
-  func: T,
+export function debounceAsync<TFunc extends (...args: readonly unknown[]) => Promise<unknown>>(
+  func: TFunc,
   wait: number
-): (...args: Parameters<T>) => Promise<ReturnType<T>> {
+): (...args: Parameters<TFunc>) => Promise<ReturnType<TFunc>> {
   let timeout: NodeJS.Timeout | null = null;
-  let resolveList: Array<(value: ReturnType<T>) => void> = [];
-  let rejectList: Array<(reason: any) => void> = [];
+  let resolveList: Array<(value: ReturnType<TFunc>) => void> = [];
+  let rejectList: Array<(reason: unknown) => void> = [];
   
-  return (...args: Parameters<T>): Promise<ReturnType<T>> => {
-    return new Promise<ReturnType<T>>((resolve, reject) => {
+  return (...args: Parameters<TFunc>): Promise<ReturnType<TFunc>> => {
+    return new Promise<ReturnType<TFunc>>((resolve, reject) => {
       resolveList.push(resolve);
       rejectList.push(reject);
       
@@ -138,7 +138,7 @@ export function debounceAsync<T extends (...args: any[]) => Promise<any>>(
         
         try {
           const result = await func(...args);
-          currentResolveList.forEach(resolve => resolve(result));
+          currentResolveList.forEach(resolve => resolve(result as ReturnType<TFunc>));
         } catch (error) {
           currentRejectList.forEach(reject => reject(error));
         }
@@ -150,15 +150,15 @@ export function debounceAsync<T extends (...args: any[]) => Promise<any>>(
 /**
  * Batch function calls and execute them together
  */
-export function batchCalls<T extends (...args: any[]) => any>(
-  func: T,
+export function batchCalls<TFunc extends (...args: readonly unknown[]) => unknown>(
+  func: TFunc,
   batchSize: number = 10,
   delay: number = 100
-): (...args: Parameters<T>) => Promise<ReturnType<T>> {
+): (...args: Parameters<TFunc>) => Promise<ReturnType<TFunc>> {
   let batch: Array<{
-    args: Parameters<T>;
-    resolve: (value: ReturnType<T>) => void;
-    reject: (reason: any) => void;
+    args: Parameters<TFunc>;
+    resolve: (value: ReturnType<TFunc>) => void;
+    reject: (reason: unknown) => void;
   }> = [];
   let timeout: NodeJS.Timeout | null = null;
   
@@ -169,15 +169,15 @@ export function batchCalls<T extends (...args: any[]) => any>(
     for (const item of currentBatch) {
       try {
         const result = await func(...item.args);
-        item.resolve(result);
+        item.resolve(result as ReturnType<TFunc>);
       } catch (error) {
         item.reject(error);
       }
     }
   };
   
-  return (...args: Parameters<T>): Promise<ReturnType<T>> => {
-    return new Promise<ReturnType<T>>((resolve, reject) => {
+  return (...args: Parameters<TFunc>): Promise<ReturnType<TFunc>> => {
+    return new Promise<ReturnType<TFunc>>((resolve, reject) => {
       batch.push({ args, resolve, reject });
       
       if (batch.length >= batchSize) {

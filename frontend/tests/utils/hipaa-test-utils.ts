@@ -26,7 +26,7 @@
  * expect(verifyNoPHILeakage(errorMessage)).toBe(true);
  * ```
  */
-export function verifyNoPHILeakage(data: any): boolean {
+export function verifyNoPHILeakage(data: unknown): boolean {
   const dataStr = JSON.stringify(data);
 
   // Check for common PHI patterns that should not appear in logs
@@ -51,7 +51,7 @@ export function verifyNoPHILeakage(data: any): boolean {
  * expect(validateAuditLog(logEntry)).toBe(true);
  * ```
  */
-export function validateAuditLog(auditLog: any): boolean {
+export function validateAuditLog(auditLog: Record<string, unknown>): boolean {
   const requiredFields = [
     'userId',
     'action',
@@ -95,7 +95,10 @@ export function verifyEncryption(headers: Record<string, string>): boolean {
  * const response = createHIPAACompliantResponse({ students: [] });
  * ```
  */
-export function createHIPAACompliantResponse(data: any, options: any = {}) {
+export function createHIPAACompliantResponse(
+  data: unknown,
+  options: { headers?: Record<string, string> } = {}
+) {
   return {
     ok: true,
     status: 200,
@@ -154,6 +157,6 @@ export const verifyAuditLog = validateAuditLog;
  * @param data - Data to check for PHI
  * @returns Boolean indicating PHI presence
  */
-export function containsPHI(data: any): boolean {
+export function containsPHI(data: unknown): boolean {
   return !verifyNoPHILeakage(data);
 }

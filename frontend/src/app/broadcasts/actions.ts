@@ -352,8 +352,8 @@ export async function createBroadcastAction(data: CreateBroadcastData): Promise<
     });
 
     // Cache invalidation
-    revalidateTag(BROADCAST_CACHE_TAGS.BROADCASTS);
-    revalidateTag('broadcast-list');
+    revalidateTag(BROADCAST_CACHE_TAGS.BROADCASTS, 'default');
+    revalidateTag('broadcast-list', 'default');
     revalidatePath('/broadcasts', 'page');
 
     return {
@@ -435,9 +435,9 @@ export async function updateBroadcastAction(
     });
 
     // Cache invalidation
-    revalidateTag(BROADCAST_CACHE_TAGS.BROADCASTS);
-    revalidateTag(`broadcast-${broadcastId}`);
-    revalidateTag('broadcast-list');
+    revalidateTag(BROADCAST_CACHE_TAGS.BROADCASTS, 'default');
+    revalidateTag(`broadcast-${broadcastId}`, 'default');
+    revalidateTag('broadcast-list', 'default');
     revalidatePath('/broadcasts', 'page');
     revalidatePath(`/broadcasts/${broadcastId}`, 'page');
 
@@ -506,11 +506,11 @@ export async function sendBroadcastAction(broadcastId: string): Promise<ActionRe
     });
 
     // Cache invalidation
-    revalidateTag(BROADCAST_CACHE_TAGS.BROADCASTS);
-    revalidateTag(BROADCAST_CACHE_TAGS.ANALYTICS);
-    revalidateTag(`broadcast-${broadcastId}`);
-    revalidateTag('broadcast-list');
-    revalidateTag('broadcast-stats');
+    revalidateTag(BROADCAST_CACHE_TAGS.BROADCASTS, 'default');
+    revalidateTag(BROADCAST_CACHE_TAGS.ANALYTICS, 'default');
+    revalidateTag(`broadcast-${broadcastId}`, 'default');
+    revalidateTag('broadcast-list', 'default');
+    revalidateTag('broadcast-stats', 'default');
     revalidatePath('/broadcasts', 'page');
     revalidatePath(`/broadcasts/${broadcastId}`, 'page');
 
@@ -584,8 +584,8 @@ export async function createBroadcastTemplateAction(data: CreateBroadcastTemplat
     });
 
     // Cache invalidation
-    revalidateTag(BROADCAST_CACHE_TAGS.TEMPLATES);
-    revalidateTag('broadcast-template-list');
+    revalidateTag(BROADCAST_CACHE_TAGS.TEMPLATES, 'default');
+    revalidateTag('broadcast-template-list', 'default');
     revalidatePath('/broadcasts/templates', 'page');
 
     return {
@@ -761,18 +761,18 @@ export async function getBroadcastOverview(): Promise<{
  */
 export async function clearBroadcastCache(resourceType?: string, resourceId?: string): Promise<void> {
   if (resourceType && resourceId) {
-    revalidateTag(`${resourceType}-${resourceId}`);
+    revalidateTag(`${resourceType}-${resourceId}`, 'default');
   }
   
   // Clear all broadcast caches
   Object.values(BROADCAST_CACHE_TAGS).forEach(tag => {
-    revalidateTag(tag);
+    revalidateTag(tag, 'default');
   });
 
   // Clear list caches
-  revalidateTag('broadcast-list');
-  revalidateTag('broadcast-template-list');
-  revalidateTag('broadcast-stats');
+  revalidateTag('broadcast-list', 'default');
+  revalidateTag('broadcast-template-list', 'default');
+  revalidateTag('broadcast-stats', 'default');
 
   // Clear paths
   revalidatePath('/broadcasts', 'page');

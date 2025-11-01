@@ -375,8 +375,8 @@ export async function createImportJobAction(data: CreateImportJobData): Promise<
     });
 
     // Cache invalidation
-    revalidateTag(IMPORT_CACHE_TAGS.JOBS);
-    revalidateTag('import-job-list');
+    revalidateTag(IMPORT_CACHE_TAGS.JOBS, 'default');
+    revalidateTag('import-job-list', 'default');
     revalidatePath('/import', 'page');
 
     return {
@@ -447,9 +447,9 @@ export async function updateImportJobAction(
     });
 
     // Cache invalidation
-    revalidateTag(IMPORT_CACHE_TAGS.JOBS);
-    revalidateTag(`import-job-${jobId}`);
-    revalidateTag('import-job-list');
+    revalidateTag(IMPORT_CACHE_TAGS.JOBS, 'default');
+    revalidateTag(`import-job-${jobId}`, 'default');
+    revalidateTag('import-job-list', 'default');
     revalidatePath('/import', 'page');
     revalidatePath(`/import/jobs/${jobId}`, 'page');
 
@@ -518,10 +518,10 @@ export async function startImportJobAction(jobId: string): Promise<ActionResult<
     });
 
     // Cache invalidation
-    revalidateTag(IMPORT_CACHE_TAGS.JOBS);
-    revalidateTag(`import-job-${jobId}`);
-    revalidateTag('import-job-list');
-    revalidateTag('import-stats');
+    revalidateTag(IMPORT_CACHE_TAGS.JOBS, 'default');
+    revalidateTag(`import-job-${jobId}`, 'default');
+    revalidateTag('import-job-list', 'default');
+    revalidateTag('import-stats', 'default');
     revalidatePath('/import', 'page');
     revalidatePath(`/import/jobs/${jobId}`, 'page');
 
@@ -590,9 +590,9 @@ export async function validateImportJobAction(jobId: string): Promise<ActionResu
     });
 
     // Cache invalidation
-    revalidateTag(IMPORT_CACHE_TAGS.JOBS);
-    revalidateTag(`import-job-${jobId}`);
-    revalidateTag('import-job-list');
+    revalidateTag(IMPORT_CACHE_TAGS.JOBS, 'default');
+    revalidateTag(`import-job-${jobId}`, 'default');
+    revalidateTag('import-job-list', 'default');
     revalidatePath('/import', 'page');
     revalidatePath(`/import/jobs/${jobId}`, 'page');
 
@@ -666,8 +666,8 @@ export async function createImportTemplateAction(data: CreateImportTemplateData)
     });
 
     // Cache invalidation
-    revalidateTag(IMPORT_CACHE_TAGS.TEMPLATES);
-    revalidateTag('import-template-list');
+    revalidateTag(IMPORT_CACHE_TAGS.TEMPLATES, 'default');
+    revalidateTag('import-template-list', 'default');
     revalidatePath('/import/templates', 'page');
 
     return {

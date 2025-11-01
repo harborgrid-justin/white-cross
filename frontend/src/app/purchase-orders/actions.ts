@@ -349,8 +349,8 @@ export async function createPurchaseOrderAction(data: CreatePurchaseOrderData): 
     });
 
     // Cache invalidation
-    revalidateTag(PURCHASE_ORDER_CACHE_TAGS.ORDERS);
-    revalidateTag('purchase-order-list');
+    revalidateTag(PURCHASE_ORDER_CACHE_TAGS.ORDERS, 'default');
+    revalidateTag('purchase-order-list', 'default');
     revalidatePath('/purchase-orders', 'page');
 
     return {
@@ -421,9 +421,9 @@ export async function updatePurchaseOrderAction(
     });
 
     // Cache invalidation
-    revalidateTag(PURCHASE_ORDER_CACHE_TAGS.ORDERS);
-    revalidateTag(`purchase-order-${purchaseOrderId}`);
-    revalidateTag('purchase-order-list');
+    revalidateTag(PURCHASE_ORDER_CACHE_TAGS.ORDERS, 'default');
+    revalidateTag(`purchase-order-${purchaseOrderId}`, 'default');
+    revalidateTag('purchase-order-list', 'default');
     revalidatePath('/purchase-orders', 'page');
     revalidatePath(`/purchase-orders/${purchaseOrderId}`, 'page');
 
@@ -492,10 +492,10 @@ export async function submitPurchaseOrderAction(purchaseOrderId: string): Promis
     });
 
     // Cache invalidation
-    revalidateTag(PURCHASE_ORDER_CACHE_TAGS.ORDERS);
-    revalidateTag(PURCHASE_ORDER_CACHE_TAGS.APPROVALS);
-    revalidateTag(`purchase-order-${purchaseOrderId}`);
-    revalidateTag('purchase-order-list');
+    revalidateTag(PURCHASE_ORDER_CACHE_TAGS.ORDERS, 'default');
+    revalidateTag(PURCHASE_ORDER_CACHE_TAGS.APPROVALS, 'default');
+    revalidateTag(`purchase-order-${purchaseOrderId}`, 'default');
+    revalidateTag('purchase-order-list', 'default');
     revalidatePath('/purchase-orders', 'page');
     revalidatePath(`/purchase-orders/${purchaseOrderId}`, 'page');
 
@@ -567,10 +567,10 @@ export async function approvePurchaseOrderAction(
     });
 
     // Cache invalidation
-    revalidateTag(PURCHASE_ORDER_CACHE_TAGS.ORDERS);
-    revalidateTag(PURCHASE_ORDER_CACHE_TAGS.APPROVALS);
-    revalidateTag(`purchase-order-${purchaseOrderId}`);
-    revalidateTag('purchase-order-list');
+    revalidateTag(PURCHASE_ORDER_CACHE_TAGS.ORDERS, 'default');
+    revalidateTag(PURCHASE_ORDER_CACHE_TAGS.APPROVALS, 'default');
+    revalidateTag(`purchase-order-${purchaseOrderId}`, 'default');
+    revalidateTag('purchase-order-list', 'default');
     revalidatePath('/purchase-orders', 'page');
     revalidatePath(`/purchase-orders/${purchaseOrderId}`, 'page');
 
@@ -649,10 +649,10 @@ export async function rejectPurchaseOrderAction(
     });
 
     // Cache invalidation
-    revalidateTag(PURCHASE_ORDER_CACHE_TAGS.ORDERS);
-    revalidateTag(PURCHASE_ORDER_CACHE_TAGS.APPROVALS);
-    revalidateTag(`purchase-order-${purchaseOrderId}`);
-    revalidateTag('purchase-order-list');
+    revalidateTag(PURCHASE_ORDER_CACHE_TAGS.ORDERS, 'default');
+    revalidateTag(PURCHASE_ORDER_CACHE_TAGS.APPROVALS, 'default');
+    revalidateTag(`purchase-order-${purchaseOrderId}`, 'default');
+    revalidateTag('purchase-order-list', 'default');
     revalidatePath('/purchase-orders', 'page');
     revalidatePath(`/purchase-orders/${purchaseOrderId}`, 'page');
 
@@ -731,9 +731,9 @@ export async function cancelPurchaseOrderAction(
     });
 
     // Cache invalidation
-    revalidateTag(PURCHASE_ORDER_CACHE_TAGS.ORDERS);
-    revalidateTag(`purchase-order-${purchaseOrderId}`);
-    revalidateTag('purchase-order-list');
+    revalidateTag(PURCHASE_ORDER_CACHE_TAGS.ORDERS, 'default');
+    revalidateTag(`purchase-order-${purchaseOrderId}`, 'default');
+    revalidateTag('purchase-order-list', 'default');
     revalidatePath('/purchase-orders', 'page');
     revalidatePath(`/purchase-orders/${purchaseOrderId}`, 'page');
 
@@ -1178,19 +1178,19 @@ export async function getPurchaseOrdersDashboardData(): Promise<{
  */
 export async function clearPurchaseOrderCache(purchaseOrderId?: string): Promise<void> {
   if (purchaseOrderId) {
-    revalidateTag(`purchase-order-${purchaseOrderId}`);
-    revalidateTag(`purchase-order-items-${purchaseOrderId}`);
+    revalidateTag(`purchase-order-${purchaseOrderId}`, 'default');
+    revalidateTag(`purchase-order-items-${purchaseOrderId}`, 'default');
   }
   
   // Clear all purchase order caches
   Object.values(PURCHASE_ORDER_CACHE_TAGS).forEach(tag => {
-    revalidateTag(tag);
+    revalidateTag(tag, 'default');
   });
 
   // Clear list caches
-  revalidateTag('purchase-order-list');
-  revalidateTag('purchase-order-stats');
-  revalidateTag('purchase-order-dashboard');
+  revalidateTag('purchase-order-list', 'default');
+  revalidateTag('purchase-order-stats', 'default');
+  revalidateTag('purchase-order-dashboard', 'default');
 
   // Clear paths
   revalidatePath('/purchase-orders', 'page');

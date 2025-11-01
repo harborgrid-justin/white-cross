@@ -6,7 +6,6 @@
  */
 
 /// <reference types="jest" />
-/// <reference types="@testing-library/jest-dom" />
 
 import '@testing-library/jest-dom';
 
@@ -47,22 +46,22 @@ declare global {
       /**
        * Validates that a string is a properly formatted email address
        */
-      toBeValidEmail(): any;
+      toBeValidEmail(): jest.Matchers<void>;
 
       /**
        * Validates that a string represents a valid date
        */
-      toBeValidDate(): any;
+      toBeValidDate(): jest.Matchers<void>;
 
       /**
        * Validates that a string is a properly formatted phone number
        */
-      toBeValidPhoneNumber(): any;
+      toBeValidPhoneNumber(): jest.Matchers<void>;
 
       /**
        * Validates that a number falls within a specified range (inclusive)
        */
-      toBeWithinRange(min: number, max: number): any;
+      toBeWithinRange(min: number, max: number): jest.Matchers<void>;
     }
   }
 

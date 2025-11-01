@@ -298,8 +298,8 @@ export async function createFormAction(data: CreateFormData): Promise<ActionResu
     });
 
     // Cache invalidation
-    revalidateTag(FORMS_CACHE_TAGS.FORMS);
-    revalidateTag('forms-list');
+    revalidateTag(FORMS_CACHE_TAGS.FORMS, 'default');
+    revalidateTag('forms-list', 'default');
     revalidatePath('/forms', 'page');
     revalidatePath('/forms/builder', 'page');
 
@@ -405,9 +405,9 @@ export async function updateFormAction(
     });
 
     // Cache invalidation
-    revalidateTag(FORMS_CACHE_TAGS.FORMS);
-    revalidateTag(`form-${formId}`);
-    revalidateTag('forms-list');
+    revalidateTag(FORMS_CACHE_TAGS.FORMS, 'default');
+    revalidateTag(`form-${formId}`, 'default');
+    revalidateTag('forms-list', 'default');
     revalidatePath('/forms', 'page');
     revalidatePath(`/forms/${formId}`, 'page');
     revalidatePath(`/forms/${formId}/edit`, 'page');
@@ -468,7 +468,7 @@ export async function deleteFormAction(formId: string, force: boolean = false): 
       return {
         success: false,
         error: `Cannot delete form with ${form.metadata.totalSubmissions} submission(s). Use force delete or archive instead.`,
-        validationErrors: { submissions: form.metadata.totalSubmissions.toString() }
+        validationErrors: { submissions: [form.metadata.totalSubmissions.toString()] }
       };
     }
 
@@ -494,9 +494,9 @@ export async function deleteFormAction(formId: string, force: boolean = false): 
     });
 
     // Cache invalidation
-    revalidateTag(FORMS_CACHE_TAGS.FORMS);
-    revalidateTag(`form-${formId}`);
-    revalidateTag('forms-list');
+    revalidateTag(FORMS_CACHE_TAGS.FORMS, 'default');
+    revalidateTag(`form-${formId}`, 'default');
+    revalidateTag('forms-list', 'default');
     revalidatePath('/forms', 'page');
 
     return {
@@ -689,10 +689,10 @@ export async function submitFormResponseAction(data: CreateFormResponseData): Pr
     });
 
     // Cache invalidation
-    revalidateTag(FORMS_CACHE_TAGS.FORM_RESPONSES);
-    revalidateTag(FORMS_CACHE_TAGS.FORMS);
-    revalidateTag(`form-${data.formId}`);
-    revalidateTag(`form-responses-${data.formId}`);
+    revalidateTag(FORMS_CACHE_TAGS.FORM_RESPONSES, 'default');
+    revalidateTag(FORMS_CACHE_TAGS.FORMS, 'default');
+    revalidateTag(`form-${data.formId}`, 'default');
+    revalidateTag(`form-responses-${data.formId}`, 'default');
     revalidatePath(`/forms/${data.formId}/responses`, 'page');
 
     return {
@@ -894,11 +894,11 @@ export async function submitFormResponseFromForm(formData: FormData): Promise<Ac
   } catch (error) {
     // Fallback: extract form data manually
     responseData = {};
-    for (const [key, value] of formData.entries()) {
+    Array.from(formData.entries()).forEach(([key, value]) => {
       if (key !== 'formId' && key !== 'data') {
         responseData[key] = value;
       }
-    }
+    });
   }
 
   const submitData: CreateFormResponseData = {
@@ -1112,12 +1112,12 @@ export const getFormsDashboardData = cache(async (): Promise<{
  */
 export async function clearFormCache(formId?: string): Promise<void> {
   if (formId) {
-    revalidateTag(`form-${formId}`);
-    revalidateTag(`form-responses-${formId}`);
+    revalidateTag(`form-${formId}`, 'default');
+    revalidateTag(`form-responses-${formId}`, 'default');
   }
-  revalidateTag(FORMS_CACHE_TAGS.FORMS);
-  revalidateTag(FORMS_CACHE_TAGS.FORM_RESPONSES);
-  revalidateTag('forms-list');
+  revalidateTag(FORMS_CACHE_TAGS.FORMS, 'default');
+  revalidateTag(FORMS_CACHE_TAGS.FORM_RESPONSES, 'default');
+  revalidateTag('forms-list', 'default');
   revalidatePath('/forms', 'page');
 }
 

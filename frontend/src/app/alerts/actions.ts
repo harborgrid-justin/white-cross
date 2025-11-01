@@ -127,8 +127,8 @@ export async function acknowledgeAlert(
       details: JSON.stringify({ actionTaken }),
     });
 
-    revalidateTag('inventory-alerts');
-    revalidateTag('low-stock-alerts');
+    revalidateTag('inventory-alerts', 'default');
+    revalidateTag('low-stock-alerts', 'default');
     revalidatePath('/inventory/alerts');
 
     return {
@@ -161,8 +161,8 @@ export async function dismissAlert(
       resourceId: alertId,
     });
 
-    revalidateTag('inventory-alerts');
-    revalidateTag('expiration-alerts');
+    revalidateTag('inventory-alerts', 'default');
+    revalidateTag('expiration-alerts', 'default');
     revalidatePath('/inventory/alerts');
 
     return {

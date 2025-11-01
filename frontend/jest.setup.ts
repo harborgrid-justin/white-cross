@@ -78,23 +78,23 @@ global.TextDecoder = TextDecoder as any;
 if (typeof global.Request === 'undefined') {
   global.Request = class Request {
     private _url: string;
-    public init?: any;
-    public headers: any;
+    public init?: RequestInit;
+    public headers: Headers;
     public method: string;
-    public body: any;
+    public body: BodyInit | null;
 
-    constructor(url: string, init?: any) {
+    constructor(url: string, init?: RequestInit) {
       this._url = url;
       this.init = init;
       this.method = init?.method || 'GET';
-      this.body = init?.body;
+      this.body = init?.body || null;
 
       // Convert headers object to Headers instance if needed
       if (init?.headers) {
         if (init.headers instanceof Headers) {
           this.headers = init.headers;
         } else {
-          this.headers = new Headers(init.headers);
+          this.headers = new Headers(init.headers as Record<string, string>);
         }
       } else {
         this.headers = new Headers();
@@ -104,7 +104,7 @@ if (typeof global.Request === 'undefined') {
     get url() {
       return this._url;
     }
-  } as any;
+  } as unknown as typeof Request;
 }
 
 /**
@@ -115,22 +115,22 @@ if (typeof global.Request === 'undefined') {
  */
 if (typeof global.Response === 'undefined') {
   global.Response = class Response {
-    constructor(public body?: any, public init?: any) {}
+    constructor(public body?: BodyInit | null, public init?: ResponseInit) {}
 
     /**
      * Creates a JSON response with appropriate headers.
      *
-     * @param {any} data - Data to serialize as JSON
-     * @param {any} init - Response initialization options
+     * @param {unknown} data - Data to serialize as JSON
+     * @param {ResponseInit} init - Response initialization options
      * @returns {Response} Response object with JSON content type
      */
-    static json(data: any, init?: any) {
+    static json(data: unknown, init?: ResponseInit) {
       return new Response(JSON.stringify(data), {
         ...init,
         headers: { 'Content-Type': 'application/json', ...init?.headers },
       });
     }
-  } as any;
+  } as unknown as typeof Response;
 }
 
 /**
@@ -143,11 +143,18 @@ if (typeof global.Headers === 'undefined') {
   global.Headers = class Headers {
     private headers: Map<string, string> = new Map();
 
-    constructor(init?: any) {
+    constructor(init?: Record<string, string> | Headers) {
       if (init) {
-        Object.entries(init).forEach(([key, value]) => {
-          this.headers.set(key.toLowerCase(), value as string);
-        });
+        if (init instanceof Headers) {
+          // Copy from existing Headers instance
+          init.forEach((value, key) => {
+            this.headers.set(key.toLowerCase(), value);
+          });
+        } else {
+          Object.entries(init).forEach(([key, value]) => {
+            this.headers.set(key.toLowerCase(), value);
+          });
+        }
       }
     }
 
@@ -170,7 +177,7 @@ if (typeof global.Headers === 'undefined') {
     forEach(callback: (value: string, key: string) => void) {
       this.headers.forEach((value, key) => callback(value, key));
     }
-  } as any;
+  } as unknown as typeof Headers;
 }
 
 // ==========================================
@@ -279,6 +286,7 @@ jest.mock('@faker-js/faker', () => ({
   faker: {
     string: {
       uuid: () => '123e4567-e89b-12d3-a456-426614174000',
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       alphanumeric: (length: number) => 'ABCD1234',
     },
     internet: {
@@ -310,14 +318,15 @@ jest.mock('@faker-js/faker', () => ({
     lorem: {
       sentence: () => 'Lorem ipsum dolor sit amet.',
       paragraph: () => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       words: (count: number) => 'lorem ipsum dolor',
     },
     helpers: {
-      arrayElement: (arr: any[]) => arr[0],
+      arrayElement: <T>(arr: T[]) => arr[0],
     },
     number: {
-      int: (options: any) => options?.min || 50,
-      float: (options: any) => options?.min || 50.0,
+      int: (options?: { min?: number; max?: number }) => options?.min || 50,
+      float: (options?: { min?: number; max?: number }) => options?.min || 50.0,
     },
     datatype: {
       boolean: () => true,
@@ -343,7 +352,7 @@ global.IntersectionObserver = class IntersectionObserver {
     return [];
   }
   unobserve() {}
-} as any;
+} as unknown as typeof IntersectionObserver;
 
 /**
  * Mock ResizeObserver API for responsive component testing.
@@ -356,7 +365,7 @@ global.ResizeObserver = class ResizeObserver {
   disconnect() {}
   observe() {}
   unobserve() {}
-} as any;
+} as unknown as typeof ResizeObserver;
 
 /**
  * Mock window.matchMedia for responsive design testing.
@@ -445,7 +454,7 @@ global.sessionStorage = sessionStorageMock as Storage;
  */
 const originalError = console.error;
 beforeAll(() => {
-  console.error = (...args: any[]) => {
+  console.error = (...args: unknown[]) => {
     if (
       typeof args[0] === 'string' &&
       (args[0].includes('Warning: ReactDOM.render') ||

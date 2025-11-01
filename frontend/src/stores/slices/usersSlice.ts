@@ -186,22 +186,23 @@
 import { createEntitySlice, EntityApiService } from '@/stores/sliceFactory';
 import { User, CreateUserData, UpdateUserData, UserFilters } from '@/types/administration';
 import { apiActions } from '@/lib/api';
+import type { RootState } from '@/stores/store';
 
 // Create API service adapter for users
 const usersApiService: EntityApiService<User, CreateUserData, UpdateUserData> = {
   async getAll(params?: UserFilters) {
     const response = await apiActions.administration.getUsers(params);
     return {
-      data: response.data?.users || [],
-      total: response.data?.pagination?.total,
-      pagination: response.data?.pagination,
+      data: response.data || [],
+      total: response.pagination?.total,
+      pagination: response.pagination,
     };
   },
 
   async getById(id: string) {
     // For now, fetch all and filter - can be optimized with a dedicated endpoint
     const response = await apiActions.administration.getUsers();
-    const user = response.data?.users?.find((u: User) => u.id === id);
+    const user = response.data?.find((u: User) => u.id === id);
     if (!user) {
       throw new Error(`User with id ${id} not found`);
     }
@@ -210,12 +211,12 @@ const usersApiService: EntityApiService<User, CreateUserData, UpdateUserData> = 
 
   async create(data: CreateUserData) {
     const response = await apiActions.administration.createUser(data);
-    return { data: response.data };
+    return { data: response };
   },
 
   async update(id: string, data: UpdateUserData) {
     const response = await apiActions.administration.updateUser(id, data);
-    return { data: response.data };
+    return { data: response };
   },
 
   async delete(id: string) {
@@ -237,26 +238,26 @@ const usersSliceFactory = createEntitySlice<User, CreateUserData, UpdateUserData
 export const usersSlice = usersSliceFactory.slice;
 export const usersReducer = usersSlice.reducer;
 export const usersActions = usersSliceFactory.actions;
-export const usersSelectors = usersSliceFactory.adapter.getSelectors((state: any) => state.users);
+export const usersSelectors = usersSliceFactory.adapter.getSelectors((state: RootState) => state.users);
 export const usersThunks = usersSliceFactory.thunks;
 
 // Export custom selectors
-export const selectUsersByRole = (state: any, role: string): User[] => {
+export const selectUsersByRole = (state: RootState, role: string): User[] => {
   const allUsers = usersSelectors.selectAll(state) as User[];
   return allUsers.filter(user => user.role === role);
 };
 
-export const selectActiveUsers = (state: any): User[] => {
+export const selectActiveUsers = (state: RootState): User[] => {
   const allUsers = usersSelectors.selectAll(state) as User[];
   return allUsers.filter(user => user.isActive);
 };
 
-export const selectUsersBySchool = (state: any, schoolId: string): User[] => {
+export const selectUsersBySchool = (state: RootState, schoolId: string): User[] => {
   const allUsers = usersSelectors.selectAll(state) as User[];
   return allUsers.filter(user => user.schoolId === schoolId);
 };
 
-export const selectUsersByDistrict = (state: any, districtId: string): User[] => {
+export const selectUsersByDistrict = (state: RootState, districtId: string): User[] => {
   const allUsers = usersSelectors.selectAll(state) as User[];
   return allUsers.filter(user => user.districtId === districtId);
 };

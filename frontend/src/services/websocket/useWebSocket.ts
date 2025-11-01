@@ -18,12 +18,13 @@ export function useWebSocket() {
   const [connectionState, setConnectionState] = useState<ConnectionState>(
     webSocketService.getState()
   );
-  const { token } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
-    // Connect when token is available
-    if (token && !webSocketService.isConnected()) {
-      webSocketService.connect(token);
+    // Connect when user is authenticated
+    if (isAuthenticated && user && !webSocketService.isConnected()) {
+      // For now, use user ID as connection identifier until proper token management is implemented
+      webSocketService.connect(user.id);
     }
 
     // Listen for state changes
@@ -36,13 +37,13 @@ export function useWebSocket() {
     return () => {
       webSocketService.offStateChange(handleStateChange);
     };
-  }, [token]);
+  }, [isAuthenticated, user]);
 
   const reconnect = useCallback(() => {
-    if (token) {
-      webSocketService.reconnect(token);
+    if (isAuthenticated && user) {
+      webSocketService.reconnect(user.id);
     }
-  }, [token]);
+  }, [isAuthenticated, user]);
 
   const disconnect = useCallback(() => {
     webSocketService.disconnect();
@@ -60,10 +61,10 @@ export function useWebSocket() {
 /**
  * Hook to subscribe to WebSocket events
  */
-export function useWebSocketEvent<T = any>(
+export function useWebSocketEvent<T = unknown>(
   event: WebSocketEvent | string,
   handler: (data: T) => void,
-  deps: any[] = []
+  deps: React.DependencyList = []
 ) {
   const handlerRef = useRef(handler);
 
@@ -73,8 +74,8 @@ export function useWebSocketEvent<T = any>(
   }, [handler]);
 
   useEffect(() => {
-    const wrappedHandler = (data: T) => {
-      handlerRef.current(data);
+    const wrappedHandler = (data: unknown) => {
+      handlerRef.current(data as T);
     };
 
     webSocketService.on(event, wrappedHandler);
@@ -88,28 +89,28 @@ export function useWebSocketEvent<T = any>(
 /**
  * Hook to subscribe to emergency alerts
  */
-export function useEmergencyAlerts(handler: (alert: any) => void) {
+export function useEmergencyAlerts(handler: (alert: unknown) => void) {
   useWebSocketEvent(WebSocketEvent.EMERGENCY_ALERT, handler);
 }
 
 /**
  * Hook to subscribe to health notifications
  */
-export function useHealthNotifications(handler: (notification: any) => void) {
+export function useHealthNotifications(handler: (notification: unknown) => void) {
   useWebSocketEvent(WebSocketEvent.HEALTH_NOTIFICATION, handler);
 }
 
 /**
  * Hook to subscribe to student health alerts
  */
-export function useStudentHealthAlerts(handler: (alert: any) => void) {
+export function useStudentHealthAlerts(handler: (alert: unknown) => void) {
   useWebSocketEvent(WebSocketEvent.STUDENT_HEALTH_ALERT, handler);
 }
 
 /**
  * Hook to subscribe to medication reminders
  */
-export function useMedicationReminders(handler: (reminder: any) => void) {
+export function useMedicationReminders(handler: (reminder: unknown) => void) {
   useWebSocketEvent(WebSocketEvent.MEDICATION_REMINDER, handler);
 }
 

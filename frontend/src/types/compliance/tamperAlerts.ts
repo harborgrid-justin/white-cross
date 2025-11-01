@@ -300,7 +300,7 @@ export const CreateTamperAlertSchema = z.object({
   entityType: z.nativeEnum(MonitoredEntityType),
   entityId: z.string().uuid(),
   description: z.string().min(1).max(1000),
-  evidence: z.record(z.any()),
+  evidence: z.record(z.string(), z.any()),
   suspectedUser: z.string().uuid().optional(),
   suspectedIp: z.string().regex(/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/).optional(),
   affectedRecords: z.string().optional(),

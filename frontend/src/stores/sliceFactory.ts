@@ -18,6 +18,9 @@ import {
   AsyncThunk,
   SerializedError,
   EntityState,
+  Reducer,
+  Slice,
+  EntityAdapter,
 } from '@reduxjs/toolkit';
 import type { WritableDraft } from '@reduxjs/toolkit';
 import type {
@@ -29,13 +32,9 @@ import type {
   FilterState,
   SelectionState,
   UIState,
-  ActionMetadata,
-  AsyncThunkResult,
-  AsyncThunkError,
   EntityQueryParams,
   AuditRecord,
 } from './types/entityTypes';
-import { createInitialEntityState } from './types/entityTypes';
 
 /**
  * Data classification type for healthcare entities
@@ -113,23 +112,23 @@ export interface SliceFactoryOptions<T extends BaseEntity> {
  */
 export interface SliceFactoryResult<T extends BaseEntity, TCreate = Partial<T>, TUpdate = Partial<T>> {
   /** The generated slice */
-  slice: ReturnType<typeof createSlice>;
+  slice: Slice;
   /** Entity adapter for normalized state */
-  adapter: ReturnType<typeof createEntityAdapter>;
+  adapter: EntityAdapter<T, string>;
   /** Async thunks for CRUD operations */
   thunks: {
-    fetchList: AsyncThunk<{ data: T[]; total?: number; pagination?: Partial<PaginationState> }, EntityQueryParams | void, {}>;
-    fetchById: AsyncThunk<{ data: T }, string, {}>;
-    create: AsyncThunk<{ data: T }, TCreate, {}>;
-    update: AsyncThunk<{ data: T }, { id: string; data: TUpdate }, {}>;
-    delete: AsyncThunk<{ success: boolean; id: string }, string, {}>;
-    bulkDelete?: AsyncThunk<{ success: boolean; ids: string[] }, string[], {}>;
-    bulkUpdate?: AsyncThunk<{ data: T[] }, Array<{ id: string; data: TUpdate }>, {}>;
+    fetchList: AsyncThunk<{ data: T[]; total?: number; pagination?: Partial<PaginationState> }, EntityQueryParams | void, object>;
+    fetchById: AsyncThunk<{ data: T }, string, object>;
+    create: AsyncThunk<{ data: T }, TCreate, object>;
+    update: AsyncThunk<{ data: T }, { id: string; data: TUpdate }, object>;
+    delete: AsyncThunk<{ success: boolean; id: string }, string, object>;
+    bulkDelete?: AsyncThunk<{ success: boolean; ids: string[] }, string[], object>;
+    bulkUpdate?: AsyncThunk<{ data: T[] }, Array<{ id: string; data: TUpdate }>, object>;
   };
   /** Action creators */
-  actions: ReturnType<typeof createSlice>['actions'];
+  actions: Record<string, unknown>;
   /** Reducer */
-  reducer: ReturnType<typeof createSlice>['reducer'];
+  reducer: Reducer<unknown>;
 }
 
 /**
@@ -225,19 +224,19 @@ export function createEntitySlice<
     if (error instanceof Error) {
       return {
         message: error.message,
-        status: (error as any).status,
-        code: (error as any).code,
-        validationErrors: (error as any).validationErrors,
+        status: (error as { status?: number }).status,
+        code: (error as { code?: string }).code,
+        validationErrors: (error as { validationErrors?: Record<string, string[]> }).validationErrors,
       };
     }
 
     if (typeof error === 'object' && error !== null) {
-      const err = error as Record<string, any>;
+      const err = error as Record<string, unknown>;
       return {
-        message: err.message || 'An error occurred',
-        status: err.status,
-        code: err.code,
-        validationErrors: err.validationErrors,
+        message: (err.message as string) || 'An error occurred',
+        status: err.status as number,
+        code: err.code as string,
+        validationErrors: err.validationErrors as Record<string, string[]>,
       };
     }
 
@@ -258,7 +257,7 @@ export function createEntitySlice<
   // Create async thunks
   const fetchList = createAsyncThunk(
     `${name}/fetchList`,
-    async (params: EntityQueryParams | void, { rejectWithValue }: { rejectWithValue: (value: ApiError) => any }) => {
+    async (params: EntityQueryParams | void, { rejectWithValue }) => {
       try {
         const result = await apiService.getAll(params || {});
         return result;
@@ -275,7 +274,7 @@ export function createEntitySlice<
 
   const fetchById = createAsyncThunk(
     `${name}/fetchById`,
-    async (id: string, { rejectWithValue }: { rejectWithValue: (value: ApiError) => any }) => {
+    async (id: string, { rejectWithValue }) => {
       try {
         const result = await apiService.getById(id);
         return result;
@@ -292,7 +291,7 @@ export function createEntitySlice<
 
   const create = createAsyncThunk(
     `${name}/create`,
-    async (data: TCreate, { rejectWithValue }: { rejectWithValue: (value: ApiError) => any }) => {
+    async (data: TCreate, { rejectWithValue }) => {
       try {
         const result = await apiService.create(data);
         return result;
@@ -310,7 +309,7 @@ export function createEntitySlice<
 
   const update = createAsyncThunk(
     `${name}/update`,
-    async ({ id, data }: { id: string; data: TUpdate }, { rejectWithValue }: { rejectWithValue: (value: ApiError) => any }) => {
+    async ({ id, data }: { id: string; data: TUpdate }, { rejectWithValue }) => {
       try {
         const result = await apiService.update(id, data);
         return result;
@@ -328,7 +327,7 @@ export function createEntitySlice<
 
   const deleteEntity = createAsyncThunk(
     `${name}/delete`,
-    async (id: string, { rejectWithValue }: { rejectWithValue: (value: ApiError) => any }) => {
+    async (id: string, { rejectWithValue }) => {
       try {
         const result = await apiService.delete(id);
         return { ...result, id };
@@ -346,7 +345,7 @@ export function createEntitySlice<
   // Bulk operations (if enabled and API service supports them)
   const bulkDelete = enableBulkOperations && apiService.bulkDelete ? createAsyncThunk(
     `${name}/bulkDelete`,
-    async (ids: string[], { rejectWithValue }: { rejectWithValue: (value: ApiError) => any }) => {
+    async (ids: string[], { rejectWithValue }) => {
       try {
         const result = await apiService.bulkDelete!(ids);
         return { ...result, ids };
@@ -363,7 +362,7 @@ export function createEntitySlice<
 
   const bulkUpdate = enableBulkOperations && apiService.bulkUpdate ? createAsyncThunk(
     `${name}/bulkUpdate`,
-    async (updates: Array<{ id: string; data: TUpdate }>, { rejectWithValue }: { rejectWithValue: (value: ApiError) => any }) => {
+    async (updates: Array<{ id: string; data: TUpdate }>, { rejectWithValue }) => {
       try {
         const result = await apiService.bulkUpdate!(updates);
         return result;
@@ -728,7 +727,7 @@ export function createEntitySlice<
       ...(bulkUpdate && { bulkUpdate }),
     },
     actions: slice.actions,
-    reducer: slice.reducer,
+    reducer: slice.reducer as Reducer<unknown>,
   };
 }
 
@@ -752,8 +751,9 @@ export function createHealthcareEntitySlice<
       ...options.extraReducers,
 
       // Audit trail management
-      addAuditRecord: (state: any, action: PayloadAction<{ entityId: string; auditRecord: AuditRecord }>) => {
-        const { entityId, auditRecord } = action.payload;
+      addAuditRecord: (state: any, action: PayloadAction<unknown>) => {
+        const payload = action.payload as { entityId: string; auditRecord: AuditRecord };
+        const { entityId, auditRecord } = payload;
         const entity = state.entities[entityId];
         if (entity && 'auditTrail' in entity) {
           const healthcareEntity = entity as HealthcareEntity;
@@ -766,8 +766,9 @@ export function createHealthcareEntitySlice<
       },
 
       // Data classification updates
-      updateDataClassification: (state: any, action: PayloadAction<{ entityId: string; classification: DataClassification }>) => {
-        const { entityId, classification } = action.payload;
+      updateDataClassification: (state: any, action: PayloadAction<unknown>) => {
+        const payload = action.payload as { entityId: string; classification: DataClassification };
+        const { entityId, classification } = payload;
         const entity = state.entities[entityId];
         if (entity && 'dataClassification' in entity) {
           const healthcareEntity = entity as HealthcareEntity;

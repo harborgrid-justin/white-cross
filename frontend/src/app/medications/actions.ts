@@ -321,9 +321,9 @@ export async function createMedication(data: CreateMedicationData): Promise<Acti
     });
 
     // Cache invalidation
-    revalidateTag(CACHE_TAGS.MEDICATIONS);
-    revalidateTag('medication-list');
-    revalidateTag(`student-medications-${data.studentId}`);
+    revalidateTag(CACHE_TAGS.MEDICATIONS, 'default');
+    revalidateTag('medication-list', 'default');
+    revalidateTag(`student-medications-${data.studentId}`, 'default');
     revalidatePath('/dashboard/medications', 'page');
     revalidatePath(`/dashboard/students/${data.studentId}/medications`, 'page');
 
@@ -436,9 +436,9 @@ export async function updateMedication(
     });
 
     // Cache invalidation
-    revalidateTag(CACHE_TAGS.MEDICATIONS);
-    revalidateTag(`medication-${medicationId}`);
-    revalidateTag('medication-list');
+    revalidateTag(CACHE_TAGS.MEDICATIONS, 'default');
+    revalidateTag(`medication-${medicationId}`, 'default');
+    revalidateTag('medication-list', 'default');
     revalidatePath('/dashboard/medications', 'page');
     revalidatePath(`/dashboard/medications/${medicationId}`, 'page');
 
@@ -560,10 +560,10 @@ export async function administerMedication(
     });
 
     // Cache invalidation
-    revalidateTag(CACHE_TAGS.MEDICATIONS);
-    revalidateTag(`medication-${data.medicationId}`);
-    revalidateTag(`student-medications-${data.studentId}`);
-    revalidateTag('due-medications');
+    revalidateTag(CACHE_TAGS.MEDICATIONS, 'default');
+    revalidateTag(`medication-${data.medicationId}`, 'default');
+    revalidateTag(`student-medications-${data.studentId}`, 'default');
+    revalidateTag('due-medications', 'default');
     revalidatePath('/dashboard/medications', 'page');
     revalidatePath(`/dashboard/medications/${data.medicationId}`, 'page');
     revalidatePath(`/dashboard/students/${data.studentId}/medications`, 'page');
@@ -651,9 +651,9 @@ export async function deleteMedication(medicationId: string): Promise<ActionResu
     });
 
     // Cache invalidation
-    revalidateTag(CACHE_TAGS.MEDICATIONS);
-    revalidateTag(`medication-${medicationId}`);
-    revalidateTag('medication-list');
+    revalidateTag(CACHE_TAGS.MEDICATIONS, 'default');
+    revalidateTag(`medication-${medicationId}`, 'default');
+    revalidateTag('medication-list', 'default');
     revalidatePath('/dashboard/medications', 'page');
 
     return {
@@ -718,8 +718,8 @@ export async function discontinueMedication(
       success: true
     });
 
-    revalidateTag(CACHE_TAGS.MEDICATIONS);
-    revalidateTag(`medication-${medicationId}`);
+    revalidateTag(CACHE_TAGS.MEDICATIONS, 'default');
+    revalidateTag(`medication-${medicationId}`, 'default');
     revalidatePath('/dashboard/medications', 'page');
     revalidatePath(`/dashboard/medications/${medicationId}`, 'page');
 
@@ -781,8 +781,8 @@ export async function requestMedicationRefill(
       success: true
     });
 
-    revalidateTag(CACHE_TAGS.MEDICATIONS);
-    revalidateTag(`medication-${medicationId}`);
+    revalidateTag(CACHE_TAGS.MEDICATIONS, 'default');
+    revalidateTag(`medication-${medicationId}`, 'default');
     revalidatePath('/dashboard/medications', 'page');
 
     return {
@@ -857,12 +857,12 @@ export async function getOverdueMedications(): Promise<Medication[]> {
  */
 export async function clearMedicationCache(medicationId?: string): Promise<void> {
   if (medicationId) {
-    revalidateTag(`medication-${medicationId}`);
+    revalidateTag(`medication-${medicationId}`, 'default');
   }
-  revalidateTag(CACHE_TAGS.MEDICATIONS);
-  revalidateTag('medication-list');
-  revalidateTag('due-medications');
-  revalidateTag('overdue-medications');
+  revalidateTag(CACHE_TAGS.MEDICATIONS, 'default');
+  revalidateTag('medication-list', 'default');
+  revalidateTag('due-medications', 'default');
+  revalidateTag('overdue-medications', 'default');
   revalidatePath('/dashboard/medications', 'page');
 }
 

@@ -71,10 +71,10 @@ export async function receiveStock(data: ReceiveStock): Promise<ActionResult<Tra
       details: JSON.stringify({ itemId: data.itemId, quantity: data.quantity, locationId: data.locationId }),
     });
 
-    revalidateTag('inventory-transactions');
-    revalidateTag('inventory-stock');
-    revalidateTag(`stock-item-${data.itemId}`);
-    revalidateTag(`stock-location-${data.locationId}`);
+    revalidateTag('inventory-transactions', 'default');
+    revalidateTag('inventory-stock', 'default');
+    revalidateTag(`stock-item-${data.itemId}`, 'default');
+    revalidateTag(`stock-location-${data.locationId}`, 'default');
     revalidatePath('/inventory/stock');
     revalidatePath('/inventory/transactions');
 
@@ -112,8 +112,8 @@ export async function bulkReceiveStock(
       details: JSON.stringify({ itemCount: items.length, totalQuantity: items.reduce((sum, item) => sum + item.quantity, 0) }),
     });
 
-    revalidateTag('inventory-transactions');
-    revalidateTag('inventory-stock');
+    revalidateTag('inventory-transactions', 'default');
+    revalidateTag('inventory-stock', 'default');
     revalidatePath('/inventory/stock');
     revalidatePath('/inventory/transactions');
 
@@ -159,15 +159,15 @@ export async function issueStock(data: IssueStock): Promise<ActionResult<Transac
       }),
     });
 
-    revalidateTag('inventory-transactions');
-    revalidateTag('inventory-stock');
-    revalidateTag(`stock-item-${data.itemId}`);
-    revalidateTag(`stock-location-${data.locationId}`);
+    revalidateTag('inventory-transactions', 'default');
+    revalidateTag('inventory-stock', 'default');
+    revalidateTag(`stock-item-${data.itemId}`, 'default');
+    revalidateTag(`stock-location-${data.locationId}`, 'default');
     revalidatePath('/inventory/stock');
     revalidatePath('/inventory/transactions');
 
     // If controlled substance, revalidate audit trail
-    revalidateTag('controlled-substance-audit');
+    revalidateTag('controlled-substance-audit', 'default');
 
     return {
       success: true,
@@ -210,10 +210,10 @@ export async function adjustStock(data: AdjustStock): Promise<ActionResult<Trans
       }),
     });
 
-    revalidateTag('inventory-transactions');
-    revalidateTag('inventory-stock');
-    revalidateTag(`stock-item-${data.itemId}`);
-    revalidateTag(`stock-location-${data.locationId}`);
+    revalidateTag('inventory-transactions', 'default');
+    revalidateTag('inventory-stock', 'default');
+    revalidateTag(`stock-item-${data.itemId}`, 'default');
+    revalidateTag(`stock-location-${data.locationId}`, 'default');
     revalidatePath('/inventory/stock');
     revalidatePath('/inventory/transactions');
 
@@ -258,9 +258,9 @@ export async function reserveStock(data: ReserveStock): Promise<ActionResult<Tra
       }),
     });
 
-    revalidateTag('inventory-stock');
-    revalidateTag(`stock-item-${data.itemId}`);
-    revalidateTag(`stock-location-${data.locationId}`);
+    revalidateTag('inventory-stock', 'default');
+    revalidateTag(`stock-item-${data.itemId}`, 'default');
+    revalidateTag(`stock-location-${data.locationId}`, 'default');
     revalidatePath('/inventory/stock');
 
     return {
@@ -301,9 +301,9 @@ export async function releaseReservedStock(
       }),
     });
 
-    revalidateTag('inventory-stock');
-    revalidateTag(`stock-item-${data.itemId}`);
-    revalidateTag(`stock-location-${data.locationId}`);
+    revalidateTag('inventory-stock', 'default');
+    revalidateTag(`stock-item-${data.itemId}`, 'default');
+    revalidateTag(`stock-location-${data.locationId}`, 'default');
     revalidatePath('/inventory/stock');
 
     return {
@@ -468,7 +468,7 @@ export async function createTransferOrder(
       }),
     });
 
-    revalidateTag('transfer-orders');
+    revalidateTag('transfer-orders', 'default');
     revalidatePath('/inventory/transfers');
 
     return {
@@ -505,8 +505,8 @@ export async function approveTransferOrder(
       details: JSON.stringify({ itemAdjustments: data.itemAdjustments }),
     });
 
-    revalidateTag('transfer-orders');
-    revalidateTag(`transfer-order-${data.transferOrderId}`);
+    revalidateTag('transfer-orders', 'default');
+    revalidateTag(`transfer-order-${data.transferOrderId}`, 'default');
     revalidatePath('/inventory/transfers');
 
     return {
@@ -557,9 +557,9 @@ export async function performPhysicalCount(
       }),
     });
 
-    revalidateTag('inventory-stock');
-    revalidateTag('inventory-transactions');
-    revalidateTag(`stock-location-${data.locationId}`);
+    revalidateTag('inventory-stock', 'default');
+    revalidateTag('inventory-transactions', 'default');
+    revalidateTag(`stock-location-${data.locationId}`, 'default');
     revalidatePath('/inventory/stock');
     revalidatePath('/inventory/counts');
 

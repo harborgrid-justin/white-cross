@@ -376,8 +376,8 @@ export async function createInvoiceAction(data: CreateInvoiceData): Promise<Acti
     });
 
     // Cache invalidation
-    revalidateTag(BILLING_CACHE_TAGS.INVOICES);
-    revalidateTag('invoice-list');
+    revalidateTag(BILLING_CACHE_TAGS.INVOICES, 'default');
+    revalidateTag('invoice-list', 'default');
     revalidatePath('/billing/invoices', 'page');
 
     return {
@@ -464,9 +464,9 @@ export async function updateInvoiceAction(
     });
 
     // Cache invalidation
-    revalidateTag(BILLING_CACHE_TAGS.INVOICES);
-    revalidateTag(`invoice-${invoiceId}`);
-    revalidateTag('invoice-list');
+    revalidateTag(BILLING_CACHE_TAGS.INVOICES, 'default');
+    revalidateTag(`invoice-${invoiceId}`, 'default');
+    revalidateTag('invoice-list', 'default');
     revalidatePath('/billing/invoices', 'page');
     revalidatePath(`/billing/invoices/${invoiceId}`, 'page');
 
@@ -531,8 +531,8 @@ export async function sendInvoiceAction(invoiceId: string): Promise<ActionResult
     });
 
     // Cache invalidation
-    revalidateTag(BILLING_CACHE_TAGS.INVOICES);
-    revalidateTag(`invoice-${invoiceId}`);
+    revalidateTag(BILLING_CACHE_TAGS.INVOICES, 'default');
+    revalidateTag(`invoice-${invoiceId}`, 'default');
     revalidatePath('/billing/invoices', 'page');
     revalidatePath(`/billing/invoices/${invoiceId}`, 'page');
 
@@ -600,9 +600,9 @@ export async function voidInvoiceAction(invoiceId: string): Promise<ActionResult
     });
 
     // Cache invalidation
-    revalidateTag(BILLING_CACHE_TAGS.INVOICES);
-    revalidateTag(`invoice-${invoiceId}`);
-    revalidateTag('invoice-list');
+    revalidateTag(BILLING_CACHE_TAGS.INVOICES, 'default');
+    revalidateTag(`invoice-${invoiceId}`, 'default');
+    revalidateTag('invoice-list', 'default');
     revalidatePath('/billing/invoices', 'page');
 
     return {
@@ -683,10 +683,10 @@ export async function createPaymentAction(data: CreatePaymentData): Promise<Acti
     });
 
     // Cache invalidation
-    revalidateTag(BILLING_CACHE_TAGS.PAYMENTS);
-    revalidateTag(BILLING_CACHE_TAGS.INVOICES);
-    revalidateTag('payment-list');
-    revalidateTag(`invoice-${data.invoiceId}`);
+    revalidateTag(BILLING_CACHE_TAGS.PAYMENTS, 'default');
+    revalidateTag(BILLING_CACHE_TAGS.INVOICES, 'default');
+    revalidateTag('payment-list', 'default');
+    revalidateTag(`invoice-${data.invoiceId}`, 'default');
     revalidatePath('/billing/payments', 'page');
     revalidatePath('/billing/invoices', 'page');
 
@@ -759,9 +759,9 @@ export async function refundPaymentAction(
     });
 
     // Cache invalidation
-    revalidateTag(BILLING_CACHE_TAGS.PAYMENTS);
-    revalidateTag(`payment-${paymentId}`);
-    revalidateTag('payment-list');
+    revalidateTag(BILLING_CACHE_TAGS.PAYMENTS, 'default');
+    revalidateTag(`payment-${paymentId}`, 'default');
+    revalidateTag('payment-list', 'default');
     revalidatePath('/billing/payments', 'page');
 
     return {
@@ -1063,18 +1063,18 @@ export const getBillingDashboardData = cache(async () => {
  */
 export async function clearBillingCache(resourceType?: string, resourceId?: string): Promise<void> {
   if (resourceType && resourceId) {
-    revalidateTag(`${resourceType}-${resourceId}`);
+    revalidateTag(`${resourceType}-${resourceId}`, 'default');
   }
   
   // Clear all billing caches
   Object.values(BILLING_CACHE_TAGS).forEach(tag => {
-    revalidateTag(tag);
+    revalidateTag(tag, 'default');
   });
 
   // Clear list caches
-  revalidateTag('invoice-list');
-  revalidateTag('payment-list');
-  revalidateTag('billing-stats');
+  revalidateTag('invoice-list', 'default');
+  revalidateTag('payment-list', 'default');
+  revalidateTag('billing-stats', 'default');
 
   // Clear paths
   revalidatePath('/billing', 'page');

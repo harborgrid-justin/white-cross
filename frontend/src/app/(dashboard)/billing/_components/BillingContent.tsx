@@ -84,7 +84,6 @@ export default function BillingContent() {
         setLoading(false);
       }
     };
-      setLoading(false);
     
     loadBillingData();
   }, []);
@@ -240,8 +239,8 @@ export default function BillingContent() {
 
       {/* Billing Management */}
       <div className="space-y-6">
-          {/* Filters */}
-          <Card>
+        {/* Filters */}
+        <Card>
             <CardContent className="p-6">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 lg:space-x-4">
                 <div className="flex items-center space-x-4">
@@ -303,11 +302,11 @@ export default function BillingContent() {
             </CardContent>
           </Card>
 
-          {/* Billing Records Table */}
-          <Card>
+        {/* Billing Records Table */}
+        <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
-                Healthcare Billing Records ({filteredRecords.length})
+                Healthcare Billing Records {filteredRecords.length}
                 <Button variant="outline" size="sm">
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Refresh
@@ -320,9 +319,7 @@ export default function BillingContent() {
                   <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">No billing records found</h3>
                   <p className="text-gray-600 mb-6">
-                    {searchTerm || statusFilter !== 'all' || serviceFilter !== 'all'
-                      ? 'Try adjusting your search or filter criteria.'
-                      : 'Create your first billing record to get started.'}
+                    Try adjusting your search or filter criteria.
                   </p>
                   <Button variant="primary">
                     <FileText className="h-4 w-4 mr-2" />
@@ -424,7 +421,6 @@ export default function BillingContent() {
               )}
             </CardContent>
           </Card>
-        </div>
       </div>
     </div>
   );

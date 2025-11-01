@@ -237,7 +237,7 @@ export const DataSourceSchema = z.object({
   endpoint: z.string().optional(),
   query: z.string().optional(),
   method: z.enum(['GET', 'POST']).default('GET'),
-  params: z.record(z.any()).optional(),
+  params: z.record(z.string(), z.any()).optional(),
   cacheTime: z.number().optional() // milliseconds
 });
 
@@ -254,7 +254,7 @@ export const ReportDefinitionSchema = z.object({
   columns: z.array(ReportColumnSchema).optional(),
   charts: z.array(ChartConfigSchema).optional(),
   filters: z.array(ReportFilterSchema).optional(),
-  defaultFilters: z.record(z.any()).optional(),
+  defaultFilters: z.record(z.string(), z.any()).optional(),
   groupBy: z.array(z.string()).optional(),
   sortBy: z.array(z.object({
     field: z.string(),
@@ -287,7 +287,7 @@ export const ReportParametersSchema = z.object({
   districtIds: z.array(z.string()).optional(),
   includeCharts: z.boolean().default(true),
   includeRawData: z.boolean().default(false),
-  customParameters: z.record(z.any()).optional()
+  customParameters: z.record(z.string(), z.any()).optional()
 });
 
 /**
@@ -306,7 +306,7 @@ export const ReportInstanceSchema = z.object({
   fileSize: z.number().optional(),
   expiresAt: z.string().datetime().optional(),
   error: z.string().optional(),
-  metadata: z.record(z.any()).optional()
+  metadata: z.record(z.string(), z.any()).optional()
 });
 
 // ============================================================================
@@ -408,7 +408,7 @@ export const AnalyticsDataPointSchema = z.object({
   date: z.string(),
   value: z.number(),
   label: z.string().optional(),
-  metadata: z.record(z.any()).optional()
+  metadata: z.record(z.string(), z.any()).optional()
 });
 
 /**

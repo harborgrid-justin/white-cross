@@ -409,10 +409,10 @@ export async function createMessageAction(data: CreateMessageData): Promise<Acti
     });
 
     // Cache invalidation
-    revalidateTag(COMMUNICATIONS_CACHE_TAGS.MESSAGES);
-    revalidateTag(COMMUNICATIONS_CACHE_TAGS.THREADS);
-    revalidateTag('message-list');
-    revalidateTag('thread-list');
+    revalidateTag(COMMUNICATIONS_CACHE_TAGS.MESSAGES, 'default');
+    revalidateTag(COMMUNICATIONS_CACHE_TAGS.THREADS, 'default');
+    revalidateTag('message-list', 'default');
+    revalidateTag('thread-list', 'default');
     revalidatePath('/communications', 'page');
 
     return {
@@ -483,10 +483,10 @@ export async function updateMessageAction(
     });
 
     // Cache invalidation
-    revalidateTag(COMMUNICATIONS_CACHE_TAGS.MESSAGES);
-    revalidateTag(COMMUNICATIONS_CACHE_TAGS.THREADS);
-    revalidateTag(`message-${messageId}`);
-    revalidateTag('message-list');
+    revalidateTag(COMMUNICATIONS_CACHE_TAGS.MESSAGES, 'default');
+    revalidateTag(COMMUNICATIONS_CACHE_TAGS.THREADS, 'default');
+    revalidateTag(`message-${messageId}`, 'default');
+    revalidateTag('message-list', 'default');
     revalidatePath('/communications', 'page');
     revalidatePath(`/communications/messages/${messageId}`, 'page');
 
@@ -555,11 +555,11 @@ export async function sendMessageAction(messageId: string): Promise<ActionResult
     });
 
     // Cache invalidation
-    revalidateTag(COMMUNICATIONS_CACHE_TAGS.MESSAGES);
-    revalidateTag(COMMUNICATIONS_CACHE_TAGS.THREADS);
-    revalidateTag(`message-${messageId}`);
-    revalidateTag('message-list');
-    revalidateTag('communication-stats');
+    revalidateTag(COMMUNICATIONS_CACHE_TAGS.MESSAGES, 'default');
+    revalidateTag(COMMUNICATIONS_CACHE_TAGS.THREADS, 'default');
+    revalidateTag(`message-${messageId}`, 'default');
+    revalidateTag('message-list', 'default');
+    revalidateTag('communication-stats', 'default');
     revalidatePath('/communications', 'page');
     revalidatePath(`/communications/messages/${messageId}`, 'page');
 
@@ -633,8 +633,8 @@ export async function createMessageTemplateAction(data: CreateMessageTemplateDat
     });
 
     // Cache invalidation
-    revalidateTag(COMMUNICATIONS_CACHE_TAGS.TEMPLATES);
-    revalidateTag('message-template-list');
+    revalidateTag(COMMUNICATIONS_CACHE_TAGS.TEMPLATES, 'default');
+    revalidateTag('message-template-list', 'default');
     revalidatePath('/communications/templates', 'page');
 
     return {
@@ -816,19 +816,19 @@ export async function getCommunicationOverview(): Promise<{
  */
 export async function clearCommunicationCache(resourceType?: string, resourceId?: string): Promise<void> {
   if (resourceType && resourceId) {
-    revalidateTag(`${resourceType}-${resourceId}`);
+    revalidateTag(`${resourceType}-${resourceId}`, 'default');
   }
   
   // Clear all communication caches
   Object.values(COMMUNICATIONS_CACHE_TAGS).forEach(tag => {
-    revalidateTag(tag);
+    revalidateTag(tag, 'default');
   });
 
   // Clear list caches
-  revalidateTag('message-list');
-  revalidateTag('thread-list');
-  revalidateTag('message-template-list');
-  revalidateTag('communication-stats');
+  revalidateTag('message-list', 'default');
+  revalidateTag('thread-list', 'default');
+  revalidateTag('message-template-list', 'default');
+  revalidateTag('communication-stats', 'default');
 
   // Clear paths
   revalidatePath('/communications', 'page');

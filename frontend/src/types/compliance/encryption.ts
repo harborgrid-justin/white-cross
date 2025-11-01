@@ -308,7 +308,7 @@ export const CreateEncryptionConfigSchema = z.object({
   scope: z.nativeEnum(EncryptionScope),
   enabled: z.boolean(),
   keyRotationDays: z.number().int().min(1).max(365),
-  settings: z.record(z.any()).optional(),
+  settings: z.record(z.string(), z.any()).optional(),
 });
 
 export const UpdateEncryptionConfigSchema = z.object({
@@ -316,7 +316,7 @@ export const UpdateEncryptionConfigSchema = z.object({
   level: z.nativeEnum(EncryptionLevel).optional(),
   enabled: z.boolean().optional(),
   keyRotationDays: z.number().int().min(1).max(365).optional(),
-  settings: z.record(z.any()).optional(),
+  settings: z.record(z.string(), z.any()).optional(),
 });
 
 /**

@@ -389,9 +389,9 @@ export async function createImmunizationRecordAction(data: CreateImmunizationRec
     });
 
     // Cache invalidation
-    revalidateTag(IMMUNIZATION_CACHE_TAGS.RECORDS);
-    revalidateTag('immunization-record-list');
-    revalidateTag(`student-${data.studentId}-immunizations`);
+    revalidateTag(IMMUNIZATION_CACHE_TAGS.RECORDS, 'default');
+    revalidateTag('immunization-record-list', 'default');
+    revalidateTag(`student-${data.studentId}-immunizations`, 'default');
     revalidatePath('/immunizations', 'page');
     revalidatePath(`/students/${data.studentId}/immunizations`, 'page');
 
@@ -463,10 +463,10 @@ export async function updateImmunizationRecordAction(
     });
 
     // Cache invalidation
-    revalidateTag(IMMUNIZATION_CACHE_TAGS.RECORDS);
-    revalidateTag(`immunization-record-${recordId}`);
-    revalidateTag('immunization-record-list');
-    revalidateTag(`student-${response.data.studentId}-immunizations`);
+    revalidateTag(IMMUNIZATION_CACHE_TAGS.RECORDS, 'default');
+    revalidateTag(`immunization-record-${recordId}`, 'default');
+    revalidateTag('immunization-record-list', 'default');
+    revalidateTag(`student-${response.data.studentId}-immunizations`, 'default');
     revalidatePath('/immunizations', 'page');
     revalidatePath(`/immunizations/records/${recordId}`, 'page');
 
@@ -535,10 +535,10 @@ export async function verifyImmunizationRecordAction(recordId: string): Promise<
     });
 
     // Cache invalidation
-    revalidateTag(IMMUNIZATION_CACHE_TAGS.RECORDS);
-    revalidateTag(`immunization-record-${recordId}`);
-    revalidateTag('immunization-record-list');
-    revalidateTag(`student-${response.data.studentId}-immunizations`);
+    revalidateTag(IMMUNIZATION_CACHE_TAGS.RECORDS, 'default');
+    revalidateTag(`immunization-record-${recordId}`, 'default');
+    revalidateTag('immunization-record-list', 'default');
+    revalidateTag(`student-${response.data.studentId}-immunizations`, 'default');
     revalidatePath('/immunizations', 'page');
     revalidatePath(`/immunizations/records/${recordId}`, 'page');
 
@@ -707,19 +707,19 @@ export async function getImmunizationOverview(): Promise<{
  */
 export async function clearImmunizationCache(resourceType?: string, resourceId?: string): Promise<void> {
   if (resourceType && resourceId) {
-    revalidateTag(`${resourceType}-${resourceId}`);
+    revalidateTag(`${resourceType}-${resourceId}`, 'default');
   }
   
   // Clear all immunization caches
   Object.values(IMMUNIZATION_CACHE_TAGS).forEach(tag => {
-    revalidateTag(tag);
+    revalidateTag(tag, 'default');
   });
 
   // Clear list caches
-  revalidateTag('immunization-record-list');
-  revalidateTag('vaccine-list');
-  revalidateTag('immunization-requirement-list');
-  revalidateTag('immunization-stats');
+  revalidateTag('immunization-record-list', 'default');
+  revalidateTag('vaccine-list', 'default');
+  revalidateTag('immunization-requirement-list', 'default');
+  revalidateTag('immunization-stats', 'default');
 
   // Clear paths
   revalidatePath('/immunizations', 'page');

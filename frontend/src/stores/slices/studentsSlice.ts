@@ -46,6 +46,29 @@ import { apiActions } from '@/lib/api';
 export type { StudentFiltersType as StudentFilters };
 
 /**
+ * Combined state interface for students slice (entity + UI state).
+ *
+ * @interface StudentsState
+ */
+export interface StudentsState {
+  // Entity state properties from EntityAdapter
+  ids: string[];
+  entities: Record<string, Student>;
+  // UI state
+  ui: StudentUIState;
+}
+
+/**
+ * Root state interface for Redux store.
+ *
+ * @interface RootState
+ */
+export interface RootState {
+  students: StudentsState;
+  // Other slices would be added here
+}
+
+/**
  * UI state interface for student management views.
  *
  * Manages view preferences, selection state, filters, sorting, and pagination
@@ -562,8 +585,86 @@ const combinedStudentsSlice = createSlice({
     ui: initialUIState,
   },
   reducers: {
-    ...studentsSliceFactory.slice.actions,
-    ...studentUISlice.actions,
+    // UI reducers from studentUISlice
+    selectStudent: (state, action: PayloadAction<string>) => {
+      if (!state.ui.selectedIds.includes(action.payload)) {
+        state.ui.selectedIds.push(action.payload);
+      }
+    },
+    deselectStudent: (state, action: PayloadAction<string>) => {
+      state.ui.selectedIds = state.ui.selectedIds.filter((id: string) => id !== action.payload);
+    },
+    selectMultipleStudents: (state, action: PayloadAction<string[]>) => {
+      const newIds = action.payload.filter(id => !state.ui.selectedIds.includes(id));
+      state.ui.selectedIds.push(...newIds);
+    },
+    selectAllStudents: (state, action: PayloadAction<string[]>) => {
+      state.ui.selectedIds = action.payload;
+    },
+    clearSelection: (state) => {
+      state.ui.selectedIds = [];
+    },
+    toggleBulkSelectMode: (state) => {
+      state.ui.bulkSelectMode = !state.ui.bulkSelectMode;
+      if (!state.ui.bulkSelectMode) {
+        state.ui.selectedIds = [];
+      }
+    },
+    setViewMode: (state, action: PayloadAction<'grid' | 'list' | 'table'>) => {
+      state.ui.viewMode = action.payload;
+    },
+    toggleCardExpansion: (state, action: PayloadAction<string>) => {
+      const studentId = action.payload;
+      if (state.ui.expandedCards.includes(studentId)) {
+        state.ui.expandedCards = state.ui.expandedCards.filter((id: string) => id !== studentId);
+      } else {
+        state.ui.expandedCards.push(studentId);
+      }
+    },
+    collapseAllCards: (state) => {
+      state.ui.expandedCards = [];
+    },
+    setFilters: (state, action: PayloadAction<Partial<StudentFiltersType>>) => {
+      state.ui.filters = { ...state.ui.filters, ...action.payload };
+      state.ui.currentPage = 1;
+    },
+    clearFilters: (state) => {
+      state.ui.filters = {};
+      state.ui.currentPage = 1;
+    },
+    setSearchQuery: (state, action: PayloadAction<string>) => {
+      state.ui.searchQuery = action.payload;
+      state.ui.currentPage = 1;
+    },
+    toggleShowInactive: (state) => {
+      state.ui.showInactive = !state.ui.showInactive;
+      state.ui.currentPage = 1;
+    },
+    setSorting: (state, action: PayloadAction<{ sortBy: StudentUIState['sortBy']; sortOrder: StudentUIState['sortOrder'] }>) => {
+      state.ui.sortBy = action.payload.sortBy;
+      state.ui.sortOrder = action.payload.sortOrder;
+    },
+    toggleSortOrder: (state) => {
+      state.ui.sortOrder = state.ui.sortOrder === 'asc' ? 'desc' : 'asc';
+    },
+    setPage: (state, action: PayloadAction<number>) => {
+      state.ui.currentPage = action.payload;
+    },
+    setPageSize: (state, action: PayloadAction<number>) => {
+      state.ui.pageSize = action.payload;
+      state.ui.currentPage = 1;
+    },
+    nextPage: (state) => {
+      state.ui.currentPage += 1;
+    },
+    previousPage: (state) => {
+      if (state.ui.currentPage > 1) {
+        state.ui.currentPage -= 1;
+      }
+    },
+    resetUIState: (state) => {
+      state.ui = initialUIState;
+    },
   },
   extraReducers: (builder) => {
     // Copy all extra reducers from the entity slice
@@ -572,7 +673,7 @@ const combinedStudentsSlice = createSlice({
       (action) => action.type.startsWith('students/'),
       (state, action) => {
         const entityState = entitySliceReducers(
-          { ...state, ui: undefined } as any,
+          { ...state, ui: undefined },
           action
         );
         return {
@@ -628,7 +729,7 @@ export const studentsActions = {
  * const student = useSelector(state => studentsSelectors.selectById(state, 'student-123'));
  * ```
  */
-export const studentsSelectors = studentsSliceFactory.adapter.getSelectors((state: any) => state.students);
+export const studentsSelectors = studentsSliceFactory.adapter.getSelectors((state: RootState) => state.students);
 
 /**
  * Async thunks for student API operations.
@@ -660,7 +761,7 @@ export const studentsThunks = studentsSliceFactory.thunks;
  * console.log(uiState.viewMode, uiState.filters, uiState.selectedIds);
  * ```
  */
-export const selectStudentUIState = (state: any): StudentUIState => state.students.ui;
+export const selectStudentUIState = (state: RootState): StudentUIState => state.students.ui;
 
 /**
  * Selector for selected student IDs.
@@ -674,12 +775,12 @@ export const selectStudentUIState = (state: any): StudentUIState => state.studen
  * const selectedCount = selectedIds.length;
  * ```
  */
-export const selectSelectedStudentIds = (state: any): string[] => state.students.ui.selectedIds;
+export const selectSelectedStudentIds = (state: RootState): string[] => state.students.ui.selectedIds;
 
 /**
  * Selector for current view mode.
  *
- * @param {any} state - Redux root state
+ * @param {RootState} state - Redux root state
  * @returns {StudentUIState['viewMode']} Current view mode ('grid' | 'list' | 'table')
  *
  * @example
@@ -687,12 +788,12 @@ export const selectSelectedStudentIds = (state: any): string[] => state.students
  * const viewMode = useSelector(selectStudentViewMode);
  * ```
  */
-export const selectStudentViewMode = (state: any): StudentUIState['viewMode'] => state.students.ui.viewMode;
+export const selectStudentViewMode = (state: RootState): StudentUIState['viewMode'] => state.students.ui.viewMode;
 
 /**
  * Selector for active filters.
  *
- * @param {any} state - Redux root state
+ * @param {RootState} state - Redux root state
  * @returns {StudentFiltersType} Current filter criteria
  *
  * @example
@@ -703,12 +804,12 @@ export const selectStudentViewMode = (state: any): StudentUIState['viewMode'] =>
  * }
  * ```
  */
-export const selectStudentFilters = (state: any): StudentFiltersType => state.students.ui.filters;
+export const selectStudentFilters = (state: RootState): StudentFiltersType => state.students.ui.filters;
 
 /**
  * Selector for current sort configuration.
  *
- * @param {any} state - Redux root state
+ * @param {RootState} state - Redux root state
  * @returns {{sortBy: string, sortOrder: string}} Sort configuration object
  *
  * @example
@@ -717,7 +818,7 @@ export const selectStudentFilters = (state: any): StudentFiltersType => state.st
  * console.log(`Sorted by ${sortBy} ${sortOrder}`);
  * ```
  */
-export const selectStudentSort = (state: any) => ({
+export const selectStudentSort = (state: RootState) => ({
   sortBy: state.students.ui.sortBy,
   sortOrder: state.students.ui.sortOrder,
 });
@@ -725,7 +826,7 @@ export const selectStudentSort = (state: any) => ({
 /**
  * Selector for pagination state.
  *
- * @param {any} state - Redux root state
+ * @param {RootState} state - Redux root state
  * @returns {{currentPage: number, pageSize: number}} Pagination configuration
  *
  * @example
@@ -733,7 +834,7 @@ export const selectStudentSort = (state: any) => ({
  * const { currentPage, pageSize } = useSelector(selectStudentPagination);
  * ```
  */
-export const selectStudentPagination = (state: any) => ({
+export const selectStudentPagination = (state: RootState) => ({
   currentPage: state.students.ui.currentPage,
   pageSize: state.students.ui.pageSize,
 });
@@ -741,7 +842,7 @@ export const selectStudentPagination = (state: any) => ({
 /**
  * Selector for search query.
  *
- * @param {any} state - Redux root state
+ * @param {RootState} state - Redux root state
  * @returns {string} Current search query
  *
  * @example
@@ -749,12 +850,12 @@ export const selectStudentPagination = (state: any) => ({
  * const searchQuery = useSelector(selectStudentSearchQuery);
  * ```
  */
-export const selectStudentSearchQuery = (state: any): string => state.students.ui.searchQuery;
+export const selectStudentSearchQuery = (state: RootState): string => state.students.ui.searchQuery;
 
 /**
  * Selector for inactive students visibility.
  *
- * @param {any} state - Redux root state
+ * @param {RootState} state - Redux root state
  * @returns {boolean} Whether inactive students are shown
  *
  * @example
@@ -762,12 +863,12 @@ export const selectStudentSearchQuery = (state: any): string => state.students.u
  * const showInactive = useSelector(selectShowInactiveStudents);
  * ```
  */
-export const selectShowInactiveStudents = (state: any): boolean => state.students.ui.showInactive;
+export const selectShowInactiveStudents = (state: RootState): boolean => state.students.ui.showInactive;
 
 /**
  * Selector for bulk select mode status.
  *
- * @param {any} state - Redux root state
+ * @param {RootState} state - Redux root state
  * @returns {boolean} Whether bulk select mode is active
  *
  * @example
@@ -775,12 +876,12 @@ export const selectShowInactiveStudents = (state: any): boolean => state.student
  * const isBulkMode = useSelector(selectIsBulkSelectMode);
  * ```
  */
-export const selectIsBulkSelectMode = (state: any): boolean => state.students.ui.bulkSelectMode;
+export const selectIsBulkSelectMode = (state: RootState): boolean => state.students.ui.bulkSelectMode;
 
 /**
  * Selector for expanded student card IDs.
  *
- * @param {any} state - Redux root state
+ * @param {RootState} state - Redux root state
  * @returns {string[]} Array of expanded student IDs
  *
  * @example
@@ -789,7 +890,7 @@ export const selectIsBulkSelectMode = (state: any): boolean => state.students.ui
  * const isExpanded = expandedCards.includes(studentId);
  * ```
  */
-export const selectExpandedStudentCards = (state: any): string[] => state.students.ui.expandedCards;
+export const selectExpandedStudentCards = (state: RootState): string[] => state.students.ui.expandedCards;
 
 /**
  * Selector for filtered and sorted students.
@@ -817,7 +918,7 @@ export const selectExpandedStudentCards = (state: any): string[] => state.studen
  * console.log(`Showing ${filteredStudents.length} students`);
  * ```
  */
-export const selectFilteredAndSortedStudents = (state: any): Student[] => {
+export const selectFilteredAndSortedStudents = (state: RootState): Student[] => {
   const allStudents = studentsSelectors.selectAll(state) as Student[];
   const { filters, searchQuery, showInactive, sortBy, sortOrder } = state.students.ui;
 
@@ -861,7 +962,7 @@ export const selectFilteredAndSortedStudents = (state: any): Student[] => {
 
   // Apply sorting
   filteredStudents.sort((a, b) => {
-    let aValue: any, bValue: any;
+    let aValue: string | number | Date, bValue: string | number | Date;
 
     switch (sortBy) {
       case 'name':
@@ -890,8 +991,8 @@ export const selectFilteredAndSortedStudents = (state: any): Student[] => {
         bValue = b.lastName;
     }
 
-    if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
-    if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+    if ((aValue as any) < (bValue as any)) return sortOrder === 'asc' ? -1 : 1;
+    if ((aValue as any) > (bValue as any)) return sortOrder === 'asc' ? 1 : -1;
     return 0;
   });
 
@@ -917,7 +1018,7 @@ export const selectFilteredAndSortedStudents = (state: any): Student[] => {
  * // Returns 20 students for current page (default page size)
  * ```
  */
-export const selectPaginatedStudents = (state: any): Student[] => {
+export const selectPaginatedStudents = (state: RootState): Student[] => {
   const filteredStudents = selectFilteredAndSortedStudents(state);
   const { currentPage, pageSize } = state.students.ui;
 
@@ -950,7 +1051,7 @@ export const selectPaginatedStudents = (state: any): Student[] => {
  * console.log(`Showing ${paginationInfo.startIndex}-${paginationInfo.endIndex} of ${paginationInfo.totalStudents}`);
  * ```
  */
-export const selectStudentPaginationInfo = (state: any) => {
+export const selectStudentPaginationInfo = (state: RootState) => {
   const totalStudents = selectFilteredAndSortedStudents(state).length;
   const { currentPage, pageSize } = state.students.ui;
 
@@ -980,9 +1081,9 @@ export const selectStudentPaginationInfo = (state: any) => {
  * const selectedNames = selectedStudents.map(s => `${s.firstName} ${s.lastName}`);
  * ```
  */
-export const selectSelectedStudents = (state: any): Student[] => {
+export const selectSelectedStudents = (state: RootState): Student[] => {
   const selectedIds = state.students.ui.selectedIds;
-  return selectedIds.map((id: string) => studentsSelectors.selectById(state, id)).filter(Boolean);
+  return selectedIds.map((id: string) => studentsSelectors.selectById(state, id)).filter(Boolean) as Student[];
 };
 
 /**
@@ -1000,7 +1101,7 @@ export const selectSelectedStudents = (state: any): Student[] => {
  * const activeStudents = useSelector(selectActiveStudents);
  * ```
  */
-export const selectActiveStudents = (state: any): Student[] => {
+export const selectActiveStudents = (state: RootState): Student[] => {
   const allStudents = studentsSelectors.selectAll(state) as Student[];
   return allStudents.filter(student => student.isActive);
 };
@@ -1017,7 +1118,7 @@ export const selectActiveStudents = (state: any): Student[] => {
  * const fifthGraders = useSelector(state => selectStudentsByGrade(state, '5'));
  * ```
  */
-export const selectStudentsByGrade = (state: any, grade: string): Student[] => {
+export const selectStudentsByGrade = (state: RootState, grade: string): Student[] => {
   const allStudents = studentsSelectors.selectAll(state) as Student[];
   return allStudents.filter(student => student.grade === grade);
 };
@@ -1034,7 +1135,7 @@ export const selectStudentsByGrade = (state: any, grade: string): Student[] => {
  * const myStudents = useSelector(state => selectStudentsByNurse(state, currentNurseId));
  * ```
  */
-export const selectStudentsByNurse = (state: any, nurseId: string): Student[] => {
+export const selectStudentsByNurse = (state: RootState, nurseId: string): Student[] => {
   const allStudents = studentsSelectors.selectAll(state) as Student[];
   return allStudents.filter(student => student.nurseId === nurseId);
 };
@@ -1055,7 +1156,7 @@ export const selectStudentsByNurse = (state: any, nurseId: string): Student[] =>
  * const allergyCount = studentsWithAllergies.length;
  * ```
  */
-export const selectStudentsWithAllergies = (state: any): Student[] => {
+export const selectStudentsWithAllergies = (state: RootState): Student[] => {
   const allStudents = studentsSelectors.selectAll(state) as Student[];
   return allStudents.filter(student => student.allergies && student.allergies.length > 0);
 };
@@ -1075,7 +1176,7 @@ export const selectStudentsWithAllergies = (state: any): Student[] => {
  * const studentsWithMeds = useSelector(selectStudentsWithMedications);
  * ```
  */
-export const selectStudentsWithMedications = (state: any): Student[] => {
+export const selectStudentsWithMedications = (state: RootState): Student[] => {
   const allStudents = studentsSelectors.selectAll(state) as Student[];
   return allStudents.filter(student => student.medications && student.medications.length > 0);
 };
@@ -1098,7 +1199,7 @@ export const selectStudentsWithMedications = (state: any): Student[] => {
  * }
  * ```
  */
-export const selectStudentByNumber = (state: any, studentNumber: string): Student | undefined => {
+export const selectStudentByNumber = (state: RootState, studentNumber: string): Student | undefined => {
   const allStudents = studentsSelectors.selectAll(state) as Student[];
   return allStudents.find(student => student.studentNumber === studentNumber);
 };

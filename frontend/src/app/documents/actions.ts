@@ -256,8 +256,8 @@ export async function uploadDocumentAction(
     });
 
     // Cache invalidation
-    revalidateTag(DOCUMENT_CACHE_TAGS.DOCUMENTS);
-    revalidateTag('document-list');
+    revalidateTag(DOCUMENT_CACHE_TAGS.DOCUMENTS, 'default');
+    revalidateTag('document-list', 'default');
     revalidatePath('/documents', 'page');
 
     return {
@@ -348,9 +348,9 @@ export async function signDocumentAction(
     });
 
     // Cache invalidation
-    revalidateTag(DOCUMENT_CACHE_TAGS.DOCUMENTS);
-    revalidateTag(DOCUMENT_CACHE_TAGS.DOCUMENT_SIGNATURES);
-    revalidateTag(`document-${documentId}`);
+    revalidateTag(DOCUMENT_CACHE_TAGS.DOCUMENTS, 'default');
+    revalidateTag(DOCUMENT_CACHE_TAGS.DOCUMENT_SIGNATURES, 'default');
+    revalidateTag(`document-${documentId}`, 'default');
     revalidatePath('/documents', 'page');
     revalidatePath(`/documents/${documentId}`, 'page');
 
@@ -441,9 +441,9 @@ export async function shareDocumentAction(
     });
 
     // Cache invalidation
-    revalidateTag(DOCUMENT_CACHE_TAGS.DOCUMENTS);
-    revalidateTag(DOCUMENT_CACHE_TAGS.DOCUMENT_SHARES);
-    revalidateTag(`document-${documentId}`);
+    revalidateTag(DOCUMENT_CACHE_TAGS.DOCUMENTS, 'default');
+    revalidateTag(DOCUMENT_CACHE_TAGS.DOCUMENT_SHARES, 'default');
+    revalidateTag(`document-${documentId}`, 'default');
     revalidatePath('/documents', 'page');
 
     return {
@@ -508,9 +508,9 @@ export async function deleteDocumentAction(documentId: string): Promise<ActionRe
     });
 
     // Cache invalidation
-    revalidateTag(DOCUMENT_CACHE_TAGS.DOCUMENTS);
-    revalidateTag(`document-${documentId}`);
-    revalidateTag('document-list');
+    revalidateTag(DOCUMENT_CACHE_TAGS.DOCUMENTS, 'default');
+    revalidateTag(`document-${documentId}`, 'default');
+    revalidateTag('document-list', 'default');
     revalidatePath('/documents', 'page');
 
     return {
@@ -637,9 +637,9 @@ export async function updateDocumentAction(
     });
 
     // Cache invalidation
-    revalidateTag(DOCUMENT_CACHE_TAGS.DOCUMENTS);
-    revalidateTag(`document-${documentId}`);
-    revalidateTag('document-list');
+    revalidateTag(DOCUMENT_CACHE_TAGS.DOCUMENTS, 'default');
+    revalidateTag(`document-${documentId}`, 'default');
+    revalidateTag('document-list', 'default');
     revalidatePath('/documents', 'page');
     revalidatePath(`/documents/${documentId}`, 'page');
 
@@ -758,10 +758,10 @@ export async function getDocumentCount(filters?: Record<string, unknown>): Promi
  */
 export async function clearDocumentCache(documentId?: string): Promise<void> {
   if (documentId) {
-    revalidateTag(`document-${documentId}`);
+    revalidateTag(`document-${documentId}`, 'default');
   }
-  revalidateTag(DOCUMENT_CACHE_TAGS.DOCUMENTS);
-  revalidateTag('document-list');
+  revalidateTag(DOCUMENT_CACHE_TAGS.DOCUMENTS, 'default');
+  revalidateTag('document-list', 'default');
   revalidatePath('/documents', 'page');
 }
 

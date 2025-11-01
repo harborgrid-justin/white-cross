@@ -61,7 +61,7 @@ export {
   selectIncidentsWithUnnotifiedParents,
   selectCriticalIncidents,
   selectReportStatistics,
-} from '../../pages/incidents/store/incidentReportsSlice';
+} from '../incidentReportsSlice';
 
 // Default export (the reducer)
-export { default } from '../../pages/incidents/store/incidentReportsSlice';
+export { default } from '../incidentReportsSlice';

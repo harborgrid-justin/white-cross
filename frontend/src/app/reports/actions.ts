@@ -359,11 +359,11 @@ export async function createReportAction(data: CreateReportData): Promise<Action
     });
 
     // Cache invalidation
-    revalidateTag(REPORT_CACHE_TAGS.REPORTS);
-    revalidateTag('report-list');
+    revalidateTag(REPORT_CACHE_TAGS.REPORTS, 'default');
+    revalidateTag('report-list', 'default');
     if (data.isScheduled) {
-      revalidateTag(REPORT_CACHE_TAGS.SCHEDULES);
-      revalidateTag('scheduled-reports');
+      revalidateTag(REPORT_CACHE_TAGS.SCHEDULES, 'default');
+      revalidateTag('scheduled-reports', 'default');
     }
     revalidatePath('/reports', 'page');
 
@@ -435,12 +435,12 @@ export async function updateReportAction(
     });
 
     // Cache invalidation
-    revalidateTag(REPORT_CACHE_TAGS.REPORTS);
-    revalidateTag(`report-${reportId}`);
-    revalidateTag('report-list');
+    revalidateTag(REPORT_CACHE_TAGS.REPORTS, 'default');
+    revalidateTag(`report-${reportId}`, 'default');
+    revalidateTag('report-list', 'default');
     if (data.schedule) {
-      revalidateTag(REPORT_CACHE_TAGS.SCHEDULES);
-      revalidateTag('scheduled-reports');
+      revalidateTag(REPORT_CACHE_TAGS.SCHEDULES, 'default');
+      revalidateTag('scheduled-reports', 'default');
     }
     revalidatePath('/reports', 'page');
     revalidatePath(`/reports/${reportId}`, 'page');
@@ -510,9 +510,9 @@ export async function generateReportAction(reportId: string): Promise<ActionResu
     });
 
     // Cache invalidation
-    revalidateTag(REPORT_CACHE_TAGS.REPORTS);
-    revalidateTag(`report-${reportId}`);
-    revalidateTag('report-list');
+    revalidateTag(REPORT_CACHE_TAGS.REPORTS, 'default');
+    revalidateTag(`report-${reportId}`, 'default');
+    revalidateTag('report-list', 'default');
     revalidatePath('/reports', 'page');
     revalidatePath(`/reports/${reportId}`, 'page');
 
@@ -644,11 +644,11 @@ export async function deleteReportAction(reportId: string): Promise<ActionResult
     });
 
     // Cache invalidation
-    revalidateTag(REPORT_CACHE_TAGS.REPORTS);
-    revalidateTag(`report-${reportId}`);
-    revalidateTag('report-list');
-    revalidateTag(REPORT_CACHE_TAGS.SCHEDULES);
-    revalidateTag('scheduled-reports');
+    revalidateTag(REPORT_CACHE_TAGS.REPORTS, 'default');
+    revalidateTag(`report-${reportId}`, 'default');
+    revalidateTag('report-list', 'default');
+    revalidateTag(REPORT_CACHE_TAGS.SCHEDULES, 'default');
+    revalidateTag('scheduled-reports', 'default');
     revalidatePath('/reports', 'page');
 
     return {
@@ -1151,20 +1151,20 @@ export async function getReportsDashboardData(): Promise<{
  */
 export async function clearReportCache(reportId?: string): Promise<void> {
   if (reportId) {
-    revalidateTag(`report-${reportId}`);
+    revalidateTag(`report-${reportId}`, 'default');
   }
   
   // Clear all report caches
   Object.values(REPORT_CACHE_TAGS).forEach(tag => {
-    revalidateTag(tag);
+    revalidateTag(tag, 'default');
   });
 
   // Clear list caches
-  revalidateTag('report-list');
-  revalidateTag('report-template-list');
-  revalidateTag('scheduled-reports');
-  revalidateTag('report-stats');
-  revalidateTag('report-dashboard');
+  revalidateTag('report-list', 'default');
+  revalidateTag('report-template-list', 'default');
+  revalidateTag('scheduled-reports', 'default');
+  revalidateTag('report-stats', 'default');
+  revalidateTag('report-dashboard', 'default');
 
   // Clear paths
   revalidatePath('/reports', 'page');

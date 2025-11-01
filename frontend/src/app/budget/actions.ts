@@ -345,8 +345,8 @@ export async function createBudgetCategoryAction(data: CreateBudgetCategoryData)
     });
 
     // Cache invalidation
-    revalidateTag(BUDGET_CACHE_TAGS.CATEGORIES);
-    revalidateTag('budget-category-list');
+    revalidateTag(BUDGET_CACHE_TAGS.CATEGORIES, 'default');
+    revalidateTag('budget-category-list', 'default');
     revalidatePath('/budget/categories', 'page');
 
     return {
@@ -425,9 +425,9 @@ export async function updateBudgetCategoryAction(
     });
 
     // Cache invalidation
-    revalidateTag(BUDGET_CACHE_TAGS.CATEGORIES);
-    revalidateTag(`budget-category-${categoryId}`);
-    revalidateTag('budget-category-list');
+    revalidateTag(BUDGET_CACHE_TAGS.CATEGORIES, 'default');
+    revalidateTag(`budget-category-${categoryId}`, 'default');
+    revalidateTag('budget-category-list', 'default');
     revalidatePath('/budget/categories', 'page');
     revalidatePath(`/budget/categories/${categoryId}`, 'page');
 
@@ -509,11 +509,11 @@ export async function createBudgetTransactionAction(data: CreateBudgetTransactio
     });
 
     // Cache invalidation
-    revalidateTag(BUDGET_CACHE_TAGS.TRANSACTIONS);
-    revalidateTag(BUDGET_CACHE_TAGS.CATEGORIES);
-    revalidateTag(BUDGET_CACHE_TAGS.SUMMARY);
-    revalidateTag('budget-transaction-list');
-    revalidateTag(`budget-category-${data.categoryId}`);
+    revalidateTag(BUDGET_CACHE_TAGS.TRANSACTIONS, 'default');
+    revalidateTag(BUDGET_CACHE_TAGS.CATEGORIES, 'default');
+    revalidateTag(BUDGET_CACHE_TAGS.SUMMARY, 'default');
+    revalidateTag('budget-transaction-list', 'default');
+    revalidateTag(`budget-category-${data.categoryId}`, 'default');
     revalidatePath('/budget/transactions', 'page');
     revalidatePath('/budget/categories', 'page');
 
@@ -593,13 +593,13 @@ export async function updateBudgetTransactionAction(
     });
 
     // Cache invalidation
-    revalidateTag(BUDGET_CACHE_TAGS.TRANSACTIONS);
-    revalidateTag(BUDGET_CACHE_TAGS.CATEGORIES);
-    revalidateTag(BUDGET_CACHE_TAGS.SUMMARY);
-    revalidateTag(`budget-transaction-${transactionId}`);
-    revalidateTag('budget-transaction-list');
+    revalidateTag(BUDGET_CACHE_TAGS.TRANSACTIONS, 'default');
+    revalidateTag(BUDGET_CACHE_TAGS.CATEGORIES, 'default');
+    revalidateTag(BUDGET_CACHE_TAGS.SUMMARY, 'default');
+    revalidateTag(`budget-transaction-${transactionId}`, 'default');
+    revalidateTag('budget-transaction-list', 'default');
     if (data.categoryId) {
-      revalidateTag(`budget-category-${data.categoryId}`);
+      revalidateTag(`budget-category-${data.categoryId}`, 'default');
     }
     revalidatePath('/budget/transactions', 'page');
     revalidatePath(`/budget/transactions/${transactionId}`, 'page');
@@ -765,18 +765,18 @@ export async function getBudgetOverview(): Promise<{
  */
 export async function clearBudgetCache(resourceType?: string, resourceId?: string): Promise<void> {
   if (resourceType && resourceId) {
-    revalidateTag(`${resourceType}-${resourceId}`);
+    revalidateTag(`${resourceType}-${resourceId}`, 'default');
   }
   
   // Clear all budget caches
   Object.values(BUDGET_CACHE_TAGS).forEach(tag => {
-    revalidateTag(tag);
+    revalidateTag(tag, 'default');
   });
 
   // Clear list caches
-  revalidateTag('budget-category-list');
-  revalidateTag('budget-transaction-list');
-  revalidateTag('budget-stats');
+  revalidateTag('budget-category-list', 'default');
+  revalidateTag('budget-transaction-list', 'default');
+  revalidateTag('budget-stats', 'default');
 
   // Clear paths
   revalidatePath('/budget', 'page');

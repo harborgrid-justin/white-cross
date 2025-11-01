@@ -193,10 +193,10 @@ export async function createAppointment(data: CreateAppointmentData): Promise<Ac
     });
 
     // Next.js v16 cache invalidation
-    revalidateTag('appointments');
-    revalidateTag('calendar-appointments');
-    revalidateTag('upcoming-appointments');
-    revalidateTag(`student-appointments-${data.studentId}`);
+    revalidateTag('appointments', 'default');
+    revalidateTag('calendar-appointments', 'default');
+    revalidateTag('upcoming-appointments', 'default');
+    revalidateTag(`student-appointments-${data.studentId}`, 'default');
     revalidatePath('/dashboard/appointments');
     revalidatePath(`/dashboard/students/${data.studentId}`);
 
@@ -291,11 +291,11 @@ export async function updateAppointment(
     });
 
     // Next.js v16 cache invalidation
-    revalidateTag('appointments');
-    revalidateTag('calendar-appointments');
-    revalidateTag(`appointment-${appointmentId}`);
+    revalidateTag('appointments', 'default');
+    revalidateTag('calendar-appointments', 'default');
+    revalidateTag(`appointment-${appointmentId}`, 'default');
     if (data.studentId) {
-      revalidateTag(`student-appointments-${data.studentId}`);
+      revalidateTag(`student-appointments-${data.studentId}`, 'default');
     }
     revalidatePath('/dashboard/appointments');
     revalidatePath(`/dashboard/appointments/${appointmentId}`);
@@ -362,9 +362,9 @@ export async function rescheduleAppointment(
     });
 
     // Next.js v16 cache invalidation
-    revalidateTag('appointments');
-    revalidateTag('calendar-appointments');
-    revalidateTag(`appointment-${data.appointmentId}`);
+    revalidateTag('appointments', 'default');
+    revalidateTag('calendar-appointments', 'default');
+    revalidateTag(`appointment-${data.appointmentId}`, 'default');
     revalidatePath('/dashboard/appointments');
 
     return {
@@ -416,9 +416,9 @@ export async function cancelAppointment(
     });
 
     // Next.js v16 cache invalidation
-    revalidateTag('appointments');
-    revalidateTag('calendar-appointments');
-    revalidateTag(`appointment-${appointmentId}`);
+    revalidateTag('appointments', 'default');
+    revalidateTag('calendar-appointments', 'default');
+    revalidateTag(`appointment-${appointmentId}`, 'default');
     revalidatePath('/dashboard/appointments');
 
     return {
@@ -470,9 +470,9 @@ export async function completeAppointment(
     });
 
     // Next.js v16 cache invalidation
-    revalidateTag('appointments');
-    revalidateTag('calendar-appointments');
-    revalidateTag(`appointment-${appointmentId}`);
+    revalidateTag('appointments', 'default');
+    revalidateTag('calendar-appointments', 'default');
+    revalidateTag(`appointment-${appointmentId}`, 'default');
     revalidatePath('/dashboard/appointments');
 
     return {
@@ -524,9 +524,9 @@ export async function deleteAppointment(appointmentId: string): Promise<ActionRe
     });
 
     // Next.js v16 cache invalidation
-    revalidateTag('appointments');
-    revalidateTag('calendar-appointments');
-    revalidateTag(`appointment-${appointmentId}`);
+    revalidateTag('appointments', 'default');
+    revalidateTag('calendar-appointments', 'default');
+    revalidateTag(`appointment-${appointmentId}`, 'default');
     revalidatePath('/dashboard/appointments');
 
     return {

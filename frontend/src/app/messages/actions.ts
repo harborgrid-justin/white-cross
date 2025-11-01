@@ -411,10 +411,10 @@ export async function createMessageAction(data: CreateMessageData): Promise<Acti
     });
 
     // Cache invalidation
-    revalidateTag(MESSAGE_CACHE_TAGS.MESSAGES);
-    revalidateTag(MESSAGE_CACHE_TAGS.THREADS);
-    revalidateTag('message-list');
-    revalidateTag('message-thread-list');
+    revalidateTag(MESSAGE_CACHE_TAGS.MESSAGES, 'default');
+    revalidateTag(MESSAGE_CACHE_TAGS.THREADS, 'default');
+    revalidateTag('message-list', 'default');
+    revalidateTag('message-thread-list', 'default');
     revalidatePath('/messages', 'page');
 
     return {
@@ -485,10 +485,10 @@ export async function updateMessageAction(
     });
 
     // Cache invalidation
-    revalidateTag(MESSAGE_CACHE_TAGS.MESSAGES);
-    revalidateTag(MESSAGE_CACHE_TAGS.THREADS);
-    revalidateTag(`message-${messageId}`);
-    revalidateTag('message-list');
+    revalidateTag(MESSAGE_CACHE_TAGS.MESSAGES, 'default');
+    revalidateTag(MESSAGE_CACHE_TAGS.THREADS, 'default');
+    revalidateTag(`message-${messageId}`, 'default');
+    revalidateTag('message-list', 'default');
     revalidatePath('/messages', 'page');
     revalidatePath(`/messages/${messageId}`, 'page');
 
@@ -557,11 +557,11 @@ export async function sendMessageAction(messageId: string): Promise<ActionResult
     });
 
     // Cache invalidation
-    revalidateTag(MESSAGE_CACHE_TAGS.MESSAGES);
-    revalidateTag(MESSAGE_CACHE_TAGS.THREADS);
-    revalidateTag(`message-${messageId}`);
-    revalidateTag('message-list');
-    revalidateTag('message-stats');
+    revalidateTag(MESSAGE_CACHE_TAGS.MESSAGES, 'default');
+    revalidateTag(MESSAGE_CACHE_TAGS.THREADS, 'default');
+    revalidateTag(`message-${messageId}`, 'default');
+    revalidateTag('message-list', 'default');
+    revalidateTag('message-stats', 'default');
     revalidatePath('/messages', 'page');
     revalidatePath(`/messages/${messageId}`, 'page');
 
@@ -621,10 +621,10 @@ export async function markMessageReadAction(messageId: string): Promise<ActionRe
     }
 
     // Cache invalidation (no audit log for read status)
-    revalidateTag(MESSAGE_CACHE_TAGS.MESSAGES);
-    revalidateTag(MESSAGE_CACHE_TAGS.THREADS);
-    revalidateTag(`message-${messageId}`);
-    revalidateTag('message-list');
+    revalidateTag(MESSAGE_CACHE_TAGS.MESSAGES, 'default');
+    revalidateTag(MESSAGE_CACHE_TAGS.THREADS, 'default');
+    revalidateTag(`message-${messageId}`, 'default');
+    revalidateTag('message-list', 'default');
     revalidatePath('/messages', 'page');
 
     return {
@@ -687,8 +687,8 @@ export async function createMessageTemplateAction(data: CreateMessageTemplateDat
     });
 
     // Cache invalidation
-    revalidateTag(MESSAGE_CACHE_TAGS.TEMPLATES);
-    revalidateTag('message-template-list');
+    revalidateTag(MESSAGE_CACHE_TAGS.TEMPLATES, 'default');
+    revalidateTag('message-template-list', 'default');
     revalidatePath('/messages/templates', 'page');
 
     return {
@@ -1102,20 +1102,20 @@ export async function getMessagesDashboardData(): Promise<{
  */
 export async function clearMessageCache(resourceType?: string, resourceId?: string): Promise<void> {
   if (resourceType && resourceId) {
-    revalidateTag(`${resourceType}-${resourceId}`);
+    revalidateTag(`${resourceType}-${resourceId}`, 'default');
   }
   
   // Clear all message caches
   Object.values(MESSAGE_CACHE_TAGS).forEach(tag => {
-    revalidateTag(tag);
+    revalidateTag(tag, 'default');
   });
 
   // Clear list caches
-  revalidateTag('message-list');
-  revalidateTag('message-thread-list');
-  revalidateTag('message-template-list');
-  revalidateTag('message-stats');
-  revalidateTag('message-dashboard');
+  revalidateTag('message-list', 'default');
+  revalidateTag('message-thread-list', 'default');
+  revalidateTag('message-template-list', 'default');
+  revalidateTag('message-stats', 'default');
+  revalidateTag('message-dashboard', 'default');
 
   // Clear paths
   revalidatePath('/messages', 'page');

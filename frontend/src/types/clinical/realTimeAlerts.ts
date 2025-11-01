@@ -293,7 +293,7 @@ export const CreateAlertSchema = z.object({
   notifyUsers: z.array(z.string().uuid()).optional(),
   requiresAction: z.boolean().optional(),
   suggestedActions: z.array(z.string()).optional(),
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.string(), z.any()).optional(),
   playSound: z.boolean().optional(),
   showVisual: z.boolean().optional(),
   expiresAt: z.string().datetime().optional(),

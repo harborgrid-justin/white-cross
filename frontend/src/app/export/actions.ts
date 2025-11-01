@@ -336,8 +336,8 @@ export async function createExportJobAction(data: CreateExportJobData): Promise<
     });
 
     // Cache invalidation
-    revalidateTag(EXPORT_CACHE_TAGS.JOBS);
-    revalidateTag('export-job-list');
+    revalidateTag(EXPORT_CACHE_TAGS.JOBS, 'default');
+    revalidateTag('export-job-list', 'default');
     revalidatePath('/export', 'page');
 
     return {
@@ -408,9 +408,9 @@ export async function updateExportJobAction(
     });
 
     // Cache invalidation
-    revalidateTag(EXPORT_CACHE_TAGS.JOBS);
-    revalidateTag(`export-job-${jobId}`);
-    revalidateTag('export-job-list');
+    revalidateTag(EXPORT_CACHE_TAGS.JOBS, 'default');
+    revalidateTag(`export-job-${jobId}`, 'default');
+    revalidateTag('export-job-list', 'default');
     revalidatePath('/export', 'page');
     revalidatePath(`/export/jobs/${jobId}`, 'page');
 
@@ -479,10 +479,10 @@ export async function startExportJobAction(jobId: string): Promise<ActionResult<
     });
 
     // Cache invalidation
-    revalidateTag(EXPORT_CACHE_TAGS.JOBS);
-    revalidateTag(`export-job-${jobId}`);
-    revalidateTag('export-job-list');
-    revalidateTag('export-stats');
+    revalidateTag(EXPORT_CACHE_TAGS.JOBS, 'default');
+    revalidateTag(`export-job-${jobId}`, 'default');
+    revalidateTag('export-job-list', 'default');
+    revalidateTag('export-stats', 'default');
     revalidatePath('/export', 'page');
     revalidatePath(`/export/jobs/${jobId}`, 'page');
 
@@ -556,8 +556,8 @@ export async function createExportTemplateAction(data: CreateExportTemplateData)
     });
 
     // Cache invalidation
-    revalidateTag(EXPORT_CACHE_TAGS.TEMPLATES);
-    revalidateTag('export-template-list');
+    revalidateTag(EXPORT_CACHE_TAGS.TEMPLATES, 'default');
+    revalidateTag('export-template-list', 'default');
     revalidatePath('/export/templates', 'page');
 
     return {
@@ -742,18 +742,18 @@ export async function getExportOverview(): Promise<{
  */
 export async function clearExportCache(resourceType?: string, resourceId?: string): Promise<void> {
   if (resourceType && resourceId) {
-    revalidateTag(`${resourceType}-${resourceId}`);
+    revalidateTag(`${resourceType}-${resourceId}`, 'default');
   }
   
   // Clear all export caches
   Object.values(EXPORT_CACHE_TAGS).forEach(tag => {
-    revalidateTag(tag);
+    revalidateTag(tag, 'default');
   });
 
   // Clear list caches
-  revalidateTag('export-job-list');
-  revalidateTag('export-template-list');
-  revalidateTag('export-stats');
+  revalidateTag('export-job-list', 'default');
+  revalidateTag('export-template-list', 'default');
+  revalidateTag('export-stats', 'default');
 
   // Clear paths
   revalidatePath('/export', 'page');
