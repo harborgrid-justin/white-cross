@@ -51,7 +51,7 @@ export function HealthRecordsFilters({ totalCount }: HealthRecordsFiltersProps) 
     if (recordedByFilter) params.set('recordedBy', recordedByFilter);
     if (studentFilter) params.set('studentId', studentFilter);
     
-    router.push(`/dashboard/health-records?${params.toString()}`);
+    router.push(`/health-records?${params.toString()}`);
   }, [
     searchTerm, typeFilter, statusFilter, priorityFilter, 
     dateFromFilter, dateToFilter, recordedByFilter, studentFilter, router
@@ -66,7 +66,7 @@ export function HealthRecordsFilters({ totalCount }: HealthRecordsFiltersProps) 
     setDateToFilter('');
     setRecordedByFilter('');
     setStudentFilter('');
-    router.push('/dashboard/health-records');
+    router.push('/health-records');
   };
 
   const hasActiveFilters = searchTerm || typeFilter || statusFilter || priorityFilter || 

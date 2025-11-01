@@ -6,13 +6,15 @@
 
 import { Metadata } from 'next';
 import { Suspense } from 'react';
+import Link from 'next/link';
 import { PageHeader } from '@/components/layouts/PageHeader';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Card, CardContent } from '@/components/ui/Card';
-import { Plus, FileHeart } from 'lucide-react';
+import { Plus, FileHeart, BarChart3 } from 'lucide-react';
 import { HealthRecordsContent } from './_components/HealthRecordsContent';
 import { HealthRecordsFilters } from './_components/HealthRecordsFilters';
+import { getHealthRecordsAction } from '@/app/health-records/actions';
 
 export const metadata: Metadata = {
   title: 'Health Records | White Cross',
@@ -60,6 +62,14 @@ function HealthRecordsPageSkeleton() {
   );
 }
 
+async function HealthRecordsFiltersWrapper({ searchParams }: { searchParams: HealthRecordsPageProps['searchParams'] }) {
+  // Fetch health records to get the total count
+  const result = await getHealthRecordsAction(searchParams.studentId, searchParams.type);
+  const totalCount = result.success ? (result.data?.length || 0) : 0;
+  
+  return <HealthRecordsFilters totalCount={totalCount} />;
+}
+
 export default function HealthRecordsPage({ searchParams }: HealthRecordsPageProps) {
   return (
     <>
@@ -68,21 +78,31 @@ export default function HealthRecordsPage({ searchParams }: HealthRecordsPagePro
         description="Comprehensive health record management for student healthcare"
         actions={
           <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              <FileHeart className="h-4 w-4 mr-2" />
-              View Timeline
-            </Button>
-            <Button size="sm">
-              <Plus className="h-4 w-4 mr-2" />
-              New Record
-            </Button>
+            <Link href="/health-records/reports">
+              <Button variant="outline" size="sm">
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Reports
+              </Button>
+            </Link>
+            <Link href="/health-records/timeline">
+              <Button variant="outline" size="sm">
+                <FileHeart className="h-4 w-4 mr-2" />
+                Timeline
+              </Button>
+            </Link>
+            <Link href="/health-records/new">
+              <Button size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                New Record
+              </Button>
+            </Link>
           </div>
         }
       />
 
       <div className="space-y-6">
-        <Suspense fallback={<Skeleton className="h-16 w-full" />}>
-          <HealthRecordsFilters totalCount={0} />
+        <Suspense fallback={<Skeleton className="h-32 w-full" />}>
+          <HealthRecordsFiltersWrapper searchParams={searchParams} />
         </Suspense>
 
         <Suspense fallback={<HealthRecordsPageSkeleton />}>

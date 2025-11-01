@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 
 interface HealthRecordsSidebarDefaultProps {
-  searchParams: {
+  searchParams?: {
     page?: string;
     limit?: string;
     type?: string;
@@ -59,7 +59,7 @@ function SidebarSkeleton() {
   );
 }
 
-export default function HealthRecordsSidebarDefault({ searchParams }: HealthRecordsSidebarDefaultProps) {
+export default function HealthRecordsSidebarDefault({ searchParams = {} }: HealthRecordsSidebarDefaultProps) {
   return (
     <Suspense fallback={<SidebarSkeleton />}>
       <HealthRecordsSidebar searchParams={searchParams} />
