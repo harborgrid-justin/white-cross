@@ -87,13 +87,72 @@ async function getHealthRecord(id: string) {
   }
 }
 
-export default async function HealthRecordDetailPage({ params }: PageProps) {
-  const { id } = await params;
+// Loading skeleton component for the health record detail page
+function HealthRecordDetailSkeleton() {
+  return (
+    <div className="container mx-auto py-6 max-w-6xl">
+      {/* Header Skeleton */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-9 w-16" />
+          <div>
+            <Skeleton className="h-8 w-80 mb-2" />
+            <Skeleton className="h-5 w-64" />
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <Skeleton className="h-9 w-20" />
+          <Skeleton className="h-9 w-24" />
+        </div>
+      </div>
 
-  if (!id || id === 'undefined' || id === 'null') {
-    notFound();
-  }
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Content Skeleton */}
+        <div className="lg:col-span-2 space-y-6">
+          <Card className="p-6">
+            <Skeleton className="h-6 w-48 mb-4" />
+            <div className="space-y-4">
+              <Skeleton className="h-20 w-full" />
+              <div className="grid grid-cols-2 gap-4">
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-16 w-full" />
+              </div>
+            </div>
+          </Card>
+          <Card className="p-6">
+            <Skeleton className="h-6 w-48 mb-4" />
+            <div className="space-y-4">
+              <Skeleton className="h-16 w-full" />
+              <Skeleton className="h-16 w-full" />
+            </div>
+          </Card>
+        </div>
 
+        {/* Sidebar Skeleton */}
+        <div className="space-y-6">
+          <Card className="p-6">
+            <Skeleton className="h-6 w-24 mb-4" />
+            <div className="space-y-3">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+            </div>
+          </Card>
+          <Card className="p-6">
+            <Skeleton className="h-6 w-24 mb-4" />
+            <div className="space-y-3">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+            </div>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Async component that fetches the health record data
+async function HealthRecordDetailContent({ id }: { id: string }) {
   const record = await getHealthRecord(id);
 
   if (!record) {
@@ -363,5 +422,19 @@ export default async function HealthRecordDetailPage({ params }: PageProps) {
         </div>
       </div>
     </div>
+  );
+}
+
+export default async function HealthRecordDetailPage({ params }: PageProps) {
+  const { id } = await params;
+
+  if (!id || id === 'undefined' || id === 'null') {
+    notFound();
+  }
+
+  return (
+    <Suspense fallback={<HealthRecordDetailSkeleton />}>
+      <HealthRecordDetailContent id={id} />
+    </Suspense>
   );
 }
