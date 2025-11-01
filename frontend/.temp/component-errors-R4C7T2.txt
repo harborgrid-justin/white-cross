@@ -1,0 +1,42 @@
+src/components/appointments/AppointmentCalendar.tsx(27,39): error TS2307: Cannot find module '@/actions/appointments.actions' or its corresponding type declarations.
+src/components/appointments/SchedulingForm.tsx(18,54): error TS2307: Cannot find module '@/actions/appointments.actions' or its corresponding type declarations.
+src/components/auth/PermissionGate.tsx(14,28): error TS2307: Cannot find module '@/hooks/usePermissions' or its corresponding type declarations.
+src/components/communications/BroadcastForm.tsx(45,26): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+src/components/communications/BroadcastManager.tsx(48,8): error TS2307: Cannot find module '@/components/ui/dropdown-menu' or its corresponding type declarations.
+src/components/communications/BroadcastManager.tsx(56,8): error TS2307: Cannot find module '@/components/ui/table' or its corresponding type declarations.
+src/components/communications/BroadcastManager.tsx(60,33): error TS2305: Module '"@/lib/actions/communications.actions"' has no exported member 'deleteBroadcastAction'.
+src/components/communications/MessageComposer.tsx(29,26): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+src/components/communications/MessageInbox.tsx(43,8): error TS2307: Cannot find module '@/components/ui/dropdown-menu' or its corresponding type declarations.
+src/components/communications/MessageInbox.tsx(49,10): error TS2305: Module '"@/lib/actions/communications.actions"' has no exported member 'markAsReadAction'.
+src/components/communications/MessageThread.tsx(35,8): error TS2307: Cannot find module '@/components/ui/dropdown-menu' or its corresponding type declarations.
+src/components/communications/NotificationBell.tsx(21,8): error TS2307: Cannot find module '@/components/ui/dropdown-menu' or its corresponding type declarations.
+src/components/compliance/AuditLogViewer.tsx(11,8): error TS2307: Cannot find module '@/components/ui/table' or its corresponding type declarations.
+src/components/development/examples/StateSyncExample.tsx(29,15): error TS2305: Module '"@/stores/reduxStore"' has no exported member 'RootState'.
+src/components/development/examples/StateSyncExample.tsx(37,10): error TS2305: Module '"@/stores/reduxStore"' has no exported member 'getStorageStats'.
+src/components/documents/DocumentUploader.tsx(13,35): error TS2307: Cannot find module '@/hooks/documents' or its corresponding type declarations.
+src/components/documents/DocumentUploader.tsx(14,15): error TS2305: Module '"@/types/documents"' has no exported member 'DocumentMetadata'.
+src/components/features/inventory/components/InventoryAlerts.tsx(17,32): error TS2307: Cannot find module '@/pages/inventory/store/inventorySlice' or its corresponding type declarations.
+src/components/incidents/FollowUpForm.tsx(19,38): error TS2307: Cannot find module '@/actions/incidents.actions' or its corresponding type declarations.
+src/components/incidents/IncidentReportForm.tsx(33,48): error TS2307: Cannot find module '@/actions/incidents.actions' or its corresponding type declarations.
+src/components/incidents/WitnessStatementForm.tsx(17,40): error TS2307: Cannot find module '@/actions/incidents.actions' or its corresponding type declarations.
+src/components/medications/forms/AdministrationForm.tsx(28,37): error TS2307: Cannot find module '@/hooks/useStudentAllergies' or its corresponding type declarations.
+src/components/medications/forms/AdministrationForm.tsx(29,33): error TS2307: Cannot find module '@/hooks/useStudentPhoto' or its corresponding type declarations.
+src/components/medications/forms/MedicationForm.tsx(21,28): error TS2307: Cannot find module '@/components/ui/Inputs/DatePicker' or its corresponding type declarations.
+src/components/realtime/ConnectionStatus.tsx(12,38): error TS2307: Cannot find module '@/hooks/useConnectionMonitor' or its corresponding type declarations.
+src/components/realtime/OfflineQueueIndicator.tsx(14,33): error TS2307: Cannot find module '@/hooks/useOfflineQueue' or its corresponding type declarations.
+src/components/ui/Badge.tsx(8,17): error TS2305: Module '"./display/Badge"' has no exported member 'default'.
+src/components/ui/Checkbox.tsx(8,20): error TS2305: Module '"./inputs/Checkbox"' has no exported member 'default'.
+src/components/ui/SearchInput.tsx(8,23): error TS2305: Module '"./inputs/SearchInput"' has no exported member 'default'.
+src/components/ui/Switch.tsx(8,18): error TS2305: Module '"./inputs/Switch"' has no exported member 'default'.
+src/components/ui/display/Avatar.tsx(13,20): error TS2307: Cannot find module '../../../utils/cn' or its corresponding type declarations.
+src/components/ui/display/Badge.tsx(16,20): error TS2307: Cannot find module '../../../utils/cn' or its corresponding type declarations.
+src/components/ui/feedback/Alert.tsx(16,20): error TS2307: Cannot find module '../../../utils/cn' or its corresponding type declarations.
+src/components/ui/feedback/Progress.tsx(252,20): error TS2307: Cannot find module '../../../utils/cn' or its corresponding type declarations.
+src/components/ui/inputs/Input.test.tsx(7,32): error TS2307: Cannot find module '@/test/utils/test-utils' or its corresponding type declarations.
+src/components/ui/inputs/Radio.tsx(384,20): error TS2307: Cannot find module '../../../utils/cn' or its corresponding type declarations.
+src/components/ui/inputs/Switch.tsx(339,20): error TS2307: Cannot find module '../../../utils/cn' or its corresponding type declarations.
+src/components/ui/navigation/Breadcrumbs.tsx(29,34): error TS2307: Cannot find module '../../../routes/routeUtils' or its corresponding type declarations.
+src/components/ui/navigation/Breadcrumbs.tsx(31,33): error TS2307: Cannot find module '../../../routes/routeUtils' or its corresponding type declarations.
+src/components/ui/navigation/Tabs.tsx(17,20): error TS2307: Cannot find module '../../../utils/cn' or its corresponding type declarations.
+src/components/ui/overlays/Modal.test.tsx(7,41): error TS2307: Cannot find module '@/test/utils/test-utils' or its corresponding type declarations.
+src/components/ui/overlays/Modal.tsx(17,20): error TS2307: Cannot find module '../../../utils/cn' or its corresponding type declarations.

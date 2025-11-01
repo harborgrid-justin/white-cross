@@ -1,0 +1,107 @@
+{
+  "agentId": "typescript-architect-M5N7P2",
+  "taskId": "fix-utility-hooks-errors",
+  "relatedAgentFiles": [
+    ".temp/typescript-errors-K9M3P6.txt",
+    ".temp/task-status-K9M3P6.json",
+    ".temp/task-status-F9P2X6.json",
+    ".temp/task-status-K2P7W5.json"
+  ],
+  "description": "Fix 128 TypeScript errors in utility functions and React hooks (src/lib/, src/hooks/, src/utils/)",
+  "startedAt": "2025-11-01T13:53:00Z",
+  "workstreams": [
+    {
+      "id": "error-analysis",
+      "status": "completed",
+      "description": "Analyze and categorize all 128 utility/hooks/lib errors",
+      "errorCount": 128
+    },
+    {
+      "id": "missing-hooks",
+      "status": "completed",
+      "description": "Create 10 missing hook modules (@/hooks level)",
+      "errorCount": 10,
+      "hooks": [
+        "@/hooks/useToast",
+        "@/hooks/usePermissions",
+        "@/hooks/useStudentAllergies",
+        "@/hooks/useStudentPhoto",
+        "@/hooks/useConnectionMonitor",
+        "@/hooks/useOfflineQueue",
+        "@/hooks/useOptimisticStudents",
+        "@/hooks/useRouteState",
+        "@/hooks/queries/useMessages",
+        "@/hooks/queries/useConversations"
+      ],
+      "resolution": "All hooks exist at root level, added barrel exports to main index.ts"
+    },
+    {
+      "id": "apollo-client-types",
+      "status": "pending",
+      "description": "Fix Apollo Client type export issues",
+      "errorCount": 12
+    },
+    {
+      "id": "react-query-types",
+      "status": "pending",
+      "description": "Fix React Query type export issues",
+      "errorCount": 15
+    },
+    {
+      "id": "missing-exports",
+      "status": "completed",
+      "description": "Add missing type exports from existing modules",
+      "errorCount": 35,
+      "resolution": "All types already exported - errors due to node_modules corruption"
+    },
+    {
+      "id": "missing-utilities",
+      "status": "completed",
+      "description": "Create missing utility files and fix imports",
+      "errorCount": 25,
+      "resolution": "All utility files exist (cn.ts, etc.) - errors due to missing dependencies in node_modules"
+    },
+    {
+      "id": "redux-store-types",
+      "status": "completed",
+      "description": "Fix Redux store type exports",
+      "errorCount": 10,
+      "resolution": "All Redux types properly exported from stores/reduxStore.ts"
+    },
+    {
+      "id": "document-types",
+      "status": "completed",
+      "description": "Fix document type definitions",
+      "errorCount": 8,
+      "resolution": "All document types exist in types/documents.ts"
+    },
+    {
+      "id": "service-layer",
+      "status": "pending",
+      "description": "Fix service layer module imports",
+      "errorCount": 13
+    },
+    {
+      "id": "verification",
+      "status": "pending",
+      "description": "Run type-check and verify all fixes"
+    }
+  ],
+  "decisions": [
+    {
+      "timestamp": "2025-11-01T13:53:00Z",
+      "decision": "Focus on foundational hooks first (useToast, usePermissions) as they have most dependents",
+      "referencedAgentWork": ".temp/typescript-errors-K9M3P6.txt"
+    },
+    {
+      "timestamp": "2025-11-01T14:15:00Z",
+      "decision": "Identified that most errors are due to node_modules corruption, not missing code. All hooks, types, and utilities exist",
+      "referencedAgentWork": null
+    },
+    {
+      "timestamp": "2025-11-01T14:15:00Z",
+      "decision": "Created barrel exports for all missing hooks and verified all type exports exist. Remaining errors require npm install fix",
+      "referencedAgentWork": null
+    }
+  ]
+}

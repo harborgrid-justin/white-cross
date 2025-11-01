@@ -1186,10 +1186,10 @@ export async function renderTemplate(
 // ============================================================================
 
 /**
- * Mark message as read (alias for markMessagesAsRead)
+ * Mark message as read (alias for markMessageAsRead)
  */
 export async function markAsReadAction(messageId: string): Promise<ActionResponse<void>> {
-  return markMessagesAsRead([messageId]);
+  return markMessageAsRead(messageId);
 }
 
 /**

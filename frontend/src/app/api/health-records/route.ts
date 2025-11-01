@@ -68,10 +68,10 @@ export const POST = withAuth(async (request: NextRequest, context, auth) => {
       });
 
       // Revalidate cache
-      revalidateTag('health-records', {});
+      revalidateTag('health-records');
       if (data.data.studentId) {
-        revalidateTag(`student-${data.data.studentId}-health-records`, {});
-        revalidateTag(`student-${data.data.studentId}`, {});
+        revalidateTag(`student-${data.data.studentId}-health-records`);
+        revalidateTag(`student-${data.data.studentId}`);
       }
     }
 
