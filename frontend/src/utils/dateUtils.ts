@@ -294,7 +294,7 @@ export function formatDuration(milliseconds: number): string {
 /**
  * Check if date is valid
  */
-export function isValidDate(date: any): boolean {
-  const dateObj = new Date(date);
+export function isValidDate(date: unknown): boolean {
+  const dateObj = new Date(date as string | Date | number);
   return dateObj instanceof Date && !isNaN(dateObj.getTime());
 }

@@ -274,7 +274,7 @@ export function StudentsSidebar({ searchParams }: StudentsSidebarProps) {
             <h3 className="text-sm font-medium text-gray-900">Grade Distribution</h3>
           </div>
           <div className="space-y-2">
-            {stats.gradeDistribution.map((grade) => (
+            {stats.gradeDistribution.map((grade: { grade: string; count: number }) => (
               <div key={grade.grade} className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">{grade.grade} Grade</span>
                 <div className="flex items-center gap-2">
@@ -328,7 +328,7 @@ export function StudentsSidebar({ searchParams }: StudentsSidebarProps) {
             <h3 className="text-sm font-medium text-gray-900">Upcoming Tasks</h3>
           </div>
           <div className="space-y-3">
-            {stats.upcomingTasks.slice(0, 4).map((task) => {
+            {stats.upcomingTasks.slice(0, 4).map((task: SidebarStats['upcomingTasks'][number]) => {
               const IconComponent = getTaskIcon(task.type);
               return (
                 <div key={task.id} className="flex items-start gap-3 p-2 bg-gray-50 rounded-lg">
@@ -362,7 +362,7 @@ export function StudentsSidebar({ searchParams }: StudentsSidebarProps) {
             <h3 className="text-sm font-medium text-gray-900">Recent Activity</h3>
           </div>
           <div className="space-y-3">
-            {stats.recentActivity.slice(0, 4).map((activity) => {
+            {stats.recentActivity.slice(0, 4).map((activity: SidebarStats['recentActivity'][number]) => {
               const IconComponent = getActivityIcon(activity.type);
               return (
                 <div key={activity.id} className="flex items-start gap-3">

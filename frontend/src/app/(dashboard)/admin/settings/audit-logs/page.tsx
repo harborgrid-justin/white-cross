@@ -58,7 +58,7 @@ export default function AuditLogsPage() {
     fetchLogs()
   }, [actionFilter, resourceFilter, dateRange])
 
-  const filteredLogs = logs.filter(log =>
+  const filteredLogs = logs.filter((log: AuditLog) =>
     log.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     log.action.toLowerCase().includes(searchQuery.toLowerCase()) ||
     log.resource.toLowerCase().includes(searchQuery.toLowerCase())
@@ -110,7 +110,7 @@ export default function AuditLogsPage() {
                 type="text"
                 placeholder="Search logs..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -119,7 +119,7 @@ export default function AuditLogsPage() {
           {/* Action Filter */}
           <select
             value={actionFilter}
-            onChange={(e) => setActionFilter(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setActionFilter(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">All Actions</option>
@@ -133,7 +133,7 @@ export default function AuditLogsPage() {
           {/* Date Range */}
           <select
             value={dateRange}
-            onChange={(e) => setDateRange(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setDateRange(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           >
             <option value="24hours">Last 24 Hours</option>
@@ -163,7 +163,7 @@ export default function AuditLogsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {filteredLogs.map((log) => (
+                {filteredLogs.map((log: AuditLog) => (
                   <tr key={log.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
                       {formatDateTime(log.timestamp)}

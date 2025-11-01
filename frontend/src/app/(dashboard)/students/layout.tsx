@@ -4,6 +4,7 @@
  * @category Students - Layout
  */
 
+import type { ReactNode } from 'react';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -12,9 +13,9 @@ export const metadata: Metadata = {
 };
 
 interface StudentsLayoutProps {
-  children: React.ReactNode;
-  sidebar: React.ReactNode;
-  modal: React.ReactNode;
+  children: ReactNode;
+  sidebar: ReactNode;
+  modal: ReactNode;
 }
 
 export default function StudentsLayout({

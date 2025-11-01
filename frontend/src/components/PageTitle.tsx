@@ -84,7 +84,7 @@ export function PageTitle() {
       const dynamicTitle = segments.length > 0
         ? segments[segments.length - 1]
             .split('-')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
             .join(' ')
         : 'Home';
 

@@ -525,7 +525,7 @@ export class InventoryApi {
         throw createValidationError(
           error.errors[0]?.message || 'Validation error',
           error.errors[0]?.path.join('.'),
-          error.errors.reduce((acc, err) => {
+          error.errors.reduce((acc: Record<string, string[]>, err: z.ZodIssue) => {
             const path = err.path.join('.');
             if (!acc[path]) acc[path] = [];
             acc[path].push(err.message);
@@ -626,7 +626,7 @@ export class InventoryApi {
         throw createValidationError(
           error.errors[0]?.message || 'Validation error',
           error.errors[0]?.path.join('.'),
-          error.errors.reduce((acc, err) => {
+          error.errors.reduce((acc: Record<string, string[]>, err: z.ZodIssue) => {
             const path = err.path.join('.');
             if (!acc[path]) acc[path] = [];
             acc[path].push(err.message);
@@ -657,7 +657,7 @@ export class InventoryApi {
         throw createValidationError(
           error.errors[0]?.message || 'Validation error',
           error.errors[0]?.path.join('.'),
-          error.errors.reduce((acc, err) => {
+          error.errors.reduce((acc: Record<string, string[]>, err: z.ZodIssue) => {
             const path = err.path.join('.');
             if (!acc[path]) acc[path] = [];
             acc[path].push(err.message);
@@ -899,7 +899,7 @@ export class InventoryApi {
         throw createValidationError(
           error.errors[0]?.message || 'Validation error',
           error.errors[0]?.path.join('.'),
-          error.errors.reduce((acc, err) => {
+          error.errors.reduce((acc: Record<string, string[]>, err: z.ZodIssue) => {
             const path = err.path.join('.');
             if (!acc[path]) acc[path] = [];
             acc[path].push(err.message);
@@ -1037,7 +1037,7 @@ export class InventoryApi {
         throw createValidationError(
           error.errors[0]?.message || 'Validation error',
           error.errors[0]?.path.join('.'),
-          error.errors.reduce((acc, err) => {
+          error.errors.reduce((acc: Record<string, string[]>, err: z.ZodIssue) => {
             const path = err.path.join('.');
             if (!acc[path]) acc[path] = [];
             acc[path].push(err.message);

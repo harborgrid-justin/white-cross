@@ -503,7 +503,7 @@ const nextConfig: NextConfig = {
    * @see https://webpack.js.org/configuration/
    * @see https://nextjs.org/docs/api-reference/next.config.js/custom-webpack-config
    */
-  webpack: (config, { isServer, dev }) => {
+  webpack: (config: any, { isServer, dev }: { isServer: boolean; dev: boolean }) => {
     // Ignore node_modules for faster builds (dev performance optimization)
     config.watchOptions = {
       ...config.watchOptions,

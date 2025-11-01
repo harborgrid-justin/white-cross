@@ -11,12 +11,17 @@
 
 import { ReactNode } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Permission } from '@/hooks/usePermissions';
+
+/**
+ * Permission type can be a string (e.g., "students:edit") or an object
+ * For string-based permissions, use the format: "resource:action"
+ */
+export type PermissionString = string;
 
 interface PermissionGateProps {
   children: ReactNode;
-  permission?: Permission;
-  permissions?: Permission[];
+  permission?: PermissionString;
+  permissions?: PermissionString[];
   role?: string | string[];
   minRole?: string;
   requireAll?: boolean;
@@ -97,17 +102,17 @@ export function PermissionGate({
 
   // Check single permission
   if (permission) {
-    hasAccess = hasPermission(permission);
+    hasAccess = hasPermission(permission as string);
   }
 
   // Check multiple permissions
   if (permissions && permissions.length > 0) {
     if (requireAll) {
       // Require all permissions
-      hasAccess = permissions.every(p => hasPermission(p));
+      hasAccess = permissions.every((p: PermissionString) => hasPermission(p as string));
     } else {
       // Require any permission
-      hasAccess = permissions.some(p => hasPermission(p));
+      hasAccess = permissions.some((p: PermissionString) => hasPermission(p as string));
     }
   }
 

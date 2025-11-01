@@ -130,6 +130,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  sessionExpiresAt: number | null;
 }
 
 /**
@@ -145,6 +146,7 @@ const initialState: AuthState = {
   isAuthenticated: false,
   isLoading: false,
   error: null,
+  sessionExpiresAt: null,
 };
 
 /**
@@ -211,7 +213,7 @@ const initialState: AuthState = {
  */
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
-  async (credentials: LoginCredentials, { rejectWithValue }) => {
+  async (credentials: LoginCredentials, { rejectWithValue }: { rejectWithValue: (value: string) => any }) => {
     try {
       const response = await apiActions.auth.login(credentials);
       return response;

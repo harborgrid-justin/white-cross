@@ -59,6 +59,17 @@ export type InventoryAlertSeverity =
   | 'HIGH'
   | 'CRITICAL';
 
+export type AlertPriority = 'critical' | 'high' | 'normal' | 'low';
+
+export type InventoryStatus =
+  | 'IN_STOCK'
+  | 'LOW_STOCK'
+  | 'OUT_OF_STOCK'
+  | 'EXPIRED'
+  | 'EXPIRING_SOON';
+
+export type StockStatus = 'optimal' | 'reorder' | 'low' | 'out' | 'adequate' | 'critical';
+
 // =====================
 // CORE ENTITIES
 // =====================
@@ -217,6 +228,91 @@ export interface InventoryAlert {
   itemId: string;
   itemName: string;
   daysUntilAction?: number;
+}
+
+/**
+ * Low Stock Alert - Specific alert for items below reorder point
+ */
+export interface LowStockAlert {
+  id: string;
+  itemId: string;
+  itemName: string;
+  currentQuantity: number;
+  reorderPoint: number;
+  minimumLevel?: number;
+  locationId?: string;
+  locationName: string;
+  priority: AlertPriority;
+  createdAt: string;
+  acknowledgedAt?: string;
+}
+
+/**
+ * Expiration Alert - Alert for items expiring soon
+ */
+export interface ExpirationAlert {
+  id: string;
+  itemId: string;
+  itemName: string;
+  batchId: string;
+  batchNumber: string;
+  quantity: number;
+  expirationDate: string;
+  daysUntilExpiration: number;
+  priority: AlertPriority;
+  locationId?: string;
+  locationName?: string;
+  createdAt: string;
+  acknowledgedAt?: string;
+}
+
+/**
+ * Stock Level - Current stock level for an inventory item
+ */
+export interface StockLevel {
+  id: string;
+  itemId: string;
+  currentLevel: number;
+  minimumLevel: number;
+  maximumLevel?: number;
+  reorderPoint: number;
+  locationId?: string;
+  status?: StockStatus;
+  lastUpdated?: string;
+}
+
+/**
+ * Stock Level with Item Details
+ */
+export interface StockLevelWithDetails extends StockLevel {
+  itemName: string;
+  itemSku: string;
+  category: string;
+  unitOfMeasure: string;
+}
+
+/**
+ * Batch - Inventory batch with expiration tracking
+ */
+export interface Batch {
+  id: string;
+  itemId: string;
+  batchNumber: string;
+  quantity: number;
+  expirationDate: string;
+  receivedDate: string;
+  cost?: number;
+  supplier?: string;
+  notes?: string;
+}
+
+/**
+ * Batch Filter Parameters
+ */
+export interface BatchFilter {
+  itemId?: string;
+  expiringWithinDays?: number;
+  includeExpired?: boolean;
 }
 
 // =====================
@@ -464,6 +560,67 @@ export interface CategoryBreakdownStats {
   itemCount: number;
   totalQuantity: number;
   totalValue: number;
+}
+
+/**
+ * Category Breakdown for Dashboard
+ */
+export interface CategoryBreakdown {
+  category: string;
+  itemCount: number;
+  totalValue: number;
+  lowStockCount?: number;
+  outOfStockCount?: number;
+}
+
+/**
+ * Inventory Dashboard Statistics
+ */
+export interface InventoryDashboardStats {
+  totalItems: number;
+  totalValue: number;
+  totalLocations: number;
+  lowStockAlerts: number;
+  expiringItems: number;
+  categoryBreakdown?: CategoryBreakdown[];
+  recentTransactions?: number;
+}
+
+/**
+ * Stock Status Breakdown
+ */
+export interface StockStatusBreakdown {
+  adequate: number;
+  low: number;
+  critical: number;
+  outOfStock: number;
+}
+
+/**
+ * Category Count Breakdown
+ */
+export interface CategoryCount {
+  medical: number;
+  supplies: number;
+  equipment: number;
+  pharmaceuticals: number;
+  maintenance: number;
+  other: number;
+}
+
+/**
+ * Comprehensive Inventory Statistics
+ */
+export interface InventoryStats {
+  totalItems: number;
+  lowStockItems: number;
+  outOfStockItems: number;
+  expiringItems: number;
+  totalValue: number;
+  avgStockLevel: number;
+  recentTransactions: number;
+  categories: CategoryCount;
+  stockStatus: StockStatusBreakdown;
 }
 
 /**

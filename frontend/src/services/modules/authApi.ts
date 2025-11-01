@@ -274,7 +274,7 @@ export class AuthApi {
         refreshToken: refreshToken,
         expiresIn: expiresIn
       };
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('[AuthApi] Login error:', error);
 
       if (error instanceof z.ZodError) {
@@ -290,7 +290,7 @@ export class AuthApi {
           error
         );
       }
-      throw createApiError(error, 'Login failed');
+      throw createApiError(error as Error, 'Login failed');
     }
   }
 
@@ -385,7 +385,7 @@ export class AuthApi {
         refreshToken: refreshToken,
         expiresIn: expiresIn
       };
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof z.ZodError) {
         throw createValidationError(
           error.issues[0]?.message || 'Validation error',
@@ -399,7 +399,7 @@ export class AuthApi {
           error
         );
       }
-      throw createApiError(error, 'Registration failed');
+      throw createApiError(error as Error, 'Registration failed');
     }
   }
 
@@ -413,8 +413,8 @@ export class AuthApi {
       );
 
       return response.data.user;
-    } catch (error) {
-      throw createApiError(error, 'Token verification failed');
+    } catch (error: unknown) {
+      throw createApiError(error as Error, 'Token verification failed');
     }
   }
 
@@ -450,10 +450,10 @@ export class AuthApi {
         refreshToken: newRefreshToken,
         expiresIn: expiresIn
       };
-    } catch (error) {
+    } catch (error: unknown) {
       // Clear tokens on refresh failure
       tokenUtils.clearAll();
-      throw createApiError(error, 'Token refresh failed');
+      throw createApiError(error as Error, 'Token refresh failed');
     }
   }
 
@@ -463,7 +463,7 @@ export class AuthApi {
   async logout(): Promise<void> {
     try {
       await this.client.post(API_ENDPOINTS.AUTH.LOGOUT);
-    } catch (error) {
+    } catch (error: unknown) {
       // Continue with local logout even if server request fails
       console.warn('Server logout failed, continuing with local logout');
     } finally {
@@ -478,14 +478,14 @@ export class AuthApi {
   async getCurrentUser(): Promise<User> {
     try {
       const response = await this.client.get<{success: boolean; data: User}>(API_ENDPOINTS.AUTH.PROFILE);
-      
+
       if (!response.data.success || !response.data.data) {
         throw new Error('Failed to get current user');
       }
-      
+
       return response.data.data;
-    } catch (error) {
-      throw createApiError(error, 'Failed to get current user');
+    } catch (error: unknown) {
+      throw createApiError(error as Error, 'Failed to get current user');
     }
   }
 
@@ -516,8 +516,8 @@ export class AuthApi {
       );
 
       return response.data;
-    } catch (error) {
-      throw createApiError(error, 'Password reset request failed');
+    } catch (error: unknown) {
+      throw createApiError(error as Error, 'Password reset request failed');
     }
   }
 
@@ -532,8 +532,8 @@ export class AuthApi {
       );
 
       return response.data;
-    } catch (error) {
-      throw createApiError(error, 'Password reset failed');
+    } catch (error: unknown) {
+      throw createApiError(error as Error, 'Password reset failed');
     }
   }
 
@@ -557,7 +557,7 @@ export class AuthApi {
       const currentTime = Date.now() / 1000;
 
       return payload.exp < currentTime;
-    } catch (error) {
+    } catch (error: unknown) {
       return true;
     }
   }
@@ -596,8 +596,8 @@ export class AuthApi {
       }
 
       return response.data.data.users;
-    } catch (error) {
-      throw createApiError(error, 'Failed to fetch development users');
+    } catch (error: unknown) {
+      throw createApiError(error as Error, 'Failed to fetch development users');
     }
   }
 }

@@ -9,6 +9,7 @@ import { listIncidents } from '@/actions/incidents.actions';
 import { IncidentCard } from '@/components/incidents/IncidentCard';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
+import type { IncidentReport } from '@/types/incidents';
 
 export const metadata: Metadata = {
   title: 'Injury Incidents | White Cross',
@@ -32,7 +33,7 @@ export default async function InjuryIncidentsPage() {
 
       {result.success && result.data ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {result.data.incidents.map((incident) => (
+          {result.data.incidents.map((incident: IncidentReport) => (
             <IncidentCard key={incident.id} incident={incident} />
           ))}
         </div>

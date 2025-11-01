@@ -19,6 +19,8 @@ import { API_ENDPOINTS } from '@/constants/api';
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
 import { CACHE_TAGS } from '@/lib/cache/constants';
 
+import type { Appointment as BaseAppointment } from '@/types/appointments';
+
 // ==========================================
 // TYPE DEFINITIONS
 // ==========================================
@@ -51,9 +53,16 @@ export interface RescheduleAppointmentData {
   reason: string;
 }
 
+/**
+ * Appointment type for dashboard components
+ * Simplified version with commonly used fields
+ */
 export interface Appointment {
   id: string;
   studentId: string;
+  studentName?: string;
+  nurseId?: string;
+  nurseName?: string;
   appointmentType: string;
   scheduledDate: string;
   scheduledTime?: string;

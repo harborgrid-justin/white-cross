@@ -51,7 +51,7 @@ export default function StudentSearchPage() {
                   <input
                     type="text"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter student name or ID..."
                   />
@@ -66,7 +66,7 @@ export default function StudentSearchPage() {
                   </label>
                   <select
                     value={filters.grade}
-                    onChange={(e) => setFilters({ ...filters, grade: e.target.value })}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters({ ...filters, grade: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     aria-label="Filter by grade"
                   >
@@ -83,7 +83,7 @@ export default function StudentSearchPage() {
                   </label>
                   <select
                     value={filters.status}
-                    onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters({ ...filters, status: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     aria-label="Filter by status"
                   >
@@ -102,7 +102,7 @@ export default function StudentSearchPage() {
                   <input
                     type="text"
                     value={filters.school}
-                    onChange={(e) => setFilters({ ...filters, school: e.target.value })}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilters({ ...filters, school: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter school name"
                   />
@@ -117,7 +117,7 @@ export default function StudentSearchPage() {
                     <input
                       type="checkbox"
                       checked={filters.hasAllergies}
-                      onChange={(e) => setFilters({ ...filters, hasAllergies: e.target.checked })}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilters({ ...filters, hasAllergies: e.target.checked })}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
                     <span className="ml-2 text-sm text-gray-700">Has Allergies</span>
@@ -126,7 +126,7 @@ export default function StudentSearchPage() {
                     <input
                       type="checkbox"
                       checked={filters.hasMedications}
-                      onChange={(e) => setFilters({ ...filters, hasMedications: e.target.checked })}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilters({ ...filters, hasMedications: e.target.checked })}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
                     <span className="ml-2 text-sm text-gray-700">Takes Medications</span>

@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { API_ENDPOINTS } from '@/lib/api-client';
 
 interface ModalStudentPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 interface StudentData {
@@ -138,11 +138,15 @@ function calculateAge(dateOfBirth: string): number {
  * Modal page component for student details
  */
 export default async function ModalStudentPage({ params }: ModalStudentPageProps) {
-  const student = await fetchStudentDetails(params.id);
+  const { id } = await params;
+  const student = await fetchStudentDetails(id);
 
   if (!student) {
     notFound();
   }
+
+  // Type assertion after null check - student is guaranteed to be non-null here
+  const safeStudent = student as StudentData;
 
   return (
     <Modal>
@@ -150,15 +154,15 @@ export default async function ModalStudentPage({ params }: ModalStudentPageProps
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-xl">
-              {student.firstName} {student.lastName}
+              {safeStudent.firstName} {safeStudent.lastName}
             </CardTitle>
-            <StatusBadge status={student.status} />
+            <StatusBadge status={safeStudent.status} />
           </div>
           <p className="text-sm text-gray-600">
-            Student ID: {student.studentId} • Grade {student.grade}
+            Student ID: {safeStudent.studentId} • Grade {safeStudent.grade}
           </p>
         </CardHeader>
-        
+
         <CardContent>
           <Suspense fallback={<StudentDetailsSkeleton />}>
             <div className="space-y-6">
@@ -167,14 +171,14 @@ export default async function ModalStudentPage({ params }: ModalStudentPageProps
                 <div>
                   <label className="text-sm font-medium text-gray-600">Date of Birth</label>
                   <p className="text-base text-gray-900">
-                    {formatDate(student.dateOfBirth)} (Age {calculateAge(student.dateOfBirth)})
+                    {formatDate(safeStudent.dateOfBirth)} (Age {calculateAge(safeStudent.dateOfBirth)})
                   </p>
                 </div>
-                
+
                 <div>
                   <label className="text-sm font-medium text-gray-600">School</label>
                   <p className="text-base text-gray-900">
-                    {student.school || 'Not specified'}
+                    {safeStudent.school || 'Not specified'}
                   </p>
                 </div>
               </div>
@@ -184,46 +188,46 @@ export default async function ModalStudentPage({ params }: ModalStudentPageProps
                 <div>
                   <label className="text-sm font-medium text-gray-600">Email</label>
                   <p className="text-base text-gray-900">
-                    {student.email || 'Not provided'}
+                    {safeStudent.email || 'Not provided'}
                   </p>
                 </div>
-                
+
                 <div>
                   <label className="text-sm font-medium text-gray-600">Phone</label>
                   <p className="text-base text-gray-900">
-                    {student.phone || 'Not provided'}
+                    {safeStudent.phone || 'Not provided'}
                   </p>
                 </div>
               </div>
 
               {/* Medical Information */}
-              {student.medicalInfo && (
+              {safeStudent.medicalInfo && (
                 <div className="space-y-3">
                   <h3 className="text-sm font-medium text-gray-900 border-b pb-2">Medical Information</h3>
-                  
-                  {student.medicalInfo.allergies?.length > 0 && (
+
+                  {safeStudent.medicalInfo.allergies && safeStudent.medicalInfo.allergies.length > 0 && (
                     <div>
                       <label className="text-sm font-medium text-red-600">Allergies</label>
                       <p className="text-base text-gray-900">
-                        {student.medicalInfo.allergies.join(', ')}
+                        {safeStudent.medicalInfo.allergies.join(', ')}
                       </p>
                     </div>
                   )}
-                  
-                  {student.medicalInfo.medications?.length > 0 && (
+
+                  {safeStudent.medicalInfo.medications && safeStudent.medicalInfo.medications.length > 0 && (
                     <div>
                       <label className="text-sm font-medium text-blue-600">Medications</label>
                       <p className="text-base text-gray-900">
-                        {student.medicalInfo.medications.join(', ')}
+                        {safeStudent.medicalInfo.medications.join(', ')}
                       </p>
                     </div>
                   )}
-                  
-                  {student.medicalInfo.conditions?.length > 0 && (
+
+                  {safeStudent.medicalInfo.conditions && safeStudent.medicalInfo.conditions.length > 0 && (
                     <div>
                       <label className="text-sm font-medium text-orange-600">Conditions</label>
                       <p className="text-base text-gray-900">
-                        {student.medicalInfo.conditions.join(', ')}
+                        {safeStudent.medicalInfo.conditions.join(', ')}
                       </p>
                     </div>
                   )}
@@ -231,11 +235,11 @@ export default async function ModalStudentPage({ params }: ModalStudentPageProps
               )}
 
               {/* Emergency Contacts */}
-              {student.emergencyContacts && student.emergencyContacts.length > 0 && (
+              {safeStudent.emergencyContacts && safeStudent.emergencyContacts.length > 0 && (
                 <div>
                   <label className="text-sm font-medium text-gray-600 border-b pb-2 block mb-3">Emergency Contacts</label>
                   <div className="space-y-2">
-                    {student.emergencyContacts.map((contact, index) => (
+                    {safeStudent.emergencyContacts.map((contact, index) => (
                       <div key={index} className="p-3 bg-gray-50 rounded-lg">
                         <p className="font-medium text-gray-900">{contact.name}</p>
                         <p className="text-sm text-gray-600">{contact.relationship}</p>
@@ -248,20 +252,20 @@ export default async function ModalStudentPage({ params }: ModalStudentPageProps
 
               {/* Timestamps */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
-                {student.createdAt && (
+                {safeStudent.createdAt && (
                   <div>
                     <label className="text-sm font-medium text-gray-600">Enrolled</label>
                     <p className="text-sm text-gray-700">
-                      {new Date(student.createdAt).toLocaleDateString()}
+                      {new Date(safeStudent.createdAt).toLocaleDateString()}
                     </p>
                   </div>
                 )}
-                
-                {student.updatedAt && (
+
+                {safeStudent.updatedAt && (
                   <div>
                     <label className="text-sm font-medium text-gray-600">Last Updated</label>
                     <p className="text-sm text-gray-700">
-                      {new Date(student.updatedAt).toLocaleDateString()}
+                      {new Date(safeStudent.updatedAt).toLocaleDateString()}
                     </p>
                   </div>
                 )}
@@ -270,21 +274,21 @@ export default async function ModalStudentPage({ params }: ModalStudentPageProps
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-2 pt-4 border-t">
                 <a
-                  href={`/students/${student.id}/edit`}
+                  href={`/students/${safeStudent.id}/edit`}
                   className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 >
                   Edit Student
                 </a>
-                
+
                 <a
-                  href={`/students/${student.id}`}
+                  href={`/students/${safeStudent.id}`}
                   className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 text-sm"
                 >
                   Full Profile
                 </a>
-                
+
                 <a
-                  href={`/health-records?studentId=${student.id}`}
+                  href={`/health-records?studentId=${safeStudent.id}`}
                   className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
                 >
                   Health Records
