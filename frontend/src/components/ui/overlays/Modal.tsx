@@ -24,7 +24,9 @@ import { cn } from '../../../utils/cn';
  *
  * @property {React.ReactNode} [children] - Modal content
  * @property {boolean} open - Whether modal is currently open/visible
+ * @property {boolean} [isOpen] - Alias for open (for compatibility)
  * @property {() => void} [onClose] - Callback function when modal should close
+ * @property {string} [title] - Modal title (for compatibility, rendered as ModalTitle if provided)
  * @property {('sm' | 'md' | 'lg' | 'xl' | 'full')} [size='md'] - Modal width size
  * @property {boolean} [centered=true] - Whether to center modal vertically
  * @property {boolean} [closeOnBackdropClick=true] - Close modal when clicking backdrop
@@ -33,8 +35,10 @@ import { cn } from '../../../utils/cn';
  */
 interface ModalProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;
-  open: boolean;
+  open?: boolean;
+  isOpen?: boolean; // Alias for open
   onClose?: () => void;
+  title?: string; // Optional title for compatibility
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
   centered?: boolean;
   closeOnBackdropClick?: boolean;
@@ -213,7 +217,9 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
   ({
     className,
     open,
+    isOpen,
     onClose,
+    title,
     size = 'md',
     centered = true,
     closeOnBackdropClick = true,
@@ -223,10 +229,12 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
     ...props
   }, ref) => {
     const modalRef = React.useRef<HTMLDivElement>(null);
+    // Use isOpen if provided, otherwise fall back to open
+    const isModalOpen = isOpen !== undefined ? isOpen : (open !== undefined ? open : false);
 
     // Handle escape key
     React.useEffect(() => {
-      if (!closeOnEscapeKey || !open) return;
+      if (!closeOnEscapeKey || !isModalOpen) return;
 
       const handleEscape = (event: KeyboardEvent) => {
         if (event.key === 'Escape') {
@@ -236,11 +244,11 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
 
       document.addEventListener('keydown', handleEscape);
       return () => document.removeEventListener('keydown', handleEscape);
-    }, [closeOnEscapeKey, open, onClose]);
+    }, [closeOnEscapeKey, isModalOpen, onClose]);
 
     // Focus trap and management
     React.useEffect(() => {
-      if (!open) return;
+      if (!isModalOpen) return;
 
       const previousActiveElement = document.activeElement as HTMLElement;
       const modal = modalRef.current;
@@ -290,11 +298,11 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
           previousActiveElement.focus();
         }
       };
-    }, [open]);
+    }, [isModalOpen]);
 
     // Prevent body scroll when modal is open
     React.useEffect(() => {
-      if (open) {
+      if (isModalOpen) {
         document.body.style.overflow = 'hidden';
       } else {
         document.body.style.overflow = '';
@@ -303,9 +311,9 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
       return () => {
         document.body.style.overflow = '';
       };
-    }, [open]);
+    }, [isModalOpen]);
 
-    if (!open) return null;
+    if (!isModalOpen) return null;
 
     const sizeClasses = {
       sm: 'max-w-md',
@@ -360,6 +368,11 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
+            )}
+            {title && (
+              <ModalHeader>
+                <ModalTitle>{title}</ModalTitle>
+              </ModalHeader>
             )}
             {children}
           </div>

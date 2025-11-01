@@ -442,6 +442,7 @@ export interface UpdateStudentData {
  */
 export interface StudentFilters {
   search?: string
+  searchTerm?: string // Alternative search parameter
   grade?: string
   isActive?: boolean
   includeInactive?: boolean
@@ -451,6 +452,8 @@ export interface StudentFilters {
   gender?: Gender
   page?: number
   limit?: number
+  sortBy?: string // Sort field
+  status?: string // Student status filter
 }
 
 /**

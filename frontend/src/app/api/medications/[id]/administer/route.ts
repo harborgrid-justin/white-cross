@@ -45,8 +45,8 @@ export const POST = withAuth(
         });
 
         // Revalidate cache
-        revalidateTag('medications');
-        revalidateTag(`medication-${id}`);
+        revalidateTag('medications', {});
+        revalidateTag(`medication-${id}`, {});
       }
 
       return NextResponse.json(data, { status: response.status });

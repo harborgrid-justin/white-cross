@@ -163,11 +163,11 @@ export function useAdministerMedication(
       queryClient.invalidateQueries({ queryKey: medicationsKeys.lists() });
 
       toast.success('Medication administered successfully');
-      options?.onSuccess?.(administration, variables, context);
+      options?.onSuccess?.(administration, variables);
     },
     onError: (error, variables, context) => {
       toast.error('Failed to record medication administration');
-      options?.onError?.(error, variables, context);
+      options?.onError?.(error, variables);
     },
     meta: {
       affectsPHI: true,
@@ -198,11 +198,11 @@ export function useCreateMedication(
       );
 
       toast.success('Medication added successfully');
-      options?.onSuccess?.(newMedication, variables, context);
+      options?.onSuccess?.(newMedication, variables);
     },
     onError: (error, variables, context) => {
       toast.error('Failed to add medication');
-      options?.onError?.(error, variables, context);
+      options?.onError?.(error, variables);
     },
     meta: {
       affectsPHI: true,
@@ -232,11 +232,11 @@ export function useUpdateMedication(
       queryClient.invalidateQueries({ queryKey: medicationsKeys.lists() });
 
       toast.success('Medication updated successfully');
-      options?.onSuccess?.(updatedMedication, variables, context);
+      options?.onSuccess?.(updatedMedication, variables);
     },
     onError: (error, variables, context) => {
       toast.error('Failed to update medication');
-      options?.onError?.(error, variables, context);
+      options?.onError?.(error, variables);
     },
     meta: {
       affectsPHI: true,

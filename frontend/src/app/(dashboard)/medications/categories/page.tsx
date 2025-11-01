@@ -28,13 +28,13 @@ async function getCategories() {
     const response = await fetchWithAuth(
       `${API_ENDPOINTS.MEDICATIONS.BASE}/categories`,
       { next: { tags: ['medication-categories'], revalidate: 600 } }
-    );
+    ) as Response;
 
-    if (!response.ok) {
+    if (!(response as Response).ok) {
       throw new Error('Failed to fetch categories');
     }
 
-    return response.json();
+    return (response as Response).json();
   } catch (error) {
     console.error('Error fetching categories:', error);
     return { categories: [], stats: {} };

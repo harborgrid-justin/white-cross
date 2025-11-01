@@ -439,9 +439,9 @@ export const CommunicationComposeTab: React.FC<CommunicationComposeTabProps> = (
               <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Priority:</span>
               <span className={cn(
                 'ml-2 text-sm font-medium',
-                priority === 'urgent' && 'text-red-600 dark:text-red-400',
-                priority === 'high' && 'text-orange-600 dark:text-orange-400',
-                priority === 'normal' && 'text-gray-900 dark:text-white'
+                priority === 'urgent' ? 'text-red-600 dark:text-red-400' : undefined,
+                priority === 'high' ? 'text-orange-600 dark:text-orange-400' : undefined,
+                priority === 'normal' ? 'text-gray-900 dark:text-white' : undefined
               )}>
                 {priorityOptions.find(p => p.value === priority)?.label}
               </span>

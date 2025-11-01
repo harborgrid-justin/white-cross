@@ -226,16 +226,16 @@ async function getMedication(id: string) {
     const response = await fetchWithAuth(
       API_ENDPOINTS.MEDICATIONS.DETAIL(id),
       { next: { revalidate: 60 } } // 1 min cache
-    );
+    ) as Response;
 
-    if (!response.ok) {
-      if (response.status === 404) {
+    if (!(response as Response).ok) {
+      if ((response as Response).status === 404) {
         return null;
       }
       throw new Error('Failed to fetch medication');
     }
 
-    return response.json();
+    return (response as Response).json();
   } catch (error) {
     console.error('Error fetching medication:', error);
     return null;
@@ -313,13 +313,13 @@ async function getRecentAdministrations(medicationId: string) {
     const response = await fetchWithAuth(
       `${API_ENDPOINTS.ADMINISTRATION_LOG.BY_MEDICATION(medicationId)}?limit=10`,
       { next: { revalidate: 30 } } // 30 sec cache
-    );
+    ) as Response;
 
-    if (!response.ok) {
+    if (!(response as Response).ok) {
       throw new Error('Failed to fetch administrations');
     }
 
-    return response.json();
+    return (response as Response).json();
   } catch (error) {
     console.error('Error fetching administrations:', error);
     return { data: [] };

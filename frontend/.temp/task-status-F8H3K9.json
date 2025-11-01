@@ -1,0 +1,44 @@
+{
+  "agentId": "typescript-architect",
+  "taskId": "fix-ts2353-ts2740-errors-F8H3K9",
+  "relatedAgentFiles": [
+    ".temp/task-status-X7Y3Z9.json",
+    ".temp/architecture-notes-A1B2C3.md",
+    ".temp/typescript-errors-T5E8R2.txt"
+  ],
+  "description": "Fix all 279 TS2353 (unknown properties) and TS2740 (missing properties) errors in the codebase by ONLY adding code",
+  "startedAt": "2025-11-01T05:41:00Z",
+  "workstreams": [
+    {
+      "id": "error-analysis",
+      "status": "in-progress",
+      "description": "Analyze all 279 errors and categorize by file/type",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "interface-extensions",
+      "status": "pending",
+      "description": "Add missing properties to interfaces and types",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "query-options-fixes",
+      "status": "pending",
+      "description": "Fix UseQueryOptions and UseMutationOptions type errors",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "component-props-fixes",
+      "status": "pending",
+      "description": "Fix component props type errors",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "verification",
+      "status": "pending",
+      "description": "Run type-check and verify all errors are fixed",
+      "crossAgentReferences": []
+    }
+  ],
+  "decisions": []
+}

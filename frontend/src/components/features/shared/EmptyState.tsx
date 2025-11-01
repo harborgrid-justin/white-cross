@@ -138,7 +138,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         <div
           className={cn(
             'mb-6 rounded-full bg-gray-100 dark:bg-gray-800 p-4 animate-fadeIn',
-            variant === 'create' && 'bg-primary-100 dark:bg-primary-900/20'
+            variant === 'create' ? 'bg-primary-100 dark:bg-primary-900/20' : undefined
           )}
         >
           <Icon

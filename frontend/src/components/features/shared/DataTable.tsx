@@ -317,9 +317,9 @@ export const DataTable = <T,>({
                   onSort={column.sortable ? () => handleSort(column.id) : undefined}
                   style={{ width: column.width }}
                   className={cn(
-                    column.align === 'center' && 'text-center',
-                    column.align === 'right' && 'text-right',
-                    column.hideOnMobile && 'hidden md:table-cell'
+                    column.align === 'center' ? 'text-center' : undefined,
+                    column.align === 'right' ? 'text-right' : undefined,
+                    column.hideOnMobile ? 'hidden md:table-cell' : undefined
                   )}
                 >
                   {column.header}
@@ -370,9 +370,9 @@ export const DataTable = <T,>({
                       <TableCell
                         key={column.id}
                         className={cn(
-                          column.align === 'center' && 'text-center',
-                          column.align === 'right' && 'text-right',
-                          column.hideOnMobile && 'hidden md:table-cell',
+                          column.align === 'center' ? 'text-center' : undefined,
+                          column.align === 'right' ? 'text-right' : undefined,
+                          column.hideOnMobile ? 'hidden md:table-cell' : undefined,
                           column.cellClassName,
                           'dark:text-gray-200'
                         )}

@@ -29,13 +29,13 @@ async function getOTCMedications() {
     const response = await fetchWithAuth(
       `${API_ENDPOINTS.MEDICATIONS.BASE}?type=over_the_counter`,
       { next: { tags: ['medications-otc'], revalidate: 300 } }
-    );
+    ) as Response;
 
-    if (!response.ok) {
+    if (!(response as Response).ok) {
       throw new Error('Failed to fetch OTC medications');
     }
 
-    return response.json();
+    return (response as Response).json();
   } catch (error) {
     console.error('Error fetching OTC medications:', error);
     return { medications: [], total: 0 };

@@ -31,7 +31,7 @@ import { cn } from '@/lib/utils';
  * @property {boolean} [replace] - Replace browser history (only used when href is provided)
  * @property {boolean} [scroll] - Scroll to top on navigation (only used when href is provided)
  * @property {('primary' | 'secondary' | 'outline' | 'outline-primary' | 'ghost' | 'link' | 'destructive' | 'danger' | 'success' | 'warning' | 'info')} [variant='primary'] - Visual style variant
- * @property {('xs' | 'sm' | 'md' | 'lg' | 'xl')} [size='md'] - Button size (affects padding and text size)
+ * @property {('xs' | 'sm' | 'md' | 'lg' | 'xl' | 'icon')} [size='md'] - Button size (affects padding and text size)
  * @property {boolean} [loading=false] - Loading state showing spinner animation
  * @property {React.ReactNode} [icon] - Icon element to display (use with iconPosition)
  * @property {('left' | 'right')} [iconPosition='left'] - Icon placement relative to text
@@ -47,7 +47,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   replace?: boolean;
   scroll?: boolean;
   variant?: 'primary' | 'secondary' | 'outline' | 'outline-primary' | 'ghost' | 'link' | 'destructive' | 'danger' | 'success' | 'warning' | 'info';
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'icon';
   loading?: boolean;
   icon?: React.ReactNode;
   iconPosition?: 'left' | 'right';
@@ -107,7 +107,8 @@ const buttonSizes = {
   sm: 'px-3 py-1.5 text-sm rounded-md',
   md: 'px-4 py-2 text-sm rounded-lg',
   lg: 'px-6 py-3 text-base rounded-lg',
-  xl: 'px-8 py-4 text-lg rounded-xl'
+  xl: 'px-8 py-4 text-lg rounded-xl',
+  icon: 'p-2 rounded-md' // Icon-only button (square aspect ratio)
 };
 
 /**

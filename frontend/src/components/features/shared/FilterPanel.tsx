@@ -296,7 +296,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
       <div
         className={cn(
           'flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700',
-          collapsible && 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150'
+          collapsible ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150' : undefined
         )}
         onClick={collapsible ? () => setIsCollapsed(!isCollapsed) : undefined}
         role={collapsible ? 'button' : undefined}

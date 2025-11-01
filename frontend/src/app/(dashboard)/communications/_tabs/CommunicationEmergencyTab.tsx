@@ -329,9 +329,9 @@ export const CommunicationEmergencyTab: React.FC<CommunicationEmergencyTabProps>
           {selectedType && (
             <div className={cn(
               'p-4 rounded-lg border-2',
-              selectedType.severity === 'critical' && 'bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700',
-              selectedType.severity === 'high' && 'bg-orange-50 dark:bg-orange-900/20 border-orange-300 dark:border-orange-700',
-              selectedType.severity === 'moderate' && 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-700'
+              selectedType.severity === 'critical' ? 'bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700' : undefined,
+              selectedType.severity === 'high' ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-300 dark:border-orange-700' : undefined,
+              selectedType.severity === 'moderate' ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-700' : undefined
             )}>
               <div className="flex items-center justify-between mb-2">
                 <h3 className="font-semibold text-gray-900 dark:text-white">{selectedType.name}</h3>

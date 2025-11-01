@@ -45,6 +45,7 @@ export interface SelectOption {
  * @property {SelectOption[]} options - Array of options to display in dropdown
  * @property {string | number | (string | number)[]} [value] - Current selected value(s)
  * @property {(value: string | number | (string | number)[]) => void} [onChange] - Callback when selection changes
+ * @property {(value: string | number | (string | number)[]) => void} [onValueChange] - Alias for onChange (for compatibility)
  * @property {string} [placeholder='Select an option...'] - Placeholder text when no selection
  * @property {boolean} [searchable=false] - Enable search/filter functionality
  * @property {boolean} [multiple=false] - Allow multiple selection
@@ -62,6 +63,7 @@ export interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectE
   options: SelectOption[];
   value?: string | number | (string | number)[];
   onChange?: (value: string | number | (string | number)[]) => void;
+  onValueChange?: (value: string | number | (string | number)[]) => void; // Alias for onChange
   placeholder?: string;
   searchable?: boolean;
   multiple?: boolean;
@@ -215,6 +217,7 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>(
     options = [],
     value,
     onChange,
+    onValueChange,
     placeholder = 'Select an option...',
     searchable = false,
     multiple = false,
@@ -225,6 +228,8 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>(
     maxHeight = 200,
     ...props
   }, ref) => {
+    // Use onValueChange if provided, otherwise fall back to onChange
+    const handleChange = onValueChange || onChange;
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [activeIndex, setActiveIndex] = useState(-1);
@@ -275,9 +280,9 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>(
         const newValues = selectedValues.includes(optionValue)
           ? selectedValues.filter(v => v !== optionValue)
           : [...selectedValues, optionValue];
-        onChange?.(newValues);
+        handleChange?.(newValues);
       } else {
-        onChange?.(optionValue);
+        handleChange?.(optionValue);
         setIsOpen(false);
         setSearchTerm('');
       }
@@ -285,7 +290,7 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>(
 
     const handleClear = (e: React.MouseEvent) => {
       e.stopPropagation();
-      onChange?.(multiple ? [] : '');
+      handleChange?.(multiple ? [] : '');
     };
 
     const displayValue = selectedLabels.length > 0 

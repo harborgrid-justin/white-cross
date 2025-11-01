@@ -260,7 +260,7 @@ export const AccordionItem: React.FC<AccordionItemProps> = ({
     <svg
       className={cn(
         'w-5 h-5 transition-transform duration-200',
-        isOpen && 'transform rotate-180'
+        isOpen ? 'transform rotate-180' : undefined
       )}
       fill="none"
       stroke="currentColor"

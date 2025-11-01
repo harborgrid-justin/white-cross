@@ -29,13 +29,13 @@ async function getControlledSubstances() {
     const response = await fetchWithAuth(
       `${API_ENDPOINTS.MEDICATIONS.BASE}?type=controlled_substance`,
       { next: { tags: ['medications-controlled'], revalidate: 180 } }
-    );
+    ) as Response;
 
-    if (!response.ok) {
+    if (!(response as Response).ok) {
       throw new Error('Failed to fetch controlled substances');
     }
 
-    return response.json();
+    return (response as Response).json();
   } catch (error) {
     console.error('Error fetching controlled substances:', error);
     return { medications: [], total: 0, inventoryStats: {} };

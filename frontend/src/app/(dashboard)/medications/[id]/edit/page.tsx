@@ -125,14 +125,14 @@ async function getMedication(id: string) {
   try {
     const response = await fetchWithAuth(API_ENDPOINTS.MEDICATIONS.BY_ID(id), {
       next: { tags: [`medication-${id}`] }
-    });
+    }) as Response;
 
-    if (!response.ok) {
-      if (response.status === 404) return null;
+    if (!(response as Response).ok) {
+      if ((response as Response).status === 404) return null;
       throw new Error('Failed to fetch medication');
     }
 
-    return response.json();
+    return (response as Response).json();
   } catch (error) {
     console.error('Error fetching medication:', error);
     return null;

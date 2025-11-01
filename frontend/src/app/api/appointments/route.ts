@@ -64,7 +64,7 @@ export const POST = withAuth(async (request: NextRequest, context, auth) => {
         details: 'Appointment created'
       });
 
-      revalidateTag('appointments');
+      revalidateTag('appointments', {});
     }
 
     return NextResponse.json(data, { status: response.status });

@@ -341,6 +341,9 @@ export interface DocumentPermission {
 export interface DocumentFilters {
   page?: number;
   limit?: number;
+  pageSize?: number; // Alternative pagination size parameter
+  folderId?: string; // Filter by folder/directory
+  isPHI?: boolean; // Filter by PHI status
   category?: DocumentCategory;
   status?: DocumentStatus;
   studentId?: string;
@@ -564,6 +567,125 @@ export interface FileUploadResponse {
   fileSize: number;
   fileType: string;
   uploadedAt: string;
+}
+
+/**
+ * Document Metadata - Metadata for document management
+ */
+export interface DocumentMetadata {
+  id: string;
+  title: string;
+  fileName: string;
+  fileType: string;
+  fileSize: number;
+  uploadedBy: string;
+  uploadedAt: string;
+  category: DocumentCategory;
+  tags?: string[];
+}
+
+/**
+ * File Metadata - Basic file information
+ */
+export interface FileMetadata {
+  name: string;
+  size: number;
+  type: string;
+  lastModified: number;
+}
+
+/**
+ * Chunked Upload Session - For large file uploads
+ */
+export interface ChunkedUploadSession {
+  sessionId: string;
+  fileName: string;
+  fileSize: number;
+  chunkSize: number;
+  totalChunks: number;
+  uploadedChunks: number[];
+  status: 'pending' | 'uploading' | 'completed' | 'failed';
+}
+
+/**
+ * Template Field Type - Field types for document templates
+ */
+export enum TemplateFieldType {
+  TEXT = 'TEXT',
+  NUMBER = 'NUMBER',
+  DATE = 'DATE',
+  BOOLEAN = 'BOOLEAN',
+  SELECT = 'SELECT',
+  MULTISELECT = 'MULTISELECT',
+}
+
+/**
+ * Template Status - Status of document templates
+ */
+export enum TemplateStatus {
+  DRAFT = 'DRAFT',
+  ACTIVE = 'ACTIVE',
+  ARCHIVED = 'ARCHIVED',
+}
+
+/**
+ * Signature Workflow - Workflow for document signatures
+ */
+export interface SignatureWorkflow {
+  id: string;
+  documentId: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'rejected';
+  signers: Array<{
+    userId: string;
+    role: string;
+    signed: boolean;
+    signedAt?: string;
+  }>;
+  createdAt: string;
+  completedAt?: string;
+}
+
+/**
+ * Signature - Individual signature record
+ */
+export interface Signature {
+  id: string;
+  documentId: string;
+  userId: string;
+  signatureData: string;
+  signedAt: string;
+  ipAddress?: string;
+}
+
+/**
+ * Signature Status - Status of a signature
+ */
+export enum SignatureStatus {
+  PENDING = 'PENDING',
+  SIGNED = 'SIGNED',
+  REJECTED = 'REJECTED',
+  EXPIRED = 'EXPIRED',
+}
+
+/**
+ * Workflow Status - Status of a document workflow
+ */
+export enum WorkflowStatus {
+  PENDING = 'PENDING',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+}
+
+/**
+ * Document List Response - Paginated list of documents
+ */
+export interface DocumentListResponse {
+  documents: Document[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
 }
 
 // ============================================================================

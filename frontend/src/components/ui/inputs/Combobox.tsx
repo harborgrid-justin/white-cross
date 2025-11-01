@@ -223,7 +223,7 @@ export const Combobox = <T,>({
           className={cn(
             'block text-sm font-medium mb-1',
             hasError ? 'text-danger-700 dark:text-danger-400' : 'text-gray-700 dark:text-gray-300',
-            disabled && 'text-gray-400 dark:text-gray-600'
+            disabled ? 'text-gray-400 dark:text-gray-600' : undefined
           )}
         >
           {label}
@@ -313,9 +313,9 @@ export const Combobox = <T,>({
                     className={({ active, disabled }) =>
                       cn(
                         'relative cursor-pointer select-none py-2 pl-10 pr-4',
-                        active && !disabled && 'bg-primary-600 text-white',
-                        !active && !disabled && 'text-gray-900 dark:text-gray-100',
-                        disabled && 'cursor-not-allowed opacity-50'
+                        active && !disabled ? 'bg-primary-600 text-white' : undefined,
+                        !active && !disabled ? 'text-gray-900 dark:text-gray-100' : undefined,
+                        disabled ? 'cursor-not-allowed opacity-50' : undefined
                       )
                     }
                   >
@@ -331,7 +331,7 @@ export const Combobox = <T,>({
                             <span
                               className={cn(
                                 'block truncate',
-                                selected && 'font-semibold'
+                                selected ? 'font-semibold' : undefined
                               )}
                             >
                               {option.label}

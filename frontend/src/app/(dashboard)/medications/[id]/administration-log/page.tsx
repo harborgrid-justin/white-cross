@@ -45,12 +45,12 @@ async function getMedicationWithLog(id: string, searchParams: any) {
         `${API_ENDPOINTS.MEDICATIONS.BY_ID(id)}/administration-log?${new URLSearchParams(searchParams)}`,
         { next: { tags: [`medication-${id}-log`], revalidate: 60 } }
       )
-    ]);
+    ]) as [Response, Response];
 
-    if (!medicationRes.ok) return null;
+    if (!(medicationRes as Response).ok) return null;
 
-    const medication = await medicationRes.json();
-    const log = logRes.ok ? await logRes.json() : { records: [], total: 0 };
+    const medication = await (medicationRes as Response).json();
+    const log = (logRes as Response).ok ? await (logRes as Response).json() : { records: [], total: 0 };
 
     return { medication, log };
   } catch (error) {

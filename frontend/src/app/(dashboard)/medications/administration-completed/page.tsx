@@ -41,13 +41,13 @@ async function getCompletedAdministrations(searchParams: any) {
     const response = await fetchWithAuth(
       `${API_ENDPOINTS.MEDICATIONS.BASE}/completed?${params}`,
       { next: { revalidate: 180 } } // 3 min cache
-    );
+    ) as Response;
 
-    if (!response.ok) {
+    if (!(response as Response).ok) {
       throw new Error('Failed to fetch completed administrations');
     }
 
-    return response.json();
+    return (response as Response).json();
   } catch (error) {
     console.error('Error fetching completed administrations:', error);
     return { completed: [], stats: {}, total: 0 };
