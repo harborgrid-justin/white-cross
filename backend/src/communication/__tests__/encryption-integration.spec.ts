@@ -150,6 +150,9 @@ describe('Encryption Integration Tests', () => {
       expect(result.conversation).toBeDefined();
 
       // Act 3: Retrieve and decrypt message
+      if (!encryptionResult.success) {
+        throw new Error('Encryption failed');
+      }
       const encryptedMessage = {
         encryptedContent: encryptionResult.data,
         metadata: encryptionResult.metadata,
@@ -166,8 +169,10 @@ describe('Encryption Integration Tests', () => {
 
       // Assert: Decryption successful
       expect(decryptionResult.success).toBe(true);
-      expect(decryptionResult.data).toBe(messageContent);
-      expect(decryptionResult.metadata.keyId).toBe(encryptionResult.metadata.keyId);
+      if (decryptionResult.success) {
+        expect(decryptionResult.data).toBe(messageContent);
+        expect(decryptionResult.metadata.keyId).toBe(encryptionResult.metadata.keyId);
+      }
     });
 
     it('should fail decryption for unauthorized recipient', async () => {
@@ -178,6 +183,10 @@ describe('Encryption Integration Tests', () => {
       const encryptionResult = await encryptionService.encrypt(messageContent, {
         conversationId,
       });
+
+      if (!encryptionResult.success) {
+        throw new Error('Encryption failed');
+      }
 
       const encryptedMessage = {
         encryptedContent: encryptionResult.data,
@@ -196,7 +205,9 @@ describe('Encryption Integration Tests', () => {
 
       // Assert: Decryption should fail
       expect(decryptionResult.success).toBe(false);
-      expect(decryptionResult.error).toBeDefined();
+      if (!decryptionResult.success) {
+        expect(decryptionResult.error).toBeDefined();
+      }
     });
 
     it('should handle encryption with Additional Authenticated Data (AAD)', async () => {
@@ -213,6 +224,10 @@ describe('Encryption Integration Tests', () => {
 
       expect(encryptionResult.success).toBe(true);
 
+      if (!encryptionResult.success) {
+        throw new Error('Encryption failed');
+      }
+
       // Act: Decrypt with correct AAD
       const decryptionResult = await encryptionService.decrypt(
         encryptionResult.data,
@@ -222,7 +237,9 @@ describe('Encryption Integration Tests', () => {
 
       // Assert: Decryption succeeds with matching AAD
       expect(decryptionResult.success).toBe(true);
-      expect(decryptionResult.data).toBe(messageContent);
+      if (decryptionResult.success) {
+        expect(decryptionResult.data).toBe(messageContent);
+      }
 
       // Act: Try to decrypt with wrong AAD
       const wrongAadResult = await encryptionService.decrypt(
@@ -264,7 +281,9 @@ describe('Encryption Integration Tests', () => {
       // Assert: All recipients can decrypt successfully
       decryptionResults.forEach((result, index) => {
         expect(result.success).toBe(true);
-        expect(result.data).toBe(messageContent);
+        if (result.success) {
+          expect(result.data).toBe(messageContent);
+        }
       });
     });
 
@@ -314,6 +333,9 @@ describe('Encryption Integration Tests', () => {
         conversationId,
       });
       expect(encryptedMessage1.success).toBe(true);
+      if (!encryptedMessage1.success) {
+        throw new Error('Encryption failed');
+      }
       const keyId1 = encryptedMessage1.metadata.keyId;
 
       // Act 3: Rotate session key
@@ -326,6 +348,9 @@ describe('Encryption Integration Tests', () => {
         conversationId,
       });
       expect(encryptedMessage2.success).toBe(true);
+      if (!encryptedMessage2.success) {
+        throw new Error('Encryption failed');
+      }
       const keyId2 = encryptedMessage2.metadata.keyId;
 
       // Assert: Different keys used
@@ -409,7 +434,9 @@ describe('Encryption Integration Tests', () => {
 
       // Assert: Graceful failure
       expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      if (!result.success) {
+        expect(result.error).toBeDefined();
+      }
     });
 
     it('should handle missing encryption metadata', async () => {
@@ -429,7 +456,9 @@ describe('Encryption Integration Tests', () => {
 
       // Assert: Graceful failure with clear error
       expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      if (!result.success) {
+        expect(result.error).toBeDefined();
+      }
     });
   });
 
@@ -468,6 +497,10 @@ describe('Encryption Integration Tests', () => {
       const encrypted = await encryptionService.encrypt(messageContent, {
         conversationId: tenant1ConversationId,
       });
+
+      if (!encrypted.success) {
+        throw new Error('Encryption failed');
+      }
 
       // Act 2: Try to decrypt using tenant 2 conversation context
       const decryption = await encryptionService.decrypt(
@@ -509,6 +542,10 @@ describe('Encryption Integration Tests', () => {
       const encrypted = await encryptionService.encrypt(messageContent, {
         conversationId,
       });
+
+      if (!encrypted.success) {
+        throw new Error('Encryption failed');
+      }
 
       // Act
       const startTime = Date.now();
@@ -604,15 +641,17 @@ describe('Encryption Integration Tests', () => {
 
       // Assert: All required metadata present
       expect(result.success).toBe(true);
-      expect(result.metadata).toBeDefined();
-      expect(result.metadata.algorithm).toBe('AES-256-GCM');
-      expect(result.metadata.iv).toBeDefined();
-      expect(result.metadata.iv.length).toBeGreaterThan(0);
-      expect(result.metadata.authTag).toBeDefined();
-      expect(result.metadata.authTag.length).toBeGreaterThan(0);
-      expect(result.metadata.keyId).toBeDefined();
-      expect(result.metadata.timestamp).toBeDefined();
-      expect(result.metadata.version).toBe('1.0.0');
+      if (result.success) {
+        expect(result.metadata).toBeDefined();
+        expect(result.metadata.algorithm).toBe('AES-256-GCM');
+        expect(result.metadata.iv).toBeDefined();
+        expect(result.metadata.iv.length).toBeGreaterThan(0);
+        expect(result.metadata.authTag).toBeDefined();
+        expect(result.metadata.authTag.length).toBeGreaterThan(0);
+        expect(result.metadata.keyId).toBeDefined();
+        expect(result.metadata.timestamp).toBeDefined();
+        expect(result.metadata.version).toBe('1.0.0');
+      }
     });
 
     it('should validate encryption version compatibility', async () => {
@@ -623,6 +662,10 @@ describe('Encryption Integration Tests', () => {
       const encrypted = await encryptionService.encrypt(messageContent, {
         conversationId,
       });
+
+      if (!encrypted.success) {
+        throw new Error('Encryption failed');
+      }
 
       // Act: Modify version to simulate version mismatch
       const modifiedMetadata = {

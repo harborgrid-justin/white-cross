@@ -42,7 +42,8 @@ export enum ConnectionQuality {
   GOOD = 'good',           // 100-300ms latency
   FAIR = 'fair',           // 300-1000ms latency
   POOR = 'poor',           // > 1000ms latency
-  OFFLINE = 'offline'
+  OFFLINE = 'offline',
+  UNKNOWN = 'unknown'      // Unable to determine quality
 }
 
 export interface ConnectionInfo {

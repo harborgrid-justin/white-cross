@@ -155,6 +155,7 @@
 import { createEntitySlice, EntityApiService } from '@/stores/sliceFactory';
 import { SystemConfiguration, ConfigurationData, ConfigCategory, ConfigValueType, ConfigScope } from '@/types/administration';
 import { apiActions } from '@/lib/api';
+import type { RootState } from '@/stores/store';
 
 // Create API service adapter for settings
 const settingsApiService: EntityApiService<SystemConfiguration, ConfigurationData, ConfigurationData> = {
@@ -172,12 +173,12 @@ const settingsApiService: EntityApiService<SystemConfiguration, ConfigurationDat
               key: item.key as string,
               value: item.value as string,
               category: category as ConfigCategory,
-              valueType: item.valueType as string,
+              valueType: item.valueType as ConfigValueType,
               description: item.description as string,
               isPublic: item.isPublic as boolean ?? false,
               isEditable: item.isEditable as boolean ?? true,
               requiresRestart: item.requiresRestart as boolean ?? false,
-              scope: item.scope as string || 'SYSTEM',
+              scope: item.scope as ConfigScope || ConfigScope.SYSTEM,
               createdAt: item.createdAt as string || new Date().toISOString(),
               updatedAt: item.updatedAt as string || new Date().toISOString(),
               validValues: item.validValues as string[] || undefined,
@@ -260,31 +261,31 @@ const settingsSliceFactory = createEntitySlice<SystemConfiguration, Configuratio
 export const settingsSlice = settingsSliceFactory.slice;
 export const settingsReducer = settingsSlice.reducer;
 export const settingsActions = settingsSliceFactory.actions;
-export const settingsSelectors = settingsSliceFactory.adapter.getSelectors((state: any) => state.settings);
+export const settingsSelectors = settingsSliceFactory.adapter.getSelectors((state: RootState) => state.settings);
 export const settingsThunks = settingsSliceFactory.thunks;
 
 // Export custom selectors
-export const selectSettingsByCategory = (state: any, category: ConfigCategory): SystemConfiguration[] => {
+export const selectSettingsByCategory = (state: RootState, category: ConfigCategory): SystemConfiguration[] => {
   const allSettings = settingsSelectors.selectAll(state) as SystemConfiguration[];
   return allSettings.filter(setting => setting.category === category);
 };
 
-export const selectPublicSettings = (state: any): SystemConfiguration[] => {
+export const selectPublicSettings = (state: RootState): SystemConfiguration[] => {
   const allSettings = settingsSelectors.selectAll(state) as SystemConfiguration[];
   return allSettings.filter(setting => setting.isPublic);
 };
 
-export const selectEditableSettings = (state: any): SystemConfiguration[] => {
+export const selectEditableSettings = (state: RootState): SystemConfiguration[] => {
   const allSettings = settingsSelectors.selectAll(state) as SystemConfiguration[];
   return allSettings.filter(setting => setting.isEditable);
 };
 
-export const selectSettingByKey = (state: any, key: string): SystemConfiguration | undefined => {
+export const selectSettingByKey = (state: RootState, key: string): SystemConfiguration | undefined => {
   const allSettings = settingsSelectors.selectAll(state) as SystemConfiguration[];
   return allSettings.find(setting => setting.key === key);
 };
 
-export const selectSettingValue = (state: any, key: string): string | undefined => {
+export const selectSettingValue = (state: RootState, key: string): string | undefined => {
   const setting = selectSettingByKey(state, key);
   return setting?.value;
 };

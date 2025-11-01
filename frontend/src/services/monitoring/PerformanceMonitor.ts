@@ -149,7 +149,10 @@ export class PerformanceMonitor {
   private async initializeWebVitals(): Promise<void> {
     try {
       // Use web-vitals library if available
-      const { onCLS, onFID, onLCP, onTTFB, onFCP, onINP } = await import('web-vitals');
+      const webVitals = await import('web-vitals');
+      const { onCLS, onLCP, onTTFB, onFCP, onINP } = webVitals;
+      // onFID may not be available in newer versions - handle gracefully
+      const onFID = (webVitals as any).onFID || null;
 
       // Largest Contentful Paint
       onLCP((metric: any) => {
@@ -163,17 +166,19 @@ export class PerformanceMonitor {
         });
       });
 
-      // First Input Delay
-      onFID((metric: any) => {
-        this.reportWebVital({
-          name: 'FID',
-          value: metric.value,
-          rating: this.getRating('FID', metric.value),
-          delta: metric.delta,
-          id: metric.id,
-          navigationType: metric.navigationType,
+      // First Input Delay (may not be available in newer web-vitals versions)
+      if (onFID) {
+        onFID((metric: any) => {
+          this.reportWebVital({
+            name: 'FID',
+            value: metric.value,
+            rating: this.getRating('FID', metric.value),
+            delta: metric.delta,
+            id: metric.id,
+            navigationType: metric.navigationType,
+          });
         });
-      });
+      }
 
       // Cumulative Layout Shift
       onCLS((metric: any) => {
@@ -471,7 +476,7 @@ export class PerformanceMonitor {
           ttfb: timing.responseStart - timing.navigationStart,
         };
 
-        logger.info('Navigation timing', navTiming);
+                logger.info('Navigation timing', { ...navTiming } as Record<string, unknown>);
 
         Object.entries(navTiming).forEach(([key, value]) => {
           this.trackMetric({

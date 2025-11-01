@@ -268,7 +268,7 @@ export class Logger {
       context: { ...this.context },
       metadata: metadata
         ? this.config.sanitizePHI
-          ? this.sanitizeObject(metadata)
+          ? (this.sanitizeObject(metadata) as Record<string, unknown>)
           : metadata
         : undefined,
       error: error

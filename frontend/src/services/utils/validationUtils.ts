@@ -15,14 +15,14 @@ import { createValidationError, ValidationError } from '../core/errors';
  * @throws ValidationError with structured error information
  */
 export function handleZodError(zodError: ZodError): never {
-  const firstError = zodError.errors[0];
+  const firstError = zodError.issues[0];
 
   if (!firstError) {
     throw createValidationError('Validation failed with no specific errors');
   }
 
   // Aggregate all errors by field path
-  const validationErrors = zodError.errors.reduce((acc, err) => {
+  const validationErrors = zodError.issues.reduce((acc, err) => {
     const path = err.path.join('.') || 'root';
     if (!acc[path]) {
       acc[path] = [];
@@ -83,8 +83,8 @@ export function safeValidate<T>(
     return { success: true, data: validatedData };
   } catch (error) {
     if (error instanceof ZodError) {
-      const firstError = error.errors[0];
-      const validationErrors = error.errors.reduce((acc, err) => {
+      const firstError = error.issues[0];
+      const validationErrors = error.issues.reduce((acc, err) => {
         const path = err.path.join('.') || 'root';
         if (!acc[path]) {
           acc[path] = [];

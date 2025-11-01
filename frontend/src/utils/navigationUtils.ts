@@ -21,8 +21,6 @@
 
 import { User, UserRole } from '../types';
 import { NavigationItem, FilteredNavigationItem, NavigationPermission } from '../types/navigation';
-import { hasAccessToRoute } from '../guards/navigationGuards';
-import { ROUTE_METADATA } from '../routes/routeUtils';
 
 // ============================================================================
 // PERMISSION CHECKING
@@ -371,7 +369,7 @@ export function formatBadgeValue(
 // EXPORTS
 // ============================================================================
 
-export default {
+const navigationUtils = {
   hasRequiredRole,
   hasRequiredPermissions,
   canAccessNavigationItem,
@@ -384,3 +382,5 @@ export default {
   groupNavigationItemsBySection,
   formatBadgeValue,
 };
+
+export default navigationUtils;

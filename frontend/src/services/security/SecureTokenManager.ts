@@ -516,7 +516,7 @@ export class SecureTokenManager implements ITokenManager {
       }
 
       // Check inactivity timeout (8 hours from SECURITY_CONFIG)
-      const inactivityThreshold = meta.lastActivity + SECURITY_CONFIG.SESSION_TIMEOUT;
+      const inactivityThreshold = meta.lastActivity + SECURITY_CONFIG.INACTIVITY_TIMEOUT;
       if (now >= inactivityThreshold) {
         console.info('[SecureTokenManager] Session timeout due to inactivity');
         return false;

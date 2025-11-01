@@ -31,6 +31,7 @@
 import { createEntitySlice, EntityApiService } from '@/stores/sliceFactory';
 import { Medication } from '@/types/api';
 import { apiActions } from '@/lib/api';
+import type { RootState } from '@/stores/store';
 
 /**
  * Data required to create a new student medication prescription.
@@ -181,8 +182,9 @@ const medicationsApiService: EntityApiService<Medication, CreateMedicationData, 
    * contraindications, and allergy checks before saving.
    */
   async create(data: CreateMedicationData) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const response = await apiActions.medications.create(data as any);
-    return { data: response };
+    return { data: response.medication };
   },
 
   /**
@@ -197,6 +199,7 @@ const medicationsApiService: EntityApiService<Medication, CreateMedicationData, 
    * new physician orders depending on school policy.
    */
   async update(id: string, data: UpdateMedicationData) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const response = await apiActions.medications.update(id, data as any);
     return { data: response };
   },
@@ -286,7 +289,7 @@ export const medicationsActions = medicationsSliceFactory.actions;
  * const medication = useSelector(state => medicationsSelectors.selectById(state, 'med-123'));
  * ```
  */
-export const medicationsSelectors = medicationsSliceFactory.adapter.getSelectors((state: any) => state.medications);
+export const medicationsSelectors = medicationsSliceFactory.adapter.getSelectors((state: RootState) => state.medications);
 
 /**
  * Async thunks for medication API operations.
@@ -330,7 +333,7 @@ export const medicationsThunks = medicationsSliceFactory.thunks;
  * Note: This selector is for the medication catalog, not student prescriptions.
  * For student-specific active medications, use selectActiveMedicationsByStudent.
  */
-export const selectActiveMedications = (state: any): Medication[] => {
+export const selectActiveMedications = (state: RootState): Medication[] => {
   const allMedications = medicationsSelectors.selectAll(state) as Medication[];
   // Medication catalog doesn't have isActive - all medications in catalog are assumed available
   return allMedications;
@@ -357,7 +360,7 @@ export const selectActiveMedications = (state: any): Medication[] => {
  * - Enhanced audit logging
  * - Periodic inventory reconciliation
  */
-export const selectControlledMedications = (state: any): Medication[] => {
+export const selectControlledMedications = (state: RootState): Medication[] => {
   const allMedications = medicationsSelectors.selectAll(state) as Medication[];
   return allMedications.filter(medication => medication.isControlled);
 };
@@ -377,7 +380,7 @@ export const selectControlledMedications = (state: any): Medication[] => {
  * const antibiotics = useSelector(state => selectMedicationsByCategory(state, 'Antibiotic'));
  * ```
  */
-export const selectMedicationsByCategory = (state: any, category: string): Medication[] => {
+export const selectMedicationsByCategory = (state: RootState, category: string): Medication[] => {
   const allMedications = medicationsSelectors.selectAll(state) as Medication[];
   return allMedications.filter(medication => medication.category === category);
 };
@@ -398,7 +401,7 @@ export const selectMedicationsByCategory = (state: any, category: string): Medic
  * const liquids = useSelector(state => selectMedicationsByForm(state, 'Liquid'));
  * ```
  */
-export const selectMedicationsByForm = (state: any, dosageForm: string): Medication[] => {
+export const selectMedicationsByForm = (state: RootState, dosageForm: string): Medication[] => {
   const allMedications = medicationsSelectors.selectAll(state) as Medication[];
   return allMedications.filter(medication => medication.dosageForm === dosageForm);
 };
@@ -426,7 +429,7 @@ export const selectMedicationsByForm = (state: any, dosageForm: string): Medicat
  * Workflow: Administration interface should prompt for witness selection when
  * administering these medications.
  */
-export const selectMedicationsRequiringWitness = (state: any): Medication[] => {
+export const selectMedicationsRequiringWitness = (state: RootState): Medication[] => {
   const allMedications = medicationsSelectors.selectAll(state) as Medication[];
   return allMedications.filter(medication => medication.requiresWitness);
 };

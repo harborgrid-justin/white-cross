@@ -37,7 +37,7 @@ export class CircuitBreaker {
       timeout: config.timeout,
       monitoringWindow: config.monitoringWindow,
       excludedErrors: config.excludedErrors || [],
-      isErrorRetryable: config.isErrorRetryable
+      isErrorRetryable: config.isErrorRetryable ?? ((error: unknown) => true)
     };
   }
 

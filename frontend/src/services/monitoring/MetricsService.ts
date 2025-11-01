@@ -396,7 +396,7 @@ export class MetricsService {
   }
 
   public trackWebVitals(metric: {
-    name: 'LCP' | 'FID' | 'CLS' | 'TTFB' | 'FCP';
+    name: 'LCP' | 'FID' | 'CLS' | 'TTFB' | 'FCP' | 'INP';
     value: number;
   }): void {
     this.recordMetric(`performance.web_vitals.${metric.name.toLowerCase()}`, metric.value, 'gauge');

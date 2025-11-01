@@ -50,6 +50,42 @@
 import { createEntitySlice, EntityApiService } from '@/stores/sliceFactory';
 import { HealthRecord } from '@/types/student.types';
 import { apiActions } from '@/lib/api';
+import type { RootState } from '@/stores/store';
+
+// Transform API response (with 'type'/'date') to store format (with 'recordType'/'recordDate')
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const transformApiToStore = (apiRecord: any): HealthRecord => ({
+  id: apiRecord.id as string,
+  studentId: apiRecord.studentId as string,
+  recordType: apiRecord.type as string,
+  recordDate: apiRecord.date as string,
+  provider: apiRecord.provider as string | undefined,
+  notes: apiRecord.notes as string | undefined,
+  attachments: (apiRecord.attachments as string[]) || [],
+  createdAt: apiRecord.createdAt as string,
+  updatedAt: apiRecord.updatedAt as string,
+});
+
+// Transform store create data to API format
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const transformCreateToApi = (storeData: CreateHealthRecordData): any => ({
+  studentId: storeData.studentId,
+  type: storeData.recordType,
+  date: storeData.recordDate,
+  provider: storeData.provider,
+  notes: storeData.notes,
+  attachments: storeData.attachments,
+});
+
+// Transform store update data to API format
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const transformUpdateToApi = (storeData: UpdateHealthRecordData): any => ({
+  type: storeData.recordType,
+  date: storeData.recordDate,
+  provider: storeData.provider,
+  notes: storeData.notes,
+  attachments: storeData.attachments,
+});
 
 /**
  * Data required to create a new health record.
@@ -209,8 +245,8 @@ const healthRecordsApiService: EntityApiService<HealthRecord, CreateHealthRecord
     }
     const response = await apiActions.healthRecords.getRecords(studentId, params);
     return {
-      data: response.data || [],
-      total: response.total,
+      data: (response.data || []).map(transformApiToStore),
+      total: response.pagination?.total || 0,
       pagination: response.pagination,
     };
   },
@@ -235,7 +271,7 @@ const healthRecordsApiService: EntityApiService<HealthRecord, CreateHealthRecord
    */
   async getById(id: string) {
     const response = await apiActions.healthRecords.getRecordById(id);
-    return { data: response };
+    return { data: transformApiToStore(response) };
   },
 
   /**
@@ -267,8 +303,9 @@ const healthRecordsApiService: EntityApiService<HealthRecord, CreateHealthRecord
    * ```
    */
   async create(data: CreateHealthRecordData) {
-    const response = await apiActions.healthRecords.createRecord(data as any);
-    return { data: response };
+    const apiData = transformCreateToApi(data);
+    const response = await apiActions.healthRecords.createRecord(apiData);
+    return { data: transformApiToStore(response) };
   },
 
   /**
@@ -298,8 +335,9 @@ const healthRecordsApiService: EntityApiService<HealthRecord, CreateHealthRecord
    * ```
    */
   async update(id: string, data: UpdateHealthRecordData) {
-    const response = await apiActions.healthRecords.updateRecord(id, data as any);
-    return { data: response };
+    const apiData = transformUpdateToApi(data);
+    const response = await apiActions.healthRecords.updateRecord(id, apiData);
+    return { data: transformApiToStore(response) };
   },
 
   /**
@@ -406,7 +444,7 @@ export const healthRecordsActions = healthRecordsSliceFactory.actions;
  * const record = useSelector(state => healthRecordsSelectors.selectById(state, 'record-123'));
  * ```
  */
-export const healthRecordsSelectors = healthRecordsSliceFactory.adapter.getSelectors((state: any) => state.healthRecords);
+export const healthRecordsSelectors = healthRecordsSliceFactory.adapter.getSelectors((state: RootState) => state.healthRecords);
 
 /**
  * Async thunks for health record API operations.
@@ -455,7 +493,7 @@ export const healthRecordsThunks = healthRecordsSliceFactory.thunks;
  * );
  * ```
  */
-export const selectHealthRecordsByStudent = (state: any, studentId: string): HealthRecord[] => {
+export const selectHealthRecordsByStudent = (state: RootState, studentId: string): HealthRecord[] => {
   const allRecords = healthRecordsSelectors.selectAll(state) as HealthRecord[];
   return allRecords.filter(record => record.studentId === studentId);
 };
@@ -484,7 +522,7 @@ export const selectHealthRecordsByStudent = (state: any, studentId: string): Hea
  * );
  * ```
  */
-export const selectHealthRecordsByType = (state: any, recordType: string): HealthRecord[] => {
+export const selectHealthRecordsByType = (state: RootState, recordType: string): HealthRecord[] => {
   const allRecords = healthRecordsSelectors.selectAll(state) as HealthRecord[];
   return allRecords.filter(record => record.recordType === recordType);
 };
@@ -506,7 +544,7 @@ export const selectHealthRecordsByType = (state: any, recordType: string): Healt
  * );
  * ```
  */
-export const selectHealthRecordsByProvider = (state: any, provider: string): HealthRecord[] => {
+export const selectHealthRecordsByProvider = (state: RootState, provider: string): HealthRecord[] => {
   const allRecords = healthRecordsSelectors.selectAll(state) as HealthRecord[];
   return allRecords.filter(record => record.provider === provider);
 };
@@ -536,7 +574,7 @@ export const selectHealthRecordsByProvider = (state: any, provider: string): Hea
  * );
  * ```
  */
-export const selectRecentHealthRecords = (state: any, days: number = 30): HealthRecord[] => {
+export const selectRecentHealthRecords = (state: RootState, days: number = 30): HealthRecord[] => {
   const allRecords = healthRecordsSelectors.selectAll(state) as HealthRecord[];
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - days);

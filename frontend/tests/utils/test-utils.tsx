@@ -86,7 +86,7 @@ export function renderWithProviders(
   /**
    * Wrapper component with all providers
    */
-  function Wrapper({ children }: { children: ReactNode }): JSX.Element {
+  function Wrapper({ children }: { children: ReactNode }): ReactElement {
     return (
       <Provider store={store}>
         <QueryClientProvider client={queryClient}>

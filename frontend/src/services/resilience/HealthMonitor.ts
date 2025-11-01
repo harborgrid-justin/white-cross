@@ -230,7 +230,7 @@ export class HealthMonitor {
       this.emitEvent({
         type: 'healthDegradation',
         endpoint,
-        details: alert,
+        details: { ...alert } as Record<string, unknown>,
         timestamp: Date.now()
       });
     });

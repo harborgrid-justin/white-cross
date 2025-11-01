@@ -143,9 +143,10 @@ export class VendorApi {
       );
 
       return response.data.data.vendor;
-    } catch (error) {
-      if (error.name === 'ZodError') {
-        throw new Error(`Validation error: ${error.errors[0].message}`);
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'name' in error && error.name === 'ZodError') {
+        const zodError = error as unknown as { errors: Array<{ message: string }> };
+        throw new Error(`Validation error: ${zodError.errors[0].message}`);
       }
       throw createApiError(error, 'Failed to create vendor');
     }
@@ -167,9 +168,10 @@ export class VendorApi {
       );
 
       return response.data.data.vendor;
-    } catch (error) {
-      if (error.name === 'ZodError') {
-        throw new Error(`Validation error: ${error.errors[0].message}`);
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'name' in error && error.name === 'ZodError') {
+        const zodError = error as unknown as { errors: Array<{ message: string }> };
+        throw new Error(`Validation error: ${zodError.errors[0].message}`);
       }
       throw createApiError(error, 'Failed to update vendor');
     }
@@ -262,7 +264,7 @@ export class VendorApi {
       }
 
       // If it comes wrapped in vendors property
-      return (response.data.data as any).vendors || [];
+      return response.data.data.vendors || [];
     } catch (error) {
       throw createApiError(error, 'Failed to fetch top vendors');
     }
@@ -299,9 +301,10 @@ export class VendorApi {
       );
 
       return response.data.data.vendor;
-    } catch (error) {
-      if (error.name === 'ZodError') {
-        throw new Error(`Validation error: ${error.errors[0].message}`);
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'name' in error && error.name === 'ZodError') {
+        const zodError = error as unknown as { errors: Array<{ message: string }> };
+        throw new Error(`Validation error: ${zodError.errors[0].message}`);
       }
       throw createApiError(error, 'Failed to update vendor rating');
     }

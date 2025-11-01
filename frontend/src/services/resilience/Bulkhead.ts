@@ -157,7 +157,7 @@ export class Bulkhead {
     }
 
     // Queue the operation
-    const request: BulkheadOperationRequest = {
+    const request: BulkheadOperationRequest<T> = {
       id: this.generateId(),
       priority,
       operation,
@@ -225,7 +225,7 @@ export class Bulkhead {
    * Wait for execution slot
    */
   private waitForExecution<T>(request: BulkheadOperationRequest<T>): Promise<T> {
-    return new Promise((resolve, reject) => {
+    return new Promise<T>((resolve, reject) => {
       const checkInterval = setInterval(() => {
         if (this.canExecute(request.priority)) {
           clearInterval(checkInterval);

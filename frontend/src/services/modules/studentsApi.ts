@@ -362,6 +362,18 @@ export class StudentsApi {
   }
 
   /**
+   * Helper method to handle errors consistently
+   */
+  private handleError(error: unknown, defaultMessage: string): never {
+    if (error && typeof error === 'object' && 'name' in error && error.name === 'ZodError') {
+      const zodError = error as unknown as { errors: Array<{ message: string }> };
+      throw new Error(`Validation error: ${zodError.errors[0].message}`);
+    }
+    const apiError = error as { response?: { data?: { error?: { message?: string } } }; message?: string };
+    throw new Error(apiError.response?.data?.error?.message || apiError.message || defaultMessage);
+  }
+
+  /**
    * Get all students with optional filtering and pagination
    * Matches backend: StudentService.getStudents()
    */
@@ -393,11 +405,13 @@ export class StudentsApi {
       }
 
       return response.data.data;
-    } catch (error) {
-      if (error.name === 'ZodError') {
-        throw new Error(`Validation error: ${error.errors[0].message}`);
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'name' in error && error.name === 'ZodError') {
+        const zodError = error as unknown as { errors: Array<{ message: string }> };
+        throw new Error(`Validation error: ${zodError.errors[0].message}`);
       }
-      throw new Error(error.response?.data?.error?.message || error.message || 'Failed to fetch students');
+      const apiError = error as { response?: { data?: { error?: { message?: string } } }; message?: string };
+      throw new Error(apiError.response?.data?.error?.message || apiError.message || 'Failed to fetch students');
     }
   }
 
@@ -428,15 +442,16 @@ export class StudentsApi {
       );
 
       return student;
-    } catch (error) {
+    } catch (error: unknown) {
+      const apiError = error as { message?: string };
       await auditService.log({
         action: AuditAction.VIEW_STUDENT,
         resourceType: AuditResourceType.STUDENT,
         resourceId: id,
         status: AuditStatus.FAILURE,
-        context: { error: error.message },
+        context: { error: apiError.message || 'Unknown error' },
       });
-      throw new Error(error.response?.data?.error?.message || error.message || 'Failed to fetch student');
+      this.handleError(error, 'Failed to fetch student');
     }
   }
 
@@ -475,17 +490,15 @@ export class StudentsApi {
       });
 
       return student;
-    } catch (error) {
-      if (error.name === 'ZodError') {
-        throw new Error(`Validation error: ${error.errors[0].message}`);
-      }
+    } catch (error: unknown) {
+      const apiError = error as { message?: string };
       await auditService.log({
         action: AuditAction.CREATE_STUDENT,
         resourceType: AuditResourceType.STUDENT,
         status: AuditStatus.FAILURE,
-        context: { error: error.message },
+        context: { error: apiError.message || 'Unknown error' },
       });
-      throw new Error(error.response?.data?.error?.message || error.message || 'Failed to create student');
+      this.handleError(error, 'Failed to create student');
     }
   }
 
@@ -519,26 +532,24 @@ export class StudentsApi {
         resourceIdentifier: `${student.firstName} ${student.lastName}`,
         status: AuditStatus.SUCCESS,
         isPHI: true,
-        afterState: studentData,
+        afterState: studentData as Record<string, unknown>,
         metadata: {
           fieldsUpdated: Object.keys(studentData),
         },
       });
 
       return student;
-    } catch (error) {
-      if (error.name === 'ZodError') {
-        throw new Error(`Validation error: ${error.errors[0].message}`);
-      }
+    } catch (error: unknown) {
+      const apiError = error as { message?: string };
       await auditService.log({
         action: AuditAction.UPDATE_STUDENT,
         resourceType: AuditResourceType.STUDENT,
         resourceId: id,
         studentId: id,
         status: AuditStatus.FAILURE,
-        context: { error: error.message },
+        context: { error: apiError.message || 'Unknown error' },
       });
-      throw new Error(error.response?.data?.error?.message || error.message || 'Failed to update student');
+      this.handleError(error, 'Failed to update student');
     }
   }
 
@@ -562,8 +573,8 @@ export class StudentsApi {
         success: true,
         message: response.data.message || 'Student deactivated successfully'
       };
-    } catch (error) {
-      throw new Error(error.response?.data?.error?.message || error.message || 'Failed to deactivate student');
+    } catch (error: unknown) {
+      this.handleError(error, 'Failed to deactivate student');
     }
   }
 
@@ -584,8 +595,8 @@ export class StudentsApi {
       }
 
       return response.data.data.student;
-    } catch (error) {
-      throw new Error(error.response?.data?.error?.message || error.message || 'Failed to reactivate student');
+    } catch (error: unknown) {
+      this.handleError(error, 'Failed to reactivate student');
     }
   }
 
@@ -608,8 +619,8 @@ export class StudentsApi {
       }
 
       return response.data.data.student;
-    } catch (error) {
-      throw new Error(error.response?.data?.error?.message || error.message || 'Failed to transfer student');
+    } catch (error: unknown) {
+      this.handleError(error, 'Failed to transfer student');
     }
   }
 
@@ -630,8 +641,8 @@ export class StudentsApi {
       }
 
       return response.data.data.students;
-    } catch (error) {
-      throw new Error(error.response?.data?.error?.message || error.message || 'Failed to fetch students by grade');
+    } catch (error: unknown) {
+      this.handleError(error, 'Failed to fetch students by grade');
     }
   }
 
@@ -652,8 +663,8 @@ export class StudentsApi {
       }
 
       return response.data.data.students;
-    } catch (error) {
-      throw new Error(error.response?.data?.error?.message || error.message || 'Failed to search students');
+    } catch (error: unknown) {
+      this.handleError(error, 'Failed to search students');
     }
   }
 
@@ -672,8 +683,8 @@ export class StudentsApi {
       }
 
       return response.data.data.students;
-    } catch (error) {
-      throw new Error(error.response?.data?.error?.message || error.message || 'Failed to fetch assigned students');
+    } catch (error: unknown) {
+      this.handleError(error, 'Failed to fetch assigned students');
     }
   }
 
@@ -694,8 +705,8 @@ export class StudentsApi {
       }
 
       return response.data.data;
-    } catch (error) {
-      throw new Error(error.response?.data?.error?.message || error.message || 'Failed to fetch student statistics');
+    } catch (error: unknown) {
+      this.handleError(error, 'Failed to fetch student statistics');
     }
   }
 
@@ -719,8 +730,8 @@ export class StudentsApi {
       }
 
       return response.data.data;
-    } catch (error) {
-      throw new Error(error.response?.data?.error?.message || error.message || 'Failed to bulk update students');
+    } catch (error: unknown) {
+      this.handleError(error, 'Failed to bulk update students');
     }
   }
 
@@ -741,8 +752,8 @@ export class StudentsApi {
       }
 
       return response.data.data;
-    } catch (error) {
-      throw new Error(error.response?.data?.error?.message || error.message || 'Failed to delete student');
+    } catch (error: unknown) {
+      this.handleError(error, 'Failed to delete student');
     }
   }
 
@@ -761,8 +772,8 @@ export class StudentsApi {
       }
 
       return response.data.data;
-    } catch (error) {
-      throw new Error(error.response?.data?.error?.message || error.message || 'Failed to fetch grades');
+    } catch (error: unknown) {
+      this.handleError(error, 'Failed to fetch grades');
     }
   }
 
@@ -794,16 +805,17 @@ export class StudentsApi {
       });
 
       return response.data.data;
-    } catch (error) {
+    } catch (error: unknown) {
+      const apiError = error as { message?: string };
       await auditService.log({
         action: AuditAction.EXPORT_STUDENT_DATA,
         resourceType: AuditResourceType.STUDENT,
         resourceId: studentId,
         studentId,
         status: AuditStatus.FAILURE,
-        context: { error: error.message },
+        context: { error: apiError.message || 'Unknown error' },
       });
-      throw new Error(error.response?.data?.error?.message || error.message || 'Failed to export student data');
+      this.handleError(error, 'Failed to export student data');
     }
   }
 
@@ -823,8 +835,9 @@ export class StudentsApi {
       }
 
       return response.data.data;
-    } catch (error) {
-      throw new Error(error.response?.data?.error?.message || error.message || 'Failed to fetch health records');
+    } catch (error: unknown) {
+      const apiError = error as any;
+      throw new Error(apiError.response?.data?.error?.message || apiError.message || 'Failed to fetch health records');
     }
   }
 
@@ -844,8 +857,9 @@ export class StudentsApi {
       }
 
       return response.data.data;
-    } catch (error) {
-      throw new Error(error.response?.data?.error?.message || error.message || 'Failed to fetch mental health records');
+    } catch (error: unknown) {
+      const apiError = error as any;
+      throw new Error(apiError.response?.data?.error?.message || apiError.message || 'Failed to fetch mental health records');
     }
   }
 

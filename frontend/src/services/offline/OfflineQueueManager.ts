@@ -215,8 +215,8 @@ export class OfflineQueueManager {
 
     return {
       total: requests.length,
-      completed: requests.filter(r => r.status === 'completed').length,
-      failed: requests.filter(r => r.status === 'failed').length,
+      completed: requests.filter((r: QueuedRequest) => r.status === 'completed').length,
+      failed: requests.filter((r: QueuedRequest) => r.status === 'failed').length,
       inProgress: this.isSyncing
     };
   }
@@ -458,9 +458,9 @@ export class OfflineQueueManager {
         action: request.metadata.action as AuditAction,
         resourceType: request.metadata.resourceType as AuditResourceType,
         resourceId: request.metadata.studentId,
-        userId: request.metadata.userId,
         status: AuditStatus.SUCCESS,
         metadata: {
+          userId: request.metadata.userId,
           queuedRequestId: request.id,
           syncedAt: new Date().toISOString()
         }
