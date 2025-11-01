@@ -40,7 +40,7 @@ export const POST = withMinimumRole('NURSE', async (request: NextRequest, contex
     const data = await response.json();
 
     if (response.status === 201 && data.data) {
-      const auditContext = createAuditContext(request, auth.user.id);
+      const auditContext = createAuditContext(request, auth.user.userId);
       await auditLog({
         ...auditContext,
         action: 'SEND_BROADCAST',

@@ -7,13 +7,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { withAuth } from '@/middleware/withAuth';
 import { proxyToBackend } from '@/lib/apiProxy';
-import { auditLog, createAuditContext } from '@/lib/audit';
+import { createAuditContext, logPHIAccess } from '@/lib/audit';
 
 /**
  * GET /appointments
  * List all appointments
  */
-export const GET = withAuth(async (request: NextRequest, context, auth) => {
+export const GET = withAuth(async (request: NextRequest, _context, auth) => {
   try {
     const response = await proxyToBackend(request, '/appointments', {
       cache: {
@@ -23,6 +23,15 @@ export const GET = withAuth(async (request: NextRequest, context, auth) => {
     });
 
     const data = await response.json();
+
+    // HIPAA: Audit log PHI access
+    const auditContext = createAuditContext(request, auth.user.userId);
+    await logPHIAccess({
+      ...auditContext,
+      action: 'VIEW',
+      resource: 'Appointment',
+      details: `Listed appointments, count: ${data.data?.length || 0}`
+    });
 
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
@@ -46,10 +55,10 @@ export const POST = withAuth(async (request: NextRequest, context, auth) => {
     const data = await response.json();
 
     if (response.status === 201 && data.data) {
-      const auditContext = createAuditContext(request, auth.user.id);
-      await auditLog({
+      const auditContext = createAuditContext(request, auth.user.userId);
+      await logPHIAccess({
         ...auditContext,
-        action: 'CREATE_APPOINTMENT',
+        action: 'CREATE',
         resource: 'Appointment',
         resourceId: data.data.id,
         details: 'Appointment created'

@@ -305,3 +305,12 @@ export * from './queries/useStudents';
 export * from './mutations/useStudentMutations';
 export * from './mutations/useOptimisticStudents';
 export * from './mutations/useStudentManagement';
+
+/**
+ * Student Utilities
+ * 
+ * Domain-specific utility hooks for student data handling:
+ * - `useStudentAllergies` - Student allergy management
+ * - `useStudentPhoto` - Student photo operations
+ */
+export * from './utils';

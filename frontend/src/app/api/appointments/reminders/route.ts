@@ -1,206 +1,155 @@
 /**
  * @fileoverview Appointments Reminders API Route
- * @module api/v1/appointments/reminders
  *
- * Endpoint for managing appointment reminders.
+ * Manages appointment reminder functionality including automated and manual
+ * reminder sending, reminder history tracking, and notification preferences.
+ * This endpoint supports multiple communication channels for healthcare
+ * appointment notifications.
+ *
+ * @module api/appointments/reminders
+ * @category Appointments
+ * @subcategory Reminders
+ *
+ * **Key Features:**
+ * - Manual and automated reminder sending
+ * - Multi-channel communication (email, SMS, push notifications)
+ * - Reminder history and tracking
+ * - Customizable reminder messages
+ * - Reminder scheduling and timing preferences
+ *
+ * **Security:**
+ * - Authentication required for all operations
+ * - Role-based access to reminder management
+ * - PHI protection in reminder content
+ * - Audit logging for all reminder operations
+ *
+ * @since 1.0.0
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
-import { auth } from '@/lib/auth';
-import { sendImmediateReminder, getReminderHistory } from '@/lib/appointments/reminders';
-
-// Validation schemas
-const sendReminderSchema = z.object({
-  appointmentId: z.string().uuid(),
-  method: z.enum(['email', 'sms', 'both']).optional().default('email'),
-  customMessage: z.string().optional(),
-});
-
-const reminderHistorySchema = z.object({
-  appointmentId: z.string().uuid(),
-});
+import { withAuth } from '@/middleware/withAuth';
+import { proxyToBackend } from '@/lib/apiProxy';
+import { createAuditContext, logPHIAccess } from '@/lib/audit';
 
 /**
- * POST /appointments/reminders
+ * GET /api/appointments/reminders
  *
- * Send an immediate reminder for an appointment.
+ * Retrieves reminder history and settings for appointments.
+ * Shows sent reminders, scheduled reminders, and reminder preferences.
  *
- * Request Body:
- * {
- *   appointmentId: string,
- *   method?: 'email' | 'sms' | 'both',
- *   customMessage?: string
- * }
+ * @async
+ * @param {NextRequest} request - Next.js request object with query parameters
+ * @param {Object} context - Route context
+ * @param {Object} auth - Authenticated user context
  *
- * Response:
- * {
- *   success: true,
- *   data: {
- *     sent: boolean,
- *     method: string,
- *     timestamp: string
- *   }
- * }
+ * @returns {Promise<NextResponse>} JSON response with reminder data
+ *
+ * @throws {401} Unauthorized - Authentication required
+ * @throws {400} Bad Request - Invalid query parameters
+ * @throws {500} Internal Server Error - Server error during retrieval
+ *
+ * @method GET
+ * @access Authenticated
+ * @auditLog Reminder history access is logged
  */
-export async function POST(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, _context, auth) => {
   try {
-    // Authentication
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Parse and validate request body
-    const body = await request.json();
-    const validation = sendReminderSchema.safeParse(body);
-
-    if (!validation.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Invalid request body',
-          details: validation.error.errors,
-        },
-        { status: 400 }
-      );
-    }
-
-    const { appointmentId, method, customMessage } = validation.data;
-
-    // Send immediate reminder
-    const result = await sendImmediateReminder({
-      appointmentId,
-      method,
-      customMessage,
-      userId: session.user.id,
+    // Proxy request to backend with caching
+    const response = await proxyToBackend(request, '/appointments/reminders', {
+      cache: {
+        revalidate: 120, // Cache for 2 minutes (reminder data changes less frequently)
+        tags: ['appointment-reminders', `staff-${auth.user.userId}`]
+      }
     });
 
-    if (!result.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Failed to send reminder',
-          message: result.error,
-        },
-        { status: 500 }
-      );
-    }
+    const data = await response.json();
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        sent: true,
-        method,
-        timestamp: new Date().toISOString(),
-        reminderId: result.reminderId,
-      },
+    // Audit log reminder history access
+    const auditContext = createAuditContext(request, auth.user.userId);
+    await logPHIAccess({
+      ...auditContext,
+      action: 'VIEW',
+      resource: 'AppointmentReminders',
+      details: 'Appointment reminder history accessed'
     });
+
+    return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error('Send reminder API error:', error);
+    console.error('Error fetching appointment reminders:', error);
+
     return NextResponse.json(
-      {
-        success: false,
-        error: 'Internal server error',
-        message: error instanceof Error ? error.message : 'Unknown error',
+      { 
+        error: 'Failed to fetch appointment reminders',
+        message: 'Unable to retrieve reminder information'
       },
       { status: 500 }
     );
   }
-}
+});
 
 /**
- * GET /appointments/reminders
+ * POST /api/appointments/reminders
  *
- * Get reminder history for an appointment.
+ * Sends immediate appointment reminders or schedules future reminders.
+ * Supports multiple communication channels and custom messaging.
  *
- * Query Parameters:
- * - appointmentId: UUID of appointment
+ * @async
+ * @param {NextRequest} request - Next.js request object with reminder data
+ * @param {Object} context - Route context
+ * @param {Object} auth - Authenticated user context
  *
- * Response:
- * {
- *   success: true,
- *   data: {
- *     reminders: Array<{
- *       id: string,
- *       type: string,
- *       scheduledFor: string,
- *       sentAt?: string,
- *       status: string,
- *       method: string
- *     }>
- *   }
- * }
+ * @returns {Promise<NextResponse>} JSON response with reminder sending results
+ *
+ * @throws {401} Unauthorized - Authentication required
+ * @throws {403} Forbidden - Insufficient permissions for reminder sending
+ * @throws {400} Bad Request - Invalid reminder data
+ * @throws {500} Internal Server Error - Server error during reminder sending
+ *
+ * @method POST
+ * @access Authenticated (NURSE or higher for manual reminders)
+ * @auditLog All reminder sending is logged
  */
-export async function GET(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, _context, auth) => {
   try {
-    // Authentication
-    const session = await auth();
-    if (!session?.user) {
+    // Check permissions for manual reminder sending
+    const allowedRoles = ['ADMIN', 'SCHOOL_ADMIN', 'NURSE'];
+    if (!allowedRoles.includes(auth.user.role)) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Parse and validate query parameters
-    const searchParams = request.nextUrl.searchParams;
-    const queryData = {
-      appointmentId: searchParams.get('appointmentId'),
-    };
-
-    const validation = reminderHistorySchema.safeParse(queryData);
-    if (!validation.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Invalid query parameters',
-          details: validation.error.errors,
+        { 
+          error: 'Forbidden', 
+          message: 'Insufficient permissions for manual reminder sending' 
         },
-        { status: 400 }
+        { status: 403 }
       );
     }
 
-    const { appointmentId } = validation.data;
+    // Proxy request to backend
+    const response = await proxyToBackend(request, '/appointments/reminders');
 
-    // Get reminder history
-    const history = await getReminderHistory({ appointmentId });
+    const data = await response.json();
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        appointmentId,
-        reminders: history,
-      },
-    });
+    if (response.status === 200 || response.status === 201) {
+      // Audit log reminder sending
+      const auditContext = createAuditContext(request, auth.user.userId);
+      await logPHIAccess({
+        ...auditContext,
+        action: 'CREATE',
+        resource: 'AppointmentReminder',
+        resourceId: data.data?.reminderId,
+        details: `Appointment reminder sent via ${data.data?.method || 'unknown'} method`
+      });
+    }
+
+    return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error('Get reminder history API error:', error);
+    console.error('Error sending appointment reminder:', error);
+
     return NextResponse.json(
-      {
-        success: false,
-        error: 'Internal server error',
-        message: error instanceof Error ? error.message : 'Unknown error',
+      { 
+        error: 'Failed to send appointment reminder',
+        message: 'Unable to send reminder notification'
       },
       { status: 500 }
     );
   }
-}
-
-/**
- * OPTIONS /appointments/reminders
- *
- * CORS preflight handler
- */
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    },
-  });
-}
+});

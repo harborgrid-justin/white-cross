@@ -18,7 +18,7 @@ export const GET = withAuth(async (request: NextRequest, context, auth) => {
     // Proxy request to backend with caching
     const response = await proxyToBackend(request, '/students', {
       cache: {
-        revalidate: 60, // Cache for 60 seconds
+        revalidate: 30, // Cache for 30 seconds (student health data)
         tags: ['students']
       }
     });
@@ -26,7 +26,7 @@ export const GET = withAuth(async (request: NextRequest, context, auth) => {
     const data = await response.json();
 
     // HIPAA: Audit log PHI access
-    const auditContext = createAuditContext(request, auth.user.id);
+    const auditContext = createAuditContext(request, auth.user.userId);
     await logPHIAccess({
       ...auditContext,
       action: 'VIEW',
@@ -58,7 +58,7 @@ export const POST = withAuth(async (request: NextRequest, context, auth) => {
 
     if (response.status === 201 && data.data) {
       // HIPAA: Audit log PHI creation
-      const auditContext = createAuditContext(request, auth.user.id);
+      const auditContext = createAuditContext(request, auth.user.userId);
       await logPHIAccess({
         ...auditContext,
         action: 'CREATE',

@@ -39,7 +39,7 @@ export const POST = withMinimumRole('ADMIN', async (request: NextRequest, contex
     const data = await response.json();
 
     if (response.status === 201 && data.data) {
-      const auditContext = createAuditContext(request, auth.user.id);
+      const auditContext = createAuditContext(request, auth.user.userId);
       await auditLog({
         ...auditContext,
         action: AUDIT_ACTIONS.GENERATE_REPORT,

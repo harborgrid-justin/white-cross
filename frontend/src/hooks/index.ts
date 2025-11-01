@@ -117,60 +117,129 @@
 // Main Hooks Export Module
 // Centralized exports for all domain hooks
 
-// New Domain Exports - Generated Hooks
+// ============================================================================
+// CORE SYSTEM HOOKS
+// ============================================================================
+
+// Authentication & System State
+export {
+  useHasPermission,
+  useHasRole,
+  useHasMinRole,
+  useHasAllPermissions,
+  useHasAnyPermission,
+  PERMISSIONS
+} from './core/useAuth';
+
+// System Monitoring & State
+export { default as useConnectionMonitor } from './core/useConnectionMonitor';
+export { default as useCrossTabSync } from './core/useCrossTabSync';
+export { default as useHydration } from './core/useHydration';
+export { default as useOfflineQueue } from './core/useOfflineQueue';
+export { default as usePHIAudit } from './core/usePHIAudit';
+export { default as useWebSocket } from './core/useWebSocket';
+
+// Navigation & Routing
+export {
+  useRouteState,
+  usePersistedFilters,
+  useNavigationState,
+  usePageState,
+  useSortState
+} from './core/useRouteState';
+
+// ============================================================================
+// UI/UX HOOKS
+// ============================================================================
+
+export { default as useToast } from './ui/useToast';
+export * from './ui/useMedicationToast';
+
+// ============================================================================
+// SHARED UTILITY HOOKS
+// ============================================================================
+
+export {
+  useApiError,
+  type EnterpriseApiError,
+  type ApiErrorType
+} from './shared/useApiError';
+
+export {
+  useAuditLog,
+  type AuditEvent,
+  type AuditEventType,
+  type AuditSeverity
+} from './shared/useAuditLog';
+
+export {
+  useCacheManager,
+  type DataSensitivity,
+  type CacheStrategy,
+  CACHE_TIMES
+} from './shared/useCacheManager';
+
+export { useHealthcareCompliance } from './shared/useHealthcareCompliance';
+export * from './shared/useAudit';
+
+// ============================================================================
+// DOMAIN-SPECIFIC HOOKS
+// ============================================================================
+
+// Core Domains - Well-established structure
+export * from './domains/students';
+export * from './domains/medications';
+export * from './domains/appointments';
+export * from './domains/health';
+export * from './domains/inventory';
+
+// New Domains - Generated structure
 export * from './domains/compliance';
 export * from './domains/documents';
 export * from './domains/budgets';
 export * from './domains/vendors';
 export * from './domains/purchase-orders';
-
-// Administration Domain (selective export to avoid useUserPermissions conflict)
-export {
-  // User Management Queries
-  useUsers,
-  useUserDetails,
-  useUserRoles,
-  // Renamed to avoid conflict: useUserPermissions -> useAdminUserPermissions
-  useUserPermissions as useAdminUserPermissions,
-  
-  // Department Management
-  useDepartments,
-  useDepartmentDetails,
-  useDepartmentStaff,
-  
-  // Settings & Configuration
-  useSettings,
-  useSettingDetails,
-  useSystemConfigurations,
-  useSystemConfiguration,
-  
-  // Audit & Notifications
-  useAuditLogs,
-  useAuditLogDetails,
-  useNotifications,
-  useNotificationDetails,
-  useUserNotifications,
-  
-  // System Health & Activity
-  useSystemHealth,
-  useUserActivity,
-  
-  // Dashboard & Reports
-  useAdministrationDashboard,
-  useAdministrationStats,
-  useAdministrationReports,
-} from './domains/administration';
-
-// Existing Domains
-export * from './domains/appointments';
-export * from './domains/medications';
-export * from './domains/access-control';
-export * from './domains/communication';
+export * from './domains/dashboard';
 export * from './domains/reports';
-export * from './domains/health';
-export * from './domains/emergency';
-export * from './domains/incidents';
-export * from './domains/inventory';
+
+// Specialized Domains (Note: Some domains have overlapping exports)
+// For conflicting hooks, import directly from the specific domain module
+export * from './domains/administration';
+export * from './domains/communication';
+
+// ============================================================================
+// INFRASTRUCTURE HOOKS
+// ============================================================================
+
+// Socket/WebSocket hooks
+export * from './socket';
+
+// Utility hooks (form validation, routing, etc.)
+// Note: Some utilities may conflict with domain hooks - import selectively if needed
+// export * from './utilities';
+
+// ============================================================================
+// DIRECT DOMAIN ACCESS
+// ============================================================================
+
+/**
+ * Note: Some domains have overlapping hook names. For complete access to all
+ * hooks in a domain without conflicts, import directly from the domain:
+ * 
+ * import { useIncidents } from '@/hooks/domains/incidents';
+ * import { useEmergencyContacts } from '@/hooks/domains/emergency';
+ * import { useAccessControl } from '@/hooks/domains/access-control';
+ * 
+ * Available domains:
+ * - domains/students
+ * - domains/medications  
+ * - domains/appointments
+ * - domains/health
+ * - domains/inventory
+ * - domains/emergency
+ * - domains/incidents
+ * - utilities (form validation, routing utilities)
+ */
 
 // Dashboard Domain (corrected exports)
 export { 

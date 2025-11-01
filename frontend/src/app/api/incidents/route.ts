@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { withAuth } from '@/middleware/withAuth';
 import { proxyToBackend } from '@/lib/apiProxy';
-import { auditLog, AUDIT_ACTIONS, createAuditContext } from '@/lib/audit';
+import { createAuditContext, logPHIAccess } from '@/lib/audit';
 
 /**
  * GET /incidents
@@ -18,7 +18,7 @@ export const GET = withAuth(async (request: NextRequest, context, auth) => {
     // Proxy request to backend with caching
     const response = await proxyToBackend(request, '/incident-report', {
       cache: {
-        revalidate: 60,
+        revalidate: 30, // Cache for 30 seconds (health incident data)
         tags: ['incidents']
       }
     });
@@ -26,10 +26,10 @@ export const GET = withAuth(async (request: NextRequest, context, auth) => {
     const data = await response.json();
 
     // Audit log
-    const auditContext = createAuditContext(request, auth.user.id);
-    await auditLog({
+    const auditContext = createAuditContext(request, auth.user.userId);
+    await logPHIAccess({
       ...auditContext,
-      action: AUDIT_ACTIONS.VIEW_INCIDENT,
+      action: 'VIEW',
       resource: 'Incident',
       details: `Listed incidents, count: ${data.data?.length || 0}`
     });
@@ -58,10 +58,10 @@ export const POST = withAuth(async (request: NextRequest, context, auth) => {
 
     if (response.status === 201 && data.data) {
       // Audit log
-      const auditContext = createAuditContext(request, auth.user.id);
-      await auditLog({
+      const auditContext = createAuditContext(request, auth.user.userId);
+      await logPHIAccess({
         ...auditContext,
-        action: AUDIT_ACTIONS.CREATE_INCIDENT,
+        action: 'CREATE',
         resource: 'Incident',
         resourceId: data.data.id,
         details: 'Incident report created'

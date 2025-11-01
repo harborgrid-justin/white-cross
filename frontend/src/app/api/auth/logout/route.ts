@@ -70,12 +70,12 @@ import { auditLog, AUDIT_ACTIONS, createAuditContext } from '@/lib/audit';
 export const POST = withAuth(async (request: NextRequest, context, auth) => {
   try {
     // Audit log
-    const auditContext = createAuditContext(request, auth.user.id);
+    const auditContext = createAuditContext(request, auth.user.userId);
     await auditLog({
       ...auditContext,
       action: AUDIT_ACTIONS.LOGOUT,
       resource: 'User',
-      resourceId: auth.user.id,
+      resourceId: auth.user.userId,
       success: true
     });
 

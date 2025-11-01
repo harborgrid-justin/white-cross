@@ -21,7 +21,7 @@ export const GET = withAuth(
       // Proxy request to backend with caching
       const response = await proxyToBackend(request, `/students/${id}`, {
         cache: {
-          revalidate: 60,
+          revalidate: 30, // Cache for 30 seconds (student health data)
           tags: [`student-${id}`, 'students']
         }
       });

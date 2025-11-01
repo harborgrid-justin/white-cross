@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { withAuth } from '@/middleware/withAuth';
 import { proxyToBackend } from '@/lib/apiProxy';
-import { auditLog, createAuditContext } from '@/lib/audit';
+import { createAuditContext, logPHIAccess } from '@/lib/audit';
 
 export const GET = withAuth(
   async (request: NextRequest, { params }: { params: { id: string } }, auth) => {
@@ -22,6 +22,19 @@ export const GET = withAuth(
       });
 
       const data = await response.json();
+
+      if (response.status === 200) {
+        // HIPAA: Audit log PHI access
+        const auditContext = createAuditContext(request, auth.user.userId);
+        await logPHIAccess({
+          ...auditContext,
+          action: 'VIEW',
+          resource: 'Appointment',
+          resourceId: id,
+          details: 'Appointment record viewed'
+        });
+      }
+
       return NextResponse.json(data, { status: response.status });
     } catch (error) {
       console.error('Error fetching appointment:', error);
@@ -39,13 +52,14 @@ export const PUT = withAuth(
       const data = await response.json();
 
       if (response.status === 200) {
+        // HIPAA: Audit log PHI update
         const auditContext = createAuditContext(request, auth.user.userId);
-        await auditLog({
+        await logPHIAccess({
           ...auditContext,
-          action: 'UPDATE_APPOINTMENT',
+          action: 'UPDATE',
           resource: 'Appointment',
           resourceId: id,
-          details: 'Appointment updated'
+          details: 'Appointment record updated'
         });
 
         revalidateTag('appointments');
@@ -69,13 +83,14 @@ export const DELETE = withAuth(
       const data = await response.json();
 
       if (response.status === 200 || response.status === 204) {
+        // HIPAA: Audit log PHI deletion
         const auditContext = createAuditContext(request, auth.user.userId);
-        await auditLog({
+        await logPHIAccess({
           ...auditContext,
-          action: 'DELETE_APPOINTMENT',
+          action: 'DELETE',
           resource: 'Appointment',
           resourceId: id,
-          details: 'Appointment deleted'
+          details: 'Appointment record deleted'
         });
 
         revalidateTag('appointments');

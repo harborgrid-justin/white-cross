@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { withAuth } from '@/middleware/withAuth';
 import { proxyToBackend } from '@/lib/apiProxy';
-import { auditLog, AUDIT_ACTIONS, createAuditContext } from '@/lib/audit';
+import { createAuditContext, logPHIAccess } from '@/lib/audit';
 
 /**
  * GET /api/incidents/:id
@@ -21,7 +21,7 @@ export const GET = withAuth(
       // Proxy request to backend with caching
       const response = await proxyToBackend(request, `/incident-report/${id}`, {
         cache: {
-          revalidate: 60,
+          revalidate: 30, // Cache for 30 seconds (health incident data)
           tags: [`incident-${id}`, 'incidents']
         }
       });
@@ -29,11 +29,11 @@ export const GET = withAuth(
       const data = await response.json();
 
       if (response.status === 200) {
-        // Audit log
+        // HIPAA: Audit log PHI access
         const auditContext = createAuditContext(request, auth.user.userId);
-        await auditLog({
+        await logPHIAccess({
           ...auditContext,
-          action: AUDIT_ACTIONS.VIEW_INCIDENT,
+          action: 'VIEW',
           resource: 'Incident',
           resourceId: id,
           details: 'Incident report viewed'
@@ -67,11 +67,11 @@ export const PUT = withAuth(
       const data = await response.json();
 
       if (response.status === 200) {
-        // Audit log
+        // HIPAA: Audit log PHI update
         const auditContext = createAuditContext(request, auth.user.userId);
-        await auditLog({
+        await logPHIAccess({
           ...auditContext,
-          action: AUDIT_ACTIONS.UPDATE_INCIDENT,
+          action: 'UPDATE',
           resource: 'Incident',
           resourceId: id,
           details: 'Incident report updated'
@@ -109,11 +109,11 @@ export const DELETE = withAuth(
       const data = await response.json();
 
       if (response.status === 200 || response.status === 204) {
-        // Audit log
+        // HIPAA: Audit log PHI deletion
         const auditContext = createAuditContext(request, auth.user.userId);
-        await auditLog({
+        await logPHIAccess({
           ...auditContext,
-          action: AUDIT_ACTIONS.DELETE_INCIDENT,
+          action: 'DELETE',
           resource: 'Incident',
           resourceId: id,
           details: 'Incident report deleted'

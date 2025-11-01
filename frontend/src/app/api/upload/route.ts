@@ -92,7 +92,7 @@ export const POST = withAuth(async (request: NextRequest, context, auth) => {
     const publicUrl = `/uploads/${category}/${safeFilename}`;
 
     // Audit log
-    const auditContext = createAuditContext(request, auth.user.id);
+    const auditContext = createAuditContext(request, auth.user.userId);
     await auditLog({
       ...auditContext,
       action: AUDIT_ACTIONS.UPLOAD_DOCUMENT,

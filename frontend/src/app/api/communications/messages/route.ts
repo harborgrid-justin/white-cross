@@ -40,7 +40,7 @@ export const POST = withAuth(async (request: NextRequest, context, auth) => {
     const data = await response.json();
 
     if (response.status === 201 && data.data) {
-      const auditContext = createAuditContext(request, auth.user.id);
+      const auditContext = createAuditContext(request, auth.user.userId);
       await auditLog({
         ...auditContext,
         action: 'SEND_MESSAGE',

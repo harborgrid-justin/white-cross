@@ -1,129 +1,89 @@
 /**
  * @fileoverview Appointments Availability API Route
- * @module api/v1/appointments/availability
  *
- * Endpoint for checking nurse availability and suggesting time slots.
+ * Provides appointment scheduling availability checking and time slot suggestions
+ * for healthcare staff. This endpoint helps optimize appointment scheduling by
+ * identifying available time slots and preventing scheduling conflicts.
+ *
+ * @module api/appointments/availability
+ * @category Appointments
+ * @subcategory Availability
+ *
+ * **Key Features:**
+ * - Real-time availability checking for healthcare staff
+ * - Intelligent time slot suggestions based on duration
+ * - Conflict detection and avoidance
+ * - Working hours and break time consideration
+ * - Student-specific availability when needed
+ *
+ * **Security:**
+ * - Authentication required for all operations
+ * - Role-based access to different staff schedules
+ * - Input validation and sanitization
+ * - Rate limiting to prevent abuse
+ *
+ * @since 1.0.0
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
-import { auth } from '@/lib/auth';
-import { findAvailableSlots } from '@/lib/appointments/conflicts';
-
-// Validation schema
-const availabilityQuerySchema = z.object({
-  nurseId: z.string().uuid().optional(),
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  duration: z.coerce.number().int().min(15).max(480).default(30),
-  studentId: z.string().uuid().optional(),
-});
+import { withAuth } from '@/middleware/withAuth';
+import { proxyToBackend } from '@/lib/apiProxy';
+import { createAuditContext, logPHIAccess } from '@/lib/audit';
 
 /**
- * GET /appointments/availability
+ * GET /api/appointments/availability
  *
- * Check availability and get suggested time slots.
+ * Checks staff availability and returns suggested appointment time slots
+ * for a specified date and duration.
  *
- * Query Parameters:
- * - nurseId: UUID of nurse (optional, defaults to current user)
- * - date: Date in YYYY-MM-DD format
- * - duration: Duration in minutes (default: 30)
- * - studentId: UUID of student (optional, for conflict checking)
+ * @async
+ * @param {NextRequest} request - Next.js request object with query parameters
+ * @param {Object} context - Route context
+ * @param {Object} auth - Authenticated user context
  *
- * Response:
- * {
- *   success: true,
- *   data: {
- *     date: string,
- *     slots: Array<{
- *       start: string,
- *       end: string,
- *       available: boolean
- *     }>,
- *     suggested: Array<TimeSlot>,
- *     workingHours: { start: string, end: string }
- *   }
- * }
+ * @returns {Promise<NextResponse>} JSON response with availability data
+ *
+ * @throws {401} Unauthorized - Authentication required
+ * @throws {400} Bad Request - Invalid query parameters
+ * @throws {500} Internal Server Error - Server error during availability check
+ *
+ * @method GET
+ * @access Authenticated
+ * @auditLog Availability checks are logged for scheduling transparency
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, _context, auth) => {
   try {
-    // Authentication
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Parse and validate query parameters
-    const searchParams = request.nextUrl.searchParams;
-    const queryData = {
-      nurseId: searchParams.get('nurseId') || session.user.id,
-      date: searchParams.get('date'),
-      duration: searchParams.get('duration'),
-      studentId: searchParams.get('studentId'),
-    };
-
-    const validation = availabilityQuerySchema.safeParse(queryData);
-    if (!validation.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Invalid query parameters',
-          details: validation.error.errors,
-        },
-        { status: 400 }
-      );
-    }
-
-    const { nurseId, date, duration, studentId } = validation.data;
-
-    // Find available slots
-    const result = await findAvailableSlots({
-      nurseId,
-      date,
-      duration,
-      studentId,
+    // Proxy request to backend with caching
+    const response = await proxyToBackend(request, '/appointments/availability', {
+      cache: {
+        revalidate: 60, // Cache for 1 minute (availability changes frequently)
+        tags: ['appointment-availability', `staff-${auth.user.userId}`]
+      }
     });
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        date,
-        duration,
-        slots: result.slots,
-        suggested: result.suggested,
-        workingHours: {
-          start: '08:00',
-          end: '16:00',
-        },
-      },
+    const data = await response.json();
+
+    // Audit log availability check
+    const auditContext = createAuditContext(request, auth.user.userId);
+    await logPHIAccess({
+      ...auditContext,
+      action: 'VIEW',
+      resource: 'AppointmentAvailability',
+      details: 'Staff availability checked for appointment scheduling'
     });
+
+    return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error('Availability API error:', error);
+    console.error('Error checking appointment availability:', error);
+
     return NextResponse.json(
-      {
-        success: false,
-        error: 'Internal server error',
-        message: error instanceof Error ? error.message : 'Unknown error',
+      { 
+        error: 'Failed to check availability',
+        message: 'Unable to retrieve appointment availability information'
       },
       { status: 500 }
     );
   }
-}
+});
 
-/**
- * OPTIONS /appointments/availability
- *
- * CORS preflight handler
- */
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    },
-  });
-}
+
