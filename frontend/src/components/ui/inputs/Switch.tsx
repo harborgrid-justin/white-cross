@@ -586,4 +586,6 @@ const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
 
 Switch.displayName = 'Switch';
 
+// Export both named and default
 export { Switch, type SwitchProps };
+export default Switch;

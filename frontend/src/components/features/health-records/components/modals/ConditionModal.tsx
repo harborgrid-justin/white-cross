@@ -141,3 +141,8 @@ export const ConditionModal: React.FC<ConditionModalProps> = ({
     </div>
   )
 }
+
+ConditionModal.displayName = 'ConditionModal';
+
+// Export both named and default
+export default ConditionModal;

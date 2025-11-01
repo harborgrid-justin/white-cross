@@ -169,3 +169,8 @@ export const VaccinationModal: React.FC<VaccinationModalProps> = ({
     </div>
   )
 }
+
+VaccinationModal.displayName = 'VaccinationModal';
+
+// Export both named and default
+export default VaccinationModal;

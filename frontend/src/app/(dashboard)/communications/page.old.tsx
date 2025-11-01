@@ -8,6 +8,7 @@ import { Suspense } from 'react';
 import { CommunicationsContent } from './_components/CommunicationsContent';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Card } from '@/components/ui/Card';
+import type { Message } from '@/types/communication';
 
 interface CommunicationsPageProps {
   searchParams: {
@@ -241,7 +242,7 @@ export default async function CommunicationsPage({ searchParams }: Communication
         ) : (
           <div className="bg-white shadow-sm rounded-lg overflow-hidden">
             <div className="divide-y divide-gray-200">
-              {communications.map((communication) => (
+              {communications.map((communication: Message) => (
                 <div
                   key={communication.id}
                   className="p-6 hover:bg-gray-50 cursor-pointer transition-colors"
@@ -285,8 +286,8 @@ export default async function CommunicationsPage({ searchParams }: Communication
           <div className="bg-white p-4 rounded-lg shadow-sm border">
             <h3 className="text-sm font-medium text-gray-700">Sent Today</h3>
             <p className="text-2xl font-bold text-green-600">
-              {communications.filter(c => 
-                c.status === 'SENT' && 
+              {communications.filter((c: Message) =>
+                c.status === 'SENT' &&
                 new Date(c.sentAt || '').toDateString() === new Date().toDateString()
               ).length}
             </p>
@@ -294,13 +295,13 @@ export default async function CommunicationsPage({ searchParams }: Communication
           <div className="bg-white p-4 rounded-lg shadow-sm border">
             <h3 className="text-sm font-medium text-gray-700">Draft</h3>
             <p className="text-2xl font-bold text-yellow-600">
-              {communications.filter(c => c.status === 'DRAFT').length}
+              {communications.filter((c: Message) => c.status === 'DRAFT').length}
             </p>
           </div>
           <div className="bg-white p-4 rounded-lg shadow-sm border">
             <h3 className="text-sm font-medium text-gray-700">Archived</h3>
             <p className="text-2xl font-bold text-red-600">
-              {communications.filter(c => c.status === 'ARCHIVED').length}
+              {communications.filter((c: Message) => c.status === 'ARCHIVED').length}
             </p>
           </div>
         </div>

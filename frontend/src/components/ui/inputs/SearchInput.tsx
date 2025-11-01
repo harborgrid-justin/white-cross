@@ -94,3 +94,8 @@ export const SearchInput: React.FC<SearchInputProps> = ({
     </div>
   )
 }
+
+SearchInput.displayName = 'SearchInput';
+
+// Export both named and default
+export default SearchInput;

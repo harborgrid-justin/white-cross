@@ -240,3 +240,8 @@ export const CarePlanModal: React.FC<CarePlanModalProps> = ({
     </div>
   )
 }
+
+CarePlanModal.displayName = 'CarePlanModal';
+
+// Export both named and default
+export default CarePlanModal;

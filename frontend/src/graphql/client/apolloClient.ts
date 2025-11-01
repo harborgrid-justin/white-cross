@@ -23,7 +23,6 @@ import {
   from,
   split,
   Operation,
-  NextLink,
 } from '@apollo/client';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { getMainDefinition } from '@apollo/client/utilities';

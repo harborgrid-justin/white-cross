@@ -89,7 +89,7 @@ export interface DataTableProps<T> {
   /** Selection change handler */
   onSelectionChange?: (selectedIds: Set<string | number>) => void;
   /** Function to get unique ID from row */
-  getRowId?: (row: T) => string | number;
+  getRowId?: (row: T, index?: number) => string | number;
   /** Row click handler */
   onRowClick?: (row: T) => void;
   /** Table size variant */

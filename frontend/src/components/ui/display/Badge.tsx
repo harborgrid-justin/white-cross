@@ -168,4 +168,6 @@ const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
 
 Badge.displayName = 'Badge';
 
+// Export both named and default
 export { Badge, type BadgeProps };
+export default Badge;

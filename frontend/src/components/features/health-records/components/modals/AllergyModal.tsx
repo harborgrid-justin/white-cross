@@ -146,3 +146,8 @@ export const AllergyModal: React.FC<AllergyModalProps> = ({
     </div>
   )
 }
+
+AllergyModal.displayName = 'AllergyModal';
+
+// Export both named and default
+export default AllergyModal;

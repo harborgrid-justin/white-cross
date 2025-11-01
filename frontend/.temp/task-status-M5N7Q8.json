@@ -1,0 +1,36 @@
+{
+  "agentId": "typescript-architect-agent-3",
+  "taskId": "fix-ts7006-dashboard-directory",
+  "relatedAgentFiles": [
+    ".temp/ts7006-errors-F9P2X6.txt"
+  ],
+  "description": "Fix TS7006 (Implicit any) errors in src/app/(dashboard) directory by adding explicit type annotations",
+  "startedAt": "2025-11-01T13:30:00Z",
+  "workstreams": [
+    {
+      "id": "workstream-1-admin-monitoring",
+      "status": "completed",
+      "description": "Fix SystemHealthDisplay.tsx errors",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "workstream-2-communications",
+      "status": "in_progress",
+      "description": "Fix communications components errors",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "workstream-3-incidents",
+      "status": "pending",
+      "description": "Fix incidents pages errors",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "workstream-4-inventory",
+      "status": "pending",
+      "description": "Fix inventory components errors",
+      "crossAgentReferences": []
+    }
+  ],
+  "decisions": []
+}

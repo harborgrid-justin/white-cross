@@ -295,6 +295,8 @@ export function useRouteState<T>(options: RouteStateOptions<T>): [
   } = options;
 
   const [searchParams, setSearchParams] = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
 
   // Parse initial value from URL
   const initialValue = useMemo(() => {

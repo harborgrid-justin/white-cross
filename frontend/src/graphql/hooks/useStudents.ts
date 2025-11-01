@@ -9,7 +9,7 @@
 
 'use client';
 
-import { useQuery, useMutation, useSubscription, ApolloError } from '@apollo/client';
+import { useQuery, useMutation, useSubscription, ApolloError, gql } from '@apollo/client';
 import { useCallback } from 'react';
 import {
   GET_STUDENTS,
@@ -275,5 +275,3 @@ export const useDeactivateStudent = () => {
     error: error ? handleGraphQLError(error) : null,
   };
 };
-
-import { gql } from '@apollo/client';

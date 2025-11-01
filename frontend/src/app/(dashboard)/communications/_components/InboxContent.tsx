@@ -371,7 +371,7 @@ export function InboxContent() {
         </form>
 
         {/* Filter */}
-        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as MessageStatus | 'all')}>
+        <Select value={statusFilter} onValueChange={(v: string) => setStatusFilter(v as MessageStatus | 'all')}>
           <SelectTrigger className="w-40">
             <Filter className="h-4 w-4 mr-2" />
             <SelectValue />

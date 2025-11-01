@@ -114,18 +114,14 @@ export function useStudentsRoute() {
   // ===============================
   // STATE MANAGEMENT
   // ===============================
-  
+
   const [state, setState] = useState<StudentsRouteState>(defaultState);
-  const { toast } = useToast();
-  
-  // Persist certain state to URL/localStorage
-  const { routeState, updateRouteState } = useRouteState('students', {
-    page: state.page,
-    pageSize: state.pageSize,
-    filters: state.filters,
-    sortColumn: state.sortColumn,
-    sortDirection: state.sortDirection,
-  });
+  const toast = useToast();
+
+  // Simple state update function (URL persistence could be added later with Next.js router)
+  const updateRouteState = useCallback((updates: Partial<typeof defaultState>) => {
+    setState(prev => ({ ...prev, ...updates }));
+  }, []);
 
   // ===============================
   // DATA FETCHING

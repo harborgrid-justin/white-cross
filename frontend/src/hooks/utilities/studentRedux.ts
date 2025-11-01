@@ -54,41 +54,49 @@ export interface StudentUIState {
 }
 
 /**
+ * Redux action type for dispatch compatibility
+ */
+export interface ReduxAction {
+  type: string;
+  payload?: any;
+}
+
+/**
  * Redux actions for student UI state
  * These would typically be defined in your Redux slice
  */
 export interface StudentUIActions {
   // Selection actions
-  selectStudent: (id: string) => void;
-  selectMultipleStudents: (ids: string[]) => void;
-  deselectStudent: (id: string) => void;
-  clearSelection: () => void;
-  toggleSelection: (id: string) => void;
-  
+  selectStudent: (id: string) => ReduxAction;
+  selectMultipleStudents: (ids: string[]) => ReduxAction;
+  deselectStudent: (id: string) => ReduxAction;
+  clearSelection: () => ReduxAction;
+  toggleSelection: (id: string) => ReduxAction;
+
   // UI state actions
-  setSelectionMode: (enabled: boolean) => void;
-  setShowInactiveStudents: (show: boolean) => void;
-  setViewMode: (mode: 'list' | 'grid' | 'table') => void;
-  setSortPreference: (field: string, direction: 'asc' | 'desc') => void;
-  
+  setSelectionMode: (enabled: boolean) => ReduxAction;
+  setShowInactiveStudents: (show: boolean) => ReduxAction;
+  setViewMode: (mode: 'list' | 'grid' | 'table') => ReduxAction;
+  setSortPreference: (field: string, direction: 'asc' | 'desc') => ReduxAction;
+
   // Filter actions
-  setFilters: (filters: Record<string, any>) => void;
-  clearFilters: () => void;
-  
+  setFilters: (filters: Record<string, any>) => ReduxAction;
+  clearFilters: () => ReduxAction;
+
   // Modal actions
-  openCreateModal: () => void;
-  closeCreateModal: () => void;
-  openEditModal: (studentId: string) => void;
-  closeEditModal: () => void;
-  
+  openCreateModal: () => ReduxAction;
+  closeCreateModal: () => ReduxAction;
+  openEditModal: (studentId: string) => ReduxAction;
+  closeEditModal: () => ReduxAction;
+
   // Bulk operation actions
-  enterBulkMode: () => void;
-  exitBulkMode: () => void;
-  selectForBulkOperation: (ids: string[]) => void;
-  
+  enterBulkMode: () => ReduxAction;
+  exitBulkMode: () => ReduxAction;
+  selectForBulkOperation: (ids: string[]) => ReduxAction;
+
   // Recent items actions
-  addToRecentlyViewed: (id: string) => void;
-  addToRecentSearches: (query: string) => void;
+  addToRecentlyViewed: (id: string) => ReduxAction;
+  addToRecentSearches: (query: string) => ReduxAction;
 }
 
 /**
@@ -119,26 +127,26 @@ const mockSelectors = {
 };
 
 const mockActions: StudentUIActions = {
-  selectStudent: () => {},
-  selectMultipleStudents: () => {},
-  deselectStudent: () => {},
-  clearSelection: () => {},
-  toggleSelection: () => {},
-  setSelectionMode: () => {},
-  setShowInactiveStudents: () => {},
-  setViewMode: () => {},
-  setSortPreference: () => {},
-  setFilters: () => {},
-  clearFilters: () => {},
-  openCreateModal: () => {},
-  closeCreateModal: () => {},
-  openEditModal: () => {},
-  closeEditModal: () => {},
-  enterBulkMode: () => {},
-  exitBulkMode: () => {},
-  selectForBulkOperation: () => {},
-  addToRecentlyViewed: () => {},
-  addToRecentSearches: () => {},
+  selectStudent: (id: string): ReduxAction => ({ type: 'students/selectStudent', payload: id }),
+  selectMultipleStudents: (ids: string[]): ReduxAction => ({ type: 'students/selectMultipleStudents', payload: ids }),
+  deselectStudent: (id: string): ReduxAction => ({ type: 'students/deselectStudent', payload: id }),
+  clearSelection: (): ReduxAction => ({ type: 'students/clearSelection' }),
+  toggleSelection: (id: string): ReduxAction => ({ type: 'students/toggleSelection', payload: id }),
+  setSelectionMode: (enabled: boolean): ReduxAction => ({ type: 'students/setSelectionMode', payload: enabled }),
+  setShowInactiveStudents: (show: boolean): ReduxAction => ({ type: 'students/setShowInactiveStudents', payload: show }),
+  setViewMode: (mode: 'list' | 'grid' | 'table'): ReduxAction => ({ type: 'students/setViewMode', payload: mode }),
+  setSortPreference: (field: string, direction: 'asc' | 'desc'): ReduxAction => ({ type: 'students/setSortPreference', payload: { field, direction } }),
+  setFilters: (filters: Record<string, any>): ReduxAction => ({ type: 'students/setFilters', payload: filters }),
+  clearFilters: (): ReduxAction => ({ type: 'students/clearFilters' }),
+  openCreateModal: (): ReduxAction => ({ type: 'students/openCreateModal' }),
+  closeCreateModal: (): ReduxAction => ({ type: 'students/closeCreateModal' }),
+  openEditModal: (studentId: string): ReduxAction => ({ type: 'students/openEditModal', payload: studentId }),
+  closeEditModal: (): ReduxAction => ({ type: 'students/closeEditModal' }),
+  enterBulkMode: (): ReduxAction => ({ type: 'students/enterBulkMode' }),
+  exitBulkMode: (): ReduxAction => ({ type: 'students/exitBulkMode' }),
+  selectForBulkOperation: (ids: string[]): ReduxAction => ({ type: 'students/selectForBulkOperation', payload: ids }),
+  addToRecentlyViewed: (id: string): ReduxAction => ({ type: 'students/addToRecentlyViewed', payload: id }),
+  addToRecentSearches: (query: string): ReduxAction => ({ type: 'students/addToRecentSearches', payload: query }),
 };
 
 /**

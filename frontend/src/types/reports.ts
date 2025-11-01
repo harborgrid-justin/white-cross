@@ -1016,3 +1016,302 @@ export interface AggregatedChartData {
   period: DateRangeFilter;
   lastUpdated: Date | string;
 }
+
+// ==================== Additional Analytics Types ====================
+
+/**
+ * Health metrics summary data
+ */
+export interface HealthMetrics {
+  totalHealthVisits: number;
+  chronicConditionCount: number;
+  allergyCount: number;
+  vaccinationComplianceRate: number;
+  screeningCompletionRate: number;
+  trends?: HealthTrendData[];
+}
+
+/**
+ * Health trends data alias for compatibility
+ */
+export type HealthTrends = HealthTrendsReport;
+
+/**
+ * Incident trends data
+ */
+export interface IncidentTrends {
+  trends: Array<{
+    date: string;
+    count: number;
+    type: string;
+    severity?: string;
+  }>;
+  totalIncidents: number;
+  averagePerDay?: number;
+  peakDay?: string;
+}
+
+/**
+ * Incident location data for heatmap and analysis
+ */
+export interface IncidentLocationData {
+  location: string;
+  count: number;
+  severity?: Record<string, number>;
+  types?: Record<string, number>;
+  coordinates?: { x: number; y: number };
+}
+
+/**
+ * Medication usage statistics
+ */
+export interface MedicationUsage {
+  medicationId: string;
+  medicationName: string;
+  totalAdministered: number;
+  totalScheduled: number;
+  missedDoses: number;
+  adherenceRate: number;
+}
+
+/**
+ * Medication adherence tracking
+ */
+export interface MedicationAdherence {
+  studentId: string;
+  medicationId: string;
+  adherenceRate: number;
+  missedDoses: number;
+  totalScheduled: number;
+  lastAdministered?: Date | string;
+}
+
+/**
+ * Appointment trends and statistics
+ */
+export interface AppointmentTrends {
+  period: DateRangeFilter;
+  totalAppointments: number;
+  completedAppointments: number;
+  canceledAppointments: number;
+  noShows: number;
+  completionRate: number;
+  noShowRate: number;
+  trends: Array<{
+    date: string;
+    completed: number;
+    canceled: number;
+    noShows: number;
+  }>;
+}
+
+/**
+ * No-show rate statistics
+ */
+export interface NoShowRate {
+  totalAppointments: number;
+  noShows: number;
+  noShowRate: number;
+  byMonth?: Array<{
+    month: string;
+    noShowRate: number;
+  }>;
+}
+
+/**
+ * Analytics summary dashboard data
+ */
+export interface AnalyticsSummary {
+  healthMetrics?: HealthMetrics;
+  incidentStatistics?: IncidentStatistics;
+  medicationCompliance?: {
+    overallRate: number;
+    topMedications: TopMedication[];
+  };
+  appointmentMetrics?: {
+    totalScheduled: number;
+    completionRate: number;
+    noShowRate: number;
+  };
+  period: DateRangeFilter;
+  generatedAt: Date | string;
+}
+
+/**
+ * Nurse dashboard data
+ */
+export interface NurseDashboard {
+  todaysAppointments: number;
+  pendingMedications: number;
+  recentIncidents: number;
+  alertsCount: number;
+  recentActivity?: RecentActivity[];
+  upcomingTasks?: unknown[];
+  metrics?: DashboardMetrics;
+}
+
+/**
+ * Admin dashboard data
+ */
+export interface AdminDashboard {
+  totalStudents: number;
+  activeNurses: number;
+  todaysMetrics: DashboardMetrics;
+  complianceScore: number;
+  criticalAlerts: number;
+  systemHealth?: {
+    uptime: number;
+    errorRate: number;
+    responseTime: number;
+  };
+  recentActivity?: RecentActivity[];
+}
+
+/**
+ * School dashboard data
+ */
+export interface SchoolDashboard {
+  schoolId: string;
+  schoolName: string;
+  enrollmentCount: number;
+  healthVisitsToday: number;
+  medicationsAdministered: number;
+  incidentsThisWeek: number;
+  complianceStatus: string;
+  metrics?: DashboardMetrics;
+}
+
+/**
+ * Custom report result
+ */
+export interface CustomReport {
+  id: string;
+  name: string;
+  description?: string;
+  reportType: ReportType | string;
+  data: unknown;
+  filters?: CustomReportFilters;
+  createdBy: string;
+  createdAt: Date | string;
+  expiresAt?: Date | string;
+}
+
+/**
+ * Custom report generation result
+ */
+export interface CustomReportResult {
+  report: CustomReport;
+  exportUrl?: string;
+  downloadUrl?: string;
+}
+
+/**
+ * Report list response with pagination
+ */
+export interface ReportListResponse {
+  reports: ReportHistory[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+/**
+ * Report schedule configuration
+ */
+export interface ReportSchedule {
+  id: string;
+  reportType: ReportType | string;
+  frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY';
+  schedule: {
+    dayOfWeek?: number;
+    dayOfMonth?: number;
+    time: string;
+    timezone?: string;
+  };
+  recipients: string[];
+  format: ReportFormat;
+  isActive: boolean;
+  nextRun?: Date | string;
+  lastRun?: Date | string;
+}
+
+/**
+ * Create report schedule request
+ */
+export interface CreateReportScheduleRequest {
+  reportType: ReportType | string;
+  frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY';
+  dayOfWeek?: number;
+  dayOfMonth?: number;
+  time: string;
+  timezone?: string;
+  recipients: string[];
+  format: ReportFormat;
+  filters?: CustomReportFilters;
+}
+
+/**
+ * Analytics query parameters
+ */
+export interface AnalyticsQueryParams extends DateRangeFilter {
+  groupBy?: string[];
+  metrics?: string[];
+  filters?: Record<string, unknown>;
+  sortBy?: string;
+  sortOrder?: 'ASC' | 'DESC';
+}
+
+/**
+ * Pagination parameters
+ */
+export interface PaginationParams {
+  page?: number;
+  limit?: number;
+  offset?: number;
+  sortBy?: string;
+  sortOrder?: 'ASC' | 'DESC';
+}
+
+/**
+ * Chart configuration for visualizations
+ */
+export interface ChartConfiguration {
+  type: ChartType;
+  title?: string;
+  dataSource: string;
+  xAxis?: string;
+  yAxis?: string;
+  groupBy?: string;
+  aggregation?: AggregationType;
+  colors?: string[];
+  showLegend?: boolean;
+  showGrid?: boolean;
+}
+
+/**
+ * Report export format alias
+ */
+export type ReportExportFormat = ReportFormat;
+
+/**
+ * Date grouping for time-series data
+ */
+export enum DateGrouping {
+  HOUR = 'HOUR',
+  DAY = 'DAY',
+  WEEK = 'WEEK',
+  MONTH = 'MONTH',
+  QUARTER = 'QUARTER',
+  YEAR = 'YEAR'
+}
+
+/**
+ * Comparison period for trend analysis
+ */
+export enum ComparisonPeriod {
+  PREVIOUS_PERIOD = 'PREVIOUS_PERIOD',
+  PREVIOUS_YEAR = 'PREVIOUS_YEAR',
+  YEAR_TO_DATE = 'YEAR_TO_DATE',
+  CUSTOM = 'CUSTOM'
+}

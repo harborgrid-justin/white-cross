@@ -10,6 +10,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import type { getSystemHealth } from '@/app/admin/_actions/monitoring';
+import type { ServiceHealth, SystemAlert } from '@/types/admin';
 
 interface SystemHealthDisplayProps {
   health: Awaited<ReturnType<typeof getSystemHealth>>;
@@ -119,7 +120,7 @@ export function SystemHealthDisplay({ health }: SystemHealthDisplayProps) {
         </h2>
 
         <div className="space-y-4">
-          {health.services.map((service) => (
+          {health.services.map((service: ServiceHealth) => (
             <div
               key={service.name}
               className="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
@@ -169,7 +170,7 @@ export function SystemHealthDisplay({ health }: SystemHealthDisplayProps) {
           </h2>
 
           <div className="space-y-3">
-            {health.alerts.map((alert) => (
+            {health.alerts.map((alert: SystemAlert) => (
               <div
                 key={alert.id}
                 className={`p-4 rounded-lg border-l-4 ${

@@ -168,7 +168,7 @@ export function useMedicationsRoute() {
   /**
    * Main medications query
    */
-  const medicationsQuery = useQuery({
+  const medicationsQuery = useQuery<any, Error>({
     queryKey: medicationKeys.list(state.filters),
     queryFn: async () => {
       const response = await apiActions.medications.getAll({
@@ -179,13 +179,13 @@ export function useMedicationsRoute() {
       return response;
     },
     staleTime: 5 * 60 * 1000,
-    cacheTime: 10 * 60 * 1000,
-  } as any);
+    gcTime: 10 * 60 * 1000, // Replaced deprecated cacheTime
+  });
 
   /**
    * Medication schedule query
    */
-  const scheduleQuery = useQuery({
+  const scheduleQuery = useQuery<any, Error>({
     queryKey: medicationKeys.schedule(state.dateRange.startDate, state.dateRange.endDate),
     queryFn: async () => {
       const response = await apiActions.medications.getSchedule(
@@ -195,24 +195,24 @@ export function useMedicationsRoute() {
       return response;
     },
     staleTime: 2 * 60 * 1000, // 2 minutes (schedule changes frequently)
-  } as any);
+  });
 
   /**
    * Medication inventory query
    */
-  const inventoryQuery = useQuery({
+  const inventoryQuery = useQuery<any, Error>({
     queryKey: medicationKeys.inventory(),
     queryFn: async () => {
       const response = await apiActions.medications.getInventory();
       return response;
     },
     staleTime: 10 * 60 * 1000,
-  } as any);
+  });
 
   /**
    * Administration logs query
    */
-  const administrationQuery = useQuery({
+  const administrationQuery = useQuery<{ data: any[] }, Error>({
     queryKey: medicationKeys.administrationLogs(state.dateRange.startDate),
     queryFn: async () => {
       // Use logAdministration or another method since getAdministrationLogs doesn't exist
@@ -220,12 +220,12 @@ export function useMedicationsRoute() {
     },
     enabled: state.activeTab === 'administration',
     staleTime: 1 * 60 * 1000, // 1 minute
-  } as any);
+  });
 
   /**
    * Medication reminders query
    */
-  const remindersQuery = useQuery({
+  const remindersQuery = useQuery<any, Error>({
     queryKey: medicationKeys.reminders(new Date().toISOString().split('T')[0]),
     queryFn: async () => {
       const response = await apiActions.medications.getReminders(new Date().toISOString().split('T')[0]);
@@ -233,7 +233,7 @@ export function useMedicationsRoute() {
     },
     refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
     staleTime: 1 * 60 * 1000,
-  } as any);
+  });
 
   // ===============================
   // OPTIMISTIC MUTATIONS
@@ -247,7 +247,7 @@ export function useMedicationsRoute() {
     onError: (error: Error) => {
       medicationToast.showError(`Failed to create medication: ${error.message}`);
     },
-  } as any);
+  });
 
   const updateMutation = useOptimisticMedicationUpdate({
     onSuccess: (medication: Medication) => {
@@ -257,7 +257,7 @@ export function useMedicationsRoute() {
     onError: (error: Error) => {
       medicationToast.showError(`Failed to update medication: ${error.message}`);
     },
-  } as any);
+  });
 
   const deleteMutation = useOptimisticMedicationDelete({
     onSuccess: () => {
@@ -267,7 +267,7 @@ export function useMedicationsRoute() {
     onError: (error: Error) => {
       medicationToast.showError(`Failed to delete medication: ${error.message}`);
     },
-  } as any);
+  });
 
   const administrationMutation = useOptimisticMedicationAdministration({
     onSuccess: (log: MedicationLog) => {
@@ -277,7 +277,7 @@ export function useMedicationsRoute() {
     onError: (error: Error) => {
       medicationToast.showError(`Failed to log administration: ${error.message}`);
     },
-  } as any);
+  });
 
   const inventoryMutation = useOptimisticInventoryUpdate({
     onSuccess: (inventory: InventoryItem) => {
@@ -287,7 +287,7 @@ export function useMedicationsRoute() {
     onError: (error: Error) => {
       medicationToast.showError(`Failed to update inventory: ${error.message}`);
     },
-  } as any);
+  });
 
   const adverseReactionMutation = useOptimisticAdverseReactionReport({
     onSuccess: (reaction: AdverseReaction) => {
@@ -297,7 +297,7 @@ export function useMedicationsRoute() {
     onError: (error: Error) => {
       medicationToast.showError(`Failed to report adverse reaction: ${error.message}`);
     },
-  } as any);
+  });
 
   // ===============================
   // COMPUTED VALUES
@@ -580,11 +580,11 @@ export function useMedicationsRoute() {
     },
     
     // Mutation states
-    isCreating: (createMutation as any).isPending || createMutation.isLoading,
-    isUpdating: (updateMutation as any).isPending || updateMutation.isLoading,
-    isDeleting: (deleteMutation as any).isPending || deleteMutation.isLoading,
-    isAdministering: (administrationMutation as any).isPending || administrationMutation.isLoading,
-    isUpdatingInventory: (inventoryMutation as any).isPending || inventoryMutation.isLoading,
+    isCreating: (createMutation as any).isPending || (createMutation as any).isLoading || false,
+    isUpdating: (updateMutation as any).isPending || (updateMutation as any).isLoading || false,
+    isDeleting: (deleteMutation as any).isPending || (deleteMutation as any).isLoading || false,
+    isAdministering: (administrationMutation as any).isPending || (administrationMutation as any).isLoading || false,
+    isUpdatingInventory: (inventoryMutation as any).isPending || (inventoryMutation as any).isLoading || false,
   };
 
   // ===============================

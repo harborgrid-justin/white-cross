@@ -8,7 +8,7 @@
  * @compliance HIPAA - No PHI in persisted cache
  */
 
-import { ApolloCache, Reference } from '@apollo/client';
+import { ApolloCache, Reference, gql } from '@apollo/client';
 import { getApolloClient } from '../client';
 
 /**
@@ -141,5 +141,3 @@ export const createOptimisticResponse = <T>(
     },
   };
 };
-
-import { gql } from '@apollo/client';

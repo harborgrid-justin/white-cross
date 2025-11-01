@@ -153,3 +153,8 @@ export const MeasurementModal: React.FC<MeasurementModalProps> = ({
     </div>
   )
 }
+
+MeasurementModal.displayName = 'MeasurementModal';
+
+// Export both named and default
+export default MeasurementModal;

@@ -256,7 +256,7 @@ export function fieldToZodType(field: FormField): ZodTypeAny {
       if (field.accept) {
         const allowedTypes = field.accept.split(',').map(t => t.trim());
         schema = schema.refine(
-          file => allowedTypes.some(type => file.type.includes(type)),
+          (file: { name: string; size: number; type: string }) => allowedTypes.some(type => file.type.includes(type)),
           `File must be one of: ${field.accept}`
         );
       }
@@ -264,7 +264,7 @@ export function fieldToZodType(field: FormField): ZodTypeAny {
       if (field.metadata?.maxFileSize) {
         const maxSize = field.metadata.maxFileSize;
         schema = schema.refine(
-          file => file.size <= maxSize,
+          (file: { name: string; size: number; type: string }) => file.size <= maxSize,
           `File size must be less than ${maxSize / 1024 / 1024}MB`
         );
       }

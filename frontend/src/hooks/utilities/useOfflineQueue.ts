@@ -240,7 +240,7 @@ export function useOfflineQueue(): UseOfflineQueueReturn {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, []);
+  }, [syncAll]);
 
   // Load pending items periodically
   useEffect(() => {
@@ -287,25 +287,7 @@ export function useOfflineQueue(): UseOfflineQueueReturn {
     [db]
   );
 
-  // Sync all pending items
-  const syncAll = useCallback(async (): Promise<void> => {
-    const items = await db.getPending();
-
-    for (const item of items) {
-      try {
-        await syncItem(item.queueId!);
-      } catch (error) {
-        console.error(`Failed to sync item ${item.queueId}:`, error);
-        // Continue with next item
-      }
-    }
-
-    // Refresh pending list
-    const remainingItems = await db.getPending();
-    setPending(remainingItems);
-  }, [db]);
-
-  // Sync single item
+  // Sync single item (declare before syncAll to avoid dependency issues)
   const syncItem = useCallback(
     async (queueId: string): Promise<void> => {
       const items = await db.getPending();
@@ -357,6 +339,25 @@ export function useOfflineQueue(): UseOfflineQueueReturn {
     },
     [db, queryClient]
   );
+
+  // Sync all pending items
+  const syncAll = useCallback(async (): Promise<void> => {
+    const items = await db.getPending();
+
+    for (const item of items) {
+      try {
+        await syncItem(item.queueId!);
+      } catch (error) {
+        console.error(`Failed to sync item ${item.queueId}:`, error);
+        // Continue with next item
+      }
+    }
+
+    // Refresh pending list
+    const remainingItems = await db.getPending();
+    setPending(remainingItems);
+  }, [db, syncItem]);
+
 
   // Remove item from queue
   const removeItem = useCallback(

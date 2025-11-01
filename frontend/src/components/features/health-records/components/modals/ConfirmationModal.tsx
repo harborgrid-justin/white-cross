@@ -74,3 +74,8 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     </div>
   )
 }
+
+ConfirmationModal.displayName = 'ConfirmationModal';
+
+// Export both named and default
+export default ConfirmationModal;

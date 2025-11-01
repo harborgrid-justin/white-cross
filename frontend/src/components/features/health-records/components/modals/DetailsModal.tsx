@@ -48,3 +48,8 @@ export const DetailsModal: React.FC<DetailsModalProps> = ({
     </div>
   )
 }
+
+DetailsModal.displayName = 'DetailsModal';
+
+// Export both named and default
+export default DetailsModal;
