@@ -4,10 +4,22 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { revalidateTag } from 'next/cache';
 import { withAuth } from '@/middleware/withAuth';
 import { proxyToBackend } from '@/lib/apiProxy';
 import { logPHIAccess, createAuditContext } from '@/lib/audit';
+import {
+  getCacheConfig,
+  generateCacheTags,
+  getCacheControlHeader
+} from '@/lib/cache/config';
+import { invalidateStudentData } from '@/lib/cache/invalidation';
+
+/**
+ * Route segment configuration
+ * Force dynamic rendering for authenticated routes with dynamic params
+ */
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 /**
  * GET /api/students/:id
@@ -17,13 +29,17 @@ export const GET = withAuth(
   async (request: NextRequest, { params }: { params: { id: string } }, auth) => {
     try {
       const { id } = params;
+      const cacheConfig = getCacheConfig('students');
+      const cacheTags = generateCacheTags('students', id);
+      const cacheControl = getCacheControlHeader('students');
 
-      // Proxy request to backend with caching
+      // Proxy request to backend with enhanced caching
       const response = await proxyToBackend(request, `/students/${id}`, {
         cache: {
-          revalidate: 30, // Cache for 30 seconds (student health data)
-          tags: [`student-${id}`, 'students']
-        }
+          revalidate: cacheConfig.revalidate,
+          tags: cacheTags
+        },
+        cacheControl
       });
 
       const data = await response.json();
@@ -77,9 +93,8 @@ export const PUT = withAuth(
           details: 'Student record updated'
         });
 
-        // Revalidate cache
-        revalidateTag('students');
-        revalidateTag(`student-${id}`);
+        // Invalidate all student-related caches
+        await invalidateStudentData(id);
       }
 
       return NextResponse.json(data, { status: response.status });
@@ -119,9 +134,8 @@ export const DELETE = withAuth(
           details: 'Student record deleted'
         });
 
-        // Revalidate cache
-        revalidateTag('students');
-        revalidateTag(`student-${id}`);
+        // Invalidate all student-related caches
+        await invalidateStudentData(id);
       }
 
       return NextResponse.json(data || { success: true }, { status: response.status });

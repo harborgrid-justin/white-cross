@@ -35,8 +35,20 @@ import { ComplianceContent } from './_components/ComplianceContent';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export const metadata: Metadata = {
-  title: 'Compliance Management | White Cross Healthcare',
-  description: 'Healthcare regulatory compliance tracking with HIPAA, FERPA, OSHA, and FDA requirements monitoring',
+  title: 'Compliance Management',
+  description: 'Healthcare regulatory compliance tracking with HIPAA, FERPA, OSHA, and FDA requirements monitoring, audit management, and risk assessment.',
+  keywords: [
+    'compliance management',
+    'HIPAA compliance',
+    'FERPA compliance',
+    'OSHA standards',
+    'FDA regulations',
+    'healthcare compliance',
+    'audit management',
+    'regulatory tracking',
+    'risk assessment',
+    'policy management'
+  ],
   robots: {
     index: false,
     follow: false,

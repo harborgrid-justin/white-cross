@@ -15,12 +15,19 @@ export const metadata: Metadata = {
 
 interface ReportsLayoutProps {
   children: ReactNode;
+  modal: ReactNode;
+  sidebar: ReactNode;
 }
 
-export default function ReportsLayout({ children }: ReportsLayoutProps) {
+export default function ReportsLayout({ children, modal, sidebar }: ReportsLayoutProps) {
   return (
-    <div className="p-6">
-      {children}
-    </div>
+    <>
+      <div className="p-6">
+        {children}
+      </div>
+      {/* Parallel Route Slots */}
+      {modal}
+      {sidebar}
+    </>
   );
 }

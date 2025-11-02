@@ -10,513 +10,528 @@
  */
 
 import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { CheckCircle } from 'lucide-react';
 
-export interface InventoryItemFormData {
-  name: string;
-  sku: string;
-  category: string;
-  type: 'medication' | 'supply' | 'equipment';
-  description: string;
-  manufacturer: string;
-  ndcCode?: string; // National Drug Code for medications
-  lotNumber?: string;
-  expirationDate?: string;
-  location: string;
-  minStockLevel: number;
-  maxStockLevel: number;
-  reorderPoint: number;
-  unitOfMeasure: string;
-  unitCost: number;
-  isControlledSubstance: boolean;
-  requiresPrescription: boolean;
-  storageRequirements?: string;
-  notes?: string;
-}
+// Zod schema for form validation
+const inventoryItemSchema = z.object({
+  name: z.string().min(1, 'Item name is required'),
+  sku: z.string().min(1, 'SKU is required'),
+  category: z.string().min(1, 'Category is required'),
+  type: z.enum(['medication', 'supply', 'equipment'], {
+    required_error: 'Please select a type',
+  }),
+  description: z.string().optional(),
+  manufacturer: z.string().optional(),
+  ndcCode: z.string().optional(),
+  lotNumber: z.string().optional(),
+  expirationDate: z.string().optional(),
+  location: z.string().min(1, 'Storage location is required'),
+  minStockLevel: z.coerce.number().min(0, 'Minimum stock level cannot be negative'),
+  maxStockLevel: z.coerce.number().min(0, 'Maximum stock level cannot be negative'),
+  reorderPoint: z.coerce.number().min(0, 'Reorder point cannot be negative'),
+  unitOfMeasure: z.string().min(1, 'Unit of measure is required'),
+  unitCost: z.coerce.number().min(0, 'Unit cost cannot be negative'),
+  isControlledSubstance: z.boolean().default(false),
+  requiresPrescription: z.boolean().default(false),
+  storageRequirements: z.string().optional(),
+  notes: z.string().optional(),
+}).refine((data) => data.maxStockLevel >= data.minStockLevel, {
+  message: 'Maximum stock level must be greater than or equal to minimum',
+  path: ['maxStockLevel'],
+}).refine((data) => data.reorderPoint >= data.minStockLevel, {
+  message: 'Reorder point should be at or above minimum stock level',
+  path: ['reorderPoint'],
+}).refine((data) => {
+  if (data.type === 'medication' && !data.ndcCode) {
+    return false;
+  }
+  return true;
+}, {
+  message: 'NDC code is required for medications',
+  path: ['ndcCode'],
+});
+
+type InventoryItemFormData = z.infer<typeof inventoryItemSchema>;
 
 /**
  * Form component for creating new inventory items
- *
- * @returns Rendered new inventory item form
- *
- * @example
- * ```tsx
- * <NewInventoryItemContent />
- * ```
  */
 export default function NewInventoryItemContent() {
-  const [formData, setFormData] = useState<InventoryItemFormData>({
-    name: '',
-    sku: '',
-    category: '',
-    type: 'supply',
-    description: '',
-    manufacturer: '',
-    location: '',
-    minStockLevel: 0,
-    maxStockLevel: 0,
-    reorderPoint: 0,
-    unitOfMeasure: 'unit',
-    unitCost: 0,
-    isControlledSubstance: false,
-    requiresPrescription: false,
-  });
-
-  const [errors, setErrors] = useState<Partial<Record<keyof InventoryItemFormData, string>>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
-  /**
-   * Validates form data
-   * @returns True if valid, false otherwise
-   */
-  const validateForm = (): boolean => {
-    const newErrors: Partial<Record<keyof InventoryItemFormData, string>> = {};
+  const form = useForm<InventoryItemFormData>({
+    resolver: zodResolver(inventoryItemSchema),
+    defaultValues: {
+      name: '',
+      sku: '',
+      category: '',
+      type: 'supply',
+      description: '',
+      manufacturer: '',
+      ndcCode: '',
+      lotNumber: '',
+      expirationDate: '',
+      location: '',
+      minStockLevel: 0,
+      maxStockLevel: 0,
+      reorderPoint: 0,
+      unitOfMeasure: 'unit',
+      unitCost: 0,
+      isControlledSubstance: false,
+      requiresPrescription: false,
+      storageRequirements: '',
+      notes: '',
+    },
+  });
 
-    if (!formData.name.trim()) {
-      newErrors.name = 'Item name is required';
-    }
-
-    if (!formData.sku.trim()) {
-      newErrors.sku = 'SKU is required';
-    }
-
-    if (!formData.category) {
-      newErrors.category = 'Category is required';
-    }
-
-    if (!formData.location) {
-      newErrors.location = 'Storage location is required';
-    }
-
-    if (formData.minStockLevel < 0) {
-      newErrors.minStockLevel = 'Minimum stock level cannot be negative';
-    }
-
-    if (formData.maxStockLevel < formData.minStockLevel) {
-      newErrors.maxStockLevel = 'Maximum stock level must be greater than minimum';
-    }
-
-    if (formData.reorderPoint < formData.minStockLevel) {
-      newErrors.reorderPoint = 'Reorder point should be at or above minimum stock level';
-    }
-
-    if (formData.unitCost < 0) {
-      newErrors.unitCost = 'Unit cost cannot be negative';
-    }
-
-    if (formData.type === 'medication' && !formData.ndcCode) {
-      newErrors.ndcCode = 'NDC code is required for medications';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  const watchType = form.watch('type');
 
   /**
    * Handles form submission
    */
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
-    setIsSubmitting(true);
-
+  const onSubmit = async (data: InventoryItemFormData) => {
     try {
       // TODO: Replace with actual API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log('Creating inventory item:', formData);
+      console.log('Creating inventory item:', data);
 
       setSubmitSuccess(true);
 
-      // Reset form after 2 seconds
+      // Reset form and redirect after success
       setTimeout(() => {
-        setFormData({
-          name: '',
-          sku: '',
-          category: '',
-          type: 'supply',
-          description: '',
-          manufacturer: '',
-          location: '',
-          minStockLevel: 0,
-          maxStockLevel: 0,
-          reorderPoint: 0,
-          unitOfMeasure: 'unit',
-          unitCost: 0,
-          isControlledSubstance: false,
-          requiresPrescription: false,
-        });
-        setSubmitSuccess(false);
+        router.push('/inventory/items');
       }, 2000);
     } catch (error) {
       console.error('Error creating inventory item:', error);
-      setErrors({ name: 'Failed to create inventory item. Please try again.' });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  /**
-   * Handles input changes
-   */
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value, type } = e.target;
-
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox'
-        ? (e.target as HTMLInputElement).checked
-        : type === 'number'
-        ? parseFloat(value) || 0
-        : value,
-    }));
-
-    // Clear error for this field
-    if (errors[name as keyof InventoryItemFormData]) {
-      setErrors(prev => ({ ...prev, [name]: undefined }));
+      form.setError('root', {
+        type: 'manual',
+        message: 'Failed to create inventory item. Please try again.',
+      });
     }
   };
 
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Add New Inventory Item</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="text-3xl font-bold">Add New Inventory Item</h1>
+        <p className="text-muted-foreground mt-2">
           Create a new inventory item for tracking medical supplies, medications, or equipment.
         </p>
       </div>
 
       {submitSuccess && (
-        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-md">
-          <p className="text-green-800">Inventory item created successfully!</p>
-        </div>
+        <Alert className="mb-6">
+          <CheckCircle className="h-4 w-4" />
+          <AlertDescription>
+            Inventory item created successfully! Redirecting...
+          </AlertDescription>
+        </Alert>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        {/* Basic Information */}
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Item Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
+      {form.formState.errors.root && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertDescription>
+            {form.formState.errors.root.message}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          {/* Basic Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Basic Information</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
                 name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., Acetaminophen 500mg"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Item Name *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Acetaminophen 500mg" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                SKU <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
+              <FormField
+                control={form.control}
                 name="sku"
-                value={formData.sku}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., MED-001"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>SKU *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., MED-001" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.sku && <p className="text-red-500 text-sm mt-1">{errors.sku}</p>}
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Type <span className="text-red-500">*</span>
-              </label>
-              <select
+              <FormField
+                control={form.control}
                 name="type"
-                value={formData.type}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="medication">Medication</option>
-                <option value="supply">Medical Supply</option>
-                <option value="equipment">Equipment</option>
-              </select>
-            </div>
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Type *</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="medication">Medication</SelectItem>
+                        <SelectItem value="supply">Medical Supply</SelectItem>
+                        <SelectItem value="equipment">Equipment</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Category <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
+              <FormField
+                control={form.control}
                 name="category"
-                value={formData.category}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., Pain Relief"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Category *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Pain Relief" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
-            </div>
 
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Description
-              </label>
-              <textarea
+              <FormField
+                control={form.control}
                 name="description"
-                value={formData.description}
-                onChange={handleChange}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Detailed description of the item"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Detailed description of the item"
+                        className="resize-none"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-          </div>
-        </div>
+            </CardContent>
+          </Card>
 
-        {/* Manufacturer & Product Info */}
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Product Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Manufacturer
-              </label>
-              <input
-                type="text"
+          {/* Product Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Product Information</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
                 name="manufacturer"
-                value={formData.manufacturer}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Manufacturer</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            {formData.type === 'medication' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  NDC Code <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
+              {watchType === 'medication' && (
+                <FormField
+                  control={form.control}
                   name="ndcCode"
-                  value={formData.ndcCode || ''}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="00000-0000-00"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>NDC Code *</FormLabel>
+                      <FormControl>
+                        <Input placeholder="00000-0000-00" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        National Drug Code (required for medications)
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                {errors.ndcCode && <p className="text-red-500 text-sm mt-1">{errors.ndcCode}</p>}
-              </div>
-            )}
+              )}
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Lot Number
-              </label>
-              <input
-                type="text"
+              <FormField
+                control={form.control}
                 name="lotNumber"
-                value={formData.lotNumber || ''}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Lot Number</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Expiration Date
-              </label>
-              <input
-                type="date"
+              <FormField
+                control={form.control}
                 name="expirationDate"
-                value={formData.expirationDate || ''}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Expiration Date</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-          </div>
-        </div>
+            </CardContent>
+          </Card>
 
-        {/* Stock Management */}
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Stock Management</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Storage Location <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
+          {/* Stock Management */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Stock Management</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
                 name="location"
-                value={formData.location}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., Cabinet A, Shelf 2"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Storage Location *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Cabinet A, Shelf 2" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Unit of Measure
-              </label>
-              <select
+              <FormField
+                control={form.control}
                 name="unitOfMeasure"
-                value={formData.unitOfMeasure}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="unit">Unit</option>
-                <option value="bottle">Bottle</option>
-                <option value="box">Box</option>
-                <option value="tablet">Tablet</option>
-                <option value="ml">mL</option>
-                <option value="mg">mg</option>
-                <option value="piece">Piece</option>
-              </select>
-            </div>
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Unit of Measure</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="unit">Unit</SelectItem>
+                        <SelectItem value="bottle">Bottle</SelectItem>
+                        <SelectItem value="box">Box</SelectItem>
+                        <SelectItem value="tablet">Tablet</SelectItem>
+                        <SelectItem value="ml">mL</SelectItem>
+                        <SelectItem value="mg">mg</SelectItem>
+                        <SelectItem value="piece">Piece</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Minimum Stock Level
-              </label>
-              <input
-                type="number"
+              <FormField
+                control={form.control}
                 name="minStockLevel"
-                value={formData.minStockLevel}
-                onChange={handleChange}
-                min="0"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Minimum Stock Level</FormLabel>
+                    <FormControl>
+                      <Input type="number" min="0" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.minStockLevel && <p className="text-red-500 text-sm mt-1">{errors.minStockLevel}</p>}
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Maximum Stock Level
-              </label>
-              <input
-                type="number"
+              <FormField
+                control={form.control}
                 name="maxStockLevel"
-                value={formData.maxStockLevel}
-                onChange={handleChange}
-                min="0"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Maximum Stock Level</FormLabel>
+                    <FormControl>
+                      <Input type="number" min="0" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.maxStockLevel && <p className="text-red-500 text-sm mt-1">{errors.maxStockLevel}</p>}
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Reorder Point
-              </label>
-              <input
-                type="number"
+              <FormField
+                control={form.control}
                 name="reorderPoint"
-                value={formData.reorderPoint}
-                onChange={handleChange}
-                min="0"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Reorder Point</FormLabel>
+                    <FormControl>
+                      <Input type="number" min="0" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.reorderPoint && <p className="text-red-500 text-sm mt-1">{errors.reorderPoint}</p>}
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Unit Cost ($)
-              </label>
-              <input
-                type="number"
+              <FormField
+                control={form.control}
                 name="unitCost"
-                value={formData.unitCost}
-                onChange={handleChange}
-                min="0"
-                step="0.01"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Unit Cost ($)</FormLabel>
+                    <FormControl>
+                      <Input type="number" min="0" step="0.01" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.unitCost && <p className="text-red-500 text-sm mt-1">{errors.unitCost}</p>}
-            </div>
-          </div>
-        </div>
+            </CardContent>
+          </Card>
 
-        {/* Regulatory & Safety */}
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Regulatory & Safety</h2>
-          <div className="space-y-3">
-            <label className="flex items-center">
-              <input
-                type="checkbox"
+          {/* Regulatory & Safety */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Regulatory & Safety</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <FormField
+                control={form.control}
                 name="isControlledSubstance"
-                checked={formData.isControlledSubstance}
-                onChange={handleChange}
-                className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>
+                        Controlled Substance (requires DEA tracking)
+                      </FormLabel>
+                    </div>
+                  </FormItem>
+                )}
               />
-              <span className="text-sm text-gray-700">Controlled Substance (requires DEA tracking)</span>
-            </label>
 
-            <label className="flex items-center">
-              <input
-                type="checkbox"
+              <FormField
+                control={form.control}
                 name="requiresPrescription"
-                checked={formData.requiresPrescription}
-                onChange={handleChange}
-                className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>
+                        Requires Prescription
+                      </FormLabel>
+                    </div>
+                  </FormItem>
+                )}
               />
-              <span className="text-sm text-gray-700">Requires Prescription</span>
-            </label>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Storage Requirements
-              </label>
-              <textarea
+              <FormField
+                control={form.control}
                 name="storageRequirements"
-                value={formData.storageRequirements || ''}
-                onChange={handleChange}
-                rows={2}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., Store at room temperature, keep away from moisture"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Storage Requirements</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="e.g., Store at room temperature, keep away from moisture"
+                        className="resize-none"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Additional Notes
-              </label>
-              <textarea
+              <FormField
+                control={form.control}
                 name="notes"
-                value={formData.notes || ''}
-                onChange={handleChange}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Any additional notes or special instructions"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Additional Notes</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Any additional notes or special instructions"
+                        className="resize-none"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-          </div>
-        </div>
+            </CardContent>
+          </Card>
 
-        {/* Form Actions */}
-        <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
-          <button
-            type="button"
-            onClick={() => window.history.back()}
-            className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors"
-          >
-            {isSubmitting ? 'Creating...' : 'Create Item'}
-          </button>
-        </div>
-      </form>
+          {/* Form Actions */}
+          <div className="flex justify-end gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.back()}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={form.formState.isSubmitting}
+            >
+              {form.formState.isSubmitting ? 'Creating...' : 'Create Item'}
+            </Button>
+          </div>
+        </form>
+      </Form>
     </div>
   );
 }

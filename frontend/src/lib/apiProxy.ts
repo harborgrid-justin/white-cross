@@ -17,9 +17,11 @@ export interface ProxyConfig {
   headers?: Record<string, string>;
   /** Cache configuration for Next.js */
   cache?: {
-    revalidate?: number;
+    revalidate?: number | false;
     tags?: string[];
   };
+  /** Cache-Control header for response */
+  cacheControl?: string;
   /** Timeout in milliseconds */
   timeout?: number;
 }
@@ -103,6 +105,11 @@ export async function proxyToBackend(
         responseHeaders.set(header, value);
       }
     });
+
+    // Add custom Cache-Control header if specified
+    if (config.cacheControl) {
+      responseHeaders.set('Cache-Control', config.cacheControl);
+    }
 
     return new Response(responseBody, {
       status: response.status,

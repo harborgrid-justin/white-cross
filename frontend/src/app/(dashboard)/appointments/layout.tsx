@@ -51,9 +51,11 @@ export const metadata: Metadata = {
 
 interface AppointmentsLayoutProps {
   children: ReactNode;
+  modal: ReactNode;
+  sidebar: ReactNode;
 }
 
-export default function AppointmentsLayout({ children }: AppointmentsLayoutProps) {
+export default function AppointmentsLayout({ children, modal, sidebar }: AppointmentsLayoutProps) {
   return (
     <div className="flex h-full">
       {/* Sidebar Navigation */}
@@ -145,6 +147,10 @@ export default function AppointmentsLayout({ children }: AppointmentsLayoutProps
       <main className="flex-1 overflow-auto">
         <div className="p-6">{children}</div>
       </main>
+
+      {/* Parallel Route Slots */}
+      {modal}
+      {sidebar}
     </div>
   );
 }

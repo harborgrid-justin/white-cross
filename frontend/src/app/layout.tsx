@@ -45,18 +45,26 @@ export const metadata: Metadata = {
     template: '%s | White Cross Healthcare',
     default: 'White Cross Healthcare Platform',
   },
-  description: 'Comprehensive healthcare management platform for student health services',
+  description: 'Comprehensive healthcare management platform for student health services with HIPAA-compliant medical records, appointment scheduling, medication tracking, and health analytics.',
   keywords: [
-    'healthcare',
-    'student health',
+    'healthcare management',
+    'student health services',
     'medical records',
-    'appointments',
-    'medications',
-    'HIPAA compliant'
+    'electronic health records',
+    'appointments scheduling',
+    'medication administration',
+    'HIPAA compliant',
+    'school health',
+    'health analytics',
+    'incident reporting',
+    'immunization tracking'
   ],
   authors: [{ name: 'White Cross Healthcare' }],
   creator: 'White Cross Healthcare',
   publisher: 'White Cross Healthcare',
+  applicationName: 'White Cross Healthcare Platform',
+  category: 'Healthcare',
+  classification: 'Healthcare Management System',
   robots: {
     index: false, // Prevent indexing of healthcare platform
     follow: false,
@@ -71,6 +79,18 @@ export const metadata: Metadata = {
     apple: '/apple-icon.png',
   },
   manifest: '/manifest.json',
+  openGraph: {
+    type: 'website',
+    siteName: 'White Cross Healthcare',
+    title: 'White Cross Healthcare Platform',
+    description: 'Comprehensive healthcare management platform for student health services with HIPAA-compliant medical records and health analytics.',
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'White Cross Healthcare Platform',
+    description: 'Comprehensive healthcare management platform for student health services.',
+  },
 };
 
 /**

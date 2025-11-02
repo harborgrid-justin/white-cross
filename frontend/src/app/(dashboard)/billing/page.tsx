@@ -8,19 +8,51 @@
  * - HIPAA-compliant billing operations
  */
 
-'use client';
-
-/**
- * Force dynamic rendering for real-time billing data
- */
-
-
-import React from 'react';
+import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { PageHeader } from '@/components/layouts/PageHeader';
 import { Plus, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import BillingContent from './_components/BillingContent';
-import BillingSidebar from './_components/BillingSidebar';
+import { Skeleton } from '@/components/ui/skeleton';
+import dynamic from 'next/dynamic';
+
+// Dynamic imports for heavy components to optimize bundle size
+const BillingContent = dynamic(() => import('./_components/BillingContent'), {
+  loading: () => <Skeleton className="h-96 w-full" />,
+  ssr: true
+});
+
+const BillingSidebar = dynamic(() => import('./_components/BillingSidebar'), {
+  loading: () => <Skeleton className="h-64 w-full" />,
+  ssr: true
+});
+
+/**
+ * Metadata for billing page
+ */
+export const metadata: Metadata = {
+  title: 'Billing & Invoices',
+  description: 'Comprehensive healthcare billing and invoice management with insurance claims processing, payment tracking, and HIPAA-compliant financial operations.',
+  keywords: [
+    'healthcare billing',
+    'medical invoices',
+    'insurance claims',
+    'payment processing',
+    'financial management',
+    'billing analytics',
+    'claims management',
+    'HIPAA compliant billing'
+  ],
+  openGraph: {
+    title: 'Billing & Invoices | White Cross Healthcare',
+    description: 'Professional healthcare billing system with comprehensive invoice management, insurance claims processing, and financial reporting.',
+    type: 'website',
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default function BillingPage() {
   return (
@@ -46,12 +78,16 @@ export default function BillingPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Main Billing Content */}
           <div className="lg:col-span-3">
-            <BillingContent />
+            <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+              <BillingContent />
+            </Suspense>
           </div>
-          
+
           {/* Billing Sidebar */}
           <div className="lg:col-span-1">
-            <BillingSidebar />
+            <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+              <BillingSidebar />
+            </Suspense>
           </div>
         </div>
       </div>

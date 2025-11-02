@@ -4,10 +4,22 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { revalidateTag } from 'next/cache';
 import { withAuth } from '@/middleware/withAuth';
 import { proxyToBackend } from '@/lib/apiProxy';
 import { logPHIAccess, createAuditContext } from '@/lib/audit';
+import {
+  getCacheConfig,
+  generateCacheTags,
+  getCacheControlHeader
+} from '@/lib/cache/config';
+import { invalidateHealthRecordData } from '@/lib/cache/invalidation';
+
+/**
+ * Route segment configuration
+ * Force dynamic rendering for authenticated routes
+ */
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 /**
  * GET /health-records
@@ -15,12 +27,17 @@ import { logPHIAccess, createAuditContext } from '@/lib/audit';
  */
 export const GET = withAuth(async (request: NextRequest, context, auth) => {
   try {
-    // Proxy request to backend with caching
+    const cacheConfig = getCacheConfig('healthRecords');
+    const cacheTags = generateCacheTags('healthRecords');
+    const cacheControl = getCacheControlHeader('healthRecords');
+
+    // Proxy request to backend with enhanced caching
     const response = await proxyToBackend(request, '/health-records', {
       cache: {
-        revalidate: 30, // Cache for 30 seconds (highly sensitive PHI)
-        tags: ['health-records']
-      }
+        revalidate: cacheConfig.revalidate,
+        tags: cacheTags
+      },
+      cacheControl
     });
 
     const data = await response.json();
@@ -67,12 +84,11 @@ export const POST = withAuth(async (request: NextRequest, context, auth) => {
         details: 'Health record created'
       });
 
-      // Revalidate cache
-      revalidateTag('health-records');
-      if (data.data.studentId) {
-        revalidateTag(`student-${data.data.studentId}-health-records`);
-        revalidateTag(`student-${data.data.studentId}`);
-      }
+      // Invalidate cache with related resources
+      await invalidateHealthRecordData(
+        data.data.id,
+        data.data.studentId
+      );
     }
 
     return NextResponse.json(data, { status: response.status });

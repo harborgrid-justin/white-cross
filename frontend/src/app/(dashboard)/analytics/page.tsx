@@ -24,9 +24,28 @@ interface AnalyticsPageProps {
   };
 }
 
-export const metadata = {
-  title: 'Healthcare Analytics | White Cross',
-  description: 'Comprehensive healthcare data analytics, performance metrics, and custom reporting dashboard for school health management.',
+export const metadata: Metadata = {
+  title: 'Healthcare Analytics',
+  description: 'Comprehensive healthcare data analytics, performance metrics, and custom reporting dashboard for school health management with advanced visualization and insights.',
+  keywords: [
+    'healthcare analytics',
+    'health metrics',
+    'data analytics',
+    'reporting dashboard',
+    'health statistics',
+    'performance metrics',
+    'custom reports',
+    'data visualization'
+  ],
+  openGraph: {
+    title: 'Healthcare Analytics | White Cross Healthcare',
+    description: 'Advanced analytics platform for healthcare data visualization, trend analysis, and comprehensive reporting.',
+    type: 'website',
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function AnalyticsPage({ searchParams }: AnalyticsPageProps) {

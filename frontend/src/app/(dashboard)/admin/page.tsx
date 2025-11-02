@@ -11,19 +11,26 @@ import { AdminContent } from './_components/AdminContent';
  * Metadata for the admin dashboard page
  */
 export const metadata: Metadata = {
-  title: 'System Administration | White Cross Healthcare',
-  description: 'Comprehensive system administration dashboard for healthcare platform management, user oversight, and security monitoring.',
+  title: 'System Administration',
+  description: 'Comprehensive system administration dashboard for healthcare platform management, user oversight, security monitoring, and HIPAA compliance tracking.',
   keywords: [
     'system administration',
     'healthcare management',
-    'user management', 
+    'user management',
     'security monitoring',
     'system health',
     'audit logs',
-    'platform oversight'
+    'platform oversight',
+    'HIPAA compliance',
+    'access control'
   ],
+  openGraph: {
+    title: 'System Administration | White Cross Healthcare',
+    description: 'Advanced healthcare platform administration with comprehensive oversight, security monitoring, and compliance management.',
+    type: 'website',
+  },
   robots: {
-    index: false, // Admin pages should not be indexed
+    index: false,
     follow: false
   }
 };

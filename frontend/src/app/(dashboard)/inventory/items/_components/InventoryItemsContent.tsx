@@ -10,7 +10,29 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import EmptyState from '@/components/ui/feedback/EmptyState';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  TableEmptyState,
+} from '@/components/ui/table';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Search, Plus, ArrowUpDown } from 'lucide-react';
 
 export interface InventoryItem {
   id: string;
@@ -211,254 +233,263 @@ export function InventoryItemsContent() {
    */
   const categories = Array.from(new Set(items.map(item => item.category))).sort();
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading inventory items...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="p-6">
+    <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="mb-6 flex justify-between items-center">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Inventory Items</h1>
-          <p className="text-gray-600 mt-1">Manage all inventory items and stock levels</p>
+          <h1 className="text-3xl font-bold">Inventory Items</h1>
+          <p className="text-muted-foreground mt-1">Manage all inventory items and stock levels</p>
         </div>
-        <button
-          onClick={() => window.location.href = '/inventory/new'}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-        >
-          Add New Item
-        </button>
+        <Button asChild>
+          <Link href="/inventory/items/new">
+            <Plus className="h-4 w-4 mr-2" />
+            Add New Item
+          </Link>
+        </Button>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <p className="text-sm text-gray-600 mb-1">Total Items</p>
-          <p className="text-2xl font-bold text-gray-900">{items.length}</p>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <p className="text-sm text-gray-600 mb-1">Low Stock</p>
-          <p className="text-2xl font-bold text-orange-600">
-            {items.filter(item => item.currentStock <= item.minStockLevel).length}
-          </p>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <p className="text-sm text-gray-600 mb-1">Needs Reorder</p>
-          <p className="text-2xl font-bold text-yellow-600">
-            {items.filter(item => item.currentStock <= item.reorderPoint && item.currentStock > item.minStockLevel).length}
-          </p>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <p className="text-sm text-gray-600 mb-1">Out of Stock</p>
-          <p className="text-2xl font-bold text-red-600">
-            {items.filter(item => item.currentStock === 0).length}
-          </p>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-sm text-muted-foreground mb-1">Total Items</p>
+            <p className="text-2xl font-bold">{items.length}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-sm text-muted-foreground mb-1">Low Stock</p>
+            <p className="text-2xl font-bold text-orange-600">
+              {items.filter(item => item.currentStock <= item.minStockLevel).length}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-sm text-muted-foreground mb-1">Needs Reorder</p>
+            <p className="text-2xl font-bold text-yellow-600">
+              {items.filter(item => item.currentStock <= item.reorderPoint && item.currentStock > item.minStockLevel).length}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-sm text-muted-foreground mb-1">Out of Stock</p>
+            <p className="text-2xl font-bold text-destructive">
+              {items.filter(item => item.currentStock === 0).length}
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          {/* Search */}
-          <div className="md:col-span-2">
-            <input
-              type="text"
-              placeholder="Search by name, SKU, or category..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+      <Card>
+        <CardContent className="pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            {/* Search */}
+            <div className="md:col-span-2 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <Input
+                type="text"
+                placeholder="Search by name, SKU, or category..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+
+            {/* Category Filter */}
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger>
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories.map(category => (
+                  <SelectItem key={category} value={category}>{category}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Type Filter */}
+            <Select value={selectedType} onValueChange={setSelectedType}>
+              <SelectTrigger>
+                <SelectValue placeholder="All Types" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="medication">Medications</SelectItem>
+                <SelectItem value="supply">Supplies</SelectItem>
+                <SelectItem value="equipment">Equipment</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Stock Filter */}
+            <Select value={stockFilter} onValueChange={setStockFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="All Stock Levels" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Stock Levels</SelectItem>
+                <SelectItem value="out">Out of Stock</SelectItem>
+                <SelectItem value="low">Low Stock</SelectItem>
+                <SelectItem value="reorder">Needs Reorder</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
-          {/* Category Filter */}
-          <div>
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          {/* Sort Controls */}
+          <div className="flex gap-4 mt-4 pt-4 border-t">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">Sort by:</span>
+              <Select value={sortBy} onValueChange={(v) => setSortBy(v as 'name' | 'stock' | 'sku')}>
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name">Name</SelectItem>
+                  <SelectItem value="sku">SKU</SelectItem>
+                  <SelectItem value="stock">Stock Level</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
             >
-              <option value="all">All Categories</option>
-              {categories.map(category => (
-                <option key={category} value={category}>{category}</option>
-              ))}
-            </select>
+              <ArrowUpDown className="h-4 w-4 mr-2" />
+              {sortOrder === 'asc' ? 'Ascending' : 'Descending'}
+            </Button>
+            <div className="ml-auto text-sm text-muted-foreground flex items-center">
+              Showing {filteredItems.length} of {items.length} items
+            </div>
           </div>
-
-          {/* Type Filter */}
-          <div>
-            <select
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">All Types</option>
-              <option value="medication">Medications</option>
-              <option value="supply">Supplies</option>
-              <option value="equipment">Equipment</option>
-            </select>
-          </div>
-
-          {/* Stock Filter */}
-          <div>
-            <select
-              value={stockFilter}
-              onChange={(e) => setStockFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">All Stock Levels</option>
-              <option value="out">Out of Stock</option>
-              <option value="low">Low Stock</option>
-              <option value="reorder">Needs Reorder</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Sort Controls */}
-        <div className="flex gap-4 mt-4 pt-4 border-t border-gray-200">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-700">Sort by:</span>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as 'name' | 'stock' | 'sku')}
-              className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="name">Name</option>
-              <option value="sku">SKU</option>
-              <option value="stock">Stock Level</option>
-            </select>
-          </div>
-          <button
-            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-            className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 transition-colors"
-          >
-            {sortOrder === 'asc' ? '↑ Ascending' : '↓ Descending'}
-          </button>
-          <div className="ml-auto text-sm text-gray-600">
-            Showing {filteredItems.length} of {items.length} items
-          </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Items Table */}
-      {filteredItems.length === 0 ? (
-        <EmptyState
-          icon="🔍"
-          title="No items found"
-          description={searchQuery || selectedCategory !== 'all' || selectedType !== 'all' || stockFilter !== 'all'
-            ? "Try adjusting your filters to find what you're looking for"
-            : "Get started by adding your first inventory item"}
-          action={searchQuery || selectedCategory !== 'all' || selectedType !== 'all' || stockFilter !== 'all'
-            ? {
-                label: "Clear Filters",
-                onClick: () => {
+      {isLoading ? (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="space-y-2">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-16 w-full" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      ) : filteredItems.length === 0 ? (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <p className="text-lg font-semibold mb-2">No items found</p>
+            <p className="text-muted-foreground mb-4">
+              {searchQuery || selectedCategory !== 'all' || selectedType !== 'all' || stockFilter !== 'all'
+                ? "Try adjusting your filters to find what you're looking for"
+                : "Get started by adding your first inventory item"}
+            </p>
+            {searchQuery || selectedCategory !== 'all' || selectedType !== 'all' || stockFilter !== 'all' ? (
+              <Button
+                variant="outline"
+                onClick={() => {
                   setSearchQuery('');
                   setSelectedCategory('all');
                   setSelectedType('all');
                   setStockFilter('all');
-                }
-              }
-            : {
-                label: "Add Item",
-                onClick: () => window.location.href = '/inventory/new'
-              }
-          }
-        />
+                }}
+              >
+                Clear Filters
+              </Button>
+            ) : (
+              <Button asChild>
+                <Link href="/inventory/items/new">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Item
+                </Link>
+              </Button>
+            )}
+          </CardContent>
+        </Card>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                    Item
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                    SKU
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                    Category
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                    Type
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                    Current Stock
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                    Location
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {filteredItems.map((item) => {
-                  const status = getStockStatus(item);
-                  return (
-                    <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">{item.name}</p>
-                          {item.isControlledSubstance && (
-                            <span className="inline-block mt-1 px-2 py-0.5 bg-red-100 text-red-800 text-xs rounded">
-                              Controlled
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900 font-mono">
-                        {item.sku}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        {item.category}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="capitalize text-sm text-gray-900">{item.type}</span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        <span className="font-medium">{item.currentStock}</span> {item.unitOfMeasure}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium bg-${status.color}-100 text-${status.color}-800`}>
-                          {status.label}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        {item.location}
-                      </td>
-                      <td className="px-6 py-4 text-right text-sm space-x-2">
-                        <button
-                          onClick={() => window.location.href = `/inventory/${item.id}`}
-                          className="text-blue-600 hover:text-blue-700"
-                        >
+        <Card>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Item</TableHead>
+                <TableHead>SKU</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Current Stock</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Location</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredItems.map((item) => {
+                const status = getStockStatus(item);
+                return (
+                  <TableRow key={item.id}>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <p className="font-medium">{item.name}</p>
+                        {item.isControlledSubstance && (
+                          <Badge variant="destructive" className="text-xs">
+                            Controlled
+                          </Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-mono text-sm">
+                      {item.sku}
+                    </TableCell>
+                    <TableCell>{item.category}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="capitalize">
+                        {item.type}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <span className="font-medium">{item.currentStock}</span>{' '}
+                      <span className="text-muted-foreground">{item.unitOfMeasure}</span>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          status.color === 'red' ? 'destructive' :
+                          status.color === 'orange' ? 'default' :
+                          status.color === 'yellow' ? 'secondary' :
+                          'outline'
+                        }
+                        className={
+                          status.color === 'orange' ? 'bg-orange-100 text-orange-800 hover:bg-orange-200' :
+                          status.color === 'yellow' ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' :
+                          status.color === 'green' ? 'bg-green-100 text-green-800 hover:bg-green-200' : ''
+                        }
+                      >
+                        {status.label}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm">{item.location}</TableCell>
+                    <TableCell className="text-right space-x-2">
+                      <Button variant="ghost" size="sm" asChild>
+                        <Link href={`/inventory/items/${item.id}`}>
                           View
-                        </button>
-                        <button
-                          onClick={() => window.location.href = `/inventory/${item.id}/edit`}
-                          className="text-gray-600 hover:text-gray-700"
-                        >
+                        </Link>
+                      </Button>
+                      <Button variant="ghost" size="sm" asChild>
+                        <Link href={`/inventory/items/${item.id}/edit`}>
                           Edit
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                        </Link>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </Card>
       )}
     </div>
   );

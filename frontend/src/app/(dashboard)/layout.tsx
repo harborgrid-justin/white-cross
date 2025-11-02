@@ -57,7 +57,13 @@ export const metadata: Metadata = {
     template: '%s | White Cross Healthcare',
     default: 'Dashboard | White Cross Healthcare',
   },
-  description: 'White Cross Healthcare Platform - Comprehensive school health management',
+  description: 'White Cross Healthcare Platform - Comprehensive school health management with real-time monitoring, medical records, and healthcare analytics.',
+  openGraph: {
+    type: 'website',
+    siteName: 'White Cross Healthcare',
+    title: 'Dashboard | White Cross Healthcare',
+    description: 'Comprehensive school health management platform with real-time monitoring and analytics.',
+  },
 };
 
 /**

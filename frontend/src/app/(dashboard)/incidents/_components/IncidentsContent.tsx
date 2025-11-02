@@ -5,11 +5,12 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 import { getIncidents } from '@/lib/actions/incidents.actions';
-import { 
-  AlertTriangle, 
-  FileText, 
-  Users, 
+import {
+  AlertTriangle,
+  FileText,
+  Users,
   Activity,
   Plus,
   Search,
@@ -391,19 +392,13 @@ export function IncidentsContent({ searchParams }: IncidentsContentProps) {
       {/* Incidents List */}
       <div className="space-y-4">
         {incidents.length === 0 ? (
-          <Card className="p-12 text-center">
-            <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No incidents found
-            </h3>
-            <p className="text-gray-600 mb-4">
-              No incidents match your current filters.
-            </p>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Create First Incident
-            </Button>
-          </Card>
+          <EmptyState
+            icon={FileText}
+            title="No incidents found"
+            description="No incidents match your current filters. Try adjusting your search criteria or create a new incident report."
+            actionLabel="Create New Incident"
+            onAction={() => window.location.href = '/incidents/new'}
+          />
         ) : (
           incidents.map((incident) => (
             <Card key={incident.id} className="p-6 hover:shadow-md transition-shadow">

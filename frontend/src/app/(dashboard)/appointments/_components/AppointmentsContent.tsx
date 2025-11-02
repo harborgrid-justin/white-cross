@@ -6,7 +6,7 @@
 
 
 import React, { useState, useEffect, useMemo, useTransition } from 'react';
-import { 
+import {
   Calendar,
   Clock,
   Plus,
@@ -37,7 +37,10 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SearchInput } from '@/components/ui/input';
-import { 
+import { EmptyState } from '@/components/ui/empty-state';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
+import { useToast } from '@/hooks/use-toast';
+import {
   getAppointments,
   createAppointment,
   updateAppointment,
@@ -71,7 +74,7 @@ interface AppointmentsContentProps {
   userRole?: string;
 }
 
-const AppointmentsContent: React.FC<AppointmentsContentProps> = ({ 
+const AppointmentsContent: React.FC<AppointmentsContentProps> = ({
   initialAppointments = []
 }) => {
   const [appointments, setAppointments] = useState<Appointment[]>(initialAppointments);
@@ -85,6 +88,10 @@ const AppointmentsContent: React.FC<AppointmentsContentProps> = ({
   const [selectedAppointments, setSelectedAppointments] = useState<Set<string>>(new Set());
   const [currentWeek, setCurrentWeek] = useState<Date>(new Date());
   const [, startTransition] = useTransition();
+
+  // UX improvements
+  const { confirm, ConfirmDialog } = useConfirmDialog();
+  const { toast } = useToast();
 
   // Load appointments on component mount and when filters change
   useEffect(() => {
@@ -206,16 +213,34 @@ const AppointmentsContent: React.FC<AppointmentsContentProps> = ({
 
   // Appointment action handlers using server actions
   const handleCancelAppointment = async (appointmentId: string, reason?: string) => {
-    if (window.confirm('Are you sure you want to cancel this appointment?')) {
+    const confirmed = await confirm({
+      title: 'Cancel Appointment',
+      description: 'Are you sure you want to cancel this appointment? This action cannot be undone.',
+      confirmText: 'Cancel Appointment',
+      cancelText: 'Keep Appointment',
+      variant: 'destructive',
+    });
+
+    if (confirmed) {
       startTransition(async () => {
         try {
           const result = await cancelAppointment(appointmentId, reason || 'Cancelled by user');
           if (result.success) {
+            toast({
+              title: 'Appointment cancelled',
+              description: 'The appointment has been successfully cancelled.',
+              variant: 'success',
+            });
             const updatedResult = await getAppointments();
             setAppointments(updatedResult.appointments);
           }
         } catch (error) {
           console.error('Failed to cancel appointment:', error);
+          toast({
+            title: 'Error',
+            description: 'Failed to cancel appointment. Please try again.',
+            variant: 'destructive',
+          });
         }
       });
     }
@@ -315,7 +340,9 @@ const AppointmentsContent: React.FC<AppointmentsContentProps> = ({
   }
 
   return (
-    <div className="space-y-6">
+    <>
+      <ConfirmDialog />
+      <div className="space-y-6">
       {/* Appointment Statistics */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card className="hover:shadow-md transition-shadow">
@@ -653,17 +680,13 @@ const AppointmentsContent: React.FC<AppointmentsContentProps> = ({
               </h2>
               
               {filteredAppointments.length === 0 ? (
-                <div className="text-center py-12">
-                  <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500 font-medium mb-2">No appointments found</p>
-                  <p className="text-sm text-gray-400 mb-4">
-                    Try adjusting your filters or schedule a new appointment.
-                  </p>
-                  <Button variant="default">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Schedule Appointment
-                  </Button>
-                </div>
+                <EmptyState
+                  icon={Calendar}
+                  title="No appointments found"
+                  description="Try adjusting your filters or schedule a new appointment to get started."
+                  actionLabel="Schedule Appointment"
+                  onAction={() => {/* Navigate to new appointment form */}}
+                />
               ) : (
                 <div className="space-y-4">
                   {filteredAppointments.map((appointment) => (
@@ -834,6 +857,7 @@ const AppointmentsContent: React.FC<AppointmentsContentProps> = ({
         </div>
       </Card>
     </div>
+    </>
   );
 };
 

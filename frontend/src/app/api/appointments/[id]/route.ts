@@ -4,21 +4,37 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { revalidateTag } from 'next/cache';
 import { withAuth } from '@/middleware/withAuth';
 import { proxyToBackend } from '@/lib/apiProxy';
 import { createAuditContext, logPHIAccess } from '@/lib/audit';
+import {
+  getCacheConfig,
+  generateCacheTags,
+  getCacheControlHeader
+} from '@/lib/cache/config';
+import { invalidateAppointmentData } from '@/lib/cache/invalidation';
+
+/**
+ * Route segment configuration
+ * Force dynamic rendering for authenticated routes with dynamic params
+ */
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export const GET = withAuth(
   async (request: NextRequest, { params }: { params: { id: string } }, auth) => {
     try {
       const { id } = params;
+      const cacheConfig = getCacheConfig('appointments');
+      const cacheTags = generateCacheTags('appointments', id);
+      const cacheControl = getCacheControlHeader('appointments');
 
       const response = await proxyToBackend(request, `/appointments/${id}`, {
         cache: {
-          revalidate: 30,
-          tags: [`appointment-${id}`, 'appointments']
-        }
+          revalidate: cacheConfig.revalidate,
+          tags: cacheTags
+        },
+        cacheControl
       });
 
       const data = await response.json();
@@ -62,8 +78,8 @@ export const PUT = withAuth(
           details: 'Appointment record updated'
         });
 
-        revalidateTag('appointments');
-        revalidateTag(`appointment-${id}`);
+        // Invalidate cache with related resources
+        await invalidateAppointmentData(id, data.data?.studentId);
       }
 
       return NextResponse.json(data, { status: response.status });
@@ -93,8 +109,8 @@ export const DELETE = withAuth(
           details: 'Appointment record deleted'
         });
 
-        revalidateTag('appointments');
-        revalidateTag(`appointment-${id}`);
+        // Invalidate cache with related resources
+        await invalidateAppointmentData(id, data.data?.studentId);
       }
 
       return NextResponse.json(data || { success: true }, { status: response.status });

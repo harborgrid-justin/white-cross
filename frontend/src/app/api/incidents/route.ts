@@ -4,10 +4,22 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { revalidateTag } from 'next/cache';
 import { withAuth } from '@/middleware/withAuth';
 import { proxyToBackend } from '@/lib/apiProxy';
 import { createAuditContext, logPHIAccess } from '@/lib/audit';
+import {
+  getCacheConfig,
+  generateCacheTags,
+  getCacheControlHeader
+} from '@/lib/cache/config';
+import { invalidateIncidentData } from '@/lib/cache/invalidation';
+
+/**
+ * Route segment configuration
+ * Force dynamic rendering for authenticated routes
+ */
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 /**
  * GET /incidents
@@ -15,12 +27,17 @@ import { createAuditContext, logPHIAccess } from '@/lib/audit';
  */
 export const GET = withAuth(async (request: NextRequest, context, auth) => {
   try {
-    // Proxy request to backend with caching
+    const cacheConfig = getCacheConfig('incidents');
+    const cacheTags = generateCacheTags('incidents');
+    const cacheControl = getCacheControlHeader('incidents');
+
+    // Proxy request to backend with enhanced caching
     const response = await proxyToBackend(request, '/incident-report', {
       cache: {
-        revalidate: 30, // Cache for 30 seconds (health incident data)
-        tags: ['incidents']
-      }
+        revalidate: cacheConfig.revalidate,
+        tags: cacheTags
+      },
+      cacheControl
     });
 
     const data = await response.json();
@@ -67,8 +84,11 @@ export const POST = withAuth(async (request: NextRequest, context, auth) => {
         details: 'Incident report created'
       });
 
-      // Revalidate cache
-      revalidateTag('incidents');
+      // Invalidate cache with related resources
+      await invalidateIncidentData(
+        data.data.id,
+        data.data.studentId
+      );
     }
 
     return NextResponse.json(data, { status: response.status });
