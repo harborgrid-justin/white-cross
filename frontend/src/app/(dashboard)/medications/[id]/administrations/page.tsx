@@ -14,7 +14,7 @@ import { fetchWithAuth } from '@/lib/server/fetch';
 import { API_ENDPOINTS } from '@/constants/api';
 import AdministrationLog from '@/components/medications/administration/AdministrationLog';
 import AdherenceTracker from '@/components/medications/advanced/AdherenceTracker';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { ClockIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 
 

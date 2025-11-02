@@ -1,7 +1,7 @@
 'use client';
 
-import { Skeleton } from '@/components/ui/Skeleton';
-import { Card } from '@/components/ui/Card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card } from '@/components/ui/card';
 
 /**
  * Health Record Detail Loading State

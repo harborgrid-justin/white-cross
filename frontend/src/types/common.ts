@@ -319,28 +319,30 @@ export type MedicationRoute = 'ORAL' | 'TOPICAL' | 'INJECTION' | 'INHALATION' | 
 /**
  * Appointment type enumeration for healthcare visits.
  *
- * NOTE: This is now defined as an enum in appointments.ts
- * Re-export it here for backward compatibility with existing code.
+ * NOTE: This type is defined in appointments.ts
+ * Import directly from './appointments' or './index' to avoid circular dependencies.
  *
  * @see {@link ./appointments.ts:AppointmentType} for the canonical enum definition
  * @see {@link backend/src/database/types/enums.ts:AppointmentType}
  *
- * @deprecated Import from './appointments' directly for better type safety
+ * @deprecated Import from './appointments' or './index' directly for better type safety
  */
-export type { AppointmentType } from './appointments';
+// Removed re-export to break circular dependency: common.ts ↔ appointments.ts
+// export type { AppointmentType } from './appointments';
 
 /**
  * Appointment status enumeration tracking appointment lifecycle.
  *
- * NOTE: This is now defined as an enum in appointments.ts
- * Re-export it here for backward compatibility with existing code.
+ * NOTE: This type is defined in appointments.ts
+ * Import directly from './appointments' or './index' to avoid circular dependencies.
  *
  * @see {@link ./appointments.ts:AppointmentStatus} for the canonical enum definition
  * @see {@link backend/src/database/types/enums.ts:AppointmentStatus}
  *
- * @deprecated Import from './appointments' directly for better type safety
+ * @deprecated Import from './appointments' or './index' directly for better type safety
  */
-export type { AppointmentStatus } from './appointments';
+// Removed re-export to break circular dependency: common.ts ↔ appointments.ts
+// export type { AppointmentStatus } from './appointments';
 
 /**
  * Incident type enumeration for health and safety events.
@@ -381,15 +383,16 @@ export type ComplianceStatus = 'PENDING' | 'COMPLIANT' | 'NON_COMPLIANT' | 'UNDE
 /**
  * Message type enumeration for communication channels
  *
- * NOTE: This is now defined as an enum in appointments.ts
- * Re-export it here for backward compatibility with existing code.
+ * NOTE: This type is defined in appointments.ts
+ * Import directly from './appointments' or './index' to avoid circular dependencies.
  *
  * @see {@link ./appointments.ts:MessageType} for the canonical enum definition
  * @aligned_with backend/src/database/types/enums.ts:MessageType
  *
- * @deprecated Import from './appointments' directly for better type safety
+ * @deprecated Import from './appointments' or './index' directly for better type safety
  */
-export type { MessageType } from './appointments';
+// Removed re-export to break circular dependency: common.ts ↔ appointments.ts
+// export type { MessageType } from './appointments';
 
 /**
  * Message priority enumeration

@@ -311,5 +311,3 @@ export const DashboardCard = React.memo<DashboardCardProps>(({
 });
 
 DashboardCard.displayName = 'DashboardCard';
-
-export default DashboardCard;

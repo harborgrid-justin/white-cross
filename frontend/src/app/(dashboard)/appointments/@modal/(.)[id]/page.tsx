@@ -1,8 +1,8 @@
 import React, { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { Modal } from '@/components/ui/modal';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Skeleton } from '@/components/ui/Skeleton';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { API_ENDPOINTS } from '@/lib/api-client';
 
 interface ModalAppointmentPageProps {

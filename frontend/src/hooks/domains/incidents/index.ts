@@ -43,4 +43,4 @@ export * from './mutations/useOptimisticIncidents';
 
 // Context Providers and Hooks for State Management
 export * from './WitnessStatementContext';
-export * from './FollowUpActionContext';
+export * from '@/contexts/incidents/FollowUpActionContext';
