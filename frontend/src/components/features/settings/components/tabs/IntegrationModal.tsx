@@ -13,7 +13,7 @@
  */
 
 import React, { useState } from 'react'
-import { integrationApi } from '../../../../../services/api'
+import { integrationApi } from '@/services/api'
 import toast from 'react-hot-toast'
 
 export default function IntegrationModal({ integration, onClose, onSave }: any) {

@@ -13,7 +13,7 @@
  */
 
 import React from 'react'
-import type { ChronicCondition, ConditionFormErrors } from '../../../../../types/healthRecords'
+import type { ChronicCondition, ConditionFormErrors } from '@/types/healthRecords'
 import { SEVERITY_LEVELS, CONDITION_STATUS_OPTIONS } from '@/constants/healthRecords'
 
 interface ConditionModalProps {

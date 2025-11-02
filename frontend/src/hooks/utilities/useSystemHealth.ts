@@ -18,7 +18,7 @@
  */
 
 import { useState, useEffect } from 'react'
-import { administrationApi } from '../../api'
+import { administrationApi } from '@/services/api'
 import type { SystemHealth } from '../types'
 
 export const useSystemHealth = (activeTab: string) => {

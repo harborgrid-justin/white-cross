@@ -14,7 +14,8 @@ import { Button } from '@/components/ui/button';
 import { Plus, Repeat, Calendar, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { RecurringAppointmentManager } from '@/components/features/appointments';
-import { apiClient, API_ENDPOINTS } from '@/lib/api-client';
+import { apiClient } from '@/lib/api-client';
+import { API_ENDPOINTS } from '@/constants/api';
 
 export default function RecurringAppointmentsPage() {
   const [loading, setLoading] = useState(true);

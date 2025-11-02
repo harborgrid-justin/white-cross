@@ -59,7 +59,7 @@ const colorClasses = {
     text: 'text-gray-600',
     border: 'border-gray-200',
   },
-}
+} as const
 
 export function AdminMetricCard({
   title,

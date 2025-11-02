@@ -4,7 +4,7 @@ import { Container } from '@/components/layouts/Container';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AppointmentList } from '@/components/features/appointments';
-import { API_ENDPOINTS } from '@/lib/api-client';
+import { API_ENDPOINTS } from '@/constants/api';
 import { unstable_cache } from 'next/cache';
 
 interface SearchPageProps {

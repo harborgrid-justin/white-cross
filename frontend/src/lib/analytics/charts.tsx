@@ -26,14 +26,14 @@ export const CHART_PALETTE = [
   CHART_COLORS.purple,
   CHART_COLORS.pink,
   CHART_COLORS.indigo,
-];
+] as const;
 
 export const DEFAULT_CHART_MARGIN = {
   top: 20,
   right: 30,
   left: 20,
   bottom: 20,
-};
+} as const;
 
 export const CHART_TOOLTIP_STYLE = {
   backgroundColor: '#ffffff',
@@ -41,14 +41,14 @@ export const CHART_TOOLTIP_STYLE = {
   borderRadius: '6px',
   padding: '12px',
   boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-};
+} as const;
 
 export const CHART_LEGEND_STYLE = {
   wrapperStyle: {
     paddingTop: '20px',
   },
   iconSize: 14,
-};
+} as const;
 
 /**
  * Chart type definitions

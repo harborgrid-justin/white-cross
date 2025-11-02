@@ -14,10 +14,10 @@
 
 import React, { useState } from 'react'
 import { Plus, AlertCircle, CheckCircle, Shield, AlertTriangle, MapPin } from 'lucide-react'
-import { getSeverityColor } from '../../../../../utils/healthRecords'
-import { useVerifyAllergy, useDeleteAllergy } from '../../../../../hooks/domains/health'
-import type { Allergy } from '../../../../../types/healthRecords'
-import type { User } from '../../../../../types'
+import { getSeverityColor } from '@/utils/healthRecords'
+import { useVerifyAllergy, useDeleteAllergy } from '@/hooks/domains/health'
+import type { Allergy } from '@/types/healthRecords'
+import type { User } from '@/types'
 
 interface AllergiesTabProps {
   allergies: Allergy[]

@@ -21,7 +21,7 @@
 import React from 'react'
 import { FileText, Stethoscope, Shield } from 'lucide-react'
 import { SearchAndFilter } from '../shared/SearchAndFilter'
-import { useAuthContext } from '../../../../../hooks/utilities/AuthContext'
+import { useAuthContext } from '@/hooks/utilities/AuthContext'
 import type { HealthRecord } from '@/services/modules/healthRecordsApi'
 
 /**

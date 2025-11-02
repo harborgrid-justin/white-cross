@@ -24,8 +24,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { administrationApi } from '../api';
-import type { AdministrationRecord, AdministrationLog } from '../api';
+import { administrationApi } from '@/services/api';
+import type { AdministrationRecord, AdministrationLog } from '@/types/api';
 
 // IndexedDB Configuration
 const DB_NAME = 'medication-offline-queue';

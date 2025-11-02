@@ -17,7 +17,7 @@
  */
 
 import type { ApiClient } from '@/services/core/ApiClient';
-import { API_ENDPOINTS } from '../config/apiConfig';
+import { API_ENDPOINTS } from '@/constants/api';
 import { ApiResponse } from '../utils/apiUtils';
 import { z } from 'zod';
 import { createApiError } from '../core/errors';

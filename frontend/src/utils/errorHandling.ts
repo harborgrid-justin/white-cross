@@ -63,10 +63,10 @@
  * ```
  */
 
-import { ApiError, ValidationError } from '../types/common';
+import { ApiError, ValidationError } from '@/types/common';
 import {
   ERROR_CODES
-} from '../constants/errors';
+} from '@/constants/errors';
 
 // Error types for classification
 export type ErrorType =

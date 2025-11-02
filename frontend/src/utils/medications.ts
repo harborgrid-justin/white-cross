@@ -17,13 +17,13 @@ import {
   SEVERITY_LEVELS,
   MEDICATION_STATUSES,
   INVENTORY_STATUSES
-} from '../constants/medications'
+} from '@/constants/medications';
 
 import type {
   Medication,
   MedicationReminder,
   Priority
-} from '../types/api'
+} from '@/types/api';
 
 /**
  * Date formatting utilities

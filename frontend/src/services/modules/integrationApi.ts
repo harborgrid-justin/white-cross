@@ -129,7 +129,7 @@
  */
 
 import type { ApiClient } from '../core/ApiClient';
-import { API_ENDPOINTS } from '../config/apiConfig';
+import { API_ENDPOINTS } from '@/constants/api';
 import { ApiResponse, PaginatedResponse, buildPaginationParams } from '../utils/apiUtils';
 import { z } from 'zod';
 

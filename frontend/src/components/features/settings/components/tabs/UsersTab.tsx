@@ -53,8 +53,8 @@ import {
   Key
 } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { API_CONFIG } from '../../../../../constants/config'
-import { API_ENDPOINTS } from '../../../../../constants/api'
+import { API_CONFIG } from '@/constants/config'
+import { API_ENDPOINTS } from '@/constants/api'
 
 export default function UsersTab() {
   const [users, setUsers] = useState<any[]>([])

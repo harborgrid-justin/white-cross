@@ -36,8 +36,8 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { configurationApi } from '../../../../../services/configurationApi'
-import type { SystemConfiguration } from '../../../../../services/configurationApi'
+import { configurationApi } from '@/services/configurationApi'
+import type { SystemConfiguration } from '@/services/configurationApi'
 
 type CategoryView = 'ALL' | 'GENERAL' | 'SECURITY' | 'NOTIFICATION' | 'HEALTHCARE' | 'UI' | 'PERFORMANCE'
 

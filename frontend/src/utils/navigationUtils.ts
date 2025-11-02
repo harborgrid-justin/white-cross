@@ -19,8 +19,8 @@
  * @module utils/navigationUtils
  */
 
-import { User, UserRole } from '../types';
-import { NavigationItem, FilteredNavigationItem, NavigationPermission } from '../types/navigation';
+import { User, UserRole } from '@/types';
+import { NavigationItem, FilteredNavigationItem, NavigationPermission } from '@/types/navigation';
 
 // ============================================================================
 // PERMISSION CHECKING

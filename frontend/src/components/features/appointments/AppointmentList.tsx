@@ -36,14 +36,14 @@ const statusColors = {
   completed: 'bg-gray-100 text-gray-800',
   cancelled: 'bg-red-100 text-red-800',
   'no-show': 'bg-orange-100 text-orange-800',
-};
+} as const;
 
 const priorityColors = {
   low: 'bg-gray-100 text-gray-600',
   medium: 'bg-blue-100 text-blue-600',
   high: 'bg-orange-100 text-orange-600',
   urgent: 'bg-red-100 text-red-600',
-};
+} as const;
 
 /**
  * AppointmentList - Server Component

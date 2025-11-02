@@ -10,8 +10,8 @@
  * LLM Context: react component or utility module, part of React frontend architecture
  */
 
-import type { ConditionStatus, Vaccination, ConditionSeverity } from '../types/healthRecords'
-import type { AllergySeverity } from '../services/modules/healthRecordsApi'
+import type { ConditionStatus, Vaccination, ConditionSeverity } from '@/types/healthRecords';
+import type { AllergySeverity } from '@/services/modules/healthRecordsApi';
 
 export const formatDate = (dateString: string): string => {
   const date = new Date(dateString)

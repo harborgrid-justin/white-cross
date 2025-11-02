@@ -49,7 +49,7 @@ export const VITAL_TYPES = {
 export type VitalType = typeof VITAL_TYPES[keyof typeof VITAL_TYPES]
 
 /**
- * Allergy types
+ * Allergy types (object)
  */
 export const ALLERGY_TYPES = {
   FOOD: 'food',
@@ -60,6 +60,17 @@ export const ALLERGY_TYPES = {
 } as const
 
 export type AllergyType = typeof ALLERGY_TYPES[keyof typeof ALLERGY_TYPES]
+
+/**
+ * Allergy types (array format for UI components)
+ */
+export const ALLERGY_TYPE_OPTIONS = [
+  { value: 'food', label: 'Food' },
+  { value: 'medication', label: 'Medication' },
+  { value: 'environmental', label: 'Environmental' },
+  { value: 'insect', label: 'Insect' },
+  { value: 'other', label: 'Other' }
+] as const
 
 /**
  * Allergy severity levels
@@ -74,9 +85,14 @@ export const ALLERGY_SEVERITY = {
 export type AllergySeverity = typeof ALLERGY_SEVERITY[keyof typeof ALLERGY_SEVERITY]
 
 /**
- * Severity levels (alias for compatibility)
+ * Severity levels (array format for UI components)
  */
-export const SEVERITY_LEVELS = ALLERGY_SEVERITY
+export const SEVERITY_LEVELS = [
+  { value: 'mild', label: 'Mild' },
+  { value: 'moderate', label: 'Moderate' },
+  { value: 'severe', label: 'Severe' },
+  { value: 'life_threatening', label: 'Life Threatening' }
+] as const
 
 /**
  * Immunization status

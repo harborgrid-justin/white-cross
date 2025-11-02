@@ -24,7 +24,7 @@ import {
   Archive,
   Clock
 } from 'lucide-react'
-import { administrationApi } from '../../../../../services/api'
+import { administrationApi } from '@/services/api'
 import toast from 'react-hot-toast'
 
 export default function BackupsTab() {

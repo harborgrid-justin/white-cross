@@ -11,7 +11,7 @@
  */
 
 import _ from 'lodash';
-import { VALIDATION_CONFIG } from '../constants/config';
+import { VALIDATION_CONFIG } from '@/constants/config';
 
 /**
  * Security utilities for sanitizing and validating user input in healthcare platform

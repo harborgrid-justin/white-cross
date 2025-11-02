@@ -52,7 +52,7 @@ const statusConfig = {
     icon: Clock,
     label: 'Pending',
   },
-}
+} as const
 
 const sizeClasses = {
   sm: {
@@ -73,7 +73,7 @@ const sizeClasses = {
     icon: 'h-5 w-5',
     dot: 'h-3 w-3',
   },
-}
+} as const
 
 export function AdminStatusIndicator({
   status,
