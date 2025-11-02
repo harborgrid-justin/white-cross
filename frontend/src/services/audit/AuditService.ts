@@ -120,6 +120,7 @@
  */
 
 import { apiInstance } from '../config/apiConfig';
+import { API_ENDPOINTS } from '@/constants/api';
 import {
   AuditEvent,
   AuditLogParams,
@@ -619,7 +620,7 @@ export class AuditService implements IAuditService {
 
       // Send to backend
       const response = await apiInstance.post<AuditApiResponse>(
-        '/api/audit/batch',
+        API_ENDPOINTS.AUDIT.PHI_ACCESS_LOG,
         batch,
         { timeout: 10000 } // 10 second timeout
       );

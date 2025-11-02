@@ -17,6 +17,7 @@
  */
 
 import type { ApiClient } from '@/services/core/ApiClient';
+import { API_ENDPOINTS } from '@/constants/api';
 import { ApiResponse } from '../utils/apiUtils';
 import { createApiError } from '../core/errors';
 import { z } from 'zod';
@@ -84,8 +85,6 @@ export class VendorApi {
     this.client = client;
   }
 
-  private readonly baseUrl = '/api/vendors';
-
   /**
    * Get all vendors with optional filtering and pagination
    */
@@ -101,8 +100,8 @@ export class VendorApi {
       if (filters.search) queryString.append('search', filters.search);
 
       const url = queryString.toString()
-        ? `${this.baseUrl}?${queryString.toString()}`
-        : this.baseUrl;
+        ? `${API_ENDPOINTS.VENDORS.BASE}?${queryString.toString()}`
+        : API_ENDPOINTS.VENDORS.BASE;
 
       const response = await this.client.get<ApiResponse<VendorsResponse>>(url);
 
@@ -120,7 +119,7 @@ export class VendorApi {
       if (!id) throw new Error('Vendor ID is required');
 
       const response = await this.client.get<ApiResponse<VendorDetailResponse>>(
-        `${this.baseUrl}/${id}`
+        API_ENDPOINTS.VENDORS.BY_ID(id)
       );
 
       return response.data.data;
@@ -138,7 +137,7 @@ export class VendorApi {
       createVendorSchema.parse(vendorData);
 
       const response = await this.client.post<ApiResponse<{ vendor: Vendor }>>(
-        this.baseUrl,
+        API_ENDPOINTS.VENDORS.BASE,
         vendorData
       );
 
@@ -163,7 +162,7 @@ export class VendorApi {
       updateVendorSchema.parse(vendorData);
 
       const response = await this.client.put<ApiResponse<{ vendor: Vendor }>>(
-        `${this.baseUrl}/${id}`,
+        API_ENDPOINTS.VENDORS.BY_ID(id),
         vendorData
       );
 
@@ -185,7 +184,7 @@ export class VendorApi {
       if (!id) throw new Error('Vendor ID is required');
 
       const response = await this.client.delete<ApiResponse<{ vendor: Vendor }>>(
-        `${this.baseUrl}/${id}`
+        API_ENDPOINTS.VENDORS.BY_ID(id)
       );
 
       return response.data.data.vendor;
@@ -202,7 +201,7 @@ export class VendorApi {
       if (!id) throw new Error('Vendor ID is required');
 
       const response = await this.client.post<ApiResponse<{ vendor: Vendor }>>(
-        `${this.baseUrl}/${id}/reactivate`
+        API_ENDPOINTS.VENDORS.REACTIVATE(id)
       );
 
       return response.data.data.vendor;
@@ -221,7 +220,7 @@ export class VendorApi {
       }
 
       const response = await this.client.get<ApiResponse<VendorSearchResponse>>(
-        `${this.baseUrl}/search/${encodeURIComponent(query)}?limit=${limit}&activeOnly=${activeOnly}`
+        `${API_ENDPOINTS.VENDORS.SEARCH(query)}?limit=${limit}&activeOnly=${activeOnly}`
       );
 
       return response.data.data.vendors;
@@ -240,7 +239,7 @@ export class VendorApi {
       }
 
       const response = await this.client.get<ApiResponse<VendorComparisonResponse>>(
-        `${this.baseUrl}/compare/${encodeURIComponent(itemName)}`
+        API_ENDPOINTS.VENDORS.COMPARE(itemName)
       );
 
       return response.data.data.comparison;
@@ -255,7 +254,7 @@ export class VendorApi {
   async getTopVendors(limit: number = 10): Promise<VendorMetrics[]> {
     try {
       const response = await this.client.get<ApiResponse<TopVendorsResponse>>(
-        `${this.baseUrl}/top?limit=${limit}`
+        `${API_ENDPOINTS.VENDORS.TOP}?limit=${limit}`
       );
 
       // Backend returns array directly, handle both formats
@@ -276,7 +275,7 @@ export class VendorApi {
   async getVendorStatistics(): Promise<VendorStatistics> {
     try {
       const response = await this.client.get<ApiResponse<VendorStatistics>>(
-        `${this.baseUrl}/statistics`
+        API_ENDPOINTS.VENDORS.STATISTICS
       );
 
       return response.data.data;
@@ -296,7 +295,7 @@ export class VendorApi {
       updateRatingSchema.parse({ rating });
 
       const response = await this.client.put<ApiResponse<{ vendor: Vendor }>>(
-        `${this.baseUrl}/${vendorId}/rating`,
+        API_ENDPOINTS.VENDORS.RATING(vendorId),
         { rating }
       );
 
@@ -327,7 +326,7 @@ export class VendorApi {
       });
 
       const response = await this.client.post<ApiResponse<BulkVendorRatingResult>>(
-        `${this.baseUrl}/ratings/bulk`,
+        API_ENDPOINTS.VENDORS.BULK_RATINGS,
         { updates }
       );
 
@@ -347,7 +346,7 @@ export class VendorApi {
       }
 
       const response = await this.client.get<ApiResponse<VendorSearchResponse>>(
-        `${this.baseUrl}/payment-terms/${encodeURIComponent(paymentTerms)}`
+        API_ENDPOINTS.VENDORS.BY_PAYMENT_TERMS(paymentTerms)
       );
 
       return response.data.data.vendors;
@@ -364,7 +363,7 @@ export class VendorApi {
       if (!vendorId) throw new Error('Vendor ID is required');
 
       const response = await this.client.get<ApiResponse<{ metrics: VendorPerformanceMetrics }>>(
-        `${this.baseUrl}/${vendorId}/metrics`
+        API_ENDPOINTS.VENDORS.METRICS(vendorId)
       );
 
       return response.data.data.metrics;
@@ -382,7 +381,7 @@ export class VendorApi {
       if (!id) throw new Error('Vendor ID is required');
 
       const response = await this.client.delete<ApiResponse<{ success: boolean }>>(
-        `${this.baseUrl}/${id}/permanent`
+        API_ENDPOINTS.VENDORS.PERMANENT_DELETE(id)
       );
 
       return response.data.data;

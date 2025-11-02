@@ -27,7 +27,7 @@ import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
 import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache/constants';
 
 // Types
-import type { ApiResponse } from '@/types/api';
+import type { ApiResponse } from '@/types';
 
 // Utils
 import { formatDate } from '@/utils/dateUtils';
@@ -180,7 +180,7 @@ export interface ExportAnalytics {
 export const getExportJob = cache(async (id: string): Promise<ExportJob | null> => {
   try {
     const response = await serverGet<ApiResponse<ExportJob>>(
-      `/api/export/jobs/${id}`,
+      `${API_ENDPOINTS.ADMIN.CONFIGURATIONS}/export/jobs/${id}`,
       undefined,
       {
         cache: 'force-cache',
@@ -204,7 +204,7 @@ export const getExportJob = cache(async (id: string): Promise<ExportJob | null> 
 export const getExportJobs = cache(async (filters?: ExportFilters): Promise<ExportJob[]> => {
   try {
     const response = await serverGet<ApiResponse<ExportJob[]>>(
-      `/api/export/jobs`,
+      `${API_ENDPOINTS.ADMIN.CONFIGURATIONS}/export/jobs`,
       filters as Record<string, string | number | boolean>,
       {
         cache: 'force-cache',
@@ -228,7 +228,7 @@ export const getExportJobs = cache(async (filters?: ExportFilters): Promise<Expo
 export const getExportTemplate = cache(async (id: string): Promise<ExportTemplate | null> => {
   try {
     const response = await serverGet<ApiResponse<ExportTemplate>>(
-      `/api/export/templates/${id}`,
+      `${API_ENDPOINTS.ADMIN.CONFIGURATIONS}/export/templates/${id}`,
       undefined,
       {
         cache: 'force-cache',
@@ -253,7 +253,7 @@ export const getExportTemplates = cache(async (format?: string): Promise<ExportT
   try {
     const params = format ? { format } : undefined;
     const response = await serverGet<ApiResponse<ExportTemplate[]>>(
-      `/api/export/templates`,
+      `${API_ENDPOINTS.ADMIN.CONFIGURATIONS}/export/templates`,
       params as Record<string, string | number | boolean>,
       {
         cache: 'force-cache',
@@ -277,7 +277,7 @@ export const getExportTemplates = cache(async (format?: string): Promise<ExportT
 export const getExportAnalytics = cache(async (filters?: Record<string, unknown>): Promise<ExportAnalytics | null> => {
   try {
     const response = await serverGet<ApiResponse<ExportAnalytics>>(
-      `/api/export/analytics`,
+      `${API_ENDPOINTS.ANALYTICS.REPORTS}`,
       filters as Record<string, string | number | boolean>,
       {
         cache: 'force-cache',
@@ -314,7 +314,7 @@ export async function createExportJobAction(data: CreateExportJobData): Promise<
     }
 
     const response = await serverPost<ApiResponse<ExportJob>>(
-      `/api/export/jobs`,
+      `${API_ENDPOINTS.ADMIN.CONFIGURATIONS}/export/jobs`,
       data,
       {
         cache: 'no-store',
@@ -385,7 +385,7 @@ export async function updateExportJobAction(
     }
 
     const response = await serverPut<ApiResponse<ExportJob>>(
-      `/api/export/jobs/${jobId}`,
+      `${API_ENDPOINTS.ADMIN.CONFIGURATIONS}/export/jobs/${jobId}`,
       data,
       {
         cache: 'no-store',
@@ -457,7 +457,7 @@ export async function startExportJobAction(jobId: string): Promise<ActionResult<
     }
 
     const response = await serverPost<ApiResponse<ExportJob>>(
-      `/api/export/jobs/${jobId}/start`,
+      `${API_ENDPOINTS.ADMIN.CONFIGURATIONS}/export/jobs/${jobId}/start`,
       {},
       {
         cache: 'no-store',
@@ -534,7 +534,7 @@ export async function createExportTemplateAction(data: CreateExportTemplateData)
     }
 
     const response = await serverPost<ApiResponse<ExportTemplate>>(
-      `/api/export/templates`,
+      `${API_ENDPOINTS.ADMIN.CONFIGURATIONS}/export/templates`,
       data,
       {
         cache: 'no-store',

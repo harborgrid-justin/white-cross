@@ -10,7 +10,6 @@
  * @see /backend/src/routes/ for backend route definitions
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export const API_ENDPOINTS = {
   // ==========================================
@@ -62,9 +61,16 @@ export const API_ENDPOINTS = {
     REPORT_CARD: (id: string) => `/students/${id}/report-card`,
     VERIFY_ELIGIBILITY: (id: string) => `/students/${id}/verify-eligibility`,
     SEARCH: `/students/search`,
+    SEARCH_BY_QUERY: (query: string) => `/students/search/${encodeURIComponent(query)}`,
     BY_GRADE: (grade: string) => `/students/grade/${grade}`,
     BY_NURSE: (nurseId: string) => `/students/nurse/${nurseId}`,
+    ASSIGNED: `/students/assigned`,
+    STATISTICS: (id: string) => `/students/${id}/statistics`,
+    BULK_UPDATE: `/students/bulk-update`,
+    PERMANENT_DELETE: (id: string) => `/students/${id}/permanent`,
+    GRADES: `/students/grades`,
     HEALTH_RECORDS: (id: string) => `/students/${id}/health-records`,
+    MENTAL_HEALTH_RECORDS: (id: string) => `/students/${id}/mental-health-records`,
     MEDICATIONS: (id: string) => `/students/${id}/medications`,
     IMMUNIZATIONS: (id: string) => `/students/${id}/immunizations`,
     ALLERGIES: (id: string) => `/students/${id}/allergies`,
@@ -298,6 +304,7 @@ export const API_ENDPOINTS = {
       `/audit-logs/resource/${resourceType}/${resourceId}`,
     BY_ACTION: (action: string) => `/audit-logs/action/${action}`,
     PHI_ACCESS: `/audit-logs/phi-access`,
+    PHI_ACCESS_LOG: `/audit/phi-access`,
     EXPORT: `/audit-logs/export`,
   },
 
@@ -330,6 +337,18 @@ export const API_ENDPOINTS = {
     DISMISS: (id: string) => `/alerts/${id}/dismiss`,
     MEDICATION_REMINDERS: `/alerts/medication-reminders`,
     APPOINTMENT_REMINDERS: `/alerts/appointment-reminders`,
+  },
+
+  // ==========================================
+  // DASHBOARD
+  // ==========================================
+  DASHBOARD: {
+    STATS: `/dashboard/stats`,
+    RECENT_ACTIVITIES: `/dashboard/recent-activities`,
+    UPCOMING_APPOINTMENTS: `/dashboard/upcoming-appointments`,
+    CHART_DATA: `/dashboard/chart-data`,
+    WIDGETS: (dashboardId: string) => `/dashboard/${dashboardId}/widgets`,
+    REFRESH: `/dashboard/refresh-cache`,
   },
 
   // ==========================================
@@ -520,6 +539,24 @@ export const API_ENDPOINTS = {
     OVER_BUDGET: `/budget/over-budget`,
     RECOMMENDATIONS: `/budget/recommendations`,
     EXPORT: `/budget/export`,
+  },
+
+  // ==========================================
+  // VENDORS
+  // ==========================================
+  VENDORS: {
+    BASE: `/vendors`,
+    BY_ID: (id: string) => `/vendors/${id}`,
+    SEARCH: (query: string) => `/vendors/search/${encodeURIComponent(query)}`,
+    COMPARE: (itemName: string) => `/vendors/compare/${encodeURIComponent(itemName)}`,
+    TOP: `/vendors/top`,
+    STATISTICS: `/vendors/statistics`,
+    REACTIVATE: (id: string) => `/vendors/${id}/reactivate`,
+    RATING: (id: string) => `/vendors/${id}/rating`,
+    BULK_RATINGS: `/vendors/ratings/bulk`,
+    BY_PAYMENT_TERMS: (terms: string) => `/vendors/payment-terms/${encodeURIComponent(terms)}`,
+    METRICS: (id: string) => `/vendors/${id}/metrics`,
+    PERMANENT_DELETE: (id: string) => `/vendors/${id}/permanent`,
   },
 
   // ==========================================

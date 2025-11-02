@@ -25,6 +25,7 @@
  */
 
 import { logger } from '../utils/logger';
+import { API_ENDPOINTS } from '@/constants/api';
 
 // ==========================================
 // TYPE DEFINITIONS
@@ -76,7 +77,7 @@ export class ConnectionMonitor {
   private connectionHistory: ConnectionEvent[] = [];
   private maxHistorySize = 100;
   private checkInterval: NodeJS.Timeout | null = null;
-  private pingUrl = '/api/health'; // Lightweight health check endpoint
+  private pingUrl = API_ENDPOINTS.SYSTEM.HEALTH; // Lightweight health check endpoint
 
   private constructor() {
     this.currentInfo = this.detectConnectionInfo();

@@ -73,9 +73,12 @@ export type {
 export {
   apiInstance,
   tokenUtils,
-  API_CONFIG,
-  API_ENDPOINTS
+  API_CONFIG
 } from './config/apiConfig';
+
+// Import API_ENDPOINTS from centralized constants
+import { API_ENDPOINTS } from '@/constants/api';
+export { API_ENDPOINTS };
 
 export {
   handleApiError,
@@ -318,47 +321,47 @@ export const inventoryApi = {
     needsMaintenance?: boolean;
     isActive?: boolean;
   }) => {
-    const response = await apiInstance.get('/api/inventory', { params });
+    const response = await apiInstance.get(API_ENDPOINTS.INVENTORY.BASE, { params });
     return response.data;
   },
 
   getById: async (id: string) => {
-    const response = await apiInstance.get(`/api/inventory/${id}`);
+    const response = await apiInstance.get(API_ENDPOINTS.INVENTORY.BY_ID(id));
     return response.data;
   },
 
   create: async (item: any) => {
-    const response = await apiInstance.post('/api/inventory', item);
+    const response = await apiInstance.post(API_ENDPOINTS.INVENTORY.BASE, item);
     return response.data;
   },
 
   update: async (id: string, item: any) => {
-    const response = await apiInstance.put(`/api/inventory/${id}`, item);
+    const response = await apiInstance.put(API_ENDPOINTS.INVENTORY.BY_ID(id), item);
     return response.data;
   },
 
   delete: async (id: string) => {
-    const response = await apiInstance.delete(`/api/inventory/${id}`);
+    const response = await apiInstance.delete(API_ENDPOINTS.INVENTORY.BY_ID(id));
     return response.data;
   },
 
   getAlerts: async () => {
-    const response = await apiInstance.get('/api/inventory/alerts');
+    const response = await apiInstance.get(API_ENDPOINTS.INVENTORY.ALERTS);
     return response.data;
   },
 
   getStats: async () => {
-    const response = await apiInstance.get('/api/inventory/stats');
+    const response = await apiInstance.get(API_ENDPOINTS.INVENTORY.ANALYTICS);
     return response.data;
   },
 
   getCurrentStock: async (id: string) => {
-    const response = await apiInstance.get(`/api/inventory/${id}/stock`);
+    const response = await apiInstance.get(`${API_ENDPOINTS.INVENTORY.BY_ID(id)}/stock`);
     return response.data;
   },
 
   adjustStock: async (id: string, quantity: number, reason: string) => {
-    const response = await apiInstance.post(`/api/inventory/${id}/adjust`, {
+    const response = await apiInstance.post(API_ENDPOINTS.INVENTORY.ADJUST(id), {
       quantity,
       reason
     });
@@ -366,7 +369,7 @@ export const inventoryApi = {
   },
 
   getStockHistory: async (id: string, page?: number, limit?: number) => {
-    const response = await apiInstance.get(`/api/inventory/${id}/history`, {
+    const response = await apiInstance.get(`${API_ENDPOINTS.INVENTORY.BY_ID(id)}/history`, {
       params: { page, limit }
     });
     return response.data;
@@ -382,7 +385,7 @@ export const inventoryApi = {
     expirationDate?: string;
     notes?: string;
   }) => {
-    const response = await apiInstance.post('/api/inventory/transactions', transaction);
+    const response = await apiInstance.post(`${API_ENDPOINTS.INVENTORY.BASE}/transactions`, transaction);
     return response.data;
   },
 
@@ -395,41 +398,41 @@ export const inventoryApi = {
     vendor?: string;
     notes?: string;
   }) => {
-    const response = await apiInstance.post('/api/inventory/maintenance', maintenance);
+    const response = await apiInstance.post(`${API_ENDPOINTS.INVENTORY.BASE}/maintenance`, maintenance);
     return response.data;
   },
 
   getMaintenanceSchedule: async (startDate?: string, endDate?: string) => {
-    const response = await apiInstance.get('/api/inventory/maintenance/schedule', {
+    const response = await apiInstance.get(`${API_ENDPOINTS.INVENTORY.BASE}/maintenance/schedule`, {
       params: { startDate, endDate }
     });
     return response.data;
   },
 
   generatePurchaseOrder: async (items: Array<{ inventoryItemId: string; quantity: number }>) => {
-    const response = await apiInstance.post('/api/inventory/purchase-order', { items });
+    const response = await apiInstance.post(`${API_ENDPOINTS.INVENTORY.BASE}/purchase-order`, { items });
     return response.data;
   },
 
   getValuation: async () => {
-    const response = await apiInstance.get('/api/inventory/valuation');
+    const response = await apiInstance.get(`${API_ENDPOINTS.INVENTORY.BASE}/valuation`);
     return response.data;
   },
 
   getUsageAnalytics: async (startDate?: string, endDate?: string) => {
-    const response = await apiInstance.get('/api/inventory/analytics/usage', {
+    const response = await apiInstance.get(`${API_ENDPOINTS.INVENTORY.BASE}/analytics/usage`, {
       params: { startDate, endDate }
     });
     return response.data;
   },
 
   getSupplierPerformance: async () => {
-    const response = await apiInstance.get('/api/inventory/analytics/suppliers');
+    const response = await apiInstance.get(`${API_ENDPOINTS.INVENTORY.BASE}/analytics/suppliers`);
     return response.data;
   },
 
   search: async (query: string, limit?: number) => {
-    const response = await apiInstance.get(`/api/inventory/search/${query}`, {
+    const response = await apiInstance.get(`${API_ENDPOINTS.INVENTORY.BASE}/search/${encodeURIComponent(query)}`, {
       params: { limit }
     });
     return response.data;

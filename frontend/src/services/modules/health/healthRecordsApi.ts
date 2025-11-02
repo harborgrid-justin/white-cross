@@ -13,7 +13,7 @@
  * @module services/modules/health/healthRecords
  */
 
-import { API_ENDPOINTS } from '@/services/config/apiConfig';
+import { API_ENDPOINTS } from '@/constants/api';
 import { z } from 'zod';
 import { BaseApiService } from '@/services/core/BaseApiService';
 import type { ApiClient } from '@/services/core/ApiClient';
@@ -194,7 +194,7 @@ export class HealthRecordsApiService extends BaseApiService<
   HealthRecordUpdate
 > {
   constructor(client: ApiClient) {
-    super(client, API_ENDPOINTS.HEALTH_RECORDS, {
+    super(client, API_ENDPOINTS.HEALTH_RECORDS.BASE, {
       createSchema: healthRecordCreateSchema,
       updateSchema: healthRecordUpdateSchema
     });
@@ -253,7 +253,7 @@ export class HealthRecordsApiService extends BaseApiService<
       throw new Error('Search query must be at least 3 characters');
     }
 
-    const params = this.buildQueryParams(searchParams);
+    const params = this.buildQueryParams(searchParams as any);
     const response = await this.client.get<PaginatedResponse<HealthRecord>>(
       `${this.baseEndpoint}/search${params}`
     );
@@ -478,7 +478,7 @@ export class HealthRecordsApiService extends BaseApiService<
     recordId?: string
   ): Promise<void> {
     try {
-      await this.client.post('/api/audit/phi-access', {
+      await this.client.post(API_ENDPOINTS.AUDIT.PHI_ACCESS_LOG, {
         action,
         studentId,
         recordType,

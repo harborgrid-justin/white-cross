@@ -494,7 +494,7 @@ export class AuthApi {
    */
   async loginWithGoogle(): Promise<void> {
     const baseUrl = API_CONFIG.BASE_URL.replace('/api', '');
-    window.location.href = `${baseUrl}/api/auth/google`;
+    window.location.href = `${baseUrl}${API_ENDPOINTS.AUTH.LOGIN}/google`;
   }
 
   /**
@@ -502,7 +502,7 @@ export class AuthApi {
    */
   async loginWithMicrosoft(): Promise<void> {
     const baseUrl = API_CONFIG.BASE_URL.replace('/api', '');
-    window.location.href = `${baseUrl}/api/auth/microsoft`;
+    window.location.href = `${baseUrl}${API_ENDPOINTS.AUTH.LOGIN}/microsoft`;
   }
 
   /**

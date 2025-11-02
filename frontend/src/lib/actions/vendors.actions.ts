@@ -27,7 +27,7 @@ import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
 import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache/constants';
 
 // Types
-import type { ApiResponse } from '@/types/api';
+import type { ApiResponse } from '@/types';
 
 // Utils
 import { formatDate } from '@/utils/dateUtils';
@@ -253,7 +253,7 @@ export interface VendorAnalytics {
 export const getVendor = cache(async (id: string): Promise<Vendor | null> => {
   try {
     const response = await serverGet<ApiResponse<Vendor>>(
-      `/api/vendors/${id}`,
+      API_ENDPOINTS.VENDORS.BY_ID(id),
       undefined,
       {
         cache: 'force-cache',
@@ -277,7 +277,7 @@ export const getVendor = cache(async (id: string): Promise<Vendor | null> => {
 export const getVendors = cache(async (filters?: VendorFilters): Promise<Vendor[]> => {
   try {
     const response = await serverGet<ApiResponse<Vendor[]>>(
-      `/api/vendors`,
+      API_ENDPOINTS.VENDORS.BASE,
       filters as Record<string, string | number | boolean>,
       {
         cache: 'force-cache',
@@ -301,7 +301,7 @@ export const getVendors = cache(async (filters?: VendorFilters): Promise<Vendor[
 export const getVendorContracts = cache(async (vendorId: string): Promise<VendorContract[]> => {
   try {
     const response = await serverGet<ApiResponse<VendorContract[]>>(
-      `/api/vendors/${vendorId}/contracts`,
+      `${API_ENDPOINTS.VENDORS.BY_ID(vendorId)}/contracts`,
       undefined,
       {
         cache: 'force-cache',
@@ -325,7 +325,7 @@ export const getVendorContracts = cache(async (vendorId: string): Promise<Vendor
 export const getVendorEvaluations = cache(async (vendorId: string): Promise<VendorEvaluation[]> => {
   try {
     const response = await serverGet<ApiResponse<VendorEvaluation[]>>(
-      `/api/vendors/${vendorId}/evaluations`,
+      `${API_ENDPOINTS.VENDORS.BY_ID(vendorId)}/evaluations`,
       undefined,
       {
         cache: 'force-cache',
@@ -349,7 +349,7 @@ export const getVendorEvaluations = cache(async (vendorId: string): Promise<Vend
 export const getVendorAnalytics = cache(async (filters?: Record<string, unknown>): Promise<VendorAnalytics | null> => {
   try {
     const response = await serverGet<ApiResponse<VendorAnalytics>>(
-      `/api/vendors/analytics`,
+      API_ENDPOINTS.VENDORS.STATISTICS,
       filters as Record<string, string | number | boolean>,
       {
         cache: 'force-cache',
@@ -408,7 +408,7 @@ export async function createVendorAction(data: CreateVendorData): Promise<Action
     };
 
     const response = await serverPost<ApiResponse<Vendor>>(
-      `/api/vendors`,
+      API_ENDPOINTS.VENDORS.BASE,
       vendorData,
       {
         cache: 'no-store',
@@ -495,7 +495,7 @@ export async function updateVendorAction(
     }
 
     const response = await serverPut<ApiResponse<Vendor>>(
-      `/api/vendors/${vendorId}`,
+      API_ENDPOINTS.VENDORS.BY_ID(vendorId),
       data,
       {
         cache: 'no-store',
@@ -567,7 +567,7 @@ export async function deleteVendorAction(vendorId: string): Promise<ActionResult
     }
 
     await serverDelete<ApiResponse<void>>(
-      `/api/vendors/${vendorId}`,
+      API_ENDPOINTS.VENDORS.BY_ID(vendorId),
       {
         cache: 'no-store',
         next: { tags: [VENDOR_CACHE_TAGS.VENDORS, `vendor-${vendorId}`] }
@@ -634,7 +634,7 @@ export async function toggleVendorStatusAction(
     }
 
     const response = await serverPost<ApiResponse<Vendor>>(
-      `/api/vendors/${vendorId}/${isActive ? 'activate' : 'deactivate'}`,
+      isActive ? API_ENDPOINTS.VENDORS.REACTIVATE(vendorId) : `${API_ENDPOINTS.VENDORS.BY_ID(vendorId)}/deactivate`,
       {},
       {
         cache: 'no-store',
@@ -709,7 +709,7 @@ export async function createVendorEvaluationAction(
     }
 
     const response = await serverPost<ApiResponse<VendorEvaluation>>(
-      `/api/vendors/${vendorId}/evaluations`,
+      `${API_ENDPOINTS.VENDORS.BY_ID(vendorId)}/evaluations`,
       evaluationData,
       {
         cache: 'no-store',
@@ -813,7 +813,7 @@ export async function createVendorFromForm(formData: FormData): Promise<ActionRe
   const result = await createVendorAction(vendorData);
   
   if (result.success && result.data) {
-    redirect(`/vendors/${result.data.id}` as any);
+    redirect(`/vendors/${result.data.id}`);
   }
   
   return result;
@@ -904,7 +904,7 @@ export async function getVendorOverview(vendorId: string): Promise<{
     
     const activeContracts = contracts.filter(c => c.status === 'active').length;
     const averageRating = evaluations.length > 0 
-      ? evaluations.reduce((sum, eval) => sum + eval.scores.overall, 0) / evaluations.length
+      ? evaluations.reduce((sum, evaluation) => sum + evaluation.scores.overall, 0) / evaluations.length
       : 0;
     
     return {

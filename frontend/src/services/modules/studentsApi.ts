@@ -399,7 +399,7 @@ export class StudentsApi {
       // ApiClient wraps the backend response: backend returns { data: [...], meta: {...} }
       // ApiClient wraps it as { success: true, data: { data: [...], meta: {...} } }
       const response = await this.client.get<PaginatedStudentsResponse>(
-        `/students?${queryString.toString()}`
+        `${API_ENDPOINTS.STUDENTS.BASE}?${queryString.toString()}`
       );
 
       // Extract the actual data from the ApiClient wrapper
@@ -423,7 +423,7 @@ export class StudentsApi {
       if (!id) throw new Error('Student ID is required');
 
       const response = await this.client.get<BackendApiResponse<{ student: Student }>>(
-        `/api/students/${id}`
+        API_ENDPOINTS.STUDENTS.BY_ID(id)
       );
 
       if (!response.data.success || !response.data.data) {
@@ -463,7 +463,7 @@ export class StudentsApi {
       createStudentSchema.parse(studentData);
 
       const response = await this.client.post<BackendApiResponse<{ student: Student }>>(
-        '/api/students',
+        API_ENDPOINTS.STUDENTS.BASE,
         studentData
       );
 
@@ -512,7 +512,7 @@ export class StudentsApi {
       updateStudentSchema.parse(studentData);
 
       const response = await this.client.put<BackendApiResponse<{ student: Student }>>(
-        `/api/students/${id}`,
+        API_ENDPOINTS.STUDENTS.BY_ID(id),
         studentData
       );
 
@@ -561,7 +561,7 @@ export class StudentsApi {
       if (!id) throw new Error('Student ID is required');
 
       const response = await this.client.delete<BackendApiResponse<{ message: string }>>(
-        `/api/students/${id}`
+        API_ENDPOINTS.STUDENTS.BY_ID(id)
       );
 
       if (!response.data.success) {
@@ -586,7 +586,7 @@ export class StudentsApi {
       if (!id) throw new Error('Student ID is required');
 
       const response = await this.client.put<BackendApiResponse<{ student: Student }>>(
-        `/api/students/${id}/reactivate`
+        API_ENDPOINTS.STUDENTS.REACTIVATE(id)
       );
 
       if (!response.data.success || !response.data.data) {
@@ -609,7 +609,7 @@ export class StudentsApi {
       if (!transferData.nurseId) throw new Error('Nurse ID is required');
 
       const response = await this.client.put<BackendApiResponse<{ student: Student }>>(
-        `/api/students/${id}/transfer`,
+        API_ENDPOINTS.STUDENTS.TRANSFER(id),
         transferData
       );
 
@@ -632,7 +632,7 @@ export class StudentsApi {
       if (!grade) throw new Error('Grade is required');
 
       const response = await this.client.get<BackendApiResponse<{ students: Student[] }>>(
-        `/api/students/grade/${encodeURIComponent(grade)}`
+        API_ENDPOINTS.STUDENTS.BY_GRADE(grade)
       );
 
       if (!response.data.success || !response.data.data) {
@@ -654,7 +654,7 @@ export class StudentsApi {
       if (!query.trim()) return [];
 
       const response = await this.client.get<BackendApiResponse<{ students: Student[] }>>(
-        `/api/students/search/${encodeURIComponent(query)}`
+        API_ENDPOINTS.STUDENTS.SEARCH_BY_QUERY(query)
       );
 
       if (!response.data.success || !response.data.data) {
@@ -674,7 +674,7 @@ export class StudentsApi {
   async getAssignedStudents(): Promise<Student[]> {
     try {
       const response = await this.client.get<BackendApiResponse<{ students: Student[] }>>(
-        '/api/students/assigned'
+        API_ENDPOINTS.STUDENTS.ASSIGNED
       );
 
       if (!response.data.success || !response.data.data) {
@@ -696,7 +696,7 @@ export class StudentsApi {
       if (!studentId) throw new Error('Student ID is required');
 
       const response = await this.client.get<BackendApiResponse<StudentStatistics>>(
-        `/api/students/${studentId}/statistics`
+        API_ENDPOINTS.STUDENTS.STATISTICS(studentId)
       );
 
       if (!response.data.success || !response.data.data) {
@@ -720,7 +720,7 @@ export class StudentsApi {
       }
 
       const response = await this.client.put<BackendApiResponse<{ updatedCount: number }>>(
-        '/api/students/bulk-update',
+        API_ENDPOINTS.STUDENTS.BULK_UPDATE,
         bulkData
       );
 
@@ -743,7 +743,7 @@ export class StudentsApi {
       if (!id) throw new Error('Student ID is required');
 
       const response = await this.client.delete<BackendApiResponse<{ success: boolean; message: string }>>(
-        `/api/students/${id}/permanent`
+        API_ENDPOINTS.STUDENTS.PERMANENT_DELETE(id)
       );
 
       if (!response.data.success || !response.data.data) {
@@ -763,7 +763,7 @@ export class StudentsApi {
   async getAllGrades(): Promise<string[]> {
     try {
       const response = await this.client.get<BackendApiResponse<string[]>>(
-        '/api/students/grades'
+        API_ENDPOINTS.STUDENTS.GRADES
       );
 
       if (!response.data.success || !response.data.data) {
@@ -786,7 +786,7 @@ export class StudentsApi {
       if (!studentId) throw new Error('Student ID is required');
 
       const response = await this.client.get<BackendApiResponse<ExportStudentDataResponse>>(
-        `/api/students/${studentId}/export`
+        API_ENDPOINTS.STUDENTS.EXPORT(studentId)
       );
 
       if (!response.data.success || !response.data.data) {
@@ -826,7 +826,7 @@ export class StudentsApi {
       if (!studentId) throw new Error('Student ID is required');
 
       const response = await this.client.get<BackendApiResponse<any>>(
-        `/api/students/${studentId}/health-records?sensitive=${sensitive}`
+        `${API_ENDPOINTS.STUDENTS.HEALTH_RECORDS(studentId)}?sensitive=${sensitive}`
       );
 
       if (!response.data.success || !response.data.data) {
@@ -848,7 +848,7 @@ export class StudentsApi {
       if (!studentId) throw new Error('Student ID is required');
 
       const response = await this.client.get<BackendApiResponse<any>>(
-        `/api/students/${studentId}/mental-health-records`
+        API_ENDPOINTS.STUDENTS.MENTAL_HEALTH_RECORDS(studentId)
       );
 
       if (!response.data.success || !response.data.data) {

@@ -13,7 +13,7 @@
  * @module services/modules/health/vitalSigns
  */
 
-import { API_ENDPOINTS } from '@/services/config/apiConfig';
+import { API_ENDPOINTS } from '@/constants/api';
 import { z } from 'zod';
 import { BaseApiService } from '@/services/core/BaseApiService';
 import type { ApiClient } from '@/services/core/ApiClient';
@@ -539,7 +539,7 @@ export class VitalSignsApiService extends BaseApiService<
     recordId?: string
   ): Promise<void> {
     try {
-      await this.client.post('/api/audit/phi-access', {
+      await this.client.post(API_ENDPOINTS.AUDIT.PHI_ACCESS_LOG, {
         action,
         studentId,
         recordType,
