@@ -41,15 +41,17 @@ export interface PageHeaderProps {
 
 /**
  * PageHeader component for displaying page titles and actions
+ *
+ * Optimized with React.memo to prevent unnecessary re-renders.
  */
-export function PageHeader({
+export const PageHeader = React.memo<PageHeaderProps>(({
   title,
   subtitle,
   breadcrumbs,
   actions,
   children,
   className = ''
-}: PageHeaderProps) {
+}) => {
   return (
     <div className={`page-header mb-6 ${className}`}>
       {/* Breadcrumbs */}
@@ -121,7 +123,7 @@ export function PageHeader({
         </div>
       )}
     </div>
-  )
-}
+  );
+});
 
-export default PageHeader
+PageHeader.displayName = 'PageHeader';

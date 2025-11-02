@@ -15,11 +15,21 @@
 import React from 'react'
 import { TrendingUp, AlertCircle, Heart, Shield, Download, Upload } from 'lucide-react'
 
+/**
+ * Props for OverviewTab component
+ */
 interface OverviewTabProps {
+  /** Callback to show the edit allergy modal */
   onShowEditAllergyModal: () => void
 }
 
-export const OverviewTab: React.FC<OverviewTabProps> = ({ onShowEditAllergyModal }) => {
+/**
+ * OverviewTab - Health records overview with dashboard and timeline
+ *
+ * Displays health summary cards, timeline, trends, and import/export capabilities.
+ * Optimized with React.memo to prevent unnecessary re-renders.
+ */
+export const OverviewTab = React.memo<OverviewTabProps>(({ onShowEditAllergyModal }) => {
   return (
     <div className="space-y-6" data-testid="overview-content">
       {/* Health Summary Dashboard */}
@@ -150,5 +160,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ onShowEditAllergyModal
         </p>
       </div>
     </div>
-  )
-}
+  );
+});
+
+OverviewTab.displayName = 'OverviewTab';

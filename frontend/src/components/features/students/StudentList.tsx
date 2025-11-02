@@ -10,30 +10,9 @@ import { Button } from '@/components/ui/button';
 import { Eye, Edit, Trash2, LayoutGrid, LayoutList } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import type { Student } from './Student.types';
 
 const cn = (...inputs: (string | undefined)[]) => twMerge(clsx(inputs));
-
-/**
- * Student data type
- */
-export interface Student {
-  id: string;
-  firstName: string;
-  lastName: string;
-  dateOfBirth: string;
-  grade: string;
-  school: string;
-  status: 'active' | 'inactive' | 'transferred' | 'graduated';
-  hasAllergies: boolean;
-  hasMedications: boolean;
-  hasChronicConditions: boolean;
-  guardianName?: string;
-  guardianPhone?: string;
-  email?: string;
-  photoUrl?: string;
-  enrollmentDate?: string;
-  lastVisit?: string;
-}
 
 /**
  * StudentList props

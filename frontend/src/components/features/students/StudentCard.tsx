@@ -8,7 +8,7 @@ import { StudentStatusBadge } from './StudentStatusBadge';
 import { Eye, Edit, Trash2, Phone, Mail, Calendar, AlertCircle } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import type { Student } from './StudentList';
+import type { Student } from './Student.types';
 
 const cn = (...inputs: (string | undefined)[]) => twMerge(clsx(inputs));
 
@@ -39,6 +39,8 @@ export interface StudentCardProps {
 /**
  * StudentCard - Display student information in card format
  *
+ * Optimized with React.memo to prevent unnecessary re-renders in lists.
+ *
  * @example
  * ```tsx
  * <StudentCard
@@ -51,7 +53,7 @@ export interface StudentCardProps {
  * />
  * ```
  */
-export const StudentCard: React.FC<StudentCardProps> = ({
+export const StudentCard = React.memo<StudentCardProps>(({
   student,
   onView,
   onEdit,
@@ -239,11 +241,9 @@ export const StudentCard: React.FC<StudentCardProps> = ({
       </div>
     </Card>
   );
-};
+});
 
 StudentCard.displayName = 'StudentCard';
-
-export default React.memo(StudentCard);
 
 
 

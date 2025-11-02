@@ -35,5 +35,5 @@ export type { DashboardCardProps } from './DashboardCard';
 export { DashboardGrid } from './DashboardGrid';
 export type { DashboardGridProps } from './DashboardGrid';
 
-// Re-export StatsWidget if it exists
-export { StatsWidget } from '../../../pages/dashboard/components/StatsWidget';
+// Note: StatsWidget should be imported directly from pages/dashboard/components when needed
+// Removing re-export to prevent import resolution issues

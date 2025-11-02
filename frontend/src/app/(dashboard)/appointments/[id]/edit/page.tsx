@@ -11,7 +11,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { PageHeader } from '@/components/layouts/PageHeader';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/layout/Card';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Edit, AlertTriangle } from 'lucide-react';
 import { SchedulingForm } from '@/components/appointments';
 import { apiClient, API_ENDPOINTS } from '@/lib/api-client';

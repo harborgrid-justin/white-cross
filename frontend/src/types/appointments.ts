@@ -17,7 +17,10 @@
  */
 
 import type { BaseEntity } from './common';
-import type { Student, User } from '../services/types';
+// Import Student and User types to avoid circular dependency
+// Note: If these types are needed, consider re-defining them here or in a shared location
+import type { Student } from './student.types';
+import type { User } from './common';
 
 // =====================
 // ENUMS

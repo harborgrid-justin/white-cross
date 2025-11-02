@@ -19,7 +19,8 @@
  * @module types/navigation
  */
 
-import { UserRole, PermissionResource, PermissionAction } from './index';
+// Import directly from source files to avoid circular dependency with index
+import { UserRole, PermissionResource, PermissionAction } from './common';
 import { LucideIcon } from 'lucide-react';
 
 // ============================================================================

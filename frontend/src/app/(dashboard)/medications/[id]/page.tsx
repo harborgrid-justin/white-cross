@@ -98,7 +98,7 @@ import { fetchWithAuth } from '@/lib/server/fetch';
 import { API_ENDPOINTS } from '@/constants/api';
 import MedicationDetails from '@/components/medications/core/MedicationDetails';
 import AdministrationLog from '@/components/medications/administration/AdministrationLog';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 
 

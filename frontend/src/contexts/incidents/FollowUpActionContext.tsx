@@ -29,7 +29,7 @@
 import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { incidentReportsApi } from '@/services';
-import { useAuthContext } from '../../utilities/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   ActionStatus,
   ActionPriority,
@@ -264,7 +264,7 @@ export function FollowUpActionProvider({
   refreshInterval,
   autoNotifyOverdue = true,
 }: FollowUpActionProviderProps) {
-  const { user } = useAuthContext();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   // =====================

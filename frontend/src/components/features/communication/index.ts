@@ -9,38 +9,29 @@
  * @module features/communication
  */
 
-/**
- * Communication statistics dashboard component
- * Displays aggregated message delivery metrics and performance indicators
- */
+// Main Hub
+export { default as CommunicationHub } from './CommunicationHub'
+
+// History and Templates
+export { MessageHistory } from './MessageHistory'
+export { MessageTemplates } from './MessageTemplates'
+
+// Statistics
 export { default as CommunicationStats } from './components/CommunicationStats'
 
-/**
- * Message composition interface for sending messages to specific recipients
- * Supports multiple channels, priority levels, and scheduled delivery
- */
+// Individual Components
+export { BroadcastForm } from './components/BroadcastForm'
+export { BroadcastManager } from './components/BroadcastManager'
+export { EmergencyAlert } from './components/EmergencyAlert'
+export { MessageComposer } from './components/MessageComposer'
+export { MessageInbox } from './components/MessageInbox'
+export { MessageList } from './components/MessageList'
+export { MessageThread } from './components/MessageThread'
+export { NotificationBell } from './components/NotificationBell'
+
+// Tab Components
 export { default as CommunicationComposeTab } from './tabs/CommunicationComposeTab'
-
-/**
- * Message history and audit trail viewer
- * Displays chronological list of sent messages with delivery details
- */
 export { default as CommunicationHistoryTab } from './tabs/CommunicationHistoryTab'
-
-/**
- * Reusable message template management interface
- * Create and manage templates with variable substitution for personalized communications
- */
 export { default as CommunicationTemplatesTab } from './tabs/CommunicationTemplatesTab'
-
-/**
- * Broadcast messaging interface for mass communications
- * Send messages to multiple recipients with grade-level and role-based filtering
- */
 export { default as CommunicationBroadcastTab } from './tabs/CommunicationBroadcastTab'
-
-/**
- * Emergency alert system interface
- * High-priority alert composition and delivery for critical healthcare situations
- */
 export { default as CommunicationEmergencyTab } from './tabs/CommunicationEmergencyTab'

@@ -133,7 +133,7 @@ import { getIncident } from '@/actions/incidents.actions';
 import { notFound } from 'next/navigation';
 import { Card } from '@/components/ui/layout/Card';
 import { Badge } from '@/components/ui/display/Badge';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 

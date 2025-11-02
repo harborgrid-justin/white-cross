@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 White Cross is an enterprise-grade healthcare platform built with Next.js 16 for managing student health records, medications, appointments, incidents, and compliance in educational environments. The application is HIPAA-compliant and designed for school nurses and healthcare administrators.
 
+**📚 State Management Guide**: For comprehensive state management patterns, boundaries, and best practices, see [STATE_MANAGEMENT.md](./STATE_MANAGEMENT.md).
+
 **Tech Stack:**
 - Next.js 16.0.0 (App Router)
 - React 19.2.0
@@ -93,7 +95,7 @@ Routes use parallel routes (`@modal`, `@sidebar`) and intercepting routes for ad
 
 ### State Management Architecture
 
-**Three-layer state management:**
+**Three-layer state management:** (See [STATE_MANAGEMENT.md](./STATE_MANAGEMENT.md) for complete guide)
 
 1. **Server State (TanStack Query)** - Primary data fetching
    - Located in `src/hooks/domains/*/queries/`
@@ -108,9 +110,11 @@ Routes use parallel routes (`@modal`, `@sidebar`) and intercepting routes for ad
    - **Critical:** PHI excluded from localStorage persistence (HIPAA)
    - Uses custom persistence middleware (non-PHI only)
 
-3. **Form State (React Hook Form + Zod)** - Form validation
+3. **Local State (React useState/Context)** - Component and feature-scoped state
+   - Form state: React Hook Form + Zod (`src/lib/validations/`)
+   - Component state: useState, useReducer
+   - Feature contexts: `src/contexts/` (e.g., FollowUpActionContext)
    - Schemas: `src/lib/validations/`
-   - Form components use `react-hook-form` with `@hookform/resolvers/zod`
 
 ### Data Fetching Patterns
 
