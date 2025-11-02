@@ -12,8 +12,29 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Eye, FileText, Calendar, Trash2 } from 'lucide-react';
+import { Eye, FileText, Calendar } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  TableEmptyState,
+  TableLoadingState,
+} from '@/components/ui/table';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 import { useStudents, usePrefetchStudent } from '@/lib/query/hooks/useStudents';
 import { ErrorDisplay } from '@/components/shared/errors/ErrorBoundary';
 import type { PaginatedStudentsResponse } from '@/types/student.types';
@@ -71,184 +92,232 @@ export function StudentsTable({ initialData, searchParams }: StudentsTableProps)
   const totalPages = Math.ceil(totalStudents / 20);
   const startIndex = (currentPage - 1) * 20;
 
+  const renderPaginationItems = () => {
+    const items = [];
+    const maxVisible = 5;
+
+    if (totalPages <= maxVisible) {
+      // Show all pages
+      for (let i = 1; i <= totalPages; i++) {
+        items.push(
+          <PaginationItem key={i}>
+            <PaginationLink
+              onClick={() => handlePageChange(i)}
+              isActive={currentPage === i}
+              className="cursor-pointer"
+            >
+              {i}
+            </PaginationLink>
+          </PaginationItem>
+        );
+      }
+    } else {
+      // Show first, last, and current with ellipsis
+      items.push(
+        <PaginationItem key={1}>
+          <PaginationLink
+            onClick={() => handlePageChange(1)}
+            isActive={currentPage === 1}
+            className="cursor-pointer"
+          >
+            1
+          </PaginationLink>
+        </PaginationItem>
+      );
+
+      if (currentPage > 3) {
+        items.push(
+          <PaginationItem key="ellipsis-1">
+            <PaginationEllipsis />
+          </PaginationItem>
+        );
+      }
+
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+
+      for (let i = start; i <= end; i++) {
+        items.push(
+          <PaginationItem key={i}>
+            <PaginationLink
+              onClick={() => handlePageChange(i)}
+              isActive={currentPage === i}
+              className="cursor-pointer"
+            >
+              {i}
+            </PaginationLink>
+          </PaginationItem>
+        );
+      }
+
+      if (currentPage < totalPages - 2) {
+        items.push(
+          <PaginationItem key="ellipsis-2">
+            <PaginationEllipsis />
+          </PaginationItem>
+        );
+      }
+
+      items.push(
+        <PaginationItem key={totalPages}>
+          <PaginationLink
+            onClick={() => handlePageChange(totalPages)}
+            isActive={currentPage === totalPages}
+            className="cursor-pointer"
+          >
+            {totalPages}
+          </PaginationLink>
+        </PaginationItem>
+      );
+    }
+
+    return items;
+  };
+
   return (
-    <Card>
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Student
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Grade
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Guardian
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Medical Info
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+    <div className="space-y-4">
+      <Card>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Student</TableHead>
+              <TableHead>Grade</TableHead>
+              <TableHead>Guardian</TableHead>
+              <TableHead>Medical Info</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {isLoading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i}>
-                  <td colSpan={5} className="px-6 py-4">
-                    <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                  </td>
-                </tr>
-              ))
+              <TableLoadingState colSpan={5} />
             ) : students.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                  No students found
-                </td>
-              </tr>
+              <TableEmptyState colSpan={5} message="No students found" />
             ) : (
               students.map((student) => (
-                <tr
+                <TableRow
                   key={student.id}
-                  className="hover:bg-gray-50"
                   onMouseEnter={() => prefetchStudent(student.id)}
                 >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">
+                  <TableCell>
+                    <div className="space-y-1">
+                      <div className="font-medium">
                         {student.firstName} {student.lastName}
                       </div>
-                      <div className="text-sm text-gray-500">{student.studentNumber}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {student.studentNumber}
+                      </div>
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      {student.grade}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      {student.emergencyContacts && student.emergencyContacts.length > 0 ? (
-                        <>
-                          <div className="text-sm text-gray-900">
-                            {student.emergencyContacts[0].firstName}{' '}
-                            {student.emergencyContacts[0].lastName}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {student.emergencyContacts[0].phoneNumber}
-                          </div>
-                        </>
-                      ) : (
-                        <div className="text-sm text-gray-400">No contact</div>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="secondary">{student.grade}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    {student.emergencyContacts && student.emergencyContacts.length > 0 ? (
+                      <div className="space-y-1">
+                        <div className="text-sm">
+                          {student.emergencyContacts[0].firstName}{' '}
+                          {student.emergencyContacts[0].lastName}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {student.emergencyContacts[0].phoneNumber}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-sm text-muted-foreground">No contact</div>
+                    )}
+                  </TableCell>
+                  <TableCell>
                     <div className="flex flex-wrap gap-1">
                       {student.chronicConditions &&
                         student.chronicConditions.map((condition) => (
-                          <span
+                          <Badge
                             key={condition.id}
-                            className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800"
+                            variant="destructive"
+                            className="text-xs"
                           >
                             {condition.conditionName}
-                          </span>
+                          </Badge>
                         ))}
                       {student.allergies &&
                         student.allergies.map((allergy) => (
-                          <span
+                          <Badge
                             key={allergy.id}
-                            className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800"
+                            className="bg-orange-100 text-orange-800 hover:bg-orange-200 text-xs"
                           >
                             {allergy.allergen}
-                          </span>
+                          </Badge>
                         ))}
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex items-center justify-end space-x-2">
-                      <Link
-                        href={`/students/${student.id}`}
-                        className="text-blue-600 hover:text-blue-900"
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        asChild
                         title="View Details"
                       >
-                        <Eye className="h-4 w-4" />
-                      </Link>
-                      <Link
-                        href={`/students/${student.id}/health-records`}
-                        className="text-purple-600 hover:text-purple-900"
+                        <Link href={`/students/${student.id}`}>
+                          <Eye className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        asChild
                         title="Health Records"
                       >
-                        <FileText className="h-4 w-4" />
-                      </Link>
-                      <Link
-                        href={`/appointments?studentId=${student.id}`}
-                        className="text-green-600 hover:text-green-900"
+                        <Link href={`/students/${student.id}/health-records`}>
+                          <FileText className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        asChild
                         title="Schedule Appointment"
                       >
-                        <Calendar className="h-4 w-4" />
-                      </Link>
+                        <Link href={`/appointments?studentId=${student.id}`}>
+                          <Calendar className="h-4 w-4" />
+                        </Link>
+                      </Button>
                     </div>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))
             )}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
+      </Card>
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-          <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm text-gray-700">
-                Showing <span className="font-medium">{startIndex + 1}</span> to{' '}
-                <span className="font-medium">{Math.min(startIndex + 20, totalStudents)}</span> of{' '}
-                <span className="font-medium">{totalStudents}</span> results
-              </p>
-            </div>
-            <div>
-              <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                <button
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Showing <span className="font-medium">{startIndex + 1}</span> to{' '}
+            <span className="font-medium">{Math.min(startIndex + 20, totalStudents)}</span> of{' '}
+            <span className="font-medium">{totalStudents}</span> results
+          </p>
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
                   onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Previous
-                </button>
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  const page = i + 1;
-                  return (
-                    <button
-                      key={page}
-                      onClick={() => handlePageChange(page)}
-                      className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                        currentPage === page
-                          ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                          : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  );
-                })}
-                <button
+                  className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                />
+              </PaginationItem>
+              {renderPaginationItems()}
+              <PaginationItem>
+                <PaginationNext
                   onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-                  disabled={currentPage === totalPages}
-                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Next
-                </button>
-              </nav>
-            </div>
-          </div>
+                  className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
         </div>
       )}
-    </Card>
+    </div>
   );
 }
 

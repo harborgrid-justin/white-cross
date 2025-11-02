@@ -1,121 +1,72 @@
 /**
  * Appointment Detail Page - Dynamic Route
- * 
+ *
  * Route: /appointments/[id]
  * Shows detailed view of a specific appointment
+ *
+ * Next.js 16 Best Practices:
+ * - Server component with async data fetching
+ * - Parallel data preloading with generateMetadata
+ * - Proper TypeScript types
+ * - notFound() for 404 handling
  */
 
-'use client';
-
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { PageHeader } from '@/components/layouts/PageHeader';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/layout/Card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Edit, Calendar, User, Clock, MapPin, FileText, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
-import { apiClient, API_ENDPOINTS } from '@/lib/api-client';
+import { getAppointment } from '@/lib/actions/appointments.actions';
 import { Appointment, appointmentUtils } from '../data';
+import { AppointmentActions } from './_components/AppointmentActions';
 
-export default function AppointmentDetailPage() {
-  const params = useParams();
-  const router = useRouter();
-  const [appointment, setAppointment] = useState<Appointment | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+/**
+ * Generate metadata for the appointment page
+ * This preloads the appointment data for better performance
+ */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const appointment = await getAppointment(id);
 
-  const appointmentId = params.id as string;
-
-  useEffect(() => {
-    const loadAppointment = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const response = await apiClient.get<{ data: Appointment }>(
-          API_ENDPOINTS.APPOINTMENTS.BY_ID(appointmentId)
-        );
-
-        const appointmentData = response.data || response;
-        setAppointment(appointmentData as Appointment);
-        setLoading(false);
-      } catch (err: unknown) {
-        console.error('Error loading appointment:', err);
-        let errorMessage = 'Failed to load appointment';
-        if (err instanceof Error) {
-          errorMessage = err.message;
-        }
-        setError(errorMessage);
-        setLoading(false);
-      }
+  if (!appointment) {
+    return {
+      title: 'Appointment Not Found | White Cross Healthcare',
     };
-
-    if (appointmentId) {
-      loadAppointment();
-    }
-  }, [appointmentId]);
-
-  const handleStatusUpdate = async (newStatus: Appointment['status']) => {
-    if (!appointment) return;
-
-    try {
-      let endpoint = '';
-      switch (newStatus) {
-        case 'confirmed':
-          endpoint = API_ENDPOINTS.APPOINTMENTS.CONFIRM(appointment.id);
-          break;
-        case 'completed':
-          endpoint = API_ENDPOINTS.APPOINTMENTS.COMPLETE(appointment.id);
-          break;
-        case 'cancelled':
-          endpoint = API_ENDPOINTS.APPOINTMENTS.CANCEL(appointment.id);
-          break;
-        case 'no-show':
-          endpoint = API_ENDPOINTS.APPOINTMENTS.NO_SHOW(appointment.id);
-          break;
-      }
-
-      if (endpoint) {
-        await apiClient.post(endpoint, {});
-        setAppointment({ ...appointment, status: newStatus });
-      }
-    } catch (err) {
-      console.error('Error updating appointment status:', err);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-gray-600">Loading appointment...</span>
-      </div>
-    );
   }
 
-  if (error || !appointment) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <AlertTriangle className="h-12 w-12 text-red-600 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            {error ? 'Error Loading Appointment' : 'Appointment Not Found'}
-          </h3>
-          <p className="text-gray-600 mb-4">
-            {error || 'The appointment you are looking for does not exist.'}
-          </p>
-          <div className="flex gap-2 justify-center">
-            <Button onClick={() => router.back()} variant="outline">
-              Go Back
-            </Button>
-            <Link href="/appointments">
-              <Button>View All Appointments</Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
+  return {
+    title: `${appointment.appointmentType} - ${appointment.studentName || 'Student'} | White Cross Healthcare`,
+    description: `Appointment details for ${appointment.studentName || 'student'}`,
+  };
+}
+
+/**
+ * Appointment Detail Page Component - Server Component
+ *
+ * This page demonstrates Next.js 16 best practices:
+ * - Async server component for data fetching
+ * - Parallel data preloading via generateMetadata
+ * - Proper error handling with notFound()
+ * - TypeScript types for all props
+ */
+export default async function AppointmentDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id: appointmentId } = await params;
+  const appointment = await getAppointment(appointmentId);
+
+  // Handle not found
+  if (!appointment) {
+    notFound();
   }
 
   return (
@@ -179,7 +130,7 @@ export default function AppointmentDetailPage() {
                   </div>
                 </div>
               </div>
-              
+
               {appointment.reason && (
                 <div>
                   <label className="text-sm font-medium text-gray-600">Reason</label>
@@ -211,54 +162,9 @@ export default function AppointmentDetailPage() {
           </Card>
         </div>
 
-        {/* Actions Sidebar */}
+        {/* Actions Sidebar - Client component for interactive actions */}
         <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {appointment.status === 'scheduled' && (
-                <Button 
-                  onClick={() => handleStatusUpdate('confirmed')} 
-                  className="w-full"
-                  variant="outline"
-                >
-                  Confirm Appointment
-                </Button>
-              )}
-              
-              {(appointment.status === 'confirmed' || appointment.status === 'in-progress') && (
-                <Button 
-                  onClick={() => handleStatusUpdate('completed')} 
-                  className="w-full"
-                  variant="primary"
-                >
-                  Mark Complete
-                </Button>
-              )}
-              
-              {appointmentUtils.canCancel(appointment.status) && (
-                <Button 
-                  onClick={() => handleStatusUpdate('cancelled')} 
-                  className="w-full"
-                  variant="outline"
-                >
-                  Cancel Appointment
-                </Button>
-              )}
-              
-              {appointment.status === 'confirmed' && (
-                <Button 
-                  onClick={() => handleStatusUpdate('no-show')} 
-                  className="w-full"
-                  variant="outline"
-                >
-                  Mark No-Show
-                </Button>
-              )}
-            </CardContent>
-          </Card>
+          <AppointmentActions appointment={appointment} />
 
           {appointment.nurseName && (
             <Card>

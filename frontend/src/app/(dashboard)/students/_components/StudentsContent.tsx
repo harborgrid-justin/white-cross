@@ -2,18 +2,30 @@
  * @fileoverview Students Content Component - Main content area for student management
  * @module app/(dashboard)/students/_components/StudentsContent
  * @category Students - Components
+ *
+ * This component provides a comprehensive student management interface with:
+ * - Real-time student data fetching with proper loading and error states
+ * - Multi-select functionality for bulk operations
+ * - CSV export capabilities
+ * - Responsive design (desktop table view and mobile card view)
+ * - Performance optimizations using React.memo, useCallback, and useMemo
+ *
+ * @example
+ * ```tsx
+ * <StudentsContent searchParams={{ grade: '10th', status: 'ACTIVE' }} />
+ * ```
  */
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo, memo, type FC, type ReactNode } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  Users, 
-  GraduationCap, 
+import {
+  Users,
+  GraduationCap,
   Plus,
   Download,
   Eye,
@@ -23,11 +35,15 @@ import {
   AlertTriangle,
   FileText,
   UserCheck,
-  UserX
+  UserX,
+  type LucideIcon
 } from 'lucide-react';
 import { getStudents } from '@/lib/actions/students.actions';
 import type { Student } from '@/types/student.types';
 
+/**
+ * Props for the StudentsContent component
+ */
 interface StudentsContentProps {
   searchParams: {
     page?: string;
@@ -41,11 +57,27 @@ interface StudentsContentProps {
   };
 }
 
-function getStatusBadgeVariant(isActive: boolean) {
-  return isActive ? 'default' : 'secondary';
+/**
+ * Props for the StatCard component
+ */
+interface StatCardProps {
+  label: string;
+  value: number | string;
+  icon: LucideIcon;
+  iconColor: string;
 }
 
-function getGradeBadgeColor(grade: string) {
+/**
+ * Get badge variant based on student active status
+ */
+const getStatusBadgeVariant = (isActive: boolean): 'default' | 'secondary' => {
+  return isActive ? 'default' : 'secondary';
+};
+
+/**
+ * Get grade badge color classes
+ */
+const getGradeBadgeColor = (grade: string): string => {
   switch (grade) {
     case '9th': return 'bg-blue-100 text-blue-800 border-blue-200';
     case '10th': return 'bg-green-100 text-green-800 border-green-200';
@@ -53,31 +85,71 @@ function getGradeBadgeColor(grade: string) {
     case '12th': return 'bg-orange-100 text-orange-800 border-orange-200';
     default: return 'bg-gray-100 text-gray-800 border-gray-200';
   }
-}
+};
 
-function calculateAge(dateOfBirth: string): number {
+/**
+ * Calculate age from date of birth
+ * @param dateOfBirth - ISO date string of birth date
+ * @returns Age in years
+ */
+const calculateAge = (dateOfBirth: string): number => {
   const today = new Date();
   const birthDate = new Date(dateOfBirth);
   let age = today.getFullYear() - birthDate.getFullYear();
   const monthDiff = today.getMonth() - birthDate.getMonth();
-  
+
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
     age--;
   }
-  
-  return age;
-}
 
+  return age;
+};
+
+/**
+ * Check if student has health alerts (allergies, medications, or chronic conditions)
+ */
+const hasHealthAlerts = (student: Student): boolean => {
+  return (
+    (student.allergies && student.allergies.length > 0) ||
+    (student.medications && student.medications.length > 0) ||
+    (student.chronicConditions && student.chronicConditions.length > 0)
+  );
+};
+
+/**
+ * StatCard Component - Memoized statistics card
+ * Displays a single statistic with icon and label
+ */
+const StatCard: FC<StatCardProps> = memo(({ label, value, icon: Icon, iconColor }) => (
+  <Card>
+    <div className="p-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-600">{label}</p>
+          <p className="text-2xl font-bold text-gray-900">{value}</p>
+        </div>
+        <Icon className={`h-8 w-8 ${iconColor}`} />
+      </div>
+    </div>
+  </Card>
+));
+StatCard.displayName = 'StatCard';
+
+/**
+ * Main StudentsContent Component
+ * Manages student data fetching, filtering, selection, and display
+ */
 export function StudentsContent({ searchParams }: StudentsContentProps) {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedStudents, setSelectedStudents] = useState<Set<string>>(new Set());
 
+  // Fetch students data based on search params
   useEffect(() => {
-    async function fetchStudents() {
+    const fetchStudents = async () => {
       try {
         setLoading(true);
-        
+
         // Build filters from searchParams
         const filters: Record<string, string | boolean | undefined> = {
           search: searchParams.search,
@@ -107,29 +179,81 @@ export function StudentsContent({ searchParams }: StudentsContentProps) {
       } finally {
         setLoading(false);
       }
-    }
+    };
 
     fetchStudents();
   }, [searchParams]);
 
-  const handleSelectStudent = (studentId: string) => {
-    const newSelected = new Set(selectedStudents);
-    if (newSelected.has(studentId)) {
-      newSelected.delete(studentId);
-    } else {
-      newSelected.add(studentId);
-    }
-    setSelectedStudents(newSelected);
-  };
+  /**
+   * Handle individual student selection
+   * Memoized to prevent unnecessary re-renders
+   */
+  const handleSelectStudent = useCallback((studentId: string) => {
+    setSelectedStudents(prevSelected => {
+      const newSelected = new Set(prevSelected);
+      if (newSelected.has(studentId)) {
+        newSelected.delete(studentId);
+      } else {
+        newSelected.add(studentId);
+      }
+      return newSelected;
+    });
+  }, []);
 
-  const handleSelectAll = () => {
-    if (selectedStudents.size === students.length) {
-      setSelectedStudents(new Set());
-    } else {
-      setSelectedStudents(new Set(students.map((s: Student) => s.id)));
-    }
-  };
+  /**
+   * Handle select all / deselect all
+   * Memoized to prevent unnecessary re-renders
+   */
+  const handleSelectAll = useCallback(() => {
+    setSelectedStudents(prevSelected => {
+      if (prevSelected.size === students.length) {
+        return new Set();
+      } else {
+        return new Set(students.map((s: Student) => s.id));
+      }
+    });
+  }, [students]);
 
+  /**
+   * Handle CSV export of selected students
+   * Memoized to prevent unnecessary re-creation
+   */
+  const handleExport = useCallback(() => {
+    const selectedStudentData = students.filter(s => selectedStudents.has(s.id));
+    const csvContent = [
+      'Student ID,Name,Grade,Status,Phone,Email',
+      ...selectedStudentData.map(s =>
+        `${s.studentNumber},"${s.firstName} ${s.lastName}",${s.grade},${s.isActive ? 'Active' : 'Inactive'},${s.emergencyContacts?.[0]?.phoneNumber || 'N/A'},${s.emergencyContacts?.[0]?.email || 'N/A'}`
+      )
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `students-export-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }, [students, selectedStudents]);
+
+  /**
+   * Computed statistics - memoized to avoid recalculation on every render
+   */
+  const stats = useMemo(() => {
+    const totalStudents = students.length;
+    const activeStudents = students.filter((s: Student) => s.isActive).length;
+    const healthAlertsCount = students.filter((s: Student) => hasHealthAlerts(s)).length;
+    const presentToday = activeStudents; // In a real system, this would be from attendance data
+
+    return {
+      totalStudents,
+      activeStudents,
+      healthAlertsCount,
+      presentToday
+    };
+  }, [students]);
+
+  // Loading state with skeleton UI
   if (loading) {
     return (
       <div className="space-y-6">
@@ -150,67 +274,34 @@ export function StudentsContent({ searchParams }: StudentsContentProps) {
     );
   }
 
-  const totalStudents = students.length;
-  const activeStudents = students.filter((s: Student) => s.isActive).length;
-  const healthAlerts = students.filter((s: Student) =>
-    (s.allergies && s.allergies.length > 0) ||
-    (s.medications && s.medications.length > 0) ||
-    (s.chronicConditions && s.chronicConditions.length > 0)
-  ).length;
-  // Calculate present today as active students (in a real system, this would be from attendance data)
-  const presentToday = activeStudents;
-
   return (
     <div className="space-y-6">
-      {/* Statistics Cards */}
+      {/* Statistics Cards - Memoized with StatCard components */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <div className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Students</p>
-                <p className="text-2xl font-bold text-gray-900">{totalStudents}</p>
-              </div>
-              <Users className="h-8 w-8 text-blue-600" />
-            </div>
-          </div>
-        </Card>
-
-        <Card>
-          <div className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Present Today</p>
-                <p className="text-2xl font-bold text-green-600">{presentToday}</p>
-              </div>
-              <UserCheck className="h-8 w-8 text-green-600" />
-            </div>
-          </div>
-        </Card>
-
-        <Card>
-          <div className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Health Alerts</p>
-                <p className="text-2xl font-bold text-orange-600">{healthAlerts}</p>
-              </div>
-              <AlertTriangle className="h-8 w-8 text-orange-600" />
-            </div>
-          </div>
-        </Card>
-
-        <Card>
-          <div className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Active</p>
-                <p className="text-2xl font-bold text-blue-600">{activeStudents}</p>
-              </div>
-              <GraduationCap className="h-8 w-8 text-blue-600" />
-            </div>
-          </div>
-        </Card>
+        <StatCard
+          label="Total Students"
+          value={stats.totalStudents}
+          icon={Users}
+          iconColor="text-blue-600"
+        />
+        <StatCard
+          label="Present Today"
+          value={stats.presentToday}
+          icon={UserCheck}
+          iconColor="text-green-600"
+        />
+        <StatCard
+          label="Health Alerts"
+          value={stats.healthAlertsCount}
+          icon={AlertTriangle}
+          iconColor="text-orange-600"
+        />
+        <StatCard
+          label="Active"
+          value={stats.activeStudents}
+          icon={GraduationCap}
+          iconColor="text-blue-600"
+        />
       </div>
 
       {/* Students Table */}
@@ -224,27 +315,10 @@ export function StudentsContent({ searchParams }: StudentsContentProps) {
                   <span className="text-sm text-gray-600 whitespace-nowrap">
                     {selectedStudents.size} selected
                   </span>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
-                    onClick={() => {
-                      // Export selected students functionality
-                      const selectedStudentData = students.filter(s => selectedStudents.has(s.id));
-                      const csvContent = [
-                        'Student ID,Name,Grade,Status,Phone,Email',
-                        ...selectedStudentData.map(s => 
-                          `${s.studentNumber},"${s.firstName} ${s.lastName}",${s.grade},${s.isActive ? 'Active' : 'Inactive'},${s.emergencyContacts?.[0]?.phoneNumber || 'N/A'},${s.emergencyContacts?.[0]?.email || 'N/A'}`
-                        )
-                      ].join('\n');
-                      
-                      const blob = new Blob([csvContent], { type: 'text/csv' });
-                      const url = window.URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = `students-export-${new Date().toISOString().split('T')[0]}.csv`;
-                      a.click();
-                      window.URL.revokeObjectURL(url);
-                    }}
+                    onClick={handleExport}
                     className="flex-shrink-0"
                   >
                     <Download className="h-4 w-4 sm:mr-2" />
@@ -345,15 +419,15 @@ export function StudentsContent({ searchParams }: StudentsContentProps) {
                         <div className="flex items-center gap-1">
                           <Phone className="h-3 w-3 text-gray-400" />
                           <span>
-                            {student.emergencyContacts && student.emergencyContacts.length > 0 
-                              ? student.emergencyContacts[0].phoneNumber 
+                            {student.emergencyContacts && student.emergencyContacts.length > 0
+                              ? student.emergencyContacts[0].phoneNumber
                               : 'N/A'}
                           </span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Mail className="h-3 w-3 text-gray-400" />
                           <span className="text-xs">
-                            {student.emergencyContacts && student.emergencyContacts.length > 0 
+                            {student.emergencyContacts && student.emergencyContacts.length > 0
                               ? student.emergencyContacts[0].email || 'N/A'
                               : 'N/A'}
                           </span>
@@ -369,15 +443,11 @@ export function StudentsContent({ searchParams }: StudentsContentProps) {
                           </span>
                         </div>
                         <div className="flex items-center gap-1">
-                          {((student.allergies && student.allergies.length > 0) || 
-                            (student.medications && student.medications.length > 0) ||
-                            (student.chronicConditions && student.chronicConditions.length > 0)) && (
+                          {hasHealthAlerts(student) && (
                             <AlertTriangle className="h-3 w-3 text-orange-500" />
                           )}
                           <span className="text-xs text-gray-500">
-                            Health: {((student.allergies && student.allergies.length > 0) || 
-                                     (student.medications && student.medications.length > 0) ||
-                                     (student.chronicConditions && student.chronicConditions.length > 0)) ? 'Alerts' : 'Normal'}
+                            Health: {hasHealthAlerts(student) ? 'Alerts' : 'Normal'}
                           </span>
                         </div>
                       </div>
@@ -482,13 +552,11 @@ export function StudentsContent({ searchParams }: StudentsContentProps) {
                           <Badge variant={getStatusBadgeVariant(student.isActive)}>
                             {student.isActive ? 'ACTIVE' : 'INACTIVE'}
                           </Badge>
-                          {((student.allergies && student.allergies.length > 0) || 
-                            (student.medications && student.medications.length > 0) ||
-                            (student.chronicConditions && student.chronicConditions.length > 0)) && (
-                          <Badge variant="destructive">
-                            <AlertTriangle className="h-3 w-3 mr-1" />
-                            Health Alert
-                          </Badge>
+                          {hasHealthAlerts(student) && (
+                            <Badge variant="destructive">
+                              <AlertTriangle className="h-3 w-3 mr-1" />
+                              Health Alert
+                            </Badge>
                           )}
                         </div>
 

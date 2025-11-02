@@ -137,6 +137,7 @@ import { Suspense } from 'react';
 import { IncidentsContent } from './_components/IncidentsContent';
 import { IncidentsFilters } from './_components/IncidentsFilters';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PageBreadcrumbs } from '@/components/common/PageBreadcrumbs';
 
 interface IncidentsListPageProps {
   searchParams: {
@@ -156,6 +157,14 @@ interface IncidentsListPageProps {
 export default async function IncidentsListPage({ searchParams }: IncidentsListPageProps) {
   return (
     <div className="space-y-6">
+      <PageBreadcrumbs
+        items={[
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Incidents' },
+        ]}
+        className="mb-4"
+      />
+
       {/* Filters */}
       <Suspense
         fallback={

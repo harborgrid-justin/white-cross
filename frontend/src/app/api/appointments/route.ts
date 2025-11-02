@@ -4,10 +4,22 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { revalidateTag } from 'next/cache';
 import { withAuth } from '@/middleware/withAuth';
 import { proxyToBackend } from '@/lib/apiProxy';
 import { createAuditContext, logPHIAccess } from '@/lib/audit';
+import {
+  getCacheConfig,
+  generateCacheTags,
+  getCacheControlHeader
+} from '@/lib/cache/config';
+import { invalidateAppointmentData } from '@/lib/cache/invalidation';
+
+/**
+ * Route segment configuration
+ * Force dynamic rendering for authenticated routes
+ */
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 /**
  * GET /appointments
@@ -15,11 +27,16 @@ import { createAuditContext, logPHIAccess } from '@/lib/audit';
  */
 export const GET = withAuth(async (request: NextRequest, _context, auth) => {
   try {
+    const cacheConfig = getCacheConfig('appointments');
+    const cacheTags = generateCacheTags('appointments');
+    const cacheControl = getCacheControlHeader('appointments');
+
     const response = await proxyToBackend(request, '/appointments', {
       cache: {
-        revalidate: 30,
-        tags: ['appointments']
-      }
+        revalidate: cacheConfig.revalidate,
+        tags: cacheTags
+      },
+      cacheControl
     });
 
     const data = await response.json();
@@ -64,7 +81,11 @@ export const POST = withAuth(async (request: NextRequest, context, auth) => {
         details: 'Appointment created'
       });
 
-      revalidateTag('appointments');
+      // Invalidate cache with related resources
+      await invalidateAppointmentData(
+        data.data.id,
+        data.data.studentId
+      );
     }
 
     return NextResponse.json(data, { status: response.status });

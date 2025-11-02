@@ -17,9 +17,27 @@ import { HealthRecordsFilters } from './_components/HealthRecordsFilters';
 import { getHealthRecordsAction } from '@/lib/actions/health-records.actions';
 
 export const metadata: Metadata = {
-  title: 'Health Records | White Cross',
-  description: 'Comprehensive health record management system for student healthcare',
-  keywords: ['health records', 'medical history', 'immunizations', 'allergies', 'vital signs'],
+  title: 'Health Records',
+  description: 'Comprehensive health record management system for student healthcare with medical history, immunizations, allergies, vital signs, and HIPAA-compliant documentation.',
+  keywords: [
+    'health records',
+    'medical history',
+    'immunizations',
+    'allergies',
+    'vital signs',
+    'medical documentation',
+    'HIPAA compliant',
+    'health tracking'
+  ],
+  openGraph: {
+    title: 'Health Records | White Cross Healthcare',
+    description: 'Secure health record management system with comprehensive medical documentation and HIPAA compliance.',
+    type: 'website',
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 interface HealthRecordsPageProps {

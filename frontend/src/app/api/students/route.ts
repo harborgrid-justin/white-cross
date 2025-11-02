@@ -4,10 +4,22 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { revalidateTag } from 'next/cache';
 import { withAuth } from '@/middleware/withAuth';
 import { proxyToBackend } from '@/lib/apiProxy';
 import { auditLog, AUDIT_ACTIONS, createAuditContext, logPHIAccess } from '@/lib/audit';
+import {
+  getCacheConfig,
+  generateCacheTags,
+  getCacheControlHeader
+} from '@/lib/cache/config';
+import { invalidateResource } from '@/lib/cache/invalidation';
+
+/**
+ * Route segment configuration
+ * Force dynamic rendering for authenticated routes
+ */
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 /**
  * GET /students
@@ -15,12 +27,17 @@ import { auditLog, AUDIT_ACTIONS, createAuditContext, logPHIAccess } from '@/lib
  */
 export const GET = withAuth(async (request: NextRequest, context, auth) => {
   try {
-    // Proxy request to backend with caching
+    const cacheConfig = getCacheConfig('students');
+    const cacheTags = generateCacheTags('students');
+    const cacheControl = getCacheControlHeader('students');
+
+    // Proxy request to backend with enhanced caching
     const response = await proxyToBackend(request, '/students', {
       cache: {
-        revalidate: 30, // Cache for 30 seconds (student health data)
-        tags: ['students']
-      }
+        revalidate: cacheConfig.revalidate,
+        tags: cacheTags
+      },
+      cacheControl
     });
 
     const data = await response.json();
@@ -67,8 +84,8 @@ export const POST = withAuth(async (request: NextRequest, context, auth) => {
         details: 'Student record created'
       });
 
-      // Revalidate cache
-      revalidateTag('students');
+      // Invalidate cache using new utility
+      await invalidateResource('students');
     }
 
     return NextResponse.json(data, { status: response.status });

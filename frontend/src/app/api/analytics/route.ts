@@ -35,6 +35,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '@/middleware/withAuth';
 import { proxyToBackend } from '@/lib/apiProxy';
 import { createAuditContext, logPHIAccess } from '@/lib/audit';
+import {
+  getCacheConfig,
+  generateCacheTags,
+  getCacheControlHeader
+} from '@/lib/cache/config';
+import { invalidateResource } from '@/lib/cache/invalidation';
 
 /**
  * GET /api/analytics
@@ -101,14 +107,26 @@ import { createAuditContext, logPHIAccess } from '@/lib/audit';
  * @access Authenticated (role-based data filtering)
  * @auditLog Analytics data access is logged
  */
+/**
+ * Route segment configuration
+ * Force dynamic rendering for role-based data
+ */
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export const GET = withAuth(async (request: NextRequest, _context, auth) => {
   try {
-    // Proxy request to backend with caching
+    const cacheConfig = getCacheConfig('analytics');
+    const cacheTags = [...generateCacheTags('analytics'), `user-${auth.user.role}`];
+    const cacheControl = getCacheControlHeader('analytics');
+
+    // Proxy request to backend with enhanced caching
     const response = await proxyToBackend(request, '/analytics', {
       cache: {
-        revalidate: 300, // Cache for 5 minutes (analytics data can be less fresh)
-        tags: ['analytics', 'dashboard-metrics', `user-${auth.user.role}`]
-      }
+        revalidate: cacheConfig.revalidate,
+        tags: cacheTags
+      },
+      cacheControl
     });
 
     const data = await response.json();
@@ -127,7 +145,7 @@ export const GET = withAuth(async (request: NextRequest, _context, auth) => {
     console.error('Error fetching analytics data:', error);
 
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to fetch analytics data',
         message: 'Unable to retrieve analytics dashboard information'
       },
@@ -164,9 +182,9 @@ export const POST = withAuth(async (request: NextRequest, _context, auth) => {
     const allowedRoles = ['ADMIN', 'SCHOOL_ADMIN', 'NURSE'];
     if (!allowedRoles.includes(auth.user.role)) {
       return NextResponse.json(
-        { 
-          error: 'Forbidden', 
-          message: 'Insufficient permissions for custom analytics generation' 
+        {
+          error: 'Forbidden',
+          message: 'Insufficient permissions for custom analytics generation'
         },
         { status: 403 }
       );
@@ -186,6 +204,9 @@ export const POST = withAuth(async (request: NextRequest, _context, auth) => {
         resource: 'CustomAnalyticsReport',
         details: 'Custom analytics report generated'
       });
+
+      // Invalidate analytics cache since new data was generated
+      await invalidateResource('analytics');
     }
 
     return NextResponse.json(data, { status: response.status });
@@ -193,7 +214,7 @@ export const POST = withAuth(async (request: NextRequest, _context, auth) => {
     console.error('Error generating custom analytics:', error);
 
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to generate custom analytics',
         message: 'Unable to complete analytics report generation'
       },

@@ -81,7 +81,26 @@ export const metadata: Metadata = {
     template: '%s | Medications | White Cross',
     default: 'Medications | White Cross'
   },
-  description: 'Medication management and administration tracking'
+  description: 'Comprehensive medication management, administration tracking, and inventory control for student healthcare services with FDA compliance and safety monitoring.',
+  keywords: [
+    'medication management',
+    'medication administration',
+    'prescription tracking',
+    'controlled substances',
+    'drug inventory',
+    'medication safety',
+    'FDA compliance',
+    'pharmacy management'
+  ],
+  openGraph: {
+    title: 'Medications | White Cross Healthcare',
+    description: 'Professional medication management system with comprehensive administration tracking, inventory control, and compliance reporting.',
+    type: 'website',
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 /**
@@ -92,6 +111,8 @@ export const metadata: Metadata = {
  */
 interface MedicationsLayoutProps {
   children: ReactNode;
+  modal: ReactNode;
+  sidebar: ReactNode;
 }
 
 /**
@@ -150,7 +171,7 @@ interface MedicationsLayoutProps {
  * would need to be handled by client components if dynamic highlighting is needed.
  * Currently uses standard Link components without active state detection.
  */
-export default function MedicationsLayout({ children }: MedicationsLayoutProps) {
+export default function MedicationsLayout({ children, modal, sidebar }: MedicationsLayoutProps) {
   return (
     <div className="flex h-full">
       {/* Sidebar Navigation */}
@@ -280,6 +301,10 @@ export default function MedicationsLayout({ children }: MedicationsLayoutProps) 
       <main className="flex-1 overflow-auto">
         <div className="p-6">{children}</div>
       </main>
+
+      {/* Parallel Route Slots */}
+      {modal}
+      {sidebar}
     </div>
   );
 }

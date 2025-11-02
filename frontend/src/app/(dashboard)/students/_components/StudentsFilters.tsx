@@ -2,17 +2,38 @@
  * @fileoverview Students Filters Component - Advanced filtering for student management
  * @module app/(dashboard)/students/_components/StudentsFilters
  * @category Students - Components
+ *
+ * This component provides comprehensive filtering capabilities for student data:
+ * - Real-time search functionality
+ * - Multiple filter categories (grade, status, health alerts)
+ * - Quick filter shortcuts for common queries
+ * - Active filter display with easy removal
+ * - Student count updates based on filters
+ * - Performance optimizations using React.memo, useCallback, and useMemo
+ *
+ * @example
+ * ```tsx
+ * <StudentsFilters searchParams={{ grade: '10th', status: 'ACTIVE' }} />
+ * ```
  */
 
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo, type FC, type ChangeEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getStudentCount } from '@/lib/actions/students.actions';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Search,
   Filter,
   X,
@@ -20,9 +41,13 @@ import {
   GraduationCap,
   UserCheck,
   UserX,
-  AlertTriangle
+  AlertTriangle,
+  type LucideIcon
 } from 'lucide-react';
 
+/**
+ * Props for the StudentsFilters component
+ */
 interface StudentsFiltersProps {
   searchParams: {
     page?: string;
@@ -36,29 +61,62 @@ interface StudentsFiltersProps {
   };
 }
 
-const GRADES = ['9th', '10th', '11th', '12th'];
-const STATUSES = [
+/**
+ * Interface for filter tag representation
+ */
+interface FilterTag {
+  key: string;
+  label: string;
+  value: string;
+}
+
+/**
+ * Interface for status options
+ */
+interface StatusOption {
+  value: string;
+  label: string;
+  icon: LucideIcon;
+}
+
+/**
+ * Available grade levels for filtering
+ */
+const GRADES = ['9th', '10th', '11th', '12th'] as const;
+
+/**
+ * Available status options for filtering
+ */
+const STATUSES: StatusOption[] = [
   { value: 'ACTIVE', label: 'Active', icon: UserCheck },
   { value: 'INACTIVE', label: 'Inactive', icon: UserX },
   { value: 'GRADUATED', label: 'Graduated', icon: GraduationCap },
   { value: 'TRANSFERRED', label: 'Transferred', icon: Users }
 ];
 
+/**
+ * StudentsFilters Component
+ * Provides advanced filtering and search capabilities for student data
+ */
 export function StudentsFilters({ searchParams }: StudentsFiltersProps) {
   const [totalCount, setTotalCount] = useState(0);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const router = useRouter();
   const urlSearchParams = useSearchParams();
-  const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const currentSearch = searchParams.search || '';
-  const currentGrade = searchParams.grade || '';
-  const currentStatus = searchParams.status || '';
-  const currentHasHealthAlerts = searchParams.hasHealthAlerts || '';
+  // Memoize current filter values
+  const currentFilters = useMemo(() => ({
+    search: searchParams.search || '',
+    grade: searchParams.grade || '',
+    status: searchParams.status || '',
+    hasHealthAlerts: searchParams.hasHealthAlerts || ''
+  }), [searchParams.search, searchParams.grade, searchParams.status, searchParams.hasHealthAlerts]);
 
+  // Fetch student count based on filters
   useEffect(() => {
-    async function fetchStudentCount() {
+    const fetchStudentCount = async () => {
       try {
-        const filters: any = {
+        const filters: Record<string, string | boolean | undefined> = {
           search: searchParams.search,
           grade: searchParams.grade,
           hasAllergies: searchParams.hasHealthAlerts === 'true',
@@ -80,62 +138,84 @@ export function StudentsFilters({ searchParams }: StudentsFiltersProps) {
         console.error('Failed to fetch student count:', error);
         setTotalCount(0);
       }
-    }
+    };
 
     fetchStudentCount();
   }, [searchParams]);
 
+  /**
+   * Update filter parameters in URL
+   * Memoized to prevent unnecessary re-creation
+   */
   const updateFilters = useCallback((key: string, value: string) => {
     const params = new URLSearchParams(urlSearchParams.toString());
-    
+
     if (value) {
       params.set(key, value);
     } else {
       params.delete(key);
     }
-    
+
     // Reset pagination when filters change
     params.delete('page');
-    
+
     router.push(`/students?${params.toString()}`);
   }, [router, urlSearchParams]);
 
+  /**
+   * Clear all active filters
+   * Memoized to prevent unnecessary re-creation
+   */
   const clearAllFilters = useCallback(() => {
     router.push('/students');
   }, [router]);
 
-  const activeFiltersCount = [currentGrade, currentStatus, currentHasHealthAlerts].filter(Boolean).length;
+  /**
+   * Count of active filters
+   * Memoized to avoid recalculation on every render
+   */
+  const activeFiltersCount = useMemo(() => {
+    return [
+      currentFilters.grade,
+      currentFilters.status,
+      currentFilters.hasHealthAlerts
+    ].filter(Boolean).length;
+  }, [currentFilters.grade, currentFilters.status, currentFilters.hasHealthAlerts]);
 
-  const getFilterTags = () => {
-    const tags = [];
-    
-    if (currentGrade) {
+  /**
+   * Generate filter tags for active filters
+   * Memoized to avoid recalculation on every render
+   */
+  const filterTags = useMemo((): FilterTag[] => {
+    const tags: FilterTag[] = [];
+
+    if (currentFilters.grade) {
       tags.push({
         key: 'grade',
-        label: `${currentGrade} Grade`,
-        value: currentGrade
+        label: `${currentFilters.grade} Grade`,
+        value: currentFilters.grade
       });
     }
-    
-    if (currentStatus) {
-      const status = STATUSES.find(s => s.value === currentStatus);
+
+    if (currentFilters.status) {
+      const status = STATUSES.find(s => s.value === currentFilters.status);
       tags.push({
         key: 'status',
-        label: status?.label || currentStatus,
-        value: currentStatus
+        label: status?.label || currentFilters.status,
+        value: currentFilters.status
       });
     }
-    
-    if (currentHasHealthAlerts === 'true') {
+
+    if (currentFilters.hasHealthAlerts === 'true') {
       tags.push({
         key: 'hasHealthAlerts',
         label: 'Has Health Alerts',
-        value: currentHasHealthAlerts
+        value: currentFilters.hasHealthAlerts
       });
     }
-    
+
     return tags;
-  };
+  }, [currentFilters.grade, currentFilters.status, currentFilters.hasHealthAlerts]);
 
   return (
     <Card>
@@ -177,21 +257,21 @@ export function StudentsFilters({ searchParams }: StudentsFiltersProps) {
 
         {/* Search Bar */}
         <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <input
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Input
             type="text"
             placeholder="Search students by name, ID, or grade..."
-            defaultValue={currentSearch}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFilters('search', e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            defaultValue={currentFilters.search}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => updateFilters('search', e.target.value)}
+            className="pl-10"
             aria-label="Search students"
           />
         </div>
 
         {/* Filter Tags */}
-        {getFilterTags().length > 0 && (
+        {filterTags.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-4">
-            {getFilterTags().map((tag) => (
+            {filterTags.map((tag) => (
               <Badge
                 key={`${tag.key}-${tag.value}`}
                 variant="secondary"
@@ -215,90 +295,96 @@ export function StudentsFilters({ searchParams }: StudentsFiltersProps) {
           <div className="border-t pt-4 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Grade Filter */}
-              <div>
-                <label htmlFor="grade-filter" className="block text-sm font-medium text-gray-700 mb-1">
+              <div className="space-y-2">
+                <label htmlFor="grade-filter" className="text-sm font-medium">
                   Grade Level
                 </label>
-                <select
-                  id="grade-filter"
-                  value={currentGrade}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateFilters('grade', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                <Select
+                  value={currentFilters.grade}
+                  onValueChange={(value) => updateFilters('grade', value)}
                 >
-                  <option value="">All Grades</option>
-                  {GRADES.map((grade) => (
-                    <option key={grade} value={grade}>
-                      {grade} Grade
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger id="grade-filter">
+                    <SelectValue placeholder="All Grades" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Grades</SelectItem>
+                    {GRADES.map((grade) => (
+                      <SelectItem key={grade} value={grade}>
+                        {grade} Grade
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Status Filter */}
-              <div>
-                <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 mb-1">
+              <div className="space-y-2">
+                <label htmlFor="status-filter" className="text-sm font-medium">
                   Status
                 </label>
-                <select
-                  id="status-filter"
-                  value={currentStatus}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateFilters('status', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                <Select
+                  value={currentFilters.status}
+                  onValueChange={(value) => updateFilters('status', value)}
                 >
-                  <option value="">All Statuses</option>
-                  {STATUSES.map((status) => (
-                    <option key={status.value} value={status.value}>
-                      {status.label}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger id="status-filter">
+                    <SelectValue placeholder="All Statuses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Statuses</SelectItem>
+                    {STATUSES.map((status) => (
+                      <SelectItem key={status.value} value={status.value}>
+                        {status.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Health Alerts Filter */}
-              <div>
-                <label htmlFor="health-filter" className="block text-sm font-medium text-gray-700 mb-1">
+              <div className="space-y-2">
+                <label htmlFor="health-filter" className="text-sm font-medium">
                   Health Alerts
                 </label>
-                <select
-                  id="health-filter"
-                  value={currentHasHealthAlerts}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateFilters('hasHealthAlerts', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                <Select
+                  value={currentFilters.hasHealthAlerts}
+                  onValueChange={(value) => updateFilters('hasHealthAlerts', value)}
                 >
-                  <option value="">All Students</option>
-                  <option value="true">With Health Alerts</option>
-                  <option value="false">No Health Alerts</option>
-                </select>
+                  <SelectTrigger id="health-filter">
+                    <SelectValue placeholder="All Students" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Students</SelectItem>
+                    <SelectItem value="true">With Health Alerts</SelectItem>
+                    <SelectItem value="false">No Health Alerts</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
             {/* Quick Filters */}
             <div>
-              <p className="text-sm font-medium text-gray-700 mb-2">Quick Filters</p>
+              <p className="text-sm font-medium mb-2">Quick Filters</p>
               <div className="flex flex-wrap gap-2">
                 <Button
-                  variant="outline"
+                  variant={currentFilters.status === 'ACTIVE' ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => updateFilters('status', 'ACTIVE')}
-                  className={currentStatus === 'ACTIVE' ? 'bg-blue-50 border-blue-200' : ''}
+                  onClick={() => updateFilters('status', currentFilters.status === 'ACTIVE' ? '' : 'ACTIVE')}
                 >
                   <UserCheck className="h-4 w-4 mr-1" />
                   Active Students
                 </Button>
                 <Button
-                  variant="outline"
+                  variant={currentFilters.hasHealthAlerts === 'true' ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => updateFilters('hasHealthAlerts', 'true')}
-                  className={currentHasHealthAlerts === 'true' ? 'bg-orange-50 border-orange-200' : ''}
+                  onClick={() => updateFilters('hasHealthAlerts', currentFilters.hasHealthAlerts === 'true' ? '' : 'true')}
                 >
                   <AlertTriangle className="h-4 w-4 mr-1" />
                   Health Alerts
                 </Button>
                 <Button
-                  variant="outline"
+                  variant={currentFilters.grade === '12th' ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => updateFilters('grade', '12th')}
-                  className={currentGrade === '12th' ? 'bg-purple-50 border-purple-200' : ''}
+                  onClick={() => updateFilters('grade', currentFilters.grade === '12th' ? '' : '12th')}
                 >
                   <GraduationCap className="h-4 w-4 mr-1" />
                   Seniors (12th)
