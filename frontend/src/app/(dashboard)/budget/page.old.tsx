@@ -37,7 +37,7 @@ import type {
   BudgetSummary,
   BudgetStatus,
   BudgetCategoryWithMetrics,
-} from '@/types/budget';
+} from '@/types/domain/budget';
 
 // Mock data - replace with actual API calls
 const mockBudgetSummary: BudgetSummary = {

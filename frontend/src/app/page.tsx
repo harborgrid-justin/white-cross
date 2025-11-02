@@ -50,7 +50,7 @@
 
 'use client';
 
-import { useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   HomeHeader, 
   HeroSection, 
@@ -85,8 +85,13 @@ import {
  * @returns {JSX.Element} Full homepage layout with modular components
  */
 export default function Home() {
-  // Check if we're running on the client to prevent hydration mismatch
-  const mounted = useMemo(() => typeof window !== 'undefined', []);
+  // Prevent hydration mismatch by ensuring client-side only rendering of auth-dependent content
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setMounted(true);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">

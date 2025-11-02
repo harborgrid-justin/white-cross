@@ -43,8 +43,8 @@ import type {
   CategoryComparisonResponse,
   OverBudgetCategoriesResponse,
   BudgetRecommendationsResponse,
-} from '../../types/budget';
-import { BudgetRecommendation } from '../../types/budget';
+} from '../../types/domain/budget';
+import { BudgetRecommendation } from '../../types/domain/budget';
 
 // =====================
 // VALIDATION SCHEMAS

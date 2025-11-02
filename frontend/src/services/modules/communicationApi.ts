@@ -85,7 +85,7 @@ import type {
   TranslationResponse,
   ProcessScheduledMessagesResponse,
   CommunicationOptions
-} from '../../types/communication'
+} from '../../types/domain/communication'
 import type { ApiClient } from '../core/ApiClient'
 import { extractApiData, handleApiError } from '../utils/apiUtils'
 

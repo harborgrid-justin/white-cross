@@ -36,7 +36,7 @@ import {
   VendorMetrics,
   BulkVendorRatingUpdate,
   BulkVendorRatingResult,
-} from '../../types/vendors';
+} from '../../types/domain/vendors';
 
 // =====================
 // VALIDATION SCHEMAS

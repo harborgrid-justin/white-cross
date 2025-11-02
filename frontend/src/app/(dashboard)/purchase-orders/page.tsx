@@ -38,7 +38,7 @@ import type {
   PurchaseOrder,
   PurchaseOrderStatus,
   PurchaseOrderStatistics,
-} from '@/types/purchaseOrders';
+} from '@/types/domain/purchaseOrders';
 
 // Mock data
 const mockStatistics: PurchaseOrderStatistics = {

@@ -37,7 +37,7 @@ import {
   ApproveOrderData,
   CancelOrderData,
   PurchaseOrderStatus,
-} from '../../types/purchaseOrders';
+} from '../../types/domain/purchaseOrders';
 
 // =====================
 // VALIDATION SCHEMAS

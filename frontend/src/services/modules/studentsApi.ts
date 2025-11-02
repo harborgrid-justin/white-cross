@@ -66,7 +66,7 @@ import {
   BulkUpdateStudentsRequest,
   ExportStudentDataResponse,
   Gender,
-} from '../../types/student.types';
+} from '../../types/domain/student.types';
 
 /**
  * API response wrapper matching backend response structure

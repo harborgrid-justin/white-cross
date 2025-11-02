@@ -84,7 +84,7 @@ import type {
   WaitlistEntryData,
   CreateAppointmentData,
   UpdateAppointmentData
-} from '../../types/appointments'
+} from '../../types/domain/appointments'
 import type { PaginatedResponse } from '@/types/common'
 import type { ApiClient } from '@/services/core/ApiClient'
 import { extractApiData, handleApiError, buildUrlParams } from '@/services/utils/apiUtils'

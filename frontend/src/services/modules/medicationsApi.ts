@@ -71,7 +71,7 @@ import {
   MedicationAlertsResponse,
   MedicationFormOptions,
   MedicationScheduleResponse
-} from '../../types/medications';
+} from '../../types/domain/medications';
 
 /**
  * Medication filtering and pagination options

@@ -153,8 +153,6 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { apiActions } from '@/lib/api';
 import {
   IncidentSeverity,
-} from '@/types/incidents';
-import type {
   IncidentReport,
   WitnessStatement,
   FollowUpAction,
@@ -166,7 +164,7 @@ import type {
   IncidentStatus,
   CreateWitnessStatementRequest,
   CreateFollowUpActionRequest,
-} from '../../types/incidents';
+} from '@/types/domain/incidents';
 import toast from 'react-hot-toast';
 import debug from 'debug';
 

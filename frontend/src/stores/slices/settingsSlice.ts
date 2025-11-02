@@ -153,7 +153,7 @@
  */
 
 import { createEntitySlice, EntityApiService } from '@/stores/sliceFactory';
-import { SystemConfiguration, ConfigurationData, ConfigCategory, ConfigValueType, ConfigScope } from '@/types/administration';
+import { SystemConfiguration, ConfigurationData, ConfigCategory, ConfigValueType, ConfigScope } from '@/types/domain/administration';
 import { apiActions } from '@/lib/api';
 import type { RootState } from '@/stores/store';
 

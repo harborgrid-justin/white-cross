@@ -31,7 +31,7 @@ import type {
   BudgetCategory,
   BudgetTransaction,
   BudgetVariance,
-} from '@/types/budget';
+} from '@/types/domain/budget';
 
 // Mock data
 const mockVarianceData: BudgetVariance[] = [
