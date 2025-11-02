@@ -14,6 +14,7 @@ import { PageHeader } from '@/components/layouts/PageHeader';
 import { Plus, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import dynamic from 'next/dynamic';
 
 // Dynamic imports for heavy components to optimize bundle size
@@ -74,26 +75,36 @@ export default function BillingPage() {
         }
       />
 
-      <div className="p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="p-6 h-[calc(100vh-12rem)]">
+        <ResizablePanelGroup
+          direction="horizontal"
+          className="min-h-full rounded-lg border"
+        >
           {/* Main Billing Content */}
-          <div className="lg:col-span-3">
+          <ResizablePanel 
+            defaultSize={75} 
+            minSize={50}
+            className="p-6"
+          >
             <Suspense fallback={<Skeleton className="h-96 w-full" />}>
               <BillingContent />
             </Suspense>
-          </div>
+          </ResizablePanel>
+
+          <ResizableHandle withHandle />
 
           {/* Billing Sidebar */}
-          <div className="lg:col-span-1">
+          <ResizablePanel 
+            defaultSize={25} 
+            minSize={20}
+            className="p-6"
+          >
             <Suspense fallback={<Skeleton className="h-64 w-full" />}>
               <BillingSidebar />
             </Suspense>
-          </div>
-        </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     </div>
   );
 }
-
-
-

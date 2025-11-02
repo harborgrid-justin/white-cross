@@ -33,6 +33,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   getBillingDashboardData,
   getBillingStats,
@@ -177,9 +179,9 @@ export default function BillingContent() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="h-full flex flex-col space-y-4">
       {/* Financial Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 flex-shrink-0">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
@@ -238,28 +240,28 @@ export default function BillingContent() {
       </div>
 
       {/* Billing Management */}
-      <div className="space-y-6">
+      <div className="flex-1 flex flex-col min-h-0 space-y-4">
         {/* Filters */}
-        <Card>
-            <CardContent className="p-6">
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 lg:space-x-4">
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-2">
+        <Card className="flex-shrink-0">
+            <CardContent className="p-4">
+              <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between space-y-3 xl:space-y-0 xl:space-x-4">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+                  <div className="flex items-center space-x-2 flex-1 sm:flex-initial">
                     <Search className="h-4 w-4 text-gray-400" />
                     <Input
                       placeholder="Search invoices, students, or claims..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-64"
+                      className="w-full sm:w-48 lg:w-64"
                     />
                   </div>
                   
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 flex-shrink-0">
                     <Filter className="h-4 w-4 text-gray-400" />
                     <select 
                       value={statusFilter} 
                       onChange={(e) => setStatusFilter(e.target.value)}
-                      className="form-select rounded-md border-gray-300"
+                      className="form-select rounded-md border-gray-300 text-sm"
                       title="Filter by billing status"
                     >
                       <option value="all">All Status</option>
@@ -276,7 +278,7 @@ export default function BillingContent() {
                   <select 
                     value={serviceFilter} 
                     onChange={(e) => setServiceFilter(e.target.value)}
-                    className="form-select rounded-md border-gray-300"
+                    className="form-select rounded-md border-gray-300 text-sm flex-shrink-0"
                     title="Filter by service type"
                   >
                     <option value="all">All Services</option>
@@ -288,7 +290,7 @@ export default function BillingContent() {
                   </select>
                 </div>
 
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2 flex-shrink-0">
                   <Button variant="outline" size="sm">
                     <Download className="h-4 w-4 mr-2" />
                     Export
@@ -303,19 +305,20 @@ export default function BillingContent() {
           </Card>
 
         {/* Billing Records Table */}
-        <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                Healthcare Billing Records {filteredRecords.length}
-                <Button variant="outline" size="sm">
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Refresh
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+        <Card className="flex-1 flex flex-col min-h-0">
+          <CardHeader className="flex-shrink-0">
+            <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <span>Healthcare Billing Records ({filteredRecords.length})</span>
+              <Button variant="outline" size="sm">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex-1 flex flex-col min-h-0 p-0">
+            <ScrollArea className="flex-1">
               {filteredRecords.length === 0 ? (
-                <div className="text-center py-12">
+                <div className="text-center py-12 px-6">
                   <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">No billing records found</h3>
                   <p className="text-gray-600 mb-6">
@@ -329,27 +332,27 @@ export default function BillingContent() {
               ) : (
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-gray-50 sticky top-0">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Invoice ID
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Student
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Service
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Amount
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Status
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Due Date
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Actions
                         </th>
                       </tr>
@@ -357,7 +360,7 @@ export default function BillingContent() {
                     <tbody className="bg-white divide-y divide-gray-200">
                       {filteredRecords.map((record) => (
                         <tr key={record.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-4 py-3 whitespace-nowrap">
                             <div>
                               <div className="text-sm font-medium text-gray-900">{record.id}</div>
                               {record.claimNumber && (
@@ -365,13 +368,13 @@ export default function BillingContent() {
                               )}
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-4 py-3 whitespace-nowrap">
                             <div>
                               <div className="text-sm font-medium text-gray-900">{record.studentName}</div>
                               <div className="text-sm text-gray-500">{record.studentId}</div>
                             </div>
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-4 py-3">
                             <div>
                               <div className="text-sm font-medium text-gray-900">
                                 {formatServiceType(record.serviceType)}
@@ -381,7 +384,7 @@ export default function BillingContent() {
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-4 py-3 whitespace-nowrap">
                             <div className="text-sm font-medium text-gray-900">
                               {formatCurrency(record.amount)}
                             </div>
@@ -389,26 +392,26 @@ export default function BillingContent() {
                               <div className="text-xs text-gray-500">{record.insuranceProvider}</div>
                             )}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-4 py-3 whitespace-nowrap">
                             {getStatusBadge(record.status)}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                             {formatDate(record.dueDate)}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <div className="flex items-center space-x-2">
+                          <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                            <div className="flex items-center space-x-1">
                               <Button variant="outline" size="sm">
                                 <Eye className="h-3 w-3 mr-1" />
-                                View
+                                <span className="hidden sm:inline">View</span>
                               </Button>
                               <Button variant="outline" size="sm">
                                 <Edit className="h-3 w-3 mr-1" />
-                                Edit
+                                <span className="hidden sm:inline">Edit</span>
                               </Button>
                               {record.status === 'draft' && (
                                 <Button variant="outline" size="sm">
                                   <Send className="h-3 w-3 mr-1" />
-                                  Submit
+                                  <span className="hidden sm:inline">Submit</span>
                                 </Button>
                               )}
                             </div>
@@ -419,12 +422,10 @@ export default function BillingContent() {
                   </table>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </ScrollArea>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
 }
-
-
-

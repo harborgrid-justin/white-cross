@@ -27,7 +27,12 @@ import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
 import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache/constants';
 
 // Types
-import type { ApiResponse } from '@/types/api';
+interface ApiResponse<T = unknown> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  error?: string;
+}
 
 // Utils
 import { formatDate } from '@/utils/dateUtils';
@@ -1001,7 +1006,7 @@ export const getBillingStats = cache(async (): Promise<BillingStats> => {
  * Get comprehensive billing dashboard data
  * Combines billing records and statistics for dashboard display
  */
-export const getBillingDashboardData = cache(async () => {
+export async function getBillingDashboardData() {
   try {
     // Fetch both billing records and stats in parallel for optimal performance
     const [billingRecords, stats] = await Promise.all([
@@ -1056,7 +1061,7 @@ export const getBillingDashboardData = cache(async () => {
       } as BillingStats
     };
   }
-});
+}
 
 /**
  * Clear billing cache
