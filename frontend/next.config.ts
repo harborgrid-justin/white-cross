@@ -99,6 +99,33 @@ const nextConfig: NextConfig = {
   // Typed routes for better type safety (moved from experimental in Next.js 16)
   typedRoutes: true,
 
+  // Enable Next.js v16 cache features (moved from experimental in Next.js 16)
+  cacheComponents: true,
+
+  // Cache life profiles for 'use cache' directive
+  cacheLife: {
+    short: {
+      stale: 60, // 1 minute
+      revalidate: 300, // 5 minutes
+      expire: 600, // 10 minutes
+    },
+    medium: {
+      stale: 300, // 5 minutes
+      revalidate: 900, // 15 minutes
+      expire: 1800, // 30 minutes
+    },
+    long: {
+      stale: 900, // 15 minutes
+      revalidate: 3600, // 1 hour
+      expire: 7200, // 2 hours
+    },
+    default: {
+      stale: 180, // 3 minutes
+      revalidate: 600, // 10 minutes
+      expire: 1200, // 20 minutes
+    },
+  },
+
   // ==========================================
   // EXPERIMENTAL FEATURES
   // ==========================================
@@ -133,9 +160,6 @@ const nextConfig: NextConfig = {
 
     // Optimize CSS
     optimizeCss: true,
-
-    // Enable Next.js v16 cache features
-    cacheComponents: false,
   },
 
   // ==========================================
@@ -507,7 +531,7 @@ const nextConfig: NextConfig = {
    * @see https://webpack.js.org/configuration/
    * @see https://nextjs.org/docs/api-reference/next.config.js/custom-webpack-config
    */
-  webpack: (config: any, { isServer, dev }: { isServer: boolean; dev: boolean }) => {
+  webpack: (config: Record<string, unknown>, { isServer, dev }: { isServer: boolean; dev: boolean }) => {
     // Ignore node_modules for faster builds (dev performance optimization)
     config.watchOptions = {
       ...config.watchOptions,

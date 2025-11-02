@@ -47,9 +47,9 @@ export function IncidentsFilters({ totalCount }: IncidentsFiltersProps) {
     const params = new URLSearchParams();
     
     if (searchTerm) params.set('search', searchTerm);
-    if (typeFilter) params.set('type', typeFilter);
-    if (statusFilter) params.set('status', statusFilter);
-    if (severityFilter) params.set('severity', severityFilter);
+    if (typeFilter && typeFilter !== 'all-types') params.set('type', typeFilter);
+    if (statusFilter && statusFilter !== 'all-statuses') params.set('status', statusFilter);
+    if (severityFilter && severityFilter !== 'all-severities') params.set('severity', severityFilter);
     if (dateFromFilter) params.set('dateFrom', dateFromFilter);
     if (dateToFilter) params.set('dateTo', dateToFilter);
     if (reportedByFilter) params.set('reportedBy', reportedByFilter);
@@ -63,9 +63,9 @@ export function IncidentsFilters({ totalCount }: IncidentsFiltersProps) {
 
   const clearAllFilters = () => {
     setSearchTerm('');
-    setTypeFilter('');
-    setStatusFilter('');
-    setSeverityFilter('');
+    setTypeFilter('all-types');
+    setStatusFilter('all-statuses');
+    setSeverityFilter('all-severities');
     setDateFromFilter('');
     setDateToFilter('');
     setReportedByFilter('');
@@ -73,11 +73,17 @@ export function IncidentsFilters({ totalCount }: IncidentsFiltersProps) {
     router.push('/dashboard/incidents');
   };
 
-  const hasActiveFilters = searchTerm || typeFilter || statusFilter || severityFilter || 
+  const hasActiveFilters = searchTerm || 
+    (typeFilter && typeFilter !== 'all-types') || 
+    (statusFilter && statusFilter !== 'all-statuses') || 
+    (severityFilter && severityFilter !== 'all-severities') || 
     dateFromFilter || dateToFilter || reportedByFilter || studentFilter;
 
   const activeFilterCount = [
-    searchTerm, typeFilter, statusFilter, severityFilter, 
+    searchTerm, 
+    typeFilter && typeFilter !== 'all-types' ? typeFilter : null,
+    statusFilter && statusFilter !== 'all-statuses' ? statusFilter : null,
+    severityFilter && severityFilter !== 'all-severities' ? severityFilter : null,
     dateFromFilter, dateToFilter, reportedByFilter, studentFilter
   ].filter(Boolean).length;
 
@@ -160,12 +166,12 @@ export function IncidentsFilters({ totalCount }: IncidentsFiltersProps) {
             <label className="block text-sm font-medium">
               Incident Type
             </label>
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <Select value={typeFilter || 'all-types'} onValueChange={setTypeFilter}>
               <SelectTrigger aria-label="Filter by incident type">
                 <SelectValue placeholder="All Types" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Types</SelectItem>
+                <SelectItem value="all-types">All Types</SelectItem>
                 {incidentTypes.map((type) => (
                   <SelectItem key={type.value} value={type.value}>
                     {type.label}
@@ -180,12 +186,12 @@ export function IncidentsFilters({ totalCount }: IncidentsFiltersProps) {
             <label className="block text-sm font-medium">
               Status
             </label>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={statusFilter || 'all-statuses'} onValueChange={setStatusFilter}>
               <SelectTrigger aria-label="Filter by incident status">
                 <SelectValue placeholder="All Statuses" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Statuses</SelectItem>
+                <SelectItem value="all-statuses">All Statuses</SelectItem>
                 {incidentStatuses.map((status) => (
                   <SelectItem key={status.value} value={status.value}>
                     {status.label}
@@ -200,12 +206,12 @@ export function IncidentsFilters({ totalCount }: IncidentsFiltersProps) {
             <label className="block text-sm font-medium">
               Severity
             </label>
-            <Select value={severityFilter} onValueChange={setSeverityFilter}>
+            <Select value={severityFilter || 'all-severities'} onValueChange={setSeverityFilter}>
               <SelectTrigger aria-label="Filter by incident severity">
                 <SelectValue placeholder="All Severities" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Severities</SelectItem>
+                <SelectItem value="all-severities">All Severities</SelectItem>
                 {severityLevels.map((severity) => (
                   <SelectItem key={severity.value} value={severity.value}>
                     {severity.label}
@@ -353,5 +359,3 @@ export function IncidentsFilters({ totalCount }: IncidentsFiltersProps) {
     </Card>
   );
 }
-
-

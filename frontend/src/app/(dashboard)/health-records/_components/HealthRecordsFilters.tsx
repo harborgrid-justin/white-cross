@@ -51,9 +51,9 @@ export function HealthRecordsFilters({ totalCount }: HealthRecordsFiltersProps) 
     const params = new URLSearchParams();
     
     if (searchTerm) params.set('search', searchTerm);
-    if (typeFilter) params.set('type', typeFilter);
-    if (statusFilter) params.set('status', statusFilter);
-    if (priorityFilter) params.set('priority', priorityFilter);
+    if (typeFilter && typeFilter !== 'all-types') params.set('type', typeFilter);
+    if (statusFilter && statusFilter !== 'all-statuses') params.set('status', statusFilter);
+    if (priorityFilter && priorityFilter !== 'all-priorities') params.set('priority', priorityFilter);
     if (dateFromFilter) params.set('dateFrom', dateFromFilter);
     if (dateToFilter) params.set('dateTo', dateToFilter);
     if (recordedByFilter) params.set('recordedBy', recordedByFilter);
@@ -67,9 +67,9 @@ export function HealthRecordsFilters({ totalCount }: HealthRecordsFiltersProps) 
 
   const clearAllFilters = () => {
     setSearchTerm('');
-    setTypeFilter('');
-    setStatusFilter('');
-    setPriorityFilter('');
+    setTypeFilter('all-types');
+    setStatusFilter('all-statuses');
+    setPriorityFilter('all-priorities');
     setDateFromFilter('');
     setDateToFilter('');
     setRecordedByFilter('');
@@ -77,11 +77,17 @@ export function HealthRecordsFilters({ totalCount }: HealthRecordsFiltersProps) 
     router.push('/health-records');
   };
 
-  const hasActiveFilters = searchTerm || typeFilter || statusFilter || priorityFilter || 
+  const hasActiveFilters = searchTerm || 
+    (typeFilter && typeFilter !== 'all-types') || 
+    (statusFilter && statusFilter !== 'all-statuses') || 
+    (priorityFilter && priorityFilter !== 'all-priorities') || 
     dateFromFilter || dateToFilter || recordedByFilter || studentFilter;
 
   const activeFilterCount = [
-    searchTerm, typeFilter, statusFilter, priorityFilter, 
+    searchTerm, 
+    typeFilter && typeFilter !== 'all-types' ? typeFilter : null,
+    statusFilter && statusFilter !== 'all-statuses' ? statusFilter : null,
+    priorityFilter && priorityFilter !== 'all-priorities' ? priorityFilter : null,
     dateFromFilter, dateToFilter, recordedByFilter, studentFilter
   ].filter(Boolean).length;
 
@@ -165,12 +171,12 @@ export function HealthRecordsFilters({ totalCount }: HealthRecordsFiltersProps) 
             <label className="block text-sm font-medium">
               Record Type
             </label>
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <Select value={typeFilter || 'all-types'} onValueChange={setTypeFilter}>
               <SelectTrigger aria-label="Filter by record type">
                 <SelectValue placeholder="All Types" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Types</SelectItem>
+                <SelectItem value="all-types">All Types</SelectItem>
                 {recordTypes.map((type) => (
                   <SelectItem key={type.value} value={type.value}>
                     {type.label}
@@ -185,12 +191,12 @@ export function HealthRecordsFilters({ totalCount }: HealthRecordsFiltersProps) 
             <label className="block text-sm font-medium">
               Status
             </label>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={statusFilter || 'all-statuses'} onValueChange={setStatusFilter}>
               <SelectTrigger aria-label="Filter by record status">
                 <SelectValue placeholder="All Statuses" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Statuses</SelectItem>
+                <SelectItem value="all-statuses">All Statuses</SelectItem>
                 {recordStatuses.map((status) => (
                   <SelectItem key={status.value} value={status.value}>
                     {status.label}
@@ -205,12 +211,12 @@ export function HealthRecordsFilters({ totalCount }: HealthRecordsFiltersProps) 
             <label className="block text-sm font-medium">
               Priority
             </label>
-            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+            <Select value={priorityFilter || 'all-priorities'} onValueChange={setPriorityFilter}>
               <SelectTrigger aria-label="Filter by record priority">
                 <SelectValue placeholder="All Priorities" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Priorities</SelectItem>
+                <SelectItem value="all-priorities">All Priorities</SelectItem>
                 {priorityLevels.map((priority) => (
                   <SelectItem key={priority.value} value={priority.value}>
                     {priority.label}
@@ -380,5 +386,3 @@ export function HealthRecordsFilters({ totalCount }: HealthRecordsFiltersProps) 
     </Card>
   );
 }
-
-

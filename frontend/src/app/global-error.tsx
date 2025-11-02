@@ -162,20 +162,36 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
   useEffect(() => {
     // Log error to monitoring service (Sentry, DataDog, etc.)
     // Ensure no PHI data is included in error logs
-    console.error('Global error:', {
-      message: error.message,
-      digest: error.digest,
-      timestamp: new Date().toISOString(),
-    });
+    try {
+      // Extract safe error information without logging the raw error object
+      const errorMessage = error?.message || 'Unknown error occurred';
+      const errorDigest = error?.digest || 'No digest available';
+      const timestamp = new Date().toISOString();
+      
+      // Log structured information separately to avoid object serialization issues
+      console.error('Global error occurred at:', timestamp);
+      console.error('Error message:', errorMessage);
+      console.error('Error digest:', errorDigest);
+      
+      if (process.env.NODE_ENV === 'development' && error?.stack) {
+        console.error('Error stack:', error.stack);
+      }
 
-    // Send to error tracking service
-    if (typeof window !== 'undefined' && (window as any).Sentry) {
-      (window as any).Sentry.captureException(error, {
-        tags: {
-          errorBoundary: 'global',
-          digest: error.digest,
-        },
-      });
+      // Send to error tracking service
+      if (typeof window !== 'undefined' && 'Sentry' in window) {
+        const sentry = (window as typeof window & { Sentry?: { captureException: (error: Error, options?: { tags?: Record<string, string> }) => void } }).Sentry;
+        if (sentry?.captureException) {
+          sentry.captureException(error, {
+            tags: {
+              errorBoundary: 'global',
+              digest: errorDigest,
+            },
+          });
+        }
+      }
+    } catch (loggingError) {
+      // Fallback logging if the main logging fails
+      console.error('Global error handler failed. Fallback message:', error?.message || 'Critical error occurred');
     }
   }, [error]);
 

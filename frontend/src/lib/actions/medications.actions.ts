@@ -951,13 +951,27 @@ export async function getMedicationsDashboardData(options: {
   search?: string;
   status?: string;
   type?: string;
+  studentId?: string;
 } = {}) {
   try {
+    // Build filters object, only including defined values
+    const filters: MedicationFilters = {};
+    
+    if (options.status && options.status !== 'all') {
+      filters.status = options.status as 'active' | 'inactive' | 'discontinued';
+    }
+    
+    if (options.search) {
+      // Note: API may expect 'search' parameter, not 'name'
+      filters.name = options.search;
+    }
+    
+    if (options.studentId) {
+      filters.studentId = options.studentId;
+    }
+
     const [medicationsResponse, statsResponse] = await Promise.allSettled([
-      getPaginatedMedications(options.page || 1, options.limit || 50, {
-        status: options.status as 'active' | 'inactive' | 'discontinued',
-        name: options.search,
-      }),
+      getPaginatedMedications(options.page || 1, options.limit || 50, filters),
       getMedicationStats()
     ]);
 

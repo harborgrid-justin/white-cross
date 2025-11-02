@@ -47,7 +47,7 @@ function TemplateInner({ children }: TemplateProps) {
  */
 export default function Template({ children }: TemplateProps) {
   return (
-    <Suspense fallback={<div className="animate-pulse">{children}</div>}>
+    <Suspense fallback={<div className="animate-pulse min-h-screen bg-gray-50" />}>
       <TemplateInner>{children}</TemplateInner>
     </Suspense>
   );

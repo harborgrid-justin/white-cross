@@ -40,8 +40,15 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { type DashboardStats, type HealthAlert, type SystemStatus } from '@/lib/actions/dashboard.actions';
 
-export default function DashboardSidebar() {
+interface DashboardSidebarProps {
+  alerts: HealthAlert[];
+  stats: DashboardStats;
+  systemStatus: SystemStatus;
+}
+
+export default function DashboardSidebar({ alerts, stats, systemStatus }: DashboardSidebarProps) {
   return (
     <div className="space-y-6">
       {/* Quick Actions */}
@@ -179,7 +186,7 @@ export default function DashboardSidebar() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-medium text-gray-900">{appointment.time}</span>
-                      <Badge variant={appointment.status === 'completed' ? 'success' : 'info'} size="sm">
+                      <Badge variant={appointment.status === 'completed' ? 'success' : 'info'}>
                         {appointment.status}
                       </Badge>
                     </div>
@@ -219,7 +226,7 @@ export default function DashboardSidebar() {
               </div>
               <div className="flex items-center space-x-1">
                 <span className="text-sm font-medium">12</span>
-                <Badge variant="error" size="sm">4 Critical</Badge>
+                <Badge variant="error">4 Critical</Badge>
               </div>
             </div>
             
@@ -407,5 +414,3 @@ export default function DashboardSidebar() {
     </div>
   );
 }
-
-

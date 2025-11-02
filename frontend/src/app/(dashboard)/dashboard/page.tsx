@@ -17,7 +17,7 @@
 
 import { Metadata } from 'next';
 import { Suspense } from 'react';
-import { getDashboardStats, getHealthAlerts, getRecentActivities } from '@/lib/actions/dashboard.actions';
+import { getDashboardData } from '@/lib/actions/dashboard.actions';
 import DashboardContent from './_components/DashboardContent';
 import DashboardSidebar from './_components/DashboardSidebar';
 
@@ -46,16 +46,6 @@ export const metadata: Metadata = {
     follow: false,
   },
 };
-
-/**
- * Route Segment Configuration
- *
- * Force dynamic rendering for real-time dashboard data.
- * Dashboard requires fresh data on every request for accurate
- * health alerts, statistics, and recent activities.
- */
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 /**
  * Loading skeleton for dashboard content
@@ -89,22 +79,16 @@ function DashboardLoading() {
 }
 
 /**
- * Dashboard Page Component - Server Component with Async Data Fetching
+ * Dashboard Page Component - Server Component with Data Fetching
  *
- * This page demonstrates Next.js 16 best practices:
- * - Server-side data fetching with async/await
- * - Parallel data fetching for better performance
- * - Proper error boundaries and loading states
- * - TypeScript types for all fetched data
+ * Uses server-side data fetching following the established architecture:
+ * - Fetches data using getDashboardData server action
+ * - Passes data as props to client components
+ * - Follows the centralized API pattern with caching
  */
 export default async function DashboardPage() {
-  // Parallel data fetching - fetch all data concurrently for better performance
-  // This is more efficient than sequential fetching
-  const [stats, alerts, activities] = await Promise.all([
-    getDashboardStats(),
-    getHealthAlerts(),
-    getRecentActivities(),
-  ]);
+  // Server-side data fetching using dashboard actions
+  const { stats, alerts, activities, systemStatus } = await getDashboardData();
 
   return (
     <div className="flex h-full">
@@ -118,6 +102,7 @@ export default async function DashboardPage() {
             stats={stats}
             alerts={alerts}
             activities={activities}
+            systemStatus={systemStatus}
           />
         </Suspense>
       </main>
@@ -128,7 +113,11 @@ export default async function DashboardPage() {
       >
         <div className="p-6">
           <Suspense fallback={<div className="animate-pulse h-64 bg-gray-200 rounded" />}>
-            <DashboardSidebar alerts={alerts} />
+            <DashboardSidebar
+              alerts={alerts}
+              stats={stats}
+              systemStatus={systemStatus}
+            />
           </Suspense>
         </div>
       </aside>

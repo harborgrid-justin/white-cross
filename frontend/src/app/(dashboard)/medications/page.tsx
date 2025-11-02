@@ -62,14 +62,14 @@ export const metadata: Metadata = {
  * Search params interface
  */
 interface MedicationsPageProps {
-  searchParams: {
+  searchParams: Promise<{
     page?: string;
     limit?: string;
     search?: string;
     status?: string;
     type?: string;
     studentId?: string;
-  };
+  }>;
 }
 
 /**
@@ -236,18 +236,21 @@ function MedicationCard({ medication }: { medication: Medication }) {
  * - Parallel data fetching for better performance
  */
 export default async function MedicationsPage({ searchParams }: MedicationsPageProps) {
+  // Await the searchParams Promise
+  const resolvedSearchParams = await searchParams;
+  
   // Parse search params
-  const page = parseInt(searchParams.page || '1');
-  const limit = parseInt(searchParams.limit || '50');
+  const page = parseInt(resolvedSearchParams.page || '1');
+  const limit = parseInt(resolvedSearchParams.limit || '50');
 
   // Fetch medications dashboard data with proper cache options
   const { medications, stats, error } = await getMedicationsDashboardData({
     page,
     limit,
-    search: searchParams.search,
-    status: searchParams.status,
-    type: searchParams.type,
-    studentId: searchParams.studentId,
+    search: resolvedSearchParams.search,
+    status: resolvedSearchParams.status,
+    type: resolvedSearchParams.type,
+    studentId: resolvedSearchParams.studentId,
   });
 
   return (

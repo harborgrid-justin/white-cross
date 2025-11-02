@@ -150,7 +150,10 @@ export function StudentsFilters({ searchParams }: StudentsFiltersProps) {
   const updateFilters = useCallback((key: string, value: string) => {
     const params = new URLSearchParams(urlSearchParams.toString());
 
-    if (value) {
+    // Handle placeholder values
+    const isPlaceholderValue = value === 'all-grades' || value === 'all-statuses' || value === 'all-students';
+    
+    if (value && !isPlaceholderValue) {
       params.set(key, value);
     } else {
       params.delete(key);
@@ -300,14 +303,14 @@ export function StudentsFilters({ searchParams }: StudentsFiltersProps) {
                   Grade Level
                 </label>
                 <Select
-                  value={currentFilters.grade}
+                  value={currentFilters.grade || 'all-grades'}
                   onValueChange={(value) => updateFilters('grade', value)}
                 >
                   <SelectTrigger id="grade-filter">
                     <SelectValue placeholder="All Grades" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Grades</SelectItem>
+                    <SelectItem value="all-grades">All Grades</SelectItem>
                     {GRADES.map((grade) => (
                       <SelectItem key={grade} value={grade}>
                         {grade} Grade
@@ -323,14 +326,14 @@ export function StudentsFilters({ searchParams }: StudentsFiltersProps) {
                   Status
                 </label>
                 <Select
-                  value={currentFilters.status}
+                  value={currentFilters.status || 'all-statuses'}
                   onValueChange={(value) => updateFilters('status', value)}
                 >
                   <SelectTrigger id="status-filter">
                     <SelectValue placeholder="All Statuses" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Statuses</SelectItem>
+                    <SelectItem value="all-statuses">All Statuses</SelectItem>
                     {STATUSES.map((status) => (
                       <SelectItem key={status.value} value={status.value}>
                         {status.label}
@@ -346,14 +349,14 @@ export function StudentsFilters({ searchParams }: StudentsFiltersProps) {
                   Health Alerts
                 </label>
                 <Select
-                  value={currentFilters.hasHealthAlerts}
+                  value={currentFilters.hasHealthAlerts || 'all-students'}
                   onValueChange={(value) => updateFilters('hasHealthAlerts', value)}
                 >
                   <SelectTrigger id="health-filter">
                     <SelectValue placeholder="All Students" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Students</SelectItem>
+                    <SelectItem value="all-students">All Students</SelectItem>
                     <SelectItem value="true">With Health Alerts</SelectItem>
                     <SelectItem value="false">No Health Alerts</SelectItem>
                   </SelectContent>
@@ -397,6 +400,3 @@ export function StudentsFilters({ searchParams }: StudentsFiltersProps) {
     </Card>
   );
 }
-
-
-

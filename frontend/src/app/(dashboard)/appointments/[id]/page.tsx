@@ -116,7 +116,7 @@ export default async function AppointmentDetailPage({
                 <div>
                   <label className="text-sm font-medium text-gray-600">Status</label>
                   <div className="mt-1">
-                    <Badge className={appointmentUtils.getStatusClass(appointment.status)}>
+                    <Badge variant={appointmentUtils.getStatusVariant(appointment.status)}>
                       {appointment.status.replace('-', ' ')}
                     </Badge>
                   </div>
@@ -124,7 +124,7 @@ export default async function AppointmentDetailPage({
                 <div>
                   <label className="text-sm font-medium text-gray-600">Priority</label>
                   <div className="mt-1">
-                    <Badge className={appointmentUtils.getPriorityClass(appointment.priority)}>
+                    <Badge variant={appointmentUtils.getPriorityVariant(appointment.priority)}>
                       {appointment.priority}
                     </Badge>
                   </div>

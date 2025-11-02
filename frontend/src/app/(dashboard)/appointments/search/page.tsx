@@ -183,13 +183,13 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         {/* Search Form */}
         <Card>
           <CardHeader>
-            <CardTitle>Search Filters</CardTitle>
+            <CardTitle className="text-base sm:text-lg">Search Filters</CardTitle>
           </CardHeader>
-          <CardContent>
-            <form method="GET" className="space-y-4">
+          <CardContent className="p-4 sm:p-6">
+            <form method="GET" className="space-y-3 sm:space-y-4">
               {/* Text Search */}
               <div>
-                <label htmlFor="q" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="q" className="block text-xs sm:text-sm font-medium text-foreground mb-1">
                   Search Text
                 </label>
                 <input
@@ -198,22 +198,22 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   name="q"
                   defaultValue={searchParams.q}
                   placeholder="Search by student name, provider, type, reason..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full h-8 sm:h-9 px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>
 
               {/* Filter Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {/* Status Filter */}
                 <div>
-                  <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="status" className="block text-xs sm:text-sm font-medium text-foreground mb-1">
                     Status
                   </label>
                   <select
                     id="status"
                     name="status"
                     defaultValue={searchParams.status || ''}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full h-8 sm:h-9 px-2 py-1 text-xs sm:text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
                   >
                     <option value="">All Statuses</option>
                     <option value="scheduled">Scheduled</option>
@@ -227,14 +227,14 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
                 {/* Priority Filter */}
                 <div>
-                  <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="priority" className="block text-xs sm:text-sm font-medium text-foreground mb-1">
                     Priority
                   </label>
                   <select
                     id="priority"
                     name="priority"
                     defaultValue={searchParams.priority || ''}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full h-8 sm:h-9 px-2 py-1 text-xs sm:text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
                   >
                     <option value="">All Priorities</option>
                     <option value="low">Low</option>
@@ -246,7 +246,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
                 {/* Date From */}
                 <div>
-                  <label htmlFor="date_from" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="date_from" className="block text-xs sm:text-sm font-medium text-foreground mb-1">
                     From Date
                   </label>
                   <input
@@ -254,13 +254,13 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     id="date_from"
                     name="date_from"
                     defaultValue={searchParams.date_from}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full h-8 sm:h-9 px-2 py-1 text-xs sm:text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                 </div>
 
                 {/* Date To */}
                 <div>
-                  <label htmlFor="date_to" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="date_to" className="block text-xs sm:text-sm font-medium text-foreground mb-1">
                     To Date
                   </label>
                   <input
@@ -268,22 +268,22 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     id="date_to"
                     name="date_to"
                     defaultValue={searchParams.date_to}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full h-8 sm:h-9 px-2 py-1 text-xs sm:text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-2">
+              <div className="flex flex-col xs:flex-row gap-2">
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring"
                 >
                   Search
                 </button>
                 <a
                   href="/appointments/search"
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80 focus:outline-none focus:ring-2 focus:ring-ring text-center"
                 >
                   Clear
                 </a>
@@ -296,22 +296,22 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         <Suspense fallback={<SearchSkeleton />}>
           <Card>
             <CardHeader>
-              <CardTitle>
+              <CardTitle className="text-base sm:text-lg">
                 Search Results
-                <span className="ml-2 text-sm font-normal text-gray-600">
+                <span className="ml-2 text-xs sm:text-sm font-normal text-muted-foreground">
                   ({appointments.length} appointment{appointments.length !== 1 ? 's' : ''} found)
                 </span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-6">
               {appointments.length > 0 ? (
                 <AppointmentList 
                   appointments={appointments}
                   showSearch={false}
                 />
               ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-500 mb-4">
+                <div className="text-center py-6 sm:py-8">
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
                     {hasActiveFilters 
                       ? 'No appointments found matching your search criteria.'
                       : 'Enter search criteria above to find appointments.'
@@ -320,7 +320,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   {hasActiveFilters && (
                     <a
                       href="/appointments/search"
-                      className="text-blue-600 hover:text-blue-800 underline"
+                      className="text-xs sm:text-sm text-primary hover:text-primary/80 underline"
                     >
                       Clear all filters
                     </a>
@@ -339,5 +339,3 @@ export const metadata = {
   title: 'Search Appointments',
   description: 'Search and filter appointments using various criteria',
 };
-
-

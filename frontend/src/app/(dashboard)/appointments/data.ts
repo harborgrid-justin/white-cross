@@ -37,25 +37,25 @@ export interface AppointmentStats {
 }
 
 /**
- * Status color mappings for UI display
+ * Status Badge variant mappings for shadcn/ui Badge component
  */
-export const appointmentStatusColors = {
-  scheduled: 'bg-blue-100 text-blue-800',
-  confirmed: 'bg-green-100 text-green-800',
-  'in-progress': 'bg-yellow-100 text-yellow-800',
-  completed: 'bg-gray-100 text-gray-800',
-  cancelled: 'bg-red-100 text-red-800',
-  'no-show': 'bg-orange-100 text-orange-800',
+export const appointmentStatusVariants = {
+  scheduled: 'info',
+  confirmed: 'success',
+  'in-progress': 'warning',
+  completed: 'secondary',
+  cancelled: 'error',
+  'no-show': 'error',
 } as const;
 
 /**
- * Priority color mappings for UI display
+ * Priority Badge variant mappings for shadcn/ui Badge component
  */
-export const appointmentPriorityColors = {
-  low: 'bg-gray-100 text-gray-600',
-  medium: 'bg-blue-100 text-blue-600',
-  high: 'bg-orange-100 text-orange-600',
-  urgent: 'bg-red-100 text-red-600',
+export const appointmentPriorityVariants = {
+  low: 'secondary',
+  medium: 'info',
+  high: 'warning',
+  urgent: 'error',
 } as const;
 
 /**
@@ -92,17 +92,17 @@ export const appointmentUtils = {
   },
 
   /**
-   * Get status badge class
+   * Get status badge variant for shadcn/ui Badge component
    */
-  getStatusClass: (status: Appointment['status']): string => {
-    return appointmentStatusColors[status] || appointmentStatusColors.scheduled;
+  getStatusVariant: (status: Appointment['status']): 'info' | 'success' | 'warning' | 'secondary' | 'error' | 'default' => {
+    return appointmentStatusVariants[status] || appointmentStatusVariants.scheduled;
   },
 
   /**
-   * Get priority badge class
+   * Get priority badge variant for shadcn/ui Badge component
    */
-  getPriorityClass: (priority: Appointment['priority']): string => {
-    return appointmentPriorityColors[priority] || appointmentPriorityColors.medium;
+  getPriorityVariant: (priority: Appointment['priority']): 'secondary' | 'info' | 'warning' | 'error' | 'default' => {
+    return appointmentPriorityVariants[priority] || appointmentPriorityVariants.medium;
   },
 
   /**

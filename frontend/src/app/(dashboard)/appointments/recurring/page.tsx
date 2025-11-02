@@ -28,23 +28,23 @@ export default function RecurringAppointmentsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-gray-600">Loading recurring appointments...</span>
+      <div className="flex items-center justify-center min-h-[300px] sm:min-h-[400px]">
+        <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-primary"></div>
+        <span className="ml-2 sm:ml-3 text-xs sm:text-sm text-muted-foreground">Loading recurring appointments...</span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-[300px] sm:min-h-[400px] p-4">
         <div className="text-center">
-          <AlertTriangle className="h-12 w-12 text-red-600 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Recurring Appointments</h3>
-          <p className="text-gray-600 mb-4">{error}</p>
+          <AlertTriangle className="h-10 w-10 sm:h-12 sm:w-12 text-destructive mx-auto mb-3 sm:mb-4" />
+          <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2">Error Loading Recurring Appointments</h3>
+          <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
           >
             Retry
           </button>
@@ -59,16 +59,16 @@ export default function RecurringAppointmentsPage() {
         title="Recurring Appointments"
         description="Manage recurring appointment series and patterns"
         actions={
-          <div className="flex gap-2">
+          <div className="flex flex-col xs:flex-row gap-2">
             <Link href="/appointments">
               <Button variant="outline" size="sm">
-                <Calendar className="h-4 w-4 mr-2" />
-                View All Appointments
+                <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                <span className="hidden xs:inline">View All </span>Appointments
               </Button>
             </Link>
             <Link href="/appointments/recurring/new">
               <Button variant="default" size="sm">
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                 Create Series
               </Button>
             </Link>
@@ -79,12 +79,12 @@ export default function RecurringAppointmentsPage() {
       {/* Recurring Appointments Manager */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <Repeat className="h-5 w-5 mr-2" />
+          <CardTitle className="flex items-center text-base sm:text-lg">
+            <Repeat className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
             Active Recurring Series
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 sm:p-6">
           <RecurringAppointmentManager userId="current-user" />
         </CardContent>
       </Card>
@@ -92,21 +92,21 @@ export default function RecurringAppointmentsPage() {
       {/* Information Card */}
       <Card>
         <CardHeader>
-          <CardTitle>About Recurring Appointments</CardTitle>
+          <CardTitle className="text-base sm:text-lg">About Recurring Appointments</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4 text-sm text-gray-600">
+        <CardContent className="p-4 sm:p-6">
+          <div className="space-y-3 sm:space-y-4 text-xs sm:text-sm text-muted-foreground">
             <div>
-              <h4 className="font-medium text-gray-900 mb-2">What are recurring appointments?</h4>
-              <p>
+              <h4 className="font-medium text-foreground mb-1 sm:mb-2 text-xs sm:text-sm">What are recurring appointments?</h4>
+              <p className="text-[10px] xs:text-xs sm:text-sm">
                 Recurring appointments allow you to schedule a series of appointments that repeat at regular intervals.
                 This is useful for students who need regular medication administration, health check-ups, or therapy sessions.
               </p>
             </div>
             
             <div>
-              <h4 className="font-medium text-gray-900 mb-2">Supported patterns:</h4>
-              <ul className="list-disc list-inside space-y-1 ml-4">
+              <h4 className="font-medium text-foreground mb-1 sm:mb-2 text-xs sm:text-sm">Supported patterns:</h4>
+              <ul className="list-disc list-inside space-y-0.5 sm:space-y-1 ml-3 sm:ml-4 text-[10px] xs:text-xs sm:text-sm">
                 <li><strong>Daily:</strong> Every N days (e.g., every 2 days)</li>
                 <li><strong>Weekly:</strong> Specific days of the week (e.g., Monday, Wednesday, Friday)</li>
                 <li><strong>Monthly:</strong> Same day each month (e.g., 15th of every month)</li>
@@ -114,8 +114,8 @@ export default function RecurringAppointmentsPage() {
             </div>
 
             <div>
-              <h4 className="font-medium text-gray-900 mb-2">Features:</h4>
-              <ul className="list-disc list-inside space-y-1 ml-4">
+              <h4 className="font-medium text-foreground mb-1 sm:mb-2 text-xs sm:text-sm">Features:</h4>
+              <ul className="list-disc list-inside space-y-0.5 sm:space-y-1 ml-3 sm:ml-4 text-[10px] xs:text-xs sm:text-sm">
                 <li>Automatic scheduling of future appointments</li>
                 <li>Bulk editing of entire series</li>
                 <li>Individual appointment modifications</li>
@@ -129,6 +129,3 @@ export default function RecurringAppointmentsPage() {
     </>
   );
 }
-
-
-

@@ -69,15 +69,15 @@ export default function AppointmentsPage() {
         title="Appointments"
         description="Manage student healthcare appointments and schedules"
         actions={
-          <Button variant="default">
-            <Plus className="h-4 w-4 mr-2" />
-            Schedule Appointment
+          <Button variant="default" size="sm">
+            <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+            <span className="hidden xs:inline">Schedule </span>Appointment
           </Button>
         }
       />
 
-      <div className="p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="p-3 sm:p-4 md:p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
           {/* Main Appointments Content */}
           <div className="lg:col-span-3">
             <Suspense fallback={<Skeleton className="h-96 w-full" />}>
@@ -96,6 +96,3 @@ export default function AppointmentsPage() {
     </div>
   );
 }
-
-
-

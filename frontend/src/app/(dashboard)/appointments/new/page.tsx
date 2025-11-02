@@ -72,11 +72,11 @@ export default function NewAppointmentPage() {
       />
 
       {error && (
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="pt-6">
+        <Card className="border-destructive/50 bg-destructive/5">
+          <CardContent className="pt-4 sm:pt-6">
             <div className="flex items-center">
-              <AlertTriangle className="h-5 w-5 text-red-600 mr-2" />
-              <p className="text-red-700">{error}</p>
+              <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-destructive mr-2 flex-shrink-0" />
+              <p className="text-xs sm:text-sm text-destructive">{error}</p>
             </div>
           </CardContent>
         </Card>
@@ -84,12 +84,12 @@ export default function NewAppointmentPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <Calendar className="h-5 w-5 mr-2" />
+          <CardTitle className="flex items-center text-base sm:text-lg">
+            <Calendar className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
             Appointment Details
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 sm:p-6">
           <SchedulingForm
             initialData={{
               ...defaultAppointment,
@@ -106,29 +106,29 @@ export default function NewAppointmentPage() {
       {/* Quick Tips */}
       <Card>
         <CardHeader>
-          <CardTitle>Scheduling Tips</CardTitle>
+          <CardTitle className="text-base sm:text-lg">Scheduling Tips</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-3 text-sm text-gray-600">
-            <div className="flex items-start">
-              <Clock className="h-4 w-4 mr-2 mt-0.5 text-blue-500" />
-              <div>
-                <p className="font-medium text-gray-900">Duration Guidelines</p>
-                <p>Health checks: 30 min, Medication: 15 min, Injury assessment: 45 min</p>
+        <CardContent className="p-4 sm:p-6">
+          <div className="space-y-3 text-xs sm:text-sm text-muted-foreground">
+            <div className="flex items-start gap-2">
+              <Clock className="h-3 w-3 sm:h-4 sm:w-4 mt-0.5 text-primary flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="font-medium text-foreground text-xs sm:text-sm">Duration Guidelines</p>
+                <p className="text-[10px] xs:text-xs sm:text-sm">Health checks: 30 min, Medication: 15 min, Injury assessment: 45 min</p>
               </div>
             </div>
-            <div className="flex items-start">
-              <User className="h-4 w-4 mr-2 mt-0.5 text-green-500" />
-              <div>
-                <p className="font-medium text-gray-900">Student Selection</p>
-                <p>Start typing the student&apos;s name to search and select</p>
+            <div className="flex items-start gap-2">
+              <User className="h-3 w-3 sm:h-4 sm:w-4 mt-0.5 text-primary flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="font-medium text-foreground text-xs sm:text-sm">Student Selection</p>
+                <p className="text-[10px] xs:text-xs sm:text-sm">Start typing the student&apos;s name to search and select</p>
               </div>
             </div>
-            <div className="flex items-start">
-              <Calendar className="h-4 w-4 mr-2 mt-0.5 text-purple-500" />
-              <div>
-                <p className="font-medium text-gray-900">Availability</p>
-                <p>The system will show available time slots based on your schedule</p>
+            <div className="flex items-start gap-2">
+              <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mt-0.5 text-primary flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="font-medium text-foreground text-xs sm:text-sm">Availability</p>
+                <p className="text-[10px] xs:text-xs sm:text-sm">The system will show available time slots based on your schedule</p>
               </div>
             </div>
           </div>
@@ -137,5 +137,3 @@ export default function NewAppointmentPage() {
     </>
   );
 }
-
-

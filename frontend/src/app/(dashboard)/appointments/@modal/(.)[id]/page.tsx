@@ -2,8 +2,10 @@ import React, { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { Modal } from '@/components/ui/modal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { API_ENDPOINTS } from '@/constants/api';
+import { appointmentUtils } from '../../data';
 
 interface ModalAppointmentPageProps {
   params: { id: string };
@@ -92,40 +94,36 @@ function AppointmentDetailsSkeleton() {
 }
 
 function StatusBadge({ status }: { status: AppointmentData['status'] }) {
-  const statusConfig = {
-    scheduled: { color: 'bg-blue-100 text-blue-800', label: 'Scheduled' },
-    confirmed: { color: 'bg-green-100 text-green-800', label: 'Confirmed' },
-    'in-progress': { color: 'bg-yellow-100 text-yellow-800', label: 'In Progress' },
-    completed: { color: 'bg-gray-100 text-gray-800', label: 'Completed' },
-    cancelled: { color: 'bg-red-100 text-red-800', label: 'Cancelled' },
-    'no-show': { color: 'bg-orange-100 text-orange-800', label: 'No Show' },
+  const statusLabels = {
+    scheduled: 'Scheduled',
+    confirmed: 'Confirmed',
+    'in-progress': 'In Progress',
+    completed: 'Completed',
+    cancelled: 'Cancelled',
+    'no-show': 'No Show',
   };
-
-  const config = statusConfig[status];
   
   return (
-    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${config.color}`}>
-      {config.label}
-    </span>
+    <Badge variant={appointmentUtils.getStatusVariant(status)}>
+      {statusLabels[status]}
+    </Badge>
   );
 }
 
 function PriorityBadge({ priority }: { priority?: AppointmentData['priority'] }) {
   if (!priority) return null;
 
-  const priorityConfig = {
-    low: { color: 'bg-gray-100 text-gray-800', label: 'Low' },
-    medium: { color: 'bg-blue-100 text-blue-800', label: 'Medium' },
-    high: { color: 'bg-yellow-100 text-yellow-800', label: 'High' },
-    urgent: { color: 'bg-red-100 text-red-800', label: 'Urgent' },
+  const priorityLabels = {
+    low: 'Low',
+    medium: 'Medium',
+    high: 'High',
+    urgent: 'Urgent',
   };
-
-  const config = priorityConfig[priority];
   
   return (
-    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${config.color}`}>
-      {config.label}
-    </span>
+    <Badge variant={appointmentUtils.getPriorityVariant(priority)}>
+      {priorityLabels[priority]}
+    </Badge>
   );
 }
 

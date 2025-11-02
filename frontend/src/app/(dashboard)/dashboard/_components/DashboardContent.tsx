@@ -13,7 +13,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   Users,
   Activity,
@@ -51,78 +51,25 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { 
-  getDashboardData, 
-  getDashboardStats, 
-  getHealthAlerts, 
-  getRecentActivities, 
-  getSystemStatus,
   acknowledgeHealthAlert,
   refreshDashboardData,
-  type DashboardStats as DashboardStatsType,
-  type HealthAlert as HealthAlertType,
-  type RecentActivity as RecentActivityType,
-  type SystemStatus,
-  type DashboardFilters
+  type DashboardStats,
+  type HealthAlert,
+  type RecentActivity,
+  type SystemStatus
 } from '@/lib/actions/dashboard.actions';
 
-// Types now imported from actions
+interface DashboardContentProps {
+  stats: DashboardStats;
+  alerts: HealthAlert[];
+  activities: RecentActivity[];
+  systemStatus: SystemStatus;
+}
 
-export default function DashboardContent() {
+export default function DashboardContent({ stats, alerts, activities, systemStatus }: DashboardContentProps) {
   const [selectedTimeframe, setSelectedTimeframe] = useState<'today' | 'week' | 'month' | 'quarter'>('today');
   const [alertFilter, setAlertFilter] = useState<'all' | 'critical' | 'high' | 'medium' | 'low'>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  
-  // State for dashboard data
-  const [stats, setStats] = useState<DashboardStatsType | null>(null);
-  const [healthAlerts, setHealthAlerts] = useState<HealthAlertType[]>([]);
-  const [recentActivities, setRecentActivities] = useState<RecentActivityType[]>([]);
-  const [systemStatus, setSystemStatus] = useState<SystemStatus | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Load dashboard data
-  useEffect(() => {
-    async function loadDashboardData() {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const filters: DashboardFilters = {
-          timeframe: selectedTimeframe,
-          alertSeverity: alertFilter === 'all' ? undefined : alertFilter
-        };
-
-        const data = await getDashboardData(filters);
-        
-        setStats(data.stats);
-        setHealthAlerts(data.alerts);
-        setRecentActivities(data.activities);
-        setSystemStatus(data.systemStatus);
-
-      } catch (err) {
-        console.error('Failed to load dashboard data:', err);
-        setError('Failed to load dashboard data');
-        
-        // Set empty defaults on error
-        setStats({
-          totalStudents: 0,
-          activeStudents: 0,
-          healthAlerts: 0,
-          pendingMedications: 0,
-          appointmentsToday: 0,
-          completedScreenings: 0,
-          immunizationCompliance: 0,
-          emergencyContacts: 0
-        });
-        setHealthAlerts([]);
-        setRecentActivities([]);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadDashboardData();
-  }, [selectedTimeframe, alertFilter]);
 
   // Handle alert acknowledgment
   const handleAcknowledgeAlert = async (alertId: string) => {
@@ -130,14 +77,8 @@ export default function DashboardContent() {
       const success = await acknowledgeHealthAlert(alertId, 'current-user-id'); // In real app, get from auth
       
       if (success) {
-        // Update local state to reflect acknowledgment
-        setHealthAlerts(prev => 
-          prev.map(alert => 
-            alert.id === alertId 
-              ? { ...alert, status: 'acknowledged' as const }
-              : alert
-          )
-        );
+        // In a real app, this would trigger a server-side revalidation
+        console.log(`Alert ${alertId} acknowledged successfully`);
       }
     } catch (err) {
       console.error('Failed to acknowledge alert:', err);
@@ -148,25 +89,13 @@ export default function DashboardContent() {
   const handleRefresh = async () => {
     try {
       await refreshDashboardData();
-      
-      // Reload data after refresh
-      const filters: DashboardFilters = {
-        timeframe: selectedTimeframe,
-        alertSeverity: alertFilter === 'all' ? undefined : alertFilter
-      };
-
-      const data = await getDashboardData(filters);
-      setStats(data.stats);
-      setHealthAlerts(data.alerts);
-      setRecentActivities(data.activities);
-      setSystemStatus(data.systemStatus);
-      
+      // Page will revalidate automatically with fresh data
     } catch (err) {
       console.error('Failed to refresh dashboard:', err);
     }
   };
 
-  const getAlertIcon = (type: HealthAlertType['type']) => {
+  const getAlertIcon = (type: HealthAlert['type']) => {
     switch (type) {
       case 'medication': return Pill;
       case 'allergy': return AlertTriangle;
@@ -177,7 +106,7 @@ export default function DashboardContent() {
     }
   };
 
-  const getAlertColor = (severity: HealthAlertType['severity']) => {
+  const getAlertColor = (severity: HealthAlert['severity']) => {
     switch (severity) {
       case 'critical': return 'text-red-600 bg-red-50 border-red-200';
       case 'high': return 'text-orange-600 bg-orange-50 border-orange-200';
@@ -187,7 +116,7 @@ export default function DashboardContent() {
     }
   };
 
-  const getActivityIcon = (type: RecentActivityType['type']) => {
+  const getActivityIcon = (type: RecentActivity['type']) => {
     switch (type) {
       case 'student_enrollment': return Users;
       case 'health_record_update': return FileText;
@@ -340,7 +269,7 @@ export default function DashboardContent() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3" role="list" aria-label="Health alerts">
-                {healthAlerts.map((alert) => {
+                {alerts.map((alert) => {
                   const AlertIcon = getAlertIcon(alert.type);
                   return (
                     <div
@@ -385,8 +314,8 @@ export default function DashboardContent() {
                 })}
               </div>
               <div className="mt-4 pt-4 border-t">
-                <Button variant="outline" className="w-full" aria-label={`View all ${healthAlerts.length + 8} health alerts`}>
-                  View All Alerts ({healthAlerts.length + 8} total)
+                <Button variant="outline" className="w-full" aria-label={`View all ${alerts.length + 8} health alerts`}>
+                  View All Alerts ({alerts.length + 8} total)
                 </Button>
               </div>
             </CardContent>
@@ -419,7 +348,7 @@ export default function DashboardContent() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3" role="list" aria-label="Recent healthcare activities">
-                {recentActivities.map((activity) => {
+                {activities.map((activity) => {
                   const ActivityIcon = getActivityIcon(activity.type);
                   return (
                     <div

@@ -41,7 +41,7 @@ export const metadata: Metadata = {
 };
 
 interface HealthRecordsPageProps {
-  searchParams: {
+  searchParams: Promise<{
     page?: string;
     limit?: string;
     type?: string;
@@ -52,7 +52,7 @@ interface HealthRecordsPageProps {
     dateTo?: string;
     studentId?: string;
     recordedBy?: string;
-  };
+  }>;
 }
 
 function HealthRecordsPageSkeleton() {
@@ -81,14 +81,18 @@ function HealthRecordsPageSkeleton() {
 }
 
 async function HealthRecordsFiltersWrapper({ searchParams }: { searchParams: HealthRecordsPageProps['searchParams'] }) {
+  // Await the searchParams Promise
+  const resolvedSearchParams = await searchParams;
+  
   // Fetch health records to get the total count
-  const result = await getHealthRecordsAction(searchParams.studentId, searchParams.type);
+  const result = await getHealthRecordsAction(resolvedSearchParams.studentId, resolvedSearchParams.type);
   const totalCount = result.success ? (result.data?.length || 0) : 0;
   
   return <HealthRecordsFilters totalCount={totalCount} />;
 }
 
-export default function HealthRecordsPage({ searchParams }: HealthRecordsPageProps) {
+export default async function HealthRecordsPage({ searchParams }: HealthRecordsPageProps) {
+  const resolvedSearchParams = await searchParams;
   return (
     <>
       <PageHeader
@@ -124,11 +128,9 @@ export default function HealthRecordsPage({ searchParams }: HealthRecordsPagePro
         </Suspense>
 
         <Suspense fallback={<HealthRecordsPageSkeleton />}>
-          <HealthRecordsContent searchParams={searchParams} />
+          <HealthRecordsContent searchParams={resolvedSearchParams} />
         </Suspense>
       </div>
     </>
   );
 }
-
-

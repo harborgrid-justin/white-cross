@@ -89,29 +89,29 @@ export default function EditAppointmentPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-gray-600">Loading appointment...</span>
+      <div className="flex items-center justify-center min-h-[300px] sm:min-h-[400px]">
+        <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-primary"></div>
+        <span className="ml-2 sm:ml-3 text-xs sm:text-sm text-muted-foreground">Loading appointment...</span>
       </div>
     );
   }
 
   if (error || !appointment) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-[300px] sm:min-h-[400px] p-4">
         <div className="text-center">
-          <AlertTriangle className="h-12 w-12 text-red-600 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <AlertTriangle className="h-10 w-10 sm:h-12 sm:w-12 text-destructive mx-auto mb-3 sm:mb-4" />
+          <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2">
             {error ? 'Error Loading Appointment' : 'Appointment Not Found'}
           </h3>
-          <p className="text-gray-600 mb-4">
+          <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
             {error || 'The appointment you are trying to edit does not exist.'}
           </p>
-          <div className="flex gap-2 justify-center">
-            <Button onClick={() => router.back()} variant="outline">
+          <div className="flex flex-col xs:flex-row gap-2 justify-center">
+            <Button onClick={() => router.back()} variant="outline" size="sm">
               Go Back
             </Button>
-            <Button onClick={() => router.push('/appointments')}>
+            <Button onClick={() => router.push('/appointments')} size="sm">
               View All Appointments
             </Button>
           </div>
@@ -122,20 +122,20 @@ export default function EditAppointmentPage() {
 
   if (!appointmentUtils.canEdit(appointment.status)) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-[300px] sm:min-h-[400px] p-4">
         <div className="text-center">
-          <AlertTriangle className="h-12 w-12 text-yellow-600 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <AlertTriangle className="h-10 w-10 sm:h-12 sm:w-12 text-warning mx-auto mb-3 sm:mb-4" />
+          <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2">
             Cannot Edit Appointment
           </h3>
-          <p className="text-gray-600 mb-4">
+          <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
             This appointment cannot be edited because its status is &quot;{appointment.status}&quot;.
           </p>
-          <div className="flex gap-2 justify-center">
-            <Button onClick={() => router.push(`/appointments/${appointmentId}`)} variant="outline">
+          <div className="flex flex-col xs:flex-row gap-2 justify-center">
+            <Button onClick={() => router.push(`/appointments/${appointmentId}`)} variant="outline" size="sm">
               View Appointment
             </Button>
-            <Button onClick={() => router.push('/appointments')}>
+            <Button onClick={() => router.push('/appointments')} size="sm">
               View All Appointments
             </Button>
           </div>
@@ -157,11 +157,11 @@ export default function EditAppointmentPage() {
       />
 
       {error && (
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="pt-6">
+        <Card className="border-destructive/50 bg-destructive/5">
+          <CardContent className="pt-4 sm:pt-6">
             <div className="flex items-center">
-              <AlertTriangle className="h-5 w-5 text-red-600 mr-2" />
-              <p className="text-red-700">{error}</p>
+              <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-destructive mr-2 flex-shrink-0" />
+              <p className="text-xs sm:text-sm text-destructive">{error}</p>
             </div>
           </CardContent>
         </Card>
@@ -169,12 +169,12 @@ export default function EditAppointmentPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <Edit className="h-5 w-5 mr-2" />
+          <CardTitle className="flex items-center text-base sm:text-lg">
+            <Edit className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
             Appointment Details
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 sm:p-6">
           <SchedulingForm
             appointment={appointment}
             onSubmit={handleSubmit}
@@ -189,21 +189,21 @@ export default function EditAppointmentPage() {
       {/* Current Status Info */}
       <Card>
         <CardHeader>
-          <CardTitle>Current Status</CardTitle>
+          <CardTitle className="text-base sm:text-lg">Current Status</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
+        <CardContent className="p-4 sm:p-6">
+          <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             <div>
-              <p className="text-sm text-gray-600">Status</p>
-              <p className="font-medium text-gray-900">{appointment.status}</p>
+              <p className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground">Status</p>
+              <p className="text-xs sm:text-sm font-medium text-foreground">{appointment.status}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Priority</p>
-              <p className="font-medium text-gray-900">{appointment.priority}</p>
+              <p className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground">Priority</p>
+              <p className="text-xs sm:text-sm font-medium text-foreground">{appointment.priority}</p>
             </div>
-            <div>
-              <p className="text-sm text-gray-600">Last Updated</p>
-              <p className="font-medium text-gray-900">
+            <div className="xs:col-span-2 lg:col-span-1">
+              <p className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground">Last Updated</p>
+              <p className="text-xs sm:text-sm font-medium text-foreground">
                 {appointmentUtils.formatDateTime(appointment.scheduledDate, appointment.scheduledTime)}
               </p>
             </div>
