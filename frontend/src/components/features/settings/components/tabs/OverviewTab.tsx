@@ -31,7 +31,7 @@ import {
   CheckCircle,
   Plus
 } from 'lucide-react'
-import { administrationApi } from '../../../../../services/api'
+import { administrationApi } from '@/services/api'
 
 export default function OverviewTab() {
   const [metrics, setMetrics] = useState({

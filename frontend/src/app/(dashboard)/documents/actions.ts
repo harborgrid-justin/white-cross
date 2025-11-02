@@ -49,7 +49,7 @@ const ALLOWED_FILE_TYPES = [
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   'application/vnd.ms-excel',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-];
+] as const;
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 

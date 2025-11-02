@@ -23,7 +23,7 @@ const statusColors = {
   ACTIVE: 'bg-green-100 text-green-800',
   ARCHIVED: 'bg-gray-100 text-gray-800',
   SUPERSEDED: 'bg-yellow-100 text-yellow-800',
-};
+} as const;
 
 export function PolicyLibrary({ policies, statistics, onViewPolicy, onEditPolicy }: PolicyLibraryProps) {
   const [searchTerm, setSearchTerm] = useState('');

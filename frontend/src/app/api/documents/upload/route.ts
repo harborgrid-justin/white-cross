@@ -59,7 +59,7 @@ const ALLOWED_MIME_TYPES = [
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   'text/plain',
   'text/csv'
-];
+] as const;
 
 /**
  * POST /api/documents/upload

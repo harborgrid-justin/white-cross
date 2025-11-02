@@ -13,7 +13,7 @@
  */
 
 import React, { useState, useEffect } from 'react'
-import { integrationApi } from '../../../../../services/api'
+import { integrationApi } from '@/services/api'
 import toast from 'react-hot-toast'
 import IntegrationModal from './IntegrationModal'
 

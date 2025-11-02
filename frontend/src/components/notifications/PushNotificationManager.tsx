@@ -15,6 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { API_ENDPOINTS } from '@/constants/api';
 
 interface PushNotificationManagerProps {
   onPermissionChange?: (permission: NotificationPermission) => void;
@@ -194,7 +195,7 @@ export function PushNotificationManager({
 
     try {
       // Send test notification request to backend
-      const response = await fetch('/api/v1/notifications/test-push', {
+      const response = await fetch(`/api/v1${API_ENDPOINTS.NOTIFICATIONS.TEST_PUSH}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -232,7 +233,7 @@ export function PushNotificationManager({
   // Send subscription to backend
   const sendSubscriptionToBackend = async (sub: PushSubscription) => {
     try {
-      const response = await fetch('/api/v1/notifications/push-subscribe', {
+      const response = await fetch(`/api/v1${API_ENDPOINTS.NOTIFICATIONS.PUSH_SUBSCRIBE}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -254,7 +255,7 @@ export function PushNotificationManager({
   // Remove subscription from backend
   const removeSubscriptionFromBackend = async (sub: PushSubscription) => {
     try {
-      const response = await fetch('/api/v1/notifications/push-unsubscribe', {
+      const response = await fetch(`/api/v1${API_ENDPOINTS.NOTIFICATIONS.PUSH_UNSUBSCRIBE}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

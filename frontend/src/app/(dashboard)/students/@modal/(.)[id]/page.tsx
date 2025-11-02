@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { Modal } from '@/components/ui/modal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { API_ENDPOINTS } from '@/lib/api-client';
+import { API_ENDPOINTS } from '@/constants/api';
 
 interface ModalStudentPageProps {
   params: Promise<{ id: string }>;

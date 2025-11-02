@@ -59,7 +59,7 @@ const AWS_REGION = process.env.AWS_REGION || 'us-east-1';
 // Retry configuration
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 1000;
-const RETRYABLE_STATUS_CODES = [408, 429, 500, 502, 503, 504];
+const RETRYABLE_STATUS_CODES = [408, 429, 500, 502, 503, 504] as const;
 
 // ============================================================================
 // Types

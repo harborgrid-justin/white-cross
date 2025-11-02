@@ -79,7 +79,7 @@ const variantConfig = {
     iconColor: 'text-red-500 dark:text-red-400',
     bgColor: 'bg-red-100 dark:bg-red-900/20'
   }
-};
+} as const;
 
 /**
  * ErrorState - Display error state with optional retry and navigation actions

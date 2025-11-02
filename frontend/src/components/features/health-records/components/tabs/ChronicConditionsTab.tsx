@@ -14,9 +14,9 @@
 
 import React from 'react'
 import { Plus, Heart } from 'lucide-react'
-import { getConditionSeverityColor, getStatusColor } from '../../../../../utils/healthRecords'
-import type { ChronicCondition } from '../../../../../types/healthRecords'
-import type { User } from '../../../../../types'
+import { getConditionSeverityColor, getStatusColor } from '@/utils/healthRecords'
+import type { ChronicCondition } from '@/types/healthRecords'
+import type { User } from '@/types'
 
 interface ChronicConditionsTabProps {
   conditions: ChronicCondition[]

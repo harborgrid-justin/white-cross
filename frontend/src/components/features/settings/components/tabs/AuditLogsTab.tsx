@@ -16,7 +16,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import {
   FileText
 } from 'lucide-react'
-import { administrationApi } from '../../../../../services/api'
+import { administrationApi } from '@/services/api'
 
 export default function AuditLogsTab() {
   const [logs, setLogs] = useState<any[]>([])

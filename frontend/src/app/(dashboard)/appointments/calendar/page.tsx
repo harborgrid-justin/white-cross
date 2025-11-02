@@ -5,7 +5,7 @@ import { Container } from '@/components/layouts/Container';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AppointmentCalendar } from '@/components/features/appointments';
 import { Skeleton } from '@/components/ui/skeleton';
-import { API_ENDPOINTS } from '@/lib/api-client';
+import { API_ENDPOINTS } from '@/constants/api';
 import { revalidateTag, unstable_cache } from 'next/cache';
 
 interface CalendarPageProps {

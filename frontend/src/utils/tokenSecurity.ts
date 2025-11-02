@@ -15,7 +15,7 @@
  * Implements encryption, expiration checking, and secure storage patterns
  */
 
-import { User } from '../types'
+import { User } from '@/types';
 
 export interface TokenData {
   token: string

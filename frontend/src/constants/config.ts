@@ -103,3 +103,44 @@ export const SECURITY_CONFIG = {
     ALGORITHM: 'AES-GCM',
   },
 } as const;
+
+/**
+ * Validation Configuration
+ * Field validation constraints and limits
+ */
+export const VALIDATION_CONFIG = {
+  /**
+   * Maximum field length for text inputs
+   * Prevents excessive data input and potential storage issues
+   */
+  MAX_FIELD_LENGTH: 5000,
+
+  /**
+   * Maximum file upload size in bytes (10MB)
+   */
+  MAX_FILE_SIZE: 10 * 1024 * 1024,
+
+  /**
+   * Allowed file types for uploads
+   */
+  ALLOWED_FILE_TYPES: [
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  ],
+
+  /**
+   * Password requirements
+   */
+  PASSWORD: {
+    MIN_LENGTH: 8,
+    MAX_LENGTH: 128,
+    REQUIRE_UPPERCASE: true,
+    REQUIRE_LOWERCASE: true,
+    REQUIRE_NUMBER: true,
+    REQUIRE_SPECIAL_CHAR: true,
+  },
+} as const;

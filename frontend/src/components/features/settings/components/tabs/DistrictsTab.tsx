@@ -21,7 +21,7 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react'
-import { administrationApi } from '../../../../../services/api'
+import { administrationApi } from '@/services/api'
 import toast from 'react-hot-toast'
 
 export default function DistrictsTab() {

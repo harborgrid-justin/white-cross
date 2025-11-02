@@ -377,7 +377,7 @@ export const INDEXED_DB_CONFIG = {
       ]
     }
   ]
-};
+} as const;
 
 /**
  * Performance Monitoring Configuration
@@ -406,4 +406,4 @@ export const PERFORMANCE_CONFIG = {
     prefetch: 500,
     invalidation: 50
   }
-};
+} as const;

@@ -16,7 +16,7 @@ import React, { useState, useEffect } from 'react'
 import {
   BookOpen
 } from 'lucide-react'
-import { administrationApi } from '../../../../../services/api'
+import { administrationApi } from '@/services/api'
 
 export default function TrainingTab() {
   const [modules, setModules] = useState<any[]>([])

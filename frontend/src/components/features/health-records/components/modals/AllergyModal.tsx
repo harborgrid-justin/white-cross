@@ -14,7 +14,7 @@
 
 import React from 'react'
 import type { Allergy, AllergyFormErrors } from '@/types/healthRecords'
-import { SEVERITY_LEVELS, ALLERGY_TYPES } from '@/constants/healthRecords'
+import { SEVERITY_LEVELS, ALLERGY_TYPE_OPTIONS } from '@/constants/healthRecords'
 
 interface AllergyModalProps {
   isOpen: boolean
@@ -73,7 +73,7 @@ export const AllergyModal: React.FC<AllergyModalProps> = ({
               data-testid="allergy-type-select"
             >
               <option value="">Select type</option>
-              {ALLERGY_TYPES.map(type => (
+              {ALLERGY_TYPE_OPTIONS.map(type => (
                 <option key={type.value} value={type.value}>{type.label}</option>
               ))}
             </select>

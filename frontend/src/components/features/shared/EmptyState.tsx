@@ -65,7 +65,7 @@ const variantConfig = {
     icon: Plus,
     iconColor: 'text-primary-400 dark:text-primary-500'
   }
-};
+} as const;
 
 /**
  * EmptyState - Display empty state with optional actions

@@ -3,7 +3,7 @@ import { PageHeader } from '@/components/layouts/PageHeader';
 import { Container } from '@/components/layouts/Container';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { API_ENDPOINTS } from '@/lib/api-client';
+import { API_ENDPOINTS } from '@/constants/api';
 
 interface ReportsPageProps {
   searchParams: {

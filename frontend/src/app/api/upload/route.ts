@@ -23,7 +23,7 @@ const ALLOWED_TYPES = {
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx',
   'text/plain': '.txt',
   'text/csv': '.csv'
-};
+} as const;
 
 // Maximum file size: 10MB
 const MAX_FILE_SIZE = 10 * 1024 * 1024;

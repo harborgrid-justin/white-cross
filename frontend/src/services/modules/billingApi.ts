@@ -11,7 +11,7 @@
 
 import type { ApiClient } from '../core/ApiClient';
 import { apiClient } from '../core/ApiClient';
-import { API_ENDPOINTS } from '../config/apiConfig';
+import { API_ENDPOINTS } from '@/constants/api';
 import { ApiResponse, PaginatedResponse } from '../types';
 import { z } from 'zod';
 
