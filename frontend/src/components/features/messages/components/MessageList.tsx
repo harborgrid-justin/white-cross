@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Card } from '@/components/ui/layout/Card';
-import { Avatar } from '@/components/ui/Avatar';
+import { Card } from '@/components/ui/card';
+import { Avatar } from '@/components/ui/avatar';
 import {
   Inbox,
   Send,
@@ -388,3 +388,5 @@ export function MessageList({
     </div>
   );
 }
+
+

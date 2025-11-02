@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { type Prescription } from './PrescriptionsList';
 
 export interface PrescriptionDetailsProps {
@@ -96,7 +96,7 @@ export const PrescriptionDetails: React.FC<PrescriptionDetailsProps> = ({
       )}
 
       {onRequestRefill && prescription.status === 'active' && prescription.refillsRemaining > 0 && (
-        <Button variant="primary" onClick={onRequestRefill} fullWidth>
+        <Button variant="default" onClick={onRequestRefill} fullWidth>
           Request Refill
         </Button>
       )}
@@ -107,3 +107,6 @@ export const PrescriptionDetails: React.FC<PrescriptionDetailsProps> = ({
 PrescriptionDetails.displayName = 'PrescriptionDetails';
 
 export default PrescriptionDetails;
+
+
+

@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { 
   Pill, 
   Clock, 
@@ -300,7 +300,7 @@ export function MedicationsSidebar({ searchParams }: MedicationsSidebarProps) {
                 <div className="text-sm text-gray-600 mb-2">
                   {med.medication}
                 </div>
-                <Button variant="primary" size="sm" className="w-full">
+                <Button variant="default" size="sm" className="w-full">
                   {med.isLate ? 'Administer Now' : 'Record Administration'}
                 </Button>
               </div>
@@ -381,3 +381,6 @@ export function MedicationsSidebar({ searchParams }: MedicationsSidebarProps) {
     </div>
   );
 }
+
+
+

@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { Badge } from '@/components/ui/display/Badge';
-import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { X, Plus, Check, Tag as TagIcon } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -313,3 +313,7 @@ export const TagSelector: React.FC<TagSelectorProps> = ({
 TagSelector.displayName = 'TagSelector';
 
 export default React.memo(TagSelector);
+
+
+
+

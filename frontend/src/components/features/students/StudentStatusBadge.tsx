@@ -1,5 +1,5 @@
 import React from 'react';
-import { Badge } from '@/components/ui/display/Badge';
+import { Badge } from '@/components/ui/badge';
 
 /**
  * Student status type
@@ -69,3 +69,6 @@ export const StudentStatusBadge: React.FC<StudentStatusBadgeProps> = ({
 StudentStatusBadge.displayName = 'StudentStatusBadge';
 
 export default React.memo(StudentStatusBadge);
+
+
+

@@ -5,10 +5,10 @@
  */
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Checkbox } from '@/components/ui/Checkbox';
-import { Select } from '@/components/ui/Select';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Select } from '@/components/ui/select';
 
 export interface MedicationSettingsData {
   enableNotifications: boolean;
@@ -174,7 +174,7 @@ export const MedicationSettings: React.FC<MedicationSettingsProps> = ({
         <Button variant="outline" onClick={handleReset} disabled={!hasChanges || isLoading}>
           Reset
         </Button>
-        <Button variant="primary" onClick={handleSave} loading={isLoading} disabled={!hasChanges}>
+        <Button variant="default" onClick={handleSave} loading={isLoading} disabled={!hasChanges}>
           Save Settings
         </Button>
       </div>
@@ -185,3 +185,6 @@ export const MedicationSettings: React.FC<MedicationSettingsProps> = ({
 MedicationSettings.displayName = 'MedicationSettings';
 
 export default MedicationSettings;
+
+
+

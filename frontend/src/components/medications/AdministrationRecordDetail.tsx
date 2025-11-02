@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { type AdministrationRecord } from './administration/AdministrationLog';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 export interface AdministrationRecordDetailProps {
   record: AdministrationRecord;
@@ -98,3 +98,5 @@ export const AdministrationRecordDetail: React.FC<AdministrationRecordDetailProp
 AdministrationRecordDetail.displayName = 'AdministrationRecordDetail';
 
 export default AdministrationRecordDetail;
+
+

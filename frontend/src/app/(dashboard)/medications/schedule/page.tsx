@@ -12,7 +12,7 @@ import { PageHeader } from '@/components/shared/PageHeader';
 import { fetchWithAuth } from '@/lib/server/fetch';
 import { API_ENDPOINTS } from '@/constants/api';
 import MedicationSchedule from '@/components/medications/administration/MedicationSchedule';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { CalendarIcon, ClockIcon } from '@heroicons/react/24/outline';
 
 export const metadata: Metadata = {
@@ -112,7 +112,7 @@ export default async function MedicationSchedulePage({
               </Button>
             </Link>
             <Link href="/medications/administration-due">
-              <Button variant="primary" icon={<ClockIcon className="h-5 w-5" />}>
+              <Button variant="default" icon={<ClockIcon className="h-5 w-5" />}>
                 Due Now
               </Button>
             </Link>
@@ -295,3 +295,6 @@ function ScheduleSkeleton() {
     <div className="h-96 animate-pulse rounded bg-gray-100"></div>
   );
 }
+
+
+

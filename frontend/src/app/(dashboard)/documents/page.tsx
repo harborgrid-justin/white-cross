@@ -18,7 +18,7 @@
 import React from 'react';
 import { PageHeader } from '@/components/layouts/PageHeader';
 import { Plus, Upload } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import DocumentsContent from './_components/DocumentsContent';
 import DocumentsSidebar from './_components/DocumentsSidebar';
 
@@ -34,7 +34,7 @@ export default function DocumentsPage() {
               <Upload className="h-4 w-4 mr-2" />
               Upload File
             </Button>
-            <Button variant="primary">
+            <Button variant="default">
               <Plus className="h-4 w-4 mr-2" />
               Create Document
             </Button>
@@ -58,3 +58,6 @@ export default function DocumentsPage() {
     </div>
   );
 }
+
+
+

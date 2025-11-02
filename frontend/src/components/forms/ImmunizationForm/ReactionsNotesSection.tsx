@@ -8,8 +8,8 @@
  * @since 1.0.0
  */
 
-import { Label } from '@/components/ui/Label';
-import { Textarea } from '@/components/ui/Textarea';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 interface ReactionsNotesSectionProps {
   errors?: Record<string, string[]>;
@@ -47,3 +47,4 @@ export function ReactionsNotesSection({ errors }: ReactionsNotesSectionProps) {
     </div>
   );
 }
+

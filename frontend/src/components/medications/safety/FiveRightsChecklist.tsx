@@ -11,9 +11,9 @@
  */
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/Button';
-import { Checkbox } from '@/components/ui/Checkbox';
-import { Modal } from '@/components/ui/overlays/Modal';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Modal } from '@/components/ui/dialog';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 
 export interface FiveRightsData {
@@ -285,7 +285,7 @@ export const FiveRightsChecklist: React.FC<FiveRightsChecklistProps> = ({
           </Button>
           <Button
             type="button"
-            variant="primary"
+            variant="default"
             onClick={handleConfirm}
             disabled={!allChecked}
             className={!allChecked ? 'opacity-50 cursor-not-allowed' : ''}
@@ -308,3 +308,6 @@ export const FiveRightsChecklist: React.FC<FiveRightsChecklistProps> = ({
 FiveRightsChecklist.displayName = 'FiveRightsChecklist';
 
 export default FiveRightsChecklist;
+
+
+

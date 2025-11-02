@@ -8,8 +8,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { type Incident } from '@/schemas/incidents/incident.schemas';
-import { Badge } from '@/components/ui/display/Badge';
-import { Card } from '@/components/ui/layout/Card';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 import { formatDistanceToNow } from 'date-fns';
 
 interface IncidentCardProps {
@@ -72,3 +72,6 @@ export function IncidentCard({ incident }: IncidentCardProps) {
     </Link>
   );
 }
+
+
+

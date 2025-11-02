@@ -38,12 +38,18 @@ import {
   Search,
   MoreVertical
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/navigation/Tabs';
-import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { 
   getDashboardData, 
   getDashboardStats, 
@@ -203,17 +209,17 @@ export default function DashboardContent() {
           <p className="text-gray-600 mt-1">Overview of student health management and activities</p>
         </div>
         <div className="flex items-center space-x-3">
-          <Select 
-            value={selectedTimeframe} 
-            onChange={(value) => setSelectedTimeframe(value as 'today' | 'week' | 'month' | 'quarter')}
-            options={[
-              { value: 'today', label: 'Today' },
-              { value: 'week', label: 'This Week' },
-              { value: 'month', label: 'This Month' },
-              { value: 'quarter', label: 'This Quarter' }
-            ]}
-            className="w-32"
-          />
+          <Select value={selectedTimeframe} onValueChange={(value) => setSelectedTimeframe(value as 'today' | 'week' | 'month' | 'quarter')}>
+            <SelectTrigger className="w-32">
+              <SelectValue placeholder="Select timeframe" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="today">Today</SelectItem>
+              <SelectItem value="week">This Week</SelectItem>
+              <SelectItem value="month">This Month</SelectItem>
+              <SelectItem value="quarter">This Quarter</SelectItem>
+            </SelectContent>
+          </Select>
           <Button variant="outline" size="sm" onClick={handleRefresh}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
@@ -304,18 +310,18 @@ export default function DashboardContent() {
               <div className="flex items-center justify-between">
                 <CardTitle>Health Alerts & Notifications</CardTitle>
                 <div className="flex items-center space-x-2">
-                  <Select 
-                    value={alertFilter} 
-                    onChange={(value) => setAlertFilter(value as 'all' | 'critical' | 'high' | 'medium' | 'low')}
-                    options={[
-                      { value: 'all', label: 'All Alerts' },
-                      { value: 'critical', label: 'Critical' },
-                      { value: 'high', label: 'High' },
-                      { value: 'medium', label: 'Medium' },
-                      { value: 'low', label: 'Low Priority' }
-                    ]}
-                    className="w-32"
-                  />
+                  <Select value={alertFilter} onValueChange={(value) => setAlertFilter(value as 'all' | 'critical' | 'high' | 'medium' | 'low')}>
+                    <SelectTrigger className="w-32">
+                      <SelectValue placeholder="Select alert filter" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Alerts</SelectItem>
+                      <SelectItem value="critical">Critical</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="low">Low Priority</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <Button variant="outline" size="sm">
                     <Filter className="h-4 w-4" />
                   </Button>

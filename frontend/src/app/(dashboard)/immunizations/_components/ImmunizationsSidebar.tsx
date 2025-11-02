@@ -21,9 +21,9 @@ import {
   Filter,
   RefreshCw
 } from 'lucide-react';
-import { Card } from '@/components/ui/layout/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 // Immunization types and statuses
 type ImmunizationStatus = 'scheduled' | 'administered' | 'declined' | 'deferred' | 'overdue' | 'completed' | 'contraindicated';
@@ -542,3 +542,5 @@ const ImmunizationsSidebar: React.FC<ImmunizationsSidebarProps> = ({
 };
 
 export default ImmunizationsSidebar;
+
+

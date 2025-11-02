@@ -9,8 +9,8 @@
 
 import React, { useEffect } from 'react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/layout/Card';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { AlertCircle, RefreshCw, ArrowLeft, Shield } from 'lucide-react';
 
 interface AdminErrorProps {
@@ -70,7 +70,7 @@ export default function AdminError({ error, reset }: AdminErrorProps) {
           )}
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button variant="primary" onClick={reset}>
+            <Button variant="default" onClick={reset}>
               <RefreshCw className="h-4 w-4 mr-2" />
               Try Again
             </Button>
@@ -100,3 +100,6 @@ export default function AdminError({ error, reset }: AdminErrorProps) {
     </div>
   );
 }
+
+
+

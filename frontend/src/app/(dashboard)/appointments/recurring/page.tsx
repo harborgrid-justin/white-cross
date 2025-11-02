@@ -9,8 +9,8 @@
 
 import { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/layouts/PageHeader';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/layout/Card';
-import { Button } from '@/components/ui/Button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Plus, Repeat, Calendar, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { RecurringAppointmentManager } from '@/components/appointments';
@@ -66,7 +66,7 @@ export default function RecurringAppointmentsPage() {
               </Button>
             </Link>
             <Link href="/appointments/recurring/new">
-              <Button variant="primary" size="sm">
+              <Button variant="default" size="sm">
                 <Plus className="h-4 w-4 mr-2" />
                 Create Series
               </Button>
@@ -128,3 +128,6 @@ export default function RecurringAppointmentsPage() {
     </>
   );
 }
+
+
+

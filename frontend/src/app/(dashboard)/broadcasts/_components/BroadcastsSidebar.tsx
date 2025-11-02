@@ -30,9 +30,9 @@ import {
   Mail,
   Phone
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 export default function BroadcastsSidebar() {
   return (
@@ -366,3 +366,5 @@ export default function BroadcastsSidebar() {
     </div>
   );
 }
+
+

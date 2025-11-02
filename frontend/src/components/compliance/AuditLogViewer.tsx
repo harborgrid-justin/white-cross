@@ -9,17 +9,17 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/Select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+} from '@/components/ui/select';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Search, Download, Filter, Eye, Shield, AlertTriangle } from 'lucide-react';
 import type { AuditLog, AuditActionTypeEnum, AuditSeverityEnum } from '@/schemas/compliance/compliance.schemas';
 
@@ -337,3 +337,5 @@ export function AuditLogViewer({
     </div>
   );
 }
+
+

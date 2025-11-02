@@ -24,13 +24,13 @@
  *
  * @example
  * ```tsx
- * import { Button, BackButton, RollbackButton } from '@/components/ui/Buttons';
+ * import { Button, BackButton, RollbackButton } from '@/components/ui/buttons';
  *
  * function MyPage() {
  *   return (
  *     <div>
  *       <BackButton fallbackPath="/dashboard" />
- *       <Button variant="primary" onClick={handleSave}>Save</Button>
+ *       <Button variant="default" onClick={handleSave}>Save</Button>
  *       <RollbackButton updateId="update-123" variant="danger" />
  *     </div>
  *   );
@@ -53,3 +53,6 @@ export type {
   RollbackButtonProps,
   BatchRollbackButtonProps
 } from './RollbackButton'
+
+
+

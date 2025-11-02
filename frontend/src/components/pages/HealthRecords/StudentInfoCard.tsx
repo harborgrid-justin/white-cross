@@ -9,7 +9,7 @@
 
 import Link from 'next/link';
 import { User } from 'lucide-react';
-import { Card } from '@/components/ui/layout/Card';
+import { Card } from '@/components/ui/card';
 
 interface Student {
   id: string;
@@ -62,3 +62,5 @@ export function StudentInfoCard({ student }: StudentInfoCardProps) {
     </Card>
   );
 }
+
+

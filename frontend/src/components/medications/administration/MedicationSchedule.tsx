@@ -6,8 +6,8 @@
  */
 
 import React from 'react';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableEmptyState } from '@/components/ui/data/Table';
-import { Button } from '@/components/ui/Button';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableEmptyState } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
 
 export interface ScheduledMedication {
   id: string;
@@ -98,7 +98,7 @@ export const MedicationSchedule: React.FC<MedicationScheduleProps> = ({
                   {isActionable(med.status) && (
                     <div className="flex items-center gap-2">
                       {onAdminister && (
-                        <Button size="xs" variant="primary" onClick={() => onAdminister(med.id)}>
+                        <Button size="xs" variant="default" onClick={() => onAdminister(med.id)}>
                           Administer
                         </Button>
                       )}
@@ -122,3 +122,6 @@ export const MedicationSchedule: React.FC<MedicationScheduleProps> = ({
 MedicationSchedule.displayName = 'MedicationSchedule';
 
 export default MedicationSchedule;
+
+
+

@@ -8,8 +8,8 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 interface RecurringSeries {
   id: string;
@@ -227,3 +227,5 @@ export function RecurringAppointmentManager({
     </div>
   );
 }
+
+

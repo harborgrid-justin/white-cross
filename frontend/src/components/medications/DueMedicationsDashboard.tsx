@@ -7,7 +7,7 @@
 
 import React, { useState } from 'react';
 import { MedicationSchedule, type ScheduledMedication } from './administration/MedicationSchedule';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 export interface DueMedicationsDashboardProps {
   dueMedications: ScheduledMedication[];
@@ -66,3 +66,5 @@ export const DueMedicationsDashboard: React.FC<DueMedicationsDashboardProps> = (
 DueMedicationsDashboard.displayName = 'DueMedicationsDashboard';
 
 export default DueMedicationsDashboard;
+
+

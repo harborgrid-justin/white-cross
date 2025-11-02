@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Container } from '@/components/layouts/Container';
 
 interface ErrorPageProps {
@@ -110,3 +110,5 @@ export default function Error({ error, reset }: ErrorPageProps) {
     </Container>
   );
 }
+
+

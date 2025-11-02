@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { MedicationList, type Medication } from './core/MedicationList';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 export interface StudentMedicationsListProps {
   studentId: string;
@@ -36,7 +36,7 @@ export const StudentMedicationsList: React.FC<StudentMedicationsListProps> = ({
           <p className="text-sm text-gray-600 mt-1">{studentName}</p>
         </div>
         {onAddMedication && (
-          <Button variant="primary" onClick={onAddMedication}>
+          <Button variant="default" onClick={onAddMedication}>
             Add Medication
           </Button>
         )}
@@ -58,3 +58,6 @@ export const StudentMedicationsList: React.FC<StudentMedicationsListProps> = ({
 StudentMedicationsList.displayName = 'StudentMedicationsList';
 
 export default StudentMedicationsList;
+
+
+

@@ -29,10 +29,10 @@ import {
   Send,
   RefreshCw
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Badge } from '@/components/ui/Badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { 
   getBillingDashboardData,
   getBillingStats,
@@ -293,7 +293,7 @@ export default function BillingContent() {
                     <Download className="h-4 w-4 mr-2" />
                     Export
                   </Button>
-                  <Button variant="primary" size="sm">
+                  <Button variant="default" size="sm">
                     <FileText className="h-4 w-4 mr-2" />
                     Create Invoice
                   </Button>
@@ -321,7 +321,7 @@ export default function BillingContent() {
                   <p className="text-gray-600 mb-6">
                     Try adjusting your search or filter criteria.
                   </p>
-                  <Button variant="primary">
+                  <Button variant="default">
                     <FileText className="h-4 w-4 mr-2" />
                     Create Billing Record
                   </Button>
@@ -425,3 +425,6 @@ export default function BillingContent() {
     </div>
   );
 }
+
+
+

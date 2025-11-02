@@ -6,6 +6,7 @@
 
 import type { ReactNode } from 'react';
 import { Metadata } from 'next';
+import { StudentsLayoutClient } from './_components/StudentsLayoutClient';
 
 export const metadata: Metadata = {
   title: 'Students | White Cross',
@@ -24,14 +25,11 @@ export default function StudentsLayout({
   modal
 }: StudentsLayoutProps) {
   return (
-    <div className="flex gap-6">
-      <div className="flex-1">
-        {children}
-      </div>
-      <div className="w-80 flex-shrink-0">
-        {sidebar}
-      </div>
-      {modal}
-    </div>
+    <StudentsLayoutClient
+      sidebar={sidebar}
+      modal={modal}
+    >
+      {children}
+    </StudentsLayoutClient>
   );
 }

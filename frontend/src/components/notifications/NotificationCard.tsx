@@ -18,9 +18,9 @@ import {
   Info,
   ChevronRight
 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { Notification, NotificationType } from '@/lib/validations/notification.schemas';
 
@@ -247,3 +247,6 @@ export function NotificationCardSkeleton({ className }: { className?: string }) 
     </Card>
   );
 }
+
+
+

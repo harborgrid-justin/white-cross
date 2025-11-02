@@ -30,7 +30,7 @@
 import { Suspense } from 'react';
 import { Metadata } from 'next';
 import { InventoryContent } from './_components/InventoryContent';
-import { Skeleton } from '@/components/ui/Skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export const metadata: Metadata = {
   title: 'Inventory Management | White Cross Healthcare',
@@ -93,3 +93,5 @@ export default function InventoryPage({ searchParams }: InventoryPageProps) {
     </div>
   );
 }
+
+

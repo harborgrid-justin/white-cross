@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { type InventoryItem } from './InventoryList';
 
 export interface InventoryItemDetailProps {
@@ -96,7 +96,7 @@ export const InventoryItemDetail: React.FC<InventoryItemDetailProps> = ({
           </Button>
         )}
         {onReorder && isLowStock && (
-          <Button variant="primary" onClick={onReorder}>
+          <Button variant="default" onClick={onReorder}>
             Reorder
           </Button>
         )}
@@ -108,3 +108,6 @@ export const InventoryItemDetail: React.FC<InventoryItemDetailProps> = ({
 InventoryItemDetail.displayName = 'InventoryItemDetail';
 
 export default InventoryItemDetail;
+
+
+

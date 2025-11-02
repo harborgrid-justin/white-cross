@@ -1,8 +1,15 @@
-/**
- * Skeleton Component - Re-export
- *
- * This is a convenience re-export for the Skeleton component.
- * The actual implementation is in ./feedback/Skeleton.tsx
- */
+import { cn } from "@/lib/utils"
 
-export { Skeleton, default, type SkeletonProps } from './feedback/Skeleton'
+function Skeleton({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      className={cn("animate-pulse rounded-md bg-primary/10", className)}
+      {...props}
+    />
+  )
+}
+
+export { Skeleton }

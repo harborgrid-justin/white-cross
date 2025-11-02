@@ -30,14 +30,14 @@ import {
   LocationType,
   MedicalResponse,
 } from '@/schemas/incidents/incident.schemas';
-import { createIncident, updateIncident } from '@/actions/incidents.actions';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Textarea } from '@/components/ui/Textarea';
-import { Select } from '@/components/ui/Select';
-import { Alert } from '@/components/ui/feedback/Alert';
-import { LoadingSpinner } from '@/components/ui/feedback/LoadingSpinner';
-import { Card } from '@/components/ui/layout/Card';
+import { createIncidentAction, updateIncidentAction } from '@/app/incidents/actions';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select } from '@/components/ui/select';
+import { Alert } from '@/components/ui/alert';
+import { LoadingSpinner } from '@/components/ui/skeleton';
+import { Card } from '@/components/ui/card';
 
 interface IncidentReportFormProps {
   studentId?: string;
@@ -479,11 +479,11 @@ export function IncidentReportForm({
 
         <div className="flex gap-3">
           {currentStep < totalSteps ? (
-            <Button type="button" variant="primary" onClick={nextStep}>
+            <Button type="button" variant="default" onClick={nextStep}>
               Next
             </Button>
           ) : (
-            <Button type="submit" variant="primary" disabled={isSubmitting}>
+            <Button type="submit" variant="default" disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
                   <LoadingSpinner size="sm" className="mr-2" />

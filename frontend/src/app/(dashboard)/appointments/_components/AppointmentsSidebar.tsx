@@ -26,10 +26,10 @@ import {
   ChevronRight,
   Thermometer
 } from 'lucide-react';
-import { Card } from '@/components/ui/layout/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { SearchInput } from '@/components/ui/SearchInput';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { SearchInput } from '@/components/ui/input';
 import { 
   getAppointments,
   type Appointment
@@ -390,7 +390,7 @@ const AppointmentsSidebar: React.FC<AppointmentsSidebarProps> = ({
         <div className="p-4">
           <h3 className="text-sm font-semibold text-gray-900 mb-3">Quick Actions</h3>
           <div className="space-y-2">
-            <Button variant="primary" className="w-full text-sm" size="sm">
+            <Button variant="default" className="w-full text-sm" size="sm">
               <Plus className="h-4 w-4 mr-2" />
               Schedule Appointment
             </Button>
@@ -691,3 +691,6 @@ const AppointmentsSidebar: React.FC<AppointmentsSidebarProps> = ({
 };
 
 export default AppointmentsSidebar;
+
+
+

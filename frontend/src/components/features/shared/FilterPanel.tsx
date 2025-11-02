@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/layout/Card';
-import { Badge } from '@/components/ui/display/Badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Filter, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -313,7 +313,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           <Filter className="h-5 w-5 text-gray-500 dark:text-gray-400" aria-hidden="true" />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
           {showActiveCount && activeFiltersCount > 0 && (
-            <Badge variant="primary" size="sm">
+            <Badge variant="default" size="sm">
               {activeFiltersCount}
             </Badge>
           )}
@@ -357,7 +357,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               )}
               {showApplyButton && (
                 <Button
-                  variant="primary"
+                  variant="default"
                   size="sm"
                   onClick={onApply}
                   className="flex-1"
@@ -376,3 +376,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
 FilterPanel.displayName = 'FilterPanel';
 
 export default React.memo(FilterPanel);
+
+
+
+

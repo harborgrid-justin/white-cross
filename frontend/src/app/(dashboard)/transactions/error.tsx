@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { Card } from '@/components/ui/Card';
+import { Card } from '@/components/ui/card';
 import { AlertTriangle, RefreshCcw, Home, CreditCard } from 'lucide-react';
 
 interface TransactionsErrorProps {
@@ -155,3 +155,5 @@ export default function TransactionsError({ error, reset }: TransactionsErrorPro
     </div>
   );
 }
+
+

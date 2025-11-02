@@ -10,8 +10,8 @@
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { PageHeader } from '@/components/layouts/PageHeader';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/layout/Card';
-import { Button } from '@/components/ui/Button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Calendar, Clock, User, AlertTriangle } from 'lucide-react';
 import { SchedulingForm } from '@/components/appointments';
 import { apiClient, API_ENDPOINTS } from '@/lib/api-client';
@@ -136,3 +136,5 @@ export default function NewAppointmentPage() {
     </>
   );
 }
+
+

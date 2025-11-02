@@ -10,9 +10,9 @@
 import React from 'react';
 import Link from 'next/link';
 import type { Student } from '@/types/student.types';
-import { Card } from '@/components/ui/layout/Card';
-import { Badge } from '@/components/ui/display/Badge';
-import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { StudentStatusBadge } from './StudentStatusBadge';
 import {
   User,
@@ -146,17 +146,20 @@ export const StudentDetails: React.FC<StudentDetailsProps> = ({
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                   {onEdit && (
-                    <Button variant="primary" size="sm" onClick={onEdit}>
+                    <Button variant="default" size="sm" onClick={onEdit} className="w-full sm:w-auto">
                       <Edit className="h-4 w-4 mr-2" />
                       Edit
                     </Button>
                   )}
-                  <Button href={`/students/${student.id}/health-records`} variant="secondary" size="sm">
-                    <FileText className="h-4 w-4 mr-2" />
-                    Health Records
-                  </Button>
+                  <Link href={`/students/${student.id}/health-records`} className="w-full sm:w-auto">
+                    <Button variant="secondary" size="sm" className="w-full">
+                      <FileText className="h-4 w-4 mr-2" />
+                      <span className="hidden sm:inline">Health Records</span>
+                      <span className="sm:hidden">Health</span>
+                    </Button>
+                  </Link>
                 </div>
               </div>
 
@@ -164,19 +167,19 @@ export const StudentDetails: React.FC<StudentDetailsProps> = ({
               {(hasAllergies || hasMedications || hasConditions) && (
                 <div className="mt-4 flex flex-wrap gap-2">
                   {hasAllergies && (
-                    <Badge variant="warning" size="sm">
+                    <Badge variant="destructive">
                       <AlertTriangle className="h-3 w-3 mr-1" />
                       {student.allergies!.length} Allerg{student.allergies!.length === 1 ? 'y' : 'ies'}
                     </Badge>
                   )}
                   {hasMedications && (
-                    <Badge variant="info" size="sm">
+                    <Badge variant="outline">
                       <Pill className="h-3 w-3 mr-1" />
                       {student.medications!.length} Medication{student.medications!.length === 1 ? '' : 's'}
                     </Badge>
                   )}
                   {hasConditions && (
-                    <Badge variant="error" size="sm">
+                    <Badge variant="destructive">
                       <Heart className="h-3 w-3 mr-1" />
                       {student.chronicConditions!.length} Condition{student.chronicConditions!.length === 1 ? '' : 's'}
                     </Badge>
@@ -197,34 +200,34 @@ export const StudentDetails: React.FC<StudentDetailsProps> = ({
               Demographics
             </h2>
             <dl className="space-y-3">
-              <div className="flex justify-between">
+              <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
                 <dt className="text-sm font-medium text-gray-600 dark:text-gray-400">Date of Birth</dt>
                 <dd className="text-sm text-gray-900 dark:text-gray-100">{formatDate(student.dateOfBirth)}</dd>
               </div>
-              <div className="flex justify-between">
+              <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
                 <dt className="text-sm font-medium text-gray-600 dark:text-gray-400">Age</dt>
                 <dd className="text-sm text-gray-900 dark:text-gray-100">{age} years</dd>
               </div>
-              <div className="flex justify-between">
+              <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
                 <dt className="text-sm font-medium text-gray-600 dark:text-gray-400">Gender</dt>
                 <dd className="text-sm text-gray-900 dark:text-gray-100">
                   {student.gender.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
                 </dd>
               </div>
-              <div className="flex justify-between">
+              <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
                 <dt className="text-sm font-medium text-gray-600 dark:text-gray-400">Grade</dt>
                 <dd className="text-sm text-gray-900 dark:text-gray-100">{student.grade}</dd>
               </div>
-              <div className="flex justify-between">
+              <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
                 <dt className="text-sm font-medium text-gray-600 dark:text-gray-400">Enrollment Date</dt>
                 <dd className="text-sm text-gray-900 dark:text-gray-100">
                   {student.enrollmentDate ? formatDate(student.enrollmentDate) : 'Not specified'}
                 </dd>
               </div>
               {student.medicalRecordNum && (
-                <div className="flex justify-between">
+                <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
                   <dt className="text-sm font-medium text-gray-600 dark:text-gray-400">Medical Record #</dt>
-                  <dd className="text-sm text-gray-900 dark:text-gray-100">{student.medicalRecordNum}</dd>
+                  <dd className="text-sm text-gray-900 dark:text-gray-100 break-all">{student.medicalRecordNum}</dd>
                 </div>
               )}
             </dl>
@@ -235,22 +238,25 @@ export const StudentDetails: React.FC<StudentDetailsProps> = ({
         {showEmergencyContacts && (
           <Card>
             <div className="p-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <span className="flex items-center">
                   <Phone className="h-5 w-5 mr-2" />
                   Emergency Contacts
                 </span>
-                <Button href={`/students/${student.id}/emergency-contacts`} variant="ghost" size="sm">
-                  <Edit className="h-4 w-4" />
-                </Button>
+                <Link href={`/students/${student.id}/emergency-contacts`}>
+                  <Button variant="ghost" size="sm">
+                    <Edit className="h-4 w-4 mr-2 sm:mr-0" />
+                    <span className="sm:hidden">Edit Contacts</span>
+                  </Button>
+                </Link>
               </h2>
 
               {student.emergencyContacts && student.emergencyContacts.length > 0 ? (
                 <div className="space-y-4">
                   {student.emergencyContacts.slice(0, 3).map((contact, index) => (
                     <div key={contact.id} className="border-b border-gray-200 dark:border-gray-700 last:border-0 pb-4 last:pb-0">
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2">
+                        <div className="min-w-0">
                           <p className="font-medium text-gray-900 dark:text-gray-100">
                             {contact.firstName} {contact.lastName}
                           </p>
@@ -258,19 +264,19 @@ export const StudentDetails: React.FC<StudentDetailsProps> = ({
                             {contact.relationship}
                           </p>
                         </div>
-                        <Badge variant={contact.priority === 'PRIMARY' ? 'primary' : 'secondary'} size="sm">
+                        <Badge variant={contact.priority === 'PRIMARY' ? 'default' : 'secondary'} className="self-start">
                           {contact.priority}
                         </Badge>
                       </div>
                       <div className="space-y-1 text-sm">
                         <div className="flex items-center text-gray-600 dark:text-gray-400">
-                          <Phone className="h-3 w-3 mr-2" />
-                          {contact.phoneNumber}
+                          <Phone className="h-3 w-3 mr-2 flex-shrink-0" />
+                          <span className="break-all">{contact.phoneNumber}</span>
                         </div>
                         {contact.email && (
                           <div className="flex items-center text-gray-600 dark:text-gray-400">
-                            <Mail className="h-3 w-3 mr-2" />
-                            {contact.email}
+                            <Mail className="h-3 w-3 mr-2 flex-shrink-0" />
+                            <span className="break-all">{contact.email}</span>
                           </div>
                         )}
                       </div>
@@ -278,9 +284,11 @@ export const StudentDetails: React.FC<StudentDetailsProps> = ({
                   ))}
 
                   {student.emergencyContacts.length > 3 && (
-                    <Button href={`/students/${student.id}/emergency-contacts`} variant="ghost" size="sm" className="w-full">
-                      View all {student.emergencyContacts.length} contacts
-                    </Button>
+                    <Link href={`/students/${student.id}/emergency-contacts`}>
+                      <Button variant="ghost" size="sm" className="w-full">
+                        View all {student.emergencyContacts.length} contacts
+                      </Button>
+                    </Link>
                   )}
                 </div>
               ) : (
@@ -289,9 +297,11 @@ export const StudentDetails: React.FC<StudentDetailsProps> = ({
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                     No emergency contacts added
                   </p>
-                  <Button href={`/students/${student.id}/emergency-contacts/new`} variant="secondary" size="sm">
-                    Add Contact
-                  </Button>
+                  <Link href={`/students/${student.id}/emergency-contacts/new`}>
+                    <Button variant="secondary" size="sm">
+                      Add Contact
+                    </Button>
+                  </Link>
                 </div>
               )}
             </div>
@@ -318,7 +328,7 @@ export const StudentDetails: React.FC<StudentDetailsProps> = ({
                     <ul className="space-y-2">
                       {student.allergies!.map((allergy) => (
                         <li key={allergy.id} className="flex items-start">
-                          <Badge variant="warning" size="sm">
+                          <Badge variant="destructive">
                             {allergy.severity}
                           </Badge>
                           <span className="ml-2 text-sm text-gray-900 dark:text-gray-100">
@@ -402,3 +412,6 @@ export const StudentDetails: React.FC<StudentDetailsProps> = ({
 StudentDetails.displayName = 'StudentDetails';
 
 export default StudentDetails;
+
+
+

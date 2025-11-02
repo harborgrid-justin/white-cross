@@ -7,8 +7,8 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/layout/Card';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { AlertTriangle, ArrowLeft, LogIn } from 'lucide-react';
 
 /**
@@ -36,7 +36,7 @@ export default function AuthNotFound() {
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/login">
-              <Button variant="primary">
+              <Button variant="default">
                 <LogIn className="h-4 w-4 mr-2" />
                 Go to Login
               </Button>
@@ -57,3 +57,6 @@ export default function AuthNotFound() {
     </div>
   );
 }
+
+
+

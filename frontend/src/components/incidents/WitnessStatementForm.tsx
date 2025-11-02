@@ -14,12 +14,12 @@ import {
   CreateStatementSchema,
   type CreateStatementInput,
 } from '@/schemas/incidents/witness.schemas';
-import { submitWitnessStatement } from '@/actions/incidents.actions';
-import { Button } from '@/components/ui/Button';
-import { Textarea } from '@/components/ui/Textarea';
-import { Input } from '@/components/ui/Input';
-import { Alert } from '@/components/ui/feedback/Alert';
-import { Card } from '@/components/ui/layout/Card';
+import { submitWitnessStatement } from '@/app/incidents/actions';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Alert } from '@/components/ui/alert';
+import { Card } from '@/components/ui/card';
 
 interface WitnessStatementFormProps {
   incidentId: string;

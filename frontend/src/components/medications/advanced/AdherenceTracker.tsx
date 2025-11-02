@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 export interface AdherenceData {
   medicationId: string;
@@ -135,3 +135,5 @@ export const AdherenceTracker: React.FC<AdherenceTrackerProps> = ({
 AdherenceTracker.displayName = 'AdherenceTracker';
 
 export default AdherenceTracker;
+
+

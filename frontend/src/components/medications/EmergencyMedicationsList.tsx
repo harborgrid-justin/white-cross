@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { MedicationList, type Medication } from './core/MedicationList';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 export interface EmergencyMedicationsListProps {
   emergencyMedications: Medication[];
@@ -45,3 +45,5 @@ export const EmergencyMedicationsList: React.FC<EmergencyMedicationsListProps> =
 EmergencyMedicationsList.displayName = 'EmergencyMedicationsList';
 
 export default EmergencyMedicationsList;
+
+

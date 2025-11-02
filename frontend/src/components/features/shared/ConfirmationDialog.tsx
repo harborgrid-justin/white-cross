@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Modal } from '@/components/ui/overlays/Modal';
-import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { AlertTriangle, AlertCircle, Info, CheckCircle, HelpCircle } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -223,3 +223,5 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
 ConfirmationDialog.displayName = 'ConfirmationDialog';
 
 export default React.memo(ConfirmationDialog);
+
+

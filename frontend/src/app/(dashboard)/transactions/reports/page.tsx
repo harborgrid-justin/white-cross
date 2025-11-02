@@ -1,6 +1,6 @@
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { 
   FileText, 
   Download, 
@@ -206,7 +206,7 @@ export default function TransactionReportsPage() {
                   {/* Actions */}
                   <div className="flex items-center gap-2 pt-2 border-t border-gray-200">
                     <Button 
-                      variant="primary" 
+                      variant="default" 
                       size="sm"
                       disabled={report.status === 'generating'}
                     >
@@ -296,3 +296,6 @@ export default function TransactionReportsPage() {
     </div>
   );
 }
+
+
+

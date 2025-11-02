@@ -15,14 +15,14 @@
 import React, { useState } from 'react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { Input } from '@/components/ui/Input';
-import { Textarea } from '@/components/ui/Textarea';
-import { Button } from '@/components/ui/Button';
-import { Select, SelectOption } from '@/components/ui/Select';
-import { Checkbox } from '@/components/ui/Checkbox';
-import { Alert } from '@/components/ui/feedback/Alert';
-import { Card } from '@/components/ui/layout/Card';
-import { Badge } from '@/components/ui/display/Badge';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Select, SelectOption } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Alert } from '@/components/ui/alert';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 const cn = (...inputs: (string | undefined)[]) => twMerge(clsx(inputs));
 
@@ -504,7 +504,7 @@ export const CommunicationBroadcastTab: React.FC<CommunicationBroadcastTabProps>
             Save Draft
           </Button>
           <Button
-            variant="primary"
+            variant="default"
             onClick={handleSendBroadcast}
             loading={isSending}
             disabled={isSending}
@@ -518,3 +518,7 @@ export const CommunicationBroadcastTab: React.FC<CommunicationBroadcastTabProps>
 };
 
 export default CommunicationBroadcastTab;
+
+
+
+

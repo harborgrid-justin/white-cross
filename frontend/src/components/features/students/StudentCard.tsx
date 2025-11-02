@@ -1,9 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Card } from '@/components/ui/layout/Card';
-import { Badge } from '@/components/ui/display/Badge';
-import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { StudentStatusBadge } from './StudentStatusBadge';
 import { Eye, Edit, Trash2, Phone, Mail, Calendar, AlertCircle } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -244,3 +244,7 @@ export const StudentCard: React.FC<StudentCardProps> = ({
 StudentCard.displayName = 'StudentCard';
 
 export default React.memo(StudentCard);
+
+
+
+

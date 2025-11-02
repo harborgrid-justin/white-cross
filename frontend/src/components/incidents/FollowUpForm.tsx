@@ -16,13 +16,13 @@ import {
   FollowUpActionType,
   FollowUpPriority,
 } from '@/schemas/incidents/follow-up.schemas';
-import { createFollowUpAction } from '@/actions/incidents.actions';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Textarea } from '@/components/ui/Textarea';
-import { Select } from '@/components/ui/Select';
-import { Alert } from '@/components/ui/feedback/Alert';
-import { Card } from '@/components/ui/layout/Card';
+import { createFollowUpAction } from '@/app/incidents/actions';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select } from '@/components/ui/select';
+import { Alert } from '@/components/ui/alert';
+import { Card } from '@/components/ui/card';
 
 interface FollowUpFormProps {
   incidentId: string;

@@ -8,8 +8,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { Card } from '@/components/ui/layout/Card';
-import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Send, Paperclip, X } from 'lucide-react';
 
 export default function NewMessagePage() {
@@ -190,7 +190,7 @@ export default function NewMessagePage() {
               </Button>
               <Button
                 type="submit"
-                variant="primary"
+                variant="default"
                 disabled={loading}
               >
                 {loading ? (
@@ -209,3 +209,6 @@ export default function NewMessagePage() {
     </div>
   );
 }
+
+
+

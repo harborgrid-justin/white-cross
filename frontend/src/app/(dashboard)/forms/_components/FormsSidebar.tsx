@@ -27,9 +27,9 @@ import {
   Search
 } from 'lucide-react';
 
-import { Card } from '@/components/ui/layout/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 // Healthcare form types and statuses
 type FormType = 'enrollment' | 'health_screening' | 'incident_report' | 'permission_slip' | 'medical_consent' | 'emergency_contact' | 'allergy_form' | 'medication_authorization' | 'assessment' | 'survey' | 'other';
@@ -700,3 +700,5 @@ const FormsSidebar: React.FC<FormsSidebarProps> = ({
 };
 
 export default FormsSidebar;
+
+

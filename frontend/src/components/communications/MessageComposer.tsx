@@ -10,18 +10,18 @@
 
 import React, { useState, useCallback } from 'react';
 import { Send, Paperclip, X, FileText, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Textarea } from '@/components/ui/Textarea';
-import { Input } from '@/components/ui/Input';
-import { Label } from '@/components/ui/Label';
-import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/Select';
+} from '@/components/ui/select';
 import { createMessage, uploadAttachment } from '@/lib/actions/communications.actions';
 import { useTypingIndicator } from '@/lib/socket/SocketContext';
 import type { CreateMessageInput, MessagePriority, Attachment } from '@/lib/validations/message.schemas';
@@ -317,3 +317,5 @@ export function MessageComposer({
     </div>
   );
 }
+
+

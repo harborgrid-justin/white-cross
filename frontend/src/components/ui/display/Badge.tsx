@@ -79,7 +79,7 @@ interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
  * <Badge variant="info" shape="square">Beta</Badge>
  *
  * // Count badge
- * <Badge variant="primary" shape="pill" size="sm">5</Badge>
+ * <Badge variant="default" shape="pill" size="sm">5</Badge>
  * ```
  */
 const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
@@ -170,3 +170,4 @@ Badge.displayName = 'Badge';
 
 export { Badge, type BadgeProps };
 export default Badge;
+

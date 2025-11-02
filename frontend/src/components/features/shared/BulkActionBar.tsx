@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/display/Badge';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { X, Trash2, Archive, Edit, Mail, Download, MoreHorizontal } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -164,7 +164,7 @@ export const BulkActionBar: React.FC<BulkActionBarProps> = ({
     >
       {/* Selection Info */}
       <div className="flex items-center gap-3">
-        <Badge variant="primary" size="lg" className="font-semibold">
+        <Badge variant="default" size="lg" className="font-semibold">
           {selectedCount} {selectedCount === 1 ? 'item' : 'items'} selected
         </Badge>
 
@@ -222,3 +222,7 @@ export const BulkActionBar: React.FC<BulkActionBarProps> = ({
 BulkActionBar.displayName = 'BulkActionBar';
 
 export default React.memo(BulkActionBar);
+
+
+
+

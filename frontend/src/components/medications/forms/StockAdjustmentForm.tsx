@@ -5,10 +5,10 @@
  */
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
-import { Textarea } from '@/components/ui/Textarea';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 
 export interface StockAdjustmentFormData {
   medicationId: string;
@@ -172,7 +172,7 @@ export const StockAdjustmentForm: React.FC<StockAdjustmentFormProps> = ({
             Cancel
           </Button>
         )}
-        <Button type="submit" variant="primary" loading={isLoading}>
+        <Button type="submit" variant="default" loading={isLoading}>
           Record Adjustment
         </Button>
       </div>
@@ -183,3 +183,6 @@ export const StockAdjustmentForm: React.FC<StockAdjustmentFormProps> = ({
 StockAdjustmentForm.displayName = 'StockAdjustmentForm';
 
 export default StockAdjustmentForm;
+
+
+

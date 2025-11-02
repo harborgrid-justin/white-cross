@@ -5,8 +5,8 @@
  */
 
 import React from 'react';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableEmptyState } from '@/components/ui/data/Table';
-import { Button } from '@/components/ui/Button';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableEmptyState } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
 
 export interface Prescription {
   id: string;
@@ -103,3 +103,5 @@ export const PrescriptionsList: React.FC<PrescriptionsListProps> = ({
 PrescriptionsList.displayName = 'PrescriptionsList';
 
 export default PrescriptionsList;
+
+

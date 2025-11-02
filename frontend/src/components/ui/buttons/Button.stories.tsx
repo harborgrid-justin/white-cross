@@ -321,7 +321,7 @@ export const AllVariants: Story = {
   render: () => (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap gap-2">
-        <Button variant="primary">Primary</Button>
+        <Button variant="default">Primary</Button>
         <Button variant="secondary">Secondary</Button>
         <Button variant="outline">Outline</Button>
         <Button variant="outline-primary">Outline Primary</Button>
@@ -380,3 +380,4 @@ export const IconVariations: Story = {
     layout: 'padded',
   },
 };
+

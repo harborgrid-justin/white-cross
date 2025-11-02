@@ -8,8 +8,8 @@
  */
 
 import { Calendar, FileText } from 'lucide-react';
-import { Card } from '@/components/ui/layout/Card';
-import { Badge } from '@/components/ui/display/Badge';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 interface HealthRecord {
   id: string;
@@ -114,3 +114,6 @@ export function RecordDetailsCard({ record }: RecordDetailsCardProps) {
     </Card>
   );
 }
+
+
+

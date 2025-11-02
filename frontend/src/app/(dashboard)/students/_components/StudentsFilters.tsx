@@ -6,11 +6,12 @@
 
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
+import { getStudentCount } from '@/app/students/actions';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { 
   Search,
   Filter,
@@ -23,7 +24,16 @@ import {
 } from 'lucide-react';
 
 interface StudentsFiltersProps {
-  totalCount: number;
+  searchParams: {
+    page?: string;
+    limit?: string;
+    search?: string;
+    grade?: string;
+    status?: string;
+    hasHealthAlerts?: string;
+    sortBy?: string;
+    sortOrder?: string;
+  };
 }
 
 const GRADES = ['9th', '10th', '11th', '12th'];
@@ -34,18 +44,49 @@ const STATUSES = [
   { value: 'TRANSFERRED', label: 'Transferred', icon: Users }
 ];
 
-export function StudentsFilters({ totalCount }: StudentsFiltersProps) {
+export function StudentsFilters({ searchParams }: StudentsFiltersProps) {
+  const [totalCount, setTotalCount] = useState(0);
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const urlSearchParams = useSearchParams();
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const currentSearch = searchParams.get('search') || '';
-  const currentGrade = searchParams.get('grade') || '';
-  const currentStatus = searchParams.get('status') || '';
-  const currentHasHealthAlerts = searchParams.get('hasHealthAlerts') || '';
+  const currentSearch = searchParams.search || '';
+  const currentGrade = searchParams.grade || '';
+  const currentStatus = searchParams.status || '';
+  const currentHasHealthAlerts = searchParams.hasHealthAlerts || '';
+
+  useEffect(() => {
+    async function fetchStudentCount() {
+      try {
+        const filters: any = {
+          search: searchParams.search,
+          grade: searchParams.grade,
+          hasAllergies: searchParams.hasHealthAlerts === 'true',
+        };
+
+        if (searchParams.status === 'ACTIVE') {
+          filters.isActive = true;
+        } else if (searchParams.status === 'INACTIVE') {
+          filters.isActive = false;
+        }
+
+        const cleanFilters = Object.fromEntries(
+          Object.entries(filters).filter(([_, value]) => value !== undefined && value !== '')
+        );
+
+        const count = await getStudentCount(cleanFilters);
+        setTotalCount(count);
+      } catch (error) {
+        console.error('Failed to fetch student count:', error);
+        setTotalCount(0);
+      }
+    }
+
+    fetchStudentCount();
+  }, [searchParams]);
 
   const updateFilters = useCallback((key: string, value: string) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(urlSearchParams.toString());
     
     if (value) {
       params.set(key, value);
@@ -57,7 +98,7 @@ export function StudentsFilters({ totalCount }: StudentsFiltersProps) {
     params.delete('page');
     
     router.push(`/students?${params.toString()}`);
-  }, [router, searchParams]);
+  }, [router, urlSearchParams]);
 
   const clearAllFilters = useCallback(() => {
     router.push('/students');
@@ -270,3 +311,6 @@ export function StudentsFilters({ totalCount }: StudentsFiltersProps) {
     </Card>
   );
 }
+
+
+

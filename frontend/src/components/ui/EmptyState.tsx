@@ -10,7 +10,7 @@
 
 import React from 'react';
 import { LucideIcon } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 export interface EmptyStateProps {
   /** Icon component to display */
@@ -103,7 +103,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             {actionLabel && (
               <Button
-                variant="primary"
+                variant="default"
                 href={actionHref}
                 onClick={onAction}
                 className="w-full sm:w-auto"
@@ -132,3 +132,6 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 EmptyState.displayName = 'EmptyState';
 
 export default EmptyState;
+
+
+

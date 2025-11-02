@@ -30,10 +30,10 @@ import {
   Clock,
   Archive
 } from 'lucide-react';
-import { Card } from '@/components/ui/layout/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { SearchInput } from '@/components/ui/SearchInput';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { SearchInput } from '@/components/ui/input';
 
 // Import server actions
 import { 
@@ -582,7 +582,7 @@ const DocumentsContent: React.FC<DocumentsContentProps> = ({
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             {/* Primary Actions */}
             <div className="flex items-center gap-3">
-              <Button variant="primary">
+              <Button variant="default">
                 <Plus className="h-4 w-4 mr-2" />
                 Upload Document
               </Button>
@@ -802,7 +802,7 @@ const DocumentsContent: React.FC<DocumentsContentProps> = ({
               <p className="text-sm text-gray-400 mb-4">
                 Try adjusting your filters or upload a new document.
               </p>
-              <Button variant="primary">
+              <Button variant="default">
                 <Plus className="h-4 w-4 mr-2" />
                 Upload Document
               </Button>
@@ -1002,3 +1002,6 @@ const DocumentsContent: React.FC<DocumentsContentProps> = ({
 };
 
 export default DocumentsContent;
+
+
+

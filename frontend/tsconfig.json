@@ -18,7 +18,7 @@
     "jsx": "react-jsx",
     "incremental": true,
     "downlevelIteration": true,
-    "baseUrl": ".",
+    "baseUrl": "./",
     "plugins": [
       {
         "name": "next"

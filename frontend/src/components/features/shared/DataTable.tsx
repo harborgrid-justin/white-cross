@@ -10,10 +10,10 @@ import {
   TableCell,
   TableEmptyState,
   TableLoadingState
-} from '@/components/ui/data/Table';
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
-import { Select } from '@/components/ui/Select';
+} from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Select } from '@/components/ui/select';
 import { Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -461,3 +461,5 @@ export const DataTable = <T,>({
 DataTable.displayName = 'DataTable';
 
 export default React.memo(DataTable) as typeof DataTable;
+
+

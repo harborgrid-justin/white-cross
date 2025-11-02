@@ -18,7 +18,7 @@
 import React from 'react';
 import { PageHeader } from '@/components/layouts/PageHeader';
 import { Plus, DollarSign } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import BillingContent from './_components/BillingContent';
 import BillingSidebar from './_components/BillingSidebar';
 
@@ -34,7 +34,7 @@ export default function BillingPage() {
               <DollarSign className="h-4 w-4 mr-2" />
               Process Payment
             </Button>
-            <Button variant="primary">
+            <Button variant="default">
               <Plus className="h-4 w-4 mr-2" />
               Create Invoice
             </Button>
@@ -58,3 +58,6 @@ export default function BillingPage() {
     </div>
   );
 }
+
+
+

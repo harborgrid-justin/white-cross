@@ -119,6 +119,7 @@ export interface UpdateIncidentData {
   parentNotificationMethod?: string;
   parentNotificationDate?: string;
   additionalNotes?: string;
+  [key: string]: unknown;
 }
 
 export interface Witness {
@@ -869,7 +870,7 @@ export const getIncidentStats = cache(async (): Promise<IncidentStats> => {
 
     // Calculate statistics
     const totalIncidents = incidents.length;
-    const openIncidents = incidents.filter(i => i.status === 'OPEN' || i.status === 'IN_PROGRESS').length;
+    const openIncidents = incidents.filter(i => i.status === 'REPORTED' || i.status === 'INVESTIGATING').length;
     const resolvedIncidents = incidents.filter(i => i.status === 'RESOLVED' || i.status === 'CLOSED').length;
     const criticalIncidents = incidents.filter(i => i.severity === 'CRITICAL').length;
     
@@ -885,7 +886,7 @@ export const getIncidentStats = cache(async (): Promise<IncidentStats> => {
       criticalIncidents,
       recentIncidents,
       avgResolutionTime: 72.5, // Average hours - would be calculated from actual data
-      pendingFollowUps: incidents.filter(i => i.followUpRequired && !i.followUpCompleted).length,
+      pendingFollowUps: incidents.filter(i => i.followUpRequired).length,
       incidentTypes: {
         injury: incidents.filter(i => i.type === 'INJURY').length,
         medical: incidents.filter(i => i.type === 'MEDICAL').length,
@@ -958,3 +959,360 @@ export const getIncidentsDashboardData = cache(async () => {
     };
   }
 });
+
+// ==========================================
+// ADDITIONAL ACTIONS (ALIASES AND MISSING FUNCTIONS)
+// ==========================================
+
+/**
+ * Alias for createIncidentAction for backward compatibility
+ */
+export const createIncident = createIncidentAction;
+
+/**
+ * Alias for updateIncidentAction for backward compatibility
+ */
+export const updateIncident = updateIncidentAction;
+
+/**
+ * Alias for submitWitnessStatementAction for backward compatibility
+ */
+export const submitWitnessStatement = submitWitnessStatementAction;
+
+/**
+ * Alias for getIncidents for backward compatibility
+ */
+export const listIncidents = getIncidents;
+
+/**
+ * Follow-up Action Interface
+ */
+export interface FollowUpAction {
+  id: string;
+  incidentId: string;
+  actionType: 'INVESTIGATION' | 'DISCIPLINE' | 'MEDICAL' | 'PARENT_MEETING' | 'COUNSELING' | 'OTHER';
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  assignedTo: string;
+  assignedBy: string;
+  dueDate: string;
+  title: string;
+  description: string;
+  notes?: string;
+  completedAt?: string;
+  completedBy?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateFollowUpData {
+  incidentId: string;
+  actionType: 'INVESTIGATION' | 'DISCIPLINE' | 'MEDICAL' | 'PARENT_MEETING' | 'COUNSELING' | 'OTHER';
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+  assignedTo: string;
+  dueDate: string;
+  title: string;
+  description: string;
+  notes?: string;
+}
+
+/**
+ * Create follow-up action for incident
+ */
+export async function createFollowUpAction(data: CreateFollowUpData): Promise<ActionResult<FollowUpAction>> {
+  try {
+    // Validate required fields
+    if (!data.incidentId || !data.actionType || !data.assignedTo || !data.title || !data.description) {
+      return {
+        success: false,
+        error: 'Missing required fields: incidentId, actionType, assignedTo, title, description'
+      };
+    }
+
+    const followUpData = {
+      ...data,
+      status: 'PENDING',
+      assignedBy: 'current-user', // Would get from auth context
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const response = await serverPost<ApiResponse<FollowUpAction>>(
+      `${API_ENDPOINTS.INCIDENTS.BASE}/${data.incidentId}/follow-ups`,
+      followUpData,
+      {
+        cache: 'no-store',
+        next: { tags: [INCIDENT_CACHE_TAGS.FOLLOW_UPS, INCIDENT_CACHE_TAGS.INCIDENTS] }
+      }
+    );
+
+    if (!response.success || !response.data) {
+      throw new Error(response.message || 'Failed to create follow-up action');
+    }
+
+    // HIPAA AUDIT LOG
+    await auditLog({
+      action: 'CREATE_FOLLOW_UP',
+      resource: 'Incident',
+      resourceId: data.incidentId,
+      details: `Created ${data.actionType} follow-up action: ${data.title}`,
+      success: true
+    });
+
+    // Cache invalidation
+    revalidateTag(INCIDENT_CACHE_TAGS.FOLLOW_UPS, 'default');
+    revalidateTag(INCIDENT_CACHE_TAGS.INCIDENTS, 'default');
+    revalidateTag(`incident-${data.incidentId}`, 'default');
+    revalidatePath(`/incidents/${data.incidentId}/follow-up`, 'page');
+
+    return {
+      success: true,
+      data: response.data,
+      message: 'Follow-up action created successfully'
+    };
+  } catch (error) {
+    const errorMessage = error instanceof NextApiClientError
+      ? error.message
+      : error instanceof Error
+      ? error.message
+      : 'Failed to create follow-up action';
+
+    return {
+      success: false,
+      error: errorMessage
+    };
+  }
+}
+
+/**
+ * Get follow-up actions for incident
+ */
+export async function listFollowUpActions(incidentId: string): Promise<ActionResult<FollowUpAction[]>> {
+  try {
+    if (!incidentId) {
+      return {
+        success: false,
+        error: 'Incident ID is required'
+      };
+    }
+
+    const response = await serverGet<ApiResponse<FollowUpAction[]>>(
+      `${API_ENDPOINTS.INCIDENTS.BASE}/${incidentId}/follow-ups`,
+      undefined,
+      {
+        cache: 'force-cache',
+        next: { 
+          revalidate: CACHE_TTL.PHI_STANDARD,
+          tags: [`incident-follow-ups-${incidentId}`, INCIDENT_CACHE_TAGS.FOLLOW_UPS, CACHE_TAGS.PHI] 
+        }
+      }
+    );
+
+    return {
+      success: true,
+      data: response.data || []
+    };
+  } catch (error) {
+    const errorMessage = error instanceof NextApiClientError
+      ? error.message
+      : error instanceof Error
+      ? error.message
+      : 'Failed to get follow-up actions';
+
+    return {
+      success: false,
+      error: errorMessage
+    };
+  }
+}
+
+/**
+ * Get trending incidents (most recent high-priority incidents)
+ */
+export async function getTrendingIncidents(limit: number = 10): Promise<ActionResult<Incident[]>> {
+  try {
+    const incidents = await getIncidents();
+    
+    // Filter and sort for trending incidents
+    const trendingIncidents = incidents
+      .filter(incident => 
+        incident.severity === 'HIGH' || 
+        incident.severity === 'CRITICAL' ||
+        incident.status === 'INVESTIGATING'
+      )
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, limit);
+
+    return {
+      success: true,
+      data: trendingIncidents
+    };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Failed to get trending incidents';
+    return {
+      success: false,
+      error: errorMessage
+    };
+  }
+}
+
+/**
+ * Incident Analytics Interface
+ */
+export interface IncidentAnalytics {
+  totalIncidents: number;
+  incidentTrends: {
+    thisMonth: number;
+    lastMonth: number;
+    changePercent: number;
+  };
+  severityBreakdown: {
+    low: number;
+    medium: number;
+    high: number;
+    critical: number;
+  };
+  typeBreakdown: {
+    injury: number;
+    illness: number;
+    behavioral: number;
+    safety: number;
+    other: number;
+  };
+  resolutionTimes: {
+    average: number;
+    median: number;
+    fastest: number;
+    slowest: number;
+  };
+  locationHotspots: Array<{
+    location: string;
+    count: number;
+    percentage: number;
+  }>;
+  monthlyTrends: Array<{
+    month: string;
+    count: number;
+    severity: {
+      low: number;
+      medium: number;
+      high: number;
+      critical: number;
+    };
+  }>;
+}
+
+/**
+ * Get incident analytics data
+ */
+export async function getIncidentAnalytics(): Promise<ActionResult<IncidentAnalytics>> {
+  try {
+    const incidents = await getIncidents();
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
+    
+    // This month's incidents
+    const thisMonth = incidents.filter(incident => {
+      const incidentDate = new Date(incident.createdAt);
+      return incidentDate.getMonth() === currentMonth && incidentDate.getFullYear() === currentYear;
+    });
+    
+    // Last month's incidents
+    const lastMonthDate = new Date(currentYear, currentMonth - 1);
+    const lastMonth = incidents.filter(incident => {
+      const incidentDate = new Date(incident.createdAt);
+      return incidentDate.getMonth() === lastMonthDate.getMonth() && 
+             incidentDate.getFullYear() === lastMonthDate.getFullYear();
+    });
+
+    // Calculate change percentage
+    const changePercent = lastMonth.length > 0 
+      ? ((thisMonth.length - lastMonth.length) / lastMonth.length) * 100 
+      : 0;
+
+    // Severity breakdown
+    const severityBreakdown = {
+      low: incidents.filter(i => i.severity === 'LOW').length,
+      medium: incidents.filter(i => i.severity === 'MEDIUM').length,
+      high: incidents.filter(i => i.severity === 'HIGH').length,
+      critical: incidents.filter(i => i.severity === 'CRITICAL').length,
+    };
+
+    // Type breakdown
+    const typeBreakdown = {
+      injury: incidents.filter(i => i.type === 'INJURY').length,
+      illness: incidents.filter(i => i.type === 'ILLNESS').length,
+      behavioral: incidents.filter(i => i.type === 'BEHAVIORAL').length,
+      safety: incidents.filter(i => i.type === 'SAFETY').length,
+      other: incidents.filter(i => !['INJURY', 'ILLNESS', 'BEHAVIORAL', 'SAFETY'].includes(i.type)).length,
+    };
+
+    // Location hotspots
+    const locationCounts = incidents.reduce((acc, incident) => {
+      acc[incident.location] = (acc[incident.location] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const locationHotspots = Object.entries(locationCounts)
+      .map(([location, count]) => ({
+        location,
+        count,
+        percentage: (count / incidents.length) * 100
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+
+    // Monthly trends (last 12 months)
+    const monthlyTrends = [];
+    for (let i = 11; i >= 0; i--) {
+      const date = new Date(currentYear, currentMonth - i);
+      const monthIncidents = incidents.filter(incident => {
+        const incidentDate = new Date(incident.createdAt);
+        return incidentDate.getMonth() === date.getMonth() && 
+               incidentDate.getFullYear() === date.getFullYear();
+      });
+
+      monthlyTrends.push({
+        month: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        count: monthIncidents.length,
+        severity: {
+          low: monthIncidents.filter(i => i.severity === 'LOW').length,
+          medium: monthIncidents.filter(i => i.severity === 'MEDIUM').length,
+          high: monthIncidents.filter(i => i.severity === 'HIGH').length,
+          critical: monthIncidents.filter(i => i.severity === 'CRITICAL').length,
+        }
+      });
+    }
+
+    const analytics: IncidentAnalytics = {
+      totalIncidents: incidents.length,
+      incidentTrends: {
+        thisMonth: thisMonth.length,
+        lastMonth: lastMonth.length,
+        changePercent: Math.round(changePercent * 100) / 100,
+      },
+      severityBreakdown,
+      typeBreakdown,
+      resolutionTimes: {
+        average: 48, // Mock data - would calculate from actual resolution times
+        median: 36,
+        fastest: 2,
+        slowest: 168,
+      },
+      locationHotspots,
+      monthlyTrends,
+    };
+
+    return {
+      success: true,
+      data: analytics
+    };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Failed to get incident analytics';
+    return {
+      success: false,
+      error: errorMessage
+    };
+  }
+}

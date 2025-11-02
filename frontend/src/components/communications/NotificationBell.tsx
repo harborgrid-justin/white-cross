@@ -10,8 +10,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Bell, Check, Trash2, Archive, X } from 'lucide-react';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -279,3 +279,5 @@ export function NotificationBell() {
     </DropdownMenu>
   );
 }
+
+

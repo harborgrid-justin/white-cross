@@ -15,11 +15,11 @@
 import React, { useState } from 'react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
-import { Select, SelectOption } from '@/components/ui/Select';
-import { Card } from '@/components/ui/layout/Card';
-import { Badge } from '@/components/ui/display/Badge';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Select, SelectOption } from '@/components/ui/select';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Pagination } from '@/components/ui/navigation/Pagination';
 
 const cn = (...inputs: (string | undefined)[]) => twMerge(clsx(inputs));
@@ -516,7 +516,7 @@ export const CommunicationHistoryTab: React.FC<CommunicationHistoryTabProps> = (
 
                   {record.status === 'failed' && (
                     <div className="mt-4 flex justify-end">
-                      <Button variant="primary" size="sm" onClick={() => handleResend(record.id)}>
+                      <Button variant="default" size="sm" onClick={() => handleResend(record.id)}>
                         Resend Message
                       </Button>
                     </div>
@@ -543,3 +543,7 @@ export const CommunicationHistoryTab: React.FC<CommunicationHistoryTabProps> = (
 };
 
 export default CommunicationHistoryTab;
+
+
+
+

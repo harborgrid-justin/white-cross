@@ -19,9 +19,9 @@ import { createStudent, updateStudent } from '@/app/students/actions';
 import type { Student } from '@/types/student.types';
 
 // UI Components
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/layout/Card';
-import { Alert } from '@/components/ui/feedback/Alert';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Alert } from '@/components/ui/alert';
 import { Loader2, Save, X } from 'lucide-react';
 
 /**
@@ -418,3 +418,7 @@ export const StudentForm: React.FC<StudentFormProps> = ({
 StudentForm.displayName = 'StudentForm';
 
 export default StudentForm;
+
+
+
+

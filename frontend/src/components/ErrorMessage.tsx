@@ -9,7 +9,7 @@
 
 import React from 'react';
 import { AlertCircle } from 'lucide-react';
-import { Button } from './ui/buttons/Button';
+import { Button } from './ui/button';
 
 interface ErrorMessageProps {
   message: string;

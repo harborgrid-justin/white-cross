@@ -270,7 +270,7 @@ const CardContent = React.forwardRef<HTMLDivElement, CardContentProps>(
  * @example
  * ```tsx
  * <CardFooter divider>
- *   <Button variant="primary">Save</Button>
+ *   <Button variant="default">Save</Button>
  *   <Button variant="ghost">Cancel</Button>
  * </CardFooter>
  * ```
@@ -374,3 +374,4 @@ export {
   type CardContentProps,
   type CardFooterProps
 };
+

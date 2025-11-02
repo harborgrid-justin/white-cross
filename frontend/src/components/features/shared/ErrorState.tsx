@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { AlertCircle, RefreshCw, ArrowLeft, Home } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -211,7 +211,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
       <div className="flex flex-col sm:flex-row items-center gap-3">
         {onRetry && (
           <Button
-            variant="primary"
+            variant="default"
             onClick={onRetry}
             className="transition-all duration-200 hover:scale-105 active:scale-95"
           >
@@ -257,3 +257,6 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
 ErrorState.displayName = 'ErrorState';
 
 export default React.memo(ErrorState);
+
+
+

@@ -136,7 +136,7 @@ export const metadata: Metadata = {
 import { Suspense } from 'react';
 import { IncidentsContent } from './_components/IncidentsContent';
 import { IncidentsFilters } from './_components/IncidentsFilters';
-import { Skeleton } from '@/components/ui/Skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface IncidentsListPageProps {
   searchParams: {
@@ -204,3 +204,5 @@ export default async function IncidentsListPage({ searchParams }: IncidentsListP
     </div>
   );
 }
+
+

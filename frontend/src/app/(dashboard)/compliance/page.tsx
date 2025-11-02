@@ -32,7 +32,7 @@
 import { Suspense } from 'react';
 import { Metadata } from 'next';
 import { ComplianceContent } from './_components/ComplianceContent';
-import { Skeleton } from '@/components/ui/Skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export const metadata: Metadata = {
   title: 'Compliance Management | White Cross Healthcare',
@@ -96,3 +96,5 @@ export default function CompliancePage({ searchParams }: CompliancePageProps) {
     </div>
   );
 }
+
+

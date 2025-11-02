@@ -112,7 +112,7 @@ interface AlertDescriptionProps extends React.HTMLAttributes<HTMLParagraphElemen
  * </Alert>
  *
  * // Large primary alert
- * <Alert variant="primary" size="lg">
+ * <Alert variant="default" size="lg">
  *   <AlertDescription>New feature available!</AlertDescription>
  * </Alert>
  * ```
@@ -355,3 +355,4 @@ export {
   type AlertTitleProps,
   type AlertDescriptionProps
 };
+

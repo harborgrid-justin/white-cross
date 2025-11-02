@@ -1,8 +1,8 @@
 import { Suspense } from 'react';
 import { PageHeader } from '@/components/layouts/PageHeader';
 import { Container } from '@/components/layouts/Container';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Skeleton } from '@/components/ui/Skeleton';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { API_ENDPOINTS } from '@/lib/api-client';
 
 interface ReportsPageProps {
@@ -392,3 +392,5 @@ export const metadata = {
   title: 'Appointment Reports & Analytics',
   description: 'Comprehensive analytics and reports for appointment management',
 };
+
+

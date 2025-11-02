@@ -9,18 +9,18 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
-import { Label } from '@/components/ui/Label';
-import { Switch } from '@/components/ui/Switch';
-import { Separator } from '@/components/ui/Separator';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
 import {
   getNotificationPreferences,
   updateNotificationPreferences
 } from '@/lib/actions/communications.actions';
 import type { NotificationPreferences } from '@/lib/validations/notification.schemas';
 import { useToast } from '@/hooks/use-toast';
-import { Skeleton } from '@/components/ui/Skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export function NotificationSettingsContent() {
   const router = useRouter();
@@ -325,3 +325,5 @@ export function NotificationSettingsContent() {
     </div>
   );
 }
+
+

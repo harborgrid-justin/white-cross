@@ -10,7 +10,7 @@
  */
 
 import React from 'react';
-import { Avatar } from '@/components/ui/Avatar';
+import { Avatar } from '@/components/ui/avatar';
 import EncryptionBadge, { EncryptionStatusType } from '../atoms/EncryptionBadge';
 import {
   Phone,
@@ -413,3 +413,5 @@ export const ConversationHeader = React.memo<ConversationHeaderProps>(({
 ConversationHeader.displayName = 'ConversationHeader';
 
 export default ConversationHeader;
+
+

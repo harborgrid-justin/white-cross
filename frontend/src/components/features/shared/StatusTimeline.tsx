@@ -1,5 +1,5 @@
 import React from 'react';
-import { Badge } from '@/components/ui/display/Badge';
+import { Badge } from '@/components/ui/badge';
 import { Check, Clock, AlertCircle, XCircle, Circle } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -237,3 +237,6 @@ export const StatusTimeline: React.FC<StatusTimelineProps> = ({
 StatusTimeline.displayName = 'StatusTimeline';
 
 export default React.memo(StatusTimeline);
+
+
+

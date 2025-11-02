@@ -9,7 +9,7 @@ import React from 'react';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { getStudentById } from '../../actions';
+import { getStudent } from '@/app/students/actions';
 import { StudentForm } from '@/components/features/students/StudentForm';
 import { ChevronLeft } from 'lucide-react';
 
@@ -22,15 +22,13 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const result = await getStudentById(id);
+  const student = await getStudent(id);
 
-  if (!result.success || !result.data) {
+  if (!student) {
     return {
       title: 'Edit Student | White Cross Healthcare'
     };
   }
-
-  const student = result.data;
 
   return {
     title: `Edit ${student.firstName} ${student.lastName} | White Cross Healthcare`,
@@ -51,18 +49,11 @@ export default async function EditStudentPage({
 }) {
   // Await params and fetch student data server-side
   const { id } = await params;
-  const result = await getStudentById(id);
+  const student = await getStudent(id);
 
   // Handle not found
-  if (!result.success || !result.data) {
-    notFound();
-  }
-
-  const student = result.data;
-
-  // Student is guaranteed to be non-null here after the check above
   if (!student) {
-    notFound(); // Should never reach here but added for type safety
+    notFound();
   }
 
   return (

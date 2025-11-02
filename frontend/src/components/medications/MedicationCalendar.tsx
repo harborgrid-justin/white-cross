@@ -5,7 +5,7 @@
  */
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 export interface CalendarMedication {
   id: string;
@@ -122,3 +122,5 @@ export const MedicationCalendar: React.FC<MedicationCalendarProps> = ({
 MedicationCalendar.displayName = 'MedicationCalendar';
 
 export default MedicationCalendar;
+
+

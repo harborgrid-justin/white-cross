@@ -5,8 +5,8 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { Card } from '@/components/ui/layout/Card';
-import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 export const metadata: Metadata = {
   title: 'Incident Settings | White Cross',
@@ -74,3 +74,5 @@ export default function IncidentSettingsPage() {
     </div>
   );
 }
+
+

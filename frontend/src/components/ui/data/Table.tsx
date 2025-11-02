@@ -33,7 +33,7 @@
  *
  * @example Basic Student List Table
  * ```tsx
- * import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/data/Table';
+ * import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
  *
  * function StudentList({ students }) {
  *   return (
@@ -913,3 +913,4 @@ export {
   type TableCellProps,
   type TableCaptionProps
 };
+

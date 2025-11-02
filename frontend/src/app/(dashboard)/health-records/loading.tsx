@@ -1,7 +1,7 @@
 'use client';
 
-import { Skeleton } from '@/components/ui/Skeleton';
-import { Card, CardContent, CardHeader } from '@/components/ui/Card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 /**
  * Health Records Loading State
@@ -217,3 +217,5 @@ export default function LoadingHealthRecords() {
     </div>
   );
 }
+
+

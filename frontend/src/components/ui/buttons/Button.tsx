@@ -30,7 +30,7 @@ import { cn } from '@/lib/utils';
  * @property {boolean} [prefetch] - Link prefetch behavior (only used when href is provided)
  * @property {boolean} [replace] - Replace browser history (only used when href is provided)
  * @property {boolean} [scroll] - Scroll to top on navigation (only used when href is provided)
- * @property {('primary' | 'secondary' | 'outline' | 'outline-primary' | 'ghost' | 'link' | 'destructive' | 'danger' | 'success' | 'warning' | 'info')} [variant='primary'] - Visual style variant
+ * @property {('primary' | 'secondary' | 'outline' | 'outline-primary' | 'ghost' | 'link' | 'destructive' | 'danger' | 'success' | 'warning' | 'info')} [variant='default'] - Visual style variant
  * @property {('xs' | 'sm' | 'md' | 'lg' | 'xl' | 'icon')} [size='md'] - Button size (affects padding and text size)
  * @property {boolean} [loading=false] - Loading state showing spinner animation
  * @property {React.ReactNode} [icon] - Icon element to display (use with iconPosition)
@@ -305,3 +305,4 @@ export const Button = React.memo(React.forwardRef<HTMLButtonElement, ButtonProps
 Button.displayName = 'Button';
 
 export default Button;
+

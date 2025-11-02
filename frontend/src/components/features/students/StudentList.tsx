@@ -5,8 +5,8 @@ import { DataTable, DataTableColumn } from '../shared/DataTable';
 import { BulkActionBar } from '../shared/BulkActionBar';
 import { StudentCard } from './StudentCard';
 import { StudentStatusBadge } from './StudentStatusBadge';
-import { Badge } from '@/components/ui/display/Badge';
-import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Eye, Edit, Trash2, LayoutGrid, LayoutList } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -395,3 +395,7 @@ export const StudentList: React.FC<StudentListProps> = ({
 StudentList.displayName = 'StudentList';
 
 export default React.memo(StudentList);
+
+
+
+

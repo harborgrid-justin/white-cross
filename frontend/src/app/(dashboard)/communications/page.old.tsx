@@ -6,8 +6,8 @@
 
 import { Suspense } from 'react';
 import { CommunicationsContent } from './_components/CommunicationsContent';
-import { Skeleton } from '@/components/ui/Skeleton';
-import { Card } from '@/components/ui/Card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card } from '@/components/ui/card';
 
 interface CommunicationsPageProps {
   searchParams: {
@@ -308,3 +308,5 @@ export default async function CommunicationsPage({ searchParams }: Communication
     </div>
   );
 }
+
+

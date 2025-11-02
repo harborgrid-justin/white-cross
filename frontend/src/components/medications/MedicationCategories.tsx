@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 export interface MedicationCategory {
   id: string;
@@ -66,3 +66,5 @@ export const MedicationCategories: React.FC<MedicationCategoriesProps> = ({
 MedicationCategories.displayName = 'MedicationCategories';
 
 export default MedicationCategories;
+
+

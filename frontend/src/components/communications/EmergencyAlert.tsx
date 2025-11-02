@@ -10,9 +10,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { AlertTriangle, X, Bell, Volume2, VolumeX, CheckCircle, ExternalLink } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { acknowledgeBroadcastAction } from '@/lib/actions/communications.actions';
 import { toast } from 'sonner';
@@ -291,3 +291,6 @@ export function EmergencyAlert({
     </div>
   );
 }
+
+
+

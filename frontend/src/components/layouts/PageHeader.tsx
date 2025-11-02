@@ -77,7 +77,7 @@ interface PageHeaderProps {
  *   actions={
  *     <>
  *       <Button variant="secondary">Export</Button>
- *       <Button variant="primary">Add Medication</Button>
+ *       <Button variant="default">Add Medication</Button>
  *     </>
  *   }
  *   showBreadcrumbs={true}
@@ -124,3 +124,4 @@ export const PageHeader = memo(({
 PageHeader.displayName = 'PageHeader'
 
 export default PageHeader
+

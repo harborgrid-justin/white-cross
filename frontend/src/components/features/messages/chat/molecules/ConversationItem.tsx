@@ -10,7 +10,7 @@
  */
 
 import React from 'react';
-import { Avatar } from '@/components/ui/Avatar';
+import { Avatar } from '@/components/ui/avatar';
 import MessageTimestamp from '../atoms/MessageTimestamp';
 import EncryptionBadge, { EncryptionStatusType } from '../atoms/EncryptionBadge';
 import { Pin, Volume2, VolumeX } from 'lucide-react';
@@ -283,3 +283,5 @@ export const ConversationItem = React.memo<ConversationItemProps>(({
 ConversationItem.displayName = 'ConversationItem';
 
 export default ConversationItem;
+
+

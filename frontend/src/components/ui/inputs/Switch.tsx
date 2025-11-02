@@ -35,7 +35,7 @@
  *
  * @example Basic Toggle Switch
  * ```tsx
- * import { Switch } from '@/components/ui/Inputs/Switch';
+ * import { Switch } from '@/components/ui/inputs/Switch';
  *
  * function NotificationSettings() {
  *   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -588,3 +588,4 @@ Switch.displayName = 'Switch';
 
 export { Switch, type SwitchProps };
 export default Switch;
+

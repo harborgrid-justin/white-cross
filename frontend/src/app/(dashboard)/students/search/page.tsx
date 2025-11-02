@@ -9,8 +9,8 @@
 
 import { useState } from 'react';
 import { PageHeader } from '@/components/layouts/PageHeader';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/layout/Card';
-import { Button } from '@/components/ui/Button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Search, Filter, User, GraduationCap } from 'lucide-react';
 
 export default function StudentSearchPage() {
@@ -179,3 +179,6 @@ export default function StudentSearchPage() {
     </div>
   );
 }
+
+
+

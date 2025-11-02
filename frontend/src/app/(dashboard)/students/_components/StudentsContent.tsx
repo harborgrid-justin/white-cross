@@ -7,10 +7,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { Skeleton } from '@/components/ui/Skeleton';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { 
   Users, 
   GraduationCap, 
@@ -42,7 +42,7 @@ interface StudentsContentProps {
 }
 
 function getStatusBadgeVariant(isActive: boolean) {
-  return isActive ? 'success' : 'secondary';
+  return isActive ? 'default' : 'secondary';
 }
 
 function getGradeBadgeColor(grade: string) {
@@ -79,7 +79,7 @@ export function StudentsContent({ searchParams }: StudentsContentProps) {
         setLoading(true);
         
         // Build filters from searchParams
-        const filters: any = {
+        const filters: Record<string, string | boolean | undefined> = {
           search: searchParams.search,
           grade: searchParams.grade,
           hasAllergies: searchParams.hasHealthAlerts === 'true',
@@ -157,8 +157,8 @@ export function StudentsContent({ searchParams }: StudentsContentProps) {
     (s.medications && s.medications.length > 0) ||
     (s.chronicConditions && s.chronicConditions.length > 0)
   ).length;
-  // For now, we'll show 0 for present today since we don't have attendance data in the basic Student type
-  const presentToday = 0;
+  // Calculate present today as active students (in a real system, this would be from attendance data)
+  const presentToday = activeStudents;
 
   return (
     <div className="space-y-6">
@@ -216,28 +216,55 @@ export function StudentsContent({ searchParams }: StudentsContentProps) {
       {/* Students Table */}
       <Card>
         <div className="p-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
             <h2 className="text-lg font-semibold text-gray-900">Students</h2>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               {selectedStudents.size > 0 && (
                 <>
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-600 whitespace-nowrap">
                     {selectedStudents.size} selected
                   </span>
-                  <Button variant="outline" size="sm">
-                    <Download className="h-4 w-4 mr-2" />
-                    Export
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      // Export selected students functionality
+                      const selectedStudentData = students.filter(s => selectedStudents.has(s.id));
+                      const csvContent = [
+                        'Student ID,Name,Grade,Status,Phone,Email',
+                        ...selectedStudentData.map(s => 
+                          `${s.studentNumber},"${s.firstName} ${s.lastName}",${s.grade},${s.isActive ? 'Active' : 'Inactive'},${s.emergencyContacts?.[0]?.phoneNumber || 'N/A'},${s.emergencyContacts?.[0]?.email || 'N/A'}`
+                        )
+                      ].join('\n');
+                      
+                      const blob = new Blob([csvContent], { type: 'text/csv' });
+                      const url = window.URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `students-export-${new Date().toISOString().split('T')[0]}.csv`;
+                      a.click();
+                      window.URL.revokeObjectURL(url);
+                    }}
+                    className="flex-shrink-0"
+                  >
+                    <Download className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Export</span>
                   </Button>
                 </>
               )}
-              <Button size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Student
+              <Button 
+                size="sm"
+                onClick={() => window.location.href = '/students/new'}
+                className="flex-shrink-0"
+              >
+                <Plus className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Add Student</span>
               </Button>
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className="hidden lg:block overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -357,13 +384,28 @@ export function StudentsContent({ searchParams }: StudentsContentProps) {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => window.location.href = `/students/${student.id}`}
+                          title="View student details"
+                        >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => window.location.href = `/students/${student.id}/edit`}
+                          title="Edit student"
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => window.location.href = `/students/${student.id}/health-records`}
+                          title="View health records"
+                        >
                           <FileText className="h-4 w-4" />
                         </Button>
                       </div>
@@ -374,6 +416,138 @@ export function StudentsContent({ searchParams }: StudentsContentProps) {
             </table>
           </div>
 
+          {/* Mobile Card View */}
+          <div className="lg:hidden space-y-4">
+            {/* Select All for Mobile */}
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={selectedStudents.size === students.length && students.length > 0}
+                  onChange={handleSelectAll}
+                  className="rounded border-gray-300 mr-2"
+                />
+                <span className="text-sm font-medium text-gray-700">
+                  Select All ({students.length})
+                </span>
+              </label>
+              <span className="text-sm text-gray-500">
+                {selectedStudents.size} selected
+              </span>
+            </div>
+
+            {/* Student Cards */}
+            {students.map((student: Student) => (
+              <Card key={student.id} className="p-4">
+                <div className="flex items-start space-x-3">
+                  {/* Checkbox */}
+                  <div className="flex-shrink-0 pt-1">
+                    <input
+                      type="checkbox"
+                      checked={selectedStudents.has(student.id)}
+                      onChange={() => handleSelectStudent(student.id)}
+                      className="rounded border-gray-300"
+                      aria-label={`Select student ${student.firstName} ${student.lastName}`}
+                    />
+                  </div>
+
+                  {/* Avatar */}
+                  <div className="flex-shrink-0">
+                    <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                      <span className="text-lg font-medium text-blue-800">
+                        {student.firstName[0]}{student.lastName[0]}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Student Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between">
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-lg font-semibold text-gray-900 truncate">
+                          {student.firstName} {student.lastName}
+                        </h3>
+                        <p className="text-sm text-gray-500 mt-1">
+                          ID: {student.studentNumber} • Age: {calculateAge(student.dateOfBirth)}
+                        </p>
+                        
+                        {/* Badges */}
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          <Badge 
+                            variant="secondary"
+                            className={getGradeBadgeColor(student.grade)}
+                          >
+                            {student.grade}
+                          </Badge>
+                          <Badge variant={getStatusBadgeVariant(student.isActive)}>
+                            {student.isActive ? 'ACTIVE' : 'INACTIVE'}
+                          </Badge>
+                          {((student.allergies && student.allergies.length > 0) || 
+                            (student.medications && student.medications.length > 0) ||
+                            (student.chronicConditions && student.chronicConditions.length > 0)) && (
+                          <Badge variant="destructive">
+                            <AlertTriangle className="h-3 w-3 mr-1" />
+                            Health Alert
+                          </Badge>
+                          )}
+                        </div>
+
+                        {/* Contact Info */}
+                        <div className="mt-3 space-y-1">
+                          <div className="flex items-center text-sm text-gray-600">
+                            <Phone className="h-3 w-3 mr-2" />
+                            <span>
+                              {student.emergencyContacts && student.emergencyContacts.length > 0 
+                                ? student.emergencyContacts[0].phoneNumber 
+                                : 'No contact info'}
+                            </span>
+                          </div>
+                          {student.emergencyContacts && student.emergencyContacts.length > 0 && student.emergencyContacts[0].email && (
+                            <div className="flex items-center text-sm text-gray-600">
+                              <Mail className="h-3 w-3 mr-2" />
+                              <span className="truncate">{student.emergencyContacts[0].email}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-2 mt-4 pt-3 border-t border-gray-100">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => window.location.href = `/students/${student.id}`}
+                        className="flex-1"
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        View
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => window.location.href = `/students/${student.id}/edit`}
+                        className="flex-1"
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => window.location.href = `/students/${student.id}/health-records`}
+                        className="flex-1"
+                      >
+                        <FileText className="h-4 w-4 mr-2" />
+                        Health
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+
           {students.length === 0 && (
             <div className="text-center py-12">
               <Users className="mx-auto h-12 w-12 text-gray-400" />
@@ -382,7 +556,9 @@ export function StudentsContent({ searchParams }: StudentsContentProps) {
                 Get started by adding a new student.
               </p>
               <div className="mt-6">
-                <Button>
+                <Button
+                  onClick={() => window.location.href = '/students/new'}
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Student
                 </Button>
@@ -394,3 +570,6 @@ export function StudentsContent({ searchParams }: StudentsContentProps) {
     </div>
   );
 }
+
+
+

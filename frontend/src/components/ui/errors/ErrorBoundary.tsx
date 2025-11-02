@@ -24,8 +24,8 @@
 
 import * as React from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Alert } from '@/components/ui/feedback/Alert';
+import { Button } from '@/components/ui/button';
+import { Alert } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
 
 // ErrorInfo type for class component error boundary
@@ -266,3 +266,6 @@ export function useErrorBoundary() {
 }
 
 export default ErrorBoundary;
+
+
+

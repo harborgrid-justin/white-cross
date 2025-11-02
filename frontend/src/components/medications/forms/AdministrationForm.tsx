@@ -17,11 +17,11 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
-import { Textarea } from '@/components/ui/Textarea';
-import { Checkbox } from '@/components/ui/Checkbox';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { FiveRightsChecklist, FiveRightsData } from '@/components/medications/safety/FiveRightsChecklist';
 import { AllergyAlertBanner } from '@/components/medications/safety/AllergyAlertBanner';
 import { StudentPhotoVerification } from '@/components/medications/safety/StudentPhotoVerification';
@@ -319,7 +319,7 @@ export const AdministrationForm: React.FC<AdministrationFormProps> = ({
             Cancel
           </Button>
         )}
-        <Button type="submit" variant="primary" loading={isLoading}>
+        <Button type="submit" variant="default" loading={isLoading}>
           {enableSafetyChecks ? 'Verify & Record Administration' : 'Record Administration'}
         </Button>
       </div>
@@ -345,3 +345,6 @@ export const AdministrationForm: React.FC<AdministrationFormProps> = ({
 AdministrationForm.displayName = 'AdministrationForm';
 
 export default AdministrationForm;
+
+
+

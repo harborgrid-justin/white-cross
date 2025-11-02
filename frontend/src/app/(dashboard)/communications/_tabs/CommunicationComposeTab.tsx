@@ -15,13 +15,13 @@
 import React, { useState } from 'react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { Input } from '@/components/ui/Input';
-import { Textarea } from '@/components/ui/Textarea';
-import { Button } from '@/components/ui/Button';
-import { Select, SelectOption } from '@/components/ui/Select';
-import { Checkbox } from '@/components/ui/Checkbox';
-import { Alert } from '@/components/ui/feedback/Alert';
-import { Card } from '@/components/ui/layout/Card';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Select, SelectOption } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Alert } from '@/components/ui/alert';
+import { Card } from '@/components/ui/card';
 
 const cn = (...inputs: (string | undefined)[]) => twMerge(clsx(inputs));
 
@@ -498,3 +498,6 @@ export const CommunicationComposeTab: React.FC<CommunicationComposeTabProps> = (
 };
 
 export default CommunicationComposeTab;
+
+
+

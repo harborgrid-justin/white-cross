@@ -11,8 +11,8 @@
 import React from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { Mail, MailOpen, Paperclip, Flag } from 'lucide-react';
-import { Badge } from '@/components/ui/Badge';
-import { Checkbox } from '@/components/ui/Checkbox';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import type { Message } from '@/lib/validations/message.schemas';
 
@@ -178,3 +178,5 @@ export function MessageList({
     </div>
   );
 }
+
+

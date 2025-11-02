@@ -2,8 +2,8 @@ import { Suspense } from 'react';
 import { TransactionsContent } from './_components/TransactionsContent';
 import { TransactionsFilters } from './_components/TransactionsFilters';
 import { TransactionsSidebar } from './_components/TransactionsSidebar';
-import { Card } from '@/components/ui/Card';
-import { Skeleton } from '@/components/ui/Skeleton';
+import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface TransactionsPageProps {
   searchParams: {
@@ -76,3 +76,5 @@ export default function TransactionsPage({ searchParams }: TransactionsPageProps
     </div>
   );
 }
+
+

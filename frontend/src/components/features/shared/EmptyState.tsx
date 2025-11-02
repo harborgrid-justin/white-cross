@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { FileQuestion, Plus, Search, Inbox, Database, AlertCircle } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -202,3 +202,5 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 EmptyState.displayName = 'EmptyState';
 
 export default React.memo(EmptyState);
+
+

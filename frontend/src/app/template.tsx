@@ -11,16 +11,16 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePathname } from 'next/navigation';
+import { Suspense } from 'react';
 
 interface TemplateProps {
   children: React.ReactNode;
 }
 
 /**
- * Page transition template with fade animation
- * Simplified to avoid hydration mismatches
+ * Inner template component that uses pathname
  */
-export default function Template({ children }: TemplateProps) {
+function TemplateInner({ children }: TemplateProps) {
   const pathname = usePathname();
 
   return (
@@ -38,5 +38,17 @@ export default function Template({ children }: TemplateProps) {
         {children}
       </motion.div>
     </AnimatePresence>
+  );
+}
+
+/**
+ * Page transition template with fade animation
+ * Wrapped in Suspense to prevent blocking route issues
+ */
+export default function Template({ children }: TemplateProps) {
+  return (
+    <Suspense fallback={<div className="animate-pulse">{children}</div>}>
+      <TemplateInner>{children}</TemplateInner>
+    </Suspense>
   );
 }

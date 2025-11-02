@@ -1,8 +1,22 @@
-/**
- * Textarea Component - Re-export
- *
- * This is a convenience re-export for the Textarea component.
- * The actual implementation is in ./inputs/Textarea.tsx
- */
+import * as React from "react"
 
-export { Textarea, default, type TextareaProps } from './inputs/Textarea'
+import { cn } from "@/lib/utils"
+
+const Textarea = React.forwardRef<
+  HTMLTextAreaElement,
+  React.ComponentProps<"textarea">
+>(({ className, ...props }, ref) => {
+  return (
+    <textarea
+      className={cn(
+        "flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+        className
+      )}
+      ref={ref}
+      {...props}
+    />
+  )
+})
+Textarea.displayName = "Textarea"
+
+export { Textarea }

@@ -1,111 +1,48 @@
-/**
- * ScrollArea Component
- *
- * TODO: This is a stub component that needs full implementation.
- * Should provide a styled scrollable area with custom scrollbars.
- *
- * Consider using:
- * - Radix UI ScrollArea primitive
- * - Custom styling for scrollbar appearance
- * - Support for horizontal/vertical scrolling
- * - Viewport and scrollbar customization
- *
- * @example
- * ```tsx
- * <ScrollArea className="h-96">
- *   <div>Scrollable content...</div>
- * </ScrollArea>
- * ```
- */
+"use client"
 
-import React from 'react';
-import { cn } from '@/lib/utils';
+import * as React from "react"
+import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area"
 
-export interface ScrollAreaProps {
-  /**
-   * Additional CSS classes to apply to the scroll area
-   */
-  className?: string;
+import { cn } from "@/lib/utils"
 
-  /**
-   * Content to render inside the scrollable area
-   */
-  children: React.ReactNode;
-
-  /**
-   * Orientation of the scroll area
-   * @default "vertical"
-   */
-  orientation?: 'vertical' | 'horizontal' | 'both';
-
-  /**
-   * Style variant
-   * @default "default"
-   */
-  variant?: 'default' | 'ghost';
-}
-
-/**
- * ScrollArea component - provides a scrollable container
- *
- * @param props - Component props
- * @returns Scrollable container component
- */
-export function ScrollArea({
-  className,
-  children,
-  orientation = 'vertical',
-  variant = 'default',
-}: ScrollAreaProps) {
-  const overflowClass = React.useMemo(() => {
-    switch (orientation) {
-      case 'horizontal':
-        return 'overflow-x-auto overflow-y-hidden';
-      case 'both':
-        return 'overflow-auto';
-      case 'vertical':
-      default:
-        return 'overflow-y-auto overflow-x-hidden';
-    }
-  }, [orientation]);
-
-  return (
-    <div
-      className={cn(
-        'relative',
-        overflowClass,
-        variant === 'ghost' ? 'scrollbar-thin' : 'scrollbar-default',
-        className
-      )}
-      data-scroll-area
-    >
+const ScrollArea = React.forwardRef<
+  React.ElementRef<typeof ScrollAreaPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root>
+>(({ className, children, ...props }, ref) => (
+  <ScrollAreaPrimitive.Root
+    ref={ref}
+    className={cn("relative overflow-hidden", className)}
+    {...props}
+  >
+    <ScrollAreaPrimitive.Viewport className="h-full w-full rounded-[inherit]">
       {children}
-    </div>
-  );
-}
+    </ScrollAreaPrimitive.Viewport>
+    <ScrollBar />
+    <ScrollAreaPrimitive.Corner />
+  </ScrollAreaPrimitive.Root>
+))
+ScrollArea.displayName = ScrollAreaPrimitive.Root.displayName
 
-/**
- * ScrollBar component for custom scrollbar styling
- * TODO: Implement custom scrollbar when needed
- */
-export function ScrollBar({
-  className,
-  orientation = 'vertical',
-}: {
-  className?: string;
-  orientation?: 'vertical' | 'horizontal';
-}) {
-  return (
-    <div
-      className={cn(
-        'scrollbar',
-        orientation === 'horizontal' ? 'h-2' : 'w-2',
-        className
-      )}
-      data-scroll-bar
-      data-orientation={orientation}
-    />
-  );
-}
+const ScrollBar = React.forwardRef<
+  React.ElementRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>,
+  React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>
+>(({ className, orientation = "vertical", ...props }, ref) => (
+  <ScrollAreaPrimitive.ScrollAreaScrollbar
+    ref={ref}
+    orientation={orientation}
+    className={cn(
+      "flex touch-none select-none transition-colors",
+      orientation === "vertical" &&
+        "h-full w-2.5 border-l border-l-transparent p-[1px]",
+      orientation === "horizontal" &&
+        "h-2.5 flex-col border-t border-t-transparent p-[1px]",
+      className
+    )}
+    {...props}
+  >
+    <ScrollAreaPrimitive.ScrollAreaThumb className="relative flex-1 rounded-full bg-border" />
+  </ScrollAreaPrimitive.ScrollAreaScrollbar>
+))
+ScrollBar.displayName = ScrollAreaPrimitive.ScrollAreaScrollbar.displayName
 
-export default ScrollArea;
+export { ScrollArea, ScrollBar }

@@ -8,8 +8,8 @@
  * @since 1.0.0
  */
 
-import { Label } from '@/components/ui/Label';
-import { Input } from '@/components/ui/Input';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
 interface ComplianceConsentSectionProps {
   errors?: Record<string, string[]>;
@@ -105,3 +105,4 @@ export function ComplianceConsentSection({ errors }: ComplianceConsentSectionPro
     </div>
   );
 }
+

@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { 
   CreditCard, 
   Eye, 
@@ -347,3 +347,6 @@ export function TransactionsContent({ searchParams }: TransactionsContentProps) 
     </Card>
   );
 }
+
+
+

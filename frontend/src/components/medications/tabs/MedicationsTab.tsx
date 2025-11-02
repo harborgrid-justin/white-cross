@@ -7,7 +7,7 @@
 
 import React, { useState } from 'react';
 import { MedicationList, type Medication } from '@/components/medications/core/MedicationList';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import MedicationFormModal from '../modals/MedicationFormModal';
 import MedicationDetailsModal from '../modals/MedicationDetailsModal';
 import { type MedicationFormData } from '@/components/medications/forms/MedicationForm';
@@ -101,7 +101,7 @@ const MedicationsTab: React.FC<MedicationsTabProps> = ({
           </p>
         </div>
         {onAddMedication && (
-          <Button variant="primary" onClick={() => setIsAddModalOpen(true)}>
+          <Button variant="default" onClick={() => setIsAddModalOpen(true)}>
             Add Medication
           </Button>
         )}
@@ -165,3 +165,6 @@ const MedicationsTab: React.FC<MedicationsTabProps> = ({
 MedicationsTab.displayName = 'MedicationsTab';
 
 export default MedicationsTab;
+
+
+

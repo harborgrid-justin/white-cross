@@ -9,7 +9,7 @@
 
 import Link from 'next/link';
 import { ArrowLeft, Edit, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 interface HealthRecordHeaderProps {
   recordId: string;
@@ -46,3 +46,6 @@ export function HealthRecordHeader({ recordId, recordDate }: HealthRecordHeaderP
     </div>
   );
 }
+
+
+

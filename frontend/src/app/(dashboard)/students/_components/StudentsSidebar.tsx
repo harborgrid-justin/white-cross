@@ -1,5 +1,5 @@
 /**
- * @fileoverview Students Sidebar Component - Sidebar navigation for student management
+ * @fileoverview Students Sidebar Component - Modern shadcn/ui implementation
  * @module app/(dashboard)/students/_components/StudentsSidebar
  * @category Students - Components
  */
@@ -7,9 +7,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Progress } from '@/components/ui/progress';
 import { 
   Users,
   GraduationCap,
@@ -22,7 +25,8 @@ import {
   BarChart3,
   Clock,
   Activity,
-  CheckCircle
+  CheckCircle,
+  TrendingUp
 } from 'lucide-react';
 
 interface StudentsSidebarProps {
@@ -166,15 +170,6 @@ function getTaskIcon(type: string) {
   }
 }
 
-function getPriorityBadgeVariant(priority: string) {
-  switch (priority) {
-    case 'HIGH': return 'danger';
-    case 'MEDIUM': return 'warning';
-    case 'LOW': return 'info';
-    default: return 'secondary';
-  }
-}
-
 export function StudentsSidebar({ searchParams }: StudentsSidebarProps) {
   const [stats, setStats] = useState<SidebarStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -193,19 +188,19 @@ export function StudentsSidebar({ searchParams }: StudentsSidebarProps) {
     return (
       <div className="space-y-4">
         <Card>
-          <div className="p-4">
-            <div className="animate-pulse space-y-3">
-              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+          <CardHeader>
+            <div className="animate-pulse">
+              <div className="h-4 bg-muted rounded w-3/4 mb-2" />
               <div className="space-y-2">
                 {[1, 2, 3, 4].map((i) => (
                   <div key={i} className="flex justify-between">
-                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                    <div className="h-3 bg-gray-200 rounded w-8"></div>
+                    <div className="h-3 bg-muted rounded w-1/2" />
+                    <div className="h-3 bg-muted rounded w-8" />
                   </div>
                 ))}
               </div>
             </div>
-          </div>
+          </CardHeader>
         </Card>
       </div>
     );
@@ -213,136 +208,152 @@ export function StudentsSidebar({ searchParams }: StudentsSidebarProps) {
 
   if (!stats) {
     return (
-      <div className="space-y-4">
-        <Card>
-          <div className="p-4">
-            <p className="text-sm text-gray-500">Unable to load statistics</p>
-          </div>
-        </Card>
-      </div>
+      <Card>
+        <CardContent className="pt-6">
+          <p className="text-sm text-muted-foreground">Unable to load statistics</p>
+        </CardContent>
+      </Card>
     );
   }
 
-  const attendanceRate = ((stats.presentToday / stats.totalStudents) * 100).toFixed(1);
+  const attendanceRate = ((stats.presentToday / stats.totalStudents) * 100);
 
   return (
-    <div className="space-y-4">
-      {/* Student Overview */}
-      <Card>
-        <div className="p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Users className="h-4 w-4 text-blue-600" />
-            <h3 className="text-sm font-medium text-gray-900">Student Overview</h3>
-          </div>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Total Students</span>
-              <span className="text-sm font-semibold text-gray-900">{stats.totalStudents.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Present Today</span>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-green-600">{stats.presentToday}</span>
-                <span className="text-xs text-gray-500">({attendanceRate}%)</span>
+    <ScrollArea className="h-full w-full">
+      <div className="space-y-6 p-1">
+        {/* Student Overview */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Users className="h-5 w-5 text-primary" />
+              Overview
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary">{stats.totalStudents.toLocaleString()}</div>
+                <div className="text-xs text-muted-foreground">Total Students</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">{attendanceRate.toFixed(1)}%</div>
+                <div className="text-xs text-muted-foreground">Attendance</div>
               </div>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Absent Today</span>
-              <span className="text-sm font-semibold text-red-600">{stats.absentToday}</span>
+            
+            <Separator />
+            
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Present Today</span>
+                <Badge variant="outline" className="text-green-600 border-green-200">
+                  {stats.presentToday}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Absent Today</span>
+                <Badge variant="outline" className="text-red-600 border-red-200">
+                  {stats.absentToday}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Health Alerts</span>
+                <Badge variant="secondary">
+                  {stats.healthAlerts}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Medications Due</span>
+                <Badge variant="destructive">
+                  {stats.medicationsDue}
+                </Badge>
+              </div>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Health Alerts</span>
-              <Badge variant="warning" className="text-xs">
-                {stats.healthAlerts}
-              </Badge>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Medications Due</span>
-              <Badge variant="danger" className="text-xs">
-                {stats.medicationsDue}
-              </Badge>
-            </div>
-          </div>
-        </div>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Grade Distribution */}
-      <Card>
-        <div className="p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <GraduationCap className="h-4 w-4 text-purple-600" />
-            <h3 className="text-sm font-medium text-gray-900">Grade Distribution</h3>
-          </div>
-          <div className="space-y-2">
-            {stats.gradeDistribution.map((grade: { grade: string; count: number }) => (
-              <div key={grade.grade} className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">{grade.grade} Grade</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">{grade.count}</span>
-                  <div className="w-12 h-2 bg-gray-200 rounded-full">
-                    <div 
-                      className={`h-2 bg-blue-600 rounded-full transition-all duration-300`}
-                      data-width={`${(grade.count / stats.totalStudents) * 100}%`}
-                    ></div>
-                  </div>
+        {/* Grade Distribution */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <GraduationCap className="h-5 w-5 text-primary" />
+              Grade Distribution
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {stats.gradeDistribution.map((grade) => (
+              <div key={grade.grade} className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">{grade.grade} Grade</span>
+                  <span className="font-medium">{grade.count}</span>
                 </div>
+                <Progress 
+                  value={(grade.count / stats.totalStudents) * 100} 
+                  className="h-2"
+                />
               </div>
             ))}
-          </div>
-        </div>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Quick Actions */}
-      <Card>
-        <div className="p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Plus className="h-4 w-4 text-green-600" />
-            <h3 className="text-sm font-medium text-gray-900">Quick Actions</h3>
-          </div>
-          <div className="space-y-2">
-            <Button variant="outline" size="sm" className="w-full justify-start">
+        {/* Quick Actions */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Plus className="h-5 w-5 text-primary" />
+              Quick Actions
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <Button variant="outline" size="sm" className="w-full justify-start h-9">
               <Plus className="h-4 w-4 mr-2" />
-              Add New Student
+              Add Student
             </Button>
-            <Button variant="outline" size="sm" className="w-full justify-start">
+            <Button variant="outline" size="sm" className="w-full justify-start h-9">
               <FileText className="h-4 w-4 mr-2" />
               Generate Report
             </Button>
-            <Button variant="outline" size="sm" className="w-full justify-start">
+            <Button variant="outline" size="sm" className="w-full justify-start h-9">
               <BarChart3 className="h-4 w-4 mr-2" />
               View Analytics
             </Button>
-            <Button variant="outline" size="sm" className="w-full justify-start">
+            <Button variant="outline" size="sm" className="w-full justify-start h-9">
               <Calendar className="h-4 w-4 mr-2" />
               Schedule Checkups
             </Button>
-          </div>
-        </div>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Upcoming Tasks */}
-      <Card>
-        <div className="p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Clock className="h-4 w-4 text-orange-600" />
-            <h3 className="text-sm font-medium text-gray-900">Upcoming Tasks</h3>
-          </div>
-          <div className="space-y-3">
-            {stats.upcomingTasks.slice(0, 4).map((task: SidebarStats['upcomingTasks'][number]) => {
+        {/* Upcoming Tasks */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Clock className="h-5 w-5 text-primary" />
+              Upcoming Tasks
+              <Badge variant="outline" className="ml-auto">
+                {stats.upcomingTasks.length}
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {stats.upcomingTasks.slice(0, 4).map((task) => {
               const IconComponent = getTaskIcon(task.type);
               return (
-                <div key={task.id} className="flex items-start gap-3 p-2 bg-gray-50 rounded-lg">
-                  <IconComponent className="h-4 w-4 text-gray-600 mt-0.5 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-gray-900 truncate">
+                <div key={task.id} className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg border">
+                  <IconComponent className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <p className="text-sm font-medium truncate">
                       {task.title}
                     </p>
-                    <p className="text-xs text-gray-600 truncate">
+                    <p className="text-xs text-muted-foreground truncate">
                       {task.studentName}
                     </p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs text-gray-500">{task.dueTime}</span>
-                      <Badge variant={getPriorityBadgeVariant(task.priority)} className="text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">{task.dueTime}</span>
+                      <Badge 
+                        variant={task.priority === 'HIGH' ? 'destructive' : 'secondary'} 
+                        className="text-xs"
+                      >
                         {task.priority}
                       </Badge>
                     </div>
@@ -350,58 +361,65 @@ export function StudentsSidebar({ searchParams }: StudentsSidebarProps) {
                 </div>
               );
             })}
-          </div>
-        </div>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Recent Activity */}
-      <Card>
-        <div className="p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Activity className="h-4 w-4 text-blue-600" />
-            <h3 className="text-sm font-medium text-gray-900">Recent Activity</h3>
-          </div>
-          <div className="space-y-3">
-            {stats.recentActivity.slice(0, 4).map((activity: SidebarStats['recentActivity'][number]) => {
+        {/* Recent Activity */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Activity className="h-5 w-5 text-primary" />
+              Recent Activity
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {stats.recentActivity.slice(0, 4).map((activity) => {
               const IconComponent = getActivityIcon(activity.type);
               return (
-                <div key={activity.id} className="flex items-start gap-3">
-                  <IconComponent className="h-4 w-4 text-gray-600 mt-0.5 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-gray-900">{activity.message}</p>
-                    <p className="text-xs text-gray-600">{activity.studentName}</p>
-                    <p className="text-xs text-gray-500">{activity.timestamp}</p>
+                <div key={activity.id} className="flex items-start gap-3 pb-3 border-b last:border-b-0 last:pb-0">
+                  <IconComponent className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <p className="text-sm">{activity.message}</p>
+                    <p className="text-xs text-muted-foreground">{activity.studentName}</p>
+                    <p className="text-xs text-muted-foreground">{activity.timestamp}</p>
                   </div>
                 </div>
               );
             })}
-          </div>
-        </div>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* System Status */}
-      <Card>
-        <div className="p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            <h3 className="text-sm font-medium text-gray-900">System Status</h3>
-          </div>
-          <div className="space-y-2">
+        {/* System Status */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+              System Status
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-600">Database</span>
-              <Badge variant="success" className="text-xs">Online</Badge>
+              <span className="text-sm text-muted-foreground">Database</span>
+              <Badge variant="outline" className="text-green-600 border-green-200">
+                Online
+              </Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-600">Sync Status</span>
-              <Badge variant="success" className="text-xs">Up to date</Badge>
+              <span className="text-sm text-muted-foreground">Sync Status</span>
+              <Badge variant="outline" className="text-green-600 border-green-200">
+                Up to date
+              </Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-600">Last Backup</span>
-              <span className="text-xs text-gray-500">2 hours ago</span>
+              <span className="text-sm text-muted-foreground">Last Backup</span>
+              <span className="text-sm">2 hours ago</span>
             </div>
-          </div>
-        </div>
-      </Card>
-    </div>
+          </CardContent>
+        </Card>
+      </div>
+    </ScrollArea>
   );
 }
+
+
+

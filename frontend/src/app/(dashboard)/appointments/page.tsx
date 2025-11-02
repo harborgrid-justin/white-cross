@@ -18,7 +18,7 @@
 import React from 'react';
 import { PageHeader } from '@/components/layouts/PageHeader';
 import { Plus } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import AppointmentsContent from './_components/AppointmentsContent';
 import AppointmentsSidebar from './_components/AppointmentsSidebar';
 
@@ -29,7 +29,7 @@ export default function AppointmentsPage() {
         title="Appointments"
         description="Manage student healthcare appointments and schedules"
         actions={
-          <Button variant="primary">
+          <Button variant="default">
             <Plus className="h-4 w-4 mr-2" />
             Schedule Appointment
           </Button>
@@ -52,3 +52,6 @@ export default function AppointmentsPage() {
     </div>
   );
 }
+
+
+

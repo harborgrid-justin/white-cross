@@ -6,8 +6,8 @@
 
 import { Suspense } from 'react';
 import { HealthRecordsSidebar } from '../_components/HealthRecordsSidebar';
-import { Skeleton } from '@/components/ui/Skeleton';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface HealthRecordsSidebarDefaultProps {
   searchParams?: {
@@ -66,3 +66,5 @@ export default function HealthRecordsSidebarDefault({ searchParams = {} }: Healt
     </Suspense>
   );
 }
+
+

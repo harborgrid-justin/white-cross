@@ -5,11 +5,11 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { listIncidents } from '@/actions/incidents.actions';
+import { listIncidents } from '@/app/incidents/actions';
 import { IncidentCard } from '@/components/incidents/IncidentCard';
 import Link from 'next/link';
-import { Button } from '@/components/ui/Button';
-import type { IncidentReport } from '@/types/incidents';
+import { Button } from '@/components/ui/button';
+import type { Incident } from '@/schemas/incidents/incident.schemas';
 
 export const metadata: Metadata = {
   title: 'Illness Incidents | White Cross',
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 
 
 export default async function IllnessIncidentsPage() {
-  const result = await listIncidents({ type: 'ILLNESS' });
+  const incidents = await listIncidents({ type: 'ILLNESS' });
 
   return (
     <div className="p-6">
@@ -30,10 +30,10 @@ export default async function IllnessIncidentsPage() {
         </Link>
       </div>
 
-      {result.success && result.data ? (
+      {incidents && incidents.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {result.data.incidents.map((incident: IncidentReport) => (
-            <IncidentCard key={incident.id} incident={incident} />
+          {incidents.map((incident) => (
+            <IncidentCard key={incident.id} incident={incident as unknown as Incident} />
           ))}
         </div>
       ) : (

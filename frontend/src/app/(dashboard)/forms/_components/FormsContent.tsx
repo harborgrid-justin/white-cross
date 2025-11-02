@@ -31,10 +31,10 @@ import {
   Phone
 } from 'lucide-react';
 import Link from 'next/link';
-import { Card } from '@/components/ui/layout/Card';
-import { Button } from '@/components/ui/Button';
-import { SearchInput } from '@/components/ui/SearchInput';
-import { Badge } from '@/components/ui/Badge';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { SearchInput } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 
 // Import server actions
 import { 
@@ -850,7 +850,7 @@ const FormsContent: React.FC<FormsContentProps> = ({
             {/* Primary Actions */}
             <div className="flex items-center gap-3">
               <Link href="/forms/new">
-                <Button variant="primary">
+                <Button variant="default">
                   <Plus className="h-4 w-4 mr-2" />
                   Create Form
                 </Button>
@@ -1040,7 +1040,7 @@ const FormsContent: React.FC<FormsContentProps> = ({
                   : 'Create your first healthcare form to get started.'}
               </p>
               <Link href="/forms/new">
-                <Button variant="primary">
+                <Button variant="default">
                   <Plus className="h-4 w-4 mr-2" />
                   Create Your First Form
                 </Button>
@@ -1414,3 +1414,6 @@ const FormsContent: React.FC<FormsContentProps> = ({
 };
 
 export default FormsContent;
+
+
+

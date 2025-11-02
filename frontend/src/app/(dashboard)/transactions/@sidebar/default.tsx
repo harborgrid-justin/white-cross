@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
-import { Card } from '@/components/ui/Card';
-import { Skeleton } from '@/components/ui/Skeleton';
+import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { TransactionsSidebar } from '../_components/TransactionsSidebar';
 
 interface TransactionsSidebarDefaultProps {
@@ -34,3 +34,5 @@ export default function TransactionsSidebarDefault({ searchParams }: Transaction
     </Suspense>
   );
 }
+
+

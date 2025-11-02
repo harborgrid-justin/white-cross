@@ -5,8 +5,8 @@
  */
 
 import { Suspense } from 'react';
-import { Card } from '@/components/ui/Card';
-import { Skeleton } from '@/components/ui/Skeleton';
+import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface BudgetLayoutProps {
   children: React.ReactNode;
@@ -207,3 +207,5 @@ function BudgetContentSkeleton() {
     </div>
   );
 }
+
+

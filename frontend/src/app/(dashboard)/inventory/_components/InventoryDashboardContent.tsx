@@ -38,9 +38,9 @@
 import React from 'react';
 import { getInventoryDashboardStats } from '@/actions/alerts.actions';
 import { getLowStockAlerts, getExpirationAlerts } from '@/actions/alerts.actions';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { Badge } from '@/components/ui/Badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, Package, TrendingDown, TrendingUp, Calendar } from 'lucide-react';
 import Link from 'next/link';
 
@@ -405,3 +405,5 @@ export async function InventoryDashboardContent() {
     </div>
   );
 }
+
+

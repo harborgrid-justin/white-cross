@@ -6,7 +6,7 @@
 
 
 import { PageHeader } from '@/components/shared/PageHeader';
-import { Card } from '@/components/ui/layout/Card';
+import { Card } from '@/components/ui/card';
 
 export default function OutstandingPage() {
   return (
@@ -27,3 +27,5 @@ export default function OutstandingPage() {
     </div>
   );
 }
+
+

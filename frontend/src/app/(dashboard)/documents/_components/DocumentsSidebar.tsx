@@ -30,9 +30,9 @@ import {
   BarChart3,
   Edit
 } from 'lucide-react';
-import { Card } from '@/components/ui/layout/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 // Document types and statuses
 type DocumentType = 'medical_record' | 'immunization_record' | 'medication_record' | 'incident_report' | 'emergency_contact' | 'consent_form' | 'allergy_record' | 'insurance_card' | 'iep_504' | 'health_plan' | 'prescription' | 'lab_result' | 'x_ray' | 'photo' | 'video' | 'other';
@@ -585,3 +585,5 @@ const DocumentsSidebar: React.FC<DocumentsSidebarProps> = ({
 };
 
 export default DocumentsSidebar;
+
+

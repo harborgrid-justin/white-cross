@@ -9,8 +9,8 @@
 
 import { useState } from 'react';
 import { PageHeader } from '@/components/layouts/PageHeader';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/layout/Card';
-import { Button } from '@/components/ui/Button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { FileText, Download, Calendar, Users, BarChart3, AlertTriangle } from 'lucide-react';
 
 export default function StudentReportsPage() {
@@ -268,3 +268,6 @@ export default function StudentReportsPage() {
     </div>
   );
 }
+
+
+

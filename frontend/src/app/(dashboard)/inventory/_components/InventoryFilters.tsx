@@ -8,9 +8,9 @@
 
 import { useState, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { 
   Search,
   Filter,
@@ -148,7 +148,7 @@ export function InventoryFilters({ totalItems = 0, activeFilters = 0 }: Inventor
             <Filter className="h-4 w-4 mr-2" />
             Filters
             {activeFilters > 0 && (
-              <Badge variant="primary" className="ml-2 text-xs">
+              <Badge variant="default" className="ml-2 text-xs">
                 {activeFilters}
               </Badge>
             )}
@@ -318,3 +318,6 @@ export function InventoryFilters({ totalItems = 0, activeFilters = 0 }: Inventor
     </Card>
   );
 }
+
+
+

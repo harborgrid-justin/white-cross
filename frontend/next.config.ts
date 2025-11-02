@@ -131,7 +131,7 @@ const nextConfig: NextConfig = {
     optimizeCss: true,
 
     // Enable Next.js v16 cache features
-    cacheComponents: true,
+    cacheComponents: false,
   },
 
   // ==========================================

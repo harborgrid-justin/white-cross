@@ -6,8 +6,8 @@
 
 import { Suspense } from 'react';
 import { StudentsSidebar } from '../_components/StudentsSidebar';
-import { Skeleton } from '@/components/ui/Skeleton';
-import { Card } from '@/components/ui/Card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card } from '@/components/ui/card';
 
 interface StudentsSidebarDefaultProps {
   searchParams: {
@@ -47,3 +47,5 @@ export default function StudentsSidebarDefault({ searchParams }: StudentsSidebar
     </Suspense>
   );
 }
+
+

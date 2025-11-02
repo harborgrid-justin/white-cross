@@ -5,7 +5,7 @@
  */
 
 import { Suspense } from 'react';
-import { Skeleton } from '@/components/ui/Skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ProfileSidebar } from './_components/ProfileSidebar';
 
 interface ProfileLayoutProps {
@@ -313,3 +313,5 @@ export default function ProfileLayout({
     </div>
   );
 }
+
+

@@ -37,7 +37,7 @@
  *
  * @example Basic Radio Button
  * ```tsx
- * import { Radio } from '@/components/ui/Inputs/Radio';
+ * import { Radio } from '@/components/ui/inputs/Radio';
  *
  * function ConsentForm() {
  *   const [consent, setConsent] = useState('');
@@ -67,7 +67,7 @@
  *
  * @example RadioGroup for Visit Type Selection
  * ```tsx
- * import { RadioGroup, Radio } from '@/components/ui/Inputs/Radio';
+ * import { RadioGroup, Radio } from '@/components/ui/inputs/Radio';
  *
  * function AppointmentForm() {
  *   const [visitType, setVisitType] = useState('');
@@ -659,3 +659,4 @@ Radio.displayName = 'Radio';
 RadioGroup.displayName = 'RadioGroup';
 
 export { Radio, RadioGroup, type RadioProps, type RadioGroupProps };
+

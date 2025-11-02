@@ -3,7 +3,7 @@
 import React from 'react';
 import { PageHeader } from '@/components/layouts/PageHeader';
 import { Plus, Building2 } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 export default function VendorsPage() {
   return (
@@ -12,7 +12,7 @@ export default function VendorsPage() {
         title="Vendors & Suppliers"
         description="Manage healthcare vendors, suppliers, and procurement"
         actions={
-          <Button variant="primary">
+          <Button variant="default">
             <Plus className="h-4 w-4 mr-2" />
             Add Vendor
           </Button>
@@ -24,3 +24,6 @@ export default function VendorsPage() {
     </div>
   );
 }
+
+
+

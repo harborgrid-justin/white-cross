@@ -7,8 +7,8 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/layout/Card';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { AlertTriangle, ArrowLeft, Shield } from 'lucide-react';
 
 /**
@@ -36,7 +36,7 @@ export default function AdminNotFound() {
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/admin/settings">
-              <Button variant="primary">
+              <Button variant="default">
                 <Shield className="h-4 w-4 mr-2" />
                 Admin Settings
               </Button>
@@ -57,3 +57,6 @@ export default function AdminNotFound() {
     </div>
   );
 }
+
+
+

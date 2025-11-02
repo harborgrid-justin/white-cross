@@ -5,7 +5,7 @@
  */
 
 import { Suspense } from 'react';
-import { Skeleton } from '@/components/ui/Skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { AnalyticsSidebar } from './_components/AnalyticsSidebar';
 
 interface AnalyticsLayoutProps {
@@ -274,3 +274,5 @@ export default function AnalyticsLayout({
     </div>
   );
 }
+
+

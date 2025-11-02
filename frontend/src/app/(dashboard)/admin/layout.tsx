@@ -5,7 +5,7 @@
  */
 
 import { Suspense } from 'react';
-import { Skeleton } from '@/components/ui/Skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { AdminSidebar } from './_components/AdminSidebar';
 
 interface AdminLayoutProps {
@@ -296,3 +296,5 @@ export default function AdminLayout({
     </div>
   );
 }
+
+

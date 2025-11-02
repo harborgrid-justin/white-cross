@@ -13,7 +13,7 @@
  */
 
 import React from 'react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 /**
  * Medication detail data interface
@@ -305,3 +305,5 @@ export const MedicationDetails: React.FC<MedicationDetailsProps> = ({
 MedicationDetails.displayName = 'MedicationDetails';
 
 export default MedicationDetails;
+
+

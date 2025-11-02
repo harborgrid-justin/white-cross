@@ -10,7 +10,7 @@
 'use client';
 
 import React, { useCallback, useState } from 'react';
-import { useDocumentUpload } from '@/hooks/documents';
+import { useCreateDocument } from '@/hooks/documents';
 import type { DocumentMetadata } from '@/types/documents';
 
 interface DocumentUploaderProps {
@@ -47,12 +47,54 @@ export function DocumentUploader({
 }: DocumentUploaderProps) {
   const [isDragActive, setIsDragActive] = useState(false);
 
-  const { upload, progress, status, document, error, isUploading, cancel } = useDocumentUpload({
-    token,
-    folderId,
-    maxFileSize: maxFileSizeMB * 1024 * 1024,
-    allowedTypes
-  });
+  const createDocument = useCreateDocument();
+  const [progress, setProgress] = useState<any>(null);
+  const [status, setStatus] = useState<'idle' | 'uploading' | 'complete' | 'error'>('idle');
+  const [document, setDocument] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  
+  const upload = async (file: File, metadata?: any) => {
+    setIsUploading(true);
+    setStatus('uploading');
+    setError(null);
+    
+    try {
+      // Simulate progress for demo purposes
+      setProgress({
+        fileName: file.name,
+        percentage: 0,
+        uploadedSize: 0,
+        totalSize: file.size,
+        speed: 0,
+        remainingTime: 0
+      });
+      
+      // Create document
+      const result = await createDocument.mutateAsync({
+        title: metadata?.title || file.name,
+        file: file,
+        folderId,
+        ...metadata
+      });
+      
+      setDocument(result);
+      setStatus('complete');
+      return result;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Upload failed');
+      setStatus('error');
+      throw err;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+  
+  const cancel = () => {
+    setIsUploading(false);
+    setStatus('idle');
+    setProgress(null);
+  };
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault();

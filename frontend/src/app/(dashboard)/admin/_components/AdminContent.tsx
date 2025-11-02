@@ -7,9 +7,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { 
   Shield,
   Users,
@@ -710,3 +710,6 @@ export function AdminContent({ searchParams }: AdminContentProps) {
     </div>
   );
 }
+
+
+

@@ -9,8 +9,8 @@
 
 import React, { useEffect } from 'react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/layout/Card';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { AlertCircle, RefreshCw, DollarSign, ArrowLeft } from 'lucide-react';
 
 interface BillingErrorProps {
@@ -78,7 +78,7 @@ export default function BillingError({ error, reset }: BillingErrorProps) {
           )}
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button variant="primary" onClick={reset}>
+            <Button variant="default" onClick={reset}>
               <RefreshCw className="h-4 w-4 mr-2" />
               Try Again
             </Button>
@@ -112,3 +112,6 @@ export default function BillingError({ error, reset }: BillingErrorProps) {
     </div>
   );
 }
+
+
+

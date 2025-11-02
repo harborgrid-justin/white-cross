@@ -9,7 +9,7 @@ import React from 'react';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { getStudentById } from '../actions';
+import { getStudent } from '@/app/students/actions';
 import { StudentDetails } from '@/components/features/students/StudentDetails';
 import { ChevronLeft } from 'lucide-react';
 
@@ -22,15 +22,13 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const result = await getStudentById(id);
+  const student = await getStudent(id);
 
-  if (!result.success || !result.data) {
+  if (!student) {
     return {
       title: 'Student Not Found | White Cross Healthcare'
     };
   }
-
-  const student = result.data;
 
   return {
     title: `${student.firstName} ${student.lastName} | White Cross Healthcare`,
@@ -51,14 +49,12 @@ export default async function StudentDetailsPage({
 }) {
   // Await params and fetch student data server-side
   const { id } = await params;
-  const result = await getStudentById(id);
+  const student = await getStudent(id);
 
   // Handle not found
-  if (!result.success || !result.data) {
+  if (!student) {
     notFound();
   }
-
-  const student = result.data;
 
   return (
     <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">

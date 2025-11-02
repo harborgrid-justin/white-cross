@@ -9,21 +9,21 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, Search, Filter, Radio } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Badge } from '@/components/ui/Badge';
-import { Card, CardContent, CardHeader } from '@/components/ui/Card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/Select';
+} from '@/components/ui/select';
 import { getBroadcasts } from '@/lib/actions/communications.actions';
 import type { Broadcast, BroadcastStatus } from '@/lib/validations/broadcast.schemas';
 import { useToast } from '@/hooks/use-toast';
-import { Skeleton } from '@/components/ui/Skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 
 export function BroadcastsContent() {
@@ -222,3 +222,5 @@ export function BroadcastsContent() {
     </div>
   );
 }
+
+

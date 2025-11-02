@@ -2,9 +2,9 @@ import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { PageHeader } from '@/components/layouts/PageHeader';
 import { Container } from '@/components/layouts/Container';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AppointmentCalendar } from '@/components/appointments';
-import { Skeleton } from '@/components/ui/Skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { API_ENDPOINTS } from '@/lib/api-client';
 import { revalidateTag, unstable_cache } from 'next/cache';
 
@@ -310,3 +310,5 @@ export const metadata = {
   title: 'Appointments Calendar',
   description: 'View and manage appointments in calendar format',
 };
+
+

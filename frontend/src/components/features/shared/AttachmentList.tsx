@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useCallback } from 'react';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/display/Badge';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   File,
   FileText,
@@ -230,7 +230,7 @@ export const AttachmentList: React.FC<AttachmentListProps> = ({
                       {attachment.name}
                     </p>
                     {attachment.isUploading && (
-                      <Badge variant="primary" size="sm">
+                      <Badge variant="default" size="sm">
                         Uploading...
                       </Badge>
                     )}
@@ -318,3 +318,7 @@ export const AttachmentList: React.FC<AttachmentListProps> = ({
 AttachmentList.displayName = 'AttachmentList';
 
 export default React.memo(AttachmentList);
+
+
+
+

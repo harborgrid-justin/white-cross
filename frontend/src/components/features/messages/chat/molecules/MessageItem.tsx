@@ -10,7 +10,7 @@
  */
 
 import React from 'react';
-import { Avatar } from '@/components/ui/Avatar';
+import { Avatar } from '@/components/ui/avatar';
 import MessageTimestamp from '../atoms/MessageTimestamp';
 import MessageStatus, { MessageStatusType } from '../atoms/MessageStatus';
 import EncryptionBadge, { EncryptionStatusType } from '../atoms/EncryptionBadge';
@@ -392,3 +392,5 @@ export const MessageItem = React.memo<MessageItemProps>(({
 MessageItem.displayName = 'MessageItem';
 
 export default MessageItem;
+
+

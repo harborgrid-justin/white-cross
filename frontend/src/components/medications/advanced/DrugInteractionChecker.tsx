@@ -6,8 +6,8 @@
  */
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/Button';
-import { SearchInput } from '@/components/ui/SearchInput';
+import { Button } from '@/components/ui/button';
+import { SearchInput } from '@/components/ui/input';
 
 export interface DrugInteraction {
   id: string;
@@ -89,7 +89,7 @@ export const DrugInteractionChecker: React.FC<DrugInteractionCheckerProps> = ({
           <p className="text-gray-600 mb-4">No medications on file</p>
         )}
 
-        <Button variant="primary" onClick={handleCheck} loading={isChecking} disabled={currentMedications.length < 2}>
+        <Button variant="default" onClick={handleCheck} loading={isChecking} disabled={currentMedications.length < 2}>
           Check for Interactions
         </Button>
       </div>
@@ -156,3 +156,6 @@ export const DrugInteractionChecker: React.FC<DrugInteractionCheckerProps> = ({
 DrugInteractionChecker.displayName = 'DrugInteractionChecker';
 
 export default DrugInteractionChecker;
+
+
+

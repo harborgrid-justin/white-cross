@@ -12,7 +12,7 @@
 
 import React from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 export interface GenericDomainErrorProps {
   error: Error & { digest?: string };
@@ -80,7 +80,7 @@ export const GenericDomainError: React.FC<GenericDomainErrorProps> = ({
           <div className="space-y-3">
             <Button
               onClick={reset}
-              variant="primary"
+              variant="default"
               className="w-full flex items-center justify-center gap-2"
             >
               <RefreshCw className="w-4 h-4" />
@@ -127,3 +127,6 @@ export const GenericDomainError: React.FC<GenericDomainErrorProps> = ({
 GenericDomainError.displayName = 'GenericDomainError';
 
 export default GenericDomainError;
+
+
+

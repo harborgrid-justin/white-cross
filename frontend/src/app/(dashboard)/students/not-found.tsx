@@ -7,8 +7,8 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/layout/Card';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { AlertTriangle, ArrowLeft } from 'lucide-react';
 
 /**
@@ -35,7 +35,7 @@ export default function StudentNotFound() {
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/students">
-              <Button variant="primary">
+              <Button variant="default">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Students
               </Button>
@@ -51,3 +51,6 @@ export default function StudentNotFound() {
     </div>
   );
 }
+
+
+

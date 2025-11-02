@@ -32,10 +32,10 @@ import {
   X
 } from 'lucide-react';
 import Link from 'next/link';
-import { Card } from '@/components/ui/layout/Card';
-import { Button } from '@/components/ui/Button';
-import { SearchInput } from '@/components/ui/SearchInput';
-import { Badge } from '@/components/ui/Badge';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { SearchInput } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 
 // Healthcare message types and priorities
 type MessageType = 'general' | 'emergency' | 'medical' | 'appointment' | 'medication' | 'incident' | 'parent_communication' | 'staff_notification';
@@ -573,7 +573,7 @@ const MessagesContent: React.FC<MessagesContentProps> = ({
             {/* Primary Actions */}
             <div className="flex items-center gap-3">
               <Link href="/messages/new">
-                <Button variant="primary">
+                <Button variant="default">
                   <Plus className="h-4 w-4 mr-2" />
                   New Message
                 </Button>
@@ -750,7 +750,7 @@ const MessagesContent: React.FC<MessagesContentProps> = ({
                   : 'Start a conversation by sending a new message.'}
               </p>
               <Link href="/messages/new">
-                <Button variant="primary">
+                <Button variant="default">
                   <Send className="h-4 w-4 mr-2" />
                   Send New Message
                 </Button>
@@ -1055,7 +1055,7 @@ const MessagesContent: React.FC<MessagesContentProps> = ({
               <div className="flex gap-2">
                 {selectedMessage.requiresAcknowledgment && !selectedMessage.acknowledgedAt && (
                   <Button
-                    variant="primary"
+                    variant="default"
                     onClick={() => {
                       handleAcknowledgeMessage(selectedMessage.id);
                       setSelectedMessage(null);
@@ -1085,3 +1085,6 @@ const MessagesContent: React.FC<MessagesContentProps> = ({
 };
 
 export default MessagesContent;
+
+
+

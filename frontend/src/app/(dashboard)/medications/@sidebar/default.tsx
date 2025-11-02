@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
-import { Card } from '@/components/ui/Card';
-import { Skeleton } from '@/components/ui/Skeleton';
+import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { MedicationsSidebar } from '../_components/MedicationsSidebar';
 
 interface MedicationsSidebarDefaultProps {
@@ -31,3 +31,5 @@ export default function MedicationsSidebarDefault({ searchParams }: MedicationsS
     </Suspense>
   );
 }
+
+

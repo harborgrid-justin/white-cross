@@ -73,8 +73,8 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, Trash2, Archive, MailOpen, Search, Filter } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { MessageList } from '@/components/communications/MessageList';
 import {
   Select,
@@ -82,7 +82,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/Select';
+} from '@/components/ui/select';
 import {
   getMessageThreads,
   archiveMessages,
@@ -91,7 +91,7 @@ import {
 } from '@/lib/actions/communications.actions';
 import type { MessageThread, MessageStatus } from '@/lib/validations/message.schemas';
 import { useToast } from '@/hooks/use-toast';
-import { Skeleton } from '@/components/ui/Skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 
 /**
  * Inbox Content Component
@@ -441,3 +441,5 @@ export function InboxContent() {
     </div>
   );
 }
+
+

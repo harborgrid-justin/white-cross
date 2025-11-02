@@ -13,7 +13,7 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Eye, FileText, Calendar, Trash2 } from 'lucide-react';
-import { Card } from '@/components/ui/layout/Card';
+import { Card } from '@/components/ui/card';
 import { useStudents, usePrefetchStudent } from '@/lib/query/hooks/useStudents';
 import { ErrorDisplay } from '@/components/ui/errors/ErrorBoundary';
 import type { PaginatedStudentsResponse } from '@/types/student.types';
@@ -251,3 +251,5 @@ export function StudentsTable({ initialData, searchParams }: StudentsTableProps)
     </Card>
   );
 }
+
+

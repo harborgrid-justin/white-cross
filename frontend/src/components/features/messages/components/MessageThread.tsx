@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/layout/Card';
-import { Avatar } from '@/components/ui/Avatar';
+import { Card } from '@/components/ui/card';
+import { Avatar } from '@/components/ui/avatar';
 import { Reply, Forward, Star, Archive, Trash2, Paperclip, Clock } from 'lucide-react';
 
 interface Message {
@@ -227,3 +227,5 @@ export function MessageThread({
     </div>
   );
 }
+
+

@@ -6,9 +6,9 @@
  */
 
 import React, { useState } from 'react';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableEmptyState, TableLoadingState } from '@/components/ui/data/Table';
-import { Button } from '@/components/ui/Button';
-import { SearchInput } from '@/components/ui/SearchInput';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableEmptyState, TableLoadingState } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { SearchInput } from '@/components/ui/input';
 
 export interface AdministrationRecord {
   id: string;
@@ -130,3 +130,5 @@ export const AdministrationLog: React.FC<AdministrationLogProps> = ({
 AdministrationLog.displayName = 'AdministrationLog';
 
 export default AdministrationLog;
+
+

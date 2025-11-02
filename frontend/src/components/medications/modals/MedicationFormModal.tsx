@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { Modal } from '@/components/ui/overlays/Modal';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { MedicationForm, type MedicationFormData } from '@/components/medications/forms/MedicationForm';
 
 export interface MedicationFormModalProps {
@@ -47,20 +47,20 @@ const MedicationFormModal: React.FC<MedicationFormModalProps> = ({
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={title || (mode === 'create' ? 'Add Medication' : 'Edit Medication')}
-      size="lg"
-    >
-      <MedicationForm
-        initialData={initialData}
-        onSubmit={handleSubmit}
-        onCancel={onClose}
-        isLoading={isLoading}
-        mode={mode}
-      />
-    </Modal>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-4xl">
+        <DialogHeader>
+          <DialogTitle>{title || (mode === 'create' ? 'Add Medication' : 'Edit Medication')}</DialogTitle>
+        </DialogHeader>
+        <MedicationForm
+          initialData={initialData}
+          onSubmit={handleSubmit}
+          onCancel={onClose}
+          isLoading={isLoading}
+          mode={mode}
+        />
+      </DialogContent>
+    </Dialog>
   );
 };
 

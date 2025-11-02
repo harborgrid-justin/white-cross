@@ -7,9 +7,9 @@
 import { Metadata } from 'next';
 import { Suspense } from 'react';
 import { PageHeader } from '@/components/layouts/PageHeader';
-import { Button } from '@/components/ui/Button';
-import { Skeleton } from '@/components/ui/Skeleton';
-import { Card, CardContent } from '@/components/ui/Card';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent } from '@/components/ui/card';
 import { Plus, Users, Download } from 'lucide-react';
 import { StudentsContent } from './_components/StudentsContent';
 import { StudentsFilters } from './_components/StudentsFilters';
@@ -80,7 +80,7 @@ export default function StudentsPage({ searchParams }: StudentsPageProps) {
 
       <div className="space-y-6">
         <Suspense fallback={<Skeleton className="h-16 w-full" />}>
-          <StudentsFilters totalCount={0} />
+          <StudentsFilters searchParams={searchParams} />
         </Suspense>
 
         <Suspense fallback={<StudentsPageSkeleton />}>
@@ -90,3 +90,5 @@ export default function StudentsPage({ searchParams }: StudentsPageProps) {
     </>
   );
 }
+
+

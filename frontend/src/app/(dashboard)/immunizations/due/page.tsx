@@ -17,10 +17,10 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { AlertTriangle, Syringe, Calendar, User, ArrowLeft, Plus, Search } from 'lucide-react';
-import { Card } from '@/components/ui/layout/Card';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { apiClient } from '@/lib/api-client';
 import { API_ENDPOINTS } from '@/lib/api-client';
 
@@ -181,7 +181,7 @@ export default function DueImmunizationsPage() {
             </p>
           </div>
           <Link href="/immunizations/new">
-            <Button variant="primary" className="flex items-center gap-2">
+            <Button variant="default" className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
               Record Immunization
             </Button>
@@ -402,7 +402,7 @@ export default function DueImmunizationsPage() {
 
                   <div className="ml-4">
                     <Button
-                      variant="primary"
+                      variant="default"
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -421,3 +421,6 @@ export default function DueImmunizationsPage() {
     </div>
   );
 }
+
+
+

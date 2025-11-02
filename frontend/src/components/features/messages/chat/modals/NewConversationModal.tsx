@@ -11,7 +11,7 @@
 
 import React, { useState, Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { Avatar } from '@/components/ui/Avatar';
+import { Avatar } from '@/components/ui/avatar';
 import { X, Search, Users, Send, Check } from 'lucide-react';
 
 /**
@@ -382,3 +382,5 @@ export const NewConversationModal = React.memo<NewConversationModalProps>(({
 NewConversationModal.displayName = 'NewConversationModal';
 
 export default NewConversationModal;
+
+

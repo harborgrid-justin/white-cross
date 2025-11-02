@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Card } from '@/components/ui/layout/Card';
-import { Avatar } from '@/components/ui/Avatar';
+import { Card } from '@/components/ui/card';
+import { Avatar } from '@/components/ui/avatar';
 import { 
   Reply, 
   Forward, 
@@ -425,3 +425,5 @@ export function MessageDetail({
     </div>
   );
 }
+
+

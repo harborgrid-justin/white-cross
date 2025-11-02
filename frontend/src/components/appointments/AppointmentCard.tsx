@@ -6,7 +6,7 @@
  */
 
 import Link from 'next/link';
-import { Badge } from '@/components/ui/Badge';
+import { Badge } from '@/components/ui/badge';
 
 interface Appointment {
   id: string;
@@ -162,3 +162,5 @@ export function AppointmentCard({ appointment }: AppointmentCardProps) {
     </div>
   );
 }
+
+

@@ -8,9 +8,9 @@ import { Metadata } from 'next';
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { PageHeader } from '@/components/layouts/PageHeader';
-import { Button } from '@/components/ui/Button';
-import { Skeleton } from '@/components/ui/Skeleton';
-import { Card, CardContent } from '@/components/ui/Card';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent } from '@/components/ui/card';
 import { Plus, FileHeart, BarChart3 } from 'lucide-react';
 import { HealthRecordsContent } from './_components/HealthRecordsContent';
 import { HealthRecordsFilters } from './_components/HealthRecordsFilters';
@@ -112,3 +112,5 @@ export default function HealthRecordsPage({ searchParams }: HealthRecordsPagePro
     </>
   );
 }
+
+

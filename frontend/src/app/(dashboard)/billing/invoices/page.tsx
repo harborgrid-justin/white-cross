@@ -7,7 +7,7 @@
 
 
 import React, { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/layout/Card';
+import { Card } from '@/components/ui/card';
 import { type BillingInvoice, type InvoiceFilters } from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
 import { fetchInvoicesDashboardData } from './data';
@@ -163,3 +163,5 @@ export default function InvoicesPage() {
     </div>
   );
 }
+
+

@@ -6,8 +6,8 @@
 import React from 'react';
 import { Metadata } from 'next';
 import { getIncidentAnalytics } from '@/actions/incidents.actions';
-import { Card } from '@/components/ui/layout/Card';
-import { Badge } from '@/components/ui/display/Badge';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 export const metadata: Metadata = {
   title: 'Incident Analytics | White Cross',
@@ -120,3 +120,6 @@ export default async function IncidentAnalyticsPage() {
     </div>
   );
 }
+
+
+

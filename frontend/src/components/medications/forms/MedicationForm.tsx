@@ -13,12 +13,12 @@
  */
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
-import { Textarea } from '@/components/ui/Textarea';
-import { Checkbox } from '@/components/ui/Checkbox';
-import { DatePicker } from '@/components/ui/Inputs/DatePicker';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { DatePicker } from '@/components/ui/calendar';
 
 /**
  * Medication form data interface
@@ -451,7 +451,7 @@ export const MedicationForm: React.FC<MedicationFormProps> = ({
             Cancel
           </Button>
         )}
-        <Button type="submit" variant="primary" loading={isLoading}>
+        <Button type="submit" variant="default" loading={isLoading}>
           {mode === 'create' ? 'Create Medication' : 'Update Medication'}
         </Button>
       </div>
@@ -462,3 +462,6 @@ export const MedicationForm: React.FC<MedicationFormProps> = ({
 MedicationForm.displayName = 'MedicationForm';
 
 export default MedicationForm;
+
+
+

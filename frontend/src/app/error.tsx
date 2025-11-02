@@ -9,8 +9,8 @@
 
 import React, { useEffect } from 'react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/layout/Card';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { AlertCircle, RefreshCw, LogIn } from 'lucide-react';
 
 interface AuthErrorProps {
@@ -66,7 +66,7 @@ export default function AuthError({ error, reset }: AuthErrorProps) {
           )}
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button variant="primary" onClick={reset}>
+            <Button variant="default" onClick={reset}>
               <RefreshCw className="h-4 w-4 mr-2" />
               Try Again
             </Button>
@@ -86,3 +86,6 @@ export default function AuthError({ error, reset }: AuthErrorProps) {
     </div>
   );
 }
+
+
+

@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 export interface MedicationReport {
   id: string;
@@ -91,3 +91,5 @@ export const ReportsDashboard: React.FC<ReportsDashboardProps> = ({ onGenerateRe
 ReportsDashboard.displayName = 'ReportsDashboard';
 
 export default ReportsDashboard;
+
+

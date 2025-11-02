@@ -18,7 +18,7 @@
 import React from 'react';
 import { PageHeader } from '@/components/layouts/PageHeader';
 import { Plus } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import ImmunizationsContent from './_components/ImmunizationsContent';
 import ImmunizationsSidebar from './_components/ImmunizationsSidebar';
 
@@ -29,7 +29,7 @@ export default function ImmunizationsPage() {
         title="Immunizations"
         description="Manage student immunizations and vaccination records"
         actions={
-          <Button variant="primary">
+          <Button variant="default">
             <Plus className="h-4 w-4 mr-2" />
             Add Immunization
           </Button>
@@ -52,3 +52,6 @@ export default function ImmunizationsPage() {
     </div>
   );
 }
+
+
+

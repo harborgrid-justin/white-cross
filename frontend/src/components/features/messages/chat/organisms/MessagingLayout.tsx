@@ -15,7 +15,7 @@ import ConversationHeader, { Participant } from '../molecules/ConversationHeader
 import MessageItem, { MessageItemProps } from '../molecules/MessageItem';
 import MessageInput, { AttachmentFile } from './MessageInput';
 import TypingIndicator from '../atoms/TypingIndicator';
-import { Skeleton } from '@/components/ui/Skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, WifiOff, AlertCircle } from 'lucide-react';
 
 /**
@@ -366,3 +366,5 @@ export const MessagingLayout = React.memo<MessagingLayoutProps>(({
 MessagingLayout.displayName = 'MessagingLayout';
 
 export default MessagingLayout;
+
+

@@ -63,7 +63,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { PageHeader } from '@/components/layouts/PageHeader';
 import { getMedicationsDashboardData } from '@/app/medications/actions';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import { useToast } from '@/hooks/useToast';
 import type { 
@@ -224,7 +224,7 @@ export default function MedicationsPage() {
         description="Manage and track all student medications"
         actions={
           <Link href="/medications/new">
-            <Button variant="primary">Add Medication</Button>
+            <Button variant="default">Add Medication</Button>
           </Link>
         }
       />
@@ -296,7 +296,7 @@ export default function MedicationsPage() {
               </p>
               <div className="mt-6">
                 <Link href="/medications/new">
-                  <Button variant="primary">Add Medication</Button>
+                  <Button variant="default">Add Medication</Button>
                 </Link>
               </div>
             </div>
@@ -554,3 +554,6 @@ function MedicationsLoadingSkeleton() {
     </div>
   );
 }
+
+
+

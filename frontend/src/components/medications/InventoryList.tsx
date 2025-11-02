@@ -5,8 +5,8 @@
  */
 
 import React from 'react';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableEmptyState } from '@/components/ui/data/Table';
-import { Button } from '@/components/ui/Button';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableEmptyState } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
 
 export interface InventoryItem {
   id: string;
@@ -105,3 +105,5 @@ export const InventoryList: React.FC<InventoryListProps> = ({
 InventoryList.displayName = 'InventoryList';
 
 export default InventoryList;
+
+

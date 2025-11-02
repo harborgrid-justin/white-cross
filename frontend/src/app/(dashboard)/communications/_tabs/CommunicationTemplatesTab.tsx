@@ -15,13 +15,13 @@
 import React, { useState } from 'react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { Input } from '@/components/ui/Input';
-import { Textarea } from '@/components/ui/Textarea';
-import { Button } from '@/components/ui/Button';
-import { Select, SelectOption } from '@/components/ui/Select';
-import { Card } from '@/components/ui/layout/Card';
-import { Badge } from '@/components/ui/display/Badge';
-import { Modal } from '@/components/ui/overlays/Modal';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Select, SelectOption } from '@/components/ui/select';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Modal } from '@/components/ui/dialog';
 
 const cn = (...inputs: (string | undefined)[]) => twMerge(clsx(inputs));
 
@@ -313,7 +313,7 @@ export const CommunicationTemplatesTab: React.FC<CommunicationTemplatesTabProps>
             Create and manage reusable message templates
           </p>
         </div>
-        <Button variant="primary" onClick={() => setIsCreateModalOpen(true)}>
+        <Button variant="default" onClick={() => setIsCreateModalOpen(true)}>
           <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
@@ -422,7 +422,7 @@ export const CommunicationTemplatesTab: React.FC<CommunicationTemplatesTabProps>
 
               <div className="flex gap-2">
                 <Button
-                  variant="primary"
+                  variant="default"
                   size="sm"
                   fullWidth
                   onClick={() => handleUseTemplate(template)}
@@ -549,7 +549,7 @@ export const CommunicationTemplatesTab: React.FC<CommunicationTemplatesTabProps>
               Cancel
             </Button>
             <Button
-              variant="primary"
+              variant="default"
               onClick={handleCreateTemplate}
               disabled={!newTemplateName || !newTemplateSubject || !newTemplateContent}
             >
@@ -627,7 +627,7 @@ export const CommunicationTemplatesTab: React.FC<CommunicationTemplatesTabProps>
                 Close
               </Button>
               <Button
-                variant="primary"
+                variant="default"
                 onClick={() => {
                   handleUseTemplate(selectedTemplate);
                   setIsPreviewModalOpen(false);
@@ -644,3 +644,7 @@ export const CommunicationTemplatesTab: React.FC<CommunicationTemplatesTabProps>
 };
 
 export default CommunicationTemplatesTab;
+
+
+
+

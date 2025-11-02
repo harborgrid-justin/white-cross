@@ -18,7 +18,7 @@
 import React from 'react';
 import { PageHeader } from '@/components/layouts/PageHeader';
 import { Settings } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 export default function NotificationsPage() {
   return (
@@ -40,3 +40,6 @@ export default function NotificationsPage() {
     </div>
   );
 }
+
+
+

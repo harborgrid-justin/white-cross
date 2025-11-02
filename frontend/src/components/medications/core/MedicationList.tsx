@@ -13,9 +13,9 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableEmptyState, TableLoadingState } from '@/components/ui/data/Table';
-import { Button } from '@/components/ui/Button';
-import { SearchInput } from '@/components/ui/SearchInput';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableEmptyState, TableLoadingState } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { SearchInput } from '@/components/ui/input';
 
 /**
  * Medication data interface
@@ -334,3 +334,5 @@ export const MedicationList: React.FC<MedicationListProps> = ({
 MedicationList.displayName = 'MedicationList';
 
 export default MedicationList;
+
+

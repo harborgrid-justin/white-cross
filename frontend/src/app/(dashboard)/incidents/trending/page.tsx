@@ -5,9 +5,9 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { getTrendingIncidents } from '@/actions/incidents.actions';
-import { Card } from '@/components/ui/layout/Card';
-import { Badge } from '@/components/ui/display/Badge';
+import { getTrendingIncidents } from '@/app/incidents/actions';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 interface TrendItem {
   type: string;

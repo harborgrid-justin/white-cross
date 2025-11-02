@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { Modal } from '@/components/ui/overlays/Modal';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { MedicationDetails, type MedicationDetailData } from '@/components/medications/core/MedicationDetails';
 
 export interface MedicationDetailsModalProps {
@@ -35,20 +35,20 @@ const MedicationDetailsModal: React.FC<MedicationDetailsModalProps> = ({
   if (!medication) return null;
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Medication Details"
-      size="lg"
-    >
-      <MedicationDetails
-        medication={medication}
-        onEdit={onEdit}
-        onDelete={onDelete}
-        onClose={onClose}
-        showActions={showActions}
-      />
-    </Modal>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-4xl">
+        <DialogHeader>
+          <DialogTitle>Medication Details</DialogTitle>
+        </DialogHeader>
+        <MedicationDetails
+          medication={medication}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onClose={onClose}
+          showActions={showActions}
+        />
+      </DialogContent>
+    </Dialog>
   );
 };
 

@@ -23,7 +23,7 @@
  */
 
 import { Suspense } from 'react';
-import { Skeleton } from '@/components/ui/Skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface IncidentsLayoutProps {
   children: React.ReactNode;
@@ -92,3 +92,5 @@ export default function IncidentsLayout({
     </div>
   );
 }
+
+
