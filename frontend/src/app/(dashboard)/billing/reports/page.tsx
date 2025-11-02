@@ -2,11 +2,11 @@
 
 /**
  * Force dynamic rendering for current billing reports
+ * PERFORMANCE: Uses lazy loading to reduce initial bundle size (~640+ lines)
  */
 
-
-import React, { useState, useEffect } from 'react';
-import { BillingReports } from '@/components/pages/Billing';
+import React, { useState, useEffect, Suspense } from 'react';
+import { LazyBillingReports, PageSkeleton } from '@/components/lazy';
 import { fetchBillingReportsDashboardData, type ReportPeriod, type RevenueMetrics, type PaymentMetrics } from './data';
 import { useToast } from '@/hooks/use-toast';
 
@@ -167,20 +167,22 @@ export default function BillingReportsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <BillingReports
-        revenueMetrics={revenueMetrics}
-        paymentMetrics={paymentMetrics}
-        loading={loading}
-        selectedPeriod={selectedPeriod}
-        dateRange={dateRange}
-        chartType={chartType}
-        onPeriodChange={handlePeriodChange}
-        onDateRangeChange={handleDateRangeChange}
-        onChartTypeChange={handleChartTypeChange}
-        onExportReport={handleExportReport}
-        onRefresh={handleRefresh}
-        onViewDetailedReport={handleViewDetailedReport}
-      />
+      <Suspense fallback={<PageSkeleton />}>
+        <LazyBillingReports
+          revenueMetrics={revenueMetrics}
+          paymentMetrics={paymentMetrics}
+          loading={loading}
+          selectedPeriod={selectedPeriod}
+          dateRange={dateRange}
+          chartType={chartType}
+          onPeriodChange={handlePeriodChange}
+          onDateRangeChange={handleDateRangeChange}
+          onChartTypeChange={handleChartTypeChange}
+          onExportReport={handleExportReport}
+          onRefresh={handleRefresh}
+          onViewDetailedReport={handleViewDetailedReport}
+        />
+      </Suspense>
     </div>
   );
 }

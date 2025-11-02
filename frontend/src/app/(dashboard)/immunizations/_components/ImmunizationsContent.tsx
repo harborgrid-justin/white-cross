@@ -37,7 +37,7 @@ import {
   getImmunizationsDashboardData,
   getImmunizationStats,
   type ImmunizationRecord 
-} from '@/app/immunizations/actions';
+} from '@/lib/actions/immunizations.actions';
 
 // Healthcare immunization types and statuses
 type ImmunizationType = 'covid19' | 'flu' | 'hepatitis_b' | 'measles' | 'mumps' | 'rubella' | 'polio' | 'tetanus' | 'diphtheria' | 'pertussis' | 'varicella' | 'meningococcal' | 'hpv' | 'pneumococcal';

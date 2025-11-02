@@ -40,7 +40,7 @@ import {
   getBroadcastStats,
   type Broadcast,
   type BroadcastStats
-} from '@/app/broadcasts/actions';
+} from '@/lib/actions/broadcasts.actions';
 
 // Healthcare broadcast types imported from server actions
 // Component uses transformed data to match UI expectations

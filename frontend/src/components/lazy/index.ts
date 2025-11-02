@@ -36,3 +36,6 @@ export * from './LazyCalendar';
 
 // Page Components
 export * from './LazyPages';
+
+// Modal/Dialog Components
+export * from './LazyModals';

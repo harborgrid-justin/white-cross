@@ -24,7 +24,7 @@
  * @since 1.0.0
  */
 
-import { GenericDomainError } from '@/components/errors/GenericDomainError';
+import { GenericDomainError } from '@/components/shared/errors/GenericDomainError';
 import { AlertTriangle, Pill, Shield, Clock } from 'lucide-react';
 
 export default function MedicationsError({

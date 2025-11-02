@@ -145,7 +145,7 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { getIncident } from '@/actions/incidents.actions';
+import { getIncident } from '@/lib/actions/incidents.actions';
 import { IncidentReportForm } from '@/components/incidents/IncidentReportForm';
 import { notFound } from 'next/navigation';
 

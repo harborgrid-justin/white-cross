@@ -25,7 +25,7 @@ import {
   UserCheck,
   UserX
 } from 'lucide-react';
-import { getStudents } from '@/app/students/actions';
+import { getStudents } from '@/lib/actions/students.actions';
 import type { Student } from '@/types/student.types';
 
 interface StudentsContentProps {

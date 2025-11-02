@@ -30,7 +30,7 @@ import {
   LocationType,
   MedicalResponse,
 } from '@/schemas/incidents/incident.schemas';
-import { createIncidentAction, updateIncidentAction } from '@/app/incidents/actions';
+import { createIncidentAction, updateIncidentAction } from '@/lib/actions/incidents.actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';

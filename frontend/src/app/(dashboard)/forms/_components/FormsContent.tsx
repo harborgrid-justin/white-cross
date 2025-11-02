@@ -42,7 +42,7 @@ import {
   getFormsDashboardData,
   getFormStats,
   type FormDefinition 
-} from '@/app/forms/actions';
+} from '@/lib/actions/forms.actions';
 
 // Healthcare form types and categories
 type FormType = 'enrollment' | 'health_screening' | 'incident_report' | 'permission_slip' | 'medical_consent' | 'emergency_contact' | 'allergy_form' | 'medication_authorization' | 'assessment' | 'survey' | 'other';

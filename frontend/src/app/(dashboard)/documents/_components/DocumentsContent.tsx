@@ -41,7 +41,7 @@ import {
   getDocumentsDashboardData,
   getDocumentStats,
   type DocumentInfo 
-} from '@/app/documents/actions';
+} from '@/lib/actions/documents.actions';
 
 // Document types and categories
 type DocumentType = 'medical_record' | 'immunization_record' | 'medication_record' | 'incident_report' | 'emergency_contact' | 'consent_form' | 'allergy_record' | 'insurance_card' | 'iep_504' | 'health_plan' | 'prescription' | 'lab_result' | 'x_ray' | 'photo' | 'video' | 'other';

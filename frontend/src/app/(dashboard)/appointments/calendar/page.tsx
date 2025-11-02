@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { PageHeader } from '@/components/layouts/PageHeader';
 import { Container } from '@/components/layouts/Container';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AppointmentCalendar } from '@/components/appointments';
+import { AppointmentCalendar } from '@/components/features/appointments';
 import { Skeleton } from '@/components/ui/skeleton';
 import { API_ENDPOINTS } from '@/lib/api-client';
 import { revalidateTag, unstable_cache } from 'next/cache';

@@ -165,6 +165,7 @@ export function SearchBar({
           aria-autocomplete="list"
           aria-controls="search-suggestions"
           aria-expanded={showSuggestionsList}
+          aria-activedescendant={selectedIndex >= 0 ? `search-option-${selectedIndex}` : undefined}
           role="combobox"
         />
 
@@ -205,6 +206,7 @@ export function SearchBar({
               {suggestions.map((suggestion, index) => (
                 <li key={`${suggestion.text}-${index}`}>
                   <button
+                    id={`search-option-${index}`}
                     onClick={() => handleSuggestionClick(suggestion)}
                     onMouseEnter={() => setSelectedIndex(index)}
                     className={clsx(
@@ -289,6 +291,7 @@ export function SearchBarWithEntity({
         value={entityType}
         onChange={(e) => onEntityTypeChange(e.target.value as SearchEntityType)}
         className="px-3 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        aria-label="Filter search by type"
       >
         {availableTypes.map((type) => (
           <option key={type} value={type}>

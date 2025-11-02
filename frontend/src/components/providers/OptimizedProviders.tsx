@@ -140,5 +140,5 @@ export function OptimizedProviders({ children }: ProvidersProps) {
  * Standard Providers Export (for backward compatibility)
  * Exports both standard and optimized providers
  */
-export { Providers } from '../providers'; // Re-export standard providers
+export { Providers } from '@/app/providers'; // Re-export standard providers from app
 export default OptimizedProviders;

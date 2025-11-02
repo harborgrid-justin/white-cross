@@ -14,7 +14,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MessageComposer } from '@/components/communications/MessageComposer';
+import { MessageComposer } from '@/components/features/communication/components/MessageComposer';
 import {
   getMessageById,
   markMessageAsRead,

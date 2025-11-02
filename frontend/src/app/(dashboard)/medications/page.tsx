@@ -62,7 +62,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { PageHeader } from '@/components/layouts/PageHeader';
-import { getMedicationsDashboardData } from '@/app/medications/actions';
+import { getMedicationsDashboardData } from '@/lib/actions/medications.actions';
 import { Button } from '@/components/ui/button';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import { useToast } from '@/hooks/useToast';

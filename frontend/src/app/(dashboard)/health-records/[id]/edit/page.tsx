@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, Save, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
-import { updateHealthRecordAction } from '@/app/health-records/actions';
+import { updateHealthRecordAction } from '@/lib/actions/health-records.actions';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 

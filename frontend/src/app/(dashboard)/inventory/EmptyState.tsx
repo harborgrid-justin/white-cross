@@ -7,6 +7,8 @@
  * @module EmptyState
  */
 
+'use client';
+
 import React from 'react';
 
 export interface EmptyStateProps {

@@ -9,7 +9,7 @@ import React from 'react';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { getStudent } from '@/app/students/actions';
+import { getStudent } from '@/lib/actions/students.actions';
 import { StudentForm } from '@/components/features/students/StudentForm';
 import { ChevronLeft } from 'lucide-react';
 

@@ -30,7 +30,7 @@
  * @see {@link https://nextjs.org/docs/app/api-reference/file-conventions/error} Next.js Error Handling
  */
 
-import { GenericDomainError } from '@/components/errors/GenericDomainError';
+import { GenericDomainError } from '@/components/shared/errors/GenericDomainError';
 import { Package } from 'lucide-react';
 
 /**

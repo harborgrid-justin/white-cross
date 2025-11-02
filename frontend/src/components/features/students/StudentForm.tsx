@@ -15,7 +15,7 @@ import {
   StudentFormSchema,
   type StudentFormInput
 } from '@/lib/validations/student.schema';
-import { createStudent, updateStudent } from '@/app/students/actions';
+import { createStudent, updateStudent } from '@/lib/actions/students.actions';
 import type { Student } from '@/types/student.types';
 
 // UI Components

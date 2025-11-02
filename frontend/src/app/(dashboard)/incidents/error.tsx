@@ -60,7 +60,7 @@
  * ```
  */
 
-import { GenericDomainError } from '@/components/errors/GenericDomainError';
+import { GenericDomainError } from '@/components/shared/errors/GenericDomainError';
 import { AlertCircle } from 'lucide-react';
 
 /**

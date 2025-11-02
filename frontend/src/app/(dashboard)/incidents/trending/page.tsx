@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { getTrendingIncidents } from '@/app/incidents/actions';
+import { getTrendingIncidents } from '@/lib/actions/incidents.actions';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 

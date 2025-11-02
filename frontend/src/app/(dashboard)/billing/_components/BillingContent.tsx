@@ -38,7 +38,7 @@ import {
   getBillingStats,
   type BillingRecord,
   type BillingStats
-} from '@/app/billing/actions';
+} from '@/lib/actions/billing.actions';
 
 // Healthcare billing types imported from server actions
 

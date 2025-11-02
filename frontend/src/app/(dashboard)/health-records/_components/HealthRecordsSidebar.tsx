@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { getHealthRecordsStats } from '@/app/health-records/actions';
+import { getHealthRecordsStats } from '@/lib/actions/health-records.actions';
 import { 
   FileText, 
   Heart, 

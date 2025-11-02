@@ -50,6 +50,18 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Handle escape key to close dropdown
+  useEffect(() => {
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isOpen) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscapeKey);
+    return () => document.removeEventListener('keydown', handleEscapeKey);
+  }, [isOpen]);
+
   // Filter notifications based on active tab
   const filteredNotifications = activeTab === 'unread'
     ? notifications.filter(n => n.status !== 'read')
@@ -61,7 +73,10 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-        aria-label="Notifications"
+        aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
+        aria-expanded={isOpen}
+        aria-haspopup="dialog"
+        aria-controls="notification-dropdown"
       >
         <svg
           className="w-6 h-6"
@@ -86,7 +101,12 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
 
       {/* Dropdown panel */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+        <div
+          id="notification-dropdown"
+          role="dialog"
+          aria-label="Notifications panel"
+          className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50"
+        >
           {/* Header */}
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between mb-3">
@@ -102,8 +122,11 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
             </div>
 
             {/* Tabs */}
-            <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
+            <div className="flex space-x-1 bg-gray-100 rounded-lg p-1" role="tablist" aria-label="Notification filters">
               <button
+                role="tab"
+                aria-selected={activeTab === 'all'}
+                aria-controls="notifications-panel"
                 onClick={() => setActiveTab('all')}
                 className={`
                   flex-1 px-3 py-1.5 text-sm font-medium rounded-md transition-colors
@@ -116,6 +139,9 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                 All
               </button>
               <button
+                role="tab"
+                aria-selected={activeTab === 'unread'}
+                aria-controls="notifications-panel"
                 onClick={() => setActiveTab('unread')}
                 className={`
                   flex-1 px-3 py-1.5 text-sm font-medium rounded-md transition-colors
@@ -131,11 +157,16 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
           </div>
 
           {/* Notifications list */}
-          <div className="max-h-96 overflow-y-auto p-4">
+          <div
+            id="notifications-panel"
+            role="tabpanel"
+            aria-label={`${activeTab === 'all' ? 'All' : 'Unread'} notifications`}
+            className="max-h-96 overflow-y-auto p-4"
+          >
             {isLoading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-                <p className="text-sm text-gray-500 mt-2">Loading...</p>
+              <div className="text-center py-8" role="status" aria-live="polite">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto" aria-hidden="true"></div>
+                <p className="text-sm text-gray-500 mt-2">Loading notifications...</p>
               </div>
             ) : (
               <NotificationList

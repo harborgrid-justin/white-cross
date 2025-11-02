@@ -36,8 +36,8 @@
  */
 
 import React from 'react';
-import { getInventoryDashboardStats } from '@/actions/alerts.actions';
-import { getLowStockAlerts, getExpirationAlerts } from '@/actions/alerts.actions';
+import { getInventoryDashboardStats } from '@/lib/actions/alerts.actions';
+import { getLowStockAlerts, getExpirationAlerts } from '@/lib/actions/alerts.actions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';

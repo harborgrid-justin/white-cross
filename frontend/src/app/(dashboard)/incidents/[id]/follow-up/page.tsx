@@ -106,7 +106,7 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { listFollowUpActions } from '@/app/incidents/actions';
+import { listFollowUpActions } from '@/lib/actions/incidents.actions';
 import { Card } from '@/components/ui/layout/Card';
 import { Badge } from '@/components/ui/display/Badge';
 import { Button } from '@/components/ui/button';

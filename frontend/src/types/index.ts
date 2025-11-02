@@ -1,171 +1,146 @@
 /**
- * WF-IDX-326 | index.ts - React component or utility module
- * Purpose: react component or utility module
- * Upstream: React, external libs | Dependencies: React ecosystem
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: interfaces | Key Features: Standard module
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
+ * Types Module - Main Export
+ *
+ * Central export point for all TypeScript type definitions in the application.
+ * This module provides a clean, organized interface to import types throughout the codebase.
+ *
+ * ## Directory Structure
+ *
+ * - `core/` - Foundational types (common, api, state, errors, etc.)
+ * - `domain/` - Business domain types (students, medications, appointments, etc.)
+ * - `augmentations/` - Third-party library type declarations
+ *
+ * ## Usage
+ *
+ * ```typescript
+ * // Import from main index (recommended)
+ * import { Student, User, ApiResponse } from '@/types';
+ *
+ * // Import from specific modules (when avoiding namespace pollution)
+ * import { Student } from '@/types/domain';
+ * import { ApiResponse } from '@/types/core';
+ * ```
+ *
+ * @module types
  */
 
-// Central types export file for the White Cross healthcare platform
-// Re-exports all types from unified type system
+// ============================================================================
+// CORE TYPES
+// ============================================================================
 
-// IMPORTANT: Export common and api types first. Domain-specific files should NOT
-// re-export common types to avoid TS2308 "already exported" errors.
-// If you need types from common, import them directly from './common' or use this index.
+/**
+ * Core types include foundational types used across the entire application:
+ * - Common types (BaseEntity, User, enums, etc.)
+ * - API types (responses, mutations, requests)
+ * - State management types
+ * - Error handling types
+ * - Utility types
+ */
+export * from './core';
 
-// Re-export common base types
-export * from './common'
+// ============================================================================
+// DOMAIN TYPES
+// ============================================================================
 
-// Re-export API types
-export * from './api'
+/**
+ * Domain types include business-specific entities and workflows:
+ * - Students
+ * - Medications
+ * - Appointments
+ * - Health Records
+ * - Incidents
+ * - And more...
+ */
+export * from './domain';
 
-// Re-export domain-specific types
-// NOTE: Wildcard exports commented out to resolve TS2308 duplicate export errors
-// These domain files re-export types already in common/api, causing conflicts
-// Consumers should import from './common', './api', or specific domain files directly
-// TODO: Refactor domain files to not re-export common/api types
-// export * from './appointments'
-// export * from './administration'
-// export * from './communication'
-// export * from './incidents'
-// export * from './compliance'
-// export * from './reports'
-// export * from './dashboard'
-// export * from './integrations'
-// export * from './vendors'
-// export * from './purchaseOrders'
-// export * from './inventory'
+// ============================================================================
+// BACKWARD COMPATIBILITY EXPORTS
+// ============================================================================
 
-// Export appointment-specific types (avoiding enum conflicts with common.ts)
+/**
+ * Legacy exports for backward compatibility.
+ * These re-export commonly used types from their new locations.
+ * @deprecated Import from '@/types/core' or '@/types/domain' for better clarity
+ */
+
+// Re-export most commonly used core types at root level for convenience
+export type {
+  // Base types
+  BaseEntity,
+  BasePersonEntity,
+  BaseAddressEntity,
+  BaseAuditEntity,
+
+  // User and authentication
+  User,
+  UserRole,
+
+  // API types
+  ApiResponse,
+  ApiError,
+  PaginatedResponse,
+  PaginationResponse,
+  PaginationParams,
+
+  // Common enums
+  Gender,
+  Priority,
+  Status,
+
+  // Utility types
+  CreateRequest,
+  UpdateRequest,
+} from './core/common';
+
+// Re-export most commonly used domain types at root level
+export type {
+  Student,
+  EmergencyContact,
+} from './domain/student.types';
+
 export type {
   Appointment,
-  AppointmentReminder,
-  AppointmentWaitlist,
-  NurseAvailability,
-  AvailabilitySlot,
-  CreateAppointmentData,
-  UpdateAppointmentData,
-  AppointmentFilters,
-  NurseAvailabilityData,
-  WaitlistEntryData,
-  WaitlistFilters,
-  ReminderData,
-  RecurrencePattern,
-  RecurringAppointmentData,
-  AppointmentStatistics,
-  ReminderProcessingResult,
-  ConflictCheckResult,
-  CalendarExportOptions,
-  AppointmentFormData,
-  WaitlistFormData,
-  AvailabilityFormData,
-  PopulatedAppointment,
-  PopulatedWaitlistEntry,
-  AppointmentCalendarEvent,
-  AppointmentTimeSlot,
-  AppointmentNotification,
-} from './appointments'
-
-// Re-export appointment enums (these take precedence over common.ts type aliases)
-export {
   AppointmentType,
   AppointmentStatus,
-  WaitlistPriority,
-  WaitlistStatus,
-  ReminderStatus,
-  MessageType,
-  RecurrenceFrequency,
-  APPOINTMENT_VALIDATION,
-  APPOINTMENT_STATUS_TRANSITIONS,
-} from './appointments'
+} from './domain/appointments';
 
-// Safe exports (no conflicts with common/api)
-export * from './analytics'
-export * from './accessControl'
-// export * from './budget' // Conflicts: BudgetCategory
-export * from './state'
-export * from './navigation'
-export * from './cache'
-// export * from './healthRecords' // Conflicts: MedicationAdherence, Allergy, ChronicCondition, etc.
-// Export specific health records types that are needed in schemas
-export type { AllergyType, HealthRecordType, VaccinationComplianceStatus } from './healthRecords'
-export * from './documents'
-// export * from './student.types' // Conflicts: Student, EmergencyContact, Gender, etc.
-
-// Re-export medication-specific types (avoiding duplicates with api.ts)
 export type {
-  MedicationTab,
-  DosageForm,
-  AdministrationRoute,
-  SeverityLevel,
-  AdverseReactionSeverity,
-  MedicationLogStatus,
-  MedicationLog,
-  MedicationAdministrationData,
-  AdverseReactionData,
-  PrescriptionData,
-  InventoryFormData,
-  FormErrors,
-  MedicationFormErrors,
-  StudentMedicationFormErrors,
-  AdverseReactionFormErrors,
-  MedicationsResponse,
-  StudentMedicationsResponse,
-  InventoryResponse,
-  RemindersResponse,
-  AdverseReactionsResponse,
-  MedicationScheduleResponse,
-  MedicationAlertsResponse,
-  MedicationFormOptions,
-  MedicationTabConfig,
-  MedicationStats,
-  MedicationSearchFilters,
-  InventoryFilters,
-  MedicationEventHandlers,
-  InventoryEventHandlers,
-  ReminderEventHandlers,
-  AdverseReactionEventHandlers,
-  TabContentProps,
-  ModalProps,
-  MedicationModalProps,
-  AdverseReactionModalProps,
-  FiveRightsValidation,
-  UseMedicationsDataReturn,
-  UseFormValidationReturn,
-  UseToastReturn
-} from './medications'
+  Incident,
+  IncidentType,
+  IncidentSeverity,
+} from './domain/incidents';
 
-// Legacy ApiResponse interface for backward compatibility
-export interface ApiResponse<T> {
-  success: boolean
-  data?: T
-  error?: {
-    message: string
-  }
-  errors?: Array<{
-    field: string
-    message: string
-  }>
-}
+// ============================================================================
+// TYPE GUARDS AND UTILITIES
+// ============================================================================
 
-// Legacy types that may still be used in older components
-// These should gradually be migrated to use the unified types above
+/**
+ * Export type guards and utility functions from API module
+ */
+export {
+  isApiResponse,
+  isSuccessResponse,
+  isErrorResponse,
+  isPaginatedResponse,
+  isMutationSuccess,
+  isMutationError,
+} from './core/api';
 
-export interface LegacyMedicationWithCount {
-  id: string
-  name: string
-  genericName?: string
-  dosageForm: string
-  strength: string
-  manufacturer?: string
-  isControlled: boolean
-  _count?: {
-    studentMedications: number
-  }
-  createdAt: string
-  updatedAt: string
-}
+// ============================================================================
+// MODULE AUGMENTATIONS
+// ============================================================================
+
+/**
+ * Module augmentations for third-party libraries are automatically loaded
+ * by TypeScript compiler. No explicit exports needed.
+ *
+ * Location: ./augmentations/
+ * Files:
+ * - apollo-client.d.ts
+ * - react-router-dom.d.ts
+ * - tanstack-react-query.d.ts
+ * - sentry.d.ts
+ * - zod.d.ts
+ * - notification-api.d.ts
+ * - react-dom.d.ts
+ */

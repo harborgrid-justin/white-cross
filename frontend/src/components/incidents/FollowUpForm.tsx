@@ -16,7 +16,7 @@ import {
   FollowUpActionType,
   FollowUpPriority,
 } from '@/schemas/incidents/follow-up.schemas';
-import { createFollowUpAction } from '@/app/incidents/actions';
+import { createFollowUpAction } from '@/lib/actions/incidents.actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';

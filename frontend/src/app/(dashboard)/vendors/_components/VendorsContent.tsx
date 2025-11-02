@@ -58,7 +58,7 @@ import {
   type Vendor as ServerVendor,
   type VendorAnalytics,
   type VendorFilters 
-} from '@/app/vendors/actions'
+} from '@/lib/actions/vendors.actions'
 
 /**
  * Vendor contact information interface
