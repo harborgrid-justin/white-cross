@@ -13,7 +13,7 @@ import { PageHeader } from '@/components/layouts/PageHeader';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/layout/Card';
 import { Button } from '@/components/ui/button';
 import { Edit, AlertTriangle } from 'lucide-react';
-import { SchedulingForm } from '@/components/appointments';
+import { SchedulingForm } from '@/components/features/appointments';
 import { apiClient, API_ENDPOINTS } from '@/lib/api-client';
 import { Appointment, appointmentUtils } from '../../data';
 

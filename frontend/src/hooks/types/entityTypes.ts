@@ -1,19 +1,13 @@
 /**
  * Entity Types
  * Common entity type definitions
+ *
+ * Re-exports from the canonical type location
  */
 
-export interface BaseEntity {
-  id: string;
-  createdAt: string;
-  updatedAt: string;
-}
+// Import from canonical location
+export type { BaseEntity, BaseAuditEntity as EntityWithMetadata } from '@/types/core/common';
 
-export interface EntityWithMetadata extends BaseEntity {
-  createdBy: string;
-  updatedBy?: string;
-  version: number;
-}
-
+// Local type aliases
 export type EntityId = string;
 export type EntityStatus = 'active' | 'inactive' | 'archived' | 'deleted';

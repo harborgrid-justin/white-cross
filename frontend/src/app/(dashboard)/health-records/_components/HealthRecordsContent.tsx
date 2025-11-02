@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 
 // Import server actions
-import { getHealthRecordsAction } from '@/app/health-records/actions';
+import { getHealthRecordsAction } from '@/lib/actions/health-records.actions';
 
 // Import types - interface that matches the server response structure
 interface HealthRecord {

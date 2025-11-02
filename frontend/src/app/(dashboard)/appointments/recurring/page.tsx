@@ -13,7 +13,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Repeat, Calendar, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
-import { RecurringAppointmentManager } from '@/components/appointments';
+import { RecurringAppointmentManager } from '@/components/features/appointments';
 import { apiClient, API_ENDPOINTS } from '@/lib/api-client';
 
 export default function RecurringAppointmentsPage() {

@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BroadcastForm } from '@/components/communications/BroadcastForm';
+import { BroadcastForm } from '@/components/features/communication/components/BroadcastForm';
 
 export function NewBroadcastContent() {
   const router = useRouter();

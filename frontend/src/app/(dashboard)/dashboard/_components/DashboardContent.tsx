@@ -63,7 +63,7 @@ import {
   type RecentActivity as RecentActivityType,
   type SystemStatus,
   type DashboardFilters
-} from '@/app/dashboard/actions';
+} from '@/lib/actions/dashboard.actions';
 
 // Types now imported from actions
 

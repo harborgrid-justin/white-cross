@@ -29,13 +29,13 @@
  * - Sanitizes error messages before display
  *
  * @module app/documents/error
- * @requires @/components/errors/GenericDomainError - Reusable error component
+ * @requires @/components/shared/errors/GenericDomainError - Reusable error component
  * @requires lucide-react - Icon library for visual feedback
  *
  * @see {@link https://nextjs.org/docs/app/building-your-application/routing/error-handling|Next.js Error Handling}
  */
 
-import { GenericDomainError } from '@/components/errors/GenericDomainError';
+import { GenericDomainError } from '@/components/shared/errors/GenericDomainError';
 import { FileText } from 'lucide-react';
 
 /**

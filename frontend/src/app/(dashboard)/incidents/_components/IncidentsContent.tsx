@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getIncidents } from '@/app/incidents/actions';
+import { getIncidents } from '@/lib/actions/incidents.actions';
 import { 
   AlertTriangle, 
   FileText, 

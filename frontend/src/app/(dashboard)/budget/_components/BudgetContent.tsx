@@ -6,11 +6,11 @@
 
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useTransition } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
+import {
   DollarSign,
   TrendingUp,
   TrendingDown,
@@ -33,6 +33,8 @@ import {
   FileText,
   Eye
 } from 'lucide-react';
+import { getBudgetSummary, getBudgetCategories, type BudgetCategory as BudgetCategoryType, type BudgetSummary as BudgetSummaryType } from '@/lib/actions/budget.actions';
+import { useQuery } from '@tanstack/react-query';
 
 interface BudgetContentProps {
   searchParams: {
@@ -48,153 +50,25 @@ interface BudgetContentProps {
   };
 }
 
-interface BudgetSummary {
-  fiscalYear: number;
-  totalAllocated: number;
-  totalSpent: number;
-  totalRemaining: number;
-  utilizationPercentage: number;
-  categoryCount: number;
-  overBudgetCount: number;
-  status: BudgetStatus;
-}
-
-interface BudgetCategory {
-  id: string;
-  name: string;
-  description: string;
-  fiscalYear: number;
-  allocatedAmount: number;
-  spentAmount: number;
-  remainingAmount: number;
-  utilizationPercentage: number;
-  status: BudgetStatus;
-  isActive: boolean;
-  department?: string;
-  lastUpdated: string;
-  transactions: BudgetTransaction[];
-}
-
-interface BudgetTransaction {
-  id: string;
-  amount: number;
-  description: string;
-  date: string;
-  vendor?: string;
-  type: 'EXPENSE' | 'ALLOCATION' | 'TRANSFER' | 'REFUND';
-  approvalStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
-}
-
-type BudgetStatus = 'UNDER_BUDGET' | 'ON_TRACK' | 'APPROACHING_LIMIT' | 'OVER_BUDGET' | 'CRITICAL';
-
-// Mock data for comprehensive healthcare budget management
-const mockBudgetSummary: BudgetSummary = {
-  fiscalYear: 2025,
-  totalAllocated: 2500000,
-  totalSpent: 1475000,
-  totalRemaining: 1025000,
-  utilizationPercentage: 59.0,
-  categoryCount: 15,
-  overBudgetCount: 2,
-  status: 'ON_TRACK'
-};
-
-const mockCategories: BudgetCategory[] = [
-  {
-    id: '1',
-    name: 'Medical Supplies',
-    description: 'General medical supplies and consumables',
-    fiscalYear: 2025,
-    allocatedAmount: 350000,
-    spentAmount: 285000,
-    remainingAmount: 65000,
-    utilizationPercentage: 81.4,
-    status: 'ON_TRACK',
-    isActive: true,
-    department: 'Health Services',
-    lastUpdated: '2025-01-15T10:00:00Z',
-    transactions: []
-  },
-  {
-    id: '2',
-    name: 'Medications & Pharmaceuticals',
-    description: 'Prescription drugs and over-the-counter medications',
-    fiscalYear: 2025,
-    allocatedAmount: 750000,
-    spentAmount: 715000,
-    remainingAmount: 35000,
-    utilizationPercentage: 95.3,
-    status: 'APPROACHING_LIMIT',
-    isActive: true,
-    department: 'Health Services',
-    lastUpdated: '2025-01-15T10:00:00Z',
-    transactions: []
-  },
-  {
-    id: '3',
-    name: 'Emergency & First Aid',
-    description: 'Emergency response supplies and first aid equipment',
-    fiscalYear: 2025,
-    allocatedAmount: 125000,
-    spentAmount: 138000,
-    remainingAmount: -13000,
-    utilizationPercentage: 110.4,
-    status: 'OVER_BUDGET',
-    isActive: true,
-    department: 'Emergency Services',
-    lastUpdated: '2025-01-15T10:00:00Z',
-    transactions: []
-  },
-  {
-    id: '4',
-    name: 'Medical Equipment',
-    description: 'Medical devices, diagnostic equipment, and maintenance',
-    fiscalYear: 2025,
-    allocatedAmount: 400000,
-    spentAmount: 189000,
-    remainingAmount: 211000,
-    utilizationPercentage: 47.3,
-    status: 'UNDER_BUDGET',
-    isActive: true,
-    department: 'Health Services',
-    lastUpdated: '2025-01-15T10:00:00Z',
-    transactions: []
-  },
-  {
-    id: '5',
-    name: 'Health Screenings',
-    description: 'Annual health screenings and diagnostic services',
-    fiscalYear: 2025,
-    allocatedAmount: 200000,
-    spentAmount: 148000,
-    remainingAmount: 52000,
-    utilizationPercentage: 74.0,
-    status: 'ON_TRACK',
-    isActive: true,
-    department: 'Health Services',
-    lastUpdated: '2025-01-15T10:00:00Z',
-    transactions: []
-  }
-];
+// Re-export types from server actions
+type BudgetSummary = BudgetSummaryType;
+type BudgetCategory = BudgetCategoryType;
+type BudgetStatus = BudgetCategory['status'];
 
 function getStatusBadgeVariant(status: BudgetStatus) {
   switch (status) {
-    case 'UNDER_BUDGET': return 'info';
-    case 'ON_TRACK': return 'success';
-    case 'APPROACHING_LIMIT': return 'warning';
-    case 'OVER_BUDGET': return 'danger';
-    case 'CRITICAL': return 'danger';
+    case 'under_budget': return 'info';
+    case 'on_track': return 'success';
+    case 'over_budget': return 'danger';
     default: return 'secondary';
   }
 }
 
 function getStatusIcon(status: BudgetStatus) {
   switch (status) {
-    case 'UNDER_BUDGET': return TrendingDown;
-    case 'ON_TRACK': return CheckCircle;
-    case 'APPROACHING_LIMIT': return AlertTriangle;
-    case 'OVER_BUDGET': return TrendingUp;
-    case 'CRITICAL': return AlertTriangle;
+    case 'under_budget': return TrendingDown;
+    case 'on_track': return CheckCircle;
+    case 'over_budget': return TrendingUp;
     default: return CheckCircle;
   }
 }
@@ -213,25 +87,36 @@ function formatPercentage(percentage: number) {
 }
 
 export function BudgetContent({ searchParams }: BudgetContentProps) {
-  const [budgetSummary, setBudgetSummary] = useState<BudgetSummary | null>(null);
-  const [categories, setCategories] = useState<BudgetCategory[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedFiscalYear, setSelectedFiscalYear] = useState(2025);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<BudgetStatus | 'ALL'>('ALL');
 
   const fiscalYears = [2023, 2024, 2025, 2026];
 
-  useEffect(() => {
-    // Simulate API call
-    const timer = setTimeout(() => {
-      setBudgetSummary(mockBudgetSummary);
-      setCategories(mockCategories);
-      setLoading(false);
-    }, 800);
+  // Fetch budget summary using server action wrapped in TanStack Query
+  const { data: budgetSummary, isLoading: summaryLoading } = useQuery({
+    queryKey: ['budgetSummary', selectedFiscalYear],
+    queryFn: async () => {
+      const summary = await getBudgetSummary({ fiscalYear: selectedFiscalYear });
+      return summary;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
-    return () => clearTimeout(timer);
-  }, [searchParams, selectedFiscalYear]);
+  // Fetch budget categories using server action wrapped in TanStack Query
+  const { data: categories = [], isLoading: categoriesLoading } = useQuery({
+    queryKey: ['budgetCategories', selectedFiscalYear, filterStatus],
+    queryFn: async () => {
+      const filters = {
+        ...(filterStatus !== 'ALL' && { status: filterStatus }),
+      };
+      const cats = await getBudgetCategories(filters);
+      return cats;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const loading = summaryLoading || categoriesLoading;
 
   const filteredCategories = useMemo(() => {
     return categories.filter((category) => {

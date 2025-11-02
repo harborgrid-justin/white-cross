@@ -45,7 +45,7 @@ import {
   cancelAppointment,
   type Appointment,
   type CreateAppointmentData
-} from '@/app/appointments/actions';
+} from '@/lib/actions/appointments.actions';
 
 // Healthcare appointment types and statuses
 type AppointmentType = 'routine_checkup' | 'medication_administration' | 'injury_assessment' | 'health_screening' | 'immunization' | 'counseling' | 'emergency' | 'follow_up' | 'consultation' | 'physical_exam';

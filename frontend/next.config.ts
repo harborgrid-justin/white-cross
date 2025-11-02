@@ -117,11 +117,15 @@ const nextConfig: NextConfig = {
     optimizePackageImports: [
       'lucide-react',
       '@headlessui/react',
+      '@radix-ui/react-icons',
       'recharts',
       'date-fns',
       'lodash',
       '@tanstack/react-query',
       'react-hook-form',
+      'framer-motion',
+      'rxjs',
+      '@apollo/client',
     ],
 
     // Enable partial pre-rendering (Next.js 16+)

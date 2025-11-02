@@ -15,7 +15,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { appointmentCreateSchema } from '@/schemas/appointment.schemas';
 import { checkConflict, findAvailableSlots } from '@/lib/appointments/conflicts';
-import { createAppointment, updateAppointment } from '@/actions/appointments.actions';
+import { createAppointment, updateAppointment } from '@/lib/actions/appointments.actions';
 import { toast } from 'react-hot-toast';
 import type { z } from 'zod';
 

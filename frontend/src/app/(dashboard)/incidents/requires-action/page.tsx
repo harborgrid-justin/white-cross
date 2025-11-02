@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { listIncidents } from '@/app/incidents/actions';
+import { listIncidents } from '@/lib/actions/incidents.actions';
 import { IncidentCard } from '@/components/incidents/IncidentCard';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';

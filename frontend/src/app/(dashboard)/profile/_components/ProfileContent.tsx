@@ -50,7 +50,7 @@ import {
   type ProfileSettings,
   type SecurityLog,
   type ActiveSession
-} from '@/app/profile/actions';
+} from '@/lib/actions/profile.actions';
 
 interface ProfileContentProps {
   searchParams: { [key: string]: string | string[] | undefined };

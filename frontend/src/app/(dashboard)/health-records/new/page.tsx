@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Save, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
-import { createHealthRecordAction } from '@/app/health-records/actions';
+import { createHealthRecordAction } from '@/lib/actions/health-records.actions';
 
 export default function NewHealthRecordPage() {
   const router = useRouter();

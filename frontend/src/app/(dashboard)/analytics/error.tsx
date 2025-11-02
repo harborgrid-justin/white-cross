@@ -33,7 +33,7 @@
  * @see {@link https://nextjs.org/docs/app/building-your-application/routing/error-handling|Next.js Error Handling}
  */
 
-import { GenericDomainError } from '@/components/errors/GenericDomainError';
+import { GenericDomainError } from '@/components/shared/errors/GenericDomainError';
 import { BarChart3 } from 'lucide-react';
 
 /**

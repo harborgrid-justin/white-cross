@@ -8,11 +8,13 @@
  *
  * @remarks
  * This module provides:
- * - Optimistic update hooks for incidents, witnesses, and follow-up actions
- * - React Context providers for witness statements and follow-up actions
+ * - Optimistic update hooks for incidents
  * - TanStack Query integration with automatic caching and invalidation
- * - Permission-based action assignment and verification workflows
- * - Real-time status tracking and overdue detection
+ * - Permission-based workflows
+ * - Real-time status tracking
+ *
+ * **Note**: Incident context providers (WitnessStatementProvider, FollowUpActionProvider)
+ * have been moved to `@/contexts/incidents` for better organization.
  *
  * @example
  * ```typescript
@@ -22,25 +24,25 @@
  * const { createIncident, isCreating } = useOptimisticIncidents();
  * createIncident.mutate({ studentId, type, description });
  *
- * // Use witness statement context
- * import { WitnessStatementProvider, useWitnessStatements } from '@/hooks/domains/incidents';
- *
- * <WitnessStatementProvider incidentId={id}>
- *   <WitnessStatementsComponent />
- * </WitnessStatementProvider>
- *
- * // Use follow-up actions context
- * import { FollowUpActionProvider, useFollowUpActions } from '@/hooks/domains/incidents';
- *
- * <FollowUpActionProvider initialIncidentId={id}>
- *   <FollowUpActionsComponent />
- * </FollowUpActionProvider>
+ * // For context providers, import from @/contexts/incidents
+ * import {
+ *   WitnessStatementProvider,
+ *   useWitnessStatements,
+ *   FollowUpActionProvider,
+ *   useFollowUpActions
+ * } from '@/contexts/incidents';
  * ```
  */
 
 // Incident Management Hooks with Optimistic Updates
 export * from './mutations/useOptimisticIncidents';
 
-// Context Providers and Hooks for State Management
-export * from './WitnessStatementContext';
-export * from '@/contexts/incidents/FollowUpActionContext';
+// Note: Context providers have been moved to @/contexts/incidents
+// Import from there for WitnessStatementProvider and FollowUpActionProvider
+// For backward compatibility, re-export them here:
+export {
+  WitnessStatementProvider,
+  useWitnessStatements,
+  FollowUpActionProvider,
+  useFollowUpActions,
+} from '@/contexts/incidents';

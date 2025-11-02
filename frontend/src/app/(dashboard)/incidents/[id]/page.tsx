@@ -129,7 +129,7 @@
 
 import React from 'react';
 import { Metadata } from 'next';
-import { getIncident } from '@/actions/incidents.actions';
+import { getIncident } from '@/lib/actions/incidents.actions';
 import { notFound } from 'next/navigation';
 import { Card } from '@/components/ui/layout/Card';
 import { Badge } from '@/components/ui/display/Badge';

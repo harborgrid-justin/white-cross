@@ -24,7 +24,7 @@ import {
   type CalendarEvent,
 } from '@/lib/appointments/calendar';
 import { checkConflict } from '@/lib/appointments/conflicts';
-import { rescheduleAppointment } from '@/actions/appointments.actions';
+import { rescheduleAppointment } from '@/lib/actions/appointments.actions';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 

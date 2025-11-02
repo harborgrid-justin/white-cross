@@ -33,7 +33,7 @@ import { SearchInput } from '@/components/ui/input';
 import { 
   getAppointments,
   type Appointment
-} from '@/app/appointments/actions';
+} from '@/lib/actions/appointments.actions';
 
 // Healthcare appointment types and priorities
 type AppointmentStatus = 'scheduled' | 'confirmed' | 'in-progress' | 'completed' | 'cancelled' | 'no-show' | 'rescheduled';

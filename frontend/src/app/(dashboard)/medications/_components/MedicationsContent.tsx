@@ -30,7 +30,7 @@ import {
   getOverdueMedications,
   administerMedication,
   type AdministerMedicationData
-} from '@/app/medications/actions';
+} from '@/lib/actions/medications.actions';
 import { 
   Pill, 
   Clock, 

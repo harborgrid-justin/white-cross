@@ -5,9 +5,6 @@
  * These components contain domain logic specific to the healthcare/school nurse domain.
  */
 
-// Page Layout Components
-export * from './PageHeader'
-
 // Security and Access Control
 export * from './security'
 
@@ -16,3 +13,6 @@ export * from './errors'
 
 // Data Management
 export * from './data'
+
+// Layout Components (re-export for backward compatibility)
+export { PageHeader } from '../layouts/PageHeader'

@@ -17,7 +17,13 @@
  * - ReportBuilder (1021 lines)
  * - ReportTemplates (1018 lines)
  * - ReportExport (1004 lines)
- * - And other 900+ line components
+ * - BillingDetail (930 lines)
+ * - CommunicationNotifications (963 lines)
+ * - CommunicationHistory (920 lines)
+ * - BillingPayment (802 lines)
+ * - BillingList (762 lines)
+ * - BillingAnalytics (717 lines)
+ * - And other 500+ line components
  *
  * USAGE:
  * ```tsx
@@ -225,6 +231,46 @@ export const LazyBillingPayment = dynamic(
 
 export const LazyBillingAnalytics = dynamic(
   () => import('@/components/pages/Billing/BillingAnalytics'),
+  {
+    loading: () => <PageLoadingFallback />,
+    ssr: false,
+  }
+);
+
+export const LazyBillingReports = dynamic(
+  () => import('@/components/pages/Billing/BillingReports'),
+  {
+    loading: () => <PageLoadingFallback />,
+    ssr: false,
+  }
+);
+
+export const LazyBillingSettings = dynamic(
+  () => import('@/components/pages/Billing/BillingSettings'),
+  {
+    loading: () => <PageLoadingFallback />,
+    ssr: false,
+  }
+);
+
+export const LazyBillingNotifications = dynamic(
+  () => import('@/components/pages/Billing/BillingNotifications'),
+  {
+    loading: () => <PageLoadingFallback />,
+    ssr: false,
+  }
+);
+
+export const LazyBillingInvoiceBuilder = dynamic(
+  () => import('@/components/pages/Billing/BillingInvoiceBuilder'),
+  {
+    loading: () => <PageLoadingFallback />,
+    ssr: false,
+  }
+);
+
+export const LazyBillingList = dynamic(
+  () => import('@/components/pages/Billing/BillingList'),
   {
     loading: () => <PageLoadingFallback />,
     ssr: false,

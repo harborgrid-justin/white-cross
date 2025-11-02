@@ -6,9 +6,13 @@
  * to enable better tree-shaking and reduce bundle size. Each export is explicit to help
  * bundlers identify unused code.
  *
+ * SHADCN/UI BEST PRACTICES:
+ * All shadcn/ui components are in the flat structure at @/components/ui/
+ * Import directly from specific component files for optimal performance.
+ *
  * Import Pattern Examples (RECOMMENDED):
- * - UI Components: import { Button } from '@/components/ui/buttons'
- * - Specific imports: import { LoadingSpinner } from '@/components/ui/feedback'
+ * - UI Components: import { Button } from '@/components/ui/button'
+ * - Specific imports: import { Card } from '@/components/ui/card'
  * - Layout: import { AppLayout } from '@/components/layouts'
  * - Features: Use direct imports from feature directories
  *
@@ -21,20 +25,19 @@
 // These are the most frequently used components across the application.
 // Direct exports here to balance convenience with performance.
 
-// Buttons
-export { Button } from './ui/buttons'
-export { BackButton } from './ui/buttons'
+// Buttons (shadcn/ui - flat structure)
+export { Button } from './ui/button'
 
-// Feedback Components
-export { LoadingSpinner } from './ui/feedback'
-export { EmptyState } from './ui/feedback'
-export { AlertBanner } from './ui/feedback'
-export { Skeleton } from './ui/feedback'
-export { Toast, ToastProvider, useToast } from './ui/feedback'
+// Feedback Components (shadcn/ui)
+export { Skeleton } from './ui/skeleton'
+export { Toaster } from './ui/sonner'
+
+// Custom UI Components
+export { EmptyState } from './ui/empty-state'
+export { Spinner } from './ui/spinner'
 
 // Layout Components
-export { Layout, AppLayout } from './layouts'
-export { PageHeader } from './shared/PageHeader'
+export { Layout, AppLayout, PageHeader } from './layouts'
 
 // ============================================================================
 // ERROR HANDLING & SECURITY
@@ -50,8 +53,11 @@ export { GlobalErrorBoundary } from './shared/errors'
 // PERFORMANCE NOTE:
 // ============================================================================
 // For all other components, import directly from their specific locations:
-// - import { Input } from '@/components/ui/inputs'
-// - import { Card } from '@/components/ui/layout'
+// - import { Input } from '@/components/ui/input'
+// - import { Card } from '@/components/ui/card'
 // - import { StudentList } from '@/components/features/students'
+//
+// Subdirectories (ui/buttons/, ui/inputs/, ui/feedback/, etc.) contain legacy
+// custom implementations. Prefer shadcn/ui components from flat structure.
 //
 // This approach ensures optimal tree-shaking and smaller bundle sizes.

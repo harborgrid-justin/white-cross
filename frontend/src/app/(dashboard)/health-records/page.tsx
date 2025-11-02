@@ -14,7 +14,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Plus, FileHeart, BarChart3 } from 'lucide-react';
 import { HealthRecordsContent } from './_components/HealthRecordsContent';
 import { HealthRecordsFilters } from './_components/HealthRecordsFilters';
-import { getHealthRecordsAction } from '@/app/health-records/actions';
+import { getHealthRecordsAction } from '@/lib/actions/health-records.actions';
 
 export const metadata: Metadata = {
   title: 'Health Records | White Cross',

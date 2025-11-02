@@ -12,7 +12,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { MessageComposer } from '@/components/communications/MessageComposer';
+import { MessageComposer } from '@/components/features/communication/components/MessageComposer';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 

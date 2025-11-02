@@ -34,7 +34,7 @@
  *
  * @module CommunicationsError
  * @requires React
- * @requires @/components/errors/GenericDomainError
+ * @requires @/components/shared/errors/GenericDomainError
  * @requires lucide-react
  *
  * @example
@@ -48,7 +48,7 @@
  * @since 1.0.0
  */
 
-import { GenericDomainError } from '@/components/errors/GenericDomainError';
+import { GenericDomainError } from '@/components/shared/errors/GenericDomainError';
 import { MessageSquare } from 'lucide-react';
 
 /**

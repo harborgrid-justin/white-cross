@@ -75,7 +75,7 @@ import { useRouter } from 'next/navigation';
 import { Plus, Trash2, Archive, MailOpen, Search, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { MessageList } from '@/components/communications/MessageList';
+import { MessageList } from '@/components/features/communication/components/MessageList';
 import {
   Select,
   SelectContent,
