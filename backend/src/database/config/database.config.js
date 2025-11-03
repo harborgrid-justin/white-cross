@@ -9,6 +9,12 @@ module.exports = {
     port: parseInt(process.env.DB_PORT || '5432', 10),
     dialect: 'postgres',
     logging: false,
+    dialectOptions: {
+      ssl: process.env.DB_HOST && process.env.DB_HOST !== 'localhost' ? {
+        require: true,
+        rejectUnauthorized: false,
+      } : false,
+    },
     define: {
       timestamps: true,
       underscored: true,
