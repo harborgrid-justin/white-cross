@@ -67,10 +67,7 @@ export interface UserAttributes {
 export class User extends Model<UserAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
-  @Column({
-    type: DataType.UUID,
-    allowNull: false
-  })
+  @Column(DataType.UUID)
   declare id: string;
 
   @Column({

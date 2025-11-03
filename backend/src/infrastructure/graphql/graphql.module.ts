@@ -38,7 +38,10 @@ import { GraphQLJSON } from 'graphql-scalars';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         // Auto-generate schema from TypeScript classes
-        autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+        // In production or Docker, generate in memory only
+        autoSchemaFile: process.env.NODE_ENV === 'production' || process.env.DOCKER 
+          ? true 
+          : join(process.cwd(), 'src/schema.gql'),
 
         // Sort schema alphabetically for consistency
         sortSchema: true,

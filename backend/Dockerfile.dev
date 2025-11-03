@@ -17,7 +17,8 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install all dependencies (including devDependencies)
-RUN npm ci
+# Use npm install instead of npm ci for development to handle lock file sync issues
+RUN npm install
 
 # Copy source code (for initial build)
 # In development, this will be overridden by volume mount

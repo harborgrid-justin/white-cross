@@ -75,6 +75,7 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: development
+      DOCKER: "true"
       PORT: ${BACKEND_PORT:-3001}
       # Database
       DB_HOST: postgres
@@ -132,13 +133,14 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.dev
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+        NEXT_PUBLIC_API_URL: http://backend:3001
         NEXT_PUBLIC_ENVIRONMENT: development
     container_name: whitecross-frontend-dev
     restart: unless-stopped
     environment:
       NODE_ENV: development
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+      NEXT_PUBLIC_API_URL: http://backend:3001
+      NEXT_PUBLIC_API_BASE_URL: http://backend:3001
       NEXT_PUBLIC_ENVIRONMENT: development
       # Enable Next.js fast refresh
       WATCHPACK_POLLING: ${WATCHPACK_POLLING:-false}

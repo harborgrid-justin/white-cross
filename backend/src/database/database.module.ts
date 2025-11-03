@@ -211,8 +211,8 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
             password: configService.get('DB_PASSWORD'),
             database: configService.get('DB_NAME', 'whitecross'),
             autoLoadModels: true,
-            synchronize: false,
-            alter: false,
+            synchronize: configService.get('NODE_ENV') === 'development',
+            alter: configService.get('NODE_ENV') === 'development',
             logging: configService.get('NODE_ENV') === 'development' ? console.log : false,
             // V6 recommended options
             define: {
