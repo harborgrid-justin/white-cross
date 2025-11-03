@@ -12,7 +12,12 @@ describe('EmailRateLimiterService', () => {
   let configService: ConfigService;
 
   const mockConfigService = {
-    get: jest.fn((key: string, defaultValue?: unknown) => {
+    get: jest.fn(),
+  };
+
+  beforeEach(async () => {
+    // Set up mock implementation fresh for each test
+    mockConfigService.get.mockImplementation((key: string, defaultValue?: unknown) => {
       const config: Record<string, unknown> = {
         EMAIL_RATE_LIMIT_ENABLED: true,
         EMAIL_RATE_LIMIT_GLOBAL_MAX: 100,
@@ -21,10 +26,8 @@ describe('EmailRateLimiterService', () => {
         EMAIL_RATE_LIMIT_RECIPIENT_WINDOW: 3600000, // 1 hour
       };
       return config[key] !== undefined ? config[key] : defaultValue;
-    }),
-  };
+    });
 
-  beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         EmailRateLimiterService,
@@ -37,12 +40,13 @@ describe('EmailRateLimiterService', () => {
 
     // Reset limits before each test
     service.resetAll();
-
-    jest.clearAllMocks();
   });
 
   afterEach(() => {
     service.resetAll();
+    // Clean up the interval to allow Jest to exit cleanly
+    service.onModuleDestroy();
+    jest.clearAllMocks();
   });
 
   it('should be defined', () => {

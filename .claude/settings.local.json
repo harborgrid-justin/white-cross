@@ -3,7 +3,9 @@
     "allow": [
       "Bash(then echo $file)",
       "Bash(cloc:*)",
-      "Bash(/tmp/auth-controller-backup.ts)"
+      "Bash(/tmp/auth-controller-backup.ts)",
+      "Bash(npm ls:*)",
+      "Bash(openssl rand:*)"
     ],
     "deny": [],
     "ask": []

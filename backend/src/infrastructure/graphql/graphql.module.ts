@@ -22,6 +22,7 @@ import { GraphQLModule as NestGraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_PIPE } from '@nestjs/core';
+import { ModuleRef } from '@nestjs/core';
 import { join } from 'path';
 import type { Request, Response } from 'express';
 import { ContactResolver } from './resolvers/contact.resolver';
@@ -46,11 +47,11 @@ import { ComplexityPlugin } from './plugins/complexity.plugin';
     NestGraphQLModule.forRootAsync<ApolloDriverConfig>({
       driver: ApolloDriver,
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: async (configService: ConfigService, moduleRef: ModuleRef) => ({
         // Auto-generate schema from TypeScript classes
         // In production or Docker, generate in memory only
-        autoSchemaFile: process.env.NODE_ENV === 'production' || process.env.DOCKER 
-          ? true 
+        autoSchemaFile: process.env.NODE_ENV === 'production' || process.env.DOCKER
+          ? true
           : join(process.cwd(), 'src/schema.gql'),
 
         // Sort schema alphabetically for consistency
@@ -71,13 +72,18 @@ import { ComplexityPlugin } from './plugins/complexity.plugin';
         // Context builder - extracts request for authentication and creates DataLoaders
         context: ({ req, res }: { req: Request; res: Response }) => {
           // Get DataLoaderFactory from the request scope
-          // Note: This is a simplified approach. In production, you'd inject DataLoaderFactory
-          // properly through dependency injection in the context factory.
+          // Each GraphQL request gets its own DataLoaderFactory instance
+          // This ensures proper caching scope and prevents data leakage between requests
+          const dataLoaderFactory = moduleRef.get(DataLoaderFactory, { strict: false });
+
+          // Create all DataLoaders for this request
+          const loaders = dataLoaderFactory.createLoaders();
+
           return {
             req,
             res,
-            // DataLoaders will be lazily created when needed
-            // This prevents circular dependency issues
+            // Add DataLoaders to context so resolvers can access them
+            loaders,
           };
         },
 
@@ -133,7 +139,7 @@ import { ComplexityPlugin } from './plugins/complexity.plugin';
           dateScalarMode: 'timestamp', // Use timestamps for Date scalars
         },
       }),
-      inject: [ConfigService],
+      inject: [ConfigService, ModuleRef],
     }),
 
     // Import feature modules that provide services

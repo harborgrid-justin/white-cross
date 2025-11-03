@@ -23,7 +23,7 @@ import {
   Gender
 } from '../dto';
 import { StudentService } from '../../../student/student.service';
-import { DataLoaderFactory } from '../dataloaders/dataloader.factory';
+import type { GraphQLContext } from '../types/context.interface';
 
 /**
  * Student Resolver
@@ -33,8 +33,26 @@ import { DataLoaderFactory } from '../dataloaders/dataloader.factory';
 export class StudentResolver {
   constructor(
     private readonly studentService: StudentService,
-    private readonly dataLoaderFactory: DataLoaderFactory,
   ) {}
+
+  /**
+   * Map Contact model to ContactDto
+   * Simplified mapper for field resolvers
+   */
+  private mapContactToDto(contact: any): ContactDto {
+    return {
+      id: contact.id,
+      firstName: contact.firstName,
+      lastName: contact.lastName,
+      email: contact.email ?? undefined,
+      phone: contact.phone ?? undefined,
+      type: contact.type,
+      relationTo: contact.relationTo ?? undefined,
+      isActive: contact.isActive,
+      createdAt: contact.createdAt,
+      updatedAt: contact.updatedAt,
+    } as ContactDto;
+  }
 
   /**
    * Query: Get paginated list of students with optional filtering
@@ -119,17 +137,23 @@ export class StudentResolver {
   /**
    * Field Resolver: Load contacts (guardians) for a student
    *
-   * Uses DataLoader to batch and cache contact queries, preventing N+1 issues.
+   * Uses DataLoader from context to batch and cache contact queries, preventing N+1 issues.
+   * The DataLoader is shared across all field resolvers in this request for optimal batching.
    *
    * @param student - Parent student object
+   * @param context - GraphQL context containing DataLoaders
    * @returns Array of contacts associated with the student
    */
   @ResolveField(() => [ContactDto], { name: 'contacts', nullable: 'items' })
-  async contacts(@Parent() student: StudentDto): Promise<ContactDto[]> {
+  async contacts(
+    @Parent() student: StudentDto,
+    @Context() context: GraphQLContext,
+  ): Promise<ContactDto[]> {
     try {
-      const loader = this.dataLoaderFactory.createContactsByStudentLoader();
-      const contacts = await loader.load(student.id);
-      return contacts || [];
+      // Use the shared DataLoader from context for optimal batching
+      const contacts = await context.loaders.contactsByStudentLoader.load(student.id);
+      // Map Contact entities to ContactDto
+      return (contacts || []).map(contact => this.mapContactToDto(contact));
     } catch (error) {
       console.error(`Error loading contacts for student ${student.id}:`, error);
       return [];
@@ -139,16 +163,21 @@ export class StudentResolver {
   /**
    * Field Resolver: Load medications for a student
    *
-   * Uses DataLoader to batch and cache medication queries.
+   * Uses DataLoader from context to batch and cache medication queries.
+   * The DataLoader is shared across all field resolvers in this request for optimal batching.
    *
    * @param student - Parent student object
+   * @param context - GraphQL context containing DataLoaders
    * @returns Array of medications for the student
    */
   @ResolveField(() => [Object], { name: 'medications', nullable: 'items' })
-  async medications(@Parent() student: StudentDto): Promise<any[]> {
+  async medications(
+    @Parent() student: StudentDto,
+    @Context() context: GraphQLContext,
+  ): Promise<any[]> {
     try {
-      const loader = this.dataLoaderFactory.createMedicationsByStudentLoader();
-      const medications = await loader.load(student.id);
+      // Use the shared DataLoader from context for optimal batching
+      const medications = await context.loaders.medicationsByStudentLoader.load(student.id);
       return medications || [];
     } catch (error) {
       console.error(`Error loading medications for student ${student.id}:`, error);
@@ -159,16 +188,21 @@ export class StudentResolver {
   /**
    * Field Resolver: Load health record for a student
    *
-   * Uses DataLoader to batch and cache health record queries.
+   * Uses DataLoader from context to batch and cache health record queries.
+   * The DataLoader is shared across all field resolvers in this request for optimal batching.
    *
    * @param student - Parent student object
+   * @param context - GraphQL context containing DataLoaders
    * @returns Health record for the student or null
    */
   @ResolveField(() => Object, { name: 'healthRecord', nullable: true })
-  async healthRecord(@Parent() student: StudentDto): Promise<any | null> {
+  async healthRecord(
+    @Parent() student: StudentDto,
+    @Context() context: GraphQLContext,
+  ): Promise<any | null> {
     try {
-      const loader = this.dataLoaderFactory.createHealthRecordsByStudentLoader();
-      const healthRecord = await loader.load(student.id);
+      // Use the shared DataLoader from context for optimal batching
+      const healthRecord = await context.loaders.healthRecordsByStudentLoader.load(student.id);
       return healthRecord;
     } catch (error) {
       console.error(`Error loading health record for student ${student.id}:`, error);
@@ -182,11 +216,15 @@ export class StudentResolver {
    * Efficiently uses the contacts field resolver result.
    *
    * @param student - Parent student object
+   * @param context - GraphQL context containing DataLoaders
    * @returns Number of contacts
    */
   @ResolveField(() => Number, { name: 'contactCount' })
-  async contactCount(@Parent() student: StudentDto): Promise<number> {
-    const contacts = await this.contacts(student);
+  async contactCount(
+    @Parent() student: StudentDto,
+    @Context() context: GraphQLContext,
+  ): Promise<number> {
+    const contacts = await this.contacts(student, context);
     return contacts.length;
   }
 }

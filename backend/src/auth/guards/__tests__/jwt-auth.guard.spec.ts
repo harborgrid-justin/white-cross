@@ -55,6 +55,15 @@ describe('JwtAuthGuard (CRITICAL SECURITY)', () => {
             getAllAndOverride: jest.fn(),
           },
         },
+        {
+          provide: 'TokenBlacklistService',
+          useValue: {
+            isTokenBlacklisted: jest.fn().mockResolvedValue(false),
+            areUserTokensBlacklisted: jest.fn().mockResolvedValue(false),
+            blacklistToken: jest.fn().mockResolvedValue(undefined),
+            blacklistUserTokens: jest.fn().mockResolvedValue(undefined),
+          },
+        },
       ],
     }).compile();
 
