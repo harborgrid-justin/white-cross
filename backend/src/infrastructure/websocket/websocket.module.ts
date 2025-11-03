@@ -8,11 +8,14 @@
  * - WebSocket Gateway for connection handling
  * - WebSocket Service for broadcasting
  * - JWT authentication integration
+ * - Token blacklist verification
+ * - Rate limiting for spam prevention
  * - Global availability for use across all modules
  *
  * Dependencies:
  * - JwtModule: For token verification
  * - ConfigModule: For configuration access
+ * - AuthModule: For token blacklist service
  *
  * Exports:
  * - WebSocketService: For use in other modules to broadcast messages
@@ -48,6 +51,7 @@ import { WebSocketGateway } from './websocket.gateway';
 import { WebSocketService } from './websocket.service';
 import { WsJwtAuthGuard } from './guards';
 import { RateLimiterService } from './services';
+import { AuthModule } from '../../auth/auth.module';
 
 /**
  * WebSocket Module
@@ -56,6 +60,8 @@ import { RateLimiterService } from './services';
 @Global()
 @Module({
   imports: [
+    // Auth Module for token blacklist service
+    AuthModule,
     // JWT Module for authentication
     JwtModule.registerAsync({
       imports: [ConfigModule],
