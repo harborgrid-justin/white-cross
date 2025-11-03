@@ -45,11 +45,11 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useActionState } from 'react';
 import Link from 'next/link';
-import { handleLoginSubmission, clearLoginForm } from './actions';
+import { handleLoginSubmission } from './actions';
 
 /**
  * Hook to get form status in React 19
