@@ -195,4 +195,68 @@ export class MedicationRepository {
     });
     return count > 0;
   }
+
+  /**
+   * Batch find medications by IDs (for DataLoader)
+   * Returns medications in the same order as requested IDs
+   */
+  async findByIds(ids: string[]): Promise<(StudentMedication | null)[]> {
+    try {
+      const medications = await this.studentMedicationModel.findAll({
+        where: {
+          id: { [Op.in]: ids }
+        },
+        include: [
+          { model: Medication, as: 'medication' },
+          { model: Student, as: 'student' },
+        ],
+      });
+
+      // Create a map for O(1) lookup
+      const medicationMap = new Map(medications.map(m => [m.id, m]));
+
+      // Return in same order as requested IDs, null for missing
+      return ids.map(id => medicationMap.get(id) || null);
+    } catch (error) {
+      this.logger.error(`Failed to batch fetch medications: ${error.message}`);
+      throw new Error('Failed to batch fetch medications');
+    }
+  }
+
+  /**
+   * Batch find medications by student IDs (for DataLoader)
+   * Returns array of medication arrays for each student ID
+   */
+  async findByStudentIds(studentIds: string[]): Promise<StudentMedication[][]> {
+    try {
+      const medications = await this.studentMedicationModel.findAll({
+        where: {
+          studentId: { [Op.in]: studentIds },
+          isActive: true
+        },
+        include: [
+          { model: Medication, as: 'medication' },
+        ],
+        order: [['createdAt', 'DESC']]
+      });
+
+      // Group medications by student ID
+      const medicationsByStudent = new Map<string, StudentMedication[]>();
+      medications.forEach(medication => {
+        const studentId = medication.studentId;
+        if (studentId) {
+          if (!medicationsByStudent.has(studentId)) {
+            medicationsByStudent.set(studentId, []);
+          }
+          medicationsByStudent.get(studentId)!.push(medication);
+        }
+      });
+
+      // Return medications array for each student, empty array for missing
+      return studentIds.map(id => medicationsByStudent.get(id) || []);
+    } catch (error) {
+      this.logger.error(`Failed to batch fetch medications by student IDs: ${error.message}`);
+      throw new Error('Failed to batch fetch medications by student IDs');
+    }
+  }
 }

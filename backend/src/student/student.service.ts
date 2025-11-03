@@ -1864,4 +1864,27 @@ export class StudentService {
       this.handleError('Failed to retrieve waitlist status', error);
     }
   }
+
+  /**
+   * Batch find students by IDs (for DataLoader)
+   * Returns students in the same order as requested IDs
+   */
+  async findByIds(ids: string[]): Promise<(Student | null)[]> {
+    try {
+      const students = await this.studentModel.findAll({
+        where: {
+          id: { [Op.in]: ids }
+        }
+      });
+
+      // Create a map for O(1) lookup
+      const studentMap = new Map(students.map(s => [s.id, s]));
+
+      // Return in same order as requested IDs, null for missing
+      return ids.map(id => studentMap.get(id) || null);
+    } catch (error) {
+      this.logger.error(`Failed to batch fetch students: ${error.message}`);
+      throw new BadRequestException('Failed to batch fetch students');
+    }
+  }
 }

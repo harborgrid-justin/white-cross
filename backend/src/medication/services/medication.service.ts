@@ -425,4 +425,24 @@ export class MedicationService {
       );
     }
   }
+
+  /**
+   * Batch find medications by IDs (for DataLoader)
+   * Returns medications in the same order as requested IDs
+   * Delegates to repository for database access
+   */
+  async findByIds(ids: string[]): Promise<(StudentMedication | null)[]> {
+    this.logger.log(`Batch fetching ${ids.length} medications by IDs`);
+    return this.medicationRepository.findByIds(ids);
+  }
+
+  /**
+   * Batch find medications by student IDs (for DataLoader)
+   * Returns array of medication arrays for each student ID
+   * Delegates to repository for database access
+   */
+  async findByStudentIds(studentIds: string[]): Promise<StudentMedication[][]> {
+    this.logger.log(`Batch fetching medications for ${studentIds.length} students`);
+    return this.medicationRepository.findByStudentIds(studentIds);
+  }
 }

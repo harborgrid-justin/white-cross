@@ -1246,4 +1246,66 @@ export class HealthRecordService {
       chronicConditions,
     };
   }
+
+  // ==================== GraphQL Resolver Helper Methods ====================
+
+  /**
+   * Find all health records with pagination and filters (alias for GraphQL resolver)
+   * @param page - Page number
+   * @param limit - Records per page
+   * @param filters - Optional filters
+   * @returns Paginated health records
+   */
+  async findAll(page: number = 1, limit: number = 20, filters: any = {}): Promise<any> {
+    return this.getAllHealthRecords(page, limit, filters);
+  }
+
+  /**
+   * Find single health record by ID (alias for GraphQL resolver)
+   * @param id - Health record UUID
+   * @returns Health record or null
+   */
+  async findOne(id: string): Promise<HealthRecord | null> {
+    return this.getHealthRecordById(id);
+  }
+
+  /**
+   * Find health records by student ID (alias for GraphQL resolver)
+   * @param studentId - Student UUID
+   * @param page - Page number
+   * @param limit - Records per page
+   * @param filters - Optional filters
+   * @returns Paginated health records for student
+   */
+  async findByStudent(studentId: string, page: number = 1, limit: number = 20, filters: any = {}): Promise<any> {
+    return this.getStudentHealthRecords(studentId, page, limit, filters);
+  }
+
+  /**
+   * Create health record (alias for GraphQL resolver)
+   * @param data - Health record creation data
+   * @returns Created health record
+   */
+  async create(data: any): Promise<HealthRecord> {
+    return this.createHealthRecord(data);
+  }
+
+  /**
+   * Update health record (alias for GraphQL resolver)
+   * @param id - Health record UUID
+   * @param data - Update data
+   * @returns Updated health record
+   */
+  async update(id: string, data: any): Promise<HealthRecord> {
+    return this.updateHealthRecord(id, data);
+  }
+
+  /**
+   * Remove health record (alias for GraphQL resolver)
+   * @param id - Health record UUID
+   * @returns void
+   */
+  async remove(id: string): Promise<void> {
+    return this.deleteHealthRecord(id);
+  }
 }

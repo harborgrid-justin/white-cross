@@ -276,4 +276,61 @@ export class ContactService {
 
     return { total, byType };
   }
+
+  /**
+   * Batch find contacts by IDs (for DataLoader)
+   * Returns contacts in the same order as requested IDs
+   */
+  async findByIds(ids: string[]): Promise<(Contact | null)[]> {
+    try {
+      const contacts = await this.contactModel.findAll({
+        where: {
+          id: { [Op.in]: ids }
+        }
+      });
+
+      // Create a map for O(1) lookup
+      const contactMap = new Map(contacts.map(c => [c.id, c]));
+
+      // Return in same order as requested IDs, null for missing
+      return ids.map(id => contactMap.get(id) || null);
+    } catch (error) {
+      this.logger.error(`Failed to batch fetch contacts: ${error.message}`);
+      throw new Error('Failed to batch fetch contacts');
+    }
+  }
+
+  /**
+   * Batch find contacts by student IDs (for DataLoader)
+   * Returns array of contact arrays for each student ID
+   */
+  async findByStudentIds(studentIds: string[]): Promise<Contact[][]> {
+    try {
+      const contacts = await this.contactModel.findAll({
+        where: {
+          relationTo: { [Op.in]: studentIds },
+          isActive: true
+        },
+        order: [['lastName', 'ASC'], ['firstName', 'ASC']]
+      });
+
+      // Group contacts by student ID
+      const contactsByStudent = new Map<string, Contact[]>();
+      contacts.forEach(contact => {
+        const studentId = contact.relationTo;
+        if (studentId) {
+          if (!contactsByStudent.has(studentId)) {
+            contactsByStudent.set(studentId, []);
+          }
+          contactsByStudent.get(studentId)!.push(contact);
+        }
+      });
+
+      // Return contacts array for each student, empty array for missing
+      return studentIds.map(id => contactsByStudent.get(id) || []);
+    } catch (error) {
+      this.logger.error(`Failed to batch fetch contacts by student IDs: ${error.message}`);
+      throw new Error('Failed to batch fetch contacts by student IDs');
+    }
+  }
 }

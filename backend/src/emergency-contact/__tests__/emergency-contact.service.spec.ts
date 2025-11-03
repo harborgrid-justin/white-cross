@@ -14,8 +14,10 @@ import { EmergencyContactService } from '../emergency-contact.service';
 import { getModelToken } from '@nestjs/sequelize';
 import { EmergencyContact } from '../../database/models/emergency-contact.model';
 import { Student } from '../../database/models/student.model';
-import { ContactPriority, VerificationStatus } from '../../contact/enums';
+import { ContactPriority, VerificationStatus, NotificationChannel } from '../../contact/enums';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { EmergencyContactCreateDto } from '../dto/create-emergency-contact.dto';
+import { NotificationDto, NotificationType, NotificationPriority } from '../dto/notification.dto';
 
 describe('EmergencyContactService (CRITICAL HEALTHCARE)', () => {
   let service: EmergencyContactService;
@@ -30,7 +32,7 @@ describe('EmergencyContactService (CRITICAL HEALTHCARE)', () => {
     isActive: true,
   };
 
-  const mockEmergencyContact = {
+  const mockEmergencyContact: Partial<EmergencyContact> & { update: jest.Mock; save: jest.Mock } = {
     id: 'contact-id-123',
     studentId: 'student-id-123',
     firstName: 'Jane',
@@ -44,7 +46,7 @@ describe('EmergencyContactService (CRITICAL HEALTHCARE)', () => {
     verificationStatus: VerificationStatus.VERIFIED,
     update: jest.fn(),
     save: jest.fn(),
-  };
+  } as any;
 
   const mockEmergencyContactModel = {
     findAll: jest.fn(),
@@ -146,7 +148,7 @@ describe('EmergencyContactService (CRITICAL HEALTHCARE)', () => {
   // ==================== CREATION TESTS ====================
 
   describe('createEmergencyContact', () => {
-    const validCreateDto = {
+    const validCreateDto: EmergencyContactCreateDto = {
       studentId: 'student-id-123',
       firstName: 'Jane',
       lastName: 'Doe',
@@ -154,7 +156,7 @@ describe('EmergencyContactService (CRITICAL HEALTHCARE)', () => {
       email: 'jane.doe@example.com',
       relationship: 'Mother',
       priority: ContactPriority.PRIMARY,
-      notificationChannels: ['sms', 'email'],
+      notificationChannels: ['sms', 'email'] as NotificationChannel[],
     };
 
     it('should successfully create emergency contact with valid data', async () => {
@@ -240,12 +242,12 @@ describe('EmergencyContactService (CRITICAL HEALTHCARE)', () => {
     });
 
     it('should validate notification channels', async () => {
-      const invalidChannelsDto = { ...validCreateDto, notificationChannels: ['invalid'] };
+      const invalidChannelsDto = { ...validCreateDto, notificationChannels: ['invalid'] as any };
       mockStudentModel.findOne.mockResolvedValue(mockStudent);
 
-      await expect(service.createEmergencyContact(invalidChannelsDto))
+      await expect(service.createEmergencyContact(invalidChannelsDto as EmergencyContactCreateDto))
         .rejects.toThrow(BadRequestException);
-      await expect(service.createEmergencyContact(invalidChannelsDto))
+      await expect(service.createEmergencyContact(invalidChannelsDto as EmergencyContactCreateDto))
         .rejects.toThrow('Invalid notification channel');
     });
 
@@ -376,19 +378,19 @@ describe('EmergencyContactService (CRITICAL HEALTHCARE)', () => {
   // ==================== NOTIFICATION TESTS ====================
 
   describe('sendEmergencyNotification', () => {
-    const notificationData = {
+    const notificationData: NotificationDto = {
       studentId: 'student-id-123',
-      type: 'medical_emergency',
-      priority: 'urgent',
+      type: NotificationType.EMERGENCY,
+      priority: NotificationPriority.CRITICAL,
       message: 'Student requires immediate medical attention',
-      channels: ['sms', 'email', 'voice'],
+      channels: ['sms', 'email', 'voice'] as NotificationChannel[],
     };
 
     it('should send notifications to all active emergency contacts', async () => {
       const mockContacts = [
         mockEmergencyContact,
         { ...mockEmergencyContact, id: 'contact-2' },
-      ];
+      ] as any;
       jest.spyOn(service, 'getStudentEmergencyContacts').mockResolvedValue(mockContacts);
 
       const result = await service.sendEmergencyNotification('student-id-123', notificationData);
@@ -408,7 +410,7 @@ describe('EmergencyContactService (CRITICAL HEALTHCARE)', () => {
     });
 
     it('should attempt all notification channels (SMS, email, voice)', async () => {
-      jest.spyOn(service, 'getStudentEmergencyContacts').mockResolvedValue([mockEmergencyContact]);
+      jest.spyOn(service, 'getStudentEmergencyContacts').mockResolvedValue([mockEmergencyContact] as any);
 
       const result = await service.sendEmergencyNotification('student-id-123', notificationData);
 
@@ -418,7 +420,7 @@ describe('EmergencyContactService (CRITICAL HEALTHCARE)', () => {
     });
 
     it('should handle SMS failure gracefully and continue with other channels', async () => {
-      jest.spyOn(service, 'getStudentEmergencyContacts').mockResolvedValue([mockEmergencyContact]);
+      jest.spyOn(service, 'getStudentEmergencyContacts').mockResolvedValue([mockEmergencyContact] as any);
 
       const result = await service.sendEmergencyNotification('student-id-123', notificationData);
 
@@ -430,7 +432,7 @@ describe('EmergencyContactService (CRITICAL HEALTHCARE)', () => {
       const mockContacts = [
         { ...mockEmergencyContact, priority: ContactPriority.PRIMARY },
         { ...mockEmergencyContact, id: 'contact-2', priority: ContactPriority.SECONDARY },
-      ];
+      ] as any;
       jest.spyOn(service, 'getStudentEmergencyContacts').mockResolvedValue(mockContacts);
 
       const result = await service.sendEmergencyNotification('student-id-123', notificationData);

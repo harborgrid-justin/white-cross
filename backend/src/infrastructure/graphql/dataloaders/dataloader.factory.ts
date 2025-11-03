@@ -51,9 +51,9 @@ export class DataLoaderFactory {
           // Fetch all students in a single query
           const students = await this.studentService.findByIds(ids);
 
-          // Create a map for O(1) lookup
+          // Create a map for O(1) lookup, filtering out nulls
           const studentMap = new Map(
-            students.map((student) => [student.id, student])
+            students.filter(student => student !== null).map((student) => [student!.id, student])
           );
 
           // Return students in the same order as requested IDs
@@ -88,20 +88,11 @@ export class DataLoaderFactory {
           const ids = [...studentIds];
 
           // Fetch all contacts for these students in a single query
-          const allContacts = await this.contactService.findByStudentIds(ids);
+          // findByStudentIds already returns contacts grouped by student ID
+          const contactsByStudent = await this.contactService.findByStudentIds(ids);
 
-          // Group contacts by student ID
-          const contactsByStudentId = new Map<string, any[]>();
-          allContacts.forEach((contact) => {
-            const studentId = contact.relationTo;
-            if (!contactsByStudentId.has(studentId)) {
-              contactsByStudentId.set(studentId, []);
-            }
-            contactsByStudentId.get(studentId)!.push(contact);
-          });
-
-          // Return contacts array for each student ID (empty array if none)
-          return ids.map((id) => contactsByStudentId.get(id) || []);
+          // Return contacts arrays in same order as requested IDs
+          return contactsByStudent;
         } catch (error) {
           console.error('Error in contacts-by-student DataLoader:', error);
           return studentIds.map(() => error);
@@ -131,9 +122,9 @@ export class DataLoaderFactory {
           // Fetch all contacts in a single query
           const contacts = await this.contactService.findByIds(ids);
 
-          // Create a map for O(1) lookup
+          // Create a map for O(1) lookup, filtering out nulls
           const contactMap = new Map(
-            contacts.map((contact) => [contact.id, contact])
+            contacts.filter(contact => contact !== null).map((contact) => [contact!.id, contact])
           );
 
           // Return contacts in the same order as requested IDs
@@ -166,20 +157,11 @@ export class DataLoaderFactory {
           const ids = [...studentIds];
 
           // Fetch all medications for these students in a single query
-          const allMedications = await this.medicationService.findByStudentIds(ids);
+          // findByStudentIds already returns medications grouped by student ID
+          const medicationsByStudent = await this.medicationService.findByStudentIds(ids);
 
-          // Group medications by student ID
-          const medicationsByStudentId = new Map<string, any[]>();
-          allMedications.forEach((medication) => {
-            const studentId = medication.studentId;
-            if (!medicationsByStudentId.has(studentId)) {
-              medicationsByStudentId.set(studentId, []);
-            }
-            medicationsByStudentId.get(studentId)!.push(medication);
-          });
-
-          // Return medications array for each student ID (empty array if none)
-          return ids.map((id) => medicationsByStudentId.get(id) || []);
+          // Return medications arrays in same order as requested IDs
+          return medicationsByStudent;
         } catch (error) {
           console.error('Error in medications-by-student DataLoader:', error);
           return studentIds.map(() => error);
@@ -209,9 +191,9 @@ export class DataLoaderFactory {
           // Fetch all medications in a single query
           const medications = await this.medicationService.findByIds(ids);
 
-          // Create a map for O(1) lookup
+          // Create a map for O(1) lookup, filtering out nulls
           const medicationMap = new Map(
-            medications.map((medication) => [medication.id, medication])
+            medications.filter(medication => medication !== null).map((medication) => [medication!.id, medication])
           );
 
           // Return medications in the same order as requested IDs
