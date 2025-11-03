@@ -27,6 +27,20 @@ import {
   ChronicConditionFiltersDto,
   PaginationDto,
 } from './dto';
+import {
+  CreateExemptionDto,
+  UpdateExemptionDto,
+  ExemptionFilterDto,
+} from './dto/exemption.dto';
+import {
+  GetScheduleByAgeDto,
+  GetCatchUpScheduleDto,
+  SchoolEntryRequirementsDto,
+  CheckContraindicationsDto,
+  VaccinationRatesQueryDto,
+  StateReportingExportDto,
+  OverdueVaccinationsQueryDto,
+} from './dto/schedule.dto';
 
 @ApiTags('health-domain')
 @Controller('health-domain')
@@ -239,8 +253,166 @@ export class HealthDomainController {
   @Get('immunizations/overdue')
   @ApiOperation({ summary: 'Get overdue immunizations across all students' })
   @ApiResponse({ status: 200, description: 'Overdue immunizations retrieved successfully' })
-  async getOverdueImmunizations() {
-    return this.healthDomainService.getOverdueImmunizations();
+  async getOverdueImmunizations(@Query() queryDto: OverdueVaccinationsQueryDto) {
+    return this.healthDomainService.getOverdueImmunizations(queryDto);
+  }
+
+  // ============================================================================
+  // IMMUNIZATION EXEMPTIONS ENDPOINTS
+  // ============================================================================
+
+  @Post('immunizations/exemptions')
+  @ApiOperation({
+    summary: 'Record vaccine exemption',
+    description:
+      'Creates a new vaccine exemption request. Medical exemptions require provider documentation.',
+  })
+  @ApiResponse({ status: 201, description: 'Exemption created successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid exemption data' })
+  async createExemption(@Body() createDto: CreateExemptionDto) {
+    return this.healthDomainService.createExemption(createDto);
+  }
+
+  @Get('immunizations/exemptions')
+  @ApiOperation({ summary: 'List vaccine exemptions with filters' })
+  @ApiResponse({ status: 200, description: 'Exemptions retrieved successfully' })
+  async getExemptions(
+    @Query() filterDto: ExemptionFilterDto,
+    @Query() pagination: PaginationDto,
+  ) {
+    return this.healthDomainService.getExemptions(filterDto, pagination.page, pagination.limit);
+  }
+
+  @Get('immunizations/exemptions/:id')
+  @ApiOperation({ summary: 'Get exemption by ID' })
+  @ApiParam({ name: 'id', description: 'Exemption UUID' })
+  @ApiResponse({ status: 200, description: 'Exemption retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Exemption not found' })
+  async getExemption(@Param('id') id: string) {
+    return this.healthDomainService.getExemption(id);
+  }
+
+  @Put('immunizations/exemptions/:id')
+  @ApiOperation({
+    summary: 'Update exemption',
+    description: 'Updates exemption details or status (approve/deny)',
+  })
+  @ApiParam({ name: 'id', description: 'Exemption UUID' })
+  @ApiResponse({ status: 200, description: 'Exemption updated successfully' })
+  @ApiResponse({ status: 404, description: 'Exemption not found' })
+  async updateExemption(@Param('id') id: string, @Body() updateDto: UpdateExemptionDto) {
+    return this.healthDomainService.updateExemption(id, updateDto);
+  }
+
+  @Delete('immunizations/exemptions/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete exemption' })
+  @ApiParam({ name: 'id', description: 'Exemption UUID' })
+  @ApiResponse({ status: 204, description: 'Exemption deleted successfully' })
+  async deleteExemption(@Param('id') id: string) {
+    await this.healthDomainService.deleteExemption(id);
+  }
+
+  @Get('immunizations/exemptions/student/:studentId')
+  @ApiOperation({ summary: 'Get all exemptions for a student' })
+  @ApiParam({ name: 'studentId', description: 'Student UUID' })
+  @ApiResponse({ status: 200, description: 'Student exemptions retrieved successfully' })
+  async getStudentExemptions(@Param('studentId') studentId: string) {
+    return this.healthDomainService.getStudentExemptions(studentId);
+  }
+
+  // ============================================================================
+  // CDC SCHEDULE ENDPOINTS
+  // ============================================================================
+
+  @Get('immunizations/schedules/age')
+  @ApiOperation({
+    summary: 'Get vaccination schedule by age',
+    description: 'Returns CDC-recommended vaccination schedule for specific age',
+  })
+  @ApiResponse({ status: 200, description: 'Schedule retrieved successfully' })
+  async getScheduleByAge(@Query() queryDto: GetScheduleByAgeDto) {
+    return this.healthDomainService.getScheduleByAge(queryDto);
+  }
+
+  @Get('immunizations/schedules/catch-up')
+  @ApiOperation({
+    summary: 'Get catch-up vaccination schedule',
+    description: 'Calculates catch-up schedule for students who are behind on vaccinations',
+  })
+  @ApiResponse({ status: 200, description: 'Catch-up schedule retrieved successfully' })
+  async getCatchUpSchedule(@Query() queryDto: GetCatchUpScheduleDto) {
+    return this.healthDomainService.getCatchUpSchedule(queryDto);
+  }
+
+  @Get('immunizations/schedules/school-entry')
+  @ApiOperation({
+    summary: 'Get school entry requirements',
+    description: 'Returns state-specific vaccination requirements for school entry by grade level',
+  })
+  @ApiResponse({ status: 200, description: 'School entry requirements retrieved successfully' })
+  async getSchoolEntryRequirements(@Query() queryDto: SchoolEntryRequirementsDto) {
+    return this.healthDomainService.getSchoolEntryRequirements(queryDto);
+  }
+
+  @Post('immunizations/schedules/check-contraindications')
+  @ApiOperation({
+    summary: 'Check contraindications for vaccine',
+    description: 'Checks student allergies and conditions for vaccine contraindications',
+  })
+  @ApiResponse({ status: 200, description: 'Contraindications check completed' })
+  async checkContraindications(@Body() queryDto: CheckContraindicationsDto) {
+    return this.healthDomainService.checkContraindications(queryDto);
+  }
+
+  // ============================================================================
+  // VACCINATION REPORTING ENDPOINTS
+  // ============================================================================
+
+  @Get('immunizations/reports/vaccination-rates')
+  @ApiOperation({
+    summary: 'Get vaccination rates report',
+    description: 'Generates vaccination coverage rates by school, grade, or vaccine type',
+  })
+  @ApiResponse({ status: 200, description: 'Vaccination rates retrieved successfully' })
+  async getVaccinationRates(@Query() queryDto: VaccinationRatesQueryDto) {
+    return this.healthDomainService.getVaccinationRates(queryDto);
+  }
+
+  @Post('immunizations/reports/state-export')
+  @ApiOperation({
+    summary: 'Generate state registry export',
+    description: 'Exports vaccination data in state-required format (HL7, CSV, etc.) for registry submission',
+  })
+  @ApiResponse({ status: 200, description: 'State report generated successfully' })
+  async generateStateReport(@Body() exportDto: StateReportingExportDto) {
+    return this.healthDomainService.generateStateReport(exportDto);
+  }
+
+  @Get('immunizations/reports/compliance-summary')
+  @ApiOperation({
+    summary: 'Get compliance summary report',
+    description: 'Returns overall compliance statistics across schools/grades',
+  })
+  @ApiResponse({ status: 200, description: 'Compliance summary retrieved successfully' })
+  async getComplianceSummary(
+    @Query('schoolId') schoolId?: string,
+    @Query('gradeLevel') gradeLevel?: string,
+  ) {
+    return this.healthDomainService.getComplianceSummary(schoolId, gradeLevel);
+  }
+
+  @Get('immunizations/reports/exemption-rates')
+  @ApiOperation({
+    summary: 'Get exemption rates report',
+    description: 'Returns exemption statistics by type, school, and vaccine',
+  })
+  @ApiResponse({ status: 200, description: 'Exemption rates retrieved successfully' })
+  async getExemptionRates(
+    @Query('schoolId') schoolId?: string,
+    @Query('vaccineName') vaccineName?: string,
+  ) {
+    return this.healthDomainService.getExemptionRates(schoolId, vaccineName);
   }
 
   // ============================================================================

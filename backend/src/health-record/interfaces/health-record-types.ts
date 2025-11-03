@@ -21,6 +21,19 @@ export interface HealthRecordRequest extends Request {
 }
 
 /**
+ * Health Record Type Enumeration
+ */
+export enum HealthRecordType {
+  CHECKUP = 'CHECKUP',
+  ILLNESS = 'ILLNESS',
+  INJURY = 'INJURY',
+  VACCINATION = 'VACCINATION',
+  MEDICATION = 'MEDICATION',
+  ALLERGY = 'ALLERGY',
+  OTHER = 'OTHER'
+}
+
+/**
  * Health Record Operation Types
  */
 export type HealthRecordOperation = 

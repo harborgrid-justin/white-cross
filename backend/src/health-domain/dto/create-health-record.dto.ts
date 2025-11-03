@@ -1,16 +1,7 @@
 import { IsString, IsDate, IsOptional, IsObject, IsArray, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-
-export enum HealthRecordType {
-  CHECKUP = 'CHECKUP',
-  ILLNESS = 'ILLNESS',
-  INJURY = 'INJURY',
-  VACCINATION = 'VACCINATION',
-  MEDICATION = 'MEDICATION',
-  ALLERGY = 'ALLERGY',
-  OTHER = 'OTHER'
-}
+import { HealthRecordType } from '../../health-record/interfaces/health-record-types';
 
 export class VitalSignsDto {
   @ApiPropertyOptional()

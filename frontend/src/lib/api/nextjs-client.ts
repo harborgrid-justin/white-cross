@@ -413,6 +413,15 @@ export async function nextFetch<T>(
       return await response.text() as unknown as T;
 
     } catch (error) {
+      // Re-throw Next.js redirect errors immediately - they should not be caught
+      if (error && typeof error === 'object' && 'digest' in error) {
+        const errorWithDigest = error as { digest: unknown };
+        if (typeof errorWithDigest.digest === 'string' && 
+            errorWithDigest.digest.startsWith('NEXT_REDIRECT')) {
+          throw error;
+        }
+      }
+
       lastError = error as Error;
 
       // Don't retry on client errors (except 408, 429)
@@ -726,7 +735,7 @@ export const fetchApi = apiClient
 // EXPORTS
 // ==========================================
 
-export default {
+const nextjsClient = {
   nextFetch,
   serverGet,
   serverPost,
@@ -739,3 +748,5 @@ export default {
   apiClient,
   fetchApi,
 };
+
+export default nextjsClient;

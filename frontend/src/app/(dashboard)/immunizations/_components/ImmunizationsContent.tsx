@@ -29,7 +29,7 @@ import {
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { SearchInput } from '@/components/ui/input';
+import { SearchInput } from '@/components/ui/search-input';
 
 // Import server actions
 import { 
@@ -95,14 +95,22 @@ const ImmunizationsContent: React.FC<ImmunizationsContentProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [selectedImmunizations, setSelectedImmunizations] = useState<Set<string>>(new Set());
+  
   // Load immunization data from server actions
   useEffect(() => {
+    let isMounted = true; // Track component mount status
+    
     async function fetchImmunizations() {
       try {
-        setLoading(true);
+        if (isMounted) {
+          setLoading(true);
+        }
         
         // Load immunizations from server actions
         const immunizationRecords = await getImmunizationRecords();
+        
+        // Only update state if component is still mounted
+        if (!isMounted) return;
         
         // Transform ImmunizationRecord[] to Immunization[] for UI compatibility
         const transformedData: Immunization[] = immunizationRecords.map((record: ImmunizationRecord) => ({
@@ -129,9 +137,13 @@ const ImmunizationsContent: React.FC<ImmunizationsContentProps> = ({
         setImmunizations(transformedData);
       } catch (error) {
         console.error('Failed to load immunizations:', error);
-        setImmunizations([]);
+        if (isMounted) {
+          setImmunizations([]);
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     }
 
@@ -141,6 +153,11 @@ const ImmunizationsContent: React.FC<ImmunizationsContentProps> = ({
     } else {
       fetchImmunizations();
     }
+    
+    // Cleanup function to prevent state updates on unmounted component
+    return () => {
+      isMounted = false;
+    };
   }, [initialImmunizations]);
 
   // Keep mock data as fallback for now

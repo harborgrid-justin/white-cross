@@ -6,9 +6,11 @@ import { AlertsController } from './alerts.controller';
 import { Alert } from '../database/models/alert.model';
 import { AlertPreferences } from '../database/models/alert-preferences.model';
 import { DeliveryLog } from '../database/models/delivery-log.model';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
+    AuthModule,
     ConfigModule,
     SequelizeModule.forFeature([Alert, AlertPreferences, DeliveryLog]),
   ],

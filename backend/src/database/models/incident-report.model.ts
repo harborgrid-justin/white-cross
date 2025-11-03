@@ -21,6 +21,7 @@ export enum IncidentType {
   MEDICATION_ERROR = 'MEDICATION_ERROR',
   ALLERGIC_REACTION = 'ALLERGIC_REACTION',
   EMERGENCY = 'EMERGENCY',
+  SAFETY = 'SAFETY',
   OTHER = 'OTHER'
   }
 
@@ -29,6 +30,15 @@ export enum IncidentSeverity {
   MEDIUM = 'MEDIUM',
   HIGH = 'HIGH',
   CRITICAL = 'CRITICAL'
+  }
+
+export enum IncidentStatus {
+  DRAFT = 'DRAFT',
+  PENDING_REVIEW = 'PENDING_REVIEW',
+  UNDER_INVESTIGATION = 'UNDER_INVESTIGATION',
+  REQUIRES_ACTION = 'REQUIRES_ACTION',
+  RESOLVED = 'RESOLVED',
+  CLOSED = 'CLOSED'
   }
 
 export enum InsuranceClaimStatus {
@@ -53,6 +63,7 @@ export interface IncidentReportAttributes {
   reportedById: string;
   type: IncidentType;
   severity: IncidentSeverity;
+  status: IncidentStatus;
   description: string;
   location: string;
   witnesses: string[];
@@ -139,6 +150,17 @@ export class IncidentReport extends Model<IncidentReportAttributes> implements I
     allowNull: false
   })
   severity: IncidentSeverity;
+
+  @Default(IncidentStatus.PENDING_REVIEW)
+  @Column({
+    type: DataType.STRING(50),
+    validate: {
+      isIn: [Object.values(IncidentStatus)]
+    },
+    allowNull: false,
+    defaultValue: IncidentStatus.PENDING_REVIEW
+  })
+  status: IncidentStatus;
 
   @Column({
     type: DataType.TEXT,

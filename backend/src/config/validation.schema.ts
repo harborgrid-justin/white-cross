@@ -280,16 +280,16 @@ export const validationSchema = Joi.object({
   // ===================
   // CORS & NETWORKING
   // ===================
-  CORS_ORIGIN: Joi.alternatives()
-    .try(
-      Joi.string().uri(),
-      Joi.string().valid('*'),
-    )
-    .when('NODE_ENV', {
-      is: 'production',
-      then: Joi.string().uri().required(),
-      otherwise: Joi.string().default('http://localhost:3000'),
-    })
+  CORS_ORIGIN: Joi.when('NODE_ENV', {
+    is: 'production',
+    then: Joi.string().uri().required(),
+    otherwise: Joi.alternatives()
+      .try(
+        Joi.string().uri(),
+        Joi.string().valid('*'),
+      )
+      .default('http://localhost:3000'),
+  })
     .description('CORS allowed origin (REQUIRED in production, safe default: http://localhost:3000 for dev)'),
 
   // ===================

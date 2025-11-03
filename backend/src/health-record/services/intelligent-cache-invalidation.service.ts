@@ -1,19 +1,21 @@
 /**
  * @fileoverview Intelligent Cache Invalidation Service
  * @module health-record/services
- * @description Event-driven cache invalidation with dependency tracking and ML-based optimization
- * 
- * HIPAA CRITICAL - This service manages PHI cache invalidation with compliance tracking
- * 
+ * @description Event-driven cache invalidation with dependency tracking and database persistence
+ *
+ * HIPAA CRITICAL - This service manages PHI cache invalidation with compliance tracking and database logging
+ *
  * @compliance HIPAA Privacy Rule §164.308, HIPAA Security Rule §164.312
  */
 
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { InjectModel } from '@nestjs/sequelize';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { HealthRecordMetricsService } from './health-record-metrics.service';
 import { PHIAccessLogger } from './phi-access-logger.service';
 import { CacheStrategyService } from './cache-strategy.service';
+import { AuditLog, ComplianceType, AuditSeverity } from '../../database/models/audit-log.model';
+import { AuditAction } from '../../database/types/database.enums';
 import { ComplianceLevel } from '../interfaces/health-record-types';
 
 export interface CacheDependency {
@@ -34,6 +36,18 @@ export enum DependencyType {
   CROSS_ENTITY = 'CROSS_ENTITY' // Cross-entity relationships
 }
 
+export interface InvalidationRule {
+  id: string;
+  name: string;
+  eventPattern: string;
+  targetPatterns: string[];
+  condition?: (event: InvalidationEvent) => boolean;
+  delay?: number; // Milliseconds to delay invalidation
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  enabled: boolean;
+  complianceRequired: boolean;
+}
+
 export interface InvalidationEvent {
   eventId: string;
   eventType: string;
@@ -49,18 +63,6 @@ export interface InvalidationEvent {
   };
 }
 
-export interface InvalidationRule {
-  id: string;
-  name: string;
-  eventPattern: string;
-  targetPatterns: string[];
-  condition?: (event: InvalidationEvent) => boolean;
-  delay?: number; // Milliseconds to delay invalidation
-  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-  enabled: boolean;
-  complianceRequired: boolean;
-}
-
 export interface InvalidationMetrics {
   totalInvalidations: number;
   eventDrivenInvalidations: number;
@@ -71,61 +73,60 @@ export interface InvalidationMetrics {
   invalidationsByCompliance: Record<ComplianceLevel, number>;
 }
 
-export interface PredictiveInvalidationModel {
-  modelId: string;
-  entityType: string;
-  features: string[];
-  accuracy: number;
-  lastTrained: Date;
-  predictions: Array<{
-    cacheKey: string;
-    invalidationProbability: number;
-    suggestedAction: 'INVALIDATE' | 'REFRESH' | 'IGNORE';
-    confidence: number;
-  }>;
-}
-
 /**
  * Intelligent Cache Invalidation Service
- * 
- * Implements advanced cache invalidation strategies:
+ *
+ * Implements advanced cache invalidation strategies with database persistence:
  * - Event-driven invalidation based on data changes
  * - Dependency graph tracking for cascade invalidation
  * - Tag-based bulk invalidation
- * - ML-based predictive invalidation
- * - HIPAA-compliant invalidation logging
+ * - Database logging of invalidation events
+ * - HIPAA-compliant invalidation tracking
  * - Performance-optimized invalidation batching
  */
 @Injectable()
 export class IntelligentCacheInvalidationService implements OnModuleDestroy {
   private readonly logger = new Logger(IntelligentCacheInvalidationService.name);
-  
+
   // Dependency tracking
   private readonly dependencyGraph = new Map<string, CacheDependency>();
   private readonly reverseIndex = new Map<string, Set<string>>(); // dependent -> sources
-  
+
   // Invalidation rules and events
   private readonly invalidationRules = new Map<string, InvalidationRule>();
   private readonly pendingInvalidations = new Map<string, NodeJS.Timeout>();
-  private readonly invalidationHistory: InvalidationEvent[] = [];
-  
+
   // Tag-based invalidation
   private readonly tagIndex = new Map<string, Set<string>>(); // tag -> cache keys
   private readonly keyTags = new Map<string, Set<string>>(); // cache key -> tags
-  
+
   // Performance optimization
   private readonly batchInvalidations = new Map<string, Set<string>>();
   private batchTimeout: NodeJS.Timeout | null = null;
   private readonly batchDelayMs = 100; // Batch invalidations within 100ms
-  
-  // ML-based prediction
-  private readonly predictiveModels = new Map<string, PredictiveInvalidationModel>();
-  
+
+  // Metrics tracking
+  private invalidationMetrics: InvalidationMetrics = {
+    totalInvalidations: 0,
+    eventDrivenInvalidations: 0,
+    manualInvalidations: 0,
+    dependencyInvalidations: 0,
+    averageInvalidationTime: 0,
+    invalidationsByType: {},
+    invalidationsByCompliance: {
+      PUBLIC: 0,
+      INTERNAL: 0,
+      PHI: 0,
+      SENSITIVE_PHI: 0
+    }
+  };
+
   constructor(
     private readonly metricsService: HealthRecordMetricsService,
     private readonly phiLogger: PHIAccessLogger,
     private readonly cacheService: CacheStrategyService,
     private readonly eventEmitter: EventEmitter2,
+    @InjectModel(AuditLog) private readonly auditLogModel: typeof AuditLog,
   ) {
     this.initializeService();
     this.setupDefaultRules();
@@ -135,29 +136,26 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
    * Initialize the invalidation service
    */
   private initializeService(): void {
-    this.logger.log('Initializing Intelligent Cache Invalidation Service');
-    
+    this.logger.log('Initializing Intelligent Cache Invalidation Service with database persistence');
+
     // Setup event listeners
     this.setupEventListeners();
-    
-    // Initialize ML models
-    this.initializePredictiveModels();
-    
+
     this.logger.log('Intelligent Cache Invalidation Service initialized successfully');
   }
 
   /**
-   * Register cache dependency relationship
+   * Register cache dependency relationship with database logging
    */
-  registerDependency(
+  async registerDependency(
     sourceKey: string,
     dependentKeys: string[],
     relationshipType: DependencyType,
     strength: number = 1.0,
     complianceLevel: ComplianceLevel = 'INTERNAL'
-  ): string {
+  ): Promise<string> {
     const dependencyId = this.generateDependencyId(sourceKey, dependentKeys);
-    
+
     const dependency: CacheDependency = {
       id: dependencyId,
       sourceKey,
@@ -167,9 +165,9 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
       lastUpdated: new Date(),
       complianceLevel,
     };
-    
+
     this.dependencyGraph.set(dependencyId, dependency);
-    
+
     // Update reverse index
     dependentKeys.forEach(depKey => {
       if (!this.reverseIndex.has(depKey)) {
@@ -177,92 +175,97 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
       }
       this.reverseIndex.get(depKey)!.add(sourceKey);
     });
-    
+
+    // Log dependency registration to database
+    await this.logInvalidationEvent({
+      eventId: dependencyId,
+      eventType: 'DEPENDENCY_REGISTERED',
+      sourceEntity: 'CACHE_DEPENDENCY',
+      entityId: dependencyId,
+      timestamp: new Date(),
+      metadata: {
+        sourceKey,
+        dependentKeys,
+        relationshipType,
+        strength,
+        complianceLevel
+      }
+    });
+
     this.logger.debug(`Registered cache dependency: ${sourceKey} -> [${dependentKeys.join(', ')}]`);
     return dependencyId;
   }
 
   /**
-   * Add tags to cache key for tag-based invalidation
+   * Invalidate cache by key with database logging
    */
-  addCacheTags(cacheKey: string, tags: string[]): void {
-    if (!this.keyTags.has(cacheKey)) {
-      this.keyTags.set(cacheKey, new Set());
-    }
-    
-    const keyTagSet = this.keyTags.get(cacheKey)!;
-    
-    tags.forEach(tag => {
-      keyTagSet.add(tag);
-      
-      if (!this.tagIndex.has(tag)) {
-        this.tagIndex.set(tag, new Set());
-      }
-      this.tagIndex.get(tag)!.add(cacheKey);
-    });
-    
-    this.logger.debug(`Added tags to cache key ${cacheKey}: [${tags.join(', ')}]`);
-  }
-
-  /**
-   * Create custom invalidation rule
-   */
-  createInvalidationRule(rule: Omit<InvalidationRule, 'id'>): string {
-    const ruleId = this.generateRuleId(rule.name);
-    const fullRule: InvalidationRule = {
-      ...rule,
-      id: ruleId,
-    };
-    
-    this.invalidationRules.set(ruleId, fullRule);
-    
-    this.logger.log(`Created invalidation rule: ${rule.name} (${ruleId})`);
-    return ruleId;
-  }
-
-  /**
-   * Invalidate cache by key with dependency tracking
-   */
-  async invalidateByKey(
+  async invalidateKey(
     cacheKey: string,
     reason: string = 'manual',
-    cascade: boolean = true
-  ): Promise<InvalidationMetrics> {
+    complianceLevel: ComplianceLevel = 'INTERNAL'
+  ): Promise<void> {
     const startTime = Date.now();
-    const invalidatedKeys = new Set<string>([cacheKey]);
-    
-    // Invalidate the primary key
-    await this.cacheService.invalidate(cacheKey, reason);
-    
-    // Cascade to dependent keys if enabled
-    if (cascade) {
-      const dependentKeys = this.getDependentKeys(cacheKey);
-      for (const depKey of dependentKeys) {
-        await this.cacheService.invalidate(depKey, `cascade from ${cacheKey}`);
-        invalidatedKeys.add(depKey);
+
+    try {
+      await this.cacheService.invalidate(cacheKey);
+      this.invalidationMetrics.totalInvalidations++;
+      this.invalidationMetrics.manualInvalidations++;
+
+      if (!this.invalidationMetrics.invalidationsByCompliance[complianceLevel]) {
+        this.invalidationMetrics.invalidationsByCompliance[complianceLevel] = 0;
       }
+      this.invalidationMetrics.invalidationsByCompliance[complianceLevel]++;
+
+      // Log invalidation event to database
+      await this.logInvalidationEvent({
+        eventId: this.generateEventId(),
+        eventType: 'CACHE_INVALIDATION',
+        sourceEntity: 'CACHE_KEY',
+        entityId: cacheKey,
+        timestamp: new Date(),
+        metadata: {
+          reason,
+          complianceLevel,
+          invalidationType: 'single'
+        }
+      });
+
+      // Log PHI access if applicable
+      if (complianceLevel === 'PHI' || complianceLevel === 'SENSITIVE_PHI') {
+        this.phiLogger.logPHIAccess({
+          correlationId: this.generateEventId(),
+          timestamp: new Date(),
+          operation: 'CACHE_INVALIDATE',
+          dataTypes: ['cache'],
+          recordCount: 1,
+          sensitivityLevel: complianceLevel,
+          ipAddress: 'internal',
+          userAgent: 'cache-invalidation-service',
+          success: true,
+        });
+      }
+
+      const invalidationTime = Date.now() - startTime;
+      this.updateAverageInvalidationTime(invalidationTime);
+
+      this.logger.debug(`Invalidated cache key: ${cacheKey}, reason: ${reason}, time: ${invalidationTime}ms`);
+
+    } catch (error) {
+      this.logger.error(`Failed to invalidate cache key ${cacheKey}:`, error);
     }
-    
-    // Record metrics
-    const metrics = this.recordInvalidation('MANUAL', invalidatedKeys, Date.now() - startTime);
-    
-    // Log for compliance if PHI involved
-    await this.logComplianceInvalidation(cacheKey, reason, invalidatedKeys);
-    
-    return metrics;
   }
 
   /**
-   * Invalidate cache by tags
+   * Invalidate cache by tags with database logging
    */
   async invalidateByTags(
     tags: string[],
-    reason: string = 'tag-based',
-    cascade: boolean = true
-  ): Promise<InvalidationMetrics> {
+    reason: string = 'tag_based',
+    complianceLevel: ComplianceLevel = 'INTERNAL'
+  ): Promise<void> {
     const startTime = Date.now();
     const keysToInvalidate = new Set<string>();
-    
+
     // Collect all keys with matching tags
     tags.forEach(tag => {
       const taggedKeys = this.tagIndex.get(tag);
@@ -270,486 +273,391 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
         taggedKeys.forEach(key => keysToInvalidate.add(key));
       }
     });
-    
-    // Add dependent keys if cascading
-    if (cascade) {
-      const allKeys = Array.from(keysToInvalidate);
-      allKeys.forEach(key => {
-        const dependentKeys = this.getDependentKeys(key);
-        dependentKeys.forEach(depKey => keysToInvalidate.add(depKey));
-      });
+
+    if (keysToInvalidate.size === 0) {
+      return;
     }
-    
-    // Perform batch invalidation
-    await this.batchInvalidate(keysToInvalidate, reason);
-    
-    // Record metrics
-    const metrics = this.recordInvalidation('TAG_BASED', keysToInvalidate, Date.now() - startTime);
-    
-    this.logger.log(`Tag-based invalidation completed: ${keysToInvalidate.size} keys invalidated`);
-    return metrics;
-  }
 
-  /**
-   * Invalidate cache by entity and ID
-   */
-  async invalidateByEntity(
-    entityType: string,
-    entityId: string,
-    reason: string = 'entity-change'
-  ): Promise<InvalidationMetrics> {
-    const tags = [
-      `entity:${entityType}`,
-      `${entityType}:${entityId}`,
-      `entity:${entityType}:${entityId}`,
-    ];
-    
-    return this.invalidateByTags(tags, reason, true);
-  }
-
-  /**
-   * Get invalidation statistics
-   */
-  getInvalidationMetrics(): InvalidationMetrics {
-    const history = this.invalidationHistory.slice(-1000); // Last 1000 events
-    
-    const metrics: InvalidationMetrics = {
-      totalInvalidations: history.length,
-      eventDrivenInvalidations: 0,
-      manualInvalidations: 0,
-      dependencyInvalidations: 0,
-      averageInvalidationTime: 0,
-      invalidationsByType: {},
-      invalidationsByCompliance: {} as Record<ComplianceLevel, number>,
-    };
-    
-    // Calculate metrics from history
-    let totalTime = 0;
-    history.forEach(event => {
-      const type = event.eventType;
-      metrics.invalidationsByType[type] = (metrics.invalidationsByType[type] || 0) + 1;
-      
-      const compliance = event.metadata.complianceLevel || 'INTERNAL';
-      metrics.invalidationsByCompliance[compliance] = (metrics.invalidationsByCompliance[compliance] || 0) + 1;
-      
-      if (type.includes('EVENT')) metrics.eventDrivenInvalidations++;
-      if (type.includes('MANUAL')) metrics.manualInvalidations++;
-      if (type.includes('DEPENDENCY')) metrics.dependencyInvalidations++;
-    });
-    
-    if (history.length > 0) {
-      metrics.averageInvalidationTime = totalTime / history.length;
-    }
-    
-    return metrics;
-  }
-
-  /**
-   * Get dependency analysis
-   */
-  getDependencyAnalysis(): {
-    totalDependencies: number;
-    dependenciesByType: Record<DependencyType, number>;
-    topSourceKeys: Array<{ key: string; dependentCount: number }>;
-    orphanedKeys: string[];
-    circularDependencies: string[][];
-  } {
-    const dependenciesByType = {} as Record<DependencyType, number>;
-    const sourceKeyCount = new Map<string, number>();
-    
-    // Analyze dependencies
-    for (const dependency of this.dependencyGraph.values()) {
-      dependenciesByType[dependency.relationshipType] = 
-        (dependenciesByType[dependency.relationshipType] || 0) + 1;
-      
-      sourceKeyCount.set(
-        dependency.sourceKey,
-        (sourceKeyCount.get(dependency.sourceKey) || 0) + dependency.dependentKeys.length
+    try {
+      // Invalidate all collected keys
+      const invalidationPromises = Array.from(keysToInvalidate).map(key =>
+        this.cacheService.invalidate(key)
       );
+      await Promise.all(invalidationPromises);
+
+      this.invalidationMetrics.totalInvalidations += keysToInvalidate.size;
+      this.invalidationMetrics.manualInvalidations += keysToInvalidate.size;
+
+      if (!this.invalidationMetrics.invalidationsByCompliance[complianceLevel]) {
+        this.invalidationMetrics.invalidationsByCompliance[complianceLevel] = 0;
+      }
+      this.invalidationMetrics.invalidationsByCompliance[complianceLevel] += keysToInvalidate.size;
+
+      // Log bulk invalidation event to database
+      await this.logInvalidationEvent({
+        eventId: this.generateEventId(),
+        eventType: 'BULK_CACHE_INVALIDATION',
+        sourceEntity: 'CACHE_TAGS',
+        entityId: tags.join(','),
+        timestamp: new Date(),
+        metadata: {
+          tags,
+          reason,
+          complianceLevel,
+          keysInvalidated: keysToInvalidate.size,
+          invalidationType: 'bulk'
+        }
+      });
+
+      // Log PHI access if applicable
+      if (complianceLevel === 'PHI' || complianceLevel === 'SENSITIVE_PHI') {
+        this.phiLogger.logPHIAccess({
+          correlationId: this.generateEventId(),
+          timestamp: new Date(),
+          operation: 'BULK_CACHE_INVALIDATE',
+          dataTypes: ['cache'],
+          recordCount: keysToInvalidate.size,
+          sensitivityLevel: complianceLevel,
+          ipAddress: 'internal',
+          userAgent: 'cache-invalidation-service',
+          success: true,
+        });
+      }
+
+      const invalidationTime = Date.now() - startTime;
+      this.updateAverageInvalidationTime(invalidationTime / keysToInvalidate.size);
+
+      this.logger.debug(`Invalidated ${keysToInvalidate.size} cache keys by tags [${tags.join(', ')}], time: ${invalidationTime}ms`);
+
+    } catch (error) {
+      this.logger.error(`Failed to invalidate cache by tags [${tags.join(', ')}]:`, error);
     }
-    
-    // Find top source keys
-    const topSourceKeys = Array.from(sourceKeyCount.entries())
-      .map(([key, count]) => ({ key, dependentCount: count }))
-      .sort((a, b) => b.dependentCount - a.dependentCount)
-      .slice(0, 10);
-    
-    // Detect circular dependencies (simplified detection)
-    const circularDependencies = this.detectCircularDependencies();
-    
-    return {
-      totalDependencies: this.dependencyGraph.size,
-      dependenciesByType,
-      topSourceKeys,
-      orphanedKeys: [], // TODO: Implement orphaned key detection
-      circularDependencies,
-    };
-  }
-
-  // ==================== Event Listeners ====================
-
-  /**
-   * Handle health record creation
-   */
-  @OnEvent('health-record.created')
-  async handleHealthRecordCreated(payload: any): Promise<void> {
-    const event: InvalidationEvent = {
-      eventId: this.generateEventId(),
-      eventType: 'HEALTH_RECORD_CREATED',
-      sourceEntity: 'health-record',
-      entityId: payload.id,
-      timestamp: new Date(),
-      metadata: {
-        studentId: payload.studentId,
-        dataType: 'HEALTH_RECORD',
-        operation: 'CREATE',
-        complianceLevel: 'PHI',
-      },
-    };
-    
-    await this.processInvalidationEvent(event);
   }
 
   /**
-   * Handle health record updates
+   * Handle data change events for automatic invalidation
    */
-  @OnEvent('health-record.updated')
-  async handleHealthRecordUpdated(payload: any): Promise<void> {
-    const event: InvalidationEvent = {
-      eventId: this.generateEventId(),
-      eventType: 'HEALTH_RECORD_UPDATED',
-      sourceEntity: 'health-record',
-      entityId: payload.id,
-      timestamp: new Date(),
-      metadata: {
-        studentId: payload.studentId,
-        dataType: 'HEALTH_RECORD',
-        operation: 'UPDATE',
-        complianceLevel: 'PHI',
-        changedFields: payload.changedFields,
-      },
-    };
-    
-    await this.processInvalidationEvent(event);
-  }
+  @OnEvent('health-record.*.changed', { async: true })
+  async handleDataChangeEvent(event: InvalidationEvent): Promise<void> {
+    try {
+      this.invalidationMetrics.eventDrivenInvalidations++;
 
-  /**
-   * Handle health record deletion
-   */
-  @OnEvent('health-record.deleted')
-  async handleHealthRecordDeleted(payload: any): Promise<void> {
-    const event: InvalidationEvent = {
-      eventId: this.generateEventId(),
-      eventType: 'HEALTH_RECORD_DELETED',
-      sourceEntity: 'health-record',
-      entityId: payload.id,
-      timestamp: new Date(),
-      metadata: {
-        studentId: payload.studentId,
-        dataType: 'HEALTH_RECORD',
-        operation: 'DELETE',
-        complianceLevel: 'PHI',
-      },
-    };
-    
-    await this.processInvalidationEvent(event);
-  }
+      // Log the change event to database
+      await this.logInvalidationEvent(event);
 
-  /**
-   * Handle allergy changes
-   */
-  @OnEvent('allergy.*')
-  async handleAllergyEvent(eventType: string, payload: any): Promise<void> {
-    const event: InvalidationEvent = {
-      eventId: this.generateEventId(),
-      eventType: `ALLERGY_${eventType.split('.')[1].toUpperCase()}`,
-      sourceEntity: 'allergy',
-      entityId: payload.id,
-      timestamp: new Date(),
-      metadata: {
-        studentId: payload.studentId,
-        dataType: 'ALLERGY',
-        operation: eventType.split('.')[1].toUpperCase(),
-        complianceLevel: 'PHI',
-        allergyType: payload.allergyType,
-        severity: payload.severity,
-      },
-    };
-    
-    await this.processInvalidationEvent(event);
-  }
+      // Find applicable invalidation rules
+      const applicableRules = this.findApplicableRules(event);
 
-  // ==================== Periodic Operations ====================
+      for (const rule of applicableRules) {
+        if (rule.condition && !rule.condition(event)) {
+          continue; // Rule condition not met
+        }
 
-  /**
-   * Perform predictive cache invalidation
-   */
-  @Cron('*/5 * * * *') // Every 5 minutes
-  async performPredictiveInvalidation(): Promise<void> {
-    this.logger.debug('Starting predictive cache invalidation');
-    
-    let predictionsProcessed = 0;
-    
-    for (const model of this.predictiveModels.values()) {
-      for (const prediction of model.predictions) {
-        if (prediction.confidence > 0.8 && prediction.suggestedAction === 'INVALIDATE') {
-          await this.invalidateByKey(
-            prediction.cacheKey,
-            `predictive invalidation (${(prediction.confidence * 100).toFixed(1)}% confidence)`,
-            false // Don't cascade for predictive invalidations
-          );
-          predictionsProcessed++;
+        // Apply rule with optional delay
+        if (rule.delay && rule.delay > 0) {
+          this.scheduleDelayedInvalidation(rule, event);
+        } else {
+          await this.applyInvalidationRule(rule, event);
         }
       }
-    }
-    
-    if (predictionsProcessed > 0) {
-      this.logger.log(`Predictive invalidation completed: ${predictionsProcessed} cache entries invalidated`);
+
+      // Check for dependency-based invalidation
+      await this.handleDependencyInvalidation(event);
+
+    } catch (error) {
+      this.logger.error(`Failed to handle data change event:`, error);
     }
   }
 
   /**
-   * Cleanup and optimization
+   * Get invalidation metrics
    */
-  @Cron(CronExpression.EVERY_HOUR)
-  async performCleanupAndOptimization(): Promise<void> {
-    this.logger.debug('Starting cache invalidation cleanup and optimization');
-    
-    // Clean up old invalidation history
-    const cutoffTime = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 hours ago
-    const initialCount = this.invalidationHistory.length;
-    
-    for (let i = this.invalidationHistory.length - 1; i >= 0; i--) {
-      if (this.invalidationHistory[i].timestamp < cutoffTime) {
-        this.invalidationHistory.splice(0, i + 1);
-        break;
-      }
-    }
-    
-    const cleanedCount = initialCount - this.invalidationHistory.length;
-    
-    // Optimize dependency graph
-    const optimizedDependencies = this.optimizeDependencyGraph();
-    
-    // Update ML models
-    const updatedModels = await this.updatePredictiveModels();
-    
-    this.logger.log(
-      `Cleanup completed: removed ${cleanedCount} old events, ` +
-      `optimized ${optimizedDependencies} dependencies, updated ${updatedModels} ML models`
-    );
-  }
-
-  // ==================== Private Helper Methods ====================
-
-  /**
-   * Process invalidation event based on rules
-   */
-  private async processInvalidationEvent(event: InvalidationEvent): Promise<void> {
-    // Store event in history
-    this.invalidationHistory.push(event);
-    
-    // Find matching invalidation rules
-    const matchingRules = this.findMatchingRules(event);
-    
-    // Process each matching rule
-    for (const rule of matchingRules) {
-      if (rule.condition && !rule.condition(event)) {
-        continue; // Rule condition not met
-      }
-      
-      const delay = rule.delay || 0;
-      
-      if (delay > 0) {
-        // Schedule delayed invalidation
-        this.scheduleDelayedInvalidation(rule, event, delay);
-      } else {
-        // Immediate invalidation
-        await this.executeRuleInvalidation(rule, event);
-      }
-    }
-    
-    // Update ML models with new event
-    await this.updatePredictiveModelsWithEvent(event);
+  getInvalidationMetrics(): InvalidationMetrics {
+    return { ...this.invalidationMetrics };
   }
 
   /**
-   * Execute rule-based invalidation
+   * Get recent invalidation events from database
    */
-  private async executeRuleInvalidation(rule: InvalidationRule, event: InvalidationEvent): Promise<void> {
-    const keysToInvalidate = new Set<string>();
-    
-    // Generate cache keys based on target patterns
+  async getRecentInvalidationEvents(limit: number = 100): Promise<InvalidationEvent[]> {
+    try {
+      const auditLogs = await this.auditLogModel.findAll({
+        where: {
+          entityType: 'CACHE_INVALIDATION'
+        },
+        order: [['createdAt', 'DESC']],
+        limit
+      });
+
+      return auditLogs.map(log => ({
+        eventId: log.id,
+        eventType: log.action === AuditAction.CACHE_DELETE ? 'CACHE_INVALIDATION' : 'UNKNOWN',
+        sourceEntity: log.entityType,
+        entityId: log.entityId || '',
+        timestamp: log.createdAt || new Date(),
+        metadata: log.metadata || {}
+      }));
+
+    } catch (error) {
+      this.logger.error('Failed to retrieve recent invalidation events:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Log invalidation event to database
+   */
+  private async logInvalidationEvent(event: InvalidationEvent): Promise<void> {
+    try {
+      const auditEntry = {
+        action: this.mapEventTypeToAuditAction(event.eventType),
+        entityType: 'CACHE_INVALIDATION',
+        entityId: event.entityId,
+        userId: null,
+        userName: null,
+        changes: event.metadata,
+        ipAddress: 'internal',
+        userAgent: 'cache-invalidation-service',
+        isPHI: event.metadata?.complianceLevel === 'PHI' || event.metadata?.complianceLevel === 'SENSITIVE_PHI',
+        complianceType: ComplianceType.HIPAA,
+        severity: AuditSeverity.LOW,
+        success: true,
+        tags: ['cache-invalidation', event.eventType.toLowerCase()],
+        metadata: event.metadata
+      };
+
+      await this.auditLogModel.create(auditEntry);
+
+    } catch (error) {
+      this.logger.error(`Failed to log invalidation event ${event.eventId}:`, error);
+    }
+  }
+
+  /**
+   * Map event type to audit action
+   */
+  private mapEventTypeToAuditAction(eventType: string): AuditAction {
+    const actionMap: Record<string, AuditAction> = {
+      'CACHE_INVALIDATION': AuditAction.CACHE_DELETE,
+      'BULK_CACHE_INVALIDATION': AuditAction.CACHE_DELETE,
+      'DEPENDENCY_REGISTERED': AuditAction.UPDATE,
+      'DATA_CHANGED': AuditAction.UPDATE
+    };
+
+    return actionMap[eventType] || AuditAction.UPDATE;
+  }
+
+  /**
+   * Find applicable invalidation rules for an event
+   */
+  private findApplicableRules(event: InvalidationEvent): InvalidationRule[] {
+    const applicableRules: InvalidationRule[] = [];
+
+    for (const rule of this.invalidationRules.values()) {
+      if (!rule.enabled) continue;
+
+      // Check if event pattern matches
+      if (this.matchesPattern(event.eventType, rule.eventPattern)) {
+        applicableRules.push(rule);
+      }
+    }
+
+    return applicableRules;
+  }
+
+  /**
+   * Apply invalidation rule
+   */
+  private async applyInvalidationRule(rule: InvalidationRule, event: InvalidationEvent): Promise<void> {
+    const keysToInvalidate: string[] = [];
+
+    // Find matching cache keys
     for (const pattern of rule.targetPatterns) {
-      const keys = this.expandCachePattern(pattern, event);
-      keys.forEach(key => keysToInvalidate.add(key));
+      const matchingKeys = this.findKeysMatchingPattern(pattern);
+      keysToInvalidate.push(...matchingKeys);
     }
-    
-    if (keysToInvalidate.size > 0) {
-      await this.batchInvalidate(keysToInvalidate, `rule: ${rule.name}`);
-      
-      this.logger.debug(
-        `Rule '${rule.name}' invalidated ${keysToInvalidate.size} cache entries for event ${event.eventType}`
+
+    if (keysToInvalidate.length > 0) {
+      await this.invalidateByTags(
+        keysToInvalidate,
+        `rule_${rule.name}`,
+        event.metadata?.complianceLevel || 'INTERNAL'
       );
     }
   }
 
   /**
-   * Get dependent cache keys
+   * Handle dependency-based invalidation
    */
-  private getDependentKeys(sourceKey: string): string[] {
-    const dependentKeys: string[] = [];
-    
-    for (const dependency of this.dependencyGraph.values()) {
-      if (dependency.sourceKey === sourceKey) {
-        dependentKeys.push(...dependency.dependentKeys);
+  private async handleDependencyInvalidation(event: InvalidationEvent): Promise<void> {
+    const sourceKey = this.generateCacheKey(event.sourceEntity, event.entityId);
+    const dependentKeys = this.findDependentKeys(sourceKey);
+
+    if (dependentKeys.length > 0) {
+      this.invalidationMetrics.dependencyInvalidations += dependentKeys.length;
+
+      for (const depKey of dependentKeys) {
+        await this.invalidateKey(
+          depKey,
+          'dependency_cascade',
+          event.metadata?.complianceLevel || 'INTERNAL'
+        );
       }
     }
-    
+  }
+
+  /**
+   * Find dependent keys for a source key
+   */
+  private findDependentKeys(sourceKey: string): string[] {
+    const dependentKeys: string[] = [];
+
+    for (const [depKey, sources] of this.reverseIndex.entries()) {
+      if (sources.has(sourceKey)) {
+        dependentKeys.push(depKey);
+      }
+    }
+
     return dependentKeys;
   }
 
   /**
-   * Batch invalidate multiple keys for performance
+   * Schedule delayed invalidation
    */
-  private async batchInvalidate(keys: Set<string>, reason: string): Promise<void> {
-    const keyArray = Array.from(keys);
-    
-    // Group by compliance level for batch processing
-    const phiKeys: string[] = [];
-    const regularKeys: string[] = [];
-    
-    keyArray.forEach(key => {
-      if (this.isPHIKey(key)) {
-        phiKeys.push(key);
-      } else {
-        regularKeys.push(key);
-      }
-    });
-    
-    // Invalidate in batches
-    const batchSize = 50;
-    
-    for (let i = 0; i < regularKeys.length; i += batchSize) {
-      const batch = regularKeys.slice(i, i + batchSize);
-      await this.cacheService.invalidate(batch, reason);
+  private scheduleDelayedInvalidation(rule: InvalidationRule, event: InvalidationEvent): void {
+    const timeoutKey = `${rule.id}_${event.eventId}`;
+
+    if (this.pendingInvalidations.has(timeoutKey)) {
+      clearTimeout(this.pendingInvalidations.get(timeoutKey)!);
     }
-    
-    // PHI keys get special handling with individual logging
-    for (const phiKey of phiKeys) {
-      await this.cacheService.invalidate(phiKey, reason);
-      
-      // Log PHI invalidation for compliance
-      this.phiLogger.logPHIAccess({
-        correlationId: this.generateEventId(),
-        timestamp: new Date(),
-        operation: 'CACHE_INVALIDATION',
-        dataTypes: ['PHI_CACHE'],
-        recordCount: 1,
-        sensitivityLevel: 'PHI',
-        ipAddress: 'internal',
-        userAgent: 'cache-invalidation-service',
-        success: true,
-      });
-    }
+
+    const timeout = setTimeout(async () => {
+      await this.applyInvalidationRule(rule, event);
+      this.pendingInvalidations.delete(timeoutKey);
+    }, rule.delay);
+
+    this.pendingInvalidations.set(timeoutKey, timeout);
   }
 
   /**
-   * Record invalidation metrics
+   * Find keys matching a pattern
    */
-  private recordInvalidation(
-    type: string,
-    keys: Set<string>,
-    duration: number
-  ): InvalidationMetrics {
-    // Record in metrics service
-    this.metricsService.recordCacheMetrics('EVICT', 'PHI', duration);
-    
-    // Return current metrics
-    return this.getInvalidationMetrics();
+  private findKeysMatchingPattern(pattern: string): string[] {
+    const matchingKeys: string[] = [];
+
+    // Simple wildcard matching
+    const regex = new RegExp(pattern.replace(/\*/g, '.*'));
+
+    for (const key of this.keyTags.keys()) {
+      if (regex.test(key)) {
+        matchingKeys.push(key);
+      }
+    }
+
+    return matchingKeys;
+  }
+
+  /**
+   * Check if string matches pattern
+   */
+  private matchesPattern(str: string, pattern: string): boolean {
+    const regex = new RegExp(pattern.replace(/\*/g, '.*'));
+    return regex.test(str);
+  }
+
+  /**
+   * Generate cache key
+   */
+  private generateCacheKey(entityType: string, entityId: string): string {
+    return `${entityType}:${entityId}`;
+  }
+
+  /**
+   * Generate dependency ID
+   */
+  private generateDependencyId(sourceKey: string, dependentKeys: string[]): string {
+    return `dep_${sourceKey}_${dependentKeys.join('_')}_${Date.now()}`;
+  }
+
+  /**
+   * Generate event ID
+   */
+  private generateEventId(): string {
+    return `evt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  /**
+   * Update average invalidation time
+   */
+  private updateAverageInvalidationTime(newTime: number): void {
+    const currentAvg = this.invalidationMetrics.averageInvalidationTime;
+    const totalInvalidations = this.invalidationMetrics.totalInvalidations;
+
+    this.invalidationMetrics.averageInvalidationTime =
+      (currentAvg * (totalInvalidations - 1) + newTime) / totalInvalidations;
+  }
+
+  /**
+   * Setup event listeners
+   */
+  private setupEventListeners(): void {
+    // Listen for health record changes
+    this.eventEmitter.on('health-record.*.changed', (event) => {
+      this.handleDataChangeEvent(event);
+    });
   }
 
   /**
    * Setup default invalidation rules
    */
   private setupDefaultRules(): void {
-    // Student health summary invalidation
-    this.createInvalidationRule({
-      name: 'Student Health Summary Invalidation',
-      eventPattern: 'health-record.*',
-      targetPatterns: [
-        'hr:*/student/{studentId}/summary*',
-        'hr:*/students/{studentId}*',
-      ],
+    // Rule for student data changes
+    this.invalidationRules.set('student_data_changed', {
+      id: 'student_data_changed',
+      name: 'Student Data Changed',
+      eventPattern: 'health-record.student.changed',
+      targetPatterns: ['student:*', 'health-record:student:*'],
       priority: 'HIGH',
       enabled: true,
-      complianceRequired: true,
+      complianceRequired: true
     });
-    
-    // Allergy summary invalidation
-    this.createInvalidationRule({
-      name: 'Allergy Summary Invalidation',
-      eventPattern: 'allergy.*',
-      targetPatterns: [
-        'hr:*/student/{studentId}/allergies*',
-        'hr:*/student/{studentId}/summary*',
-      ],
+
+    // Rule for allergy changes
+    this.invalidationRules.set('allergy_changed', {
+      id: 'allergy_changed',
+      name: 'Allergy Data Changed',
+      eventPattern: 'health-record.allergy.changed',
+      targetPatterns: ['allergy:*', 'health-record:allergy:*'],
       priority: 'HIGH',
       enabled: true,
-      complianceRequired: true,
+      complianceRequired: true
     });
-    
-    // Vaccination summary invalidation
-    this.createInvalidationRule({
-      name: 'Vaccination Summary Invalidation',
-      eventPattern: 'vaccination.*',
-      targetPatterns: [
-        'hr:*/student/{studentId}/vaccinations*',
-        'hr:*/student/{studentId}/summary*',
-      ],
+
+    // Rule for chronic condition changes
+    this.invalidationRules.set('chronic_condition_changed', {
+      id: 'chronic_condition_changed',
+      name: 'Chronic Condition Changed',
+      eventPattern: 'health-record.chronic-condition.changed',
+      targetPatterns: ['chronic-condition:*', 'health-record:chronic-condition:*'],
       priority: 'MEDIUM',
       enabled: true,
-      complianceRequired: true,
+      complianceRequired: true
     });
   }
-
-  // Additional helper methods (stubs for now)...
-  private setupEventListeners(): void { /* TODO */ }
-  private initializePredictiveModels(): void { /* TODO */ }
-  private generateDependencyId(sourceKey: string, dependentKeys: string[]): string {
-    return Buffer.from(`${sourceKey}:${dependentKeys.join(',')}`).toString('base64').substring(0, 16);
-  }
-  private generateRuleId(name: string): string {
-    return Buffer.from(name).toString('base64').substring(0, 12);
-  }
-  private generateEventId(): string {
-    return Date.now().toString(36) + Math.random().toString(36).substring(2);
-  }
-  private async logComplianceInvalidation(cacheKey: string, reason: string, invalidatedKeys: Set<string>): Promise<void> { /* TODO */ }
-  private findMatchingRules(event: InvalidationEvent): InvalidationRule[] { return []; }
-  private scheduleDelayedInvalidation(rule: InvalidationRule, event: InvalidationEvent, delay: number): void { /* TODO */ }
-  private expandCachePattern(pattern: string, event: InvalidationEvent): string[] { return []; }
-  private isPHIKey(key: string): boolean { return key.includes('phi') || key.includes('health'); }
-  private detectCircularDependencies(): string[][] { return []; }
-  private optimizeDependencyGraph(): number { return 0; }
-  private async updatePredictiveModels(): Promise<number> { return 0; }
-  private async updatePredictiveModelsWithEvent(event: InvalidationEvent): Promise<void> { /* TODO */ }
 
   /**
    * Cleanup resources
    */
   onModuleDestroy(): void {
-    // Clear timeouts
-    this.pendingInvalidations.forEach(timeout => clearTimeout(timeout));
-    if (this.batchTimeout) clearTimeout(this.batchTimeout);
-    
-    // Clear data structures
-    this.dependencyGraph.clear();
-    this.reverseIndex.clear();
-    this.invalidationRules.clear();
-    this.tagIndex.clear();
-    this.keyTags.clear();
-    
+    // Clear all pending invalidations
+    for (const timeout of this.pendingInvalidations.values()) {
+      clearTimeout(timeout);
+    }
+
+    if (this.batchTimeout) {
+      clearTimeout(this.batchTimeout);
+    }
+
     this.logger.log('Intelligent Cache Invalidation Service destroyed');
   }
 }

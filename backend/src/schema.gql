@@ -106,17 +106,121 @@ enum Gender {
   PREFER_NOT_TO_SAY
 }
 
+type HealthRecordDto {
+  attachments: [String!]!
+  createdAt: Timestamp!
+  createdBy: ID
+  description: String!
+  diagnosis: String
+  diagnosisCode: String
+  facility: String
+  facilityNpi: String
+  followUpCompleted: Boolean!
+  followUpDate: Timestamp
+  followUpRequired: Boolean!
+  id: ID!
+  isConfidential: Boolean!
+  metadata: JSON
+  notes: String
+  provider: String
+  providerNpi: String
+  recordDate: Timestamp!
+  recordType: String!
+  studentId: ID!
+  title: String!
+  treatment: String
+  updatedAt: Timestamp!
+  updatedBy: ID
+}
+
+input HealthRecordFilterInputDto {
+  followUpCompleted: Boolean
+  followUpRequired: Boolean
+  fromDate: Timestamp
+  isConfidential: Boolean
+  recordType: String
+  search: String
+  studentId: ID
+  toDate: Timestamp
+}
+
+input HealthRecordInputDto {
+  attachments: [String!] = []
+  description: String!
+  diagnosis: String
+  diagnosisCode: String
+  facility: String
+  facilityNpi: String
+  followUpDate: Timestamp
+  followUpRequired: Boolean! = false
+  isConfidential: Boolean! = false
+  metadata: JSON
+  notes: String
+  provider: String
+  providerNpi: String
+  recordDate: Timestamp!
+  recordType: String!
+  studentId: ID!
+  title: String!
+  treatment: String
+}
+
+type HealthRecordListResponseDto {
+  healthRecords: [HealthRecordDto!]!
+  pagination: PaginationDto!
+}
+
+input HealthRecordUpdateInputDto {
+  attachments: [String!]
+  description: String
+  diagnosis: String
+  diagnosisCode: String
+  facility: String
+  facilityNpi: String
+  followUpCompleted: Boolean
+  followUpDate: Timestamp
+  followUpRequired: Boolean
+  isConfidential: Boolean
+  metadata: JSON
+  notes: String
+  provider: String
+  providerNpi: String
+  recordDate: Timestamp
+  recordType: String
+  title: String
+  treatment: String
+}
+
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
 scalar JSON @specifiedBy(url: "http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf")
 
+type MedicationDto {
+  createdAt: Timestamp!
+  dosage: String
+  endDate: Timestamp
+  frequency: String
+  id: ID!
+  instructions: String
+  isActive: Boolean!
+  name: String!
+  prescribedBy: String
+  route: String
+  startDate: Timestamp
+  studentId: ID!
+  updatedAt: Timestamp!
+}
+
 type Mutation {
   createContact(input: ContactInputDto!): ContactDto!
+  createHealthRecord(input: HealthRecordInputDto!): HealthRecordDto!
   deactivateContact(id: ID!): ContactDto!
   deleteContact(id: ID!): DeleteResponseDto!
+  deleteHealthRecord(id: ID!): DeleteResponseDto!
   reactivateContact(id: ID!): ContactDto!
   updateContact(id: ID!, input: ContactUpdateInputDto!): ContactDto!
+  updateHealthRecord(id: ID!, input: HealthRecordUpdateInputDto!): HealthRecordDto!
 }
 
 type PaginationDto {
@@ -131,12 +235,17 @@ type Query {
   contactStats: ContactStatsDto!
   contacts(filters: ContactFilterInputDto, limit: Float! = 20, orderBy: String! = "lastName", orderDirection: String! = "ASC", page: Float! = 1): ContactListResponseDto!
   contactsByRelation(relationTo: ID!, type: String): [ContactDto!]!
+  healthRecord(id: ID!): HealthRecordDto
+  healthRecords(filters: HealthRecordFilterInputDto, limit: Float! = 20, orderBy: String! = "recordDate", orderDirection: String! = "DESC", page: Float! = 1): HealthRecordListResponseDto!
+  healthRecordsByStudent(studentId: ID!): [HealthRecordDto!]!
   searchContacts(limit: Float! = 10, query: String!): [ContactDto!]!
   student(id: ID!): StudentDto
   students(filters: StudentFilterInputDto, limit: Float! = 20, orderBy: String! = "lastName", orderDirection: String! = "ASC", page: Float! = 1): StudentListResponseDto!
 }
 
 type StudentDto {
+  contactCount: Float!
+  contacts: [ContactDto]!
   createdAt: Timestamp!
   dateOfBirth: Timestamp!
   enrollmentDate: Timestamp!
@@ -144,10 +253,12 @@ type StudentDto {
   fullName: String!
   gender: Gender!
   grade: String!
+  healthRecord: HealthRecordDto
   id: ID!
   isActive: Boolean!
   lastName: String!
   medicalRecordNum: String
+  medications: [MedicationDto]!
   nurseId: ID
   photo: String
   studentNumber: String!

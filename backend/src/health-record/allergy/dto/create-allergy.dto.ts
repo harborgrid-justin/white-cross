@@ -1,20 +1,6 @@
 import { IsString, IsUUID, IsEnum, IsOptional, MaxLength, MinLength, IsDateString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-
-export enum AllergySeverity {
-  MILD = 'MILD',
-  MODERATE = 'MODERATE',
-  SEVERE = 'SEVERE',
-  LIFE_THREATENING = 'LIFE_THREATENING',
-}
-
-export enum AllergyType {
-  FOOD = 'FOOD',
-  MEDICATION = 'MEDICATION',
-  ENVIRONMENTAL = 'ENVIRONMENTAL',
-  INSECT = 'INSECT',
-  OTHER = 'OTHER',
-}
+import { AllergyType, AllergySeverity } from '../../interfaces/allergy.interface';
 
 /**
  * DTO for creating a new allergy record

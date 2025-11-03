@@ -14,7 +14,7 @@ import {
   BeforeUpdate
   } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { Op } from 'sequelize';
+import { Op, literal } from 'sequelize';
 
 import { PrescriptionStatus } from '../../clinical/enums/prescription-status.enum';
 
@@ -82,7 +82,7 @@ export interface PrescriptionAttributes {
         [Op.in]: [PrescriptionStatus.FILLED, PrescriptionStatus.PICKED_UP]
       },
       refillsAuthorized: {
-        [Op.gt]: (Op.col as any)('refillsUsed')
+        [Op.gt]: literal('"refillsUsed"')
       }
     }
   },

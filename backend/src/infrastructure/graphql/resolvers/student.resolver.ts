@@ -20,6 +20,8 @@ import {
   StudentListResponseDto,
   StudentFilterInputDto,
   ContactDto,
+  MedicationDto,
+  HealthRecordDto,
   Gender
 } from '../dto';
 import { StudentService } from '../../../student/student.service';
@@ -170,15 +172,31 @@ export class StudentResolver {
    * @param context - GraphQL context containing DataLoaders
    * @returns Array of medications for the student
    */
-  @ResolveField(() => [Object], { name: 'medications', nullable: 'items' })
+  @ResolveField(() => [MedicationDto], { name: 'medications', nullable: 'items' })
   async medications(
     @Parent() student: StudentDto,
     @Context() context: GraphQLContext,
-  ): Promise<any[]> {
+  ): Promise<MedicationDto[]> {
     try {
       // Use the shared DataLoader from context for optimal batching
-      const medications = await context.loaders.medicationsByStudentLoader.load(student.id);
-      return medications || [];
+      const studentMedications = await context.loaders.medicationsByStudentLoader.load(student.id);
+      
+      // Map StudentMedication to MedicationDto
+      return (studentMedications || []).map((sm: any) => ({
+        id: sm.id,
+        studentId: sm.studentId,
+        name: sm.medication?.name || sm.medicationName || 'Unknown',
+        dosage: sm.dosage,
+        frequency: sm.frequency,
+        route: sm.route,
+        instructions: sm.instructions,
+        prescribedBy: sm.prescribedBy,
+        startDate: sm.startDate,
+        endDate: sm.endDate,
+        isActive: sm.isActive,
+        createdAt: sm.createdAt,
+        updatedAt: sm.updatedAt
+      }));
     } catch (error) {
       console.error(`Error loading medications for student ${student.id}:`, error);
       return [];
@@ -195,11 +213,11 @@ export class StudentResolver {
    * @param context - GraphQL context containing DataLoaders
    * @returns Health record for the student or null
    */
-  @ResolveField(() => Object, { name: 'healthRecord', nullable: true })
+  @ResolveField(() => HealthRecordDto, { name: 'healthRecord', nullable: true })
   async healthRecord(
     @Parent() student: StudentDto,
     @Context() context: GraphQLContext,
-  ): Promise<any | null> {
+  ): Promise<HealthRecordDto | null> {
     try {
       // Use the shared DataLoader from context for optimal batching
       const healthRecord = await context.loaders.healthRecordsByStudentLoader.load(student.id);

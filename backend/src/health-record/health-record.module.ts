@@ -49,6 +49,7 @@ import { ImportExportModule } from './import-export/import-export.module';
 import { ChronicConditionModule } from './chronic-condition/chronic-condition.module';
 import { ValidationModule } from './validation/validation.module';
 import { AllergyModule } from './allergy/allergy.module';
+import { MedicationModule } from './medication/medication.module';
 
 // Models
 import { HealthRecord } from '../database/models/health-record.model';
@@ -56,6 +57,7 @@ import { Allergy } from '../database/models/allergy.model';
 import { Student } from '../database/models/student.model';
 import { ChronicCondition } from '../database/models/chronic-condition.model';
 import { Vaccination } from '../database/models/vaccination.model';
+import { Medication } from '../database/models/medication.model';
 import { CacheEntry } from '../database/models/cache-entry.model';
 
 /**
@@ -94,6 +96,7 @@ import { CacheEntry } from '../database/models/cache-entry.model';
       Student,
       ChronicCondition,
       Vaccination,
+      Medication,
       CacheEntry,
     ]),
     VaccinationModule,
@@ -104,6 +107,7 @@ import { CacheEntry } from '../database/models/cache-entry.model';
     ChronicConditionModule,
     ValidationModule,
     AllergyModule,
+    MedicationModule,
   ],
   providers: [
     // Core Service

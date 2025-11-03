@@ -1,20 +1,7 @@
-import { IsString, IsDate, IsOptional, IsEnum, IsArray } from 'class-validator';
+import { IsString, IsDate, IsOptional, IsEnum, IsArray, IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-
-export enum ConditionStatus {
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE',
-  RESOLVED = 'RESOLVED',
-  REMISSION = 'REMISSION'
-}
-
-export enum ConditionSeverity {
-  MILD = 'MILD',
-  MODERATE = 'MODERATE',
-  SEVERE = 'SEVERE',
-  CRITICAL = 'CRITICAL'
-}
+import { ConditionStatus, ConditionSeverity } from '../../health-record/interfaces/chronic-condition.interface';
 
 export class HealthDomainCreateChronicConditionDto {
   @ApiProperty()
@@ -25,15 +12,24 @@ export class HealthDomainCreateChronicConditionDto {
   @IsString()
   condition: string;
 
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  icdCode?: string;
+
   @ApiProperty()
   @IsDate()
   @Type(() => Date)
-  diagnosisDate: Date;
+  diagnosedDate: Date;
 
-  @ApiPropertyOptional({ enum: ConditionStatus })
+  @ApiPropertyOptional()
   @IsOptional()
+  @IsString()
+  diagnosedBy?: string;
+
+  @ApiProperty({ enum: ConditionStatus })
   @IsEnum(ConditionStatus)
-  status?: ConditionStatus;
+  status: ConditionStatus;
 
   @ApiPropertyOptional({ enum: ConditionSeverity })
   @IsOptional()
@@ -68,25 +64,29 @@ export class HealthDomainCreateChronicConditionDto {
   @IsString({ each: true })
   triggers?: string[];
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ type: [String] })
   @IsOptional()
-  @IsString()
-  diagnosedBy?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsDate()
-  @Type(() => Date)
-  lastReviewDate?: Date;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsDate()
-  @Type(() => Date)
-  nextReviewDate?: Date;
+  @IsArray()
+  @IsString({ each: true })
+  accommodations?: string[];
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  icdCode?: string;
+  emergencyActionPlan?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Number)
+  reviewFrequencyMonths?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  requiresIEP?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  requires504?: boolean;
 }

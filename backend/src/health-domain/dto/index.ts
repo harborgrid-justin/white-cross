@@ -10,6 +10,12 @@ export * from './update-allergy.dto';
 export * from './create-immunization.dto';
 export * from './update-immunization.dto';
 
+// Immunization Exemptions
+export * from './exemption.dto';
+
+// CDC Schedules & Reporting
+export * from './schedule.dto';
+
 // Chronic Conditions
 export * from './create-chronic-condition.dto';
 export * from './update-chronic-condition.dto';

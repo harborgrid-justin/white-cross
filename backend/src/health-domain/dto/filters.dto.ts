@@ -1,9 +1,10 @@
 import { IsOptional, IsString, IsDate, IsEnum, IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { HealthRecordType } from './create-health-record.dto';
-import { AllergySeverity } from './create-allergy.dto';
-import { ConditionStatus, ConditionSeverity } from './create-chronic-condition.dto';
+import { HealthRecordType } from '../../health-record/interfaces/health-record-types';
+import { AllergySeverity, AllergyType } from '../../health-record/interfaces/allergy.interface';
+import { ConditionStatus, ConditionSeverity } from '../../health-record/interfaces/chronic-condition.interface';
+import { VaccineType } from '../../health-record/interfaces/vaccination.interface';
 
 export class HealthRecordFiltersDto {
   @ApiPropertyOptional({ enum: HealthRecordType })
@@ -64,10 +65,10 @@ export class ChronicConditionFiltersDto {
 }
 
 export class VaccinationFiltersDto {
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ enum: VaccineType })
   @IsOptional()
-  @IsString()
-  vaccineName?: string;
+  @IsEnum(VaccineType)
+  vaccineType?: VaccineType;
 
   @ApiPropertyOptional()
   @IsOptional()

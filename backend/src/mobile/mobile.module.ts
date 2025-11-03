@@ -9,6 +9,7 @@ import { DeviceToken } from '../database/models/device-token.model';
 import { PushNotification } from '../database/models/push-notification.model';
 import { SyncQueueItem } from '../database/models/sync-queue-item.model';
 import { SyncConflict } from '../database/models/sync-conflict.model';
+import { AuthModule } from '../auth/auth.module';
 
 /**
  * Mobile Module
@@ -23,6 +24,7 @@ import { SyncConflict } from '../database/models/sync-conflict.model';
  */
 @Module({
   imports: [
+    AuthModule,
     SequelizeModule.forFeature([
       DeviceToken,
       PushNotification,

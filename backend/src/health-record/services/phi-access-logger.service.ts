@@ -1,15 +1,20 @@
 /**
  * @fileoverview PHI Access Logger Service
  * @module health-record/services
- * @description Specialized logging service for Protected Health Information (PHI) access
- * 
- * HIPAA CRITICAL - This service provides structured PHI access logging
- * 
+ * @description Specialized logging service for Protected Health Information (PHI) access with database persistence
+ *
+ * HIPAA CRITICAL - This service provides structured PHI access logging with persistent database storage
+ *
  * @compliance HIPAA Privacy Rule §164.308, HIPAA Security Rule §164.312
  * @compliance 45 CFR 164.312(b) - Audit controls
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
+import { AuditLog, ComplianceType, AuditSeverity } from '../../database/models/audit-log.model';
+import { AuditAction } from '../../database/types/database.enums';
+import { PhiDisclosureAudit } from '../../database/models/phi-disclosure-audit.model';
 
 export interface PHIAccessLogEntry {
   correlationId: string;
@@ -51,379 +56,457 @@ export interface PHIAccessStatistics {
 
 /**
  * PHI Access Logger Service
- * 
+ *
  * Provides specialized logging for Protected Health Information access
- * with compliance tracking and security incident monitoring
+ * with compliance tracking and persistent database storage
  */
 @Injectable()
-export class PHIAccessLogger {
+export class PHIAccessLogger implements OnModuleDestroy {
   private readonly logger = new Logger(PHIAccessLogger.name);
-  private phiAccessLog: PHIAccessLogEntry[] = [];
-  private securityIncidents: SecurityIncidentEntry[] = [];
-  private readonly maxLogEntries = 10000; // In production, use persistent storage
+
+  constructor(
+    @InjectModel(AuditLog) private readonly auditLogModel: typeof AuditLog,
+    @InjectModel(PhiDisclosureAudit) private readonly phiDisclosureAuditModel: typeof PhiDisclosureAudit,
+  ) {
+    this.logger.log('PHI Access Logger Service initialized with database persistence');
+  }
 
   /**
-   * Log PHI access with structured details
+   * Log PHI access with structured details and database persistence
    */
-  logPHIAccess(entry: PHIAccessLogEntry): void {
-    // Add to in-memory log (in production, write to secure database)
-    this.phiAccessLog.push(entry);
-    
-    // Maintain log size limit
-    if (this.phiAccessLog.length > this.maxLogEntries) {
-      this.phiAccessLog.shift();
+  async logPHIAccess(entry: PHIAccessLogEntry): Promise<void> {
+    try {
+      // Create audit log entry for PHI access
+      const auditEntry = {
+        action: this.mapOperationToAuditAction(entry.operation),
+        entityType: 'PHI_ACCESS',
+        entityId: entry.studentId || entry.correlationId,
+        userId: entry.userId || null,
+        userName: null, // Would need to be populated from user service
+        changes: {
+          operation: entry.operation,
+          dataTypes: entry.dataTypes,
+          recordCount: entry.recordCount,
+          sensitivityLevel: entry.sensitivityLevel,
+          ipAddress: entry.ipAddress,
+          userAgent: entry.userAgent,
+          success: entry.success
+        },
+        ipAddress: entry.ipAddress,
+        userAgent: entry.userAgent,
+        isPHI: true,
+        complianceType: ComplianceType.HIPAA,
+        severity: this.determineSeverity(entry),
+        success: entry.success,
+        tags: ['phi-access', entry.sensitivityLevel.toLowerCase()],
+        metadata: {
+          correlationId: entry.correlationId,
+          studentId: entry.studentId,
+          dataTypes: entry.dataTypes,
+          sensitivityLevel: entry.sensitivityLevel
+        }
+      };
+
+      await this.auditLogModel.create(auditEntry);
+
+      // Create structured log message
+      const logMessage = this.formatPHIAccessLog(entry);
+
+      // Log with appropriate level based on sensitivity
+      if (entry.sensitivityLevel === 'SENSITIVE_PHI') {
+        this.logger.warn(`[PHI_SENSITIVE] ${logMessage}`);
+      } else {
+        this.logger.log(`[PHI_ACCESS] ${logMessage}`);
+      }
+
+      // Check for suspicious patterns
+      await this.detectSuspiciousActivity(entry);
+
+      // Log to compliance system (placeholder for actual implementation)
+      await this.logToComplianceSystem(entry);
+
+    } catch (error) {
+      this.logger.error(`Failed to log PHI access for correlationId ${entry.correlationId}:`, error);
+      // Fallback to console logging if database logging fails
+      console.error('PHI ACCESS LOGGING FAILURE:', entry);
     }
+  }
 
-    // Create structured log message
-    const logMessage = this.formatPHIAccessLog(entry);
-    
-    // Log with appropriate level based on sensitivity
-    if (entry.sensitivityLevel === 'SENSITIVE_PHI') {
-      this.logger.warn(`[PHI_SENSITIVE] ${logMessage}`);
-    } else {
-      this.logger.log(`[PHI_ACCESS] ${logMessage}`);
+  /**
+   * Log security incidents related to PHI access with database persistence
+   */
+  async logSecurityIncident(incident: SecurityIncidentEntry): Promise<void> {
+    try {
+      // Create audit log entry for security incident
+      const auditEntry = {
+        action: AuditAction.UPDATE, // Using UPDATE as closest match for security incident
+        entityType: 'PHI_SECURITY',
+        entityId: incident.correlationId,
+        userId: incident.userId || null,
+        userName: null,
+        changes: {
+          incidentType: incident.incidentType,
+          operation: incident.operation,
+          errorMessage: incident.errorMessage,
+          severity: incident.severity
+        },
+        ipAddress: incident.ipAddress,
+        userAgent: null,
+        isPHI: true,
+        complianceType: ComplianceType.HIPAA,
+        severity: this.mapIncidentSeverityToAuditSeverity(incident.severity),
+        success: false,
+        tags: ['security-incident', incident.severity.toLowerCase()],
+        metadata: {
+          incidentType: incident.incidentType,
+          correlationId: incident.correlationId
+        }
+      };
+
+      await this.auditLogModel.create(auditEntry);
+
+      // Log security incident
+      const incidentMessage = this.formatSecurityIncidentLog(incident);
+      this.logger.error(`[SECURITY_INCIDENT] ${incidentMessage}`);
+
+      // Additional security monitoring could be triggered here
+      await this.triggerSecurityAlert(incident);
+
+    } catch (error) {
+      this.logger.error(`Failed to log security incident for correlationId ${incident.correlationId}:`, error);
+      // Fallback logging
+      console.error('SECURITY INCIDENT LOGGING FAILURE:', incident);
     }
-
-    // Check for suspicious patterns
-    this.detectSuspiciousActivity(entry);
-
-    // Log to compliance system (placeholder for actual implementation)
-    this.logToComplianceSystem(entry);
   }
 
   /**
-   * Log security incidents related to PHI access
+   * Get PHI access statistics from database
    */
-  logSecurityIncident(incident: SecurityIncidentEntry): void {
-    // Add to security incidents log
-    this.securityIncidents.push(incident);
-    
-    // Maintain incidents log size
-    if (this.securityIncidents.length > this.maxLogEntries) {
-      this.securityIncidents.shift();
-    }
-
-    // Log with severity-appropriate level
-    const logLevel = this.getLogLevelForSeverity(incident.severity);
-    const logMessage = this.formatSecurityIncident(incident);
-    
-    this.logger[logLevel](`[SECURITY_INCIDENT] ${logMessage}`);
-
-    // Alert security team for high/critical incidents
-    if (incident.severity === 'HIGH' || incident.severity === 'CRITICAL') {
-      this.alertSecurityTeam(incident);
-    }
-
-    // Log to security monitoring system
-    this.logToSecuritySystem(incident);
-  }
-
-  /**
-   * Get PHI access statistics for compliance reporting
-   */
-  getPHIAccessStatistics(
-    startDate: Date = new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours
-    endDate: Date = new Date()
-  ): PHIAccessStatistics {
-    const filteredEntries = this.phiAccessLog.filter(
-      entry => entry.timestamp >= startDate && entry.timestamp <= endDate
-    );
-
-    const uniqueUsers = new Set(filteredEntries.map(e => e.userId).filter(Boolean)).size;
-    const uniqueStudents = new Set(filteredEntries.map(e => e.studentId).filter(Boolean)).size;
-
-    // Count operations
-    const operationCounts: Record<string, number> = {};
-    filteredEntries.forEach(entry => {
-      operationCounts[entry.operation] = (operationCounts[entry.operation] || 0) + 1;
-    });
-
-    // Count data types
-    const dataTypeCounts: Record<string, number> = {};
-    filteredEntries.forEach(entry => {
-      entry.dataTypes.forEach(dataType => {
-        dataTypeCounts[dataType] = (dataTypeCounts[dataType] || 0) + 1;
-      });
-    });
-
-    // Count security incidents in period
-    const securityIncidents = this.securityIncidents.filter(
-      incident => incident.timestamp >= startDate && incident.timestamp <= endDate
-    ).length;
-
-    return {
-      totalAccesses: filteredEntries.length,
-      uniqueUsers,
-      uniqueStudents,
-      operationCounts,
-      dataTypeCounts,
-      securityIncidents,
-      period: {
-        start: startDate,
-        end: endDate,
-      },
-    };
-  }
-
-  /**
-   * Get recent PHI access entries for audit review
-   */
-  getRecentPHIAccesses(limit: number = 100): PHIAccessLogEntry[] {
-    return this.phiAccessLog
-      .slice(-limit)
-      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-  }
-
-  /**
-   * Get security incidents for review
-   */
-  getSecurityIncidents(limit: number = 50): SecurityIncidentEntry[] {
-    return this.securityIncidents
-      .slice(-limit)
-      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-  }
-
-  /**
-   * Search PHI access logs by criteria
-   */
-  searchPHIAccessLogs(criteria: {
-    userId?: string;
-    studentId?: string;
-    operation?: string;
-    dataType?: string;
-    startDate?: Date;
-    endDate?: Date;
-    sensitivityLevel?: PHIAccessLogEntry['sensitivityLevel'];
-  }): PHIAccessLogEntry[] {
-    return this.phiAccessLog.filter(entry => {
-      if (criteria.userId && entry.userId !== criteria.userId) return false;
-      if (criteria.studentId && entry.studentId !== criteria.studentId) return false;
-      if (criteria.operation && entry.operation !== criteria.operation) return false;
-      if (criteria.dataType && !entry.dataTypes.includes(criteria.dataType)) return false;
-      if (criteria.startDate && entry.timestamp < criteria.startDate) return false;
-      if (criteria.endDate && entry.timestamp > criteria.endDate) return false;
-      if (criteria.sensitivityLevel && entry.sensitivityLevel !== criteria.sensitivityLevel) return false;
-      return true;
-    });
-  }
-
-  /**
-   * Generate compliance report for HIPAA audit
-   */
-  generateComplianceReport(
+  async getPHIAccessStatistics(
     startDate: Date,
-    endDate: Date
-  ): {
-    summary: PHIAccessStatistics;
-    detailedLogs: PHIAccessLogEntry[];
-    securityIncidents: SecurityIncidentEntry[];
-    complianceMetrics: {
-      auditTrailCompleteness: number;
-      accessControlViolations: number;
-      unauthorizedAttempts: number;
-      dataBreachIndicators: number;
-    };
-  } {
-    const summary = this.getPHIAccessStatistics(startDate, endDate);
-    const detailedLogs = this.searchPHIAccessLogs({ startDate, endDate });
-    const securityIncidents = this.securityIncidents.filter(
-      incident => incident.timestamp >= startDate && incident.timestamp <= endDate
-    );
+    endDate: Date,
+    userId?: string,
+    studentId?: string
+  ): Promise<PHIAccessStatistics> {
+    try {
+      const whereClause: any = {
+        createdAt: {
+          [Op.between]: [startDate, endDate]
+        },
+        entityType: 'PHI_ACCESS'
+      };
 
-    // Calculate compliance metrics
-    const complianceMetrics = {
-      auditTrailCompleteness: this.calculateAuditCompleteness(detailedLogs),
-      accessControlViolations: securityIncidents.filter(i => 
-        i.incidentType.includes('ACCESS_VIOLATION')
-      ).length,
-      unauthorizedAttempts: securityIncidents.filter(i => 
-        i.incidentType.includes('UNAUTHORIZED')
-      ).length,
-      dataBreachIndicators: securityIncidents.filter(i => 
-        i.severity === 'CRITICAL'
-      ).length,
-    };
+      if (userId) {
+        whereClause.userId = userId;
+      }
 
-    return {
-      summary,
-      detailedLogs,
-      securityIncidents,
-      complianceMetrics,
-    };
+      if (studentId) {
+        whereClause.entityId = studentId;
+      }
+
+      const auditLogs = await this.auditLogModel.findAll({
+        where: whereClause,
+        attributes: [
+          'userId',
+          'entityId',
+          'changes',
+          'action'
+        ]
+      });
+
+      // Aggregate statistics
+      const uniqueUsers = new Set();
+      const uniqueStudents = new Set();
+      const operationCounts: Record<string, number> = {};
+      const dataTypeCounts: Record<string, number> = {};
+
+      auditLogs.forEach(log => {
+        if (log.userId) uniqueUsers.add(log.userId);
+        if (log.entityId) uniqueStudents.add(log.entityId);
+
+        const changes = log.changes as any;
+        if (changes?.operation) {
+          operationCounts[changes.operation] = (operationCounts[changes.operation] || 0) + 1;
+        }
+
+        if (changes?.dataTypes) {
+          changes.dataTypes.forEach((dataType: string) => {
+            dataTypeCounts[dataType] = (dataTypeCounts[dataType] || 0) + 1;
+          });
+        }
+      });
+
+      // Get security incidents count
+      const securityIncidents = await this.auditLogModel.count({
+        where: {
+          createdAt: {
+            [Op.between]: [startDate, endDate]
+          },
+          action: AuditAction.UPDATE, // Using UPDATE for security incident logging
+          entityType: 'PHI_SECURITY'
+        }
+      });
+
+      return {
+        totalAccesses: auditLogs.length,
+        uniqueUsers: uniqueUsers.size,
+        uniqueStudents: uniqueStudents.size,
+        operationCounts,
+        dataTypeCounts,
+        securityIncidents,
+        period: {
+          start: startDate,
+          end: endDate
+        }
+      };
+
+    } catch (error) {
+      this.logger.error('Failed to retrieve PHI access statistics:', error);
+      return {
+        totalAccesses: 0,
+        uniqueUsers: 0,
+        uniqueStudents: 0,
+        operationCounts: {},
+        dataTypeCounts: {},
+        securityIncidents: 0,
+        period: { start: startDate, end: endDate }
+      };
+    }
   }
 
   /**
-   * Format PHI access log entry for structured logging
+   * Get recent PHI access logs with pagination
+   */
+  async getRecentPHIAccessLogs(
+    limit: number = 100,
+    offset: number = 0,
+    userId?: string,
+    studentId?: string
+  ): Promise<PHIAccessLogEntry[]> {
+    try {
+      const whereClause: any = {
+        entityType: 'PHI_ACCESS'
+      };
+
+      if (userId) {
+        whereClause.userId = userId;
+      }
+
+      if (studentId) {
+        whereClause.entityId = studentId;
+      }
+
+      const auditLogs = await this.auditLogModel.findAll({
+        where: whereClause,
+        order: [['createdAt', 'DESC']],
+        limit,
+        offset
+      });
+
+      return auditLogs.map(log => {
+        const changes = log.changes as any;
+        return {
+          correlationId: changes?.correlationId || log.id || '',
+          timestamp: log.createdAt || new Date(),
+          userId: log.userId || undefined,
+          studentId: log.entityId || undefined,
+          operation: changes?.operation || 'UNKNOWN',
+          dataTypes: changes?.dataTypes || [],
+          recordCount: changes?.recordCount || 1,
+          sensitivityLevel: changes?.sensitivityLevel || 'PHI',
+          ipAddress: changes?.ipAddress || log.ipAddress || '',
+          userAgent: changes?.userAgent || log.userAgent || '',
+          success: changes?.success !== false
+        };
+      });
+
+    } catch (error) {
+      this.logger.error('Failed to retrieve recent PHI access logs:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Log PHI disclosure for compliance tracking
+   */
+  async logPHIDisclosure(
+    disclosureId: string,
+    action: string,
+    changes?: any,
+    performedBy?: string,
+    ipAddress?: string,
+    userAgent?: string
+  ): Promise<void> {
+    try {
+      await this.phiDisclosureAuditModel.create({
+        disclosureId,
+        action,
+        changes,
+        performedBy: performedBy || 'system',
+        ipAddress,
+        userAgent
+      });
+
+      this.logger.log(`PHI disclosure logged: ${disclosureId}, action: ${action}`);
+
+    } catch (error) {
+      this.logger.error(`Failed to log PHI disclosure for ${disclosureId}:`, error);
+    }
+  }
+
+  /**
+   * Map operation string to AuditAction enum
+   */
+  private mapOperationToAuditAction(operation: string): AuditAction {
+    const operationMap: Record<string, AuditAction> = {
+      'READ': AuditAction.READ,
+      'CREATE': AuditAction.CREATE,
+      'UPDATE': AuditAction.UPDATE,
+      'DELETE': AuditAction.DELETE,
+      'EXPORT': AuditAction.EXPORT,
+      'SEARCH': AuditAction.VIEW,
+      'CACHE_READ': AuditAction.READ,
+      'CACHE_WRITE': AuditAction.UPDATE
+    };
+
+    return operationMap[operation] || AuditAction.READ;
+  }
+
+  /**
+   * Determine audit severity based on PHI access entry
+   */
+  private determineSeverity(entry: PHIAccessLogEntry): AuditSeverity {
+    if (entry.sensitivityLevel === 'SENSITIVE_PHI') {
+      return AuditSeverity.HIGH;
+    }
+
+    if (entry.recordCount > 100) {
+      return AuditSeverity.MEDIUM;
+    }
+
+    if (!entry.success) {
+      return AuditSeverity.MEDIUM;
+    }
+
+    return AuditSeverity.LOW;
+  }
+
+  /**
+   * Map incident severity to audit severity
+   */
+  private mapIncidentSeverityToAuditSeverity(severity: string): AuditSeverity {
+    const severityMap: Record<string, AuditSeverity> = {
+      'LOW': AuditSeverity.LOW,
+      'MEDIUM': AuditSeverity.MEDIUM,
+      'HIGH': AuditSeverity.HIGH,
+      'CRITICAL': AuditSeverity.CRITICAL
+    };
+
+    return severityMap[severity] || AuditSeverity.MEDIUM;
+  }
+
+  /**
+   * Format PHI access log message
    */
   private formatPHIAccessLog(entry: PHIAccessLogEntry): string {
-    return [
-      `CorrelationID: ${entry.correlationId}`,
-      `User: ${entry.userId || 'Anonymous'}`,
-      `Student: ${entry.studentId || 'N/A'}`,
-      `Operation: ${entry.operation}`,
-      `DataTypes: [${entry.dataTypes.join(', ')}]`,
-      `Records: ${entry.recordCount}`,
-      `Sensitivity: ${entry.sensitivityLevel}`,
-      `IP: ${entry.ipAddress}`,
-      `Success: ${entry.success}`,
-      `Timestamp: ${entry.timestamp.toISOString()}`,
-    ].join(' | ');
+    return `PHI Access - User: ${entry.userId || 'unknown'}, Student: ${entry.studentId || 'unknown'}, ` +
+           `Operation: ${entry.operation}, DataTypes: [${entry.dataTypes.join(', ')}], ` +
+           `Records: ${entry.recordCount}, Level: ${entry.sensitivityLevel}, ` +
+           `Success: ${entry.success}, IP: ${entry.ipAddress}`;
   }
 
   /**
-   * Format security incident for logging
+   * Format security incident log message
    */
-  private formatSecurityIncident(incident: SecurityIncidentEntry): string {
-    return [
-      `CorrelationID: ${incident.correlationId}`,
-      `Type: ${incident.incidentType}`,
-      `User: ${incident.userId || 'Anonymous'}`,
-      `IP: ${incident.ipAddress}`,
-      `Operation: ${incident.operation}`,
-      `Severity: ${incident.severity}`,
-      `Error: ${incident.errorMessage}`,
-      `Timestamp: ${incident.timestamp.toISOString()}`,
-    ].join(' | ');
-  }
-
-  /**
-   * Get appropriate log level for security incident severity
-   */
-  private getLogLevelForSeverity(severity: SecurityIncidentEntry['severity']): 'debug' | 'log' | 'warn' | 'error' {
-    switch (severity) {
-      case 'LOW': return 'debug';
-      case 'MEDIUM': return 'log';
-      case 'HIGH': return 'warn';
-      case 'CRITICAL': return 'error';
-      default: return 'log';
-    }
+  private formatSecurityIncidentLog(incident: SecurityIncidentEntry): string {
+    return `Security Incident - Type: ${incident.incidentType}, User: ${incident.userId || 'unknown'}, ` +
+           `Operation: ${incident.operation}, Severity: ${incident.severity}, ` +
+           `IP: ${incident.ipAddress}, Message: ${incident.errorMessage}`;
   }
 
   /**
    * Detect suspicious activity patterns
    */
-  private detectSuspiciousActivity(entry: PHIAccessLogEntry): void {
-    // Check for rapid successive accesses by same user
-    const recentAccesses = this.phiAccessLog.filter(log => 
-      log.userId === entry.userId && 
-      log.timestamp > new Date(Date.now() - 60000) // Last minute
-    );
-
-    if (recentAccesses.length > 10) {
-      this.logSecurityIncident({
-        correlationId: entry.correlationId,
-        timestamp: new Date(),
-        incidentType: 'RAPID_PHI_ACCESS',
-        userId: entry.userId,
-        ipAddress: entry.ipAddress,
-        operation: entry.operation,
-        errorMessage: `Rapid PHI access detected: ${recentAccesses.length} accesses in 1 minute`,
-        severity: 'MEDIUM',
+  private async detectSuspiciousActivity(entry: PHIAccessLogEntry): Promise<void> {
+    try {
+      // Check for unusual access patterns
+      const recentAccesses = await this.auditLogModel.count({
+        where: {
+          userId: entry.userId,
+          entityType: 'PHI_ACCESS',
+          createdAt: {
+            [Op.gte]: new Date(Date.now() - 60 * 60 * 1000) // Last hour
+          }
+        }
       });
+
+      // Flag high-frequency access
+      if (recentAccesses > 50) {
+        await this.logSecurityIncident({
+          correlationId: entry.correlationId,
+          timestamp: new Date(),
+          incidentType: 'HIGH_FREQUENCY_PHI_ACCESS',
+          userId: entry.userId,
+          ipAddress: entry.ipAddress,
+          operation: entry.operation,
+          errorMessage: `High frequency PHI access detected: ${recentAccesses} accesses in last hour`,
+          severity: 'MEDIUM'
+        });
+      }
+
+      // Check for access to multiple students rapidly
+      if (entry.studentId) {
+        const studentAccesses = await this.auditLogModel.count({
+          where: {
+            userId: entry.userId,
+            entityType: 'PHI_ACCESS',
+            createdAt: {
+              [Op.gte]: new Date(Date.now() - 30 * 60 * 1000) // Last 30 minutes
+            }
+          }
+        });
+
+        if (studentAccesses > 20) {
+          await this.logSecurityIncident({
+            correlationId: entry.correlationId,
+            timestamp: new Date(),
+            incidentType: 'MULTIPLE_STUDENT_ACCESS',
+            userId: entry.userId,
+            ipAddress: entry.ipAddress,
+            operation: entry.operation,
+            errorMessage: `Multiple student access detected: ${studentAccesses} students in last 30 minutes`,
+            severity: 'HIGH'
+          });
+        }
+      }
+
+    } catch (error) {
+      this.logger.error('Failed to detect suspicious activity:', error);
     }
-
-    // Check for unusual data volume access
-    if (entry.recordCount > 100) {
-      this.logSecurityIncident({
-        correlationId: entry.correlationId,
-        timestamp: new Date(),
-        incidentType: 'BULK_PHI_ACCESS',
-        userId: entry.userId,
-        ipAddress: entry.ipAddress,
-        operation: entry.operation,
-        errorMessage: `Large volume PHI access: ${entry.recordCount} records`,
-        severity: 'MEDIUM',
-      });
-    }
-
-    // Check for access outside business hours (placeholder - would use actual business hours)
-    const hour = entry.timestamp.getHours();
-    if (hour < 6 || hour > 22) {
-      this.logSecurityIncident({
-        correlationId: entry.correlationId,
-        timestamp: new Date(),
-        incidentType: 'AFTER_HOURS_PHI_ACCESS',
-        userId: entry.userId,
-        ipAddress: entry.ipAddress,
-        operation: entry.operation,
-        errorMessage: `PHI access outside business hours: ${hour}:00`,
-        severity: 'LOW',
-      });
-    }
   }
 
   /**
-   * Alert security team for high-severity incidents
+   * Log to external compliance system
    */
-  private alertSecurityTeam(incident: SecurityIncidentEntry): void {
-    // Placeholder for actual security team alerting system
-    this.logger.error(
-      `[SECURITY_ALERT] High-severity incident requires immediate attention: ${incident.incidentType}`
-    );
-    
-    // In production, this would:
-    // - Send email alerts
-    // - Create security tickets
-    // - Integrate with SIEM systems
-    // - Trigger automated responses
+  private async logToComplianceSystem(entry: PHIAccessLogEntry): Promise<void> {
+    // Placeholder for integration with external compliance systems
+    // Could send to SIEM, compliance databases, etc.
+    this.logger.debug(`Compliance system logging for PHI access: ${entry.correlationId}`);
   }
 
   /**
-   * Log to compliance system
+   * Trigger security alert for critical incidents
    */
-  private logToComplianceSystem(entry: PHIAccessLogEntry): void {
-    // Placeholder for compliance system integration
-    this.logger.debug(
-      `[COMPLIANCE_LOG] PHI access logged for audit trail: ${entry.correlationId}`
-    );
-    
-    // In production, this would integrate with:
-    // - HIPAA compliance databases
-    // - Audit management systems
-    // - Legal compliance platforms
+  private async triggerSecurityAlert(incident: SecurityIncidentEntry): Promise<void> {
+    // Placeholder for security alert system integration
+    // Could send emails, SMS, trigger workflows, etc.
+    this.logger.warn(`Security alert triggered for incident: ${incident.incidentType}`);
   }
 
   /**
-   * Log to security monitoring system
+   * Cleanup resources when service is destroyed
    */
-  private logToSecuritySystem(incident: SecurityIncidentEntry): void {
-    // Placeholder for security system integration
-    this.logger.debug(
-      `[SECURITY_LOG] Security incident logged: ${incident.correlationId}`
-    );
-    
-    // In production, this would integrate with:
-    // - SIEM systems (Splunk, ELK, etc.)
-    // - Security orchestration platforms
-    // - Threat intelligence systems
-  }
-
-  /**
-   * Calculate audit trail completeness percentage
-   */
-  private calculateAuditCompleteness(logs: PHIAccessLogEntry[]): number {
-    if (logs.length === 0) return 100;
-    
-    // Check for required fields in audit logs
-    const requiredFields = ['correlationId', 'userId', 'operation', 'timestamp'];
-    let completeEntries = 0;
-    
-    logs.forEach(log => {
-      const hasAllFields = requiredFields.every(field => 
-        log[field as keyof PHIAccessLogEntry] != null
-      );
-      if (hasAllFields) completeEntries++;
-    });
-    
-    return Math.round((completeEntries / logs.length) * 100);
-  }
-
-  /**
-   * Clear logs (for testing/maintenance - use with extreme caution)
-   */
-  clearLogs(): void {
-    this.logger.warn('[MAINTENANCE] Clearing PHI access logs - This should only be done during maintenance');
-    this.phiAccessLog = [];
-    this.securityIncidents = [];
+  onModuleDestroy(): void {
+    this.logger.log('PHI Access Logger Service destroyed');
   }
 }

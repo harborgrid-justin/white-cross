@@ -1,15 +1,16 @@
-import { IsString, IsDate, IsOptional, IsNumber } from 'class-validator';
+import { IsString, IsDate, IsOptional, IsNumber, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { VaccineType } from '../../health-record/interfaces/vaccination.interface';
 
 export class CreateImmunizationDto {
   @ApiProperty()
   @IsString()
   studentId: string;
 
-  @ApiProperty()
-  @IsString()
-  vaccineName: string;
+  @ApiProperty({ enum: VaccineType })
+  @IsEnum(VaccineType)
+  vaccineType: VaccineType;
 
   @ApiProperty()
   @IsDate()
