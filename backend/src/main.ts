@@ -2,6 +2,17 @@
  * NestJS Application Entry Point
  * White Cross School Health Platform
  */
+
+// Configure DNS servers before any network operations
+import * as dns from 'dns';
+dns.setServers([
+  '8.8.8.8',      // Google DNS
+  '8.8.4.4',      // Google DNS Secondary
+  '1.1.1.1',      // Cloudflare DNS
+  '1.0.0.1',      // Cloudflare DNS Secondary
+]);
+console.log('✅ DNS servers configured:', dns.getServers());
+
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';

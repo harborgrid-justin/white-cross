@@ -15,6 +15,12 @@ import { Module, Global } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Sequelize } from 'sequelize-typescript';
+import * as dns from 'dns';
+import { promisify } from 'util';
+
+// Configure DNS with reliable public DNS servers
+dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1', '1.0.0.1']);
+const dnsResolve4 = promisify(dns.resolve4);
 
 // Services
 import { CacheService } from './services/cache.service';
@@ -170,9 +176,23 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
     ConfigModule,
     SequelizeModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => {
+      useFactory: async (configService: ConfigService) => {
         const databaseUrl = configService.get('DATABASE_URL');
-        
+
+        // Helper function to resolve hostname to IP
+        const resolveHost = async (hostname: string): Promise<string> => {
+          try {
+            console.log(`🔍 Resolving hostname: ${hostname}`);
+            const addresses = await dnsResolve4(hostname);
+            const resolvedIp = addresses[0];
+            console.log(`✅ Resolved ${hostname} to ${resolvedIp}`);
+            return resolvedIp;
+          } catch (error) {
+            console.warn(`⚠️  DNS resolution failed for ${hostname}, using original hostname:`, error.message);
+            return hostname;
+          }
+        };
+
         if (databaseUrl) {
           // Use DATABASE_URL if provided (for cloud deployments)
           return {
@@ -203,9 +223,12 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
           };
         } else {
           // Use individual connection parameters for local development
+          const dbHost = configService.get('DB_HOST', 'localhost');
+          const resolvedHost = await resolveHost(dbHost);
+
           return {
             dialect: 'postgres',
-            host: configService.get('DB_HOST', 'localhost'),
+            host: resolvedHost,
             port: configService.get<number>('DB_PORT', 5432),
             username: configService.get('DB_USERNAME', 'postgres'),
             password: configService.get('DB_PASSWORD'),
@@ -214,6 +237,12 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
             synchronize: false,
             alter: false,
             logging: configService.get('NODE_ENV') === 'development' ? console.log : false,
+            dialectOptions: {
+              ssl: {
+                require: true,
+                rejectUnauthorized: false
+              }
+            },
             // V6 recommended options
             define: {
               timestamps: true,
