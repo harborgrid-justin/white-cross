@@ -17,9 +17,7 @@ import { Module, Global, Optional, SkipSelf } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE, APP_FILTER } from '@nestjs/core';
 
 // Guards
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { ThrottlerGuard } from '@nestjs/throttler';
 
 // Interceptors
 import { LoggingInterceptor } from '../common/interceptors/logging.interceptor';
@@ -64,35 +62,18 @@ import { AllExceptionsFilter } from '../common/exceptions/filters/all-exceptions
 @Module({
   providers: [
     // ==================== Global Guards ====================
-
-    /**
-     * JWT Authentication Guard
-     * Validates JWT tokens on all routes (except @Public())
-     * Priority: 1 (runs first)
-     */
-    {
-      provide: APP_GUARD,
-      useClass: JwtAuthGuard,
-    },
+    // NOTE: Global guards (ThrottlerGuard, IpRestrictionGuard, JwtAuthGuard) are now
+    // registered in AppModule with the correct security layering order.
+    // See app.module.ts for guard configuration and ordering rationale.
 
     /**
      * Roles Authorization Guard
      * Enforces role-based access control (RBAC)
-     * Priority: 2 (runs after authentication)
+     * Priority: Runs after authentication guards from AppModule
      */
     {
       provide: APP_GUARD,
       useClass: RolesGuard,
-    },
-
-    /**
-     * Rate Limiting Guard
-     * Prevents DDoS and brute-force attacks
-     * Priority: 3 (runs after authorization)
-     */
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
     },
 
     // ==================== Global Interceptors ====================

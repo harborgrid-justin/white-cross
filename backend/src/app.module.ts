@@ -9,6 +9,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { IpRestrictionGuard } from './access-control/guards/ip-restriction.guard';
 import { HealthRecordModule } from './health-record/health-record.module';
 import { UserModule } from './user/user.module';
 import {
@@ -68,9 +69,14 @@ import { StudentModule } from './student/student.module';
 import { AppointmentModule } from './appointment/appointment.module';
 import { DiscoveryExampleModule } from './discovery/discovery.module';
 import { CommandsModule } from './commands/commands.module';
+import { CoreModule } from './core/core.module';
 
 @Module({
   imports: [
+    // Core module (CRITICAL - provides global exception filters, interceptors, and pipes)
+    // MUST be imported first to ensure proper error handling and logging
+    CoreModule,
+
     // Configuration module with validation and type-safe namespaces
     ConfigModule.forRoot({
       isGlobal: true,
@@ -127,6 +133,9 @@ import { CommandsModule } from './commands/commands.module';
     // Security module (IP restrictions, threat detection, incidents)
     SecurityModule,
 
+    // Access Control module (required for IpRestrictionGuard)
+    AccessControlModule,
+
     // Infrastructure modules
     MonitoringModule,
     EmailModule,
@@ -155,8 +164,6 @@ import { CommandsModule } from './commands/commands.module';
     ConfigurationModule,
 
     AuditModule,
-
-    AccessControlModule,
 
     ContactModule,
 
@@ -228,15 +235,56 @@ import { CommandsModule } from './commands/commands.module';
     // Global configuration service (type-safe configuration access)
     AppConfigService,
 
-    // Global JWT authentication guard
-    {
-      provide: APP_GUARD,
-      useClass: JwtAuthGuard,
-    },
-    // Global rate limiting guard (CRITICAL SECURITY)
+    /**
+     * CRITICAL FIX: Corrected Global Guard Ordering
+     *
+     * Guards are executed in the order they are registered.
+     * Proper security layering requires:
+     *
+     * 1. ThrottlerGuard (FIRST) - Rate limiting to prevent brute force attacks
+     *    - Runs before expensive JWT validation
+     *    - Prevents authentication endpoint abuse
+     *    - Low overhead: O(1) in-memory lookup
+     *
+     * 2. IpRestrictionGuard (SECOND) - IP-based access control
+     *    - Blocks known malicious IPs early
+     *    - Prevents banned IPs from consuming resources
+     *    - Database lookup but cached
+     *
+     * 3. JwtAuthGuard (THIRD) - JWT authentication
+     *    - Most expensive guard (JWT verification, token blacklist check)
+     *    - Only runs for requests that pass rate limiting and IP checks
+     *    - Adds user context to request
+     *
+     * Old (WRONG) Order:
+     * - JwtAuthGuard (expensive operation)
+     * - ThrottlerGuard (rate limiting)
+     *
+     * Impact of Wrong Order:
+     * - Attackers could brute force authentication before rate limiting
+     * - Higher server load from JWT verification
+     * - Token blacklist lookups for every attack attempt
+     *
+     * New (CORRECT) Order:
+     * - ThrottlerGuard → IpRestrictionGuard → JwtAuthGuard
+     */
+
+    // 1. RATE LIMITING - Prevent brute force attacks (RUNS FIRST)
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+
+    // 2. IP RESTRICTION - Block malicious IPs early (RUNS SECOND)
+    {
+      provide: APP_GUARD,
+      useClass: IpRestrictionGuard,
+    },
+
+    // 3. AUTHENTICATION - Validate JWT tokens (RUNS THIRD)
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
     },
   ],
   exports: [
