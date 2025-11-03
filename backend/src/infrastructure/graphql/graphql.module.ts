@@ -47,30 +47,34 @@ import { ComplexityPlugin } from './plugins/complexity.plugin';
     NestGraphQLModule.forRootAsync<ApolloDriverConfig>({
       driver: ApolloDriver,
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService, moduleRef: ModuleRef) => ({
-        // Auto-generate schema from TypeScript classes
-        // In production or Docker, generate in memory only
-        autoSchemaFile: process.env.NODE_ENV === 'production' || process.env.DOCKER
-          ? true
-          : join(process.cwd(), 'src/schema.gql'),
+      useFactory: async (configService: ConfigService, moduleRef: ModuleRef) => {
+        const isProduction = configService.get('NODE_ENV') === 'production';
+        const isDocker = configService.get('DOCKER') === 'true';
 
-        // Sort schema alphabetically for consistency
-        sortSchema: true,
+        return {
+          // Auto-generate schema from TypeScript classes
+          // In production or Docker, generate in memory only
+          autoSchemaFile: isProduction || isDocker
+            ? true
+            : join(process.cwd(), 'src/schema.gql'),
 
-        // Enable GraphQL Playground in development
-        playground: configService.get('NODE_ENV') !== 'production',
+          // Sort schema alphabetically for consistency
+          sortSchema: true,
 
-        // Enable introspection (needed for Playground)
-        introspection: true,
+          // Enable GraphQL Playground in development
+          playground: !isProduction,
 
-        // CORS configuration
-        cors: {
-          origin: configService.get('CORS_ORIGIN') || 'http://localhost:5173',
-          credentials: true,
-        },
+          // Enable introspection (needed for Playground)
+          introspection: true,
 
-        // Context builder - extracts request for authentication and creates DataLoaders
-        context: ({ req, res }: { req: Request; res: Response }) => {
+          // CORS configuration
+          cors: {
+            origin: configService.get('security.cors.origin') || 'http://localhost:5173',
+            credentials: true,
+          },
+
+          // Context builder - extracts request for authentication and creates DataLoaders
+          context: ({ req, res }: { req: Request; res: Response }) => {
           // Get DataLoaderFactory from the request scope
           // Each GraphQL request gets its own DataLoaderFactory instance
           // This ensures proper caching scope and prevents data leakage between requests
@@ -87,13 +91,13 @@ import { ComplexityPlugin } from './plugins/complexity.plugin';
           };
         },
 
-        // Custom scalars
-        resolvers: {
-          JSON: GraphQLJSON,
-        },
+          // Custom scalars
+          resolvers: {
+            JSON: GraphQLJSON,
+          },
 
-        // Error formatting with PHI sanitization (HIPAA compliance)
-        formatError: (error) => {
+          // Error formatting with PHI sanitization (HIPAA compliance)
+          formatError: (error) => {
           // Check if error contains PHI for audit logging
           const hasPHI = containsPHI(error.message);
           if (hasPHI) {
@@ -114,31 +118,32 @@ import { ComplexityPlugin } from './plugins/complexity.plugin';
             path: error.path,
           });
 
-          // Sanitize error to remove any PHI
-          const sanitizedError = sanitizeGraphQLError(error);
+            // Sanitize error to remove any PHI
+            const sanitizedError = sanitizeGraphQLError(error);
 
-          // Return sanitized error to client
-          return {
-            message: sanitizedError.message,
-            extensions: {
-              code: sanitizedError.extensions?.code || 'INTERNAL_SERVER_ERROR',
-              ...(configService.get('NODE_ENV') !== 'production' && {
-                stacktrace: sanitizedError.extensions?.stacktrace,
-              }),
-            },
-            // Include path for debugging (no PHI in paths)
-            ...(error.path && { path: error.path }),
-          };
-        },
+            // Return sanitized error to client
+            return {
+              message: sanitizedError.message,
+              extensions: {
+                code: sanitizedError.extensions?.code || 'INTERNAL_SERVER_ERROR',
+                ...(!isProduction && {
+                  stacktrace: sanitizedError.extensions?.stacktrace,
+                }),
+              },
+              // Include path for debugging (no PHI in paths)
+              ...(error.path && { path: error.path }),
+            };
+          },
 
-        // Include directives in schema
-        includeDirectives: true,
+          // Include directives in schema
+          includeDirectives: true,
 
-        // Build schema options
-        buildSchemaOptions: {
-          dateScalarMode: 'timestamp', // Use timestamps for Date scalars
-        },
-      }),
+          // Build schema options
+          buildSchemaOptions: {
+            dateScalarMode: 'timestamp', // Use timestamps for Date scalars
+          },
+        };
+      },
       inject: [ConfigService, ModuleRef],
     }),
 

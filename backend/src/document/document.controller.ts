@@ -8,7 +8,6 @@ import {
   Param,
   Query,
   UseGuards,
-  Request,
   HttpCode,
   HttpStatus,
   ParseIntPipe,
@@ -20,6 +19,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBearerAuth, ApiPara
 import { FileInterceptor } from '@nestjs/platform-express';
 import { DocumentService } from './document.service';
 import { CreateDocumentDto, UpdateDocumentDto, SignDocumentDto } from './dto';
+import { CurrentUser, IpAddress } from '../auth/decorators';
 
 /**
  * Document Controller
@@ -88,19 +88,19 @@ export class DocumentController {
     @Query('studentId') studentId?: string,
     @Query('uploadedBy') uploadedBy?: string,
     @Query('searchTerm') searchTerm?: string,
-  ) {
+  ): Promise<any> {
     const filters = { category, status, studentId, uploadedBy, searchTerm };
     return this.documentService.getDocuments(page, limit, filters);
   }
 
   @Get(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get document by ID with all associations',
     description: 'Retrieves a single document by UUID with full details including metadata, signatures, and access history. Logs access for HIPAA audit trail.'
   })
   @ApiParam({ name: 'id', description: 'Document UUID', format: 'uuid' })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Document retrieved successfully with full details',
     schema: {
       type: 'object',
@@ -135,7 +135,7 @@ export class DocumentController {
   @ApiResponse({ status: 403, description: 'Forbidden - No access to this document' })
   @ApiResponse({ status: 404, description: 'Document not found' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
-  async getDocumentById(@Param('id') id: string) {
+  async getDocumentById(@Param('id') id: string): Promise<any> {
     return this.documentService.getDocumentById(id);
   }
 
@@ -165,7 +165,7 @@ export class DocumentController {
   @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
   @ApiResponse({ status: 403, description: 'Forbidden - Insufficient permissions to create documents' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
-  async createDocument(@Body() createDto: CreateDocumentDto) {
+  async createDocument(@Body() createDto: CreateDocumentDto): Promise<any> {
     return this.documentService.createDocument(createDto);
   }
 
@@ -176,9 +176,9 @@ export class DocumentController {
   async updateDocument(
     @Param('id') id: string,
     @Body() updateDto: UpdateDocumentDto,
-    @Request() req: any,
-  ) {
-    const updatedBy = req.user?.id || 'system';
+    @CurrentUser('id') userId: string,
+  ): Promise<any> {
+    const updatedBy = userId || 'system';
     return this.documentService.updateDocument(id, updateDto, updatedBy);
   }
 
@@ -187,8 +187,11 @@ export class DocumentController {
   @ApiResponse({ status: 200, description: 'Document deleted successfully' })
   @ApiResponse({ status: 404, description: 'Document not found' })
   @HttpCode(HttpStatus.OK)
-  async deleteDocument(@Param('id') id: string, @Request() req: any) {
-    const deletedBy = req.user?.id || 'system';
+  async deleteDocument(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string,
+  ): Promise<any> {
+    const deletedBy = userId || 'system';
     return this.documentService.deleteDocument(id, deletedBy);
   }
 
@@ -221,18 +224,18 @@ export class DocumentController {
   @ApiResponse({ status: 404, description: 'Document not found' })
   @ApiResponse({ status: 409, description: 'Document already signed or in invalid state' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
-  async signDocument(@Body() signDto: SignDocumentDto) {
+  async signDocument(@Body() signDto: SignDocumentDto): Promise<any> {
     return this.documentService.signDocument(signDto);
   }
 
   @Post(':id/download')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Download a document (tracks access)',
     description: 'Initiates secure download of document file with comprehensive access logging. Tracks user, IP address, and timestamp for HIPAA audit compliance. Returns download URL or file stream.'
   })
   @ApiParam({ name: 'id', description: 'Document UUID', format: 'uuid' })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Document download initiated successfully',
     schema: {
       type: 'object',
@@ -250,9 +253,12 @@ export class DocumentController {
   @ApiResponse({ status: 403, description: 'Forbidden - No download permission for this document' })
   @ApiResponse({ status: 404, description: 'Document not found or file missing' })
   @ApiResponse({ status: 500, description: 'Internal server error or file system error' })
-  async downloadDocument(@Param('id') id: string, @Request() req: any) {
-    const downloadedBy = req.user?.id || 'system';
-    const ipAddress = req.ip;
+  async downloadDocument(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string,
+    @IpAddress() ipAddress: string,
+  ): Promise<any> {
+    const downloadedBy = userId || 'system';
     return this.documentService.downloadDocument(id, downloadedBy, ipAddress);
   }
 }

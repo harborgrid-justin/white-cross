@@ -178,7 +178,9 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
         const databaseUrl = configService.get('DATABASE_URL');
-        
+        const isProduction = configService.get('NODE_ENV') === 'production';
+        const isDevelopment = configService.get('NODE_ENV') === 'development';
+
         if (databaseUrl) {
           // Use DATABASE_URL if provided (for cloud deployments)
           return {
@@ -187,7 +189,7 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
             autoLoadModels: true,
             synchronize: false,
             alter: false,
-            logging: configService.get('NODE_ENV') === 'development' ? console.log : false,
+            logging: isDevelopment ? console.log : false,
             benchmark: true,
             // V6 recommended options
             define: {
@@ -196,7 +198,7 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
               freezeTableName: true,
             },
             pool: {
-              max: process.env.NODE_ENV === 'production' ? 20 : 10,
+              max: isProduction ? 20 : 10,
               min: 2,
               acquire: 30000,
               idle: 10000,
@@ -236,15 +238,15 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
           // Use individual connection parameters for local development
           return {
             dialect: 'postgres',
-            host: configService.get('DB_HOST', 'localhost'),
-            port: configService.get<number>('DB_PORT', 5432),
-            username: configService.get('DB_USERNAME', 'postgres'),
-            password: configService.get('DB_PASSWORD'),
-            database: configService.get('DB_NAME', 'whitecross'),
+            host: configService.get('database.host', 'localhost'),
+            port: configService.get<number>('database.port', 5432),
+            username: configService.get('database.username', 'postgres'),
+            password: configService.get('database.password'),
+            database: configService.get('database.database', 'whitecross'),
             autoLoadModels: true,
-            synchronize: configService.get('NODE_ENV') === 'development',
-            alter: configService.get('NODE_ENV') === 'development',
-            logging: configService.get('NODE_ENV') === 'development' ? console.log : false,
+            synchronize: isDevelopment,
+            alter: isDevelopment,
+            logging: isDevelopment ? console.log : false,
             benchmark: true,
             // V6 recommended options
             define: {
@@ -253,7 +255,7 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
               freezeTableName: true,
             },
             pool: {
-              max: process.env.NODE_ENV === 'production' ? 20 : 10,
+              max: isProduction ? 20 : 10,
               min: 2,
               acquire: 30000,
               idle: 10000,

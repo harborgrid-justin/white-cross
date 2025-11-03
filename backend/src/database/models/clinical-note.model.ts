@@ -8,9 +8,13 @@ import {
   AllowNull,
   Index,
   ForeignKey,
-  BelongsTo
+  BelongsTo,
+  BeforeCreate,
+  BeforeUpdate,
+  Scopes
   } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
+import { Op } from 'sequelize';
 
 import { NoteType } from '../../clinical/enums/note-type.enum';
 
@@ -37,6 +41,64 @@ export interface ClinicalNoteAttributes {
   visit?: any;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  },
+  byStudent: (studentId: string) => ({
+    where: { studentId },
+    order: [['createdAt', 'DESC']]
+  }),
+  byType: (type: NoteType) => ({
+    where: { type },
+    order: [['createdAt', 'DESC']]
+  }),
+  byAuthor: (createdBy: string) => ({
+    where: { createdBy },
+    order: [['createdAt', 'DESC']]
+  }),
+  confidential: {
+    where: {
+      isConfidential: true
+    },
+    order: [['createdAt', 'DESC']]
+  },
+  unsigned: {
+    where: {
+      isSigned: false
+    },
+    order: [['createdAt', 'ASC']]
+  },
+  signed: {
+    where: {
+      isSigned: true
+    },
+    order: [['signedAt', 'DESC']]
+  },
+  amended: {
+    where: {
+      amended: true
+    },
+    order: [['updatedAt', 'DESC']]
+  },
+  recent: {
+    where: {
+      createdAt: {
+        [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+      }
+    },
+    order: [['createdAt', 'DESC']]
+  },
+  soapNotes: {
+    where: {
+      type: NoteType.SOAP
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'clinical_notes',
   timestamps: true,
@@ -195,6 +257,42 @@ export class ClinicalNote extends Model<ClinicalNoteAttributes> implements Clini
 
   @Column(DataType.DATE)
   declare updatedAt?: Date;
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: ClinicalNote) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] ClinicalNote ${instance.id} modified for student ${instance.studentId} at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}, Author: ${instance.createdBy}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
+
+  @BeforeCreate
+  @BeforeUpdate
+  static async validateSOAPNote(instance: ClinicalNote) {
+    if (instance.type === NoteType.SOAP) {
+      if (instance.isSigned && (!instance.subjective || !instance.objective || !instance.assessment || !instance.plan)) {
+        throw new Error('SOAP note must have all four components (S.O.A.P) before signing');
+      }
+    }
+  }
+
+  @BeforeUpdate
+  static async validateAmendment(instance: ClinicalNote) {
+    if (instance.changed('amended') && instance.amended && !instance.amendmentReason) {
+      throw new Error('amendmentReason is required when marking note as amended');
+    }
+  }
+
+  @BeforeUpdate
+  static async validateSignature(instance: ClinicalNote) {
+    if (instance.changed('isSigned') && instance.isSigned) {
+      instance.signedAt = new Date();
+    }
+  }
 
   /**
    * Check if note is a SOAP note

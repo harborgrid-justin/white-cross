@@ -16,3 +16,6 @@ export type { DatabaseConfig } from './database.config';
 export type { AuthConfig } from './auth.config';
 export type { SecurityConfig } from './security.config';
 export type { RedisConfig } from './redis.config';
+
+// Export centralized configuration service
+export { AppConfigService } from './app-config.service';

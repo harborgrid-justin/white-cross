@@ -8,11 +8,15 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import helmet from 'helmet';
 import { RedisIoAdapter } from './infrastructure/websocket/adapters/redis-io.adapter';
+import { AppConfigService } from './config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn', 'log', 'debug', 'verbose'],
   });
+
+  // Get type-safe configuration service
+  const configService = app.get(AppConfigService);
 
   // Enable Helmet security headers
   app.use(
@@ -75,10 +79,10 @@ async function bootstrap() {
   );
 
   // Enable CORS with strict origin validation
-  const corsOrigin = process.env.CORS_ORIGIN;
+  const allowedOrigins = configService.corsOrigins;
 
   // CRITICAL SECURITY: Fail fast if CORS_ORIGIN is not configured
-  if (!corsOrigin) {
+  if (!allowedOrigins || allowedOrigins.length === 0) {
     throw new Error(
       'CRITICAL SECURITY ERROR: CORS_ORIGIN is not configured. ' +
       'Application cannot start without proper CORS configuration. ' +
@@ -86,11 +90,8 @@ async function bootstrap() {
     );
   }
 
-  // Parse multiple origins (comma-separated)
-  const allowedOrigins = corsOrigin.split(',').map(origin => origin.trim());
-
   // Validate that wildcard is not used in production
-  if (process.env.NODE_ENV === 'production' && allowedOrigins.includes('*')) {
+  if (configService.isProduction && allowedOrigins.includes('*')) {
     throw new Error(
       'CRITICAL SECURITY ERROR: Wildcard CORS origin (*) is not allowed in production. ' +
       'Please specify exact allowed origins in CORS_ORIGIN.'
@@ -108,7 +109,7 @@ async function bootstrap() {
 
   // Configure Redis adapter for WebSocket horizontal scaling
   // This is CRITICAL for multi-server deployments
-  const useRedisAdapter = process.env.ENABLE_REDIS_ADAPTER !== 'false';
+  const useRedisAdapter = configService.isWebSocketEnabled;
 
   if (useRedisAdapter) {
     try {
@@ -120,7 +121,7 @@ async function bootstrap() {
     } catch (error) {
       console.error('Failed to initialize Redis adapter:', error);
 
-      if (process.env.NODE_ENV === 'production') {
+      if (configService.isProduction) {
         throw new Error(
           'CRITICAL ERROR: Redis adapter failed to initialize in production. ' +
           'WebSockets cannot scale horizontally without Redis. ' +
@@ -135,7 +136,7 @@ async function bootstrap() {
     }
   } else {
     console.warn(
-      'Redis adapter disabled (ENABLE_REDIS_ADAPTER=false). ' +
+      'Redis adapter disabled. ' +
       'WebSockets will NOT work across multiple server instances.'
     );
   }
@@ -312,13 +313,15 @@ async function bootstrap() {
     res.json(document);
   });
 
+  // Validate critical configuration before starting
+  configService.validateCriticalConfig();
+
   // Port configuration with validation
-  const portStr = process.env.PORT || '3001';
-  const port = parseInt(portStr, 10);
+  const port = configService.port;
 
   if (isNaN(port) || port < 1024 || port > 65535) {
     throw new Error(
-      `CONFIGURATION ERROR: Invalid PORT value "${portStr}". ` +
+      `CONFIGURATION ERROR: Invalid PORT value "${port}". ` +
       `Port must be a number between 1024 and 65535.`
     );
   }
@@ -327,7 +330,7 @@ async function bootstrap() {
   console.log(`\n${'='.repeat(80)}`);
   console.log(`🚀 White Cross NestJS Backend`);
   console.log(`${'='.repeat(80)}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`Environment: ${configService.environment}`);
   console.log(`Server: http://localhost:${port}`);
   console.log(`API Documentation: http://localhost:${port}/api/docs`);
   console.log(`Health Check: http://localhost:${port}/api/health`);

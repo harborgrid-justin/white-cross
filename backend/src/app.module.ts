@@ -18,6 +18,7 @@ import {
   securityConfig,
   redisConfig,
   validationSchema,
+  AppConfigService,
 } from './config';
 
 import { AnalyticsModule } from './analytics/analytics.module';
@@ -224,6 +225,9 @@ import { CommandsModule } from './commands/commands.module';
   ],
   controllers: [],
   providers: [
+    // Global configuration service (type-safe configuration access)
+    AppConfigService,
+
     // Global JWT authentication guard
     {
       provide: APP_GUARD,
@@ -234,6 +238,10 @@ import { CommandsModule } from './commands/commands.module';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
+  ],
+  exports: [
+    // Export AppConfigService for use in other modules
+    AppConfigService,
   ],
 })
 export class AppModule {}
