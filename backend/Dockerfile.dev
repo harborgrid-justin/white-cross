@@ -1,0 +1,37 @@
+# ============================================
+# White Cross NestJS Backend - Development Dockerfile
+# ============================================
+# Optimized for local development with hot reload
+# Includes all development dependencies and debugging tools
+# ============================================
+
+FROM node:20-alpine
+
+# Install build dependencies for native modules
+RUN apk add --no-cache python3 make g++
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install all dependencies (including devDependencies)
+RUN npm ci
+
+# Copy source code (for initial build)
+# In development, this will be overridden by volume mount
+COPY . .
+
+# Expose application ports
+# 3001: Main API server
+# 3002: WebSocket server
+# 9229: Node.js debugging port
+EXPOSE 3001 3002 9229
+
+# Set NODE_ENV to development
+ENV NODE_ENV=development
+
+# Start the application in development mode with hot reload
+# Use --watch flag for automatic restart on file changes
+CMD ["npm", "run", "start:dev"]
