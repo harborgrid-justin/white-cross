@@ -135,41 +135,6 @@ export class StudentController {
   }
 
   /**
-   * Get student by ID
-   */
-  @Get(':id')
-  @ApiOperation({
-    summary: 'Get student by ID',
-    description: 'Retrieves a single student by their UUID with full profile information',
-  })
-  @ApiParam({
-    name: 'id',
-    description: 'Student UUID',
-    type: 'string',
-    format: 'uuid',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Student retrieved successfully',
-    type: 'Student',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Invalid UUID format',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Student not found',
-  })
-  @ApiResponse({
-    status: 500,
-    description: 'Internal server error',
-  })
-  async findOne(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
-    return this.studentService.findOne(id);
-  }
-
-  /**
    * Update student
    */
   @Patch(':id')
@@ -1006,5 +971,42 @@ export class StudentController {
     @Query() query: WaitlistStatusDto,
   ) {
     return this.studentService.getStudentWaitlistStatus(id, query);
+  }
+
+  // ==================== IMPORTANT: Keep :id route LAST to prevent route conflicts ====================
+
+  /**
+   * Get student by ID
+   */
+  @Get(':id')
+  @ApiOperation({
+    summary: 'Get student by ID',
+    description: 'Retrieves a single student by their UUID with full profile information',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Student UUID',
+    type: 'string',
+    format: 'uuid',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Student retrieved successfully',
+    type: 'Student',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid UUID format',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Student not found',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
+  })
+  async findOne(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+    return this.studentService.findOne(id);
   }
 }

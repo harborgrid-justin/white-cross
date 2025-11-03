@@ -8,10 +8,13 @@ import {
   AllowNull,
   Index,
   ForeignKey,
-  BelongsTo
+  BelongsTo,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
   } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-
+import { Op } from 'sequelize';
 
 import { PrescriptionStatus } from '../../clinical/enums/prescription-status.enum';
 
@@ -44,6 +47,58 @@ export interface PrescriptionAttributes {
   treatmentPlan?: any;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      status: {
+        [Op.in]: [PrescriptionStatus.FILLED, PrescriptionStatus.PICKED_UP]
+      },
+      endDate: {
+        [Op.or]: [
+          null,
+          { [Op.gte]: new Date() }
+        ]
+      }
+    },
+    order: [['startDate', 'DESC']]
+  },
+  byStudent: (studentId: string) => ({
+    where: { studentId },
+    order: [['startDate', 'DESC']]
+  }),
+  byStatus: (status: PrescriptionStatus) => ({
+    where: { status },
+    order: [['startDate', 'DESC']]
+  }),
+  pending: {
+    where: {
+      status: PrescriptionStatus.PENDING
+    },
+    order: [['createdAt', 'ASC']]
+  },
+  needsRefill: {
+    where: {
+      status: {
+        [Op.in]: [PrescriptionStatus.FILLED, PrescriptionStatus.PICKED_UP]
+      },
+      refillsAuthorized: {
+        [Op.gt]: (Op.col as any)('refillsUsed')
+      }
+    }
+  },
+  expired: {
+    where: {
+      [Op.or]: [
+        { status: PrescriptionStatus.EXPIRED },
+        {
+          endDate: {
+            [Op.lt]: new Date()
+          }
+        }
+      ]
+    }
+  }
+}))
 @Table({
   tableName: 'prescriptions',
   timestamps: true,
@@ -59,6 +114,14 @@ export interface PrescriptionAttributes {
     {
       fields: ['treatmentPlanId']
   },
+    {
+      fields: ['status', 'startDate'],
+      name: 'idx_prescriptions_status_start_date'
+  },
+    {
+      fields: ['endDate'],
+      name: 'idx_prescriptions_end_date'
+  },
   ]
   })
 export class Prescription extends Model<PrescriptionAttributes> implements PrescriptionAttributes {
@@ -67,9 +130,16 @@ export class Prescription extends Model<PrescriptionAttributes> implements Presc
   @Column(DataType.UUID)
   declare id: string;
 
+  @ForeignKey(() => require('./student.model').Student)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
+    references: {
+      model: 'students',
+      key: 'id'
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE'
   })
   @Index
   studentId: string;
@@ -94,9 +164,19 @@ export class Prescription extends Model<PrescriptionAttributes> implements Presc
   @BelongsTo(() => require('./treatment-plan.model').TreatmentPlan, { foreignKey: 'treatmentPlanId', as: 'treatmentPlan' })
   declare treatmentPlan?: any;
 
+  @BelongsTo(() => require('./student.model').Student, { foreignKey: 'studentId', as: 'student' })
+  declare student?: any;
+
+  @ForeignKey(() => require('./user.model').User)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
+    references: {
+      model: 'users',
+      key: 'id'
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'RESTRICT'
   })
   prescribedBy: string;
 
@@ -108,7 +188,13 @@ export class Prescription extends Model<PrescriptionAttributes> implements Presc
 
   @AllowNull
   @Column({
-    type: DataType.STRING(100)
+    type: DataType.STRING(100),
+    validate: {
+      is: {
+        args: /^\d{4,5}-\d{4}-\d{1,2}$/,
+        msg: 'Drug code must be in NDC format (e.g., 12345-1234-1, 1234-1234-12)'
+      }
+    }
   })
   drugCode?: string;
 
@@ -215,6 +301,43 @@ export class Prescription extends Model<PrescriptionAttributes> implements Presc
 
   @Column(DataType.DATE)
   declare updatedAt?: Date;
+
+  @BelongsTo(() => require('./user.model').User, { foreignKey: 'prescribedBy', as: 'prescriber' })
+  declare prescriber?: any;
+
+  // Hooks
+  @BeforeCreate
+  @BeforeUpdate
+  static async validateDates(instance: Prescription) {
+    if (instance.endDate && instance.endDate < instance.startDate) {
+      throw new Error('End date cannot be before start date');
+    }
+    if (instance.filledDate && instance.filledDate < instance.startDate) {
+      throw new Error('Filled date cannot be before start date');
+    }
+    if (instance.pickedUpDate && instance.filledDate && instance.pickedUpDate < instance.filledDate) {
+      throw new Error('Picked up date cannot be before filled date');
+    }
+  }
+
+  @BeforeCreate
+  @BeforeUpdate
+  static async validateRefills(instance: Prescription) {
+    if (instance.refillsUsed > instance.refillsAuthorized) {
+      throw new Error('Refills used cannot exceed refills authorized');
+    }
+    if (instance.quantityFilled > instance.quantity) {
+      throw new Error('Quantity filled cannot exceed quantity prescribed');
+    }
+  }
+
+  @BeforeCreate
+  @BeforeUpdate
+  static async checkExpiration(instance: Prescription) {
+    if (instance.endDate && new Date() > instance.endDate && instance.status !== PrescriptionStatus.EXPIRED) {
+      instance.status = PrescriptionStatus.EXPIRED;
+    }
+  }
 
   /**
    * Check if prescription is currently active

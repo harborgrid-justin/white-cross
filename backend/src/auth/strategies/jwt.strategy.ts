@@ -21,10 +21,21 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private readonly userModel: typeof User,
     private readonly configService: ConfigService,
   ) {
+    const jwtSecret = configService.get<string>('JWT_SECRET');
+
+    // CRITICAL SECURITY: Fail fast if JWT_SECRET is not configured
+    if (!jwtSecret) {
+      throw new Error(
+        'CRITICAL SECURITY ERROR: JWT_SECRET is not configured in JWT Strategy'
+      );
+    }
+
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('JWT_SECRET') || 'default-secret-change-in-production',
+      secretOrKey: jwtSecret,
+      issuer: 'white-cross-healthcare',
+      audience: 'white-cross-api',
     });
   }
 

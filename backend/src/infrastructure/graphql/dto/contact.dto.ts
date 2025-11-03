@@ -7,6 +7,16 @@
 import { ObjectType, Field, ID, InputType, registerEnumType } from '@nestjs/graphql';
 import { GraphQLJSON } from 'graphql-scalars';
 import { PaginationDto } from './pagination.dto';
+import {
+  IsString,
+  IsEmail,
+  IsOptional,
+  IsBoolean,
+  IsEnum,
+  MinLength,
+  MaxLength,
+  Matches
+} from 'class-validator';
 
 /**
  * Contact Type Enum for GraphQL
@@ -118,51 +128,97 @@ export class ContactListResponseDto {
 @InputType()
 export class ContactInputDto {
   @Field()
+  @IsString()
+  @MinLength(1, { message: 'First name must not be empty' })
+  @MaxLength(50, { message: 'First name must not exceed 50 characters' })
   firstName: string;
 
   @Field()
+  @IsString()
+  @MinLength(1, { message: 'Last name must not be empty' })
+  @MaxLength(50, { message: 'Last name must not exceed 50 characters' })
   lastName: string;
 
   @Field({ nullable: true })
+  @IsOptional()
+  @IsEmail({}, { message: 'Invalid email format' })
+  @MaxLength(100, { message: 'Email must not exceed 100 characters' })
   email?: string;
 
   @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @Matches(/^\+?[1-9]\d{1,14}$/, {
+    message: 'Invalid phone number format. Use E.164 format (e.g., +12345678900)'
+  })
   phone?: string;
 
   @Field(() => ContactType)
+  @IsEnum(ContactType, { message: 'Invalid contact type' })
   type: ContactType;
 
   @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100, { message: 'Organization must not exceed 100 characters' })
   organization?: string;
 
   @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(50, { message: 'Title must not exceed 50 characters' })
   title?: string;
 
   @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200, { message: 'Address must not exceed 200 characters' })
   address?: string;
 
   @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(50, { message: 'City must not exceed 50 characters' })
   city?: string;
 
   @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2, { message: 'State must be 2 characters' })
+  @MinLength(2, { message: 'State must be 2 characters' })
+  @Matches(/^[A-Z]{2}$/, { message: 'State must be 2 uppercase letters (e.g., CA, NY)' })
   state?: string;
 
   @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @Matches(/^\d{5}(-\d{4})?$/, { message: 'Invalid ZIP code format (e.g., 12345 or 12345-6789)' })
   zip?: string;
 
   @Field(() => ID, { nullable: true })
+  @IsOptional()
+  @IsString()
   relationTo?: string;
 
   @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(50, { message: 'Relationship type must not exceed 50 characters' })
   relationshipType?: string;
 
   @Field(() => GraphQLJSON, { nullable: true })
+  @IsOptional()
   customFields?: any;
 
   @Field({ nullable: true, defaultValue: true })
+  @IsOptional()
+  @IsBoolean()
   isActive?: boolean;
 
   @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000, { message: 'Notes must not exceed 1000 characters' })
   notes?: string;
 }
 
@@ -172,51 +228,100 @@ export class ContactInputDto {
 @InputType()
 export class ContactUpdateInputDto {
   @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @MinLength(1, { message: 'First name must not be empty' })
+  @MaxLength(50, { message: 'First name must not exceed 50 characters' })
   firstName?: string;
 
   @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @MinLength(1, { message: 'Last name must not be empty' })
+  @MaxLength(50, { message: 'Last name must not exceed 50 characters' })
   lastName?: string;
 
   @Field({ nullable: true })
+  @IsOptional()
+  @IsEmail({}, { message: 'Invalid email format' })
+  @MaxLength(100, { message: 'Email must not exceed 100 characters' })
   email?: string;
 
   @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @Matches(/^\+?[1-9]\d{1,14}$/, {
+    message: 'Invalid phone number format. Use E.164 format (e.g., +12345678900)'
+  })
   phone?: string;
 
   @Field(() => ContactType, { nullable: true })
+  @IsOptional()
+  @IsEnum(ContactType, { message: 'Invalid contact type' })
   type?: ContactType;
 
   @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100, { message: 'Organization must not exceed 100 characters' })
   organization?: string;
 
   @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(50, { message: 'Title must not exceed 50 characters' })
   title?: string;
 
   @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200, { message: 'Address must not exceed 200 characters' })
   address?: string;
 
   @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(50, { message: 'City must not exceed 50 characters' })
   city?: string;
 
   @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2, { message: 'State must be 2 characters' })
+  @MinLength(2, { message: 'State must be 2 characters' })
+  @Matches(/^[A-Z]{2}$/, { message: 'State must be 2 uppercase letters (e.g., CA, NY)' })
   state?: string;
 
   @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @Matches(/^\d{5}(-\d{4})?$/, { message: 'Invalid ZIP code format (e.g., 12345 or 12345-6789)' })
   zip?: string;
 
   @Field(() => ID, { nullable: true })
+  @IsOptional()
+  @IsString()
   relationTo?: string;
 
   @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(50, { message: 'Relationship type must not exceed 50 characters' })
   relationshipType?: string;
 
   @Field(() => GraphQLJSON, { nullable: true })
+  @IsOptional()
   customFields?: any;
 
   @Field({ nullable: true })
+  @IsOptional()
+  @IsBoolean()
   isActive?: boolean;
 
   @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000, { message: 'Notes must not exceed 1000 characters' })
   notes?: string;
 }
 

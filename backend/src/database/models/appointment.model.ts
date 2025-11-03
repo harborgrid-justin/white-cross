@@ -8,8 +8,12 @@ import {
   ForeignKey,
   BelongsTo,
   HasMany,
-  Index
+  Index,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
   } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 
 
 
@@ -48,11 +52,100 @@ export interface AppointmentAttributes {
   recurringEndDate?: Date;
 }
 
+@Scopes(() => ({
+  upcoming: {
+    where: {
+      scheduledAt: {
+        [Op.gte]: new Date()
+      },
+      status: {
+        [Op.in]: [AppointmentStatus.SCHEDULED, AppointmentStatus.IN_PROGRESS]
+      }
+    },
+    order: [['scheduledAt', 'ASC']]
+  },
+  past: {
+    where: {
+      scheduledAt: {
+        [Op.lt]: new Date()
+      }
+    },
+    order: [['scheduledAt', 'DESC']]
+  },
+  today: {
+    where: {
+      scheduledAt: {
+        [Op.gte]: new Date(new Date().setHours(0, 0, 0, 0)),
+        [Op.lt]: new Date(new Date().setHours(23, 59, 59, 999))
+      }
+    },
+    order: [['scheduledAt', 'ASC']]
+  },
+  byStatus: (status: AppointmentStatus) => ({
+    where: { status },
+    order: [['scheduledAt', 'DESC']]
+  }),
+  byNurse: (nurseId: string) => ({
+    where: { nurseId },
+    order: [['scheduledAt', 'ASC']]
+  }),
+  byStudent: (studentId: string) => ({
+    where: { studentId },
+    order: [['scheduledAt', 'DESC']]
+  }),
+  emergency: {
+    where: {
+      type: AppointmentType.EMERGENCY,
+      status: {
+        [Op.ne]: AppointmentStatus.CANCELLED
+      }
+    },
+    order: [['scheduledAt', 'DESC']]
+  },
+  recurring: {
+    where: {
+      recurringGroupId: {
+        [Op.ne]: null
+      }
+    }
+  }
+}))
 @Table({
   tableName: 'appointments',
   timestamps: true,
   underscored: false,
-  paranoid: true
+  paranoid: true,
+  indexes: [
+    // Composite indexes for common query patterns
+    {
+      fields: ['studentId', 'scheduledAt'],
+      name: 'idx_appointments_student_scheduled'
+    },
+    {
+      fields: ['nurseId', 'scheduledAt'],
+      name: 'idx_appointments_nurse_scheduled'
+    },
+    {
+      fields: ['status', 'scheduledAt'],
+      name: 'idx_appointments_status_scheduled'
+    },
+    {
+      fields: ['studentId', 'status', 'scheduledAt'],
+      name: 'idx_appointments_student_status_scheduled'
+    },
+    {
+      fields: ['type', 'status', 'scheduledAt'],
+      name: 'idx_appointments_type_status_scheduled'
+    },
+    {
+      fields: ['recurringGroupId'],
+      name: 'idx_appointments_recurring_group'
+    },
+    {
+      fields: ['nurseId', 'scheduledAt', 'status'],
+      name: 'idx_appointments_nurse_scheduled_status'
+    },
+  ]
   })
 export class Appointment extends Model<AppointmentAttributes> {
   @PrimaryKey
@@ -61,10 +154,17 @@ export class Appointment extends Model<AppointmentAttributes> {
   declare id?: string;
 
   @Index
+  @ForeignKey(() => require('./student.model').Student)
   @Column({
     type: DataType.UUID,
     allowNull: false,
-    comment: 'Foreign key to students table - appointment patient'
+    comment: 'Foreign key to students table - appointment patient',
+    references: {
+      model: 'students',
+      key: 'id'
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE'
   })
   studentId: string;
 
@@ -73,14 +173,20 @@ export class Appointment extends Model<AppointmentAttributes> {
   @Column({
     type: DataType.UUID,
     allowNull: true,
-    comment: 'Foreign key to users table - assigned nurse'
+    comment: 'Foreign key to users table - assigned nurse',
+    references: {
+      model: 'users',
+      key: 'id'
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'SET NULL'
   })
   nurseId: string;
 
-  @BelongsTo(() => require('./user.model').User, { foreignKey: 'nurseId', as: 'nurse' })
+  @BelongsTo(() => require('./user.model').User, { foreignKey: 'nurseId', as: 'nurse', constraints: true })
   declare nurse: any;
 
-  @BelongsTo(() => require('./student.model').Student, { foreignKey: 'studentId', as: 'student' })
+  @BelongsTo(() => require('./student.model').Student, { foreignKey: 'studentId', as: 'student', constraints: true })
   declare student: any;
 
   @Index
@@ -202,5 +308,47 @@ export class Appointment extends Model<AppointmentAttributes> {
   })
   declare updatedAt?: Date;
 
+  /**
+   * Virtual attribute: Check if appointment is upcoming
+   */
+  get isUpcoming(): boolean {
+    return this.scheduledAt > new Date() &&
+           [AppointmentStatus.SCHEDULED, AppointmentStatus.IN_PROGRESS].includes(this.status);
+  }
 
+  /**
+   * Virtual attribute: Check if appointment is today
+   */
+  get isToday(): boolean {
+    const today = new Date();
+    const apptDate = new Date(this.scheduledAt);
+    return apptDate.toDateString() === today.toDateString();
+  }
+
+  /**
+   * Virtual attribute: Minutes until appointment
+   */
+  get minutesUntil(): number {
+    return Math.floor((this.scheduledAt.getTime() - Date.now()) / (1000 * 60));
+  }
+
+  // Hooks
+  @BeforeCreate
+  @BeforeUpdate
+  static async validateScheduledDate(instance: Appointment) {
+    if (instance.status === AppointmentStatus.SCHEDULED && instance.scheduledAt < new Date()) {
+      throw new Error('Cannot schedule appointment in the past');
+    }
+  }
+
+  @BeforeCreate
+  @BeforeUpdate
+  static async validateRecurringData(instance: Appointment) {
+    if (instance.recurringGroupId && !instance.recurringFrequency) {
+      throw new Error('Recurring appointments must have a frequency');
+    }
+    if (instance.recurringEndDate && instance.recurringEndDate < instance.scheduledAt) {
+      throw new Error('Recurring end date must be after scheduled date');
+    }
+  }
 }

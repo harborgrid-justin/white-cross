@@ -1,7 +1,9 @@
 import { WebSocketGateway, WebSocketServer, SubscribeMessage, MessageBody, ConnectedSocket } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Logger } from '@nestjs/common';
+import { Logger, UseFilters } from '@nestjs/common';
+import { WsExceptionFilter } from '../../infrastructure/websocket/filters/ws-exception.filter';
 
+@UseFilters(new WsExceptionFilter())
 @WebSocketGateway({ namespace: '/communication' })
 export class CommunicationGateway {
   @WebSocketServer()

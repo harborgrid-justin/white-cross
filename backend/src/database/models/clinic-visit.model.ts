@@ -6,7 +6,9 @@ import {
   PrimaryKey,
   Default,
   AllowNull,
-  Index
+  Index,
+  ForeignKey,
+  BelongsTo
   } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 import { VisitDisposition } from '../../clinical/enums/visit-disposition.enum';
@@ -57,9 +59,16 @@ export class ClinicVisit extends Model<ClinicVisitAttributes> implements ClinicV
   @Column(DataType.UUID)
   declare id: string;
 
+  @ForeignKey(() => require('./student.model').Student)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
+    references: {
+      model: 'students',
+      key: 'id'
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE'
   })
   @Index
   studentId: string;
@@ -118,9 +127,16 @@ export class ClinicVisit extends Model<ClinicVisitAttributes> implements ClinicV
   })
   minutesMissed?: number;
 
+  @ForeignKey(() => require('./user.model').User)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
+    references: {
+      model: 'users',
+      key: 'id'
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'RESTRICT'
   })
   @Index
   attendedBy: string;
@@ -136,6 +152,13 @@ export class ClinicVisit extends Model<ClinicVisitAttributes> implements ClinicV
 
   @Column(DataType.DATE)
   declare updatedAt?: Date;
+
+  // Associations
+  @BelongsTo(() => require('./student.model').Student, { foreignKey: 'studentId', as: 'student' })
+  declare student?: any;
+
+  @BelongsTo(() => require('./user.model').User, { foreignKey: 'attendedBy', as: 'attendingNurse' })
+  declare attendingNurse?: any;
 
   /**
    * Calculate visit duration in minutes

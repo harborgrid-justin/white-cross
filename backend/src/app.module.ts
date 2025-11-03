@@ -4,10 +4,21 @@
  */
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { HealthRecordModule } from './health-record/health-record.module';
 import { UserModule } from './user/user.module';
+import {
+  appConfig,
+  databaseConfig,
+  authConfig,
+  securityConfig,
+  redisConfig,
+  validationSchema,
+} from './config';
 
 import { AnalyticsModule } from './analytics/analytics.module';
 import { ChronicConditionModule } from './chronic-condition/chronic-condition.module';
@@ -59,11 +70,49 @@ import { CommandsModule } from './commands/commands.module';
 
 @Module({
   imports: [
-    // Configuration module
+    // Configuration module with validation and type-safe namespaces
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['.env.local', '.env'],
+      cache: true,
+      expandVariables: true,
+      envFilePath: [
+        `.env.${process.env.NODE_ENV}.local`,
+        `.env.${process.env.NODE_ENV}`,
+        '.env.local',
+        '.env',
+      ],
+      load: [
+        appConfig,
+        databaseConfig,
+        authConfig,
+        securityConfig,
+        redisConfig,
+      ],
+      validationSchema,
+      validationOptions: {
+        abortEarly: false, // Show all validation errors
+        allowUnknown: true, // Allow extra env vars
+      },
     }),
+
+    // Rate limiting module (CRITICAL SECURITY)
+    ThrottlerModule.forRoot([
+      {
+        name: 'short',
+        ttl: 1000, // 1 second
+        limit: 10, // 10 requests per second
+      },
+      {
+        name: 'medium',
+        ttl: 10000, // 10 seconds
+        limit: 50, // 50 requests per 10 seconds
+      },
+      {
+        name: 'long',
+        ttl: 60000, // 1 minute
+        limit: 100, // 100 requests per minute
+      },
+    ]),
 
     // Database connection (Sequelize)
     DatabaseModule,
@@ -174,6 +223,17 @@ import { CommandsModule } from './commands/commands.module';
     CommandsModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    // Global JWT authentication guard
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+    // Global rate limiting guard (CRITICAL SECURITY)
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

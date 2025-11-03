@@ -6,11 +6,61 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import helmet from 'helmet';
+import { RedisIoAdapter } from './infrastructure/websocket/adapters/redis-io.adapter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn', 'log', 'debug', 'verbose'],
   });
+
+  // Enable Helmet security headers
+  app.use(
+    helmet({
+      // Content Security Policy
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'", 'https://cdnjs.cloudflare.com'],
+          scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdnjs.cloudflare.com'],
+          imgSrc: ["'self'", 'data:', 'https:'],
+          connectSrc: ["'self'"],
+          fontSrc: ["'self'", 'data:', 'https://cdnjs.cloudflare.com'],
+          objectSrc: ["'none'"],
+          mediaSrc: ["'self'"],
+          frameSrc: ["'none'"],
+        },
+      },
+      // HTTP Strict Transport Security (HSTS)
+      hsts: {
+        maxAge: 31536000, // 1 year
+        includeSubDomains: true,
+        preload: true,
+      },
+      // X-Frame-Options: Prevent clickjacking
+      frameguard: {
+        action: 'deny',
+      },
+      // X-Content-Type-Options: Prevent MIME-sniffing
+      noSniff: true,
+      // X-XSS-Protection: Enable XSS filter
+      xssFilter: true,
+      // Referrer-Policy: Control referrer information
+      referrerPolicy: {
+        policy: 'strict-origin-when-cross-origin',
+      },
+      // X-DNS-Prefetch-Control: Control DNS prefetching
+      dnsPrefetchControl: {
+        allow: false,
+      },
+      // X-Download-Options: Prevent IE from executing downloads
+      ieNoOpen: true,
+      // X-Permitted-Cross-Domain-Policies: Control Adobe products
+      permittedCrossDomainPolicies: {
+        permittedPolicies: 'none',
+      },
+    }),
+  );
 
   // Global validation pipe for DTOs
   app.useGlobalPipes(
@@ -24,11 +74,71 @@ async function bootstrap() {
     }),
   );
 
-  // Enable CORS
+  // Enable CORS with strict origin validation
+  const corsOrigin = process.env.CORS_ORIGIN;
+
+  // CRITICAL SECURITY: Fail fast if CORS_ORIGIN is not configured
+  if (!corsOrigin) {
+    throw new Error(
+      'CRITICAL SECURITY ERROR: CORS_ORIGIN is not configured. ' +
+      'Application cannot start without proper CORS configuration. ' +
+      'Please set CORS_ORIGIN in your .env file (e.g., http://localhost:3000 for development).'
+    );
+  }
+
+  // Parse multiple origins (comma-separated)
+  const allowedOrigins = corsOrigin.split(',').map(origin => origin.trim());
+
+  // Validate that wildcard is not used in production
+  if (process.env.NODE_ENV === 'production' && allowedOrigins.includes('*')) {
+    throw new Error(
+      'CRITICAL SECURITY ERROR: Wildcard CORS origin (*) is not allowed in production. ' +
+      'Please specify exact allowed origins in CORS_ORIGIN.'
+    );
+  }
+
   app.enableCors({
-    origin: process.env.CORS_ORIGIN || '*',
+    origin: allowedOrigins.length === 1 ? allowedOrigins[0] : allowedOrigins,
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-Token'],
+    exposedHeaders: ['X-Total-Count', 'X-Page-Count'],
+    maxAge: 3600, // Cache preflight requests for 1 hour
   });
+
+  // Configure Redis adapter for WebSocket horizontal scaling
+  // This is CRITICAL for multi-server deployments
+  const useRedisAdapter = process.env.ENABLE_REDIS_ADAPTER !== 'false';
+
+  if (useRedisAdapter) {
+    try {
+      const redisIoAdapter = new RedisIoAdapter(app);
+      await redisIoAdapter.connectToRedis();
+      app.useWebSocketAdapter(redisIoAdapter);
+
+      console.log('Redis adapter enabled for WebSocket horizontal scaling');
+    } catch (error) {
+      console.error('Failed to initialize Redis adapter:', error);
+
+      if (process.env.NODE_ENV === 'production') {
+        throw new Error(
+          'CRITICAL ERROR: Redis adapter failed to initialize in production. ' +
+          'WebSockets cannot scale horizontally without Redis. ' +
+          'Please ensure Redis is running and accessible.'
+        );
+      } else {
+        console.warn(
+          'WARNING: Falling back to default Socket.IO adapter in development. ' +
+          'WebSockets will NOT work across multiple server instances.'
+        );
+      }
+    }
+  } else {
+    console.warn(
+      'Redis adapter disabled (ENABLE_REDIS_ADAPTER=false). ' +
+      'WebSockets will NOT work across multiple server instances.'
+    );
+  }
 
   // Swagger API Documentation
   const config = new DocumentBuilder()
@@ -202,10 +312,26 @@ async function bootstrap() {
     res.json(document);
   });
 
-  const port = process.env.PORT || 3001;
+  // Port configuration with validation
+  const portStr = process.env.PORT || '3001';
+  const port = parseInt(portStr, 10);
+
+  if (isNaN(port) || port < 1024 || port > 65535) {
+    throw new Error(
+      `CONFIGURATION ERROR: Invalid PORT value "${portStr}". ` +
+      `Port must be a number between 1024 and 65535.`
+    );
+  }
+
   await app.listen(port);
-  console.log(`\n🚀 White Cross NestJS Backend running on: http://localhost:${port}`);
-  console.log(`📚 API Documentation: http://localhost:${port}/api/docs`);
+  console.log(`\n${'='.repeat(80)}`);
+  console.log(`🚀 White Cross NestJS Backend`);
+  console.log(`${'='.repeat(80)}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`Server: http://localhost:${port}`);
+  console.log(`API Documentation: http://localhost:${port}/api/docs`);
+  console.log(`Health Check: http://localhost:${port}/api/health`);
+  console.log(`${'='.repeat(80)}\n`);
 }
 
 bootstrap();

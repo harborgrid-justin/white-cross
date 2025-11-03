@@ -98,8 +98,9 @@ export class AppointmentController {
   })
   @ApiParam({ name: 'id', description: 'Appointment UUID' })
   @ApiResponse({ status: 200, description: 'Appointment found' })
+  @ApiResponse({ status: 400, description: 'Invalid UUID format' })
   @ApiResponse({ status: 404, description: 'Appointment not found' })
-  async getAppointmentById(@Param('id') id: string) {
+  async getAppointmentById(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     this.logger.log(`GET /appointments/${id}`);
     return this.appointmentService.getAppointmentById(id);
   }
@@ -135,10 +136,10 @@ export class AppointmentController {
   @ApiParam({ name: 'id', description: 'Appointment UUID' })
   @ApiBody({ type: UpdateAppointmentDto })
   @ApiResponse({ status: 200, description: 'Appointment updated successfully' })
-  @ApiResponse({ status: 400, description: 'Validation failed or invalid transition' })
+  @ApiResponse({ status: 400, description: 'Validation failed or invalid transition or invalid UUID' })
   @ApiResponse({ status: 404, description: 'Appointment not found' })
   async updateAppointment(
-    @Param('id') id: string,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() updateDto: UpdateAppointmentDto,
   ) {
     this.logger.log(`PATCH /appointments/${id}`);
@@ -161,10 +162,10 @@ export class AppointmentController {
     description: 'Reason for cancellation',
   })
   @ApiResponse({ status: 200, description: 'Appointment cancelled successfully' })
-  @ApiResponse({ status: 400, description: 'Cannot cancel appointment in current state' })
+  @ApiResponse({ status: 400, description: 'Cannot cancel appointment in current state or invalid UUID' })
   @ApiResponse({ status: 404, description: 'Appointment not found' })
   async cancelAppointment(
-    @Param('id') id: string,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Query('reason') reason?: string,
   ) {
     this.logger.log(`DELETE /appointments/${id}`);
@@ -174,24 +175,24 @@ export class AppointmentController {
   /**
    * Start an appointment (transition to IN_PROGRESS)
    */
-  @Post(':id/start')
+  @Patch(':id/start')
   @ApiOperation({
     summary: 'Start appointment',
     description: 'Mark appointment as in progress when student arrives',
   })
   @ApiParam({ name: 'id', description: 'Appointment UUID' })
   @ApiResponse({ status: 200, description: 'Appointment started successfully' })
-  @ApiResponse({ status: 400, description: 'Cannot start appointment in current state' })
+  @ApiResponse({ status: 400, description: 'Cannot start appointment in current state or invalid UUID' })
   @ApiResponse({ status: 404, description: 'Appointment not found' })
-  async startAppointment(@Param('id') id: string) {
-    this.logger.log(`POST /appointments/${id}/start`);
+  async startAppointment(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+    this.logger.log(`PATCH /appointments/${id}/start`);
     return this.appointmentService.startAppointment(id);
   }
 
   /**
    * Complete an appointment
    */
-  @Post(':id/complete')
+  @Patch(':id/complete')
   @ApiOperation({
     summary: 'Complete appointment',
     description: 'Mark appointment as completed with optional outcome data',
@@ -217,30 +218,30 @@ export class AppointmentController {
     },
   })
   @ApiResponse({ status: 200, description: 'Appointment completed successfully' })
-  @ApiResponse({ status: 400, description: 'Cannot complete appointment in current state' })
+  @ApiResponse({ status: 400, description: 'Cannot complete appointment in current state or invalid UUID' })
   @ApiResponse({ status: 404, description: 'Appointment not found' })
   async completeAppointment(
-    @Param('id') id: string,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() completionData?: any,
   ) {
-    this.logger.log(`POST /appointments/${id}/complete`);
+    this.logger.log(`PATCH /appointments/${id}/complete`);
     return this.appointmentService.completeAppointment(id, completionData);
   }
 
   /**
    * Mark appointment as no-show
    */
-  @Post(':id/no-show')
+  @Patch(':id/no-show')
   @ApiOperation({
     summary: 'Mark as no-show',
     description: 'Mark appointment as no-show when student does not arrive',
   })
   @ApiParam({ name: 'id', description: 'Appointment UUID' })
   @ApiResponse({ status: 200, description: 'Appointment marked as no-show' })
-  @ApiResponse({ status: 400, description: 'Cannot mark as no-show in current state' })
+  @ApiResponse({ status: 400, description: 'Cannot mark as no-show in current state or invalid UUID' })
   @ApiResponse({ status: 404, description: 'Appointment not found' })
-  async markNoShow(@Param('id') id: string) {
-    this.logger.log(`POST /appointments/${id}/no-show`);
+  async markNoShow(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+    this.logger.log(`PATCH /appointments/${id}/no-show`);
     return this.appointmentService.markNoShow(id);
   }
 
@@ -336,8 +337,9 @@ export class AppointmentController {
     example: 10,
   })
   @ApiResponse({ status: 200, description: 'Successfully retrieved upcoming appointments' })
+  @ApiResponse({ status: 400, description: 'Invalid UUID format' })
   async getUpcomingAppointments(
-    @Param('nurseId') nurseId: string,
+    @Param('nurseId', new ParseUUIDPipe({ version: '4' })) nurseId: string,
     @Query('limit') limit?: number,
   ) {
     this.logger.log(`GET /appointments/nurse/${nurseId}/upcoming`);
@@ -369,8 +371,9 @@ export class AppointmentController {
     example: 30,
   })
   @ApiResponse({ status: 200, description: 'Available slots retrieved' })
+  @ApiResponse({ status: 400, description: 'Invalid UUID format or invalid date' })
   async getAvailableSlots(
-    @Param('nurseId') nurseId: string,
+    @Param('nurseId', new ParseUUIDPipe({ version: '4' })) nurseId: string,
     @Query('date') dateStr: string,
     @Query('duration') duration?: number,
   ) {
@@ -426,9 +429,10 @@ export class AppointmentController {
   @ApiParam({ name: 'id', description: 'Waitlist entry UUID' })
   @ApiBody({ type: UpdateWaitlistPriorityDto })
   @ApiResponse({ status: 200, description: 'Priority updated successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid UUID format' })
   @ApiResponse({ status: 404, description: 'Waitlist entry not found' })
   async updateWaitlistPriority(
-    @Param('id') id: string,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() updateDto: UpdateWaitlistPriorityDto,
   ) {
     this.logger.log(`PATCH /appointments/waitlist/${id}/priority`);
@@ -445,8 +449,9 @@ export class AppointmentController {
   })
   @ApiParam({ name: 'id', description: 'Waitlist entry UUID' })
   @ApiResponse({ status: 200, description: 'Position retrieved successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid UUID format' })
   @ApiResponse({ status: 404, description: 'Waitlist entry not found' })
-  async getWaitlistPosition(@Param('id') id: string) {
+  async getWaitlistPosition(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     this.logger.log(`GET /appointments/waitlist/${id}/position`);
     return this.appointmentService.getWaitlistPosition(id);
   }
@@ -462,9 +467,10 @@ export class AppointmentController {
   @ApiParam({ name: 'id', description: 'Waitlist entry UUID' })
   @ApiBody({ type: NotifyWaitlistEntryDto, required: false })
   @ApiResponse({ status: 200, description: 'Notification sent successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid UUID format' })
   @ApiResponse({ status: 404, description: 'Waitlist entry not found' })
   async notifyWaitlistEntry(
-    @Param('id') id: string,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() notifyDto?: NotifyWaitlistEntryDto,
   ) {
     this.logger.log(`POST /appointments/waitlist/${id}/notify`);
@@ -482,9 +488,10 @@ export class AppointmentController {
   @ApiParam({ name: 'id', description: 'Waitlist entry UUID' })
   @ApiBody({ type: RemoveFromWaitlistDto, required: false })
   @ApiResponse({ status: 200, description: 'Removed from waitlist successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid UUID format' })
   @ApiResponse({ status: 404, description: 'Waitlist entry not found' })
   async removeFromWaitlist(
-    @Param('id') id: string,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() removeDto?: RemoveFromWaitlistDto,
   ) {
     this.logger.log(`DELETE /appointments/waitlist/${id}`);
@@ -517,8 +524,9 @@ export class AppointmentController {
   })
   @ApiParam({ name: 'id', description: 'Appointment UUID' })
   @ApiResponse({ status: 200, description: 'Reminders retrieved successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid UUID format' })
   @ApiResponse({ status: 404, description: 'Appointment not found' })
-  async getAppointmentReminders(@Param('id') id: string) {
+  async getAppointmentReminders(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     this.logger.log(`GET /appointments/${id}/reminders`);
     return this.appointmentService.getAppointmentReminders(id);
   }
@@ -550,8 +558,9 @@ export class AppointmentController {
   })
   @ApiParam({ name: 'reminderId', description: 'Reminder UUID' })
   @ApiResponse({ status: 200, description: 'Reminder cancelled successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid UUID format' })
   @ApiResponse({ status: 404, description: 'Reminder not found' })
-  async cancelReminder(@Param('reminderId') reminderId: string) {
+  async cancelReminder(@Param('reminderId', new ParseUUIDPipe({ version: '4' })) reminderId: string) {
     this.logger.log(`DELETE /appointments/reminders/${reminderId}`);
     return this.appointmentService.cancelReminder(reminderId);
   }
@@ -841,8 +850,8 @@ export class AppointmentController {
     description: 'End date for export',
     example: '2025-10-31',
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Calendar exported successfully',
     content: {
       'text/calendar': {
@@ -850,8 +859,9 @@ export class AppointmentController {
       }
     }
   })
+  @ApiResponse({ status: 400, description: 'Invalid UUID format' })
   async exportCalendar(
-    @Param('nurseId') nurseId: string,
+    @Param('nurseId', new ParseUUIDPipe({ version: '4' })) nurseId: string,
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
   ) {

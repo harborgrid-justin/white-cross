@@ -152,6 +152,9 @@ export class Conversation extends Model<ConversationAttributes, ConversationCrea
   @HasMany(() => ConversationParticipant, { foreignKey: 'conversationId', as: 'participants' })
   declare participants?: ConversationParticipant[];
 
+  @HasMany(() => require('./message.model').Message, { foreignKey: 'conversationId', as: 'messages' })
+  declare messages?: any[];
+
   @Column({
     type: DataType.DATE,
     allowNull: false,

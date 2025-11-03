@@ -9,24 +9,48 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { User } from '../database/models/user.model';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
+import { TokenBlacklistService } from './services/token-blacklist.service';
 
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET') || 'default-secret-change-in-production',
-        signOptions: {
-          expiresIn: '15m',
-        },
-      }),
+      useFactory: async (configService: ConfigService) => {
+        const jwtSecret = configService.get<string>('JWT_SECRET');
+
+        // CRITICAL SECURITY: Fail fast if JWT_SECRET is not configured
+        if (!jwtSecret) {
+          throw new Error(
+            'CRITICAL SECURITY ERROR: JWT_SECRET is not configured. ' +
+            'Application cannot start without proper JWT secret configuration. ' +
+            'Please set JWT_SECRET in your .env file to a strong, random secret.'
+          );
+        }
+
+        // Ensure secret is strong enough (minimum 32 characters)
+        if (jwtSecret.length < 32) {
+          throw new Error(
+            'CRITICAL SECURITY ERROR: JWT_SECRET must be at least 32 characters long. ' +
+            'Current length: ' + jwtSecret.length
+          );
+        }
+
+        return {
+          secret: jwtSecret,
+          signOptions: {
+            expiresIn: '15m',
+            issuer: 'white-cross-healthcare',
+            audience: 'white-cross-api',
+          },
+        };
+      },
       inject: [ConfigService],
     }),
     SequelizeModule.forFeature([User]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard],
-  exports: [AuthService, JwtAuthGuard, RolesGuard, PassportModule, JwtModule],
+  providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard, TokenBlacklistService],
+  exports: [AuthService, JwtAuthGuard, RolesGuard, PassportModule, JwtModule, TokenBlacklistService],
 })
 export class AuthModule {}

@@ -60,9 +60,16 @@ export class ClinicalNote extends Model<ClinicalNoteAttributes> implements Clini
   @Column(DataType.UUID)
   declare id: string;
 
+  @ForeignKey(() => require('./student.model').Student)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
+    references: {
+      model: 'students',
+      key: 'id'
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE'
   })
   @Index
   studentId: string;
@@ -77,6 +84,12 @@ export class ClinicalNote extends Model<ClinicalNoteAttributes> implements Clini
   @BelongsTo(() => require('./clinic-visit.model').ClinicVisit, { foreignKey: 'visitId', as: 'visit' })
   declare visit?: any;
 
+  @BelongsTo(() => require('./student.model').Student, { foreignKey: 'studentId', as: 'student' })
+  declare student?: any;
+
+  @BelongsTo(() => require('./user.model').User, { foreignKey: 'createdBy', as: 'author' })
+  declare author?: any;
+
   @Column({
     type: DataType.STRING(50),
     validate: {
@@ -87,9 +100,16 @@ export class ClinicalNote extends Model<ClinicalNoteAttributes> implements Clini
   })
   type: NoteType;
 
+  @ForeignKey(() => require('./user.model').User)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
+    references: {
+      model: 'users',
+      key: 'id'
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'RESTRICT'
   })
   @Index
   createdBy: string;

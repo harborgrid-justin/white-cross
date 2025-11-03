@@ -8,9 +8,11 @@ import {
   ForeignKey,
   BelongsTo,
   HasMany,
-  Index
+  Index,
+  Scopes
   } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
+import { Op } from 'sequelize';
 
 
 
@@ -97,6 +99,74 @@ export interface AlertAttributes {
  * - userId, studentId, schoolId for scope queries
  * - createdAt for chronological ordering
  */
+@Scopes(() => ({
+  active: {
+    where: {
+      status: AlertStatus.ACTIVE
+    },
+    order: [['severity', 'DESC'], ['createdAt', 'DESC']]
+  },
+  critical: {
+    where: {
+      severity: {
+        [Op.in]: [AlertSeverity.CRITICAL, AlertSeverity.EMERGENCY]
+      },
+      status: {
+        [Op.in]: [AlertStatus.ACTIVE, AlertStatus.ACKNOWLEDGED]
+      }
+    },
+    order: [['createdAt', 'DESC']]
+  },
+  byPriority: (severity: AlertSeverity) => ({
+    where: { severity },
+    order: [['createdAt', 'DESC']]
+  }),
+  bySeverity: (severity: AlertSeverity) => ({
+    where: { severity },
+    order: [['createdAt', 'DESC']]
+  }),
+  byCategory: (category: AlertCategory) => ({
+    where: { category },
+    order: [['createdAt', 'DESC']]
+  }),
+  byStudent: (studentId: string) => ({
+    where: { studentId },
+    order: [['createdAt', 'DESC']]
+  }),
+  byUser: (userId: string) => ({
+    where: { userId },
+    order: [['createdAt', 'DESC']]
+  }),
+  bySchool: (schoolId: string) => ({
+    where: { schoolId },
+    order: [['createdAt', 'DESC']]
+  }),
+  unacknowledged: {
+    where: {
+      status: AlertStatus.ACTIVE,
+      requiresAcknowledgment: true,
+      acknowledgedAt: null
+    },
+    order: [['severity', 'DESC'], ['createdAt', 'ASC']]
+  },
+  needsEscalation: {
+    where: {
+      status: AlertStatus.ACTIVE,
+      autoEscalateAfter: {
+        [Op.ne]: null
+      },
+      acknowledgedAt: null
+    }
+  },
+  recent: {
+    where: {
+      createdAt: {
+        [Op.gte]: new Date(Date.now() - 24 * 60 * 60 * 1000)
+      }
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'alerts',
   timestamps: true,

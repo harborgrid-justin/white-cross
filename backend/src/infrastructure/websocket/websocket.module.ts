@@ -59,12 +59,22 @@ import { RateLimiterService } from './services';
     // JWT Module for authentication
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService): Promise<JwtModuleOptions> => ({
-        secret: configService.get<string>('JWT_SECRET') || 'default-secret-change-in-production',
-        signOptions: {
-          expiresIn: 86400, // 24 hours in seconds
-        },
-      }),
+      useFactory: async (configService: ConfigService): Promise<JwtModuleOptions> => {
+        const jwtSecret = configService.get<string>('JWT_SECRET');
+
+        if (!jwtSecret) {
+          throw new Error(
+            'CRITICAL SECURITY ERROR: JWT_SECRET not configured for WebSocket module'
+          );
+        }
+
+        return {
+          secret: jwtSecret,
+          signOptions: {
+            expiresIn: 86400, // 24 hours in seconds
+          },
+        };
+      },
       inject: [ConfigService],
     }),
   ],

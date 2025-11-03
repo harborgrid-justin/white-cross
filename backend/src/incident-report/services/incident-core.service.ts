@@ -27,6 +27,7 @@ export class IncidentCoreService {
 
   /**
    * Get incident reports with pagination and filters
+   * OPTIMIZED: Added eager loading for student and reporter relations to prevent N+1 queries
    */
   async getIncidentReports(filters: IncidentFiltersDto) {
     const { page = 1, limit = 20, ...filterParams } = filters;
@@ -77,6 +78,23 @@ export class IncidentCoreService {
       offset,
       limit,
       order: [['occurredAt', 'DESC']],
+      // OPTIMIZATION: Eager load related entities to prevent N+1 queries
+      // Before: 1 query + N queries for student + N queries for reporter = 1 + 2N queries
+      // After: 1 query with JOINs = 1 query total
+      include: [
+        {
+          association: 'student',
+          attributes: ['id', 'studentNumber', 'firstName', 'lastName', 'grade'],
+          required: false, // LEFT JOIN to handle orphaned records
+        },
+        {
+          association: 'reporter',
+          attributes: ['id', 'firstName', 'lastName', 'email', 'role'],
+          required: false, // LEFT JOIN to handle orphaned records
+        },
+      ],
+      // Prevent duplicate counts when using includes
+      distinct: true,
     });
 
     return {
@@ -92,9 +110,24 @@ export class IncidentCoreService {
 
   /**
    * Get incident report by ID
+   * OPTIMIZED: Added eager loading for related entities
    */
   async getIncidentReportById(id: string): Promise<IncidentReport> {
-    const report = await this.incidentReportModel.findByPk(id);
+    const report = await this.incidentReportModel.findByPk(id, {
+      // OPTIMIZATION: Eager load related entities to prevent N+1 queries
+      include: [
+        {
+          association: 'student',
+          attributes: ['id', 'studentNumber', 'firstName', 'lastName', 'grade', 'dateOfBirth'],
+          required: false,
+        },
+        {
+          association: 'reporter',
+          attributes: ['id', 'firstName', 'lastName', 'email', 'role'],
+          required: false,
+        },
+      ],
+    });
 
     if (!report) {
       throw new NotFoundException('Incident report not found');

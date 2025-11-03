@@ -9,7 +9,10 @@ import {
   Index,
   ForeignKey,
   BelongsTo,
-  HasMany
+  HasMany,
+  BeforeCreate,
+  BeforeUpdate,
+  Scopes
   } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
@@ -45,6 +48,36 @@ export interface StudentAttributes {
   updatedAt?: Date;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      isActive: true,
+      deletedAt: null
+    }
+  },
+  byGrade: (grade: string) => ({
+    where: { grade }
+  }),
+  bySchool: (schoolId: string) => ({
+    where: { schoolId }
+  }),
+  byDistrict: (districtId: string) => ({
+    where: { districtId }
+  }),
+  withHealthRecords: {
+    include: [{
+      association: 'healthRecords'
+    }]
+  },
+  recentlyEnrolled: {
+    where: {
+      enrollmentDate: {
+        [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+      }
+    },
+    order: [['enrollmentDate', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'students',
   timestamps: true,
@@ -81,6 +114,18 @@ export interface StudentAttributes {
           [Op.ne]: null
         }
       }
+    },
+    {
+      fields: ['schoolId', 'grade', 'isActive'],
+      name: 'idx_students_school_grade_active'
+    },
+    {
+      fields: ['districtId', 'isActive'],
+      name: 'idx_students_district_active'
+    },
+    {
+      fields: ['enrollmentDate'],
+      name: 'idx_students_enrollment_date'
     }
   ]
   })
@@ -127,7 +172,18 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
    */
   @Column({
     type: DataType.DATEONLY,
-    allowNull: false
+    allowNull: false,
+    validate: {
+      isDate: true,
+      isBefore: new Date().toISOString(),
+      isValidAge(value: string) {
+        const dob = new Date(value);
+        const age = (Date.now() - dob.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+        if (age < 3 || age > 22) {
+          throw new Error('Student age must be between 3 and 22 years');
+        }
+      }
+    }
   })
   dateOfBirth: Date;
 
@@ -274,6 +330,45 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
   })
   declare deletedAt?: Date;
 
+  /**
+   * Virtual attribute: Full name
+   */
+  get fullName(): string {
+    return `${this.firstName} ${this.lastName}`;
+  }
+
+  /**
+   * Virtual attribute: Age in years
+   */
+  get age(): number {
+    return this.getAge();
+  }
+
+  // Hooks
+  @BeforeCreate
+  @BeforeUpdate
+  static async validateEnrollmentDate(instance: Student) {
+    if (instance.enrollmentDate && instance.enrollmentDate > new Date()) {
+      throw new Error('Enrollment date cannot be in the future');
+    }
+  }
+
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: Student) {
+    // Log PHI access for HIPAA compliance
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      const phiFields = ['firstName', 'lastName', 'dateOfBirth', 'medicalRecordNum', 'photo'];
+      const phiChanged = changedFields.some(field => phiFields.includes(field));
+
+      if (phiChanged) {
+        console.log(`[AUDIT] PHI modified for student ${instance.id} at ${new Date().toISOString()}`);
+        // TODO: Integrate with AuditLog model when available
+      }
+    }
+  }
+
   // Relationships
   // Using lazy evaluation with require() to prevent circular dependencies
   @BelongsTo(() => require('./user.model').User, { foreignKey: 'nurseId', as: 'nurse' })
@@ -295,18 +390,32 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
   @HasMany(() => require('./mental-health-record.model').MentalHealthRecord, { foreignKey: 'studentId', as: 'mentalHealthRecords' })
   declare mentalHealthRecords?: any[];
 
-  // Additional relationships (commented out until related models are available)
-  // @HasMany(() => Vaccination, { foreignKey: 'studentId', as: 'vaccinations' })
-  // vaccinations?: Vaccination[];
+  @HasMany(() => require('./appointment.model').Appointment, { foreignKey: 'studentId', as: 'appointments' })
+  declare appointments?: any[];
 
-  // @HasMany(() => VitalSigns, { foreignKey: 'studentId', as: 'vitalSigns' })
-  // vitalSigns?: VitalSigns[];
+  @HasMany(() => require('./prescription.model').Prescription, { foreignKey: 'studentId', as: 'prescriptions' })
+  declare prescriptions?: any[];
 
-  // @HasMany(() => Allergy, { foreignKey: 'studentId', as: 'allergies' })
-  // allergies?: Allergy[];
+  @HasMany(() => require('./clinic-visit.model').ClinicVisit, { foreignKey: 'studentId', as: 'clinicVisits' })
+  declare clinicVisits?: any[];
 
-  // @HasMany(() => ChronicCondition, { foreignKey: 'studentId', as: 'chronicConditions' })
-  // chronicConditions?: ChronicCondition[];
+  @HasMany(() => require('./allergy.model').Allergy, { foreignKey: 'studentId', as: 'allergies' })
+  declare allergies?: any[];
+
+  @HasMany(() => require('./chronic-condition.model').ChronicCondition, { foreignKey: 'studentId', as: 'chronicConditions' })
+  declare chronicConditions?: any[];
+
+  @HasMany(() => require('./vaccination.model').Vaccination, { foreignKey: 'studentId', as: 'vaccinations' })
+  declare vaccinations?: any[];
+
+  @HasMany(() => require('./vital-signs.model').VitalSigns, { foreignKey: 'studentId', as: 'vitalSigns' })
+  declare vitalSigns?: any[];
+
+  @HasMany(() => require('./clinical-note.model').ClinicalNote, { foreignKey: 'studentId', as: 'clinicalNotes' })
+  declare clinicalNotes?: any[];
+
+  @HasMany(() => require('./incident-report.model').IncidentReport, { foreignKey: 'studentId', as: 'incidentReports' })
+  declare incidentReports?: any[];
 
   /**
    * Get student's full name

@@ -4,10 +4,16 @@
  * Implements all GraphQL queries and mutations for Contact entity.
  * Integrates with ContactService for business logic and enforces
  * authentication and authorization via guards.
+ *
+ * Features:
+ * - Role-based access control with GqlRolesGuard
+ * - PHI access protected by role restrictions
  */
 import { Resolver, Query, Mutation, Args, ID, Context } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
-import { GqlAuthGuard } from '../guards/gql-auth.guard';
+import { GqlAuthGuard, GqlRolesGuard } from '../guards';
+import { Roles } from '../../../auth/decorators/roles.decorator';
+import { UserRole } from '../../../database/models/user.model';
 import {
   ContactDto,
   ContactListResponseDto,
@@ -106,9 +112,12 @@ export class ContactResolver {
 
   /**
    * Query: Get paginated list of contacts with optional filtering
+   *
+   * Access: ADMIN, SCHOOL_ADMIN, DISTRICT_ADMIN, NURSE, COUNSELOR
    */
   @Query(() => ContactListResponseDto, { name: 'contacts' })
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(GqlAuthGuard, GqlRolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN, UserRole.NURSE, UserRole.COUNSELOR)
   async getContacts(
     @Args('page', { type: () => Number, defaultValue: 1 }) page: number,
     @Args('limit', { type: () => Number, defaultValue: 20 }) limit: number,
@@ -146,9 +155,12 @@ export class ContactResolver {
 
   /**
    * Query: Get single contact by ID
+   *
+   * Access: ADMIN, SCHOOL_ADMIN, DISTRICT_ADMIN, NURSE, COUNSELOR
    */
   @Query(() => ContactDto, { name: 'contact', nullable: true })
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(GqlAuthGuard, GqlRolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN, UserRole.NURSE, UserRole.COUNSELOR)
   async getContact(
     @Args('id', { type: () => ID }) id: string,
     @Context() context?: any
@@ -163,9 +175,12 @@ export class ContactResolver {
 
   /**
    * Query: Get contacts by relation (e.g., student's guardians)
+   *
+   * Access: ADMIN, SCHOOL_ADMIN, DISTRICT_ADMIN, NURSE, COUNSELOR
    */
   @Query(() => [ContactDto], { name: 'contactsByRelation' })
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(GqlAuthGuard, GqlRolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN, UserRole.NURSE, UserRole.COUNSELOR)
   async getContactsByRelation(
     @Args('relationTo', { type: () => ID }) relationTo: string,
     @Args('type', { type: () => String, nullable: true }) type?: string,
@@ -177,9 +192,12 @@ export class ContactResolver {
 
   /**
    * Query: Search contacts by query string
+   *
+   * Access: ADMIN, SCHOOL_ADMIN, DISTRICT_ADMIN, NURSE, COUNSELOR
    */
   @Query(() => [ContactDto], { name: 'searchContacts' })
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(GqlAuthGuard, GqlRolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN, UserRole.NURSE, UserRole.COUNSELOR)
   async searchContacts(
     @Args('query', { type: () => String }) query: string,
     @Args('limit', { type: () => Number, defaultValue: 10 }) limit: number,
@@ -191,18 +209,24 @@ export class ContactResolver {
 
   /**
    * Query: Get contact statistics
+   *
+   * Access: ADMIN, SCHOOL_ADMIN, DISTRICT_ADMIN
    */
   @Query(() => ContactStatsDto, { name: 'contactStats' })
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(GqlAuthGuard, GqlRolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN)
   async getContactStats(@Context() context?: any): Promise<ContactStatsDto> {
     return await this.contactService.getContactStats();
   }
 
   /**
    * Mutation: Create new contact
+   *
+   * Access: ADMIN, SCHOOL_ADMIN, DISTRICT_ADMIN, NURSE
    */
   @Mutation(() => ContactDto)
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(GqlAuthGuard, GqlRolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN, UserRole.NURSE)
   async createContact(
     @Args('input') input: ContactInputDto,
     @Context() context: any
@@ -219,9 +243,12 @@ export class ContactResolver {
 
   /**
    * Mutation: Update existing contact
+   *
+   * Access: ADMIN, SCHOOL_ADMIN, DISTRICT_ADMIN, NURSE
    */
   @Mutation(() => ContactDto)
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(GqlAuthGuard, GqlRolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN, UserRole.NURSE)
   async updateContact(
     @Args('id', { type: () => ID }) id: string,
     @Args('input') input: ContactUpdateInputDto,
@@ -239,9 +266,12 @@ export class ContactResolver {
 
   /**
    * Mutation: Delete contact
+   *
+   * Access: ADMIN, SCHOOL_ADMIN, DISTRICT_ADMIN only
    */
   @Mutation(() => DeleteResponseDto)
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(GqlAuthGuard, GqlRolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN)
   async deleteContact(
     @Args('id', { type: () => ID }) id: string,
     @Context() context?: any
@@ -255,9 +285,12 @@ export class ContactResolver {
 
   /**
    * Mutation: Deactivate contact
+   *
+   * Access: ADMIN, SCHOOL_ADMIN, DISTRICT_ADMIN, NURSE
    */
   @Mutation(() => ContactDto)
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(GqlAuthGuard, GqlRolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN, UserRole.NURSE)
   async deactivateContact(
     @Args('id', { type: () => ID }) id: string,
     @Context() context: any
@@ -270,9 +303,12 @@ export class ContactResolver {
 
   /**
    * Mutation: Reactivate contact
+   *
+   * Access: ADMIN, SCHOOL_ADMIN, DISTRICT_ADMIN, NURSE
    */
   @Mutation(() => ContactDto)
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(GqlAuthGuard, GqlRolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN, UserRole.NURSE)
   async reactivateContact(
     @Args('id', { type: () => ID }) id: string,
     @Context() context: any

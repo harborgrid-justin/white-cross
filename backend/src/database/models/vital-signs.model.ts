@@ -60,9 +60,16 @@ export class VitalSigns extends Model<VitalSignsAttributes> implements VitalSign
   @Column(DataType.UUID)
   declare id?: string;
 
+  @ForeignKey(() => require('./student.model').Student)
   @Column({
     type: DataType.UUID,
     allowNull: false,
+    references: {
+      model: 'students',
+      key: 'id'
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE'
   })
   studentId: string;
 
@@ -138,6 +145,10 @@ export class VitalSigns extends Model<VitalSignsAttributes> implements VitalSign
 
   @Column(DataType.DATE)
   declare updatedAt?: Date;
+
+  // Associations
+  @BelongsTo(() => require('./student.model').Student, { foreignKey: 'studentId', as: 'student' })
+  declare student?: any;
 
   @BeforeCreate
   static async calculateBMI(instance: VitalSigns) {

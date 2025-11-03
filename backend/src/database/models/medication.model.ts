@@ -6,8 +6,11 @@ import {
   PrimaryKey,
   Default,
   BeforeCreate,
+  BeforeUpdate,
+  Scopes
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
+import { Op } from 'sequelize';
 
 export interface MedicationAttributes {
   id: string;
@@ -25,6 +28,50 @@ export interface MedicationAttributes {
   deletedBy?: string;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      isActive: true,
+      deletedAt: null
+    },
+    order: [['name', 'ASC']]
+  },
+  controlled: {
+    where: {
+      isControlled: true,
+      isActive: true
+    },
+    order: [['deaSchedule', 'ASC'], ['name', 'ASC']]
+  },
+  byDEASchedule: (schedule: 'I' | 'II' | 'III' | 'IV' | 'V') => ({
+    where: {
+      deaSchedule: schedule,
+      isActive: true
+    },
+    order: [['name', 'ASC']]
+  }),
+  byDosageForm: (form: string) => ({
+    where: {
+      dosageForm: form,
+      isActive: true
+    },
+    order: [['name', 'ASC']]
+  }),
+  requiresWitness: {
+    where: {
+      requiresWitness: true,
+      isActive: true
+    },
+    order: [['name', 'ASC']]
+  },
+  byManufacturer: (manufacturer: string) => ({
+    where: {
+      manufacturer,
+      isActive: true
+    },
+    order: [['name', 'ASC']]
+  })
+}))
 @Table({
   tableName: 'medications',
   timestamps: true,
@@ -33,19 +80,37 @@ export interface MedicationAttributes {
   indexes: [
     {
       fields: ['name'],
+      name: 'idx_medications_name'
     },
     {
       fields: ['genericName'],
+      name: 'idx_medications_generic_name'
     },
     {
       fields: ['ndc'],
       unique: true,
+      name: 'idx_medications_ndc_unique'
     },
     {
       fields: ['isControlled'],
+      name: 'idx_medications_controlled'
     },
     {
       fields: ['isActive'],
+      name: 'idx_medications_active'
+    },
+    // Additional composite indexes
+    {
+      fields: ['isActive', 'name'],
+      name: 'idx_medications_active_name'
+    },
+    {
+      fields: ['isControlled', 'deaSchedule'],
+      name: 'idx_medications_controlled_schedule'
+    },
+    {
+      fields: ['dosageForm', 'isActive'],
+      name: 'idx_medications_form_active'
     },
   ],
 })
@@ -82,6 +147,12 @@ export class Medication extends Model<MedicationAttributes> implements Medicatio
   @Column({
     type: DataType.STRING(255),
     unique: true,
+    validate: {
+      is: {
+        args: /^\d{4,5}-\d{3,4}-\d{1,2}$/,
+        msg: 'NDC must be in format 12345-1234-12 or 1234-123-1'
+      }
+    }
   })
   ndc?: string;
 
@@ -113,4 +184,25 @@ export class Medication extends Model<MedicationAttributes> implements Medicatio
 
   @Column(DataType.DATE)
   declare updatedAt: Date;
+
+  // Hooks
+  @BeforeCreate
+  @BeforeUpdate
+  static async validateControlledSchedule(instance: Medication) {
+    if (instance.isControlled && !instance.deaSchedule) {
+      throw new Error('Controlled medications must have a DEA schedule');
+    }
+    if (!instance.isControlled && instance.deaSchedule) {
+      throw new Error('Non-controlled medications cannot have a DEA schedule');
+    }
+  }
+
+  @BeforeCreate
+  @BeforeUpdate
+  static async setWitnessRequirement(instance: Medication) {
+    // Schedule II and III controlled substances typically require witness
+    if (instance.isControlled && ['II', 'III'].includes(instance.deaSchedule || '')) {
+      instance.requiresWitness = true;
+    }
+  }
 }

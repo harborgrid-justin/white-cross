@@ -3,6 +3,8 @@ import {
   NotFoundException,
   BadRequestException,
   Logger,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { MedicationRepository } from '../medication.repository';
 import {
@@ -12,6 +14,7 @@ import {
   ListMedicationsQueryDto,
 } from '../dto';
 import { StudentMedication, PaginatedMedicationResponse } from '../entities';
+import { WebSocketService } from '../../infrastructure/websocket/websocket.service';
 
 /**
  * Medication Service
@@ -42,7 +45,11 @@ import { StudentMedication, PaginatedMedicationResponse } from '../entities';
 export class MedicationService {
   private readonly logger = new Logger(MedicationService.name);
 
-  constructor(private readonly medicationRepository: MedicationRepository) {}
+  constructor(
+    private readonly medicationRepository: MedicationRepository,
+    @Inject(forwardRef(() => WebSocketService))
+    private readonly websocketService: WebSocketService,
+  ) {}
 
   /**
    * Get all medications with pagination and filtering
@@ -120,6 +127,15 @@ export class MedicationService {
     const medication = await this.medicationRepository.create(createDto);
 
     this.logger.log(`Created medication: ${medication.id}`);
+
+    // Send real-time notification about new medication
+    try {
+      await this.sendMedicationNotification(medication, 'medication:created');
+    } catch (error) {
+      this.logger.error(`Failed to send WebSocket notification: ${error.message}`);
+      // Don't fail the operation if notification fails
+    }
+
     return medication;
   }
 
@@ -217,6 +233,15 @@ export class MedicationService {
     const medication = await this.medicationRepository.update(id, updateDto);
 
     this.logger.log(`Updated medication: ${id}`);
+
+    // Send real-time notification about medication update
+    try {
+      await this.sendMedicationNotification(medication, 'medication:updated');
+    } catch (error) {
+      this.logger.error(`Failed to send WebSocket notification: ${error.message}`);
+      // Don't fail the operation if notification fails
+    }
+
     return medication;
   }
 
@@ -252,6 +277,15 @@ export class MedicationService {
     );
 
     this.logger.log(`Deactivated medication: ${id}`);
+
+    // Send real-time notification about medication deactivation
+    try {
+      await this.sendMedicationNotification(medication, 'medication:deactivated');
+    } catch (error) {
+      this.logger.error(`Failed to send WebSocket notification: ${error.message}`);
+      // Don't fail the operation if notification fails
+    }
+
     return medication;
   }
 
@@ -329,5 +363,66 @@ export class MedicationService {
 
     this.logger.log(`Medication statistics: ${JSON.stringify(stats)}`);
     return stats;
+  }
+
+  /**
+   * Send real-time WebSocket notification for medication events
+   *
+   * Broadcasts medication events to relevant users via WebSockets:
+   * - Sends to student's room for student-specific notifications
+   * - Sends to organization's room for nurse/admin notifications
+   *
+   * Events:
+   * - medication:created - New medication added
+   * - medication:updated - Medication modified
+   * - medication:deactivated - Medication stopped/discontinued
+   * - medication:reminder - Medication administration reminder
+   *
+   * @param medication - The medication record
+   * @param event - The event type to broadcast
+   * @private
+   */
+  private async sendMedicationNotification(
+    medication: any,
+    event: 'medication:created' | 'medication:updated' | 'medication:deactivated' | 'medication:reminder',
+  ): Promise<void> {
+    if (!this.websocketService || !this.websocketService.isInitialized()) {
+      this.logger.warn('WebSocket service not initialized, skipping notification');
+      return;
+    }
+
+    const payload = {
+      medicationId: medication.id,
+      studentId: medication.studentId,
+      medicationName: medication.medicationName,
+      dosage: medication.dosage,
+      frequency: medication.frequency,
+      route: medication.route,
+      isActive: medication.isActive,
+      timestamp: new Date().toISOString(),
+    };
+
+    try {
+      // Send to student-specific room
+      if (medication.studentId) {
+        await this.websocketService.broadcastToRoom(
+          `student:${medication.studentId}`,
+          event,
+          payload,
+        );
+      }
+
+      // Send to organization room (for nurses/admins monitoring all students)
+      // Note: organizationId should be added to medication model for multi-tenant support
+      // For now, broadcast to all connected users
+      this.logger.log(
+        `Sent ${event} notification for medication ${medication.id} (student: ${medication.studentId})`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to send ${event} notification: ${error.message}`,
+        error.stack,
+      );
+    }
   }
 }

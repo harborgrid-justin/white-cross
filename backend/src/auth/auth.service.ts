@@ -13,6 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { User, UserRole } from '../database/models/user.model';
 import { RegisterDto, LoginDto, AuthChangePasswordDto, AuthResponseDto } from './dto';
 import { JwtPayload } from './strategies/jwt.strategy';
+import { TokenBlacklistService } from './services/token-blacklist.service';
 
 @Injectable()
 export class AuthService {
@@ -26,6 +27,7 @@ export class AuthService {
     private readonly userModel: typeof User,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly tokenBlacklistService: TokenBlacklistService,
   ) {}
 
   /**
@@ -147,8 +149,14 @@ export class AuthService {
    */
   async verifyToken(token: string): Promise<any> {
     try {
+      const jwtSecret = this.configService.get<string>('JWT_SECRET');
+
+      if (!jwtSecret) {
+        throw new Error('JWT_SECRET not configured');
+      }
+
       const payload = this.jwtService.verify<JwtPayload>(token, {
-        secret: this.configService.get<string>('JWT_SECRET') || 'default-secret-change-in-production',
+        secret: jwtSecret,
       });
 
       if (payload.type !== 'access') {
@@ -172,10 +180,16 @@ export class AuthService {
    */
   async refreshToken(refreshToken: string): Promise<AuthResponseDto> {
     try {
+      // Use separate refresh secret or fall back to JWT_SECRET
+      const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET') ||
+                           this.configService.get<string>('JWT_SECRET');
+
+      if (!refreshSecret) {
+        throw new Error('JWT secrets not configured');
+      }
+
       const payload = this.jwtService.verify<JwtPayload>(refreshToken, {
-        secret: this.configService.get<string>('JWT_REFRESH_SECRET') ||
-                this.configService.get<string>('JWT_SECRET') ||
-                'default-secret-change-in-production',
+        secret: refreshSecret,
       });
 
       if (payload.type !== 'refresh') {
@@ -231,9 +245,14 @@ export class AuthService {
     user.password = newPassword;
     await user.save();
 
-    this.logger.log(`Password changed successfully for user: ${user.email}`);
+    // CRITICAL SECURITY: Invalidate all existing tokens after password change
+    await this.tokenBlacklistService.blacklistAllUserTokens(userId);
 
-    return { message: 'Password changed successfully' };
+    this.logger.log(`Password changed successfully for user: ${user.email} - All tokens invalidated`);
+
+    return {
+      message: 'Password changed successfully. All existing sessions have been terminated. Please login again.',
+    };
   }
 
   /**
@@ -314,6 +333,13 @@ export class AuthService {
    * Generate access and refresh tokens
    */
   private async generateTokens(user: User): Promise<{ accessToken: string; refreshToken: string }> {
+    const jwtSecret = this.configService.get<string>('JWT_SECRET');
+    const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET') || jwtSecret;
+
+    if (!jwtSecret) {
+      throw new Error('JWT_SECRET not configured');
+    }
+
     const payload: JwtPayload = {
       sub: user.id!,
       email: user.email,
@@ -322,7 +348,7 @@ export class AuthService {
     };
 
     const accessToken = this.jwtService.sign(payload, {
-      secret: this.configService.get<string>('JWT_SECRET') || 'default-secret-change-in-production',
+      secret: jwtSecret,
       expiresIn: this.accessTokenExpiry,
     });
 
@@ -334,9 +360,7 @@ export class AuthService {
     };
 
     const refreshToken = this.jwtService.sign(refreshPayload, {
-      secret: this.configService.get<string>('JWT_REFRESH_SECRET') ||
-              this.configService.get<string>('JWT_SECRET') ||
-              'default-secret-change-in-production',
+      secret: refreshSecret,
       expiresIn: this.refreshTokenExpiry,
     });
 

@@ -5,6 +5,7 @@ import { MedicationService } from './services/medication.service';
 import { MedicationRepository } from './medication.repository';
 import { StudentMedication } from '../database/models/student-medication.model';
 import { Medication } from '../database/models/medication.model';
+import { WebSocketModule } from '../infrastructure/websocket/websocket.module';
 
 /**
  * Medication Module
@@ -59,6 +60,7 @@ import { Medication } from '../database/models/medication.model';
       StudentMedication,
       Medication,
     ]),
+    WebSocketModule,
   ],
   controllers: [MedicationController],
   providers: [MedicationService, MedicationRepository],

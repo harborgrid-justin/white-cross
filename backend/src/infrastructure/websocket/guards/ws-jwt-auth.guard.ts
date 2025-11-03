@@ -91,7 +91,11 @@ export class WsJwtAuthGuard implements CanActivate {
    * @throws Error if token verification fails
    */
   private async verifyToken(token: string): Promise<any> {
-    const secret = this.configService.get<string>('JWT_SECRET') || 'default-secret-change-in-production';
+    const secret = this.configService.get<string>('JWT_SECRET');
+
+    if (!secret) {
+      throw new Error('JWT_SECRET not configured');
+    }
 
     return this.jwtService.verify(token, { secret });
   }

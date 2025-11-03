@@ -1,4 +1,5 @@
-import { Table, Column, Model, DataType, PrimaryKey, Default, CreatedAt, UpdatedAt, DeletedAt, Index } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, PrimaryKey, Default, CreatedAt, UpdatedAt, DeletedAt, Index, Scopes } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { ContactType } from '../../contact/enums/contact-type.enum';
 
 /**
@@ -8,6 +9,46 @@ import { ContactType } from '../../contact/enums/contact-type.enum';
  * Inspired by TwentyHQ CRM contact management system
  * Supports HIPAA-compliant contact tracking with audit trails
  */
+@Scopes(() => ({
+  active: {
+    where: {
+      isActive: true,
+      deletedAt: null
+    }
+  },
+  byType: (type: ContactType) => ({
+    where: { type }
+  }),
+  byRelation: (relationTo: string) => ({
+    where: { relationTo }
+  }),
+  guardians: {
+    where: {
+      type: ContactType.Guardian,
+      isActive: true
+    }
+  },
+  providers: {
+    where: {
+      type: ContactType.Provider,
+      isActive: true
+    }
+  },
+  withEmail: {
+    where: {
+      email: {
+        [Op.ne]: null
+      }
+    }
+  },
+  withPhone: {
+    where: {
+      phone: {
+        [Op.ne]: null
+      }
+    }
+  }
+}))
 @Table({
   tableName: 'contacts',
   timestamps: true,
@@ -23,6 +64,7 @@ import { ContactType } from '../../contact/enums/contact-type.enum';
 @Index(['isActive'])
 @Index(['createdAt'])
 @Index(['firstName', 'lastName'])
+@Index(['relationTo', 'type', 'isActive'])
 export class Contact extends Model<Contact> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -43,13 +85,24 @@ export class Contact extends Model<Contact> {
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: true
+    allowNull: true,
+    validate: {
+      isEmail: {
+        msg: 'Must be a valid email address'
+      }
+    }
   })
   email: string | null;
 
   @Column({
     type: DataType.STRING(20),
-    allowNull: true
+    allowNull: true,
+    validate: {
+      is: {
+        args: /^\+?[1-9]\d{1,14}$/,
+        msg: 'Phone number must be in E.164 format or standard US format'
+      }
+    }
   })
   phone: string | null;
 
@@ -94,7 +147,13 @@ export class Contact extends Model<Contact> {
 
   @Column({
     type: DataType.STRING(20),
-    allowNull: true
+    allowNull: true,
+    validate: {
+      is: {
+        args: /^\d{5}(-\d{4})?$/,
+        msg: 'ZIP code must be in format 12345 or 12345-6789'
+      }
+    }
   })
   zip: string | null;
 

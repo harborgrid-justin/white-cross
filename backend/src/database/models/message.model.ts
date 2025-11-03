@@ -75,10 +75,17 @@ export class Message extends Model<MessageAttributes, MessageCreationAttributes>
   declare id: string;
 
   @Index
+  @ForeignKey(() => require('./conversation.model').Conversation)
   @Column({
     type: DataType.UUID,
     allowNull: true,
     comment: 'Conversation this message belongs to (for chat messages)',
+    references: {
+      model: 'conversations',
+      key: 'id'
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE'
   })
   declare conversationId?: string;
 
@@ -182,6 +189,9 @@ export class Message extends Model<MessageAttributes, MessageCreationAttributes>
 
   @BelongsTo(() => require('./user.model').User, { foreignKey: 'senderId', as: 'sender' })
   declare sender?: any;
+
+  @BelongsTo(() => require('./conversation.model').Conversation, { foreignKey: 'conversationId', as: 'conversation' })
+  declare conversation?: any;
 
   @Column({
     type: DataType.UUID,

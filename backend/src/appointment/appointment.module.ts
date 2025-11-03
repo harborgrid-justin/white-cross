@@ -12,6 +12,7 @@ import { Appointment } from '../database/models/appointment.model';
 import { AppointmentReminder } from '../database/models/appointment-reminder.model';
 import { AppointmentWaitlist } from '../database/models/appointment-waitlist.model';
 import { User } from '../database/models/user.model';
+import { WebSocketModule } from '../infrastructure/websocket/websocket.module';
 
 /**
  * Appointment Module
@@ -43,6 +44,7 @@ import { User } from '../database/models/user.model';
       AppointmentWaitlist,
       User,
     ]),
+    WebSocketModule,
   ],
   controllers: [AppointmentController],
   providers: [AppointmentService],

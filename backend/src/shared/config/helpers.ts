@@ -53,7 +53,15 @@ export interface ConfigurationError {
 const configCache = new Map<string, { value: any; timestamp: number; ttl: number }>();
 
 // Encryption key for sensitive configuration
-const ENCRYPTION_KEY = process.env.CONFIG_ENCRYPTION_KEY || 'default-key-change-in-production';
+// SECURITY: No default - must be explicitly set in production
+const ENCRYPTION_KEY = process.env.CONFIG_ENCRYPTION_KEY;
+
+if (!ENCRYPTION_KEY && process.env.NODE_ENV === 'production') {
+  throw new Error(
+    'SECURITY ERROR: CONFIG_ENCRYPTION_KEY must be set in production. ' +
+    'This key is used to encrypt sensitive configuration values.'
+  );
+}
 
 /**
  * Get configuration value with fallback
@@ -143,6 +151,10 @@ export function encryptSensitiveConfig(value: string, algorithm: string = 'aes-2
     throw new Error('Value must be a non-empty string');
   }
 
+  if (!ENCRYPTION_KEY) {
+    throw new Error('CONFIG_ENCRYPTION_KEY must be set to encrypt configuration values');
+  }
+
   try {
     const key = crypto.scryptSync(ENCRYPTION_KEY, 'salt', 32);
     const iv = crypto.randomBytes(16);
@@ -177,6 +189,10 @@ export function encryptSensitiveConfig(value: string, algorithm: string = 'aes-2
 export function decryptSensitiveConfig(encryptedValue: string): string {
   if (!encryptedValue || typeof encryptedValue !== 'string') {
     throw new Error('Encrypted value must be a non-empty string');
+  }
+
+  if (!ENCRYPTION_KEY) {
+    throw new Error('CONFIG_ENCRYPTION_KEY must be set to decrypt configuration values');
   }
 
   try {

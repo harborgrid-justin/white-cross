@@ -3,12 +3,15 @@
  * Central module providing all database infrastructure services
  *
  * Provides:
- * - Sequelize ORM configuration
+ * - Sequelize ORM configuration with optimized connection pooling
  * - Cache management (in-memory and Redis support)
  * - Audit logging (HIPAA-compliant)
  * - Repository pattern with enterprise features
  * - Unit of Work for transaction management
  * - Database types and utilities
+ * - Performance monitoring and connection pool tracking
+ * - Query logging and slow query detection
+ * - Query result caching with automatic invalidation
  */
 
 import { Module, Global } from '@nestjs/common';
@@ -20,6 +23,9 @@ import { Sequelize } from 'sequelize-typescript';
 import { CacheService } from './services/cache.service';
 import { AuditService } from './services/audit.service';
 import { SequelizeUnitOfWorkService } from './uow/sequelize-unit-of-work.service';
+import { ConnectionMonitorService } from './services/connection-monitor.service';
+import { QueryLoggerService } from './services/query-logger.service';
+import { QueryCacheService } from './services/query-cache.service';
 
 // Core Models
 import { AuditLog } from './models/audit-log.model';
@@ -182,12 +188,7 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
             synchronize: false,
             alter: false,
             logging: configService.get('NODE_ENV') === 'development' ? console.log : false,
-            dialectOptions: databaseUrl.includes('sslmode=require') ? {
-              ssl: {
-                require: true,
-                rejectUnauthorized: false
-              }
-            } : {},
+            benchmark: true,
             // V6 recommended options
             define: {
               timestamps: true,
@@ -195,10 +196,40 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
               freezeTableName: true,
             },
             pool: {
-              max: 5,
-              min: 0,
+              max: process.env.NODE_ENV === 'production' ? 20 : 10,
+              min: 2,
               acquire: 30000,
               idle: 10000,
+              evict: 1000,
+              handleDisconnects: true,
+              validate: (connection: any) => {
+                return connection && !connection._closed;
+              }
+            },
+            // Retry configuration for connection failures
+            retry: {
+              match: [
+                /ETIMEDOUT/,
+                /EHOSTUNREACH/,
+                /ECONNRESET/,
+                /ECONNREFUSED/,
+                /EHOSTDOWN/,
+                /ENETDOWN/,
+                /ENETUNREACH/,
+                /EAI_AGAIN/
+              ],
+              max: 3
+            },
+            dialectOptions: {
+              ...(databaseUrl.includes('sslmode=require') ? {
+                ssl: {
+                  require: true,
+                  rejectUnauthorized: false
+                }
+              } : {}),
+              application_name: 'white-cross-app',
+              statement_timeout: 30000,
+              idle_in_transaction_session_timeout: 30000
             },
           };
         } else {
@@ -214,6 +245,7 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
             synchronize: configService.get('NODE_ENV') === 'development',
             alter: configService.get('NODE_ENV') === 'development',
             logging: configService.get('NODE_ENV') === 'development' ? console.log : false,
+            benchmark: true,
             // V6 recommended options
             define: {
               timestamps: true,
@@ -221,10 +253,34 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
               freezeTableName: true,
             },
             pool: {
-              max: 5,
-              min: 0,
+              max: process.env.NODE_ENV === 'production' ? 20 : 10,
+              min: 2,
               acquire: 30000,
               idle: 10000,
+              evict: 1000,
+              handleDisconnects: true,
+              validate: (connection: any) => {
+                return connection && !connection._closed;
+              }
+            },
+            // Retry configuration for connection failures
+            retry: {
+              match: [
+                /ETIMEDOUT/,
+                /EHOSTUNREACH/,
+                /ECONNRESET/,
+                /ECONNREFUSED/,
+                /EHOSTDOWN/,
+                /ENETDOWN/,
+                /ENETUNREACH/,
+                /EAI_AGAIN/
+              ],
+              max: 3
+            },
+            dialectOptions: {
+              application_name: 'white-cross-app',
+              statement_timeout: 30000,
+              idle_in_transaction_session_timeout: 30000
             },
           };
         }
@@ -367,6 +423,11 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
       useClass: SequelizeUnitOfWorkService
     },
 
+    // Performance Monitoring Services
+    ConnectionMonitorService,
+    QueryLoggerService,
+    QueryCacheService,
+
     // Repository Implementations
     // Add repositories as they are migrated following this pattern:
     StudentRepository,
@@ -394,11 +455,16 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
   exports: [
     // Export SequelizeModule to make Sequelize instance available for injection
     SequelizeModule,
-    
+
     // Export services for use in other modules
     'ICacheManager',
     'IAuditLogger',
     'IUnitOfWork',
+
+    // Export performance monitoring services
+    ConnectionMonitorService,
+    QueryLoggerService,
+    QueryCacheService,
 
     // Export repositories as they are added
     StudentRepository,

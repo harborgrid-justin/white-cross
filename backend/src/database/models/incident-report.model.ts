@@ -109,9 +109,16 @@ export class IncidentReport extends Model<IncidentReportAttributes> implements I
   })
   studentId: string;
 
+  @ForeignKey(() => require('./user.model').User)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
+    references: {
+      model: 'users',
+      key: 'id'
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'RESTRICT'
   })
   reportedById: string;
 
@@ -260,12 +267,15 @@ export class IncidentReport extends Model<IncidentReportAttributes> implements I
   })
   declare updatedAt: Date;
 
-  @BelongsTo(() => require('./student.model').Student)
+  @BelongsTo(() => require('./student.model').Student, { foreignKey: 'studentId', as: 'student' })
   declare student?: any;
 
-  @HasMany(() => require('./follow-up-action.model').FollowUpAction)
+  @BelongsTo(() => require('./user.model').User, { foreignKey: 'reportedById', as: 'reporter' })
+  declare reporter?: any;
+
+  @HasMany(() => require('./follow-up-action.model').FollowUpAction, { foreignKey: 'incidentReportId', as: 'followUpActions' })
   declare followUpActions?: any[];
 
-  @HasMany(() => require('./witness-statement.model').WitnessStatement)
+  @HasMany(() => require('./witness-statement.model').WitnessStatement, { foreignKey: 'incidentReportId', as: 'witnessStatements' })
   declare witnessStatements?: any[];
 }

@@ -41,7 +41,7 @@ import {
   ConnectedSocket,
   MessageBody,
 } from '@nestjs/websockets';
-import { Logger, UseGuards } from '@nestjs/common';
+import { Logger, UseGuards, UseFilters } from '@nestjs/common';
 import { Server } from 'socket.io';
 import { WsException } from '@nestjs/websockets';
 import type { AuthenticatedSocket } from './interfaces';
@@ -55,7 +55,9 @@ import {
 } from './dto';
 import { WsJwtAuthGuard } from './guards';
 import { RateLimiterService } from './services';
+import { WsExceptionFilter } from './filters/ws-exception.filter';
 
+@UseFilters(new WsExceptionFilter())
 @NestWebSocketGateway({
   cors: {
     origin: process.env.CORS_ORIGIN || 'http://localhost:5173',

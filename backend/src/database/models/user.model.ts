@@ -247,6 +247,34 @@ export class User extends Model<UserAttributes> {
   })
   declare district?: District;
 
+  // One-to-many relationships
+  @HasMany(() => require('./appointment.model').Appointment, { foreignKey: 'nurseId', as: 'appointments' })
+  declare appointments?: any[];
+
+  @HasMany(() => require('./clinical-note.model').ClinicalNote, { foreignKey: 'createdBy', as: 'clinicalNotes' })
+  declare clinicalNotes?: any[];
+
+  @HasMany(() => require('./message.model').Message, { foreignKey: 'senderId', as: 'sentMessages' })
+  declare sentMessages?: any[];
+
+  @HasMany(() => require('./alert.model').Alert, { foreignKey: 'createdBy', as: 'createdAlerts' })
+  declare createdAlerts?: any[];
+
+  @HasMany(() => require('./alert.model').Alert, { foreignKey: 'acknowledgedBy', as: 'acknowledgedAlerts' })
+  declare acknowledgedAlerts?: any[];
+
+  @HasMany(() => require('./alert.model').Alert, { foreignKey: 'resolvedBy', as: 'resolvedAlerts' })
+  declare resolvedAlerts?: any[];
+
+  @HasMany(() => require('./incident-report.model').IncidentReport, { foreignKey: 'reportedById', as: 'reportedIncidents' })
+  declare reportedIncidents?: any[];
+
+  @HasMany(() => require('./prescription.model').Prescription, { foreignKey: 'prescribedBy', as: 'prescriptions' })
+  declare prescriptions?: any[];
+
+  @HasMany(() => require('./clinic-visit.model').ClinicVisit, { foreignKey: 'attendedBy', as: 'clinicVisits' })
+  declare clinicVisits?: any[];
+
   @BeforeCreate
   static async hashPasswordBeforeCreate(user: User) {
     if (user.password) {

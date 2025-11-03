@@ -1,5 +1,6 @@
-import { Table, Column, Model, DataType, PrimaryKey, Default, CreatedAt, UpdatedAt, Index, ForeignKey, BelongsTo } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, PrimaryKey, Default, CreatedAt, UpdatedAt, Index, ForeignKey, BelongsTo, Scopes } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
+import { Op } from 'sequelize';
 
 import { ContactPriority } from '../../contact/enums/contact-priority.enum';
 import { VerificationStatus } from '../../contact/enums/verification-status.enum';
@@ -64,6 +65,43 @@ export interface EmergencyContactCreationAttributes
  * - Contact verification workflow (unverified → pending → verified/failed)
  * - Student pickup authorization tracking
  */
+@Scopes(() => ({
+  active: {
+    where: {
+      isActive: true
+    }
+  },
+  byStudent: (studentId: string) => ({
+    where: { studentId }
+  }),
+  primary: {
+    where: {
+      priority: ContactPriority.PRIMARY,
+      isActive: true
+    }
+  },
+  verified: {
+    where: {
+      verificationStatus: VerificationStatus.VERIFIED,
+      isActive: true
+    }
+  },
+  canPickup: {
+    where: {
+      canPickupStudent: true,
+      isActive: true,
+      verificationStatus: VerificationStatus.VERIFIED
+    }
+  },
+  unverified: {
+    where: {
+      verificationStatus: {
+        [Op.in]: [VerificationStatus.UNVERIFIED, VerificationStatus.PENDING]
+      },
+      isActive: true
+    }
+  }
+}))
 @Table({
   tableName: 'emergency_contacts',
   timestamps: true,
@@ -75,6 +113,7 @@ export interface EmergencyContactCreationAttributes
     { name: 'idx_emergency_contacts_is_active', fields: ['isActive'] },
     { name: 'idx_emergency_contacts_priority', fields: ['priority'] },
     { name: 'idx_emergency_contacts_verification_status', fields: ['verificationStatus'] },
+    { name: 'idx_emergency_contacts_student_priority', fields: ['studentId', 'priority', 'isActive'] },
   ]
   })
 export class EmergencyContact extends Model<EmergencyContactAttributes, EmergencyContactCreationAttributes> {
@@ -111,13 +150,24 @@ export class EmergencyContact extends Model<EmergencyContactAttributes, Emergenc
 
   @Column({
     type: DataType.STRING(20),
-    allowNull: false
+    allowNull: false,
+    validate: {
+      is: {
+        args: /^\+?[1-9]\d{1,14}$/,
+        msg: 'Phone number must be in E.164 format or standard US format'
+      }
+    }
   })
   phoneNumber: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: true
+    allowNull: true,
+    validate: {
+      isEmail: {
+        msg: 'Must be a valid email address'
+      }
+    }
   })
   email: string | null;
 

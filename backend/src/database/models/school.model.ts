@@ -13,6 +13,7 @@ import {
   Default,
   ForeignKey,
   BelongsTo,
+  HasMany,
   Index,
   AllowNull,
 } from 'sequelize-typescript';
@@ -199,4 +200,20 @@ export class School extends Model<SchoolAttributes, CreateSchoolAttributes> {
     as: 'district',
   })
   declare district?: any;
+
+  @HasMany(() => require('./user.model').User, { foreignKey: 'schoolId', as: 'users' })
+  declare users?: any[];
+
+  @HasMany(() => require('./student.model').Student, { foreignKey: 'schoolId', as: 'students' })
+  declare students?: any[];
+
+  @HasMany(() => require('./alert.model').Alert, { foreignKey: 'schoolId', as: 'alerts' })
+  declare alerts?: any[];
+
+  @HasMany(() => require('./incident-report.model').IncidentReport, {
+    foreignKey: 'schoolId',
+    as: 'incidentReports',
+    constraints: false
+  })
+  declare incidentReports?: any[];
 }

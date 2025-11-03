@@ -29,6 +29,9 @@ import { ConversationService } from './services/conversation.service';
 // Helpers
 import { QueueIntegrationHelper } from './helpers/queue-integration.helper';
 
+// Gateways
+import { CommunicationGateway } from './gateways/communication.gateway';
+
 @Module({
   imports: [
     SequelizeModule.forFeature([
@@ -57,6 +60,7 @@ import { QueueIntegrationHelper } from './helpers/queue-integration.helper';
     EnhancedMessageService,
     ConversationService,
     QueueIntegrationHelper,
+    CommunicationGateway,
   ],
   exports: [
     MessageService,
@@ -65,6 +69,7 @@ import { QueueIntegrationHelper } from './helpers/queue-integration.helper';
     CommunicationService,
     EnhancedMessageService,
     ConversationService,
+    CommunicationGateway,
   ],
 })
 export class CommunicationModule {}

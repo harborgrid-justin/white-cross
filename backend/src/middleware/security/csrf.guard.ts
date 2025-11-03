@@ -297,7 +297,14 @@ export class CsrfGuard implements CanActivate {
     const timestamp = Date.now().toString();
     const randomBytes = crypto.randomBytes(32).toString('hex');
     const payload = `${userId}:${sessionId}:${timestamp}:${randomBytes}`;
-    const secret = process.env.CSRF_SECRET || 'default-csrf-secret';
+    const secret = process.env.CSRF_SECRET;
+
+    if (!secret) {
+      throw new Error(
+        'CRITICAL SECURITY ERROR: CSRF_SECRET not configured. ' +
+        'Please set CSRF_SECRET in your .env file.'
+      );
+    }
 
     const hmac = crypto.createHmac('sha256', secret);
     hmac.update(payload);
@@ -341,7 +348,13 @@ export class CsrfGuard implements CanActivate {
 
       // Verify signature
       const payload = `${tokenUserId}:${tokenSessionId}:${timestamp}:${randomBytes}`;
-      const secret = process.env.CSRF_SECRET || 'default-csrf-secret';
+      const secret = process.env.CSRF_SECRET;
+
+      if (!secret) {
+        this.logger.error('CSRF_SECRET not configured');
+        return false;
+      }
+
       const hmac = crypto.createHmac('sha256', secret);
       hmac.update(payload);
       const expectedSignature = hmac.digest('hex');

@@ -127,10 +127,20 @@ export function createTrustedTimestamp(data: string): TrustedTimestamp {
   const nonce = crypto.randomBytes(16).toString('hex');
   const dataHash = crypto.createHash('sha256').update(data).digest('hex');
 
+  // Get signature secret from environment
+  const secret = process.env.SIGNATURE_SECRET || process.env.JWT_SECRET;
+
+  if (!secret) {
+    throw new Error(
+      'CRITICAL SECURITY ERROR: SIGNATURE_SECRET or JWT_SECRET not configured. ' +
+      'Cannot create trusted timestamps without a secret.'
+    );
+  }
+
   // Create cryptographic proof (HMAC of timestamp + data hash)
   const proofData = `${timestamp.toISOString()}|${dataHash}|${nonce}`;
   const proof = crypto
-    .createHmac('sha256', process.env.SIGNATURE_SECRET || process.env.JWT_SECRET || 'default-secret')
+    .createHmac('sha256', secret)
     .update(proofData)
     .digest('hex');
 
@@ -151,10 +161,18 @@ export function createTrustedTimestamp(data: string): TrustedTimestamp {
  */
 export function verifyTimestamp(timestamp: TrustedTimestamp): boolean {
   try {
+    // Get signature secret from environment
+    const secret = process.env.SIGNATURE_SECRET || process.env.JWT_SECRET;
+
+    if (!secret) {
+      console.error('[Signatures] SIGNATURE_SECRET or JWT_SECRET not configured');
+      return false;
+    }
+
     // Reconstruct proof data
     const proofData = `${timestamp.timestamp.toISOString()}|${timestamp.dataHash}|${timestamp.nonce}`;
     const expectedProof = crypto
-      .createHmac('sha256', process.env.SIGNATURE_SECRET || process.env.JWT_SECRET || 'default-secret')
+      .createHmac('sha256', secret)
       .update(proofData)
       .digest('hex');
 

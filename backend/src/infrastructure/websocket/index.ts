@@ -28,3 +28,5 @@ export * from './websocket.gateway';
 export * from './interfaces';
 export * from './dto';
 export * from './guards';
+export * from './filters/ws-exception.filter';
+export * from './adapters/redis-io.adapter';

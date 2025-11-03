@@ -7,25 +7,32 @@ import {
   HttpCode,
   HttpStatus,
   ValidationPipe,
+  Request,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto, AuthChangePasswordDto, RefreshTokenDto, AuthResponseDto } from './dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
+import { TokenBlacklistService } from './services/token-blacklist.service';
 
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly tokenBlacklistService: TokenBlacklistService,
+  ) {}
 
   @Public()
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
+  @Throttle({ short: { limit: 3, ttl: 60000 } }) // 3 registration attempts per minute
   @ApiOperation({
     summary: 'Register a new user',
-    description: 'Create a new user account with email, password, and user details',
+    description: 'Create a new user account with email, password, and user details. Rate limited to 3 attempts per minute to prevent abuse.',
   })
   @ApiBody({ type: RegisterDto })
   @ApiResponse({
@@ -42,6 +49,10 @@ export class AuthController {
     description: 'Conflict - User with this email already exists',
   })
   @ApiResponse({
+    status: 429,
+    description: 'Too many requests - Rate limit exceeded (3 attempts per minute)',
+  })
+  @ApiResponse({
     status: 500,
     description: 'Internal server error',
   })
@@ -54,9 +65,10 @@ export class AuthController {
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ short: { limit: 5, ttl: 60000 } }) // 5 login attempts per minute
   @ApiOperation({
     summary: 'User login',
-    description: 'Authenticate user with email and password, returns access and refresh tokens',
+    description: 'Authenticate user with email and password, returns access and refresh tokens. Rate limited to 5 attempts per minute to prevent brute force attacks.',
   })
   @ApiBody({ type: LoginDto })
   @ApiResponse({
@@ -67,6 +79,10 @@ export class AuthController {
   @ApiResponse({
     status: 401,
     description: 'Unauthorized - Invalid credentials or account locked',
+  })
+  @ApiResponse({
+    status: 429,
+    description: 'Too many requests - Rate limit exceeded (5 attempts per minute)',
   })
   @ApiResponse({
     status: 500,
@@ -169,7 +185,7 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'User logout',
-    description: 'Logout the authenticated user (client should discard tokens)',
+    description: 'Logout the authenticated user and invalidate tokens',
   })
   @ApiResponse({
     status: 200,
@@ -183,15 +199,14 @@ export class AuthController {
     status: 500,
     description: 'Internal server error',
   })
-  async logout() {
-    // In a production system, you would:
-    // 1. Add the token to a blacklist (Redis)
-    // 2. Clear any server-side sessions
-    // 3. Revoke refresh tokens
-    // For now, client-side token removal is sufficient
+  async logout(@Request() req: any) {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (token) {
+      await this.tokenBlacklistService.blacklistToken(token);
+    }
     return {
       success: true,
-      message: 'Logged out successfully. Please discard your tokens.',
+      message: 'Logged out successfully. Tokens have been invalidated.',
     };
   }
 }
