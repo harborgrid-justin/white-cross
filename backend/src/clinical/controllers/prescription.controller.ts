@@ -12,63 +12,83 @@ export class PrescriptionController {
   constructor(private readonly prescriptionService: PrescriptionService) {}
 
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create prescription' })
-  async create(@Body() createDto: CreatePrescriptionDto) {
+  @ApiResponse({ status: 201, description: 'Prescription created successfully' })
+  async create(@Body() createDto: CreatePrescriptionDto): Promise<any> {
     return this.prescriptionService.create(createDto);
   }
 
   @Get()
   @ApiOperation({ summary: 'Query prescriptions' })
-  async findAll(@Query() filters: PrescriptionFiltersDto) {
+  @ApiResponse({ status: 200, description: 'Prescriptions retrieved successfully' })
+  async findAll(@Query() filters: PrescriptionFiltersDto): Promise<any> {
     return this.prescriptionService.findAll(filters);
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get prescription by ID' })
-  async findOne(@Param('id') id: string) {
+  @ApiResponse({ status: 200, description: 'Prescription retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Prescription not found' })
+  async findOne(@Param('id') id: string): Promise<any> {
     return this.prescriptionService.findOne(id);
   }
 
   @Get('student/:studentId')
   @ApiOperation({ summary: 'Get prescriptions for a student' })
-  async findByStudent(@Param('studentId') studentId: string) {
+  @ApiResponse({ status: 200, description: 'Prescriptions retrieved successfully' })
+  async findByStudent(@Param('studentId') studentId: string): Promise<any[]> {
     return this.prescriptionService.findByStudent(studentId);
   }
 
   @Get('student/:studentId/active')
   @ApiOperation({ summary: 'Get active prescriptions for a student' })
-  async findActiveByStudent(@Param('studentId') studentId: string) {
+  @ApiResponse({ status: 200, description: 'Active prescriptions retrieved successfully' })
+  async findActiveByStudent(@Param('studentId') studentId: string): Promise<any[]> {
     return this.prescriptionService.findActiveByStudent(studentId);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update prescription' })
-  async update(@Param('id') id: string, @Body() updateDto: UpdatePrescriptionDto) {
+  @ApiResponse({ status: 200, description: 'Prescription updated successfully' })
+  @ApiResponse({ status: 404, description: 'Prescription not found' })
+  async update(@Param('id') id: string, @Body() updateDto: UpdatePrescriptionDto): Promise<any> {
     return this.prescriptionService.update(id, updateDto);
   }
 
-  @Post(':id/fill')
+  @Patch(':id/fill')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Fill prescription' })
-  async fill(@Param('id') id: string, @Body() fillDto: FillPrescriptionDto) {
+  @ApiResponse({ status: 200, description: 'Prescription filled successfully' })
+  @ApiResponse({ status: 404, description: 'Prescription not found' })
+  async fill(@Param('id') id: string, @Body() fillDto: FillPrescriptionDto): Promise<any> {
     return this.prescriptionService.fill(id, fillDto);
   }
 
-  @Post(':id/mark-picked-up')
+  @Patch(':id/mark-picked-up')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Mark prescription as picked up' })
-  async markPickedUp(@Param('id') id: string) {
+  @ApiResponse({ status: 200, description: 'Prescription marked as picked up successfully' })
+  @ApiResponse({ status: 404, description: 'Prescription not found' })
+  async markPickedUp(@Param('id') id: string): Promise<any> {
     return this.prescriptionService.markPickedUp(id);
   }
 
-  @Post(':id/cancel')
+  @Patch(':id/cancel')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Cancel prescription' })
-  async cancel(@Param('id') id: string) {
+  @ApiResponse({ status: 200, description: 'Prescription cancelled successfully' })
+  @ApiResponse({ status: 404, description: 'Prescription not found' })
+  async cancel(@Param('id') id: string): Promise<any> {
     return this.prescriptionService.cancel(id);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete prescription' })
-  async remove(@Param('id') id: string) {
+  @ApiResponse({ status: 204, description: 'Prescription deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Prescription not found' })
+  async remove(@Param('id') id: string): Promise<void> {
     await this.prescriptionService.remove(id);
   }
 }

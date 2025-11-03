@@ -1,0 +1,13 @@
+# Testing
+coverage/
+coverage-e2e/
+*.lcov
+.nyc_output/
+
+# Test results
+junit.xml
+test-results/
+test-report/
+
+# Jest cache
+.jest-cache/

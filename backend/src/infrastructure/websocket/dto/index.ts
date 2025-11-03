@@ -11,3 +11,11 @@ export * from './typing-indicator.dto';
 export * from './read-receipt.dto';
 export * from './message-delivery.dto';
 export * from './conversation-event.dto';
+
+// Validated Input DTOs (with class-validator decorators)
+export * from './send-message.dto';
+export * from './edit-message.dto';
+export * from './delete-message.dto';
+export * from './join-conversation.dto';
+export * from './typing-indicator-input.dto';
+export * from './read-receipt-input.dto';

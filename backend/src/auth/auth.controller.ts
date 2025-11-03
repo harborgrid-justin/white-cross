@@ -7,15 +7,13 @@ import {
   HttpCode,
   HttpStatus,
   ValidationPipe,
-  Request,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto, AuthChangePasswordDto, RefreshTokenDto, AuthResponseDto } from './dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { Public } from './decorators/public.decorator';
-import { CurrentUser } from './decorators/current-user.decorator';
+import { Public, CurrentUser, AuthToken } from './decorators';
 import { TokenBlacklistService } from './services/token-blacklist.service';
 
 @ApiTags('Authentication')
@@ -140,7 +138,7 @@ export class AuthController {
     status: 500,
     description: 'Internal server error',
   })
-  async getProfile(@CurrentUser() user: any) {
+  async getProfile(@CurrentUser() user: any): Promise<{ success: boolean; data: any }> {
     return {
       success: true,
       data: user,
@@ -175,7 +173,7 @@ export class AuthController {
   async changePassword(
     @CurrentUser('id') userId: string,
     @Body(new ValidationPipe({ transform: true, whitelist: true })) changePasswordDto: AuthChangePasswordDto,
-  ) {
+  ): Promise<{ success: boolean; message: string }> {
     return this.authService.changePassword(userId, changePasswordDto);
   }
 
@@ -199,8 +197,7 @@ export class AuthController {
     status: 500,
     description: 'Internal server error',
   })
-  async logout(@Request() req: any) {
-    const token = req.headers.authorization?.replace('Bearer ', '');
+  async logout(@AuthToken() token: string | null): Promise<{ success: boolean; message: string }> {
     if (token) {
       await this.tokenBlacklistService.blacklistToken(token);
     }

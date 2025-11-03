@@ -7,9 +7,12 @@ import {
   Default,
   ForeignKey,
   BelongsTo,
-  BeforeCreate
+  BeforeCreate,
+  BeforeUpdate,
+  Scopes
   } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
+import { Op } from 'sequelize';
 
 export enum AllergyType {
   FOOD = 'FOOD',
@@ -53,6 +56,60 @@ export interface AllergyAttributes {
   updatedBy?: string;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      active: true,
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  },
+  byStudent: (studentId: string) => ({
+    where: { studentId, active: true },
+    order: [['severity', 'DESC'], ['allergen', 'ASC']]
+  }),
+  byType: (allergyType: AllergyType) => ({
+    where: { allergyType, active: true },
+    order: [['severity', 'DESC']]
+  }),
+  bySeverity: (severity: AllergySeverity) => ({
+    where: { severity, active: true },
+    order: [['allergen', 'ASC']]
+  }),
+  severe: {
+    where: {
+      severity: {
+        [Op.in]: [AllergySeverity.SEVERE, AllergySeverity.LIFE_THREATENING]
+      },
+      active: true
+    },
+    order: [['severity', 'DESC'], ['allergen', 'ASC']]
+  },
+  requiresEpiPen: {
+    where: {
+      epiPenRequired: true,
+      active: true
+    },
+    order: [['epiPenExpiration', 'ASC']]
+  },
+  expiredEpiPen: {
+    where: {
+      epiPenRequired: true,
+      epiPenExpiration: {
+        [Op.lt]: new Date()
+      },
+      active: true
+    },
+    order: [['epiPenExpiration', 'ASC']]
+  },
+  unverified: {
+    where: {
+      verified: false,
+      active: true
+    },
+    order: [['severity', 'DESC'], ['createdAt', 'ASC']]
+  }
+}))
 @Table({
   tableName: 'allergies',
   timestamps: true,
@@ -201,4 +258,53 @@ export class Allergy extends Model<AllergyAttributes> implements AllergyAttribut
 
   @BelongsTo(() => require('./student.model').Student)
   declare student?: any;
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: Allergy) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] Allergy ${instance.id} modified for student ${instance.studentId} at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
+
+  @BeforeUpdate
+  static async validateVerification(instance: Allergy) {
+    if (instance.changed('verified') && instance.verified) {
+      if (!instance.verifiedBy) {
+        throw new Error('verifiedBy is required when marking allergy as verified');
+      }
+      instance.verificationDate = new Date();
+    }
+  }
+
+  @BeforeCreate
+  @BeforeUpdate
+  static async validateEpiPen(instance: Allergy) {
+    if (instance.epiPenRequired && !instance.epiPenLocation) {
+      throw new Error('epiPenLocation is required when EpiPen is required');
+    }
+    if (instance.epiPenExpiration && instance.epiPenExpiration < new Date()) {
+      console.warn(`[WARNING] EpiPen for allergy ${instance.id} has expired`);
+    }
+  }
+
+  // Instance methods
+  isEpiPenExpired(): boolean {
+    if (!this.epiPenRequired || !this.epiPenExpiration) {
+      return false;
+    }
+    return this.epiPenExpiration < new Date();
+  }
+
+  getDaysUntilEpiPenExpiration(): number | null {
+    if (!this.epiPenRequired || !this.epiPenExpiration) {
+      return null;
+    }
+    const diff = this.epiPenExpiration.getTime() - new Date().getTime();
+    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  }
 }
