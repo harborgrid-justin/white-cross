@@ -50,28 +50,44 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
 CMD ["npm", "run", "dev"]
 
 # -----------------------------------------------------------------------------
-# Stage 2: Production Dependencies
+# Stage 2: Build Dependencies (All dependencies for building)
 # -----------------------------------------------------------------------------
-FROM node:20-alpine AS deps
+FROM node:20-alpine AS deps-build
 
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install only production dependencies
-RUN npm ci --only=production && \
+# Install ALL dependencies (including devDependencies) for building
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci && \
     npm cache clean --force
 
 # -----------------------------------------------------------------------------
-# Stage 3: Builder
+# Stage 3: Production Dependencies
+# -----------------------------------------------------------------------------
+FROM node:20-alpine AS deps-prod
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install only production dependencies for runtime
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --only=production && \
+    npm cache clean --force
+
+# -----------------------------------------------------------------------------
+# Stage 4: Builder
 # -----------------------------------------------------------------------------
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy dependencies from deps stage
-COPY --from=deps /app/node_modules ./node_modules
+# Copy ALL dependencies from deps-build stage (needed for build)
+COPY --from=deps-build /app/node_modules ./node_modules
 
 # Copy application source
 COPY . .
@@ -88,7 +104,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
 # -----------------------------------------------------------------------------
-# Stage 4: Production Runner
+# Stage 5: Production Runner
 # -----------------------------------------------------------------------------
 FROM node:20-alpine AS production
 
@@ -103,6 +119,7 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Copy necessary files from builder
+# Note: standalone output already includes required production dependencies
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static

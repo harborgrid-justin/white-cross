@@ -1,0 +1,101 @@
+# =============================================================================
+# Docker Ignore - White Cross Healthcare Platform Root
+# For Docker Compose build context
+# =============================================================================
+
+# Dependencies
+node_modules
+**/node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Testing
+coverage
+**/.nyc_output
+*.lcov
+test-results
+**/test/
+**/__tests__/
+**/__mocks__/
+
+# Build artifacts
+dist
+**/dist
+build
+**/build
+.next
+**/out
+.cache
+**/.cache
+*.tsbuildinfo
+
+# Environment files
+.env
+.env*.local
+**/.env
+**/.env*.local
+!.env.example
+!**/.env.example
+!.env.docker.example
+
+# IDE and Editor
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+*.iml
+
+# Git
+.git
+.gitignore
+.gitattributes
+**/.git
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.circleci
+**/.github
+
+# Documentation
+*.md
+!README.md
+!DOCKER_SETUP.md
+docs
+**/docs
+api-docs
+
+# Logs
+logs
+**/logs
+*.log
+
+# Temporary files
+.temp
+**/temp
+**/tmp
+*.tmp
+archived
+**/archived
+
+# Backup files
+*.backup
+*.bak
+
+# Database files
+*.sqlite
+*.db
+
+# Docker files (don't copy these into context unnecessarily)
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+
+# Misc
+.prettierrc*
+.eslintrc*
+.editorconfig

@@ -4,9 +4,9 @@
 # =============================================================================
 
 # -----------------------------------------------------------------------------
-# Stage 1: Dependencies
+# Stage 1: Build Dependencies (All dependencies for building)
 # -----------------------------------------------------------------------------
-FROM node:20-alpine AS deps
+FROM node:20-alpine AS deps-build
 
 # Install libc6-compat for compatibility
 RUN apk add --no-cache libc6-compat
@@ -16,19 +16,39 @@ WORKDIR /app
 # Copy package files
 COPY package.json package-lock.json* ./
 
-# Install dependencies with clean install
-RUN npm ci --only=production && \
+# Install ALL dependencies (including devDependencies) for building
+# Use cache mount for npm cache to speed up subsequent builds
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci && \
     npm cache clean --force
 
 # -----------------------------------------------------------------------------
-# Stage 2: Builder
+# Stage 2: Production Dependencies (Only runtime dependencies)
+# -----------------------------------------------------------------------------
+FROM node:20-alpine AS deps-prod
+
+# Install libc6-compat for compatibility
+RUN apk add --no-cache libc6-compat
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json* ./
+
+# Install only production dependencies for runtime
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --only=production && \
+    npm cache clean --force
+
+# -----------------------------------------------------------------------------
+# Stage 3: Builder
 # -----------------------------------------------------------------------------
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy dependencies from deps stage
-COPY --from=deps /app/node_modules ./node_modules
+# Copy ALL dependencies from deps-build stage (needed for build)
+COPY --from=deps-build /app/node_modules ./node_modules
 
 # Copy application source
 COPY . .
@@ -51,7 +71,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
 # -----------------------------------------------------------------------------
-# Stage 3: Production Runner
+# Stage 4: Production Runner
 # -----------------------------------------------------------------------------
 FROM node:20-alpine AS runner
 
@@ -66,6 +86,7 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Copy necessary files from builder
+# Note: standalone output already includes required production dependencies
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
