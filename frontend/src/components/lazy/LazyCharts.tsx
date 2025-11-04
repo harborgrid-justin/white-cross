@@ -105,6 +105,41 @@ export const LazyComposedChart = dynamic(
 );
 
 /**
+ * Lazy-loaded Health Metrics Chart component
+ * For detailed health metrics visualization
+ */
+export const LazyHealthMetricsChart = dynamic(
+  () => import('@/components/analytics/HealthMetricsChart').then((mod) => mod.HealthMetricsChart),
+  {
+    loading: () => <ChartLoadingFallback />,
+    ssr: false,
+  }
+);
+
+/**
+ * Lazy-loaded Incident Trend Chart component
+ * For incident analytics and trend analysis
+ */
+export const LazyIncidentTrendChart = dynamic(
+  () => import('@/components/analytics/IncidentTrendChart').then((mod) => mod.IncidentTrendChart),
+  {
+    loading: () => <ChartLoadingFallback />,
+    ssr: false,
+  }
+);
+
+/**
+ * Lazy-loaded Medication Compliance Chart component
+ */
+export const LazyMedicationComplianceChart = dynamic(
+  () => import('@/components/analytics/MedicationComplianceChart').then((mod) => mod.MedicationComplianceChart),
+  {
+    loading: () => <ChartLoadingFallback />,
+    ssr: false,
+  }
+);
+
+/**
  * Chart Skeleton Component
  * Export for use in other loading states
  */

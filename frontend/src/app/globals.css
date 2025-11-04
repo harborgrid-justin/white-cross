@@ -1,3 +1,4 @@
+@import '../styles/tokens.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,120 +8,270 @@
  * Healthcare-focused design system with accessibility and HIPAA compliance
  */
 
-:root {
-  /* Healthcare Brand Colors */
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #3b82f6;
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
-
-  /* Healthcare Semantic Colors */
-  --color-success-50: #f0fdf4;
-  --color-success-500: #22c55e;
-  --color-success-600: #16a34a;
-  
-  --color-warning-50: #fffbeb;
-  --color-warning-500: #f59e0b;
-  --color-warning-600: #d97706;
-  
-  --color-error-50: #fef2f2;
-  --color-error-500: #ef4444;
-  --color-error-600: #dc2626;
-  
-  --color-info-50: #eff6ff;
-  --color-info-500: #3b82f6;
-  --color-info-600: #2563eb;
-
-  /* Neutral Colors */
-  --color-gray-50: #f9fafb;
-  --color-gray-100: #f3f4f6;
-  --color-gray-200: #e5e7eb;
-  --color-gray-300: #d1d5db;
-  --color-gray-400: #9ca3af;
-  --color-gray-500: #6b7280;
-  --color-gray-600: #4b5563;
-  --color-gray-700: #374151;
-  --color-gray-800: #1f2937;
-  --color-gray-900: #111827;
-
-  /* Background and Foreground */
-  --color-background: #ffffff;
-  --color-foreground: #111827;
-  
-  /* Typography */
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-}
-
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-background: #0f172a;
-    --color-foreground: #f1f5f9;
-  }
-}
-
 /* Base Styles */
-html {
-  scroll-behavior: smooth;
-}
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
 
-body {
-  background: var(--color-background);
-  color: var(--color-foreground);
-  font-family: var(--font-sans);
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 
-/* Focus Styles for Accessibility */
-*:focus-visible {
-  outline: 2px solid var(--color-primary-500);
-  outline-offset: 2px;
-}
+  * {
+    @apply border-border;
+  }
 
-/* Screen Reader Only - WCAG 2.1 AA Compliance */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
-}
-
-.sr-only.focusable:active,
-.sr-only.focusable:focus {
-  position: static;
-  width: auto;
-  height: auto;
-  overflow: visible;
-  clip: auto;
-  white-space: normal;
-}
-
-/* Reduced Motion Support - WCAG 2.1 AA Compliance */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+  /* Focus Styles for Accessibility */
+  *:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
   }
 }
 
-/* Print Styles */
+/* ==========================================
+ * SEMANTIC UTILITY CLASSES
+ * Use these instead of hardcoded color classes
+ * ========================================== */
+
+@layer utilities {
+  /* Background Utilities (Semantic) */
+  .bg-surface {
+    background-color: hsl(var(--surface));
+  }
+
+  .bg-surface-secondary {
+    background-color: hsl(var(--surface-secondary));
+  }
+
+  .bg-surface-tertiary {
+    background-color: hsl(var(--surface-tertiary));
+  }
+
+  /* Text Utilities (Semantic) */
+  .text-primary {
+    color: hsl(var(--text-primary));
+  }
+
+  .text-secondary {
+    color: hsl(var(--text-secondary));
+  }
+
+  .text-tertiary {
+    color: hsl(var(--text-tertiary));
+  }
+
+  .text-muted {
+    color: hsl(var(--text-muted));
+  }
+
+  .text-inverse {
+    color: hsl(var(--text-inverse));
+  }
+
+  .text-link {
+    color: hsl(var(--text-link));
+  }
+
+  .text-link:hover {
+    color: hsl(var(--text-link-hover));
+  }
+
+  /* Border Utilities (Semantic) */
+  .border-primary {
+    border-color: hsl(var(--border));
+  }
+
+  .border-secondary {
+    border-color: hsl(var(--border-secondary));
+  }
+
+  /* Status Background Utilities */
+  .bg-status-active {
+    background-color: hsl(var(--status-active) / 0.1);
+  }
+
+  .bg-status-inactive {
+    background-color: hsl(var(--status-inactive) / 0.1);
+  }
+
+  .bg-status-pending {
+    background-color: hsl(var(--status-pending) / 0.1);
+  }
+
+  .bg-status-completed {
+    background-color: hsl(var(--status-completed) / 0.1);
+  }
+
+  .bg-status-cancelled {
+    background-color: hsl(var(--status-cancelled) / 0.1);
+  }
+
+  .bg-status-scheduled {
+    background-color: hsl(var(--status-scheduled) / 0.1);
+  }
+
+  /* Status Text Utilities */
+  .text-status-active {
+    color: hsl(var(--status-active));
+  }
+
+  .text-status-inactive {
+    color: hsl(var(--status-inactive));
+  }
+
+  .text-status-pending {
+    color: hsl(var(--status-pending));
+  }
+
+  .text-status-completed {
+    color: hsl(var(--status-completed));
+  }
+
+  .text-status-cancelled {
+    color: hsl(var(--status-cancelled));
+  }
+
+  .text-status-scheduled {
+    color: hsl(var(--status-scheduled));
+  }
+
+  /* State Background Utilities */
+  .bg-success-subtle {
+    background-color: hsl(var(--success) / 0.1);
+  }
+
+  .bg-warning-subtle {
+    background-color: hsl(var(--warning) / 0.1);
+  }
+
+  .bg-error-subtle {
+    background-color: hsl(var(--error) / 0.1);
+  }
+
+  .bg-info-subtle {
+    background-color: hsl(var(--info) / 0.1);
+  }
+}
+
+/* ==========================================
+ * COMPONENT UTILITIES
+ * ========================================== */
+
+@layer components {
+  /* Card Component */
+  .card-primary {
+    @apply bg-card text-card-foreground rounded-lg border shadow-sm;
+  }
+
+  .card-secondary {
+    @apply bg-surface-secondary rounded-lg border-primary;
+  }
+
+  /* Button Variants */
+  .btn-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md font-medium transition-colors;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80 px-4 py-2 rounded-md font-medium transition-colors;
+  }
+
+  .btn-outline {
+    @apply border border-primary bg-background hover:bg-accent hover:text-accent-foreground px-4 py-2 rounded-md font-medium transition-colors;
+  }
+
+  .btn-ghost {
+    @apply hover:bg-accent hover:text-accent-foreground px-4 py-2 rounded-md font-medium transition-colors;
+  }
+
+  .btn-destructive {
+    @apply bg-destructive text-destructive-foreground hover:bg-destructive/90 px-4 py-2 rounded-md font-medium transition-colors;
+  }
+
+  /* Input Component */
+  .input-primary {
+    @apply flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  /* Badge Component Base */
+  .badge-base {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors;
+  }
+
+  .badge-success {
+    @apply badge-base bg-success-subtle text-status-active;
+  }
+
+  .badge-warning {
+    @apply badge-base bg-warning-subtle text-status-pending;
+  }
+
+  .badge-error {
+    @apply badge-base bg-error-subtle text-status-cancelled;
+  }
+
+  .badge-info {
+    @apply badge-base bg-info-subtle text-status-scheduled;
+  }
+
+  .badge-inactive {
+    @apply badge-base bg-status-inactive/10 text-status-inactive;
+  }
+}
+
+/* ==========================================
+ * ACCESSIBILITY UTILITIES
+ * ========================================== */
+
+@layer utilities {
+  /* Screen Reader Only - WCAG 2.1 AA Compliance */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  .sr-only-focusable:active,
+  .sr-only-focusable:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+
+  /* Focus Ring Utilities */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+  }
+
+  .focus-ring-inset {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset;
+  }
+
+  /* Touch Target (Minimum 44px for accessibility) */
+  .touch-target {
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+  }
+}
+
+/* ==========================================
+ * PRINT STYLES
+ * ========================================== */
+
 @media print {
   .no-print {
     display: none !important;
@@ -129,89 +280,9 @@ body {
   .print-break {
     page-break-after: always;
   }
-}
-/*
- ---break---
- */
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-}
-/*
- ---break---
- */
-@layer base {
-  * {
-    @apply border-border;
-  }
+
   body {
-    @apply bg-background text-foreground;
+    background: white;
+    color: black;
   }
 }

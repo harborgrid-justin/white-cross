@@ -5,6 +5,7 @@
 
 'use client';
 
+import React from 'react';
 import {
   LineChart,
   Line,
@@ -43,7 +44,7 @@ interface HealthMetricsChartProps {
   showLegend?: boolean;
 }
 
-export function HealthMetricsChart({
+export const HealthMetricsChart = React.memo(function HealthMetricsChart({
   data,
   metrics,
   chartType = 'line',
@@ -208,4 +209,4 @@ export function HealthMetricsChart({
       </div>
     </div>
   );
-}
+});

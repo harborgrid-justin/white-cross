@@ -57,8 +57,8 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
-import { MedicationComplianceChart } from '@/components/analytics/MedicationComplianceChart';
+import { useState, useEffect, Suspense } from 'react';
+import { LazyMedicationComplianceChart, ChartSkeleton } from '@/components/lazy';
 import { DataExporter } from '@/components/analytics/DataExporter';
 import { getMedicationCompliance } from '@/lib/actions/analytics.actions';
 import { Download, Filter, RefreshCw } from 'lucide-react';
@@ -240,7 +240,9 @@ export default function MedicationCompliancePage() {
             <RefreshCw className="h-8 w-8 animate-spin text-blue-600" />
           </div>
         ) : (
-          <MedicationComplianceChart data={data} trendData={trendData} />
+          <Suspense fallback={<ChartSkeleton />}>
+            <LazyMedicationComplianceChart data={data} trendData={trendData} />
+          </Suspense>
         )}
       </div>
     </div>

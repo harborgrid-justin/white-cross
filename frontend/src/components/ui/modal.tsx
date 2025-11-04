@@ -7,9 +7,11 @@ interface ModalProps {
   children: React.ReactNode;
   defaultOpen?: boolean;
   onClose?: () => void;
+  ariaLabelledBy?: string;
+  ariaDescribedBy?: string;
 }
 
-export function Modal({ children, defaultOpen = false, onClose }: ModalProps) {
+export function Modal({ children, defaultOpen = false, onClose, ariaLabelledBy, ariaDescribedBy }: ModalProps) {
   const router = useRouter();
   const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -19,6 +21,14 @@ export function Modal({ children, defaultOpen = false, onClose }: ModalProps) {
 
     if (defaultOpen) {
       dialog.showModal();
+
+      // Focus the first focusable element in the dialog
+      const focusableElements = dialog.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusableElements.length > 0) {
+        (focusableElements[0] as HTMLElement).focus();
+      }
     }
 
     const handleClose = () => {
@@ -54,8 +64,12 @@ export function Modal({ children, defaultOpen = false, onClose }: ModalProps) {
     <dialog
       ref={dialogRef}
       className="modal-backdrop bg-black/50 backdrop-blur-sm fixed inset-0 z-50 flex items-center justify-center p-4 w-full h-full max-w-none max-h-none"
+      aria-modal="true"
+      aria-labelledby={ariaLabelledBy}
+      aria-describedby={ariaDescribedBy}
+      role="dialog"
     >
-      <div 
+      <div
         className="modal-content bg-white rounded-lg shadow-xl max-w-4xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >

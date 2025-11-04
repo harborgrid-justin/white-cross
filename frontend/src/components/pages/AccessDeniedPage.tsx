@@ -35,6 +35,7 @@
 
 import React from 'react'
 import { Shield, ArrowLeft } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 /**
  * Props for AccessDeniedPage component
@@ -70,14 +71,16 @@ export default function AccessDeniedPage({
           </p>
           
           {onBack && (
-            <button
+            <Button
               onClick={onBack}
-              className="btn-secondary flex items-center mx-auto"
+              variant="secondary"
+              className="mx-auto"
               data-testid="back-button"
+              aria-label="Go back to previous page"
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
+              <ArrowLeft className="h-4 w-4 mr-2" aria-hidden="true" />
               Go Back
-            </button>
+            </Button>
           )}
         </div>
       </div>

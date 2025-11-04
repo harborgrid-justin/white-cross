@@ -65,17 +65,22 @@ export default function NewAppointmentPage() {
         title="Schedule New Appointment"
         description="Create a new appointment for a student"
         actions={
-          <Button onClick={handleCancel} variant="outline" size="sm">
+          <Button
+            onClick={handleCancel}
+            variant="outline"
+            size="sm"
+            aria-label="Cancel appointment creation"
+          >
             Cancel
           </Button>
         }
       />
 
       {error && (
-        <Card className="border-destructive/50 bg-destructive/5">
+        <Card className="border-destructive/50 bg-destructive/5" role="alert" aria-live="assertive">
           <CardContent className="pt-4 sm:pt-6">
             <div className="flex items-center">
-              <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-destructive mr-2 flex-shrink-0" />
+              <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-destructive mr-2 flex-shrink-0" aria-hidden="true" />
               <p className="text-xs sm:text-sm text-destructive">{error}</p>
             </div>
           </CardContent>

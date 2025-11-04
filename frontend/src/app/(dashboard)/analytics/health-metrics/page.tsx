@@ -51,8 +51,8 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
-import { HealthMetricsChart } from '@/components/analytics/HealthMetricsChart';
+import { useState, useEffect, Suspense } from 'react';
+import { LazyHealthMetricsChart, ChartSkeleton } from '@/components/lazy';
 import { DataExporter } from '@/components/analytics/DataExporter';
 import { getHealthMetrics } from '@/lib/actions/analytics.actions';
 import { Calendar, Download, Filter, RefreshCw } from 'lucide-react';
@@ -284,12 +284,14 @@ export default function HealthMetricsPage() {
             <RefreshCw className="h-8 w-8 animate-spin text-blue-600" />
           </div>
         ) : (
-          <HealthMetricsChart
-            data={data}
-            metrics={metrics}
-            chartType="line"
-            title="Health Metrics Trends"
-          />
+          <Suspense fallback={<ChartSkeleton />}>
+            <LazyHealthMetricsChart
+              data={data}
+              metrics={metrics}
+              chartType="line"
+              title="Health Metrics Trends"
+            />
+          </Suspense>
         )}
       </div>
 

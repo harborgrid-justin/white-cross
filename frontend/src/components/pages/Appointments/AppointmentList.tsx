@@ -252,8 +252,9 @@ const AppointmentList: React.FC<AppointmentListProps> = ({
               <>
                 <button
                   onClick={() => onPageChange?.(1)}
-                  className="px-3 py-1 text-sm text-gray-700 hover:text-gray-900 focus:outline-none 
+                  className="px-3 py-1 text-sm text-gray-700 hover:text-gray-900 focus:outline-none
                            focus:ring-2 focus:ring-blue-500 rounded-md"
+                  aria-label="Go to page 1"
                 >
                   1
                 </button>
@@ -272,6 +273,8 @@ const AppointmentList: React.FC<AppointmentListProps> = ({
                     : 'text-gray-700 hover:text-gray-900'
                   }
                 `}
+                aria-label={`Go to page ${page}`}
+                aria-current={page === pagination.page ? 'page' : undefined}
               >
                 {page}
               </button>
@@ -282,8 +285,9 @@ const AppointmentList: React.FC<AppointmentListProps> = ({
                 {endPage < pagination.totalPages - 1 && <span className="text-gray-400">...</span>}
                 <button
                   onClick={() => onPageChange?.(pagination.totalPages)}
-                  className="px-3 py-1 text-sm text-gray-700 hover:text-gray-900 focus:outline-none 
+                  className="px-3 py-1 text-sm text-gray-700 hover:text-gray-900 focus:outline-none
                            focus:ring-2 focus:ring-blue-500 rounded-md"
+                  aria-label={`Go to page ${pagination.totalPages}`}
                 >
                   {pagination.totalPages}
                 </button>
@@ -324,48 +328,61 @@ const AppointmentList: React.FC<AppointmentListProps> = ({
                 onClick={() => setShowBulkMenu(!showBulkMenu)}
                 className="px-3 py-1 bg-blue-600 text-white text-sm font-medium rounded-md
                          hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Bulk actions menu"
+                aria-expanded={showBulkMenu}
+                aria-haspopup="true"
               >
                 Actions
-                <MoreVertical size={16} className="ml-1 inline" />
+                <MoreVertical size={16} className="ml-1 inline" aria-hidden="true" />
               </button>
 
               {showBulkMenu && (
-                <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+                <div
+                  className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10"
+                  role="menu"
+                  aria-label="Bulk actions"
+                >
                   <div className="py-1">
                     <button
                       onClick={() => handleBulkAction('confirm')}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      role="menuitem"
                     >
                       Confirm Appointments
                     </button>
                     <button
                       onClick={() => handleBulkAction('cancel')}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      role="menuitem"
                     >
                       Cancel Appointments
                     </button>
                     <button
                       onClick={() => handleBulkAction('reschedule')}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      role="menuitem"
                     >
                       Reschedule Appointments
                     </button>
                     <button
                       onClick={() => handleBulkAction('message')}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      role="menuitem"
                     >
                       Send Messages
                     </button>
-                    <div className="border-t border-gray-200" />
+                    <div className="border-t border-gray-200" role="separator" />
                     <button
                       onClick={() => handleBulkAction('export')}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      role="menuitem"
                     >
                       Export Selected
                     </button>
                     <button
                       onClick={() => handleBulkAction('delete')}
                       className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                      role="menuitem"
                     >
                       Delete Appointments
                     </button>
@@ -390,9 +407,9 @@ const AppointmentList: React.FC<AppointmentListProps> = ({
    * Renders loading state
    */
   const renderLoading = (): React.ReactNode => (
-    <div className="flex items-center justify-center py-12">
+    <div className="flex items-center justify-center py-12" role="status" aria-live="polite">
       <div className="flex items-center space-x-2 text-gray-600">
-        <RefreshCw className="animate-spin" size={20} />
+        <RefreshCw className="animate-spin" size={20} aria-hidden="true" />
         <span>Loading appointments...</span>
       </div>
     </div>
@@ -403,7 +420,7 @@ const AppointmentList: React.FC<AppointmentListProps> = ({
    */
   const renderEmptyState = (): React.ReactNode => (
     <div className="flex flex-col items-center justify-center py-12 text-center">
-      <Calendar size={48} className="text-gray-400 mb-4" />
+      <Calendar size={48} className="text-gray-400 mb-4" aria-hidden="true" />
       <h3 className="text-lg font-medium text-gray-900 mb-2">No appointments found</h3>
       <p className="text-gray-600 mb-4">
         {Object.keys(filters).some(key => {
@@ -467,15 +484,17 @@ const AppointmentList: React.FC<AppointmentListProps> = ({
               onClick={() => handleSelectAll(!allSelected)}
               className="flex items-center space-x-2 text-sm text-gray-700 hover:text-gray-900
                        focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-1"
+              aria-label={`${allSelected ? 'Deselect' : 'Select'} all ${appointments.length} appointments`}
+              aria-pressed={allSelected}
             >
               {allSelected ? (
-                <CheckSquare size={16} className="text-blue-600" />
+                <CheckSquare size={16} className="text-blue-600" aria-hidden="true" />
               ) : someSelected ? (
-                <div className="w-4 h-4 bg-blue-600 border border-blue-600 rounded flex items-center justify-center">
+                <div className="w-4 h-4 bg-blue-600 border border-blue-600 rounded flex items-center justify-center" aria-hidden="true">
                   <div className="w-2 h-2 bg-white rounded-sm" />
                 </div>
               ) : (
-                <Square size={16} />
+                <Square size={16} aria-hidden="true" />
               )}
               <span>
                 {allSelected ? 'Deselect all' : 'Select all'}
@@ -503,11 +522,12 @@ const AppointmentList: React.FC<AppointmentListProps> = ({
                   className="p-1 bg-white rounded-md shadow-sm border border-gray-300
                            hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   aria-label={`Select appointment with ${appointment.patient.name}`}
+                  aria-pressed={selectedIds.includes(appointment.id)}
                 >
                   {selectedIds.includes(appointment.id) ? (
-                    <CheckSquare size={16} className="text-blue-600" />
+                    <CheckSquare size={16} className="text-blue-600" aria-hidden="true" />
                   ) : (
-                    <Square size={16} />
+                    <Square size={16} aria-hidden="true" />
                   )}
                 </button>
               </div>
