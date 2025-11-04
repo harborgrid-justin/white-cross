@@ -7,7 +7,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import type { Response } from 'express';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { PdfService } from './pdf.service';
 import { GenerateStudentHealthSummaryDto } from './dto/generate-student-health-summary.dto';
 import { GenerateMedicationLogDto } from './dto/generate-medication-log.dto';
@@ -23,6 +23,7 @@ import { SignPdfDto } from './dto/sign-pdf.dto';
  * Handles PDF generation and manipulation endpoints
  */
 @ApiTags('PDF')
+@ApiBearerAuth()
 @Controller('pdf')
 export class PdfController {
   constructor(private readonly pdfService: PdfService) {}

@@ -7,7 +7,11 @@ import {
   Default,
   HasMany,
   BeforeCreate,
-} from 'sequelize-typescript';
+} ,
+  Scopes,
+  BeforeUpdate
+  } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 
@@ -27,6 +31,14 @@ export interface InventoryItemAttributes {
   isActive: boolean;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'inventory_items',
   timestamps: true,
@@ -50,7 +62,15 @@ export interface InventoryItemAttributes {
     },
     {
       fields: ['reorderLevel'],
+    },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_inventory_item_created_at'
     },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_inventory_item_updated_at'
+    }
   ],
 })
 export class InventoryItem extends Model<InventoryItemAttributes> implements InventoryItemAttributes {
@@ -125,4 +145,17 @@ export class InventoryItem extends Model<InventoryItemAttributes> implements Inv
 
   @HasMany(() => require('./purchase-order-item.model').PurchaseOrderItem)
   declare purchaseOrderItems?: any[];
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: InventoryItem) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] InventoryItem ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

@@ -8,6 +8,10 @@ import {
   AllowNull,
   Index,
   HasMany
+  } ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
   } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
@@ -33,6 +37,14 @@ export interface DrugCatalogAttributes {
   allergies?: any[];
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'drug_catalog',
   timestamps: true,
@@ -64,7 +76,15 @@ export interface DrugCatalogAttributes {
   },
     {
       fields: ['isActive']
-  },
+  },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_drug_catalog_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_drug_catalog_updated_at'
+    }
   ]
   })
 export class DrugCatalog extends Model<DrugCatalogAttributes> implements DrugCatalogAttributes {
@@ -163,4 +183,17 @@ export class DrugCatalog extends Model<DrugCatalogAttributes> implements DrugCat
 
   @HasMany(() => require('./student-drug-allergy.model').StudentDrugAllergy, { foreignKey: 'drugId', as: 'allergies' })
   allergies?: any[];
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: DrugCatalog) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] DrugCatalog ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

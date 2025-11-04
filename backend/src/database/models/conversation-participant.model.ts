@@ -8,7 +8,11 @@ import {
   ForeignKey,
   BelongsTo,
   Index,
-} from 'sequelize-typescript';
+} ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
+  } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 import { Conversation } from './conversation.model';
 
@@ -67,6 +71,14 @@ export interface ConversationParticipantCreationAttributes
  * - userId: Fast lookup for user's conversations
  * - conversationId: Fast lookup for conversation members
  */
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'conversation_participants',
   timestamps: true,
@@ -76,7 +88,15 @@ export interface ConversationParticipantCreationAttributes
       unique: true,
       fields: ['conversationId', 'userId'],
       name: 'conversation_participants_conversation_user_unique',
+    },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_conversation_participant_created_at'
     },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_conversation_participant_updated_at'
+    }
   ],
 })
 export class ConversationParticipant extends Model<
@@ -186,4 +206,17 @@ export class ConversationParticipant extends Model<
     defaultValue: DataType.NOW,
   })
   declare updatedAt: Date;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: ConversationParticipant) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] ConversationParticipant ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

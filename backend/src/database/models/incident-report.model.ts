@@ -8,9 +8,12 @@ import {
   ForeignKey,
   BelongsTo,
   HasMany,
-  BeforeCreate
+  BeforeCreate,
+  BeforeUpdate,
+  Scopes
   } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
+import { Op } from 'sequelize';
 
 
 
@@ -87,6 +90,64 @@ export interface IncidentReportAttributes {
   witnessStatements?: any[];
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['occurredAt', 'DESC']]
+  },
+  byStudent: (studentId: string) => ({
+    where: { studentId },
+    order: [['occurredAt', 'DESC']]
+  }),
+  byType: (type: IncidentType) => ({
+    where: { type },
+    order: [['occurredAt', 'DESC']]
+  }),
+  bySeverity: (severity: IncidentSeverity) => ({
+    where: { severity },
+    order: [['occurredAt', 'DESC']]
+  }),
+  byStatus: (status: IncidentStatus) => ({
+    where: { status },
+    order: [['occurredAt', 'DESC']]
+  }),
+  pendingReview: {
+    where: {
+      status: {
+        [Op.in]: [IncidentStatus.PENDING_REVIEW, IncidentStatus.UNDER_INVESTIGATION]
+      }
+    },
+    order: [['occurredAt', 'ASC']]
+  },
+  critical: {
+    where: {
+      severity: {
+        [Op.in]: [IncidentSeverity.HIGH, IncidentSeverity.CRITICAL]
+      }
+    },
+    order: [['occurredAt', 'DESC']]
+  },
+  requiresAction: {
+    where: {
+      status: IncidentStatus.REQUIRES_ACTION
+    },
+    order: [['severity', 'DESC'], ['occurredAt', 'ASC']]
+  },
+  parentNotRequired: {
+    where: {
+      parentNotified: false
+    },
+    order: [['occurredAt', 'ASC']]
+  },
+  withFollowUp: {
+    where: {
+      followUpRequired: true
+    },
+    order: [['occurredAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'incident_reports',
   timestamps: true,
@@ -104,6 +165,18 @@ export interface IncidentReportAttributes {
   },
     {
       fields: ['severity']
+  },
+    {
+      fields: ['status'],
+      name: 'idx_incident_reports_status'
+  },
+    {
+      fields: ['createdAt'],
+      name: 'idx_incident_reports_created_at'
+  },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_incident_reports_updated_at'
   },
   ]
   })
@@ -300,4 +373,27 @@ export class IncidentReport extends Model<IncidentReportAttributes> implements I
 
   @HasMany(() => require('./witness-statement.model').WitnessStatement, { foreignKey: 'incidentReportId', as: 'witnessStatements' })
   declare witnessStatements?: any[];
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: IncidentReport) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] IncidentReport ${instance.id} modified for student ${instance.studentId} at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}, Reporter: ${instance.reportedById}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
+
+  @BeforeCreate
+  @BeforeUpdate
+  static async validateParentNotification(instance: IncidentReport) {
+    if (instance.parentNotified && !instance.parentNotificationMethod) {
+      throw new Error('parentNotificationMethod is required when parent is notified');
+    }
+    if (instance.parentNotified && !instance.parentNotifiedAt) {
+      instance.parentNotifiedAt = new Date();
+    }
+  }
 }

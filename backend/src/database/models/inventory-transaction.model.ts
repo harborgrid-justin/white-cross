@@ -8,7 +8,11 @@ import {
   ForeignKey,
   BelongsTo,
   BeforeCreate,
-} from 'sequelize-typescript';
+} ,
+  Scopes,
+  BeforeUpdate
+  } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum InventoryTransactionType {
@@ -33,6 +37,14 @@ export interface InventoryTransactionAttributes {
   notes?: string;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'inventory_transactions',
   timestamps: true,
@@ -49,7 +61,15 @@ export interface InventoryTransactionAttributes {
     },
     {
       fields: ['createdAt'],
+    },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_inventory_transaction_created_at'
     },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_inventory_transaction_updated_at'
+    }
   ],
 })
 export class InventoryTransaction extends Model<InventoryTransactionAttributes> implements InventoryTransactionAttributes {
@@ -109,4 +129,17 @@ export class InventoryTransaction extends Model<InventoryTransactionAttributes> 
   // Relationships
   @BelongsTo(() => require('./inventory-item.model').InventoryItem)
   declare inventoryItem?: any;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: InventoryTransaction) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] InventoryTransaction ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

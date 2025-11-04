@@ -8,7 +8,12 @@ import {
   ForeignKey,
   BelongsTo,
   Index,
-} from 'sequelize-typescript';
+} ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
+  } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 
 
 export enum MessageType {
@@ -40,11 +45,30 @@ export interface MessageTemplateAttributes {
   updatedAt?: Date;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'message_templates',
   timestamps: true,
   underscored: false,
-})
+  paranoid: true,
+,
+  indexes: [
+    {
+      fields: ['createdAt'],
+      name: 'idx_message_template_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_message_template_updated_at'
+    }
+  ]})
 export class MessageTemplate extends Model<MessageTemplateAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -128,4 +152,17 @@ export class MessageTemplate extends Model<MessageTemplateAttributes> {
     defaultValue: DataType.NOW,
   })
   declare updatedAt?: Date;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: MessageTemplate) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] MessageTemplate ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

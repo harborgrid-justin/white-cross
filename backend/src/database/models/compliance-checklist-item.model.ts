@@ -8,7 +8,12 @@ import {
   AllowNull,
   ForeignKey,
   BelongsTo,
-} from 'sequelize-typescript';
+} ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
+  } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum ComplianceCategory {
@@ -45,6 +50,14 @@ export interface ComplianceChecklistItemAttributes {
   updatedAt?: Date;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'compliance_checklist_items',
   timestamps: true,
@@ -64,7 +77,15 @@ export interface ComplianceChecklistItemAttributes {
     },
     {
       fields: ['reportId'],
+    },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_compliance_checklist_item_created_at'
     },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_compliance_checklist_item_updated_at'
+    }
   ],
 })
 export class ComplianceChecklistItem extends Model<ComplianceChecklistItemAttributes> implements ComplianceChecklistItemAttributes {
@@ -135,4 +156,17 @@ export class ComplianceChecklistItem extends Model<ComplianceChecklistItemAttrib
 
   @Column(DataType.DATE)
   declare updatedAt?: Date;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: ComplianceChecklistItem) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] ComplianceChecklistItem ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

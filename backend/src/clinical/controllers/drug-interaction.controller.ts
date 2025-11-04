@@ -10,7 +10,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { DrugInteractionService } from '../services/drug-interaction.service';
 import { DrugSearchDto } from '../dto/drug/drug-search.dto';
 import { InteractionCheckDto } from '../dto/drug/interaction-check.dto';
@@ -26,6 +26,7 @@ import { ClinicalUpdateAllergyDto } from '../dto/drug/update-allergy.dto';
  * REST API for drug catalog, interaction checking, and allergy management
  */
 @ApiTags('Clinical - Drug Interactions')
+@ApiBearerAuth()
 @Controller('clinical/drugs')
 export class DrugInteractionController {
   constructor(private readonly drugInteractionService: DrugInteractionService) {}

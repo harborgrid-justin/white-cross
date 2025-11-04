@@ -18,7 +18,12 @@ import {
   UpdatedAt,
   PrimaryKey,
   AutoIncrement,
-} from 'sequelize-typescript';
+} ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
+  } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 
 export interface CacheEntryAttributes {
   id?: number;
@@ -48,6 +53,14 @@ export interface CacheEntryCreationAttributes extends Omit<CacheEntryAttributes,
  * - Tag-based cache invalidation support
  * - Compliance level tracking for audit purposes
  */
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'cache_entries',
   timestamps: true,
@@ -78,7 +91,15 @@ export interface CacheEntryCreationAttributes extends Omit<CacheEntryAttributes,
       name: 'idx_tags',
       fields: ['tags'],
       using: 'gin', // For PostgreSQL JSON indexing
+    },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_cache_entry_created_at'
     },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_cache_entry_updated_at'
+    }
   ],
 })
 export class CacheEntry extends Model<CacheEntryAttributes, CacheEntryCreationAttributes> {
@@ -226,5 +247,18 @@ export class CacheEntry extends Model<CacheEntryAttributes, CacheEntryCreationAt
    */
   isPHI(): boolean {
     return this.complianceLevel === 'PHI' || this.complianceLevel === 'SENSITIVE_PHI';
+  }
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: CacheEntry) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] CacheEntry ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
   }
 }

@@ -1,4 +1,9 @@
-import { Table, Column, Model, DataType, PrimaryKey, Default, ForeignKey, BelongsTo, CreatedAt, UpdatedAt } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, PrimaryKey, Default, ForeignKey, BelongsTo, CreatedAt, UpdatedAt } ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
+  } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 
 /**
  * Budget Transaction Model
@@ -12,13 +17,31 @@ import { Table, Column, Model, DataType, PrimaryKey, Default, ForeignKey, Belong
  * - Transaction date defaults to creation time
  * - Updating/deleting transactions automatically adjusts category spent amount
  */
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'budget_transactions',
   timestamps: true,
   underscored: false,
   createdAt: 'created_at',
   updatedAt: 'updated_at'
-  })
+  ,
+  indexes: [
+    {
+      fields: ['createdAt'],
+      name: 'idx_budget_transaction_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_budget_transaction_updated_at'
+    }
+  ]})
 export class BudgetTransaction extends Model<BudgetTransaction> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -83,4 +106,17 @@ export class BudgetTransaction extends Model<BudgetTransaction> {
   // Relationships
   @BelongsTo(() => require('./budget-category.model').BudgetCategory, { foreignKey: 'category_id', as: 'category' })
   declare category: any;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: BudgetTransaction) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] BudgetTransaction ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

@@ -189,7 +189,15 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
             autoLoadModels: true,
             synchronize: false,
             alter: false,
-            logging: isDevelopment ? console.log : false,
+            // OPTIMIZATION: Enhanced logging with slow query detection
+            logging: isDevelopment
+              ? console.log
+              : (sql: string, timing?: number) => {
+                  // Log slow queries in production (over 1 second)
+                  if (timing && timing > 1000) {
+                    console.warn(`SLOW QUERY (${timing}ms): ${sql.substring(0, 200)}...`);
+                  }
+                },
             benchmark: true,
             // V6 recommended options
             define: {
@@ -197,12 +205,18 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
               underscored: false,
               freezeTableName: true,
             },
+            // OPTIMIZATION: Production-ready connection pool configuration
+            // - Max 20 connections for high concurrency (adjustable based on load)
+            // - Min 5 connections to handle baseline traffic
+            // - 30s acquire timeout for peak traffic scenarios
+            // - 10s idle timeout to free up unused connections
+            // - Connection validation to prevent stale connections
             pool: {
               max: isProduction ? 20 : 10,
-              min: 2,
-              acquire: 30000,
-              idle: 10000,
-              evict: 1000,
+              min: isProduction ? 5 : 2,   // Higher min for production to handle baseline traffic
+              acquire: 30000,               // 30s max time to acquire connection
+              idle: 10000,                  // 10s idle time before releasing
+              evict: 1000,                  // Check for idle connections every 1s
               handleDisconnects: true,
               validate: (connection: any) => {
                 return connection && !connection._closed;
@@ -246,7 +260,15 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
             autoLoadModels: true,
             synchronize: isDevelopment,
             alter: isDevelopment,
-            logging: isDevelopment ? console.log : false,
+            // OPTIMIZATION: Enhanced logging with slow query detection
+            logging: isDevelopment
+              ? console.log
+              : (sql: string, timing?: number) => {
+                  // Log slow queries in production (over 1 second)
+                  if (timing && timing > 1000) {
+                    console.warn(`SLOW QUERY (${timing}ms): ${sql.substring(0, 200)}...`);
+                  }
+                },
             benchmark: true,
             // V6 recommended options
             define: {
@@ -254,12 +276,18 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
               underscored: false,
               freezeTableName: true,
             },
+            // OPTIMIZATION: Production-ready connection pool configuration
+            // - Max 20 connections for high concurrency (adjustable based on load)
+            // - Min 5 connections to handle baseline traffic
+            // - 30s acquire timeout for peak traffic scenarios
+            // - 10s idle timeout to free up unused connections
+            // - Connection validation to prevent stale connections
             pool: {
               max: isProduction ? 20 : 10,
-              min: 2,
-              acquire: 30000,
-              idle: 10000,
-              evict: 1000,
+              min: isProduction ? 5 : 2,   // Higher min for production to handle baseline traffic
+              acquire: 30000,               // 30s max time to acquire connection
+              idle: 10000,                  // 10s idle time before releasing
+              evict: 1000,                  // Check for idle connections every 1s
               handleDisconnects: true,
               validate: (connection: any) => {
                 return connection && !connection._closed;
@@ -281,8 +309,8 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
             },
             dialectOptions: {
               application_name: 'white-cross-app',
-              statement_timeout: 30000,
-              idle_in_transaction_session_timeout: 30000
+              statement_timeout: 30000,    // 30s query timeout
+              idle_in_transaction_session_timeout: 30000  // 30s idle transaction timeout
             },
           };
         }

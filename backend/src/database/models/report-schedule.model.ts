@@ -8,7 +8,12 @@ import {
   AllowNull,
   ForeignKey,
   BelongsTo
+  } ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
   } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 import { ReportTemplate } from './report-template.model';
 import { ReportType, OutputFormat } from './report-execution.model';
@@ -43,11 +48,29 @@ export interface ReportScheduleAttributes {
   template?: ReportTemplate;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'report_schedules',
   timestamps: true,
   underscored: false
-  })
+  ,
+  indexes: [
+    {
+      fields: ['createdAt'],
+      name: 'idx_report_schedule_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_report_schedule_updated_at'
+    }
+  ]})
 export class ReportSchedule extends Model<ReportScheduleAttributes> implements ReportScheduleAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -165,4 +188,17 @@ export class ReportSchedule extends Model<ReportScheduleAttributes> implements R
 
   @Column(DataType.DATE)
   declare updatedAt?: Date;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: ReportSchedule) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] ReportSchedule ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

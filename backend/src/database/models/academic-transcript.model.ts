@@ -8,7 +8,12 @@ import {
   ForeignKey,
   BelongsTo,
   Index
+  } ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
   } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -91,6 +96,14 @@ export interface AcademicTranscriptCreationAttributes extends Omit<AcademicTrans
  * - academicYear for year-based queries
  * - Composite index on (studentId, academicYear, semester) for unique constraints
  */
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'academic_transcripts',
   timestamps: true,
@@ -116,7 +129,15 @@ export interface AcademicTranscriptCreationAttributes extends Omit<AcademicTrans
     {
       fields: ['importedBy'],
       name: 'academic_transcripts_imported_by_idx'
-  },
+  },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_academic_transcript_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_academic_transcript_updated_at'
+    }
   ]
   })
 export class AcademicTranscript extends Model<AcademicTranscriptAttributes, AcademicTranscriptCreationAttributes> implements AcademicTranscriptAttributes {
@@ -284,5 +305,18 @@ export class AcademicTranscript extends Model<AcademicTranscriptAttributes, Acad
    */
   getSubject(subjectCode: string): SubjectGrade | undefined {
     return this.subjects.find(s => s.subjectCode === subjectCode);
+  }
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: AcademicTranscript) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] AcademicTranscript ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
   }
 }

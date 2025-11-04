@@ -15,7 +15,12 @@ import {
   BelongsTo,
   Index,
   AllowNull,
-} from 'sequelize-typescript';
+} ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
+  } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 
 /**
  * License types
@@ -83,6 +88,14 @@ export interface CreateLicenseAttributes {
  *
  * Represents a software license issued to a district
  */
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'licenses',
   timestamps: true,
@@ -90,7 +103,15 @@ export interface CreateLicenseAttributes {
   indexes: [
     { fields: ['licenseKey'], unique: true },
     { fields: ['status'] },
-    { fields: ['districtId'] },
+    { fields: ['districtId'] },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_license_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_license_updated_at'
+    }
   ],
 })
 export class License extends Model<LicenseAttributes, CreateLicenseAttributes> {
@@ -238,4 +259,17 @@ export class License extends Model<LicenseAttributes, CreateLicenseAttributes> {
     as: 'district',
   })
   declare district?: any;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: License) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] License ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

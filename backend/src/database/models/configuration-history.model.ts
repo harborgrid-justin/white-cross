@@ -15,7 +15,12 @@ import {
   BelongsTo,
   Index,
   AllowNull,
-} from 'sequelize-typescript';
+} ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
+  } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 
 /**
  * ConfigurationHistory attributes interface
@@ -46,6 +51,14 @@ export interface CreateConfigurationHistoryAttributes {
  *
  * Tracks changes to system configuration settings
  */
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'configuration_history',
   timestamps: true,
@@ -54,7 +67,15 @@ export interface CreateConfigurationHistoryAttributes {
   indexes: [
     { fields: ['configKey'] },
     { fields: ['changedBy'] },
-    { fields: ['configurationId'] },
+    { fields: ['configurationId'] },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_configuration_history_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_configuration_history_updated_at'
+    }
   ],
 })
 export class ConfigurationHistory extends Model<ConfigurationHistoryAttributes, CreateConfigurationHistoryAttributes> {
@@ -121,4 +142,17 @@ export class ConfigurationHistory extends Model<ConfigurationHistoryAttributes, 
     as: 'configuration',
   })
   declare configuration?: any;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: ConfigurationHistory) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] ConfigurationHistory ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

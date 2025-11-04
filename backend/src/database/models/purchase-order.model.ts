@@ -9,7 +9,11 @@ import {
   BelongsTo,
   HasMany,
   BeforeCreate,
-} from 'sequelize-typescript';
+} ,
+  Scopes,
+  BeforeUpdate
+  } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 
@@ -37,6 +41,14 @@ export interface PurchaseOrderAttributes {
   notes?: string;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'purchase_orders',
   timestamps: true,
@@ -54,7 +66,15 @@ export interface PurchaseOrderAttributes {
     },
     {
       fields: ['orderDate'],
+    },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_purchase_order_created_at'
     },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_purchase_order_updated_at'
+    }
   ],
 })
 export class PurchaseOrder extends Model<PurchaseOrderAttributes> implements PurchaseOrderAttributes {
@@ -138,4 +158,17 @@ export class PurchaseOrder extends Model<PurchaseOrderAttributes> implements Pur
 
   @HasMany(() => require('./purchase-order-item.model').PurchaseOrderItem)
   declare items?: any[];
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: PurchaseOrder) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] PurchaseOrder ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

@@ -8,3 +8,5 @@ export * from './student.dto';
 export * from './health-record.dto';
 export * from './medication.dto';
 export * from './pagination.dto';
+export * from './alert.dto';
+export * from './vitals.dto';

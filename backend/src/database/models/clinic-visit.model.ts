@@ -117,7 +117,15 @@ export interface ClinicVisitAttributes {
   },
     {
       fields: ['attendedBy']
-  },
+  },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_clinic_visit_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_clinic_visit_updated_at'
+    }
   ]
   })
 export class ClinicVisit extends Model<ClinicVisitAttributes> implements ClinicVisitAttributes {

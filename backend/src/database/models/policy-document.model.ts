@@ -6,7 +6,12 @@ import {
   PrimaryKey,
   Default,
   AllowNull
+  } ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
   } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum PolicyCategory {
@@ -41,6 +46,14 @@ export interface PolicyDocumentAttributes {
   updatedAt?: Date;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'policy_documents',
   timestamps: true,
@@ -60,7 +73,15 @@ export interface PolicyDocumentAttributes {
   },
     {
       fields: ['approvedBy']
-  },
+  },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_policy_document_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_policy_document_updated_at'
+    }
   ]
   })
 export class PolicyDocument extends Model<PolicyDocumentAttributes> implements PolicyDocumentAttributes {
@@ -130,4 +151,17 @@ export class PolicyDocument extends Model<PolicyDocumentAttributes> implements P
 
   @Column(DataType.DATE)
   declare updatedAt?: Date;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: PolicyDocument) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] PolicyDocument ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

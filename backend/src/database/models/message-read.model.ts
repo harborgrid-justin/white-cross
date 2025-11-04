@@ -8,7 +8,11 @@ import {
   ForeignKey,
   BelongsTo,
   Index,
-} from 'sequelize-typescript';
+} ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
+  } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 import { Message } from './message.model';
 
@@ -48,6 +52,14 @@ export interface MessageReadCreationAttributes
  * - userId: Fast lookup for user's read messages
  * - messageId: Fast lookup for who read a message
  */
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'message_reads',
   timestamps: true,
@@ -57,7 +69,15 @@ export interface MessageReadCreationAttributes
       unique: true,
       fields: ['messageId', 'userId'],
       name: 'message_reads_message_user_unique',
+    },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_message_read_created_at'
     },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_message_read_updated_at'
+    }
   ],
 })
 export class MessageRead extends Model<MessageReadAttributes, MessageReadCreationAttributes> {
@@ -108,4 +128,17 @@ export class MessageRead extends Model<MessageReadAttributes, MessageReadCreatio
     defaultValue: DataType.NOW,
   })
   declare updatedAt: Date;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: MessageRead) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] MessageRead ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

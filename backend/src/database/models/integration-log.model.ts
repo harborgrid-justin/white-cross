@@ -14,12 +14,25 @@ import {
   Index,
   ForeignKey,
   BelongsTo,
-} from 'sequelize-typescript';
+} ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
+  } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 
 /**
  * IntegrationLog Model
  * Logs all integration operations and their results
  */
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'integration_logs',
   timestamps: true,
@@ -31,7 +44,15 @@ import {
     { fields: ['status'] },
     { fields: ['startedAt'] },
     { fields: ['completedAt'] },
-    { fields: ['createdAt'] },
+    { fields: ['createdAt'] },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_integration_log_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_integration_log_updated_at'
+    }
   ],
 })
 export class IntegrationLog extends Model {
@@ -152,4 +173,17 @@ export class IntegrationLog extends Model {
     as: 'integration',
   })
   declare integration: any;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: IntegrationLog) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] IntegrationLog ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

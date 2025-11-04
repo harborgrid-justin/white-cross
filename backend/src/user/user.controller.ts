@@ -27,6 +27,7 @@ import {
   ApiResponse,
   ApiParam,
   ApiQuery,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import {
@@ -42,6 +43,7 @@ import {
 import { UserRole } from './enums/user-role.enum';
 
 @ApiTags('users')
+@ApiBearerAuth()
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))

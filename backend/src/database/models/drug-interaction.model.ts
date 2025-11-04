@@ -9,7 +9,12 @@ import {
   Index,
   ForeignKey,
   BelongsTo
+  } ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
   } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 import { InteractionSeverity } from '../../clinical/enums/interaction-severity.enum';
@@ -30,6 +35,14 @@ export interface DrugInteractionAttributes {
   drug2?: any;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'drug_interactions',
   timestamps: true,
@@ -41,7 +54,15 @@ export interface DrugInteractionAttributes {
   },
     {
       fields: ['severity']
-  },
+  },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_drug_interaction_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_drug_interaction_updated_at'
+    }
   ]
   })
 export class DrugInteraction extends Model<DrugInteractionAttributes> implements DrugInteractionAttributes {
@@ -118,4 +139,17 @@ export class DrugInteraction extends Model<DrugInteractionAttributes> implements
 
   @BelongsTo(() => require('./drug-catalog.model').DrugCatalog, { foreignKey: 'drug2Id', as: 'drug2' })
   drug2?: any;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: DrugInteraction) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] DrugInteraction ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

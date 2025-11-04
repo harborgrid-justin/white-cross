@@ -22,7 +22,8 @@ import {
   ApiOperation,
   ApiResponse,
   ApiParam,
-  ApiQuery
+  ApiQuery,
+  ApiBearerAuth
 } from '@nestjs/swagger';
 import { ContactService } from './services/contact.service';
 import { EmergencyContactService } from './services/emergency-contact.service';
@@ -38,6 +39,7 @@ import {
 import { ContactType } from './enums';
 
 @ApiTags('Contacts')
+@ApiBearerAuth()
 @Controller('contacts')
 export class ContactController {
   constructor(

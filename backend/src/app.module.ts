@@ -70,12 +70,16 @@ import { AppointmentModule } from './appointment/appointment.module';
 import { DiscoveryExampleModule } from './discovery/discovery.module';
 import { CommandsModule } from './commands/commands.module';
 import { CoreModule } from './core/core.module';
+import { SentryModule } from './infrastructure/monitoring/sentry.module';
 
 @Module({
   imports: [
     // Core module (CRITICAL - provides global exception filters, interceptors, and pipes)
     // MUST be imported first to ensure proper error handling and logging
     CoreModule,
+
+    // Sentry module for error tracking and monitoring (global)
+    SentryModule,
 
     // Configuration module with validation and type-safe namespaces
     ConfigModule.forRoot({
@@ -149,8 +153,8 @@ import { CoreModule } from './core/core.module';
     UserModule,
     HealthRecordModule,
 
-    // Analytics module
-    AnalyticsModule,
+    // Analytics module (conditionally loaded based on feature flag)
+    ...(process.env.ENABLE_ANALYTICS !== 'false' ? [AnalyticsModule] : []),
 
     ChronicConditionModule,
 
@@ -179,7 +183,8 @@ import { CoreModule } from './core/core.module';
     // Integration clients module (external API integrations with circuit breaker and rate limiting)
     IntegrationsModule,
 
-    ReportModule,
+    // Report module (conditionally loaded based on feature flag)
+    ...(process.env.ENABLE_REPORTING !== 'false' ? [ReportModule] : []),
 
     MobileModule,
 
@@ -199,9 +204,11 @@ import { CoreModule } from './core/core.module';
 
     SharedModule,
 
-    DashboardModule,
+    // Dashboard module (conditionally loaded based on feature flag)
+    ...(process.env.ENABLE_DASHBOARD !== 'false' ? [DashboardModule] : []),
 
-    AdvancedFeaturesModule,
+    // Advanced features module (conditionally loaded based on feature flag)
+    ...(process.env.ENABLE_ADVANCED_FEATURES !== 'false' ? [AdvancedFeaturesModule] : []),
 
     EmergencyBroadcastModule,
 
@@ -209,7 +216,8 @@ import { CoreModule } from './core/core.module';
 
     GradeTransitionModule,
 
-    EnterpriseFeaturesModule,
+    // Enterprise features module (conditionally loaded based on feature flag)
+    ...(process.env.ENABLE_ENTERPRISE !== 'false' ? [EnterpriseFeaturesModule] : []),
 
     HealthMetricsModule,
 
@@ -225,10 +233,12 @@ import { CoreModule } from './core/core.module';
     AppointmentModule,
 
     // Discovery module (for runtime introspection and metadata discovery)
-    DiscoveryExampleModule,
+    // Only loaded in development mode with feature flag
+    ...(process.env.NODE_ENV === 'development' && process.env.ENABLE_DISCOVERY === 'true' ? [DiscoveryExampleModule] : []),
 
     // Commands module (for CLI commands like seeding)
-    CommandsModule,
+    // Only loaded in CLI mode
+    ...(process.env.CLI_MODE === 'true' ? [CommandsModule] : []),
   ],
   controllers: [],
   providers: [

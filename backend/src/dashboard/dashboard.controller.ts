@@ -18,6 +18,7 @@ import {
   ApiOperation,
   ApiResponse,
   ApiQuery,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { DashboardService } from './dashboard.service';
 import {
@@ -42,6 +43,7 @@ import {
  * - Cache management
  */
 @ApiTags('dashboard')
+@ApiBearerAuth()
 @Controller('dashboard')
 export class DashboardController {
   private readonly logger = new Logger(DashboardController.name);

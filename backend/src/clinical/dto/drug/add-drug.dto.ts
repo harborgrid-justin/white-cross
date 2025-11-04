@@ -16,13 +16,14 @@ export class AddDrugDto {
   genericName: string;
 
   @ApiPropertyOptional({
-    description: 'Brand names for the drug',
+    description: 'Brand names for the drug (each max 100 characters)',
     example: ['Advil', 'Motrin'],
     type: [String],
   })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @MaxLength(100, { each: true, message: 'Each brand name cannot exceed 100 characters' })
   brandNames?: string[];
 
   @ApiPropertyOptional({
@@ -44,13 +45,14 @@ export class AddDrugDto {
   rxnormId?: string;
 
   @ApiPropertyOptional({
-    description: 'NDC codes',
+    description: 'NDC codes (each max 50 characters)',
     example: ['0573-0001-01', '0573-0001-05'],
     type: [String],
   })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @MaxLength(50, { each: true, message: 'Each NDC code cannot exceed 50 characters' })
   ndcCodes?: string[];
 
   @ApiPropertyOptional({
@@ -63,27 +65,33 @@ export class AddDrugDto {
   drugClass?: string;
 
   @ApiPropertyOptional({
-    description: 'Drug description',
+    description: 'Drug description (maximum 2000 characters)',
     example: 'Nonsteroidal anti-inflammatory drug used for pain relief',
+    maxLength: 2000,
   })
   @IsOptional()
   @IsString()
+  @MaxLength(2000, { message: 'Description cannot exceed 2000 characters' })
   description?: string;
 
   @ApiPropertyOptional({
-    description: 'Administration route',
+    description: 'Administration route (maximum 100 characters)',
     example: 'oral',
+    maxLength: 100,
   })
   @IsOptional()
   @IsString()
+  @MaxLength(100, { message: 'Administration route cannot exceed 100 characters' })
   administrationRoute?: string;
 
   @ApiPropertyOptional({
-    description: 'Controlled substance schedule (I-V)',
+    description: 'Controlled substance schedule (I-V, maximum 10 characters)',
     example: null,
+    maxLength: 10,
   })
   @IsOptional()
   @IsString()
+  @MaxLength(10, { message: 'Controlled substance schedule cannot exceed 10 characters' })
   controlledSubstanceSchedule?: string;
 
   @ApiPropertyOptional({
@@ -95,33 +103,36 @@ export class AddDrugDto {
   commonDoses?: Record<string, any>;
 
   @ApiPropertyOptional({
-    description: 'Known side effects',
+    description: 'Known side effects (each max 200 characters)',
     example: ['Nausea', 'Stomach upset', 'Dizziness'],
     type: [String],
   })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @MaxLength(200, { each: true, message: 'Each side effect cannot exceed 200 characters' })
   sideEffects?: string[];
 
   @ApiPropertyOptional({
-    description: 'Contraindications',
+    description: 'Contraindications (each max 200 characters)',
     example: ['Active peptic ulcer disease', 'Known hypersensitivity'],
     type: [String],
   })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @MaxLength(200, { each: true, message: 'Each contraindication cannot exceed 200 characters' })
   contraindications?: string[];
 
   @ApiPropertyOptional({
-    description: 'Warnings and precautions',
+    description: 'Warnings and precautions (each max 200 characters)',
     example: ['Use caution in patients with renal impairment'],
     type: [String],
   })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @MaxLength(200, { each: true, message: 'Each warning cannot exceed 200 characters' })
   warnings?: string[];
 
   @ApiPropertyOptional({

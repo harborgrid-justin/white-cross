@@ -10,7 +10,12 @@ import {
   Index,
   CreatedAt,
   UpdatedAt
+  } ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
   } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 
 export enum MedicationLogStatus {
   PENDING = 'PENDING',
@@ -38,6 +43,14 @@ export interface MedicationLogAttributes {
   updatedAt: Date;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'medication_logs',
   timestamps: true,
@@ -46,7 +59,15 @@ export interface MedicationLogAttributes {
   indexes: [
     { fields: ['studentId', 'medicationId'] },
     { fields: ['administeredAt'] },
-    { fields: ['administeredBy'] },
+    { fields: ['administeredBy'] },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_medication_log_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_medication_log_updated_at'
+    }
   ]
   })
 export class MedicationLog extends Model<MedicationLogAttributes> implements MedicationLogAttributes {
@@ -154,4 +175,17 @@ export class MedicationLog extends Model<MedicationLogAttributes> implements Med
   // Relations
   @BelongsTo(() => require('./student.model').Student, { foreignKey: 'studentId', as: 'student' })
   declare student?: any;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: MedicationLog) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] MedicationLog ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

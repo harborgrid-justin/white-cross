@@ -7,7 +7,12 @@ import {
   Default,
   AllowNull,
   Index
+  } ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
   } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum NotificationPriority {
@@ -142,6 +147,14 @@ export interface PushNotificationCreationAttributes {
   createdBy: string;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'push_notifications',
   timestamps: true,
@@ -155,7 +168,15 @@ export interface PushNotificationCreationAttributes {
   },
     {
       fields: ['createdAt']
-  },
+  },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_push_notification_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_push_notification_updated_at'
+    }
   ]
   })
 export class PushNotification extends Model<PushNotificationAttributes, PushNotificationCreationAttributes> implements PushNotificationAttributes {
@@ -386,4 +407,17 @@ export class PushNotification extends Model<PushNotificationAttributes, PushNoti
 
   @Column(DataType.DATE)
   declare updatedAt?: Date;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: PushNotification) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] PushNotification ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

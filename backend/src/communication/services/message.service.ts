@@ -13,6 +13,14 @@ export class MessageService {
     @InjectModel(MessageDelivery) private deliveryModel: typeof MessageDelivery,
   ) {}
 
+  /**
+   * Send message to multiple recipients
+   *
+   * OPTIMIZATION: Fixed N+1 query problem
+   * Before: 1 + N queries (1 for message + N for each delivery) = 101 queries for 100 recipients
+   * After: 2 queries (1 for message + 1 bulk create for all deliveries) = 2 queries
+   * Performance improvement: ~98% query reduction
+   */
   async sendMessage(data: SendMessageDto & { senderId: string }) {
     this.logger.log(`Sending message to ${data.recipients.length} recipients`);
 
@@ -29,31 +37,37 @@ export class MessageService {
       templateId: data.templateId,
     } as any);
 
-    // Create delivery records
-    const deliveryStatuses: any[] = [];
+    // OPTIMIZATION: Build all delivery records first, then bulk create instead of N individual creates
+    const deliveryRecords: any[] = [];
     const channels = data.channels || ['EMAIL'];
+    const sentAt = !data.scheduledAt ? new Date() : null;
+    const status = data.scheduledAt ? 'PENDING' : 'SENT';
 
     for (const recipient of data.recipients) {
       for (const channel of channels) {
-        const delivery = await this.deliveryModel.create({
+        deliveryRecords.push({
           recipientType: recipient.type,
           recipientId: recipient.id,
           channel: channel,
-          status: data.scheduledAt ? 'PENDING' : 'SENT',
+          status: status,
           contactInfo: channel === 'EMAIL' ? recipient.email : recipient.phoneNumber,
           messageId: message.id,
-          sentAt: !data.scheduledAt ? new Date() : null,
-        } as any);
-
-        deliveryStatuses.push({
-          messageId: message.id,
-          recipientId: recipient.id,
-          channel: channel,
-          status: delivery.status,
-          sentAt: delivery.sentAt,
+          sentAt: sentAt,
         });
       }
     }
+
+    // Bulk create all deliveries in a single query
+    const deliveries = await this.deliveryModel.bulkCreate(deliveryRecords);
+
+    // Build delivery statuses from bulk-created records
+    const deliveryStatuses = deliveries.map((delivery) => ({
+      messageId: message.id,
+      recipientId: delivery.recipientId,
+      channel: delivery.channel,
+      status: delivery.status,
+      sentAt: delivery.sentAt,
+    }));
 
     return {
       message: message.toJSON(),

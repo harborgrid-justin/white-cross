@@ -112,6 +112,14 @@ export interface MedicationAttributes {
       fields: ['dosageForm', 'isActive'],
       name: 'idx_medications_form_active'
     },
+    {
+      fields: ['createdAt'],
+      name: 'idx_medications_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_medications_updated_at'
+    },
   ],
 })
 export class Medication extends Model<MedicationAttributes> implements MedicationAttributes {
@@ -185,7 +193,18 @@ export class Medication extends Model<MedicationAttributes> implements Medicatio
   @Column(DataType.DATE)
   declare updatedAt: Date;
 
-  // Hooks
+  // Hooks for HIPAA compliance and validation
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditAccess(instance: Medication) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] Medication ${instance.id} (${instance.name}) modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
+
   @BeforeCreate
   @BeforeUpdate
   static async validateControlledSchedule(instance: Medication) {

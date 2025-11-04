@@ -8,7 +8,11 @@ import {
   ForeignKey,
   BelongsTo,
   BeforeCreate,
-} from 'sequelize-typescript';
+} ,
+  Scopes,
+  BeforeUpdate
+  } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum MaintenanceType {
@@ -32,6 +36,14 @@ export interface MaintenanceLogAttributes {
   notes?: string;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'maintenance_logs',
   timestamps: true,
@@ -48,7 +60,15 @@ export interface MaintenanceLogAttributes {
     },
     {
       fields: ['nextMaintenanceDate'],
+    },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_maintenance_log_created_at'
     },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_maintenance_log_updated_at'
+    }
   ],
 })
 export class MaintenanceLog extends Model<MaintenanceLogAttributes> implements MaintenanceLogAttributes {
@@ -105,4 +125,17 @@ export class MaintenanceLog extends Model<MaintenanceLogAttributes> implements M
   // Relationships
   @BelongsTo(() => require('./inventory-item.model').InventoryItem)
   declare inventoryItem?: any;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: MaintenanceLog) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] MaintenanceLog ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

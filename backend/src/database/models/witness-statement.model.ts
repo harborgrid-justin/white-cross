@@ -9,7 +9,12 @@ import {
   Index,
   ForeignKey,
   BelongsTo
+  } ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
   } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum WitnessType {
@@ -36,6 +41,14 @@ export interface WitnessStatementAttributes {
   incidentReport?: any;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'witness_statements',
   timestamps: true,
@@ -43,7 +56,15 @@ export interface WitnessStatementAttributes {
   indexes: [
     {
       fields: ['incidentReportId', 'verified']
-  },
+  },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_witness_statement_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_witness_statement_updated_at'
+    }
   ]
   })
 export class WitnessStatement extends Model<WitnessStatementAttributes> implements WitnessStatementAttributes {
@@ -115,4 +136,17 @@ export class WitnessStatement extends Model<WitnessStatementAttributes> implemen
 
   @BelongsTo(() => require('./incident-report.model').IncidentReport, { foreignKey: 'incidentReportId', as: 'incidentReport' })
   declare incidentReport?: any;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: WitnessStatement) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] WitnessStatement ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

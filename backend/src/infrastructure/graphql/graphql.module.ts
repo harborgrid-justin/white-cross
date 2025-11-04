@@ -28,14 +28,23 @@ import type { Request, Response } from 'express';
 import { ContactResolver } from './resolvers/contact.resolver';
 import { StudentResolver } from './resolvers/student.resolver';
 import { HealthRecordResolver } from './resolvers/health-record.resolver';
+import { SubscriptionResolver } from './resolvers/subscription.resolver';
 import { ContactModule } from '../../contact/contact.module';
 import { StudentModule } from '../../student/student.module';
 import { MedicationModule } from '../../medication/medication.module';
 import { HealthRecordModule } from '../../health-record/health-record.module';
+import { AuthModule } from '../../auth/auth.module';
 import { GraphQLJSON } from 'graphql-scalars';
 import { sanitizeGraphQLError, containsPHI } from './errors/phi-sanitizer';
 import { DataLoaderFactory } from './dataloaders/dataloader.factory';
 import { ComplexityPlugin } from './plugins/complexity.plugin';
+import { PubSubModule } from './pubsub/pubsub.module';
+import {
+  DateTimeScalar,
+  PhoneNumberScalar,
+  EmailAddressScalar,
+  UUIDScalar,
+} from './scalars';
 
 /**
  * GraphQL Module
@@ -96,6 +105,30 @@ import { ComplexityPlugin } from './plugins/complexity.plugin';
             JSON: GraphQLJSON,
           },
 
+          // WebSocket subscriptions configuration
+          subscriptions: {
+            'graphql-ws': {
+              path: '/graphql',
+              onConnect: (context: any) => {
+                const { connectionParams, extra } = context;
+
+                // Authenticate WebSocket connection
+                const token = connectionParams?.authorization?.replace('Bearer ', '');
+                if (!token) {
+                  console.warn('WebSocket connection attempted without token');
+                  throw new Error('Missing authentication token');
+                }
+
+                // Note: Token verification happens in the guard
+                // We just pass the token through context here
+                return { token };
+              },
+              onDisconnect: (context: any) => {
+                console.log('Client disconnected from GraphQL subscriptions');
+              },
+            },
+          },
+
           // Error formatting with PHI sanitization (HIPAA compliance)
           formatError: (error) => {
           // Check if error contains PHI for audit logging
@@ -152,18 +185,27 @@ import { ComplexityPlugin } from './plugins/complexity.plugin';
     StudentModule,
     MedicationModule,
     HealthRecordModule,
+    AuthModule, // Required for TokenBlacklistService in GqlAuthGuard
+    PubSubModule, // Required for subscriptions
   ],
   providers: [
     // Register resolvers
     ContactResolver,
     StudentResolver,
     HealthRecordResolver,
+    SubscriptionResolver, // Real-time subscriptions
 
     // DataLoader factory for efficient data fetching
     DataLoaderFactory,
 
     // Query complexity limiting plugin
     ComplexityPlugin,
+
+    // Register custom scalars
+    DateTimeScalar,
+    PhoneNumberScalar,
+    EmailAddressScalar,
+    UUIDScalar,
 
     // Global validation pipe for GraphQL
     {

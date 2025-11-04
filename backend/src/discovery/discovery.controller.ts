@@ -12,7 +12,7 @@ import {
   DefaultValuePipe,
   ParseIntPipe
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
 import { DiscoveryExampleService, ProviderInfo, ControllerInfo } from './discovery-example.service';
 import { AdminDiscoveryGuard } from './guards/admin-discovery.guard';
 import { DiscoveryRateLimitGuard } from './guards/discovery-rate-limit.guard';
@@ -33,6 +33,7 @@ import { PaginationDto } from './dto/pagination.dto';
 import { ProviderType, MonitoringLevel } from './enums/provider-type.enum';
 
 @ApiTags('Discovery')
+@ApiBearerAuth()
 @Controller('discovery')
 @UseFilters(DiscoveryExceptionFilter)
 @UseGuards(AdminDiscoveryGuard, DiscoveryRateLimitGuard)

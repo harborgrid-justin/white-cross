@@ -1,9 +1,15 @@
 /**
- * @fileoverview Rate Limiting Guard for Healthcare API Protection (NestJS)
+ * @fileoverview Rate Limiting Guard for Healthcare API Protection (NestJS) - FIXED VERSION
  * @module middleware/security/rate-limit
  * @description NestJS guard implementing rate limiting to prevent brute force attacks,
  * API abuse, and PHI data harvesting. Implements sliding window algorithm with Redis
  * or in-memory storage for distributed and single-instance deployments.
+ *
+ * FIXES APPLIED:
+ * - Changed fail-open to fail-closed on errors (security improvement)
+ * - Added circuit breaker pattern for service degradation
+ * - Improved error logging and monitoring
+ * - Added health check method
  *
  * Key Features:
  * - Sliding window rate limiting algorithm
@@ -12,6 +18,7 @@
  * - Per-user and per-IP rate limiting
  * - Configurable time windows and request limits
  * - Automatic cleanup of expired records
+ * - Circuit breaker for graceful degradation
  *
  * @security Critical security guard - prevents automated attacks and abuse
  * @compliance
@@ -27,6 +34,7 @@ import {
   HttpException,
   HttpStatus,
   Logger,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
@@ -45,6 +53,21 @@ export interface RateLimitInfo {
   remainingPoints: number;
   msBeforeNext: number;
   isFirstInDuration: boolean;
+}
+
+/**
+ * Circuit breaker state for rate limit service
+ */
+enum CircuitState {
+  CLOSED = 'CLOSED',    // Normal operation
+  OPEN = 'OPEN',        // Service unavailable, failing fast
+  HALF_OPEN = 'HALF_OPEN',  // Testing if service recovered
+}
+
+interface CircuitBreakerConfig {
+  failureThreshold: number;    // Number of failures before opening circuit
+  resetTimeout: number;        // Time before attempting recovery (ms)
+  monitoringWindow: number;    // Time window for counting failures (ms)
 }
 
 export const RATE_LIMIT_CONFIGS = {
@@ -87,7 +110,7 @@ export const RATE_LIMIT_CONFIGS = {
 };
 
 /**
- * In-memory rate limit store
+ * In-memory rate limit store with circuit breaker
  */
 class MemoryRateLimitStore {
   private store = new Map<
@@ -146,12 +169,76 @@ class MemoryRateLimitStore {
 }
 
 /**
- * Rate Limiting Guard for NestJS
+ * Circuit Breaker for Rate Limit Service
+ */
+class CircuitBreaker {
+  private state: CircuitState = CircuitState.CLOSED;
+  private failureCount = 0;
+  private lastFailureTime = 0;
+  private nextAttemptTime = 0;
+
+  constructor(private config: CircuitBreakerConfig) {}
+
+  recordSuccess(): void {
+    if (this.state === CircuitState.HALF_OPEN) {
+      this.state = CircuitState.CLOSED;
+      this.failureCount = 0;
+    }
+  }
+
+  recordFailure(): void {
+    const now = Date.now();
+    this.lastFailureTime = now;
+
+    // Reset failure count if outside monitoring window
+    if (now - this.lastFailureTime > this.config.monitoringWindow) {
+      this.failureCount = 0;
+    }
+
+    this.failureCount++;
+
+    if (this.failureCount >= this.config.failureThreshold) {
+      this.state = CircuitState.OPEN;
+      this.nextAttemptTime = now + this.config.resetTimeout;
+    }
+  }
+
+  canAttempt(): boolean {
+    if (this.state === CircuitState.CLOSED) {
+      return true;
+    }
+
+    if (this.state === CircuitState.OPEN) {
+      const now = Date.now();
+      if (now >= this.nextAttemptTime) {
+        this.state = CircuitState.HALF_OPEN;
+        return true;
+      }
+      return false;
+    }
+
+    // HALF_OPEN
+    return true;
+  }
+
+  getState(): CircuitState {
+    return this.state;
+  }
+}
+
+/**
+ * Rate Limiting Guard for NestJS - FIXED VERSION
  *
  * @class RateLimitGuard
  * @implements {CanActivate}
  * @description NestJS guard implementing sliding window rate limiting algorithm
  * to prevent brute force attacks, API abuse, and PHI data harvesting.
+ *
+ * CHANGES FROM ORIGINAL:
+ * - Fail closed on errors (was fail open - security issue)
+ * - Added circuit breaker for graceful degradation
+ * - Improved error handling and logging
+ * - Added health monitoring
  *
  * @example
  * // Apply to controller
@@ -171,9 +258,17 @@ class MemoryRateLimitStore {
 export class RateLimitGuard implements CanActivate {
   private readonly logger = new Logger(RateLimitGuard.name);
   private store: MemoryRateLimitStore;
+  private circuitBreaker: CircuitBreaker;
 
   constructor(private reflector: Reflector) {
     this.store = new MemoryRateLimitStore();
+
+    // Initialize circuit breaker
+    this.circuitBreaker = new CircuitBreaker({
+      failureThreshold: 5,           // 5 failures
+      resetTimeout: 30000,           // 30 seconds before retry
+      monitoringWindow: 60000,       // 1 minute monitoring window
+    });
 
     // Start cleanup timer
     setInterval(() => {
@@ -181,6 +276,10 @@ export class RateLimitGuard implements CanActivate {
         if (cleaned > 0) {
           this.logger.debug(`Cleaned up ${cleaned} expired rate limit records`);
         }
+      }).catch((error) => {
+        this.logger.error('Rate limit cleanup failed', {
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
       });
     }, 5 * 60 * 1000); // Cleanup every 5 minutes
   }
@@ -200,6 +299,22 @@ export class RateLimitGuard implements CanActivate {
     if (!config) {
       this.logger.warn(`Unknown rate limit type: ${rateLimitType}`);
       return true;
+    }
+
+    // Check circuit breaker before attempting rate limit check
+    if (!this.circuitBreaker.canAttempt()) {
+      const state = this.circuitBreaker.getState();
+      this.logger.error('Rate limit service circuit breaker OPEN', {
+        state,
+        rateLimitType,
+      });
+
+      throw new ServiceUnavailableException({
+        statusCode: HttpStatus.SERVICE_UNAVAILABLE,
+        error: 'Service Temporarily Unavailable',
+        message: 'Rate limiting service is temporarily unavailable. Please try again later.',
+        retryAfter: 30,
+      });
     }
 
     const request = context.switchToHttp().getRequest<Request>();
@@ -249,6 +364,9 @@ export class RateLimitGuard implements CanActivate {
         );
       }
 
+      // Record success with circuit breaker
+      this.circuitBreaker.recordSuccess();
+
       this.logger.debug(`Rate limit check passed: ${identifier}`, {
         totalHits: info.totalHits,
         remainingPoints,
@@ -258,15 +376,47 @@ export class RateLimitGuard implements CanActivate {
 
       return true;
     } catch (error) {
+      // If it's a rate limit exception, re-throw it
       if (error instanceof HttpException) {
         throw error;
       }
 
-      this.logger.error('Rate limit check failed', error);
-      return true; // Fail open on errors
+      // For other errors, record failure with circuit breaker
+      this.circuitBreaker.recordFailure();
+
+      this.logger.error('Rate limit check failed', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        rateLimitType,
+        userId,
+        ip,
+        circuitState: this.circuitBreaker.getState(),
+      });
+
+      /**
+       * CRITICAL SECURITY FIX: Fail Closed
+       *
+       * Original behavior: return true (fail open - allow request on error)
+       * Security Issue: Attackers could exploit service failures to bypass rate limiting
+       *
+       * New behavior: throw ServiceUnavailableException (fail closed - block request)
+       * Security Improvement: Service degradation doesn't compromise security
+       *
+       * Trade-off: Temporary service unavailability vs. security bypass
+       * Decision: Security > Availability for rate limiting
+       */
+      throw new ServiceUnavailableException({
+        statusCode: HttpStatus.SERVICE_UNAVAILABLE,
+        error: 'Rate Limiting Unavailable',
+        message: 'Rate limiting service is temporarily unavailable. Please try again later.',
+        retryAfter: 30,
+      });
     }
   }
 
+  /**
+   * Get client IP address from request
+   */
   private getClientIP(req: Request): string {
     const forwarded = req.headers['x-forwarded-for'];
     const realIP = req.headers['x-real-ip'];
@@ -280,6 +430,27 @@ export class RateLimitGuard implements CanActivate {
     }
 
     return req.ip || req.socket.remoteAddress || 'unknown';
+  }
+
+  /**
+   * Health check method for monitoring
+   */
+  getHealth(): {
+    status: 'healthy' | 'degraded' | 'unhealthy';
+    circuitState: CircuitState;
+  } {
+    const state = this.circuitBreaker.getState();
+
+    let status: 'healthy' | 'degraded' | 'unhealthy';
+    if (state === CircuitState.CLOSED) {
+      status = 'healthy';
+    } else if (state === CircuitState.HALF_OPEN) {
+      status = 'degraded';
+    } else {
+      status = 'unhealthy';
+    }
+
+    return { status, circuitState: state };
   }
 }
 

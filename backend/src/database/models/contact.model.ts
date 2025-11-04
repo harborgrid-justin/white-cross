@@ -57,7 +57,17 @@ import { ContactType } from '../../contact/enums/contact-type.enum';
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt',
   paranoid: true, // Enable soft deletes
-})
+,
+  indexes: [
+    {
+      fields: ['createdAt'],
+      name: 'idx_contact_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_contact_updated_at'
+    }
+  ]})
 @Index(['email'])
 @Index(['type'])
 @Index(['relationTo'])
@@ -240,5 +250,18 @@ export class Contact extends Model<Contact> {
       return `${this.fullName} (${this.organization})`;
     }
     return this.fullName;
+  }
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: Contact) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] Contact ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
   }
 }

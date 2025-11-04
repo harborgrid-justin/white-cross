@@ -122,6 +122,14 @@ export interface PrescriptionAttributes {
       fields: ['endDate'],
       name: 'idx_prescriptions_end_date'
   },
+    {
+      fields: ['createdAt'],
+      name: 'idx_prescriptions_created_at'
+  },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_prescriptions_updated_at'
+  },
   ]
   })
 export class Prescription extends Model<PrescriptionAttributes> implements PrescriptionAttributes {
@@ -305,7 +313,18 @@ export class Prescription extends Model<PrescriptionAttributes> implements Presc
   @BelongsTo(() => require('./user.model').User, { foreignKey: 'prescribedBy', as: 'prescriber' })
   declare prescriber?: any;
 
-  // Hooks
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: Prescription) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] Prescription ${instance.id} modified for student ${instance.studentId} at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}, Drug: ${instance.drugName}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
+
   @BeforeCreate
   @BeforeUpdate
   static async validateDates(instance: Prescription) {

@@ -8,7 +8,12 @@ import {
   AllowNull,
   ForeignKey,
   BelongsTo
+  } ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
   } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface PhiDisclosureAuditAttributes {
@@ -22,13 +27,29 @@ export interface PhiDisclosureAuditAttributes {
   createdAt?: Date;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'phi_disclosure_audits',
   timestamps: false,
   indexes: [
     {
       fields: ['disclosureId']
-  },
+  },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_phi_disclosure_audit_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_phi_disclosure_audit_updated_at'
+    }
   ]
   })
 export class PhiDisclosureAudit extends Model<PhiDisclosureAuditAttributes> implements PhiDisclosureAuditAttributes {
@@ -73,4 +94,17 @@ export class PhiDisclosureAudit extends Model<PhiDisclosureAuditAttributes> impl
 
   @Column(DataType.DATE)
   declare createdAt?: Date;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: PhiDisclosureAudit) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] PhiDisclosureAudit ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

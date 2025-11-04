@@ -14,7 +14,11 @@ import {
   Default,
   Index,
   BeforeCreate
+  } ,
+  Scopes,
+  BeforeUpdate
   } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { AuditAction } from '../types/database.enums';
 
 /**
@@ -75,6 +79,14 @@ export interface AuditLogAttributes {
  * - Performance-optimized indexes
  * - Immutable records (no updates allowed)
  */
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'audit_logs',
   timestamps: true,
@@ -107,7 +119,15 @@ export interface AuditLogAttributes {
 
     // JSONB indexes for metadata and changes (PostgreSQL specific)
     { fields: ['metadata'], using: 'gin' },
-    { fields: ['changes'], using: 'gin' },
+    { fields: ['changes'], using: 'gin' },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_audit_log_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_audit_log_updated_at'
+    }
   ]
   })
 export class AuditLog extends Model<AuditLogAttributes> {
@@ -282,6 +302,19 @@ export class AuditLog extends Model<AuditLogAttributes> {
   /**
    * Hook to prevent updates to audit logs (immutability)
    */
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: AuditLog) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] AuditLog ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
+
   @BeforeCreate
   static preventModification(instance: AuditLog) {
     // Ensure audit logs have a timestamp

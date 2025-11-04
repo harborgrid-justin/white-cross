@@ -1,7 +1,7 @@
 /**
  * @fileoverview Request/Response Logging Interceptor
  * @module common/interceptors/logging
- * @description Comprehensive logging with PHI redaction
+ * @description Comprehensive structured logging with Winston, PHI redaction, and Sentry integration
  */
 
 import {
@@ -9,12 +9,13 @@ import {
   NestInterceptor,
   ExecutionContext,
   CallHandler,
-  Logger,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import type { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { SentryService } from '../../infrastructure/monitoring/sentry.service';
 
 /**
  * Logging Interceptor
@@ -22,11 +23,11 @@ import { v4 as uuidv4 } from 'uuid';
  * @class LoggingInterceptor
  * @implements {NestInterceptor}
  *
- * @description Logs all HTTP requests and responses with PHI redaction
+ * @description Logs all HTTP requests and responses with PHI redaction using Winston and Sentry
  */
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
-  private readonly logger = new Logger('HTTP');
+  private readonly logger: LoggerService;
   private readonly sensitiveFields = [
     'password',
     'ssn',
@@ -38,7 +39,15 @@ export class LoggingInterceptor implements NestInterceptor {
     'mrn',
     'dateOfBirth',
     'dob',
+    'email',
+    'phone',
+    'address',
   ];
+
+  constructor(private readonly sentryService: SentryService) {
+    this.logger = new LoggerService();
+    this.logger.setContext('HTTP');
+  }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest<Request>();
@@ -52,20 +61,38 @@ export class LoggingInterceptor implements NestInterceptor {
     const { method, url, body, query, params } = request;
     const userAgent = request.headers['user-agent'] || 'unknown';
     const userId = (request as any).user?.id || 'anonymous';
+    const organizationId = (request as any).user?.organizationId;
+    const ipAddress = this.getClientIp(request);
 
     const startTime = Date.now();
 
-    // Log incoming request
-    this.logger.log({
+    // Log incoming request with structured format
+    this.logger.logWithMetadata('info', `${method} ${url}`, {
       type: 'REQUEST',
       requestId,
       method,
       url,
       userId,
+      organizationId,
       userAgent,
+      ipAddress,
       body: this.redactSensitiveData(body),
       query: this.redactSensitiveData(query),
       params: this.redactSensitiveData(params),
+      timestamp: new Date().toISOString(),
+    });
+
+    // Add Sentry breadcrumb for request
+    this.sentryService.addBreadcrumb({
+      message: `${method} ${url}`,
+      category: 'http.request',
+      level: 'info',
+      data: {
+        requestId,
+        method,
+        url,
+        userId: userId !== 'anonymous' ? userId : undefined,
+      },
     });
 
     return next.handle().pipe(
@@ -73,33 +100,84 @@ export class LoggingInterceptor implements NestInterceptor {
         next: (data) => {
           const duration = Date.now() - startTime;
 
-          // Log successful response
-          this.logger.log({
+          // Log successful response with structured format
+          this.logger.logWithMetadata('info', `${method} ${url} - ${response.statusCode}`, {
             type: 'RESPONSE',
             requestId,
             method,
             url,
             statusCode: response.statusCode,
-            duration: `${duration}ms`,
+            duration,
+            durationMs: `${duration}ms`,
             userId,
+            organizationId,
+            timestamp: new Date().toISOString(),
+          });
+
+          // Add Sentry breadcrumb for successful response
+          this.sentryService.addBreadcrumb({
+            message: `${method} ${url} - ${response.statusCode}`,
+            category: 'http.response',
+            level: 'info',
+            data: {
+              requestId,
+              statusCode: response.statusCode,
+              duration,
+            },
           });
         },
         error: (error) => {
           const duration = Date.now() - startTime;
+          const statusCode = error.status || 500;
 
-          // Log error response
-          this.logger.error({
+          // Log error response with structured format
+          this.logger.logWithMetadata('error', `${method} ${url} - ${statusCode}`, {
             type: 'ERROR',
             requestId,
             method,
             url,
-            statusCode: error.status || 500,
-            duration: `${duration}ms`,
+            statusCode,
+            duration,
+            durationMs: `${duration}ms`,
             userId,
+            organizationId,
             error: error.message,
+            errorName: error.name,
+            timestamp: new Date().toISOString(),
           });
+
+          // Report to Sentry for 5xx errors and critical issues
+          if (statusCode >= 500) {
+            this.sentryService.captureException(error, {
+              userId: userId !== 'anonymous' ? userId : undefined,
+              organizationId,
+              tags: {
+                method,
+                url,
+                statusCode: String(statusCode),
+              },
+              extra: {
+                requestId,
+                duration,
+                userAgent,
+              },
+              level: 'error',
+            });
+          }
         },
       }),
+    );
+  }
+
+  /**
+   * Get client IP address
+   */
+  private getClientIp(request: Request): string {
+    return (
+      (request.headers['x-forwarded-for'] as string)?.split(',')[0] ||
+      (request.headers['x-real-ip'] as string) ||
+      request.socket.remoteAddress ||
+      'unknown'
     );
   }
 

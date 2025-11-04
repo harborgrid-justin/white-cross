@@ -113,7 +113,15 @@ export interface EmergencyContactCreationAttributes
     { name: 'idx_emergency_contacts_is_active', fields: ['isActive'] },
     { name: 'idx_emergency_contacts_priority', fields: ['priority'] },
     { name: 'idx_emergency_contacts_verification_status', fields: ['verificationStatus'] },
-    { name: 'idx_emergency_contacts_student_priority', fields: ['studentId', 'priority', 'isActive'] },
+    { name: 'idx_emergency_contacts_student_priority', fields: ['studentId', 'priority', 'isActive'] },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_emergency_contact_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_emergency_contact_updated_at'
+    }
   ]
   })
 export class EmergencyContact extends Model<EmergencyContactAttributes, EmergencyContactCreationAttributes> {
@@ -286,6 +294,19 @@ export class EmergencyContact extends Model<EmergencyContactAttributes, Emergenc
       return JSON.parse(this.notificationChannels);
     } catch {
       return [];
+    }
+  }
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: EmergencyContact) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] EmergencyContact ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
     }
   }
 }

@@ -135,6 +135,14 @@ export interface HealthRecordAttributes {
       fields: ['diagnosisCode'],
       name: 'idx_health_records_diagnosis_code'
     },
+    {
+      fields: ['createdAt'],
+      name: 'idx_health_records_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_health_records_updated_at'
+    },
   ],
 })
 export class HealthRecord extends Model<HealthRecordAttributes> implements HealthRecordAttributes {

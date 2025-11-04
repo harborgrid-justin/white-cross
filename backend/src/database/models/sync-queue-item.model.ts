@@ -7,7 +7,12 @@ import {
   Default,
   AllowNull,
   Index
+  } ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
   } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum SyncActionType {
@@ -65,6 +70,14 @@ export interface SyncQueueItemAttributes {
   updatedAt?: Date;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'sync_queue_items',
   timestamps: true,
@@ -81,7 +94,15 @@ export interface SyncQueueItemAttributes {
   },
     {
       fields: ['priority']
-  },
+  },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_sync_queue_item_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_sync_queue_item_updated_at'
+    }
   ]
   })
 export class SyncQueueItem extends Model<SyncQueueItemAttributes> implements SyncQueueItemAttributes {
@@ -213,4 +234,17 @@ export class SyncQueueItem extends Model<SyncQueueItemAttributes> implements Syn
 
   @Column(DataType.DATE)
   declare updatedAt?: Date;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: SyncQueueItem) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] SyncQueueItem ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

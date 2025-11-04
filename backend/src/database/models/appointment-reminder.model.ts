@@ -8,7 +8,12 @@ import {
   ForeignKey,
   BelongsTo,
   Index
+  } ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
   } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 
 export enum MessageType {
   EMAIL = 'EMAIL',
@@ -36,11 +41,29 @@ export interface AppointmentReminderAttributes {
   updatedAt?: Date;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'appointment_reminders',
   timestamps: true,
   underscored: false
-  })
+  ,
+  indexes: [
+    {
+      fields: ['createdAt'],
+      name: 'idx_appointment_reminder_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_appointment_reminder_updated_at'
+    }
+  ]})
 export class AppointmentReminder extends Model<AppointmentReminderAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -114,4 +137,17 @@ export class AppointmentReminder extends Model<AppointmentReminderAttributes> {
     allowNull: false
   })
   declare updatedAt?: Date;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: AppointmentReminder) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] AppointmentReminder ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

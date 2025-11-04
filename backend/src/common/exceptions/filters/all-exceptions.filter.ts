@@ -1,7 +1,7 @@
 /**
  * @fileoverview All Exceptions Filter
  * @module common/exceptions/filters/all-exceptions
- * @description Catch-all exception filter for unhandled errors
+ * @description Catch-all exception filter for unhandled errors with Winston logging and Sentry integration
  */
 
 import {
@@ -10,12 +10,14 @@ import {
   ArgumentsHost,
   HttpException,
   HttpStatus,
-  Logger,
+  Inject,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { ErrorResponse, ErrorSeverity, ErrorCategory } from '../types/error-response.types';
 import { SystemErrorCodes } from '../constants/error-codes';
+import { LoggerService } from '../../../shared/logging/logger.service';
+import { SentryService } from '../../../infrastructure/monitoring/sentry.service';
 
 /**
  * All Exceptions Filter
@@ -24,16 +26,22 @@ import { SystemErrorCodes } from '../constants/error-codes';
  * @implements {ExceptionFilter}
  *
  * @description Catches all unhandled exceptions and provides safe, HIPAA-compliant error responses
+ * with structured Winston logging and Sentry error tracking
  *
  * @example
  * app.useGlobalFilters(new AllExceptionsFilter());
  */
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
-  private readonly logger = new Logger(AllExceptionsFilter.name);
+  private readonly logger: LoggerService;
   private readonly isDevelopment = process.env.NODE_ENV === 'development';
   private readonly enableDetailedErrors =
     process.env.ENABLE_DETAILED_ERRORS === 'true' || this.isDevelopment;
+
+  constructor(@Inject(SentryService) private readonly sentryService: SentryService) {
+    this.logger = new LoggerService();
+    this.logger.setContext(AllExceptionsFilter.name);
+  }
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
@@ -180,37 +188,65 @@ export class AllExceptionsFilter implements ExceptionFilter {
   }
 
   /**
-   * Log error with appropriate severity
+   * Log error with appropriate severity using Winston and Sentry
    */
   private logError(
     exception: unknown,
     request: Request,
     errorResponse: ErrorResponse,
   ): void {
+    const userId = (request as any).user?.id;
+    const organizationId = (request as any).user?.organizationId;
+
     const loggingContext = {
       category: ErrorCategory.SYSTEM,
       severity: ErrorSeverity.CRITICAL,
       requestId: errorResponse.requestId,
-      userId: (request as any).user?.id,
-      organizationId: (request as any).user?.organizationId,
+      userId,
+      organizationId,
       userAgent: request.headers['user-agent'],
       ipAddress: this.getClientIp(request),
       containsPHI: false,
-      metadata: {
-        path: request.url,
-        method: request.method,
-        statusCode: errorResponse.statusCode,
-        errorCode: errorResponse.errorCode,
-        errorType: exception instanceof Error ? exception.name : typeof exception,
-      },
+      path: request.url,
+      method: request.method,
+      statusCode: errorResponse.statusCode,
+      errorCode: errorResponse.errorCode,
+      errorType: exception instanceof Error ? exception.name : typeof exception,
     };
 
     const logMessage = `Unhandled exception: ${errorResponse.message}`;
 
+    // Log with Winston using structured format
     if (exception instanceof Error) {
-      this.logger.error(logMessage, exception.stack, loggingContext);
+      this.logger.logWithMetadata('error', logMessage, {
+        ...loggingContext,
+        stack: exception.stack,
+      });
     } else {
-      this.logger.error(logMessage, String(exception), loggingContext);
+      this.logger.logWithMetadata('error', logMessage, {
+        ...loggingContext,
+        error: String(exception),
+      });
+    }
+
+    // Report to Sentry for critical errors
+    if (errorResponse.statusCode >= 500 && exception instanceof Error) {
+      this.sentryService.captureException(exception, {
+        userId,
+        organizationId,
+        tags: {
+          category: ErrorCategory.SYSTEM,
+          errorCode: errorResponse.errorCode,
+          path: request.url,
+          method: request.method,
+        },
+        extra: {
+          requestId: errorResponse.requestId,
+          statusCode: errorResponse.statusCode,
+          userAgent: request.headers['user-agent'],
+        },
+        level: 'fatal',
+      });
     }
 
     // Alert for critical errors
@@ -235,10 +271,30 @@ export class AllExceptionsFilter implements ExceptionFilter {
    * Send alert for critical errors
    */
   private sendAlert(errorResponse: ErrorResponse, context: any): void {
-    // In production, this would integrate with alerting service (PagerDuty, Slack, etc.)
-    this.logger.error('CRITICAL ERROR ALERT', {
+    // Log critical alert with structured format
+    this.logger.logWithMetadata('error', 'CRITICAL ERROR ALERT', {
       ...errorResponse,
       ...context,
+      alert: true,
+      timestamp: new Date().toISOString(),
     });
+
+    // Send to Sentry as high-priority message
+    this.sentryService.captureMessage(
+      `CRITICAL ERROR: ${errorResponse.error} - ${errorResponse.message}`,
+      'fatal',
+      {
+        userId: context.userId,
+        tags: {
+          errorCode: errorResponse.errorCode,
+          category: context.category,
+        },
+        extra: {
+          requestId: errorResponse.requestId,
+          statusCode: errorResponse.statusCode,
+          path: errorResponse.path,
+        },
+      },
+    );
   }
 }

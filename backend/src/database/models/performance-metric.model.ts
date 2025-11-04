@@ -13,7 +13,12 @@ import {
   Default,
   Index,
   AllowNull,
-} from 'sequelize-typescript';
+} ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
+  } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 
 /**
  * Metric types for performance monitoring
@@ -58,6 +63,14 @@ export interface CreatePerformanceMetricAttributes {
  *
  * Stores system performance metrics over time for monitoring and analysis
  */
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'performance_metrics',
   timestamps: true,
@@ -65,7 +78,15 @@ export interface CreatePerformanceMetricAttributes {
   underscored: false,
   indexes: [
     { fields: ['metricType'] },
-    { fields: ['recordedAt'] },
+    { fields: ['recordedAt'] },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_performance_metric_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_performance_metric_updated_at'
+    }
   ],
 })
 export class PerformanceMetric extends Model<PerformanceMetricAttributes, CreatePerformanceMetricAttributes> {
@@ -126,4 +147,17 @@ export class PerformanceMetric extends Model<PerformanceMetricAttributes, Create
     comment: 'Timestamp when the metric record was created',
   })
   declare createdAt?: Date;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: PerformanceMetric) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] PerformanceMetric ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

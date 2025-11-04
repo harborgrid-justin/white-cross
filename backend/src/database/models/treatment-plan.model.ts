@@ -5,7 +5,12 @@ import {
   DataType,
   PrimaryKey,
   Default,
-} from 'sequelize-typescript';
+} ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
+  } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 import { TreatmentStatus } from '../../clinical/enums/treatment-status.enum';
 
@@ -22,6 +27,14 @@ export interface TreatmentPlanAttributes {
   updatedAt?: Date;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'treatment_plans',
   timestamps: true,
@@ -33,7 +46,15 @@ export interface TreatmentPlanAttributes {
     },
     {
       fields: ['status'],
+    },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_treatment_plan_created_at'
     },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_treatment_plan_updated_at'
+    }
   ],
 })
 export class TreatmentPlan extends Model<TreatmentPlanAttributes> implements TreatmentPlanAttributes {
@@ -89,4 +110,17 @@ export class TreatmentPlan extends Model<TreatmentPlanAttributes> implements Tre
 
   @Column(DataType.DATE)
   declare updatedAt?: Date;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: TreatmentPlan) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] TreatmentPlan ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

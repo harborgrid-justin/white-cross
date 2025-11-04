@@ -15,7 +15,12 @@ import {
   BelongsTo,
   Index,
   AllowNull,
-} from 'sequelize-typescript';
+} ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
+  } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum ActionStatus {
@@ -64,6 +69,14 @@ export interface CreateFollowUpActionAttributes {
  *
  * Tracks follow-up actions for incident reports
  */
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'follow_up_actions',
   timestamps: true,
@@ -71,7 +84,15 @@ export interface CreateFollowUpActionAttributes {
   indexes: [
     { fields: ['incidentReportId', 'status'] },
     { fields: ['assignedTo', 'status'] },
-    { fields: ['dueDate', 'status'] },
+    { fields: ['dueDate', 'status'] },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_follow_up_action_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_follow_up_action_updated_at'
+    }
   ],
 })
 export class FollowUpAction extends Model<FollowUpActionAttributes, CreateFollowUpActionAttributes> {
@@ -188,4 +209,17 @@ export class FollowUpAction extends Model<FollowUpActionAttributes, CreateFollow
     as: 'incidentReport',
   })
   declare incidentReport?: any;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: FollowUpAction) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] FollowUpAction ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

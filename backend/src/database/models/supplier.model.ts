@@ -5,7 +5,12 @@ import {
   DataType,
   PrimaryKey,
   Default,
-} from 'sequelize-typescript';
+} ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
+  } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface SupplierAttributes {
@@ -20,11 +25,29 @@ export interface SupplierAttributes {
   updatedAt?: Date;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'suppliers',
   timestamps: true,
   underscored: false,
-})
+,
+  indexes: [
+    {
+      fields: ['createdAt'],
+      name: 'idx_supplier_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_supplier_updated_at'
+    }
+  ]})
 export class Supplier extends Model<SupplierAttributes> implements SupplierAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -58,4 +81,17 @@ export class Supplier extends Model<SupplierAttributes> implements SupplierAttri
 
   @Column(DataType.DATE)
   declare updatedAt?: Date;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: Supplier) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] Supplier ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

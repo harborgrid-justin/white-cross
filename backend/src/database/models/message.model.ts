@@ -10,7 +10,11 @@ import {
   HasMany,
   Index,
   DeletedAt,
-} from 'sequelize-typescript';
+} ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
+  } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 
 export enum MessagePriority {
@@ -62,12 +66,30 @@ export interface MessageCreationAttributes
     'id' | 'conversationId' | 'subject' | 'encryptedContent' | 'isEncrypted' | 'encryptionMetadata' | 'encryptionVersion' | 'scheduledAt' | 'templateId' | 'parentId' | 'threadId' | 'isEdited' | 'editedAt' | 'metadata' | 'createdAt' | 'updatedAt' | 'deletedAt'
   > {}
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'messages',
   timestamps: true,
   paranoid: true,
   underscored: false,
-})
+,
+  indexes: [
+    {
+      fields: ['createdAt'],
+      name: 'idx_message_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_message_updated_at'
+    }
+  ]})
 export class Message extends Model<MessageAttributes, MessageCreationAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -260,4 +282,17 @@ export class Message extends Model<MessageAttributes, MessageCreationAttributes>
     comment: 'Soft delete timestamp for data retention',
   })
   declare deletedAt?: Date;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: Message) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] Message ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

@@ -143,3 +143,5 @@ import { MonitoringController } from './monitoring.controller';
   exports: [MonitoringService],
 })
 export class MonitoringModule {}
+
+// Note: SentryModule is imported separately in AppModule for global error tracking
