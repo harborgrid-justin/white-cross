@@ -10,8 +10,6 @@
  * IMPORTANT: This is a Client Component due to FullCalendar interactivity.
  */
 
-'use client';
-
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid/index.js';

@@ -7,8 +7,26 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Alerts',
-  description: 'System alerts and inventory notifications',
+  title: 'Alerts & Notifications',
+  description: 'System alerts, inventory notifications, low-stock warnings, and medication expiration alerts for healthcare management.',
+  keywords: [
+    'alerts',
+    'notifications',
+    'inventory alerts',
+    'low stock',
+    'medication expiration',
+    'system notifications',
+    'healthcare alerts'
+  ],
+  openGraph: {
+    title: 'Alerts & Notifications | White Cross Healthcare',
+    description: 'Real-time system alerts and inventory management notifications.',
+    type: 'website',
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function AlertsPage() {

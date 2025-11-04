@@ -139,7 +139,7 @@ export function getStatusCode(error: unknown): number | undefined {
     return error.statusCode;
   }
   if (error && typeof error === 'object' && 'statusCode' in error) {
-    const code = (error as any).statusCode;
+    const code = (error as Record<string, unknown>).statusCode;
     return typeof code === 'number' ? code : undefined;
   }
   return undefined;

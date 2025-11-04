@@ -65,7 +65,7 @@ export function useDebounce<T>(value: T, delay: number = 300): T {
  * }, [handleScroll]);
  * ```
  */
-export function useThrottle<T extends (...args: any[]) => any>(
+export function useThrottle<T extends (...args: readonly unknown[]) => unknown>(
   callback: T,
   delay: number = 200
 ): T {
@@ -370,7 +370,7 @@ export function useDeepCompareMemo<T>(value: T): T {
   return ref.current;
 }
 
-function deepEqual(a: any, b: any): boolean {
+function deepEqual(a: unknown, b: unknown): boolean {
   if (a === b) return true;
 
   if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) {
@@ -402,7 +402,7 @@ function deepEqual(a: any, b: any): boolean {
  * });
  * ```
  */
-export function memoize<T extends (...args: any[]) => any>(
+export function memoize<T extends (...args: readonly unknown[]) => unknown>(
   fn: T,
   keyFn?: (...args: Parameters<T>) => string
 ): T {

@@ -114,8 +114,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <div className="flex items-center">
-              <Link href="/dashboard" className="flex items-center">
-                <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <Link href="/dashboard" className="flex items-center" aria-label="White Cross Healthcare - Go to dashboard">
+                <div
+                  className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center"
+                  aria-hidden="true"
+                >
                   <span className="text-white font-bold text-sm">WC</span>
                 </div>
                 <span className="ml-2 text-xl font-semibold text-gray-900">
@@ -139,15 +142,21 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
             {/* User Menu Placeholder */}
             <div className="flex items-center space-x-4">
-              <button className="text-gray-500 hover:text-gray-700">
+              <button
+                className="text-gray-500 hover:text-gray-700"
+                aria-label="View notifications"
+              >
                 <span className="sr-only">View notifications</span>
                 {/* Bell icon placeholder */}
-                <div className="w-6 h-6 bg-gray-300 rounded"></div>
+                <div className="w-6 h-6 bg-gray-300 rounded" aria-hidden="true"></div>
               </button>
-              <button className="text-gray-500 hover:text-gray-700">
+              <button
+                className="text-gray-500 hover:text-gray-700"
+                aria-label="Open user menu"
+              >
                 <span className="sr-only">User menu</span>
                 {/* User avatar placeholder */}
-                <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
+                <div className="w-8 h-8 bg-gray-300 rounded-full" aria-hidden="true"></div>
               </button>
             </div>
           </div>

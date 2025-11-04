@@ -166,7 +166,7 @@ export const validateNumericRange = (
   return value >= min && value <= max
 }
 
-export const debounce = <T extends (...args: any[]) => any>(
+export const debounce = <T extends (...args: readonly unknown[]) => unknown>(
   func: T,
   wait: number
 ): ((...args: Parameters<T>) => void) => {

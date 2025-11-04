@@ -205,7 +205,7 @@ export interface StructuredDataConfig {
   description?: string;
   url?: string;
   logo?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**

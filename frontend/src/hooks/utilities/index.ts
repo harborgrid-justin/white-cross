@@ -38,3 +38,9 @@ export * from './useOfflineQueue';
 // Authentication (Legacy Context - use specific exports to avoid conflicts)
 export { AuthProvider } from './AuthContext';
 export { useAuthContext } from './AuthContext';
+
+// State Management Utilities (Items 151-170 compliance)
+// Added 2025-11-04 for NEXTJS_GAP_ANALYSIS_CHECKLIST.md compliance
+export * from './useUrlState';
+export * from './useFormPersistence';
+export * from './useMemoizedSelectors';

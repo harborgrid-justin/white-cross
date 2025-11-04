@@ -43,10 +43,17 @@ export class ErrorBoundary extends Component<Props, State> {
       errorInfo,
     });
 
-    // Log error to monitoring service in production
+    // Item 234: Log error to monitoring service
     if (process.env.NODE_ENV === 'production') {
-      // Here you would integrate with your error monitoring service
-      // e.g., Sentry, LogRocket, etc.
+      // Import Sentry dynamically to avoid blocking
+      import('@/monitoring/sentry').then(({ captureException }) => {
+        captureException(error, {
+          componentStack: errorInfo.componentStack,
+          errorBoundary: 'ErrorBoundary',
+        }, 'error');
+      }).catch(err => {
+        console.error('Failed to send error to Sentry:', err);
+      });
     }
   }
 
