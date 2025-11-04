@@ -1,0 +1,156 @@
+/**
+ * @fileoverview Password Management Operations
+ * @module lib/actions/auth.password
+ *
+ * Server actions for password change and reset operations.
+ *
+ * Features:
+ * - Password change validation and processing
+ * - Password reset request handling
+ * - HIPAA audit logging for password events
+ * - Secure cookie-based authentication
+ */
+
+'use server';
+
+import { cookies } from 'next/headers';
+import { headers } from 'next/headers';
+import { z } from 'zod';
+
+// API integration
+import { serverPost } from '@/lib/api/nextjs-client';
+import { API_ENDPOINTS } from '@/constants/api';
+import { auditLog, AUDIT_ACTIONS, extractIPAddress, extractUserAgent } from '@/lib/audit';
+
+// Types
+import type { ApiResponse } from '@/types';
+import type { ActionResult, ChangePasswordFormState } from './auth.types';
+import { AUTH_CACHE_TAGS, changePasswordSchema } from './auth.types';
+
+// ==========================================
+// PASSWORD MANAGEMENT ACTIONS
+// ==========================================
+
+/**
+ * Change password action
+ */
+export async function changePasswordAction(
+  prevState: ChangePasswordFormState,
+  formData: FormData
+): Promise<ChangePasswordFormState> {
+  // Validate form data
+  const validatedFields = changePasswordSchema.safeParse({
+    currentPassword: formData.get('currentPassword'),
+    newPassword: formData.get('newPassword'),
+    confirmPassword: formData.get('confirmPassword'),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+    };
+  }
+
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('auth_token')?.value;
+
+    if (!token) {
+      return {
+        errors: {
+          _form: ['You must be logged in to change your password'],
+        },
+      };
+    }
+
+    const { currentPassword, newPassword } = validatedFields.data;
+
+    const response = await serverPost<ApiResponse<void>>(
+      API_ENDPOINTS.AUTH.CHANGE_PASSWORD,
+      { currentPassword, newPassword },
+      {
+        cache: 'no-store',
+        next: { tags: [AUTH_CACHE_TAGS.AUTH] },
+        headers: { 'Authorization': `Bearer ${token}` }
+      }
+    );
+
+    if (!response.success) {
+      return {
+        errors: {
+          _form: [response.message || 'Failed to change password'],
+        },
+      };
+    }
+
+    // Audit password change
+    const headersList = await headers();
+    const mockRequest = {
+      headers: {
+        get: (name: string) => headersList.get(name)
+      }
+    } as Request;
+
+    await auditLog({
+      action: AUDIT_ACTIONS.PASSWORD_CHANGE,
+      resource: 'Authentication',
+      details: 'Password changed successfully',
+      ipAddress: extractIPAddress(mockRequest),
+      userAgent: extractUserAgent(mockRequest),
+      success: true
+    });
+
+    return {
+      success: true,
+      message: 'Password changed successfully',
+    };
+  } catch (error) {
+    console.error('[Change Password Action] Error:', error);
+    return {
+      errors: {
+        _form: ['An unexpected error occurred. Please try again.'],
+      },
+    };
+  }
+}
+
+/**
+ * Request password reset
+ */
+export async function requestPasswordResetAction(
+  email: string
+): Promise<ActionResult<{ message: string }>> {
+  try {
+    const validatedEmail = z.object({
+      email: z.string().email('Invalid email address')
+    }).parse({ email });
+
+    const response = await serverPost<ApiResponse<{ message: string }>>(
+      API_ENDPOINTS.AUTH.FORGOT_PASSWORD,
+      validatedEmail,
+      {
+        cache: 'no-store',
+        next: { tags: [AUTH_CACHE_TAGS.AUTH] }
+      }
+    );
+
+    if (!response.success || !response.data) {
+      return {
+        success: false,
+        error: response.message || 'Failed to request password reset',
+      };
+    }
+
+    return {
+      success: true,
+      data: response.data,
+      message: 'If an account exists with that email, you will receive password reset instructions.',
+    };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Failed to request password reset';
+    return {
+      success: false,
+      error: errorMessage,
+    };
+  }
+}
