@@ -79,8 +79,29 @@
  * @since 1.0.0
  */
 
-// Configuration and Types
-export * from './config';
+// Configuration Exports
+export {
+  BUDGETS_QUERY_KEYS,
+  budgetKeys,
+} from './budgetQueryKeys';
+
+export {
+  BUDGETS_CACHE_CONFIG,
+  invalidateBudgetsQueries,
+  invalidateBudgetQueries,
+  invalidateBudgetCategoryQueries,
+  invalidateTransactionQueries,
+} from './budgetCacheConfig';
+
+// Type Exports
+export type {
+  Budget,
+  BudgetCategory,
+  BudgetTransaction,
+  BudgetReport,
+  BudgetUser,
+  TransactionAttachment,
+} from './budgetTypes';
 
 // Query Hooks
 export * from './queries/useBudgetQueries';
@@ -90,13 +111,3 @@ export * from './mutations/useBudgetMutations';
 
 // Composite Hooks
 export * from './composites/useBudgetComposites';
-
-// Re-export key types for convenience
-export type {
-  Budget,
-  BudgetCategory,
-  BudgetTransaction,
-  BudgetReport,
-  BudgetUser,
-  TransactionAttachment,
-} from './config';

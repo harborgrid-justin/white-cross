@@ -46,10 +46,22 @@
  */
 
 // Configuration, Types, and Utilities
+// Re-export from modularized config files for backward compatibility
+export * from './administrationQueryKeys';
+export * from './administrationCacheConfig';
+export * from './administrationUserTypes';
+export * from './administrationDepartmentTypes';
+export * from './administrationSettingsTypes';
+export * from './administrationAuditTypes';
+export * from './administrationNotificationTypes';
+export * from './administrationSystemTypes';
+
+// Legacy export (for backward compatibility if anything imports from ./config directly)
 export * from './config';
 
 // Query Hooks - Data Fetching
 export * from './queries/useAdministrationQueries';
 
 // Mutation Hooks - Data Modification
-export * from './mutations/useAdministrationMutations';
+// Re-export from modular mutation files via mutations/index.ts
+export * from './mutations';

@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//f/temp/white-cross/frontend/**)",
+      "Bash(for file in administrationQueryKeys.ts administrationCacheConfig.ts administrationUserTypes.ts administrationDepartmentTypes.ts administrationSettingsTypes.ts administrationAuditTypes.ts administrationNotificationTypes.ts administrationSystemTypes.ts)",
+      "Bash(done)",
+      "Bash(for file in F:/temp/white-cross/frontend/src/hooks/utilities/routeValidation/*.ts)",
+      "Bash(for file in useUserAdminMutations.ts useUserStatusMutations.ts useDepartmentAdminMutations.ts useSettingsAdminMutations.ts useNotificationAdminMutations.ts useBulkAdminMutations.ts index.ts)",
+      "Bash(awk:*)",
+      "Bash(for:*)",
+      "Bash(npx tsc:*)",
+      "Bash(find:*)",
+      "Bash(tree:*)",
+      "Bash(sort:*)",
+      "Bash(printf:*)",
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(wc:*)",
+      "Bash(do:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -34,7 +34,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { budgetKeys } from '../config';
+import { budgetKeys } from '../budgetQueryKeys';
 import {
   useBudget,
   useBudgets,
@@ -52,7 +52,7 @@ import {
   useApproveTransaction,
   useBulkApproveTransactions
 } from '../mutations/useBudgetMutations';
-import type { Budget, BudgetCategory, BudgetTransaction } from '../config';
+import type { Budget, BudgetCategory, BudgetTransaction } from '../budgetTypes';
 
 /**
  * Complete budget management workflow hook.

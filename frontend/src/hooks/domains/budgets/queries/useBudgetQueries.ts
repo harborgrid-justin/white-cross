@@ -32,8 +32,8 @@
  */
 
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
-import { budgetKeys } from '../config';
-import type { Budget, BudgetCategory, BudgetTransaction, BudgetReport } from '../config';
+import { budgetKeys } from '../budgetQueryKeys';
+import type { Budget, BudgetCategory, BudgetTransaction, BudgetReport } from '../budgetTypes';
 
 /**
  * Fetches a single budget by ID with full details including categories.
