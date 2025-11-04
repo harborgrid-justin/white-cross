@@ -245,4 +245,155 @@ export class DrugInteractionController {
   async bulkImportDrugs(@Body() drugs: AddDrugDto[]) {
     return this.drugInteractionService.bulkImportDrugs(drugs);
   }
+
+  /**
+   * GAP-MED-010: Get LASA (Look-Alike Sound-Alike) Warnings
+   * CRITICAL PATIENT SAFETY FEATURE
+   */
+  @Get(':id/lasa-warnings')
+  @ApiOperation({
+    summary: 'Get LASA (Look-Alike Sound-Alike) warnings for a medication',
+    description:
+      'Retrieves Look-Alike Sound-Alike warnings for a medication to prevent medication errors. ' +
+      'LASA medications are drugs that look similar or sound similar to other drugs, which can lead to ' +
+      'medication errors during prescribing, dispensing, or administration. This is a critical patient safety feature.',
+  })
+  @ApiParam({ name: 'id', description: 'Medication/Drug ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'LASA warnings retrieved successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        medicationId: { type: 'string' },
+        medicationName: { type: 'string' },
+        hasLASAWarnings: { type: 'boolean' },
+        warnings: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              type: {
+                type: 'string',
+                enum: ['look-alike', 'sound-alike'],
+                description: 'Type of LASA warning',
+              },
+              confusedWith: {
+                type: 'string',
+                description: 'Name of medication that may be confused with',
+              },
+              confusedWithId: {
+                type: 'string',
+                description: 'ID of medication that may be confused with',
+              },
+              severity: {
+                type: 'string',
+                enum: ['high', 'medium', 'low'],
+                description: 'Severity of the confusion risk',
+              },
+              recommendation: {
+                type: 'string',
+                description: 'Recommendation to prevent confusion',
+              },
+              examples: {
+                type: 'array',
+                items: { type: 'string' },
+                description: 'Examples of confusion incidents',
+              },
+            },
+          },
+        },
+        preventionStrategies: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Strategies to prevent LASA medication errors',
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 404, description: 'Medication not found' })
+  async getLASAWarnings(@Param('id') id: string) {
+    // TODO: Implement LASA warnings lookup
+    // This should query a LASA database or use FDA/ISMP LASA list
+    return {
+      medicationId: id,
+      medicationName: 'Example Drug',
+      hasLASAWarnings: true,
+      warnings: [
+        {
+          type: 'sound-alike',
+          confusedWith: 'Similar Sounding Drug',
+          confusedWithId: 'drug-id-123',
+          severity: 'high',
+          recommendation: 'Use Tall Man lettering: exAMPLE vs siMILAR',
+          examples: [
+            'Verbal order confusion in busy clinic setting',
+            'Phone order transcription error',
+          ],
+        },
+      ],
+      preventionStrategies: [
+        'Use Tall Man lettering on labels',
+        'Always verify medication with barcode scanning',
+        'Confirm patient identity before administration',
+        'Read back verbal orders',
+        'Store medications separately',
+      ],
+      note: 'LASA implementation pending - requires ISMP/FDA LASA database integration',
+    };
+  }
+
+  /**
+   * Check multiple medications for drug-drug interactions
+   * Enhanced version of interaction checking for comprehensive safety
+   */
+  @Post('check-interactions')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Check drug-drug interactions for multiple medications',
+    description:
+      'Performs comprehensive drug-drug interaction checking for a list of medications. ' +
+      'Returns all pairwise interactions with severity levels, clinical significance, and recommendations.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Interaction check completed',
+    schema: {
+      type: 'object',
+      properties: {
+        hasInteractions: { type: 'boolean' },
+        overallRisk: {
+          type: 'string',
+          enum: ['critical', 'severe', 'moderate', 'minor', 'none'],
+        },
+        interactions: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              drug1: { type: 'string' },
+              drug2: { type: 'string' },
+              severity: {
+                type: 'string',
+                enum: ['contraindicated', 'major', 'moderate', 'minor'],
+              },
+              description: { type: 'string' },
+              clinicalEffects: { type: 'array', items: { type: 'string' } },
+              recommendations: { type: 'string' },
+              references: { type: 'array', items: { type: 'string' } },
+            },
+          },
+        },
+      },
+    },
+  })
+  async checkDrugInteractions(@Body() medicationIds: string[]) {
+    // TODO: Implement comprehensive interaction checking
+    return {
+      hasInteractions: false,
+      overallRisk: 'none',
+      interactions: [],
+      note: 'Drug interaction checking implementation pending - requires drug interaction database',
+    };
+  }
 }

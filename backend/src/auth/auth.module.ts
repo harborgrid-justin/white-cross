@@ -6,10 +6,16 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { GoogleStrategy } from './strategies/google.strategy';
+import { MicrosoftStrategy } from './strategies/microsoft.strategy';
 import { User } from '../database/models/user.model';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { TokenBlacklistService } from './services/token-blacklist.service';
+import { MfaService } from './services/mfa.service';
+import { OAuthService } from './services/oauth.service';
+import { PasswordResetService } from './services/password-reset.service';
+import { EmailVerificationService } from './services/email-verification.service';
 
 @Module({
   imports: [
@@ -50,7 +56,30 @@ import { TokenBlacklistService } from './services/token-blacklist.service';
     SequelizeModule.forFeature([User]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard, TokenBlacklistService],
-  exports: [AuthService, JwtAuthGuard, RolesGuard, PassportModule, JwtModule, TokenBlacklistService],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    GoogleStrategy,
+    MicrosoftStrategy,
+    JwtAuthGuard,
+    RolesGuard,
+    TokenBlacklistService,
+    MfaService,
+    OAuthService,
+    PasswordResetService,
+    EmailVerificationService,
+  ],
+  exports: [
+    AuthService,
+    JwtAuthGuard,
+    RolesGuard,
+    PassportModule,
+    JwtModule,
+    TokenBlacklistService,
+    MfaService,
+    OAuthService,
+    PasswordResetService,
+    EmailVerificationService,
+  ],
 })
 export class AuthModule {}

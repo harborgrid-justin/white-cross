@@ -291,6 +291,74 @@ export class User extends Model<UserAttributes> {
   })
   declare mustChangePassword: boolean;
 
+  // MFA fields
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+    comment: 'Whether multi-factor authentication is enabled'
+  })
+  declare mfaEnabled: boolean;
+
+  @Column({
+    type: DataType.STRING(255),
+    allowNull: true,
+    comment: 'TOTP secret for MFA (encrypted)'
+  })
+  declare mfaSecret?: string | null;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+    comment: 'JSON array of hashed backup codes for MFA recovery'
+  })
+  declare mfaBackupCodes?: string | null;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+    comment: 'Timestamp when MFA was enabled'
+  })
+  declare mfaEnabledAt?: Date | null;
+
+  // OAuth fields
+  @Column({
+    type: DataType.STRING(50),
+    allowNull: true,
+    comment: 'OAuth provider (google, microsoft, etc.)'
+  })
+  declare oauthProvider?: string | null;
+
+  @Column({
+    type: DataType.STRING(255),
+    allowNull: true,
+    comment: 'User ID from OAuth provider'
+  })
+  declare oauthProviderId?: string | null;
+
+  @Column({
+    type: DataType.STRING(500),
+    allowNull: true,
+    comment: 'URL to user profile picture'
+  })
+  declare profilePictureUrl?: string | null;
+
+  // Enhanced email verification fields
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+    comment: 'Whether email address has been verified'
+  })
+  declare isEmailVerified: boolean;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+    comment: 'Timestamp when email was verified'
+  })
+  declare emailVerifiedAt?: Date | null;
+
   // Associations
   @BelongsTo(() => require('./school.model').School, {
     foreignKey: 'schoolId',
@@ -381,6 +449,8 @@ export class User extends Model<UserAttributes> {
       emailVerificationToken,
       emailVerificationExpires,
       twoFactorSecret,
+      mfaSecret,
+      mfaBackupCodes,
       ...safeData
     } = this.get({ plain: true });
     return {

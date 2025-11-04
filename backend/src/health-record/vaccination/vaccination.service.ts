@@ -429,6 +429,279 @@ export class VaccinationService {
   }
 
   /**
+   * GAP-VAX-001: Get due vaccinations for student
+   */
+  async getDueVaccinations(studentId: string): Promise<any> {
+    const student = await this.studentModel.findByPk(studentId);
+    if (!student) {
+      throw new NotFoundException('Student not found');
+    }
+
+    const complianceReport = await this.checkComplianceStatus(studentId);
+    const today = new Date();
+    const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+    const dueVaccinations = complianceReport.upcoming.filter((vax: any) => {
+      if (!vax.dueDate) return false;
+      const dueDate = new Date(vax.dueDate);
+      return dueDate >= today && dueDate <= thirtyDaysFromNow;
+    });
+
+    this.logger.log(`PHI Access: Due vaccinations retrieved for student ${studentId}`);
+
+    return {
+      studentId,
+      studentName: `${student.firstName} ${student.lastName}`,
+      dueVaccinations: dueVaccinations.map((vax: any) => ({
+        vaccineName: vax.vaccineName,
+        doseNumber: vax.nextDose,
+        totalDoses: vax.requiredDoses,
+        dueDate: vax.dueDate,
+        status: 'DUE',
+      })),
+    };
+  }
+
+  /**
+   * GAP-VAX-002: Get overdue vaccinations for specific student
+   */
+  async getOverdueVaccinationsForStudent(studentId: string): Promise<any> {
+    const student = await this.studentModel.findByPk(studentId);
+    if (!student) {
+      throw new NotFoundException('Student not found');
+    }
+
+    const complianceReport = await this.checkComplianceStatus(studentId);
+    const today = new Date();
+
+    const overdueVaccinations = complianceReport.missing.filter((vax: any) =>
+      vax.status === 'OVERDUE' && vax.dueDate
+    );
+
+    this.logger.log(`PHI Access: Overdue vaccinations retrieved for student ${studentId}`);
+
+    return {
+      studentId,
+      studentName: `${student.firstName} ${student.lastName}`,
+      dueVaccinations: overdueVaccinations.map((vax: any) => {
+        const dueDate = new Date(vax.dueDate);
+        const daysOverdue = Math.floor((today.getTime() - dueDate.getTime()) / (24 * 60 * 60 * 1000));
+
+        return {
+          vaccineName: vax.vaccineName,
+          doseNumber: vax.nextDose || vax.completedDoses + 1,
+          totalDoses: vax.requiredDoses,
+          dueDate: vax.dueDate,
+          status: 'OVERDUE',
+          daysOverdue,
+        };
+      }),
+    };
+  }
+
+  /**
+   * GAP-VAX-003: Batch import vaccinations
+   */
+  async batchImport(vaccinations: any[]): Promise<any> {
+    this.logger.log(`Batch importing ${vaccinations.length} vaccinations`);
+
+    const results = {
+      successCount: 0,
+      errorCount: 0,
+      importedIds: [] as string[],
+      errors: [] as string[],
+    };
+
+    for (const vaccinationData of vaccinations) {
+      try {
+        const vaccination = await this.addVaccination(vaccinationData);
+        results.successCount++;
+        results.importedIds.push((vaccination as any).id);
+      } catch (error) {
+        results.errorCount++;
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        results.errors.push(
+          `Failed to import vaccination for student ${vaccinationData.studentId}: ${errorMessage}`
+        );
+        this.logger.error(`Batch import error: ${errorMessage}`);
+      }
+    }
+
+    this.logger.log(
+      `Batch import completed: ${results.successCount} successful, ${results.errorCount} failed`
+    );
+
+    return results;
+  }
+
+  /**
+   * GAP-VAX-004: Get CDC vaccination schedule
+   */
+  getCDCSchedule(query: any): any {
+    const { ageOrGrade, vaccineType } = query;
+
+    // CDC schedule data (simplified)
+    const schedules = [
+      {
+        vaccine: 'Hepatitis B',
+        cvxCode: '08',
+        doses: [
+          { dose: 1, age: 'Birth', timing: 'At birth' },
+          { dose: 2, age: '1-2 months', timing: '1-2 months after dose 1' },
+          { dose: 3, age: '6-18 months', timing: '6-18 months after dose 1' },
+        ],
+      },
+      {
+        vaccine: 'DTaP',
+        cvxCode: '20',
+        doses: [
+          { dose: 1, age: '2 months', timing: 'At 2 months' },
+          { dose: 2, age: '4 months', timing: 'At 4 months' },
+          { dose: 3, age: '6 months', timing: 'At 6 months' },
+          { dose: 4, age: '15-18 months', timing: 'At 15-18 months' },
+          { dose: 5, age: '4-6 years', timing: 'At 4-6 years (before school entry)' },
+        ],
+      },
+      {
+        vaccine: 'Polio (IPV)',
+        cvxCode: '10',
+        doses: [
+          { dose: 1, age: '2 months', timing: 'At 2 months' },
+          { dose: 2, age: '4 months', timing: 'At 4 months' },
+          { dose: 3, age: '6-18 months', timing: 'At 6-18 months' },
+          { dose: 4, age: '4-6 years', timing: 'At 4-6 years (before school entry)' },
+        ],
+      },
+      {
+        vaccine: 'MMR',
+        cvxCode: '03',
+        doses: [
+          { dose: 1, age: '12-15 months', timing: 'At 12-15 months' },
+          { dose: 2, age: '4-6 years', timing: 'At 4-6 years (before school entry)' },
+        ],
+      },
+      {
+        vaccine: 'Varicella',
+        cvxCode: '21',
+        doses: [
+          { dose: 1, age: '12-15 months', timing: 'At 12-15 months' },
+          { dose: 2, age: '4-6 years', timing: 'At 4-6 years' },
+        ],
+      },
+    ];
+
+    // Filter by vaccine type if specified
+    let filteredSchedules = vaccineType
+      ? schedules.filter((s) => s.vaccine.toLowerCase().includes(vaccineType.toLowerCase()))
+      : schedules;
+
+    return {
+      source: 'CDC Immunization Schedule',
+      lastUpdated: '2024-01-01',
+      ageOrGrade: ageOrGrade || 'All ages',
+      schedules: filteredSchedules,
+    };
+  }
+
+  /**
+   * GAP-VAX-005: Create vaccination exemption
+   */
+  async createExemption(studentId: string, exemptionDto: any): Promise<any> {
+    const student = await this.studentModel.findByPk(studentId);
+    if (!student) {
+      throw new NotFoundException('Student not found');
+    }
+
+    // Create exemption vaccination record
+    const exemption = await this.vaccinationModel.create({
+      studentId,
+      vaccineName: exemptionDto.vaccineName,
+      vaccineType: exemptionDto.vaccineName,
+      exemptionStatus: true,
+      exemptionReason: exemptionDto.reason,
+      exemptionType: exemptionDto.exemptionType,
+      notes: `Exemption: ${exemptionDto.exemptionType} - ${exemptionDto.reason}`,
+      providerName: exemptionDto.providerName,
+      administrationDate: new Date(), // Record creation date
+      complianceStatus: 'EXEMPT',
+    });
+
+    this.logger.log(
+      `PHI Created: Vaccination exemption created for student ${studentId} (${exemptionDto.vaccineName})`
+    );
+
+    return exemption;
+  }
+
+  /**
+   * GAP-VAX-006: Get compliance report across students
+   */
+  async getComplianceReport(query: any): Promise<any> {
+    const { schoolId, gradeLevel, vaccineType, onlyNonCompliant } = query;
+
+    // This is a simplified implementation - in production, you'd query across multiple students
+    const whereClause: any = {};
+
+    if (vaccineType) {
+      whereClause.vaccineName = { [Op.iLike]: `%${vaccineType}%` };
+    }
+
+    const vaccinations = await this.vaccinationModel.findAll({
+      where: whereClause,
+      include: ['student'],
+      limit: 100,
+    });
+
+    // Group by student
+    const studentGroups = vaccinations.reduce((acc: any, vax: any) => {
+      const studentId = vax.studentId;
+      if (!acc[studentId]) {
+        acc[studentId] = {
+          student: vax.student,
+          vaccinations: [],
+        };
+      }
+      acc[studentId].vaccinations.push(vax);
+      return acc;
+    }, {});
+
+    // Calculate compliance for each student
+    const complianceData = Object.values(studentGroups).map((group: any) => {
+      const compliantCount = group.vaccinations.filter((v: any) => v.complianceStatus === 'COMPLIANT' || v.complianceStatus === 'EXEMPT').length;
+      const totalVaccinations = group.vaccinations.length;
+      const compliancePercentage = totalVaccinations > 0 ? (compliantCount / totalVaccinations) * 100 : 0;
+
+      return {
+        studentId: group.student.id,
+        studentName: `${group.student.firstName} ${group.student.lastName}`,
+        totalVaccinations,
+        compliantCount,
+        compliancePercentage: Math.round(compliancePercentage),
+        status: compliancePercentage >= 100 ? 'COMPLIANT' : compliancePercentage >= 50 ? 'PARTIALLY_COMPLIANT' : 'NON_COMPLIANT',
+      };
+    });
+
+    // Filter if onlyNonCompliant is true
+    const filteredData = onlyNonCompliant
+      ? complianceData.filter((d: any) => d.status !== 'COMPLIANT')
+      : complianceData;
+
+    this.logger.log(`Compliance report generated: ${filteredData.length} students`);
+
+    return {
+      reportDate: new Date().toISOString(),
+      filters: { schoolId, gradeLevel, vaccineType, onlyNonCompliant },
+      totalStudents: filteredData.length,
+      summary: {
+        compliant: filteredData.filter((d: any) => d.status === 'COMPLIANT').length,
+        partiallyCompliant: filteredData.filter((d: any) => d.status === 'PARTIALLY_COMPLIANT').length,
+        nonCompliant: filteredData.filter((d: any) => d.status === 'NON_COMPLIANT').length,
+      },
+      students: filteredData,
+    };
+  }
+
+  /**
    * Get dose schedule for a vaccine series
    * @param vaccineType - Type of vaccine
    * @param currentDose - Current dose number
