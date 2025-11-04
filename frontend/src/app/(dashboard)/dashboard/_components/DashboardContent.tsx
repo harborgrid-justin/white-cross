@@ -1,63 +1,42 @@
 /**
  * DashboardContent Component - White Cross Healthcare Platform
- * 
+ *
  * Main dashboard overview featuring:
  * - Healthcare statistics and KPIs
  * - Student health status overview
  * - Recent activities and alerts
  * - Quick access to key functions
  * - Emergency notifications and status
- * 
+ *
+ * This component has been refactored into smaller, focused sub-components:
+ * - DashboardHeader: Header with timeframe selector and refresh
+ * - DashboardStatsCards: Key statistics display
+ * - HealthAlertsPanel: Health alerts with filtering
+ * - RecentActivitiesPanel: Recent activities with search
+ * - DashboardAnalytics: Trends and monthly summary
+ * - QuickActionsGrid: Action shortcuts
+ *
  * @component DashboardContent
  */
 
 'use client';
 
-import React, { useState } from 'react';
-import { 
-  Users,
-  Activity,
-  AlertTriangle,
-  Calendar,
-  Pill,
-  FileText,
-  TrendingUp,
-  TrendingDown,
-  Clock,
-  CheckCircle,
-  Bell,
-  Shield,
-  Heart,
-  UserCheck,
-  MessageSquare,
-  Download,
-  Plus,
-  Eye,
-  Filter,
-  RefreshCw,
-  Search,
-  MoreVertical
-} from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { 
-  acknowledgeHealthAlert,
-  refreshDashboardData,
-  type DashboardStats,
-  type HealthAlert,
-  type RecentActivity,
-  type SystemStatus
+import type {
+  DashboardStats,
+  HealthAlert,
+  RecentActivity,
+  SystemStatus
 } from '@/lib/actions/dashboard.actions';
+import { DashboardHeader } from './DashboardHeader';
+import { DashboardStatsCards } from './DashboardStatsCards';
+import { HealthAlertsPanel } from './HealthAlertsPanel';
+import { RecentActivitiesPanel } from './RecentActivitiesPanel';
+import { DashboardAnalytics } from './DashboardAnalytics';
+import { QuickActionsGrid } from './QuickActionsGrid';
+import { useDashboardFilters } from './useDashboardFilters';
+import { useAlertActions } from './useAlertActions';
 
 interface DashboardContentProps {
   stats: DashboardStats;
@@ -67,67 +46,22 @@ interface DashboardContentProps {
 }
 
 export default function DashboardContent({ stats, alerts, activities, systemStatus }: DashboardContentProps) {
-  const [selectedTimeframe, setSelectedTimeframe] = useState<'today' | 'week' | 'month' | 'quarter'>('today');
-  const [alertFilter, setAlertFilter] = useState<'all' | 'critical' | 'high' | 'medium' | 'low'>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  // Custom hooks for filter state management
+  const {
+    selectedTimeframe,
+    setSelectedTimeframe,
+    alertFilter,
+    setAlertFilter,
+    searchQuery,
+    setSearchQuery,
+  } = useDashboardFilters();
 
-  // Handle alert acknowledgment
-  const handleAcknowledgeAlert = async (alertId: string) => {
-    try {
-      const success = await acknowledgeHealthAlert(alertId, 'current-user-id'); // In real app, get from auth
-      
-      if (success) {
-        // In a real app, this would trigger a server-side revalidation
-        console.log(`Alert ${alertId} acknowledged successfully`);
-      }
-    } catch (err) {
-      console.error('Failed to acknowledge alert:', err);
-    }
-  };
-
-  // Handle manual refresh
-  const handleRefresh = async () => {
-    try {
-      await refreshDashboardData();
-      // Page will revalidate automatically with fresh data
-    } catch (err) {
-      console.error('Failed to refresh dashboard:', err);
-    }
-  };
-
-  const getAlertIcon = (type: HealthAlert['type']) => {
-    switch (type) {
-      case 'medication': return Pill;
-      case 'allergy': return AlertTriangle;
-      case 'condition': return Heart;
-      case 'emergency': return Shield;
-      case 'immunization': return Shield;
-      default: return Bell;
-    }
-  };
-
-  const getAlertColor = (severity: HealthAlert['severity']) => {
-    switch (severity) {
-      case 'critical': return 'text-red-600 bg-red-50 border-red-200';
-      case 'high': return 'text-orange-600 bg-orange-50 border-orange-200';
-      case 'medium': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-      case 'low': return 'text-blue-600 bg-blue-50 border-blue-200';
-      default: return 'text-gray-600 bg-gray-50 border-gray-200';
-    }
-  };
-
-  const getActivityIcon = (type: RecentActivity['type']) => {
-    switch (type) {
-      case 'student_enrollment': return Users;
-      case 'health_record_update': return FileText;
-      case 'medication_administered': return Pill;
-      case 'appointment_scheduled': return Calendar;
-      case 'emergency_contact': return Shield;
-      case 'document_upload': return Download;
-      case 'system_alert': return Bell;
-      default: return Activity;
-    }
-  };
+  // Custom hook for alert actions
+  const {
+    isRefreshing,
+    handleAcknowledgeAlert,
+    handleRefresh,
+  } = useAlertActions();
 
   return (
     <div className="space-y-6 p-6">

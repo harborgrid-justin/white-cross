@@ -1,0 +1,133 @@
+COMMUNICATION TEMPLATES TAB - COMPONENT ARCHITECTURE
+=====================================================
+
+CommunicationTemplatesTab.tsx (261 lines)
+├─ Main Orchestrator & State Management
+│
+├─ Custom Hooks (from hooks.ts - 161 lines)
+│  ├─ useTemplates()           → CRUD operations
+│  ├─ useTemplateFilters()     → Filtering logic
+│  ├─ useTemplateVariables()   → Variable extraction
+│  └─ useTemplateCategories()  → Category utilities
+│
+├─ Header Section
+│  ├─ Title & Description
+│  └─ Create Template Button → Opens TemplateEditor
+│
+├─ TemplateFilters (84 lines)
+│  ├─ Search Input (with icon)
+│  ├─ Category Dropdown
+│  └─ Results Count Display
+│
+├─ Templates Grid (Responsive Layout)
+│  └─ TemplateList (101 lines)
+│     ├─ Empty State (when no results)
+│     └─ TemplateCard × N (152 lines each)
+│        ├─ Template Name & Category
+│        ├─ Public/Private Badge
+│        ├─ Subject Line
+│        ├─ Content Preview (3 lines max)
+│        ├─ Variable Badges (dynamic)
+│        ├─ Usage Statistics
+│        └─ Action Buttons
+│           ├─ Use Template → handleUseTemplate()
+│           ├─ Preview → Opens TemplatePreview
+│           ├─ Edit → Opens TemplateEditor (edit mode)
+│           └─ Delete → handleDeleteTemplate()
+│
+├─ Modals
+│  ├─ TemplateEditor (185 lines)
+│  │  ├─ Mode: Create / Edit
+│  │  ├─ Form Fields
+│  │  │  ├─ Template Name
+│  │  │  ├─ Category Dropdown
+│  │  │  ├─ Subject Line
+│  │  │  ├─ Content Textarea (auto-resize)
+│  │  │  └─ Public Checkbox
+│  │  ├─ Live Variable Detection
+│  │  │  └─ Variable Badges (auto-generated)
+│  │  └─ Actions
+│  │     ├─ Cancel
+│  │     └─ Create/Save
+│  │
+│  └─ TemplatePreview (139 lines)
+│     ├─ Template Name (title)
+│     ├─ Category & Public Badges
+│     ├─ Subject Line
+│     ├─ Full Content (pre-wrap)
+│     ├─ Variable List
+│     ├─ Metadata
+│     │  ├─ Created By
+│     │  ├─ Created Date
+│     │  ├─ Usage Count
+│     │  └─ Last Used Date
+│     └─ Actions
+│        ├─ Close
+│        └─ Use This Template
+│
+└─ Supporting Modules
+   ├─ types.ts (86 lines)
+   │  ├─ MessageTemplate interface
+   │  ├─ TemplateCategory interface
+   │  ├─ TemplateFormData interface
+   │  ├─ TemplateFilters interface
+   │  └─ Constants (TEMPLATE_CATEGORIES, INITIAL_TEMPLATE_FORM)
+   │
+   ├─ mockData.ts (98 lines)
+   │  └─ mockTemplates array (6 healthcare templates)
+   │
+   └─ index.ts (20 lines)
+      └─ Barrel exports for clean imports
+
+
+DATA FLOW
+=========
+
+User Action → Event Handler → Custom Hook → State Update → UI Re-render
+
+Example: Create Template Flow
+1. User clicks "Create Template" button
+2. Opens TemplateEditor modal (create mode)
+3. User fills form (name, category, subject, content)
+4. Live variable detection updates badge display
+5. User clicks "Create Template"
+6. handleCreateTemplate() → addTemplate() hook
+7. New template added to state
+8. Modal closes
+9. TemplateList re-renders with new template
+10. Success alert shown
+
+
+COMPONENT RELATIONSHIPS
+=======================
+
+TemplateCard ← TemplateList ← CommunicationTemplatesTab
+TemplateFilters ← CommunicationTemplatesTab
+TemplateEditor ← CommunicationTemplatesTab (modal)
+TemplatePreview ← CommunicationTemplatesTab (modal)
+
+All components import from:
+- types.ts (interfaces)
+- hooks.ts (business logic)
+- mockData.ts (initial data)
+
+
+LINE COUNT SUMMARY
+==================
+
+Main Component:      261 lines (20%)
+UI Components:       661 lines (51%)
+  - TemplateCard:    152 lines
+  - TemplateList:    101 lines
+  - TemplateEditor:  185 lines
+  - TemplatePreview: 139 lines
+  - TemplateFilters:  84 lines
+
+Logic/Data:          365 lines (29%)
+  - hooks.ts:        161 lines
+  - types.ts:         86 lines
+  - mockData.ts:      98 lines
+  - index.ts:         20 lines
+
+TOTAL:             1,287 lines
+REDUCTION:           650 → 261 lines (60% in main component)

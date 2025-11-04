@@ -65,6 +65,12 @@
  * - Parallel data fetching (details + administrations)
  * - Suspense boundaries for progressive rendering
  *
+ * **Refactoring:**
+ * - Refactored from 633 lines to modular component structure
+ * - Components extracted to _components directory
+ * - Improved maintainability and testability
+ * - Follows React component best practices
+ *
  * @requires Authentication - JWT with nurse/admin role
  * @requires Permissions - VIEW_MEDICATIONS, ADMINISTER_MEDICATIONS
  *
@@ -92,21 +98,18 @@
 import { Suspense } from 'react';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import { PageHeader } from '@/components/layouts/PageHeader';
 import { fetchWithAuth } from '@/lib/server/fetch';
 import { API_ENDPOINTS } from '@/constants/api';
 import MedicationDetails from '@/components/medications/core/MedicationDetails';
-import AdministrationLog from '@/components/medications/administration/AdministrationLog';
-import { Button } from '@/components/ui/button';
-
-
-
 import {
-  PencilIcon,
-  ClockIcon,
-  BeakerIcon
-} from '@heroicons/react/24/outline';
+  MedicationActionButtons,
+  MedicationQuickInfo,
+  StudentInfoCard,
+  QuickActionsCard,
+  RecentAdministrationsSection,
+  DetailsSkeleton
+} from './_components';
 
 interface MedicationDetailPageProps {
   params: {
@@ -398,6 +401,12 @@ async function getRecentAdministrations(medicationId: string) {
  * - Automatic session timeout after inactivity
  * - Permission verification before rendering
  *
+ * **Refactored Structure:**
+ * - Uses modular sub-components from _components directory
+ * - Each component has single responsibility
+ * - Improved code organization and maintainability
+ * - Better testability through component isolation
+ *
  * @example
  * ```tsx
  * // Route: /medications/abc-123-def-456
@@ -416,218 +425,66 @@ async function getRecentAdministrations(medicationId: string) {
 export default async function MedicationDetailPage({
   params
 }: MedicationDetailPageProps) {
+  // Fetch medication data
   const medication = await getMedication(params.id);
 
   if (!medication) {
     notFound();
   }
 
+  // Fetch recent administrations
   const administrations = await getRecentAdministrations(params.id);
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
+      {/* Page Header with Action Buttons */}
       <PageHeader
         title={medication.name}
         description={medication.genericName || 'Medication details and administration'}
         backLink="/medications"
         backLabel="Back to Medications"
-        action={
-          <div className="flex gap-2">
-            <Link href={`/medications/${params.id}/edit`}>
-              <Button variant="secondary" icon={<PencilIcon className="h-5 w-5" />}>
-                Edit
-              </Button>
-            </Link>
-            <Link href={`/medications/${params.id}/administer`}>
-              <Button variant="primary" icon={<ClockIcon className="h-5 w-5" />}>
-                Record Administration
-              </Button>
-            </Link>
-            <Link href="/medications/interactions">
-              <Button
-                variant="secondary"
-                icon={<BeakerIcon className="h-5 w-5" />}
-              >
-                Check Interactions
-              </Button>
-            </Link>
-          </div>
-        }
+        action={<MedicationActionButtons medicationId={params.id} />}
       />
 
-      {/* Main Content Grid */}
+      {/* Main Content Grid: 2-column responsive layout */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Left Column - Medication Details */}
+        {/* Left Column - Medication Details & Administration History */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Detailed Medication Information */}
           <Suspense fallback={<DetailsSkeleton />}>
             <MedicationDetails medication={medication} />
           </Suspense>
 
-          {/* Recent Administration Log */}
-          <div className="rounded-lg border border-gray-200 bg-white p-6">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">
-                Recent Administrations
-              </h2>
-              <Link
-                href={`/medications/${params.id}/administration-log`}
-                className="text-sm font-medium text-blue-600 hover:text-blue-700"
-              >
-                View All →
-              </Link>
-            </div>
-            <Suspense fallback={<LogSkeleton />}>
-              <AdministrationLog
-                medicationId={params.id}
-                initialData={administrations.data}
-                limit={10}
-              />
-            </Suspense>
-          </div>
+          {/* Recent Administration Log Section */}
+          <RecentAdministrationsSection
+            medicationId={params.id}
+            initialData={administrations.data}
+            limit={10}
+          />
         </div>
 
-        {/* Right Column - Quick Actions & Info */}
+        {/* Right Column - Sidebar Cards */}
         <div className="space-y-6">
-          {/* Quick Info Card */}
-          <div className="rounded-lg border border-gray-200 bg-white p-6">
-            <h3 className="mb-4 font-semibold text-gray-900">Quick Info</h3>
-            <dl className="space-y-3">
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Status</dt>
-                <dd className="mt-1">
-                  <span
-                    className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-                      medication.status === 'active'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-800'
-                    }`}
-                  >
-                    {medication.status}
-                  </span>
-                </dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Dosage</dt>
-                <dd className="mt-1 text-sm text-gray-900">
-                  {medication.dosage}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Route</dt>
-                <dd className="mt-1 text-sm text-gray-900">
-                  {medication.route}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Frequency</dt>
-                <dd className="mt-1 text-sm text-gray-900">
-                  {medication.frequency}
-                </dd>
-              </div>
-              {medication.nextDue && (
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">Next Due</dt>
-                  <dd className="mt-1 text-sm text-gray-900">
-                    {new Date(medication.nextDue).toLocaleString()}
-                  </dd>
-                </div>
-              )}
-            </dl>
-          </div>
+          {/* Quick Info Card - Status, Dosage, Route, Frequency */}
+          <MedicationQuickInfo
+            medication={{
+              status: medication.status,
+              dosage: medication.dosage,
+              route: medication.route,
+              frequency: medication.frequency,
+              nextDue: medication.nextDue
+            }}
+          />
 
-          {/* Student Info */}
+          {/* Student Info Card - Name, Grade, Avatar */}
           {medication.student && (
-            <div className="rounded-lg border border-gray-200 bg-white p-6">
-              <h3 className="mb-4 font-semibold text-gray-900">
-                Student Information
-              </h3>
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600">
-                    <span className="text-lg font-semibold">
-                      {medication.student.firstName[0]}
-                      {medication.student.lastName[0]}
-                    </span>
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <Link
-                    href={`/students/${medication.student.id}`}
-                    className="text-sm font-medium text-blue-600 hover:text-blue-700"
-                  >
-                    {medication.student.firstName} {medication.student.lastName}
-                  </Link>
-                  <p className="text-xs text-gray-500">
-                    Grade {medication.student.gradeLevel}
-                  </p>
-                </div>
-              </div>
-            </div>
+            <StudentInfoCard student={medication.student} />
           )}
 
-          {/* Quick Actions */}
-          <div className="rounded-lg border border-gray-200 bg-white p-6">
-            <h3 className="mb-4 font-semibold text-gray-900">Quick Actions</h3>
-            <div className="space-y-2">
-              <Link
-                href={`/medications/${params.id}/administration-log`}
-                className="block rounded-md bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
-              >
-                View Full Administration Log
-              </Link>
-              <Link
-                href={`/medications/${params.id}/edit`}
-                className="block rounded-md bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
-              >
-                Edit Medication
-              </Link>
-              <Link
-                href={`/medications/schedule?medicationId=${params.id}`}
-                className="block rounded-md bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
-              >
-                View Schedule
-              </Link>
-            </div>
-          </div>
+          {/* Quick Actions Card - Navigation Links */}
+          <QuickActionsCard medicationId={params.id} />
         </div>
       </div>
-    </div>
-  );
-}
-
-/**
- * Details Loading Skeleton
- */
-function DetailsSkeleton() {
-  return (
-    <div className="animate-pulse rounded-lg border border-gray-200 bg-white p-6">
-      <div className="space-y-4">
-        <div className="h-6 w-1/4 rounded bg-gray-200"></div>
-        <div className="space-y-2">
-          <div className="h-4 w-full rounded bg-gray-100"></div>
-          <div className="h-4 w-5/6 rounded bg-gray-100"></div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Log Loading Skeleton
- */
-function LogSkeleton() {
-  return (
-    <div className="space-y-3 animate-pulse">
-      {[...Array(5)].map((_, i) => (
-        <div key={i} className="flex items-center justify-between border-b border-gray-100 pb-3">
-          <div className="flex-1 space-y-2">
-            <div className="h-4 w-1/3 rounded bg-gray-200"></div>
-            <div className="h-3 w-1/4 rounded bg-gray-100"></div>
-          </div>
-          <div className="h-6 w-16 rounded bg-gray-200"></div>
-        </div>
-      ))}
     </div>
   );
 }
