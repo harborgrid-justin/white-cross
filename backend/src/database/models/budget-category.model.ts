@@ -1,4 +1,9 @@
-import { Table, Column, Model, DataType, PrimaryKey, Default, ForeignKey, BelongsTo, HasMany, CreatedAt, UpdatedAt } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, PrimaryKey, Default, ForeignKey, BelongsTo, HasMany, CreatedAt, UpdatedAt } ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
+  } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 
 /**
  * Budget Category Model
@@ -12,13 +17,31 @@ import { Table, Column, Model, DataType, PrimaryKey, Default, ForeignKey, Belong
  * - Soft delete via isActive flag preserves historical data
  * - Over-budget spending is allowed but generates warnings
  */
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'budget_categories',
   timestamps: true,
   underscored: false,
   createdAt: 'created_at',
   updatedAt: 'updated_at'
-  })
+  ,
+  indexes: [
+    {
+      fields: ['createdAt'],
+      name: 'idx_budget_category_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_budget_category_updated_at'
+    }
+  ]})
 export class BudgetCategory extends Model<BudgetCategory> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -92,5 +115,18 @@ export class BudgetCategory extends Model<BudgetCategory> {
 
   get isOverBudget(): boolean {
     return Number(this.spentAmount) > Number(this.allocatedAmount);
+  }
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: BudgetCategory) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] BudgetCategory ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
   }
 }

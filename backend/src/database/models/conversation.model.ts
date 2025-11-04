@@ -8,7 +8,11 @@ import {
   HasMany,
   Index,
   DeletedAt,
-} from 'sequelize-typescript';
+} ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
+  } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 import { ConversationParticipant } from './conversation-participant.model';
 
@@ -65,12 +69,30 @@ export interface ConversationCreationAttributes
  * - Archive functionality
  * - Last message tracking for sorting
  */
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'conversations',
   timestamps: true,
   paranoid: true,
   underscored: false,
-})
+,
+  indexes: [
+    {
+      fields: ['createdAt'],
+      name: 'idx_conversation_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_conversation_updated_at'
+    }
+  ]})
 export class Conversation extends Model<ConversationAttributes, ConversationCreationAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -176,4 +198,17 @@ export class Conversation extends Model<ConversationAttributes, ConversationCrea
     comment: 'Soft delete timestamp',
   })
   declare deletedAt?: Date;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: Conversation) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] Conversation ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

@@ -8,7 +8,12 @@ import {
   AllowNull,
   ForeignKey,
   BelongsTo
+  } ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
   } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface ConsentSignatureAttributes {
@@ -25,6 +30,14 @@ export interface ConsentSignatureAttributes {
   createdAt?: Date;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'consent_signatures',
   timestamps: false,
@@ -38,7 +51,15 @@ export interface ConsentSignatureAttributes {
   },
     {
       fields: ['studentId']
-  },
+  },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_consent_signature_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_consent_signature_updated_at'
+    }
   ]
   })
 export class ConsentSignature extends Model<ConsentSignatureAttributes> implements ConsentSignatureAttributes {
@@ -100,4 +121,17 @@ export class ConsentSignature extends Model<ConsentSignatureAttributes> implemen
 
   @Column(DataType.DATE)
   declare createdAt?: Date;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: ConsentSignature) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] ConsentSignature ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

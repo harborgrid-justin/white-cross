@@ -10,7 +10,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { HealthDomainService } from './health-domain.service';
 import {
   HealthDomainCreateRecordDto,
@@ -43,6 +43,7 @@ import {
 } from './dto/schedule.dto';
 
 @ApiTags('health-domain')
+@ApiBearerAuth()
 @Controller('health-domain')
 export class HealthDomainController {
   constructor(private readonly healthDomainService: HealthDomainService) {}
@@ -472,7 +473,7 @@ export class HealthDomainController {
   @ApiResponse({ status: 201, description: 'Vital signs recorded successfully' })
   async recordVitalSigns(
     @Body('studentId') studentId: string,
-    @Body('vitals') vitals: any,
+    @Body('vitals') vitals: Record<string, unknown>,
     @Body('notes') notes?: string,
   ) {
     return this.healthDomainService.recordVitalSigns(studentId, vitals, notes);
@@ -547,7 +548,7 @@ export class HealthDomainController {
   @ApiResponse({ status: 200, description: 'Data exported successfully' })
   async exportStudentData(
     @Param('studentId') studentId: string,
-    @Body() options: any,
+    @Body() options: Record<string, unknown>,
   ) {
     return this.healthDomainService.exportStudentData(studentId, options);
   }
@@ -556,8 +557,8 @@ export class HealthDomainController {
   @ApiOperation({ summary: 'Import student health data' })
   @ApiResponse({ status: 201, description: 'Data imported successfully' })
   async importStudentData(
-    @Body('importData') importData: any,
-    @Body('options') options: any,
+    @Body('importData') importData: Record<string, unknown>,
+    @Body('options') options: Record<string, unknown>,
   ) {
     return this.healthDomainService.importStudentData(importData, options);
   }

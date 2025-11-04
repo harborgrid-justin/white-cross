@@ -5,7 +5,12 @@ import {
   DataType,
   PrimaryKey,
   Default,
-} from 'sequelize-typescript';
+} ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
+  } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface GrowthTrackingAttributes {
@@ -26,6 +31,14 @@ export interface GrowthTrackingAttributes {
   updatedAt?: Date;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'growth_tracking',
   timestamps: true,
@@ -37,7 +50,15 @@ export interface GrowthTrackingAttributes {
     },
     {
       fields: ['measurementDate'],
+    },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_growth_tracking_created_at'
     },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_growth_tracking_updated_at'
+    }
   ],
 })
 export class GrowthTracking extends Model<GrowthTrackingAttributes> implements GrowthTrackingAttributes {
@@ -98,4 +119,17 @@ export class GrowthTracking extends Model<GrowthTrackingAttributes> implements G
 
   @Column(DataType.DATE)
   declare updatedAt?: Date;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: GrowthTracking) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] GrowthTracking ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

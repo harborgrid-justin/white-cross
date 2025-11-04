@@ -26,6 +26,7 @@ import {
 } from '../dto';
 import { StudentService } from '../../../student/student.service';
 import type { GraphQLContext } from '../types/context.interface';
+import { PHIField } from '../guards/field-authorization.guard';
 
 /**
  * Student Resolver
@@ -168,11 +169,14 @@ export class StudentResolver {
    * Uses DataLoader from context to batch and cache medication queries.
    * The DataLoader is shared across all field resolvers in this request for optimal batching.
    *
+   * PHI PROTECTED: Only ADMIN, SCHOOL_ADMIN, DISTRICT_ADMIN, and NURSE can access medication data
+   *
    * @param student - Parent student object
    * @param context - GraphQL context containing DataLoaders
-   * @returns Array of medications for the student
+   * @returns Array of medications for the student or null if unauthorized
    */
   @ResolveField(() => [MedicationDto], { name: 'medications', nullable: 'items' })
+  @PHIField() // Field-level authorization for PHI
   async medications(
     @Parent() student: StudentDto,
     @Context() context: GraphQLContext,
@@ -209,11 +213,14 @@ export class StudentResolver {
    * Uses DataLoader from context to batch and cache health record queries.
    * The DataLoader is shared across all field resolvers in this request for optimal batching.
    *
+   * PHI PROTECTED: Only ADMIN, SCHOOL_ADMIN, DISTRICT_ADMIN, and NURSE can access health records
+   *
    * @param student - Parent student object
    * @param context - GraphQL context containing DataLoaders
-   * @returns Health record for the student or null
+   * @returns Health record for the student or null if unauthorized
    */
   @ResolveField(() => HealthRecordDto, { name: 'healthRecord', nullable: true })
+  @PHIField() // Field-level authorization for PHI
   async healthRecord(
     @Parent() student: StudentDto,
     @Context() context: GraphQLContext,

@@ -8,7 +8,11 @@ import {
   ForeignKey,
   BelongsTo,
   Index,
-} from 'sequelize-typescript';
+} ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
+  } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 import { Message } from './message.model';
 
@@ -50,6 +54,14 @@ export interface MessageReactionCreationAttributes
  * - messageId: Fast lookup for message reactions
  * - userId: Fast lookup for user's reactions
  */
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'message_reactions',
   timestamps: true,
@@ -59,7 +71,15 @@ export interface MessageReactionCreationAttributes
       unique: true,
       fields: ['messageId', 'userId', 'emoji'],
       name: 'message_reactions_message_user_emoji_unique',
+    },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_message_reaction_created_at'
     },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_message_reaction_updated_at'
+    }
   ],
 })
 export class MessageReaction extends Model<MessageReactionAttributes, MessageReactionCreationAttributes> {
@@ -108,4 +128,17 @@ export class MessageReaction extends Model<MessageReactionAttributes, MessageRea
     defaultValue: DataType.NOW,
   })
   declare updatedAt: Date;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: MessageReaction) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] MessageReaction ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

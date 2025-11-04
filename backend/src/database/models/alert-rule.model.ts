@@ -8,7 +8,12 @@ import {
   ForeignKey,
   BelongsTo,
   Index
+  } ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
   } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -111,6 +116,14 @@ export interface AlertRuleAttributes {
  * - isActive for active rule queries
  * - priority for rule evaluation order
  */
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'alert_rules',
   timestamps: true,
@@ -143,7 +156,15 @@ export interface AlertRuleAttributes {
     {
       fields: ['category', 'isActive', 'priority'],
       name: 'alert_rules_active_category_priority_idx'
-  },
+  },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_alert_rule_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_alert_rule_updated_at'
+    }
   ]
   })
 export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAttributes {
@@ -401,5 +422,18 @@ export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAt
     this.lastTriggered = new Date();
     this.triggerCount = (this.triggerCount || 0) + 1;
     await this.save();
+  }
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: AlertRule) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] AlertRule ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
   }
 }

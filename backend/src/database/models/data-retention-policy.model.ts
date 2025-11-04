@@ -6,7 +6,12 @@ import {
   PrimaryKey,
   Default,
   AllowNull
+  } ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
   } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum DataRetentionCategory {
@@ -39,6 +44,14 @@ export interface DataRetentionPolicyAttributes {
   updatedAt?: Date;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'data_retention_policies',
   timestamps: true,
@@ -55,7 +68,15 @@ export interface DataRetentionPolicyAttributes {
   },
     {
       fields: ['lastReviewedAt']
-  },
+  },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_data_retention_policy_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_data_retention_policy_updated_at'
+    }
   ]
   })
 export class DataRetentionPolicy extends Model<DataRetentionPolicyAttributes> implements DataRetentionPolicyAttributes {
@@ -121,4 +142,17 @@ export class DataRetentionPolicy extends Model<DataRetentionPolicyAttributes> im
 
   @Column(DataType.DATE)
   declare updatedAt?: Date;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: DataRetentionPolicy) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] DataRetentionPolicy ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

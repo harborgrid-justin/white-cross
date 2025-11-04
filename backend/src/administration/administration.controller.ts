@@ -10,7 +10,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 
 // Import services
 import { DistrictService } from './services/district.service';
@@ -43,6 +43,7 @@ import {
  * Handles all administration-related API endpoints
  */
 @ApiTags('Administration')
+@ApiBearerAuth()
 @Controller('administration')
 export class AdministrationController {
   constructor(

@@ -113,7 +113,15 @@ export interface ClinicalNoteAttributes {
   },
     {
       fields: ['createdBy']
-  },
+  },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_clinical_note_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_clinical_note_updated_at'
+    }
   ]
   })
 export class ClinicalNote extends Model<ClinicalNoteAttributes> implements ClinicalNoteAttributes {

@@ -13,6 +13,7 @@ import {
   ApiResponse,
   ApiParam,
   ApiQuery,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { HealthRiskAssessmentService } from './health-risk-assessment.service';
 import {
@@ -29,6 +30,7 @@ import {
  * and recent incident history.
  */
 @ApiTags('Health Risk Assessment')
+@ApiBearerAuth()
 @Controller('health-risk-assessment')
 export class HealthRiskAssessmentController {
   private readonly logger = new Logger(HealthRiskAssessmentController.name);

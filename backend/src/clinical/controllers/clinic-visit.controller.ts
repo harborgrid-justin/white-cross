@@ -10,7 +10,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { ClinicVisitService } from '../services/clinic-visit.service';
 import { CheckInDto } from '../dto/visit/check-in.dto';
 import { CheckOutDto } from '../dto/visit/check-out.dto';
@@ -21,6 +21,7 @@ import { VisitFiltersDto } from '../dto/visit/visit-filters.dto';
  * REST API for clinic visit workflow and tracking
  */
 @ApiTags('Clinical - Clinic Visits')
+@ApiBearerAuth()
 @Controller('clinical/visits')
 export class ClinicVisitController {
   constructor(private readonly clinicVisitService: ClinicVisitService) {}

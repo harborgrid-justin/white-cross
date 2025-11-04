@@ -14,13 +14,13 @@
  * @security Token revocation, session management
  */
 
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import Redis from 'ioredis';
 
 @Injectable()
-export class TokenBlacklistService implements OnModuleInit {
+export class TokenBlacklistService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(TokenBlacklistService.name);
   private redisClient: Redis | null = null;
   private readonly BLACKLIST_PREFIX = 'token:blacklist:';

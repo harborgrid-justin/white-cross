@@ -203,7 +203,15 @@ export interface AlertAttributes {
     {
       fields: ['status', 'severity', 'createdAt'],
       name: 'alerts_status_severity_created_idx'
-  },
+  },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_alert_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_alert_updated_at'
+    }
   ]
   })
 export class Alert extends Model<AlertAttributes> implements AlertAttributes {
@@ -450,5 +458,18 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
 
     const minutesSinceCreation = (Date.now() - this.createdAt!.getTime()) / (1000 * 60);
     return minutesSinceCreation >= this.autoEscalateAfter;
+  }
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: Alert) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] Alert ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
   }
 }

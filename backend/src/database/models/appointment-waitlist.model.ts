@@ -8,7 +8,12 @@ import {
   ForeignKey,
   BelongsTo,
   Index
+  } ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
   } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { AppointmentType } from './appointment.model';
 
 export enum WaitlistPriority {
@@ -43,11 +48,29 @@ export interface AppointmentWaitlistAttributes {
   updatedAt?: Date;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'appointment_waitlist',
   timestamps: true,
   underscored: false
-  })
+  ,
+  indexes: [
+    {
+      fields: ['createdAt'],
+      name: 'idx_appointment_waitlist_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_appointment_waitlist_updated_at'
+    }
+  ]})
 export class AppointmentWaitlist extends Model<AppointmentWaitlistAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -156,4 +179,17 @@ export class AppointmentWaitlist extends Model<AppointmentWaitlistAttributes> {
 
   // Computed property for student relation (will be populated via raw queries)
   student?: any;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: AppointmentWaitlist) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] AppointmentWaitlist ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

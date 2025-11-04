@@ -8,7 +8,11 @@ import {
   ForeignKey,
   BelongsTo,
   BeforeCreate
+  } ,
+  Scopes,
+  BeforeUpdate
   } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 
@@ -30,6 +34,14 @@ export interface StudentMedicationAttributes {
   updatedBy?: string;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'student_medications',
   timestamps: true,
@@ -55,7 +67,15 @@ export interface StudentMedicationAttributes {
   },
     {
       fields: ['createdBy']
-  },
+  },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_student_medication_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_student_medication_updated_at'
+    }
   ]
   })
 export class StudentMedication extends Model<StudentMedicationAttributes> implements StudentMedicationAttributes {
@@ -177,5 +197,18 @@ export class StudentMedication extends Model<StudentMedicationAttributes> implem
     const now = new Date();
     const diff = this.endDate.getTime() - now.getTime();
     return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  }
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: StudentMedication) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] StudentMedication ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
   }
 }

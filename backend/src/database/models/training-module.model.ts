@@ -13,7 +13,12 @@ import {
   Default,
   Index,
   AllowNull,
-} from 'sequelize-typescript';
+} ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
+  } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 
 /**
  * Training categories
@@ -65,6 +70,14 @@ export interface CreateTrainingModuleAttributes {
  *
  * Represents training modules for staff education and compliance
  */
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'training_modules',
   timestamps: true,
@@ -72,7 +85,15 @@ export interface CreateTrainingModuleAttributes {
   indexes: [
     { fields: ['category'] },
     { fields: ['isRequired'] },
-    { fields: ['order'] },
+    { fields: ['order'] },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_training_module_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_training_module_updated_at'
+    }
   ],
 })
 export class TrainingModule extends Model<TrainingModuleAttributes, CreateTrainingModuleAttributes> {
@@ -177,4 +198,17 @@ export class TrainingModule extends Model<TrainingModuleAttributes, CreateTraini
     comment: 'Timestamp when the training module was last updated',
   })
   declare updatedAt?: Date;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: TrainingModule) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] TrainingModule ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

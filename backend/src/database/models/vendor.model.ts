@@ -7,7 +7,11 @@ import {
   Default,
   HasMany,
   BeforeCreate,
-} from 'sequelize-typescript';
+} ,
+  Scopes,
+  BeforeUpdate
+  } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface VendorAttributes {
@@ -25,6 +29,14 @@ export interface VendorAttributes {
   isActive: boolean;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'vendors',
   timestamps: true,
@@ -39,7 +51,15 @@ export interface VendorAttributes {
     },
     {
       fields: ['isActive'],
+    },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_vendor_created_at'
     },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_vendor_updated_at'
+    }
   ],
 })
 export class Vendor extends Model<VendorAttributes> implements VendorAttributes {
@@ -99,4 +119,17 @@ export class Vendor extends Model<VendorAttributes> implements VendorAttributes 
   // Relationships
   @HasMany(() => require('./purchase-order.model').PurchaseOrder)
   declare purchaseOrders?: any[];
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: Vendor) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] Vendor ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

@@ -8,7 +8,11 @@ import {
   BeforeCreate,
   ForeignKey,
   BelongsTo,
-} from 'sequelize-typescript';
+} ,
+  Scopes,
+  BeforeUpdate
+  } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 import {
   EmergencyType,
@@ -45,6 +49,14 @@ export interface EmergencyBroadcastAttributes {
   updatedAt?: Date;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'emergency_broadcasts',
   timestamps: true,
@@ -67,7 +79,15 @@ export interface EmergencyBroadcastAttributes {
     },
     {
       fields: ['expiresAt'],
+    },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_emergency_broadcast_created_at'
     },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_emergency_broadcast_updated_at'
+    }
   ],
 })
 export class EmergencyBroadcast extends Model<EmergencyBroadcastAttributes> implements EmergencyBroadcastAttributes {
@@ -201,4 +221,17 @@ export class EmergencyBroadcast extends Model<EmergencyBroadcastAttributes> impl
 
   @Column(DataType.DATE)
   declare updatedAt?: Date;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: EmergencyBroadcast) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] EmergencyBroadcast ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

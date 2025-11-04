@@ -6,7 +6,12 @@ import {
   PrimaryKey,
   Default,
   AllowNull
+  } ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
   } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum ReportType {
@@ -41,6 +46,14 @@ export interface ReportTemplateAttributes {
   updatedAt?: Date;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'report_templates',
   timestamps: true,
@@ -48,7 +61,15 @@ export interface ReportTemplateAttributes {
   indexes: [
     {
       fields: ['reportType']
-  },
+  },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_report_template_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_report_template_updated_at'
+    }
   ]
   })
 export class ReportTemplate extends Model<ReportTemplateAttributes> implements ReportTemplateAttributes {
@@ -116,4 +137,17 @@ export class ReportTemplate extends Model<ReportTemplateAttributes> implements R
 
   @Column(DataType.DATE)
   declare updatedAt?: Date;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: ReportTemplate) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] ReportTemplate ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

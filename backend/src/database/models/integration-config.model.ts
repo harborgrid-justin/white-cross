@@ -13,7 +13,12 @@ import {
   Default,
   Index,
   HasMany,
-} from 'sequelize-typescript';
+} ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
+  } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 
 export enum IntegrationType {
   SIS = 'SIS',
@@ -38,6 +43,14 @@ export enum IntegrationStatus {
  * IntegrationConfig Model
  * Configuration for external system integrations
  */
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'integration_configs',
   timestamps: true,
@@ -47,7 +60,15 @@ export enum IntegrationStatus {
     { fields: ['status'] },
     { fields: ['isActive'] },
     { fields: ['lastSyncAt'] },
-    { fields: ['createdAt'] },
+    { fields: ['createdAt'] },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_integration_config_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_integration_config_updated_at'
+    }
   ],
 })
 export class IntegrationConfig extends Model {
@@ -181,4 +202,17 @@ export class IntegrationConfig extends Model {
     as: 'logs',
   })
   declare logs: any[];
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: IntegrationConfig) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] IntegrationConfig ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

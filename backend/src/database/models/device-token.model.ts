@@ -7,7 +7,12 @@ import {
   Default,
   AllowNull,
   Index
+  } ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
   } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum NotificationPlatform {
@@ -60,6 +65,14 @@ export interface DeviceTokenCreationAttributes {
   lastUsedAt?: Date;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'device_tokens',
   timestamps: true,
@@ -74,7 +87,15 @@ export interface DeviceTokenCreationAttributes {
   },
     {
       fields: ['isActive', 'isValid']
-  },
+  },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_device_token_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_device_token_updated_at'
+    }
   ]
   })
 export class DeviceToken extends Model<DeviceTokenAttributes, DeviceTokenCreationAttributes> implements DeviceTokenAttributes {
@@ -197,4 +218,17 @@ export class DeviceToken extends Model<DeviceTokenAttributes, DeviceTokenCreatio
     type: DataType.DATE
   })
   lastUsedAt?: Date;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: DeviceToken) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] DeviceToken ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

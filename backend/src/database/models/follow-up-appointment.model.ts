@@ -9,7 +9,12 @@ import {
   Index,
   ForeignKey,
   BelongsTo
+  } ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
   } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 import { FollowUpStatus } from '../../clinical/enums/follow-up-status.enum';
@@ -42,6 +47,14 @@ export interface FollowUpAppointmentAttributes {
   completedVisit?: any;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'follow_up_appointments',
   timestamps: true,
@@ -55,7 +68,15 @@ export interface FollowUpAppointmentAttributes {
   },
     {
       fields: ['scheduledDate']
-  },
+  },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_follow_up_appointment_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_follow_up_appointment_updated_at'
+    }
   ]
   })
 export class FollowUpAppointment extends Model<FollowUpAppointmentAttributes> implements FollowUpAppointmentAttributes {
@@ -279,5 +300,18 @@ export class FollowUpAppointment extends Model<FollowUpAppointmentAttributes> im
    */
   getEndTime(): Date {
     return new Date(this.scheduledDate.getTime() + this.durationMinutes * 60 * 1000);
+  }
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: FollowUpAppointment) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] FollowUpAppointment ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
   }
 }

@@ -8,7 +8,12 @@ import {
   ForeignKey,
   BelongsTo,
   Index
+  } ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
   } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum DeliveryChannel {
@@ -53,6 +58,14 @@ export interface DeliveryLogAttributes {
  * - success for failed delivery queries
  * - lastAttempt for retry scheduling
  */
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'delivery_logs',
   timestamps: true,
@@ -81,7 +94,15 @@ export interface DeliveryLogAttributes {
     {
       fields: ['alertId', 'channel', 'recipientId'],
       name: 'delivery_logs_alert_channel_recipient_idx'
-  },
+  },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_delivery_log_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_delivery_log_updated_at'
+    }
   ]
   })
 export class DeliveryLog extends Model<DeliveryLogAttributes> implements DeliveryLogAttributes {
@@ -208,5 +229,18 @@ export class DeliveryLog extends Model<DeliveryLogAttributes> implements Deliver
 
     const timeSinceLastAttempt = Date.now() - this.lastAttempt.getTime();
     return timeSinceLastAttempt >= this.getBackoffMs();
+  }
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: DeliveryLog) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] DeliveryLog ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
   }
 }

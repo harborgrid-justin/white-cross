@@ -8,7 +8,11 @@ import {
   Index,
   BeforeCreate,
   CreatedAt,
-} from 'sequelize-typescript';
+} ,
+  Scopes,
+  BeforeUpdate
+  } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum TrendDirection {
@@ -30,6 +34,14 @@ export interface HealthMetricSnapshotAttributes {
   snapshotDate: Date;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'health_metric_snapshots',
   timestamps: false, // Only createdAt, no updatedAt
@@ -39,7 +51,15 @@ export interface HealthMetricSnapshotAttributes {
     },
     {
       fields: ['metricName', 'snapshotDate'],
+    },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_health_metric_snapshot_created_at'
     },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_health_metric_snapshot_updated_at'
+    }
   ],
 })
 export class HealthMetricSnapshot extends Model<HealthMetricSnapshotAttributes> implements HealthMetricSnapshotAttributes {
@@ -101,4 +121,17 @@ export class HealthMetricSnapshot extends Model<HealthMetricSnapshotAttributes> 
     allowNull: false,
   })
   declare createdAt: Date;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: HealthMetricSnapshot) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] HealthMetricSnapshot ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

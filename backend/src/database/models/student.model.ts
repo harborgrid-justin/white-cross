@@ -126,6 +126,14 @@ export interface StudentAttributes {
     {
       fields: ['enrollmentDate'],
       name: 'idx_students_enrollment_date'
+    },
+    {
+      fields: ['createdAt'],
+      name: 'idx_students_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_students_updated_at'
     }
   ]
   })

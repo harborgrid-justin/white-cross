@@ -9,7 +9,12 @@ import {
   ForeignKey,
   BelongsTo,
   HasMany
+  } ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
   } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum ComplianceReportType {
@@ -50,6 +55,14 @@ export interface ComplianceReportAttributes {
   updatedAt?: Date;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'compliance_reports',
   timestamps: true,
@@ -69,7 +82,15 @@ export interface ComplianceReportAttributes {
   },
     {
       fields: ['createdById']
-  },
+  },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_compliance_report_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_compliance_report_updated_at'
+    }
   ]
   })
 export class ComplianceReport extends Model<ComplianceReportAttributes> implements ComplianceReportAttributes {
@@ -156,4 +177,17 @@ export class ComplianceReport extends Model<ComplianceReportAttributes> implemen
   // Relationships
   @HasMany(() => require('./compliance-checklist-item.model').ComplianceChecklistItem)
   declare checklistItems?: any[];
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: ComplianceReport) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] ComplianceReport ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

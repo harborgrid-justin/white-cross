@@ -138,7 +138,7 @@ export class AuthController {
     status: 500,
     description: 'Internal server error',
   })
-  async getProfile(@CurrentUser() user: any): Promise<{ success: boolean; data: any }> {
+  async getProfile(@CurrentUser() user: Express.User): Promise<{ success: boolean; data: Express.User }> {
     return {
       success: true,
       data: user,

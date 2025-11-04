@@ -9,8 +9,10 @@ import {
   BelongsTo,
   BeforeCreate,
   BeforeUpdate,
+  Scopes
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
+import { Op } from 'sequelize';
 
 export interface VitalSignsAttributes {
   id?: string;
@@ -37,6 +39,40 @@ export interface VitalSignsAttributes {
   updatedAt?: Date;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['measurementDate', 'DESC']]
+  },
+  byStudent: (studentId: string) => ({
+    where: { studentId },
+    order: [['measurementDate', 'DESC']]
+  }),
+  abnormal: {
+    where: {
+      isAbnormal: true
+    },
+    order: [['measurementDate', 'DESC']]
+  },
+  recent: {
+    where: {
+      measurementDate: {
+        [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+      }
+    },
+    order: [['measurementDate', 'DESC']]
+  },
+  withFlag: (flag: string) => ({
+    where: {
+      abnormalFlags: {
+        [Op.contains]: [flag]
+      }
+    },
+    order: [['measurementDate', 'DESC']]
+  })
+}))
 @Table({
   tableName: 'vital_signs',
   timestamps: true,
@@ -51,6 +87,14 @@ export interface VitalSignsAttributes {
     },
     {
       fields: ['isAbnormal'],
+    },
+    {
+      fields: ['createdAt'],
+      name: 'idx_vital_signs_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_vital_signs_updated_at'
     },
   ],
 })
@@ -149,6 +193,18 @@ export class VitalSigns extends Model<VitalSignsAttributes> implements VitalSign
   // Associations
   @BelongsTo(() => require('./student.model').Student, { foreignKey: 'studentId', as: 'student' })
   declare student?: any;
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: VitalSigns) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] VitalSigns ${instance.id} modified for student ${instance.studentId} at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 
   @BeforeCreate
   static async calculateBMI(instance: VitalSigns) {

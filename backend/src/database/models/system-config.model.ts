@@ -14,7 +14,12 @@ import {
   HasMany,
   Index,
   AllowNull,
-} from 'sequelize-typescript';
+} ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
+  } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 
 /**
  * Configuration categories
@@ -119,6 +124,14 @@ export interface CreateSystemConfigAttributes {
  *
  * Stores system-wide and scoped configuration settings
  */
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'system_configurations',
   timestamps: true,
@@ -126,7 +139,15 @@ export interface CreateSystemConfigAttributes {
   indexes: [
     { fields: ['key'], unique: true },
     { fields: ['category'] },
-    { fields: ['scope'] },
+    { fields: ['scope'] },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_system_config_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_system_config_updated_at'
+    }
   ],
 })
 export class SystemConfig extends Model<SystemConfigAttributes, CreateSystemConfigAttributes> {
@@ -312,4 +333,17 @@ export class SystemConfig extends Model<SystemConfigAttributes, CreateSystemConf
     as: 'history',
   })
   declare history?: any[];
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: SystemConfig) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] SystemConfig ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

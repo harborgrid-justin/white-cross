@@ -145,6 +145,14 @@ export interface AppointmentAttributes {
       fields: ['nurseId', 'scheduledAt', 'status'],
       name: 'idx_appointments_nurse_scheduled_status'
     },
+    {
+      fields: ['createdAt'],
+      name: 'idx_appointments_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_appointments_updated_at'
+    },
   ]
   })
 export class Appointment extends Model<AppointmentAttributes> {
@@ -332,7 +340,18 @@ export class Appointment extends Model<AppointmentAttributes> {
     return Math.floor((this.scheduledAt.getTime() - Date.now()) / (1000 * 60));
   }
 
-  // Hooks
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: Appointment) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] Appointment ${instance.id} modified for student ${instance.studentId} at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}, Nurse: ${instance.nurseId}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
+
   @BeforeCreate
   @BeforeUpdate
   static async validateScheduledDate(instance: Appointment) {

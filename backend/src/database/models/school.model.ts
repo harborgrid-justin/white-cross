@@ -16,7 +16,11 @@ import {
   HasMany,
   Index,
   AllowNull,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
 } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 
 /**
  * School attributes interface
@@ -62,14 +66,47 @@ export interface CreateSchoolAttributes {
  *
  * Represents a school within a district
  */
+@Scopes(() => ({
+  active: {
+    where: {
+      isActive: true,
+      deletedAt: null
+    },
+    order: [['name', 'ASC']]
+  },
+  byDistrict: (districtId: string) => ({
+    where: { districtId, isActive: true },
+    order: [['name', 'ASC']]
+  }),
+  byState: (state: string) => ({
+    where: { state, isActive: true },
+    order: [['city', 'ASC'], ['name', 'ASC']]
+  }),
+  byCity: (city: string) => ({
+    where: { city, isActive: true },
+    order: [['name', 'ASC']]
+  }),
+  withStudents: {
+    include: [{
+      association: 'students',
+      where: { isActive: true },
+      required: false
+    }],
+    order: [['name', 'ASC']]
+  }
+}))
 @Table({
   tableName: 'schools',
   timestamps: true,
   underscored: false,
+  paranoid: true,
   indexes: [
     { fields: ['code'], unique: true },
     { fields: ['districtId'] },
     { fields: ['isActive'] },
+    { fields: ['createdAt'], name: 'idx_schools_created_at' },
+    { fields: ['updatedAt'], name: 'idx_schools_updated_at' },
+    { fields: ['state', 'city'], name: 'idx_schools_state_city' },
   ],
 })
 export class School extends Model<SchoolAttributes, CreateSchoolAttributes> {
@@ -193,6 +230,18 @@ export class School extends Model<SchoolAttributes, CreateSchoolAttributes> {
     comment: 'Timestamp when the school was last updated',
   })
   declare updatedAt?: Date;
+
+  // Hooks for audit compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditAccess(instance: School) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] School ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 
   // Relationships
   @BelongsTo(() => require('./district.model').District, {

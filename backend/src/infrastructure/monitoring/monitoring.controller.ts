@@ -6,7 +6,7 @@
  */
 
 import { Controller, Get, Post, Param, Query, Body, HttpStatus } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags, ApiQuery, ApiParam } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags, ApiQuery, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
 import { MonitoringService } from './monitoring.service';
 import type {
   MetricsSnapshot,
@@ -42,6 +42,7 @@ import type {
  * ```
  */
 @ApiTags('Monitoring & Metrics')
+@ApiBearerAuth()
 @Controller('monitoring')
 export class MonitoringController {
   constructor(private readonly monitoringService: MonitoringService) {}

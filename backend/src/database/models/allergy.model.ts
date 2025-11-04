@@ -124,7 +124,15 @@ export interface AllergyAttributes {
   },
     {
       fields: ['epiPenExpiration']
-  },
+  },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_allergy_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_allergy_updated_at'
+    }
   ]
   })
 export class Allergy extends Model<AllergyAttributes> implements AllergyAttributes {

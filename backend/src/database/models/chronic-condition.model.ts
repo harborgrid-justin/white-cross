@@ -9,7 +9,12 @@ import {
   Index,
   ForeignKey,
   BelongsTo
+  } ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
   } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 
@@ -60,6 +65,14 @@ export interface ChronicConditionAttributes {
   healthRecord?: any;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'chronic_conditions',
   timestamps: true,
@@ -80,7 +93,15 @@ export interface ChronicConditionAttributes {
   },
     {
       fields: ['requires504']
-  },
+  },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_chronic_condition_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_chronic_condition_updated_at'
+    }
   ]
   })
 export class ChronicCondition extends Model<ChronicConditionAttributes> implements ChronicConditionAttributes {
@@ -240,4 +261,17 @@ export class ChronicCondition extends Model<ChronicConditionAttributes> implemen
 
   @BelongsTo(() => require('./health-record.model').HealthRecord, { foreignKey: 'healthRecordId', as: 'healthRecord' })
   declare healthRecord?: any;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: ChronicCondition) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] ChronicCondition ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

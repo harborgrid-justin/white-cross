@@ -78,9 +78,11 @@ export class CreateAlertDto {
   @ApiProperty({
     description: 'Alert message',
     example: 'Student John Doe needs to take asthma medication at 2:00 PM',
+    maxLength: 5000,
   })
   @IsNotEmpty({ message: 'Message is required' })
   @IsString()
+  @MaxLength(5000, { message: 'Message cannot exceed 5000 characters' })
   message: string;
 
   @ApiProperty({

@@ -9,9 +9,11 @@ import {
   Default,
   ForeignKey,
   BelongsTo,
-  HasMany
+  HasMany,
+  Scopes
   } from 'sequelize-typescript';
 import * as bcrypt from 'bcrypt';
+import { Op } from 'sequelize';
 import type { School } from './school.model';
 import type { District } from './district.model';
 
@@ -50,10 +52,63 @@ export interface UserAttributes {
   mustChangePassword: boolean;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      isActive: true,
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  },
+  byRole: (role: UserRole) => ({
+    where: { role, isActive: true },
+    order: [['lastName', 'ASC'], ['firstName', 'ASC']]
+  }),
+  bySchool: (schoolId: string) => ({
+    where: { schoolId, isActive: true },
+    order: [['lastName', 'ASC'], ['firstName', 'ASC']]
+  }),
+  byDistrict: (districtId: string) => ({
+    where: { districtId, isActive: true },
+    order: [['lastName', 'ASC'], ['firstName', 'ASC']]
+  }),
+  nurses: {
+    where: {
+      role: UserRole.NURSE,
+      isActive: true
+    },
+    order: [['lastName', 'ASC'], ['firstName', 'ASC']]
+  },
+  admins: {
+    where: {
+      role: {
+        [Op.in]: [UserRole.ADMIN, UserRole.DISTRICT_ADMIN, UserRole.SCHOOL_ADMIN]
+      },
+      isActive: true
+    },
+    order: [['role', 'ASC'], ['lastName', 'ASC']]
+  },
+  locked: {
+    where: {
+      lockoutUntil: {
+        [Op.gt]: new Date()
+      }
+    },
+    order: [['lockoutUntil', 'DESC']]
+  },
+  unverified: {
+    where: {
+      emailVerified: false,
+      isActive: true
+    },
+    order: [['createdAt', 'ASC']]
+  }
+}))
 @Table({
   tableName: 'users',
   timestamps: true,
   underscored: false,
+  paranoid: true,
   indexes: [
     { fields: ['email'], unique: true },
     { fields: ['schoolId'] },
@@ -61,7 +116,9 @@ export interface UserAttributes {
     { fields: ['role'] },
     { fields: ['isActive'] },
     { fields: ['emailVerificationToken'] },
-    { fields: ['passwordResetToken'] }
+    { fields: ['passwordResetToken'] },
+    { fields: ['createdAt'], name: 'idx_users_created_at' },
+    { fields: ['updatedAt'], name: 'idx_users_updated_at' }
   ]
   })
 export class User extends Model<UserAttributes> {
@@ -289,6 +346,22 @@ export class User extends Model<UserAttributes> {
       user.password = await bcrypt.hash(user.password, 10);
       user.passwordChangedAt = new Date();
       user.lastPasswordChange = new Date();
+    }
+  }
+
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(user: User) {
+    if (user.changed()) {
+      const changedFields = user.changed() as string[];
+      const phiFields = ['email', 'firstName', 'lastName', 'phone'];
+      const phiChanged = changedFields.some(field => phiFields.includes(field));
+
+      if (phiChanged) {
+        console.log(`[AUDIT] User ${user.id} PHI modified at ${new Date().toISOString()}`);
+        console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+        // TODO: Integrate with AuditLog service for persistent audit trail
+      }
     }
   }
 

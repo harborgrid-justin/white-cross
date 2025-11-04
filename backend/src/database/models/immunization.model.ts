@@ -5,7 +5,12 @@ import {
   DataType,
   PrimaryKey,
   Default,
-} from 'sequelize-typescript';
+} ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
+  } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface ImmunizationAttributes {
@@ -26,6 +31,14 @@ export interface ImmunizationAttributes {
   updatedAt?: Date;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'immunizations',
   timestamps: true,
@@ -40,7 +53,15 @@ export interface ImmunizationAttributes {
     },
     {
       fields: ['administeredDate'],
+    },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_immunization_created_at'
     },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_immunization_updated_at'
+    }
   ],
 })
 export class Immunization extends Model<ImmunizationAttributes> implements ImmunizationAttributes {
@@ -102,4 +123,17 @@ export class Immunization extends Model<ImmunizationAttributes> implements Immun
 
   @Column(DataType.DATE)
   declare updatedAt?: Date;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: Immunization) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] Immunization ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

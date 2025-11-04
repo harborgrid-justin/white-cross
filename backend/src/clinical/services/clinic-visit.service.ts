@@ -344,6 +344,11 @@ export class ClinicVisitService {
 
   /**
    * Get frequent visitors (students with high visit frequency)
+   *
+   * OPTIMIZATION: Fixed N+1 query problem
+   * Before: 1 + N queries (1 for visits + N for each student's summary) = 101 queries for 100 students
+   * After: 1 query (calculate summaries from already-fetched visits data) = 1 query
+   * Performance improvement: ~99% query reduction
    */
   async getFrequentVisitors(
     startDate: Date,
@@ -367,10 +372,53 @@ export class ClinicVisitService {
       studentVisits.set(visit.studentId, existing);
     }
 
-    // Calculate summaries
+    // OPTIMIZATION: Calculate summaries from already-fetched data instead of N additional queries
     const summaries: StudentVisitSummary[] = [];
-    for (const [studentId] of studentVisits) {
-      const summary = await this.getStudentVisitSummary(studentId, startDate, endDate);
+    for (const [studentId, studentVisitList] of studentVisits.entries()) {
+      // Calculate summary directly from visits data without additional query
+      const summary: StudentVisitSummary = {
+        studentId,
+        totalVisits: studentVisitList.length,
+        averageDuration: 0,
+        totalMinutesMissed: 0,
+        mostCommonReasons: [],
+        lastVisitDate: studentVisitList[0]?.checkInTime || new Date(),
+        visitFrequency: 0,
+      };
+
+      // Calculate average duration
+      let totalDuration = 0;
+      let durationCount = 0;
+      const reasonCounts: Record<string, number> = {};
+
+      for (const visit of studentVisitList) {
+        const duration = visit.getDuration();
+        if (duration !== null) {
+          totalDuration += duration;
+          durationCount++;
+        }
+
+        if (visit.minutesMissed) {
+          summary.totalMinutesMissed += visit.minutesMissed;
+        }
+
+        for (const reason of visit.reasonForVisit) {
+          reasonCounts[reason] = (reasonCounts[reason] || 0) + 1;
+        }
+      }
+
+      summary.averageDuration = durationCount > 0 ? totalDuration / durationCount : 0;
+
+      // Get most common reasons
+      summary.mostCommonReasons = Object.entries(reasonCounts)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 3)
+        .map(([reason]) => reason);
+
+      // Calculate visit frequency (visits per month)
+      const months = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
+      summary.visitFrequency = studentVisitList.length / (months || 1);
+
       summaries.push(summary);
     }
 

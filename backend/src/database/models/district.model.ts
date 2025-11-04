@@ -14,7 +14,11 @@ import {
   HasMany,
   Index,
   AllowNull,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
 } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 
 
 /**
@@ -55,13 +59,42 @@ export interface CreateDistrictAttributes {
  *
  * Represents a school district in the system
  */
+@Scopes(() => ({
+  active: {
+    where: {
+      isActive: true,
+      deletedAt: null
+    },
+    order: [['name', 'ASC']]
+  },
+  byState: (state: string) => ({
+    where: { state, isActive: true },
+    order: [['name', 'ASC']]
+  }),
+  byCity: (city: string) => ({
+    where: { city, isActive: true },
+    order: [['name', 'ASC']]
+  }),
+  withSchools: {
+    include: [{
+      association: 'schools',
+      where: { isActive: true },
+      required: false
+    }],
+    order: [['name', 'ASC']]
+  }
+}))
 @Table({
   tableName: 'districts',
   timestamps: true,
   underscored: false,
+  paranoid: true,
   indexes: [
     { fields: ['code'], unique: true },
     { fields: ['isActive'] },
+    { fields: ['state', 'city'], name: 'idx_districts_state_city' },
+    { fields: ['createdAt'], name: 'idx_districts_created_at' },
+    { fields: ['updatedAt'], name: 'idx_districts_updated_at' },
   ],
 })
 export class District extends Model<DistrictAttributes, CreateDistrictAttributes> {
@@ -159,6 +192,18 @@ export class District extends Model<DistrictAttributes, CreateDistrictAttributes
     comment: 'Timestamp when the district was last updated',
   })
   declare updatedAt?: Date;
+
+  // Hooks for audit compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditAccess(instance: District) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] District ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 
   // Relationships
   @HasMany(() => require('./school.model').School, {

@@ -7,7 +7,12 @@ import {
   Default,
   AllowNull,
   Index
+  } ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
   } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 import { ProtocolStatus } from '../../clinical/enums/protocol-status.enum';
 
@@ -46,6 +51,14 @@ export interface ClinicalProtocolAttributes {
   updatedAt?: Date;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'clinical_protocols',
   timestamps: true,
@@ -63,7 +76,15 @@ export interface ClinicalProtocolAttributes {
     {
       fields: ['code'],
       unique: true
-  },
+  },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_clinical_protocol_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_clinical_protocol_updated_at'
+    }
   ]
   })
 export class ClinicalProtocol extends Model<ClinicalProtocolAttributes> implements ClinicalProtocolAttributes {
@@ -239,5 +260,18 @@ export class ClinicalProtocol extends Model<ClinicalProtocolAttributes> implemen
    */
   getRequiredSteps(): typeof this.steps {
     return this.steps.filter((step) => step.required);
+  }
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: ClinicalProtocol) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] ClinicalProtocol ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
   }
 }

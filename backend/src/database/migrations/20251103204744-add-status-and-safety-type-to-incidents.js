@@ -62,16 +62,30 @@ module.exports = {
     // Remove indexes if they exist
     try {
       await queryInterface.removeIndex('incident_reports', 'incident_reports_status_idx');
+      console.log('✓ Removed status index');
     } catch (err) {
       console.log('Status index not found, skipping removal');
     }
-    
+
     try {
       await queryInterface.removeIndex('incident_reports', 'incident_reports_type_status_idx');
+      console.log('✓ Removed type-status index');
     } catch (err) {
       console.log('Type-status index not found, skipping removal');
     }
-    
-    // Note: We don't remove the status column or SAFETY type as they may be in use
+
+    // Remove status column (complete rollback)
+    const [statusCheck] = await queryInterface.sequelize.query(`
+      SELECT column_name
+      FROM information_schema.columns
+      WHERE table_name = 'incident_reports' AND column_name = 'status'
+    `);
+
+    if (statusCheck.length > 0) {
+      await queryInterface.removeColumn('incident_reports', 'status');
+      console.log('✓ Removed status column from incident_reports');
+    } else {
+      console.log('Status column not found, skipping removal');
+    }
   }
 };

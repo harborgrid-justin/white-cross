@@ -7,7 +7,12 @@ import {
   Default,
   AllowNull,
   Index
+  } ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
   } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 import { SyncEntityType, ConflictResolution } from './sync-queue-item.model';
 
@@ -41,6 +46,14 @@ export interface SyncConflictAttributes {
   createdAt?: Date;
 }
 
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'sync_conflicts',
   timestamps: false,
@@ -50,7 +63,15 @@ export interface SyncConflictAttributes {
   },
     {
       fields: ['entityType']
-  },
+  },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_sync_conflict_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_sync_conflict_updated_at'
+    }
   ]
   })
 export class SyncConflict extends Model<SyncConflictAttributes> implements SyncConflictAttributes {
@@ -136,4 +157,17 @@ export class SyncConflict extends Model<SyncConflictAttributes> implements SyncC
     allowNull: false
   })
   declare createdAt?: Date;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: SyncConflict) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] SyncConflict ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }

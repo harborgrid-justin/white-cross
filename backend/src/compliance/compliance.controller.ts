@@ -25,6 +25,7 @@ import {
   ApiQuery,
   ApiParam,
   ApiBody,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import type { Request } from 'express';
 
@@ -53,6 +54,7 @@ import { CreateViolationDto, UpdateViolationDto, CreateRemediationDto, UpdateRem
 import { QueryStatisticsDto } from './dto/statistics.dto';
 
 @ApiTags('compliance')
+@ApiBearerAuth()
 @Controller('compliance')
 export class ComplianceController {
   private readonly logger = new Logger(ComplianceController.name);

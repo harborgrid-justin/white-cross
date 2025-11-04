@@ -64,6 +64,7 @@ import { CreateRecurringAppointmentDto } from './dto/recurring.dto';
  * - Reminder scheduling and notification
  */
 @ApiTags('appointments')
+@ApiBearerAuth()
 @Controller('appointments')
 export class AppointmentController {
   private readonly logger = new Logger(AppointmentController.name);
@@ -222,7 +223,7 @@ export class AppointmentController {
   @ApiResponse({ status: 404, description: 'Appointment not found' })
   async completeAppointment(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
-    @Body() completionData?: any,
+    @Body() completionData?: Record<string, unknown>,
   ) {
     this.logger.log(`PATCH /appointments/${id}/complete`);
     return this.appointmentService.completeAppointment(id, completionData);

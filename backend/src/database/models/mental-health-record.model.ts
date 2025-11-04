@@ -8,7 +8,12 @@ import {
   ForeignKey,
   BelongsTo,
   Index
+  } ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
   } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -113,6 +118,14 @@ export interface MentalHealthRecordAttributes {
  * - riskLevel for identifying high-risk students
  * - counselorId for counselor caseload queries
  */
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'mental_health_records',
   timestamps: true,
@@ -146,7 +159,15 @@ export interface MentalHealthRecordAttributes {
     {
       fields: ['studentId', 'recordDate'],
       name: 'mental_health_records_student_date_idx'
-  },
+  },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_mental_health_record_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_mental_health_record_updated_at'
+    }
   ]
   })
 export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> implements MentalHealthRecordAttributes {
@@ -480,5 +501,18 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
   requiresParentNotification(): boolean {
     // High or critical risk records should notify parents
     return this.isHighRisk() && !this.parentNotified;
+  }
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: MentalHealthRecord) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] MentalHealthRecord ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
   }
 }

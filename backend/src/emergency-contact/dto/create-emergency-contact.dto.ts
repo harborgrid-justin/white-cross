@@ -63,10 +63,12 @@ export class EmergencyContactCreateDto {
   relationship: string;
 
   @ApiProperty({
-    description: 'Phone number (minimum 10 digits)',
+    description: 'Phone number (minimum 10 digits, maximum 20 characters)',
     example: '+1-555-123-4567',
+    maxLength: 20,
   })
   @IsString()
+  @MaxLength(20, { message: 'Phone number cannot exceed 20 characters' })
   @Matches(/^[\d\s\-().+]+$/, {
     message: 'Phone number must contain only digits, spaces, hyphens, parentheses, or plus sign',
   })
@@ -82,11 +84,13 @@ export class EmergencyContactCreateDto {
   email?: string;
 
   @ApiPropertyOptional({
-    description: 'Physical address',
+    description: 'Physical address (maximum 500 characters)',
     example: '123 Main St, City, State 12345',
+    maxLength: 500,
   })
   @IsOptional()
   @IsString()
+  @MaxLength(500, { message: 'Address cannot exceed 500 characters' })
   address?: string;
 
   @ApiProperty({
@@ -126,10 +130,12 @@ export class EmergencyContactCreateDto {
   canPickupStudent?: boolean;
 
   @ApiPropertyOptional({
-    description: 'Additional notes',
+    description: 'Additional notes (maximum 1000 characters)',
     example: 'Prefers text messages during work hours',
+    maxLength: 1000,
   })
   @IsOptional()
   @IsString()
+  @MaxLength(1000, { message: 'Notes cannot exceed 1000 characters' })
   notes?: string;
 }

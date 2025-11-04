@@ -10,7 +10,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { ChronicConditionService } from './chronic-condition.service';
 import {
   ChronicConditionCreateDto,
@@ -29,6 +29,7 @@ import { AccommodationType } from './enums';
  * educational accommodation coordination, and monitoring.
  */
 @ApiTags('Chronic Conditions')
+@ApiBearerAuth()
 @Controller('chronic-conditions')
 export class ChronicConditionController {
   constructor(

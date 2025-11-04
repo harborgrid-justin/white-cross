@@ -14,7 +14,12 @@ import {
   Index,
   ForeignKey,
   BelongsTo,
-} from 'sequelize-typescript';
+} ,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
+  } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 
 export enum ConflictResolution {
   KEEP_LOCAL = 'KEEP_LOCAL',
@@ -25,6 +30,14 @@ export enum ConflictResolution {
  * SIS SyncConflict Model
  * Stores conflicts detected during SIS synchronization
  */
+@Scopes(() => ({
+  active: {
+    where: {
+      deletedAt: null
+    },
+    order: [['createdAt', 'DESC']]
+  }
+}))
 @Table({
   tableName: 'sis_sync_conflicts',
   timestamps: true,
@@ -35,7 +48,15 @@ export enum ConflictResolution {
     { fields: ['field'] },
     { fields: ['resolution'] },
     { fields: ['resolvedAt'] },
-    { fields: ['createdAt'] },
+    { fields: ['createdAt'] },,
+    {
+      fields: ['createdAt'],
+      name: 'idx_sis_sync_conflict_created_at'
+    },
+    {
+      fields: ['updatedAt'],
+      name: 'idx_sis_sync_conflict_updated_at'
+    }
   ],
 })
 export class SISSyncConflict extends Model {
@@ -131,4 +152,17 @@ export class SISSyncConflict extends Model {
     as: 'session',
   })
   declare session: any;
+
+
+  // Hooks for HIPAA compliance
+  @BeforeCreate
+  @BeforeUpdate
+  static async auditPHIAccess(instance: SisSyncConflict) {
+    if (instance.changed()) {
+      const changedFields = instance.changed() as string[];
+      console.log(`[AUDIT] SisSyncConflict ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
+      // TODO: Integrate with AuditLog service for persistent audit trail
+    }
+  }
 }
