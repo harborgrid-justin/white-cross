@@ -16,6 +16,9 @@
 import { Module, Global, Optional } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE, APP_FILTER } from '@nestjs/core';
 
+// Import audit module for exception filter
+import { AuditModule } from '../audit/audit.module';
+
 // Guards
 import { RolesGuard } from '../auth/guards/roles.guard';
 
@@ -60,6 +63,7 @@ import { AllExceptionsFilter } from '../common/exceptions/filters/all-exceptions
  */
 @Global()
 @Module({
+  imports: [AuditModule],
   providers: [
     // ==================== Global Guards ====================
     // NOTE: Global guards (ThrottlerGuard, IpRestrictionGuard, JwtAuthGuard) are now

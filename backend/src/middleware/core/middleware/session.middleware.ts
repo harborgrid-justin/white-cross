@@ -12,7 +12,8 @@ import {
   Injectable,
   NestMiddleware,
   UnauthorizedException,
-  Logger
+  Logger,
+  Optional
 } from '@nestjs/common';
 import type { Request, Response, NextFunction } from 'express';
 import * as crypto from 'crypto';
@@ -121,11 +122,11 @@ export class MemorySessionStore implements SessionStore {
 @Injectable()
 export class SessionMiddleware implements NestMiddleware {
   private readonly logger = new Logger(SessionMiddleware.name);
-  private readonly config: SessionConfig;
+  private config: SessionConfig;
   private readonly store: SessionStore;
 
-  constructor(config?: SessionConfig) {
-    this.config = config || SESSION_CONFIGS.healthcare;
+  constructor() {
+    this.config = SESSION_CONFIGS.healthcare;
     this.store = this.config.store || new MemorySessionStore();
 
     // Start cleanup timer for memory store
@@ -138,6 +139,15 @@ export class SessionMiddleware implements NestMiddleware {
         });
       }, 60 * 60 * 1000); // Cleanup every hour
     }
+  }
+
+  /**
+   * Update session configuration
+   *
+   * @param {SessionConfig} newConfig - New configuration
+   */
+  setConfig(newConfig: SessionConfig): void {
+    this.config = newConfig;
   }
 
   /**
@@ -462,7 +472,9 @@ export class SessionMiddleware implements NestMiddleware {
  * @returns {SessionMiddleware} Middleware instance
  */
 export function createHealthcareSessionMiddleware(): SessionMiddleware {
-  return new SessionMiddleware(SESSION_CONFIGS.healthcare);
+  const middleware = new SessionMiddleware();
+  middleware.setConfig(SESSION_CONFIGS.healthcare);
+  return middleware;
 }
 
 /**
@@ -471,5 +483,7 @@ export function createHealthcareSessionMiddleware(): SessionMiddleware {
  * @returns {SessionMiddleware} Middleware instance
  */
 export function createAdminSessionMiddleware(): SessionMiddleware {
-  return new SessionMiddleware(SESSION_CONFIGS.admin);
+  const middleware = new SessionMiddleware();
+  middleware.setConfig(SESSION_CONFIGS.admin);
+  return middleware;
 }

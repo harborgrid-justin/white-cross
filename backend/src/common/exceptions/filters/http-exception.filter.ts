@@ -23,7 +23,7 @@ import {
 import { getErrorCodeCategory, getHttpStatusForErrorCode } from '../constants/error-codes';
 import { LoggerService } from '../../../shared/logging/logger.service';
 import { SentryService } from '../../../infrastructure/monitoring/sentry.service';
-import { AuditLogService } from '../../../audit/services/audit-log.service';
+import { AuditService } from '../../../audit/audit.service';
 
 /**
  * HTTP Exception Filter
@@ -46,7 +46,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
   constructor(
     @Inject(SentryService) private readonly sentryService: SentryService,
-    @Inject(AuditLogService) private readonly auditLogService: AuditLogService,
+    @Inject(AuditService) private readonly auditService: AuditService,
   ) {
     this.logger = new LoggerService();
     this.logger.setContext(HttpExceptionFilter.name);
@@ -281,7 +281,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     // Create audit log entry for security events
     try {
-      await this.auditLogService.logAction({
+      await this.auditService.logAction({
         userId: userId || null,
         action: this.getAuditAction(errorResponse.statusCode, errorResponse.errorCode),
         entityType: 'error_event',
