@@ -9,7 +9,9 @@ import {
   BelongsTo,
   HasMany,
   Index,
-  Scopes
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate
   } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 import { Op } from 'sequelize';
@@ -203,7 +205,7 @@ export interface AlertAttributes {
     {
       fields: ['status', 'severity', 'createdAt'],
       name: 'alerts_status_severity_created_idx'
-  },,
+    },
     {
       fields: ['createdAt'],
       name: 'idx_alert_created_at'

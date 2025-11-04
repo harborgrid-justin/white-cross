@@ -54,9 +54,15 @@ export class AppConfigService {
       return this.cache.get(cacheKey);
     }
 
-    const value = this.configService.get<T>(key, defaultValue);
-    this.cache.set(cacheKey, value);
+    const value = defaultValue !== undefined
+      ? this.configService.get<T>(key, defaultValue)
+      : this.configService.get<T>(key);
 
+    if (value === undefined) {
+      throw new Error(`Configuration key '${key}' not found and no default value provided`);
+    }
+
+    this.cache.set(cacheKey, value);
     return value;
   }
 

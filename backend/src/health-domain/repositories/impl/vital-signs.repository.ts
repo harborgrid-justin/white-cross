@@ -255,7 +255,9 @@ export class VitalSignsRepository
         { count: results.length }
       );
 
-      await transaction.commit();
+      if (transaction) {
+        await transaction.commit();
+      }
 
       this.logger.log(`Bulk recorded ${results.length} vital sign measurements`);
 

@@ -98,7 +98,6 @@ export class ErrorMappingInterceptor implements NestInterceptor {
           errorCode: 'VALID_003',
           details: {
             table: error.table,
-            constraint: error.constraint,
           },
         },
         HttpStatus.BAD_REQUEST,

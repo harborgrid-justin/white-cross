@@ -70,7 +70,7 @@ export interface MessageReactionCreationAttributes
       unique: true,
       fields: ['messageId', 'userId', 'emoji'],
       name: 'message_reactions_message_user_emoji_unique'
-    },,
+    },
     {
       fields: ['createdAt'],
       name: 'idx_message_reaction_created_at'

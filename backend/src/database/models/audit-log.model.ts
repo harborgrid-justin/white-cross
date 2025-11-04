@@ -118,7 +118,7 @@ export interface AuditLogAttributes {
 
     // JSONB indexes for metadata and changes (PostgreSQL specific)
     { fields: ['metadata'], using: 'gin' },
-    { fields: ['changes'], using: 'gin' },,
+    { fields: ['changes'], using: 'gin' },
     {
       fields: ['createdAt'],
       name: 'idx_audit_log_created_at'

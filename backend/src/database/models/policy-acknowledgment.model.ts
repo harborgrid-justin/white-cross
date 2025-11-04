@@ -38,7 +38,7 @@ export interface PolicyAcknowledgmentAttributes {
     {
       unique: true,
       fields: ['policyId', 'userId']
-  },,
+    },
     {
       fields: ['createdAt'],
       name: 'idx_policy_acknowledgment_created_at'

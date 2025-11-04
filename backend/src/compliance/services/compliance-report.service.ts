@@ -13,13 +13,15 @@ export class ComplianceReportService {
 
   async listReports(query: QueryComplianceReportDto) {
     const { page = 1, limit = 20, ...filters } = query;
-    const result = await this.reportRepository.findMany({
-      where: filters,
-      pagination: { page, limit }
-    });
+    const result = await this.reportRepository.findAll(filters, page, limit);
     return {
       data: result.data,
-      pagination: result.pagination,
+      pagination: {
+        page,
+        limit,
+        total: result.total,
+        totalPages: Math.ceil(result.total / limit),
+      },
     };
   }
 
@@ -37,7 +39,7 @@ export class ComplianceReportService {
       createdById,
       status: ComplianceStatus.PENDING,
       dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
-    }, context);
+    });
   }
 
   async updateReport(id: string, dto: UpdateComplianceReportDto, context: ExecutionContext) {
@@ -51,12 +53,12 @@ export class ComplianceReportService {
       updateData.reviewedAt = new Date();
     }
 
-    return this.reportRepository.update(id, updateData, context);
+    return this.reportRepository.update(id, updateData);
   }
 
   async deleteReport(id: string, context: ExecutionContext) {
     await this.getReportById(id); // Verify exists
-    return this.reportRepository.delete(id, context);
+    return this.reportRepository.delete(id);
   }
 
   async generateReport(dto: ComplianceGenerateReportDto, createdById: string, context: ExecutionContext) {

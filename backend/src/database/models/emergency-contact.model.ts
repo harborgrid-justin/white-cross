@@ -1,4 +1,4 @@
-import { Table, Column, Model, DataType, PrimaryKey, Default, CreatedAt, UpdatedAt, Index, ForeignKey, BelongsTo, Scopes } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, PrimaryKey, Default, CreatedAt, UpdatedAt, Index, ForeignKey, BelongsTo, Scopes, BeforeCreate, BeforeUpdate } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 import { Op } from 'sequelize';
 
@@ -113,7 +113,7 @@ export interface EmergencyContactCreationAttributes
     { name: 'idx_emergency_contacts_is_active', fields: ['isActive'] },
     { name: 'idx_emergency_contacts_priority', fields: ['priority'] },
     { name: 'idx_emergency_contacts_verification_status', fields: ['verificationStatus'] },
-    { name: 'idx_emergency_contacts_student_priority', fields: ['studentId', 'priority', 'isActive'] },,
+    { name: 'idx_emergency_contacts_student_priority', fields: ['studentId', 'priority', 'isActive'] },
     {
       fields: ['createdAt'],
       name: 'idx_emergency_contact_created_at'

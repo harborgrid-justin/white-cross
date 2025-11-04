@@ -39,7 +39,7 @@ export interface SyncStateAttributes {
     {
       fields: ['entityType', 'entityId'],
       unique: true
-    },,
+    },
     {
       fields: ['createdAt'],
       name: 'idx_sync_state_created_at'

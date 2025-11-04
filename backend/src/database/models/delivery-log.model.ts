@@ -95,7 +95,7 @@ export interface DeliveryLogAttributes {
     {
       fields: ['alertId', 'channel', 'recipientId'],
       name: 'delivery_logs_alert_channel_recipient_idx'
-  },,
+    },
     {
       fields: ['createdAt'],
       name: 'idx_delivery_log_created_at'

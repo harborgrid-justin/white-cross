@@ -158,7 +158,7 @@ export interface MentalHealthRecordAttributes {
     {
       fields: ['studentId', 'recordDate'],
       name: 'mental_health_records_student_date_idx'
-  },,
+    },
     {
       fields: ['createdAt'],
       name: 'idx_mental_health_record_created_at'

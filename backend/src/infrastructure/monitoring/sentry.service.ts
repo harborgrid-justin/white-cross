@@ -67,11 +67,11 @@ export class SentryService implements OnModuleInit {
         profilesSampleRate: environment === 'production' ? 0.1 : 1.0,
         integrations: [
           // Express integration for request tracking
-          Sentry.httpIntegration({ tracing: true }),
+          Sentry.httpIntegration(),
         ],
         beforeSend: (event, hint) => {
           // HIPAA Compliance: Remove any potential PHI from error reports
-          return this.sanitizeEvent(event);
+          return this.sanitizeEvent(event) as Sentry.ErrorEvent | null;
         },
         beforeBreadcrumb: (breadcrumb) => {
           // HIPAA Compliance: Sanitize breadcrumbs
@@ -320,16 +320,37 @@ export class SentryService implements OnModuleInit {
   /**
    * Sanitize query string to remove sensitive parameters
    */
-  private sanitizeQueryString(queryString: string): string {
-    const sensitiveParams = ['token', 'password', 'ssn', 'dob', 'mrn'];
-    let sanitized = queryString;
+  private sanitizeQueryString(queryString: string | Record<string, string> | [string, string][]): string {
+    if (typeof queryString === 'string') {
+      const sensitiveParams = ['token', 'password', 'ssn', 'dob', 'mrn'];
+      let sanitized = queryString;
 
-    sensitiveParams.forEach(param => {
-      const regex = new RegExp(`(${param}=)[^&]*`, 'gi');
-      sanitized = sanitized.replace(regex, `$1[REDACTED]`);
-    });
+      sensitiveParams.forEach(param => {
+        const regex = new RegExp(`(${param}=)[^&]*`, 'gi');
+        sanitized = sanitized.replace(regex, `$1[REDACTED]`);
+      });
 
-    return sanitized;
+      return sanitized;
+    } else if (Array.isArray(queryString)) {
+      // Handle array format
+      return queryString.map(([key, value]) => {
+        const sensitiveParams = ['token', 'password', 'ssn', 'dob', 'mrn'];
+        if (sensitiveParams.includes(key.toLowerCase())) {
+          return `${key}=[REDACTED]`;
+        }
+        return `${key}=${value}`;
+      }).join('&');
+    } else {
+      // Handle object format
+      const params = Object.entries(queryString);
+      return params.map(([key, value]) => {
+        const sensitiveParams = ['token', 'password', 'ssn', 'dob', 'mrn'];
+        if (sensitiveParams.includes(key.toLowerCase())) {
+          return `${key}=[REDACTED]`;
+        }
+        return `${key}=${value}`;
+      }).join('&');
+    }
   }
 
   /**

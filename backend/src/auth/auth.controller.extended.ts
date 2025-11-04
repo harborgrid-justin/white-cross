@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
-import { Request } from 'express';
+import type { Request } from 'express';
 import { MfaService } from './services/mfa.service';
 import { OAuthService } from './services/oauth.service';
 import { PasswordResetService } from './services/password-reset.service';

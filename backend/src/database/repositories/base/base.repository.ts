@@ -183,7 +183,9 @@ export abstract class BaseRepository<
       // Invalidate related caches
       await this.invalidateCaches(result);
 
-      await transaction.commit();
+      if (transaction) {
+        await transaction.commit();
+      }
 
       this.logger.log(`Created ${this.entityName}:${result.id} by user ${context.userId}`);
 
@@ -276,7 +278,9 @@ export abstract class BaseRepository<
       // Invalidate related caches
       await this.invalidateCaches(updated);
 
-      await transaction.commit();
+      if (transaction) {
+        await transaction.commit();
+      }
 
       this.logger.log(`Updated ${this.entityName}:${id} by user ${context.userId}`);
 
@@ -339,7 +343,9 @@ export abstract class BaseRepository<
       // Invalidate related caches
       await this.invalidateCaches(existing);
 
-      await transaction.commit();
+      if (transaction) {
+        await transaction.commit();
+      }
 
       this.logger.log(`Deleted ${this.entityName}:${id} by user ${context.userId}`);
     } catch (error) {
@@ -403,7 +409,9 @@ export abstract class BaseRepository<
         { count: results.length }
       );
 
-      await transaction.commit();
+      if (transaction) {
+        await transaction.commit();
+      }
 
       this.logger.log(`Bulk created ${results.length} ${this.entityName} records`);
 

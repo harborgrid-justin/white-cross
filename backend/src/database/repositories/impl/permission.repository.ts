@@ -144,7 +144,9 @@ export class PermissionRepository
         { permissionIds, roleId, count: permissionIds.length }
       );
 
-      await transaction.commit();
+      if (transaction) {
+        await transaction.commit();
+      }
 
       this.logger.log(`Bulk assigned ${permissionIds.length} permissions to role ${roleId}`);
     } catch (error) {

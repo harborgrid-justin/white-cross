@@ -60,9 +60,9 @@ export class ParseDatePipe implements PipeTransform<string | number, Date> {
   ) {}
 
   transform(value: string | number): Date {
-    // Handle optional values
+    // Handle optional values - return current date as placeholder
     if (this.options?.optional && (value === null || value === undefined || value === '')) {
-      return undefined;
+      return new Date(); // This will be filtered out by validation if needed
     }
 
     // Reject null/undefined for required dates

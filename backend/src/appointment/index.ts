@@ -15,8 +15,9 @@ export { AppointmentController } from './appointment.controller';
 // DTOs
 export * from './dto';
 
-// Entities
-export * from './entities';
+// Entities (excluding conflicting enums)
+export { Appointment } from './entities';
+export type { AvailabilitySlot } from './entities';
 
 // Validators
 export * from './validators';

@@ -111,24 +111,24 @@ export interface AcademicTranscriptCreationAttributes extends Omit<AcademicTrans
     {
       fields: ['studentId'],
       name: 'academic_transcripts_student_id_idx'
-  },
+    },
     {
       fields: ['academicYear'],
       name: 'academic_transcripts_academic_year_idx'
-  },
+    },
     {
       fields: ['studentId', 'academicYear', 'semester'],
       unique: true,
       name: 'academic_transcripts_student_year_semester_unique'
-  },
+    },
     {
       fields: ['gpa'],
       name: 'academic_transcripts_gpa_idx'
-  },
+    },
     {
       fields: ['importedBy'],
       name: 'academic_transcripts_imported_by_idx'
-  },,
+    },
     {
       fields: ['createdAt'],
       name: 'idx_academic_transcript_created_at'

@@ -80,7 +80,7 @@ export interface EmergencyBroadcastAttributes {
     },
     {
       fields: ['expiresAt']
-    },,
+    },
     {
       fields: ['createdAt'],
       name: 'idx_emergency_broadcast_created_at'

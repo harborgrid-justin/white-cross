@@ -89,7 +89,7 @@ export interface AlertPreferencesAttributes {
       fields: ['userId', 'schoolId'],
       name: 'alert_preferences_user_school_idx',
       unique: true
-  },,
+    },
     {
       fields: ['createdAt'],
       name: 'idx_alert_preferences_created_at'

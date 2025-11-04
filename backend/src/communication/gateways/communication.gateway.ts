@@ -40,7 +40,7 @@ export class CommunicationGateway
    */
   afterInit(server: Server): void {
     this.logger.log('Communication Gateway initialized');
-    this.logger.log(`Namespace: ${server.name}`);
+    // Note: server.name is not available in Socket.io v4+
   }
 
   /**

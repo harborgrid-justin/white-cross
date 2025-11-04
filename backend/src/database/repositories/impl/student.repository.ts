@@ -194,7 +194,9 @@ export class StudentRepository
         { studentIds, nurseId, count: studentIds.length }
       );
 
-      await transaction.commit();
+      if (transaction) {
+        await transaction.commit();
+      }
 
       this.logger.log(`Bulk assigned ${studentIds.length} students to nurse ${nurseId}`);
     } catch (error) {

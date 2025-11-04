@@ -24,7 +24,7 @@ export class PrescriptionController {
   @Get()
   @ApiOperation({ summary: 'Query prescriptions' })
   @ApiResponse({ status: 200, description: 'Prescriptions retrieved successfully' })
-  async findAll(@Query() filters: PrescriptionFiltersDto): Promise<Prescription[]> {
+  async findAll(@Query() filters: PrescriptionFiltersDto): Promise<{ prescriptions: Prescription[]; total: number }> {
     return this.prescriptionService.findAll(filters);
   }
 

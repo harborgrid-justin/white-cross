@@ -90,7 +90,7 @@ export interface CacheEntryCreationAttributes extends Omit<CacheEntryAttributes,
       name: 'idx_tags',
       fields: ['tags'],
       using: 'gin', // For PostgreSQL JSON indexing
-    },,
+    },
     {
       fields: ['createdAt'],
       name: 'idx_cache_entry_created_at'

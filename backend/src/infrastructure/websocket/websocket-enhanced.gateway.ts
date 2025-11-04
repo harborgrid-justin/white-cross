@@ -92,7 +92,7 @@ export class EnhancedWebSocketGateway
     server.use(createWsAuthMiddleware(this.jwtService, this.configService));
 
     // Log server configuration
-    this.logger.log(`Server listening on namespace: ${server.name}`);
+    this.logger.log('WebSocket server initialized');
     this.logger.log(`Transports: ${JSON.stringify(server._opts?.transports)}`);
 
     // Set up any additional server-level configuration
@@ -193,6 +193,9 @@ export class EnhancedWebSocketGateway
     @MessageBody() dto: SendMessageDto,
   ): Promise<{ success: boolean; messageId: string }> {
     const user = client.user;
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
 
     // Rate limiting
     const allowed = await this.rateLimiter.checkLimit(user.userId, 'message:send');
@@ -228,6 +231,9 @@ export class EnhancedWebSocketGateway
     @MessageBody() dto: EditMessageDto,
   ): Promise<{ success: boolean }> {
     const user = client.user;
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
 
     // Rate limiting
     const allowed = await this.rateLimiter.checkLimit(user.userId, 'message:edit');
@@ -258,6 +264,9 @@ export class EnhancedWebSocketGateway
     @MessageBody() dto: DeleteMessageDto,
   ): Promise<{ success: boolean }> {
     const user = client.user;
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
 
     // Rate limiting
     const allowed = await this.rateLimiter.checkLimit(user.userId, 'message:delete');
@@ -287,6 +296,9 @@ export class EnhancedWebSocketGateway
     @MessageBody() dto: JoinConversationDto,
   ): Promise<{ success: boolean; conversationId: string }> {
     const user = client.user;
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
 
     // TODO: Validate user has access to conversation
 
@@ -321,6 +333,9 @@ export class EnhancedWebSocketGateway
     @MessageBody() dto: TypingIndicatorInputDto,
   ): Promise<void> {
     const user = client.user;
+    if (!user) {
+      return; // Silently ignore unauthenticated users
+    }
 
     // Rate limiting (silent failure for typing)
     const allowed = await this.rateLimiter.checkLimit(user.userId, 'message:typing');

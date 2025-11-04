@@ -169,7 +169,9 @@ export class SessionRepository
         { userId }
       );
 
-      await transaction.commit();
+      if (transaction) {
+        await transaction.commit();
+      }
 
       await this.cacheManager.deletePattern(`white-cross:session:user:${userId}:*`);
 

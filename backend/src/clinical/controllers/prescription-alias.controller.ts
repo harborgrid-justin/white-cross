@@ -1,6 +1,6 @@
 import { Controller, All, Req, Res } from '@nestjs/common';
 import { ApiExcludeController } from '@nestjs/swagger';
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 
 /**
  * Prescription Alias Controller

@@ -297,7 +297,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
         ipAddress,
         userAgent,
         success: false,
-        errorMessage: errorResponse.message,
+        errorMessage: Array.isArray(errorResponse.message) ? errorResponse.message.join(', ') : errorResponse.message,
       });
 
       this.logger.logWithMetadata('info', 'Audit log entry created for security event', {

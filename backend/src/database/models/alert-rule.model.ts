@@ -155,7 +155,7 @@ export interface AlertRuleAttributes {
     {
       fields: ['category', 'isActive', 'priority'],
       name: 'alert_rules_active_category_priority_idx'
-  },,
+    },
     {
       fields: ['createdAt'],
       name: 'idx_alert_rule_created_at'

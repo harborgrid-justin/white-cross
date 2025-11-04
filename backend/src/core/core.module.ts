@@ -13,7 +13,7 @@
  * - Ensures single instance of critical services
  */
 
-import { Module, Global, Optional, SkipSelf } from '@nestjs/common';
+import { Module, Global, Optional } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE, APP_FILTER } from '@nestjs/core';
 
 // Guards
@@ -186,7 +186,7 @@ export class CoreModule {
    * @param parentModule - Parent module if imported elsewhere
    * @throws Error if CoreModule is imported in any module other than AppModule
    */
-  constructor(@Optional() @SkipSelf() parentModule?: CoreModule) {
+  constructor(@Optional() parentModule?: CoreModule) {
     if (parentModule) {
       throw new Error(
         'CoreModule is already loaded. Import it ONLY in AppModule.',

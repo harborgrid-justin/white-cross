@@ -76,7 +76,7 @@ export interface ComplianceChecklistItemAttributes {
     },
     {
       fields: ['reportId']
-    },,
+    },
     {
       fields: ['createdAt'],
       name: 'idx_compliance_checklist_item_created_at'

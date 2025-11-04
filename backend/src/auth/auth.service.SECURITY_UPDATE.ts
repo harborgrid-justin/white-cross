@@ -22,15 +22,17 @@ import * as bcrypt from 'bcrypt';
 export class AuthService {
   // SECURITY UPDATE: Increased from 10 to 12
   // Configurable via environment variable for flexibility
-  private readonly saltRounds = parseInt(
-    this.configService.get<string>('BCRYPT_SALT_ROUNDS', '12'),
-    10,
-  );
+  private readonly saltRounds: number;
 
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {
+    this.saltRounds = parseInt(
+      this.configService.get<string>('BCRYPT_SALT_ROUNDS', '12'),
+      10,
+    );
+
     // Validate salt rounds on startup
     if (this.saltRounds < 10 || this.saltRounds > 14) {
       throw new Error(

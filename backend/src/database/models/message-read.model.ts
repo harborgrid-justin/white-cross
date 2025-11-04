@@ -68,7 +68,7 @@ export interface MessageReadCreationAttributes
       unique: true,
       fields: ['messageId', 'userId'],
       name: 'message_reads_message_user_unique'
-    },,
+    },
     {
       fields: ['createdAt'],
       name: 'idx_message_read_created_at'
