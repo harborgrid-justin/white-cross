@@ -1,0 +1,138 @@
+================================================================================
+DOCUMENT VALIDATION MODULE ARCHITECTURE
+================================================================================
+
+BEFORE REFACTORING:
+===================
+┌─────────────────────────────────────────────────────────────┐
+│                                                               │
+│         documentValidation.ts (835 lines)                    │
+│         - All types, constants, functions mixed together     │
+│                                                               │
+└─────────────────────────────────────────────────────────────┘
+
+
+AFTER REFACTORING:
+==================
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                     documentValidation.ts (116 lines)                        │
+│                         BARREL EXPORT MODULE                                 │
+│              Re-exports all functions, types, and constants                  │
+│              Maintains 100% backward compatibility                           │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                    │
+        ┌───────────────────────────┼───────────────────────────┐
+        │                           │                           │
+        ▼                           ▼                           ▼
+┌──────────────────┐    ┌──────────────────┐      ┌──────────────────┐
+│  types (46)      │    │  fileTypes (176) │      │  security (300)  │
+│  ────────────    │    │  ───────────────  │      │  ───────────────  │
+│  - Types         │◄───│  - File size     │      │  - Title         │
+│  - Interfaces    │    │  - File type     │      │  - Description   │
+│  - Constants     │    │  - Extension     │      │  - Category      │
+│                  │    │  - File name     │      │  - Access level  │
+│  10 exports      │    │  - Combined      │      │  - Tags          │
+│                  │    │                  │      │  - Signature     │
+│                  │    │  5 exports       │      │  - Sharing       │
+│                  │    │                  │      │                  │
+│                  │    │                  │      │  7 exports       │
+└──────────────────┘    └──────────────────┘      └──────────────────┘
+        ▲                                                  ▲
+        │                                                  │
+        │              ┌──────────────────┐               │
+        │              │  lifecycle (161) │               │
+        │              │  ───────────────  │               │
+        └──────────────│  - Status        │───────────────┘
+                       │  - Transitions   │
+                       │  - Retention     │
+                       │  - Defaults      │
+                       │                  │
+                       │  5 exports       │
+                       └──────────────────┘
+                                │
+                    ┌───────────┴───────────┐
+                    │                       │
+                    ▼                       ▼
+        ┌──────────────────┐    ┌──────────────────┐
+        │ operations (101) │    │   schema (163)   │
+        │ ───────────────  │    │   ────────────   │
+        │ - Can edit       │    │ - Create doc     │
+        │ - Can sign       │    │ - Update doc     │
+        │ - Can delete     │    │ (Orchestrator)   │
+        │                  │    │                  │
+        │ 3 exports        │    │ 2 exports        │
+        └──────────────────┘    └──────────────────┘
+                                         ▲
+                                         │
+                               ┌──────────────────┐
+                               │  helpers (37)    │
+                               │  ──────────────  │
+                               │  - Format errors │
+                               │  - Get first err │
+                               │                  │
+                               │  2 exports       │
+                               └──────────────────┘
+
+EXTERNAL DEPENDENCIES:
+======================
+┌────────────────────────────────────────┐
+│   ../types/domain/documents            │
+│   ────────────────────────────────     │
+│   - DocumentCategory (enum)            │
+│   - DocumentStatus (enum)              │
+│   - DocumentAccessLevel (enum)         │
+│   - ALLOWED_FILE_TYPES (const)         │
+│   - MAX_FILE_SIZE (const)              │
+│   - DEFAULT_RETENTION_YEARS (const)    │
+└────────────────────────────────────────┘
+
+
+MODULE RELATIONSHIPS:
+=====================
+
+1. BASE LAYER (no dependencies on other validation modules):
+   - documentValidation.types
+
+2. DOMAIN LAYER (depends on types + external types):
+   - documentValidation.fileTypes
+   - documentValidation.security
+   - documentValidation.lifecycle
+   - documentValidation.operations
+   - documentValidation.helpers
+
+3. ORCHESTRATION LAYER (combines domain modules):
+   - documentValidation.schema
+
+4. EXPORT LAYER (re-exports all):
+   - documentValidation.ts
+
+
+KEY CHARACTERISTICS:
+====================
+✅ No circular dependencies
+✅ Clear separation of concerns
+✅ Each module single responsibility
+✅ Minimal coupling between modules
+✅ High cohesion within modules
+✅ Tree-shaking friendly
+✅ Easy to test in isolation
+
+
+LINE COUNT SUMMARY:
+===================
+types       : 46  lines (1.6K) ████
+helpers     : 37  lines (1.4K) ███
+operations  : 101 lines (3.0K) ████████
+barrel      : 116 lines (4.1K) █████████
+lifecycle   : 161 lines (4.6K) ████████████
+schema      : 163 lines (4.7K) ████████████
+fileTypes   : 176 lines (5.0K) █████████████
+security    : 300 lines (7.6K) ████████████████████████
+            ─────────────────────────────────────────
+TOTAL       : 1,100 lines (32K) 
+
+All modules ≤ 300 lines ✅
+Average: ~150 lines per module ✅
+
+================================================================================

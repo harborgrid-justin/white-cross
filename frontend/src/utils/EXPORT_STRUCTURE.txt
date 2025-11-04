@@ -1,0 +1,277 @@
+================================================================================
+UTILS BARREL EXPORT STRUCTURE
+================================================================================
+File: /workspaces/white-cross/frontend/src/utils/index.ts
+Total Exports: 200+ functions, types, and constants
+Total Lines: 698
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          UTILS INDEX.TS                                     │
+│                     (Barrel Export - 698 lines)                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+        ┌───────────────────────────┼───────────────────────────┐
+        │                           │                           │
+        ▼                           ▼                           ▼
+┌───────────────┐         ┌──────────────────┐       ┌──────────────────┐
+│  VALIDATION   │         │  API ADAPTERS    │       │  PERFORMANCE     │
+│   UTILITIES   │         │                  │       │   UTILITIES      │
+└───────────────┘         └──────────────────┘       └──────────────────┘
+│                         │                          │
+├─ Student Validation    ├─ unwrapData              ├─ useDebounce
+│  ├─ Demographics       ├─ extractData             ├─ useThrottle
+│  ├─ Health            ├─ adaptResponse            ├─ useIntersectionObserver
+│  └─ Enrollment        ├─ isSuccessResponse        ├─ performanceMark
+│                        └─ handleApiError           ├─ memoize
+├─ User Validation                                   ├─ useWebWorker
+│                                                    └─ useVirtualScroll
+├─ Document Validation
+│  ├─ File Upload
+│  ├─ Security
+│  ├─ Lifecycle
+│  └─ Operations
+
+        │                           │                           │
+        ▼                           ▼                           ▼
+┌───────────────┐         ┌──────────────────┐       ┌──────────────────┐
+│  OPTIMISTIC   │         │   NAVIGATION     │       │  ERROR HANDLING  │
+│    UPDATES    │         │   UTILITIES      │       │                  │
+└───────────────┘         └──────────────────┘       └──────────────────┘
+│                         │                          │
+├─ OptimisticUpdateMgr   ├─ hasRequiredRole         ├─ processError
+├─ optimisticCreate      ├─ filterNavigationItems   ├─ isRetryableError
+├─ optimisticUpdate      ├─ isNavigationItemActive  ├─ withErrorHandling
+├─ generateTempId        └─ canAccessNavigationItem ├─ getUserFriendlyMessage
+├─ beginTransaction                                  └─ createErrorHandler
+└─ rollbackTransaction
+
+        │                           │                           │
+        ▼                           ▼                           ▼
+┌───────────────┐         ┌──────────────────┐       ┌──────────────────┐
+│   SECURITY    │         │   MEDICATION     │       │  HEALTH RECORDS  │
+│   UTILITIES   │         │   UTILITIES      │       │                  │
+└───────────────┘         └──────────────────┘       └──────────────────┘
+│                         │                          │
+├─ Sanitization          ├─ Format Functions        ├─ formatHealthRecordDate
+│  ├─ sanitizeText       ├─ Status Tracking         ├─ getAllergySeverityColor
+│  ├─ sanitizeHtml       ├─ Inventory Mgmt          ├─ getConditionSeverityColor
+│  ├─ sanitizeEmail      ├─ Operations              ├─ sortVaccinations
+│  └─ sanitizeUrl        └─ Validation              ├─ calculateBMI
+│                                                    └─ filterVaccinations
+├─ Token Security
+│  └─ TokenSecurityMgr
+
+        │                           │                           │
+        ▼                           ▼                           ▼
+┌───────────────┐         ┌──────────────────┐       ┌──────────────────┐
+│    LODASH     │         │   DATE & TIME    │       │   FORMATTERS     │
+│   UTILITIES   │         │   UTILITIES      │       │                  │
+└───────────────┘         └──────────────────┘       └──────────────────┘
+│                         │                          │
+├─ arrayUtils            ├─ formatDate              ├─ formatCurrency
+├─ objectUtils           ├─ addDays/Months/Years    ├─ formatName
+├─ stringUtils           ├─ isToday/Yesterday       ├─ formatPhone
+├─ functionUtils         ├─ calculateAge            ├─ formatPercentage
+├─ dateUtils             ├─ getRelativeTime         └─ formatFileSize
+├─ validationUtils       ├─ daysBetween
+├─ mathUtils             └─ formatDuration
+├─ reactUtils
+└─ healthcareUtils
+
+        │                           │                           │
+        ▼                           ▼                           ▼
+┌───────────────┐         ┌──────────────────┐       ┌──────────────────┐
+│  GENERATORS   │         │   UI UTILITIES   │       │    METADATA      │
+└───────────────┘         └──────────────────┘       └──────────────────┘
+│                         │                          │
+├─ generateId            ├─ cn (class names)        ├─ baseMetadata
+├─ generateUUID          ├─ showSuccessToast        ├─ generateMetadata
+├─ createSlug            └─ showErrorToast          ├─ generateStructuredData
+├─ generatePassword                                  ├─ structuredDataTemplates
+├─ generateRandomColor                               └─ healthcareMetadata
+├─ generateInitials
+└─ generateReferenceNumber
+
+        │
+        ▼
+┌───────────────┐
+│ DEBUG/LOGGING │
+└───────────────┘
+│
+└─ createLogger
+
+
+================================================================================
+EXPORT CATEGORIES SUMMARY
+================================================================================
+
+1. VALIDATION (50+ exports)
+   - Student validation (demographics, health, enrollment)
+   - User validation
+   - Document validation (files, security, lifecycle, operations)
+
+2. API ADAPTERS (15+ exports)
+   - Core unwrapping (unwrapData, extractData)
+   - Type guards (isSuccessResponse, isErrorResponse)
+   - Transformations (adaptResponse, domain adapters)
+
+3. PERFORMANCE (25+ exports)
+   - React hooks (debounce, throttle, intersection)
+   - Monitoring (performance marks, tracking)
+   - Optimization (web workers, memoization)
+   - Observers (resize, media query, virtual scroll)
+
+4. OPTIMISTIC UPDATES (30+ exports)
+   - Manager class and singleton
+   - CRUD helpers (create, update, delete)
+   - Bulk operations
+   - Transactions and rollback
+
+5. NAVIGATION (15+ exports)
+   - Permission checking
+   - Route filtering
+   - Active detection
+   - Helper functions
+
+6. ERROR HANDLING (15+ exports)
+   - Error processing and classification
+   - Retry logic
+   - Recovery utilities
+   - User-friendly messaging
+
+7. SECURITY (15+ exports)
+   - Input sanitization
+   - Token management
+   - XSS prevention
+
+8. MEDICATION (20+ exports)
+   - Formatting and display
+   - Status tracking
+   - Inventory management
+   - Validation
+
+9. HEALTH RECORDS (15+ exports)
+   - Date formatting
+   - Severity colors
+   - BMI calculation
+   - Vaccination tracking
+
+10. LODASH WRAPPERS (9 utility objects)
+    - Arrays, objects, strings
+    - Functions, dates, validation
+    - Math, React, healthcare
+
+11. DATE/TIME (20+ exports)
+    - Formatting and parsing
+    - Date arithmetic
+    - Relative time
+    - Validation
+
+12. FORMATTERS (6 exports)
+    - Currency, names, phones
+    - Percentages, file sizes
+
+13. GENERATORS (11 exports)
+    - IDs, UUIDs, slugs
+    - Random values
+    - Passwords, codes
+
+14. UI UTILITIES (3 exports)
+    - Class name merger
+    - Toast notifications
+
+15. METADATA (7 exports)
+    - SEO metadata
+    - Structured data
+    - Healthcare-specific
+
+16. DEBUG/LOGGING (1 export)
+    - Namespaced logger
+
+17. LEGACY EXPORTS
+    - Backward compatibility
+
+
+================================================================================
+USAGE PATTERNS
+================================================================================
+
+PATTERN 1: Import specific utilities
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+import { cn, showSuccessToast, formatDate } from '@/utils';
+
+PATTERN 2: Import category utilities
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+import {
+  validateStudentCreation,
+  validateEmail,
+  unwrapData,
+  useDebounce
+} from '@/utils';
+
+PATTERN 3: Import with types
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+import {
+  optimisticCreate,
+  type OptimisticCreateResult
+} from '@/utils';
+
+PATTERN 4: Default import (common utilities)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+import utils from '@/utils';
+utils.cn('class1', 'class2');
+utils.showSuccessToast('Success!');
+
+
+================================================================================
+BENEFITS
+================================================================================
+
+✓ Single import point for all utilities
+✓ Tree-shaking support via named exports
+✓ Comprehensive TypeScript types
+✓ Organized by functionality
+✓ Backward compatibility maintained
+✓ Well-documented with JSDoc
+✓ 200+ utilities accessible from one file
+✓ Clear categorization and structure
+
+
+================================================================================
+FILES INCLUDED
+================================================================================
+
+Main Modules (with submodules):
+  • validation/studentValidation (5 files)
+  • validation/userValidation (1 file)
+  • adapters/apiAdapters (5 files)
+  • performance-utilities (5 files)
+  • optimisticUpdates (2 files)
+  • optimisticHelpers (6 files)
+  • navigationUtils (5 files)
+  • errorHandling (4 files)
+  • documentValidation (8 files)
+  • medications (5 files)
+  • lodashUtils (6 files)
+
+Standalone Utilities:
+  • cn.ts
+  • toast.ts
+  • tokenSecurity.ts
+  • sanitization.ts
+  • performance.ts
+  • metadata.ts
+  • healthRecords.ts
+  • debug.ts
+  • dateUtils.ts
+  • formatters.ts
+  • generators.ts
+  • studentValidation.ts (legacy)
+
+Total: 73 TypeScript files analyzed and exported
+
+
+================================================================================
+END OF STRUCTURE DIAGRAM
+================================================================================

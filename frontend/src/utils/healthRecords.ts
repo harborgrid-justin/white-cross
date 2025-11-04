@@ -149,6 +149,15 @@ export const generateId = (): string => {
   return Math.random().toString(36).substr(2, 9)
 }
 
+/**
+ * Validates that a string value is required (not empty)
+ *
+ * NOTE: This is a simplified version for health records.
+ * For more comprehensive validation (supporting numbers, booleans, etc.),
+ * use validateRequired from '@/utils/validation/userValidation'
+ *
+ * @see {@link @/utils/validation/userValidation#validateRequired} for comprehensive validation
+ */
 export const validateRequired = (value: string | undefined | null): boolean => {
   return Boolean(value?.trim())
 }

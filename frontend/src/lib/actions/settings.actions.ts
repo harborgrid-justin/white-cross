@@ -44,6 +44,16 @@ export type {
 } from './settings.types';
 
 // ==========================================
+// ADDITIONAL TYPE EXPORTS FROM SCHEMAS
+// ==========================================
+
+// Re-export all schema types that are used by the settings modules
+export type {
+  UpdateNotificationPreferencesInput,
+  UpdatePrivacySettingsInput,
+} from '@/schemas/settings.schemas';
+
+// ==========================================
 // PROFILE MANAGEMENT ACTIONS
 // ==========================================
 

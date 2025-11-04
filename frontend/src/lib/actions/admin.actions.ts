@@ -43,6 +43,7 @@ export type {
   School,
   CreateSchoolData,
   SystemSettings,
+  ApiResponse,
 } from './admin.types';
 
 // ==========================================

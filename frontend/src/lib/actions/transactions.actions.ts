@@ -18,7 +18,7 @@
 
 'use server';
 
-// Re-export types
+// Re-export all types from types module
 export type {
   Transaction,
   TransactionWithDetails,

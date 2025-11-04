@@ -24,8 +24,13 @@ export * from './reminders.types';
 // Cache functions
 export * from './reminders.cache';
 
-// CRUD actions
+// CRUD actions (aggregated)
 export * from './reminders.crud';
+
+// Individual CRUD operations (for direct imports)
+export * from './reminders.create';
+export * from './reminders.update';
+export * from './reminders.status';
 
 // Form handlers
 export * from './reminders.forms';
