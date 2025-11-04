@@ -14,8 +14,6 @@
  * - Comprehensive error handling and validation
  */
 
-'use server';
-
 // ==========================================
 // RE-EXPORTS FROM SPLIT MODULES
 // ==========================================

@@ -5,7 +5,7 @@
  * policies, reports, and training compliance.
  */
 
-import {
+import type {
   AuditActionTypeEnum,
   AuditSeverityEnum,
   ResourceTypeEnum,
@@ -15,6 +15,10 @@ import {
 // Types
 // ============================================================================
 
+/**
+ * Action Result Type - Matches ApiResponse pattern from @/lib/api
+ * but named ActionResult to distinguish server actions from API calls
+ */
 export interface ActionResult<T> {
   success: boolean;
   data?: T;

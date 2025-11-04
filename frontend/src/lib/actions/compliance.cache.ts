@@ -4,7 +4,7 @@
  * Configuration and cache functions for compliance management.
  */
 
-import { AuditLog } from '@/schemas/compliance/compliance.schemas';
+import type { AuditLog } from '@/schemas/compliance/compliance.schemas';
 
 // ============================================================================
 // Configuration
@@ -76,4 +76,12 @@ export async function getCurrentUserContext(): Promise<{ userId: string; ipAddre
     userName: 'Current User',
     userRole: 'admin'
   };
+}
+
+/**
+ * Get current user ID for audit logging
+ */
+export async function getCurrentUserId(): Promise<string> {
+  const context = await getCurrentUserContext();
+  return context.userId;
 }

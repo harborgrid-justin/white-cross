@@ -7,8 +7,8 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createReminderAction } from './reminders.crud';
-import { CreateReminderData, ActionResult, Reminder } from './reminders.types';
+import { createReminderAction } from './reminders.create';
+import type { CreateReminderData, ActionResult, Reminder } from './reminders.types';
 
 /**
  * Create reminder from form data
