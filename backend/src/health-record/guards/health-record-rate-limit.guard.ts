@@ -394,7 +394,7 @@ export class HealthRecordRateLimitGuard implements CanActivate {
     // Record current usage as percentage of limit
     const usagePercentage = (currentCount / limit) * 100;
     
-    this.metricsService.recordCacheMetrics('SET', 'SEARCH'); // Using cache metrics for now
+    this.metricsService.recordCacheMetrics('SET', 'SEARCH', 0); // Using cache metrics for now
     
     // Log warning if approaching limit
     if (usagePercentage > 80) {

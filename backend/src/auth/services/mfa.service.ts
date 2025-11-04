@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException, BadRequestException, Logger } from '
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/sequelize';
 import * as speakeasy from 'speakeasy';
-import * as QRCode from 'qrcode';
+import QRCode from 'qrcode';
 import * as crypto from 'crypto';
 import { User } from '../../database/models/user.model';
 import { MfaSetupResponseDto, MfaStatusDto } from '../dto/mfa.dto';

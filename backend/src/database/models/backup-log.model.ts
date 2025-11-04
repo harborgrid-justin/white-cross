@@ -13,11 +13,10 @@ import {
   Default,
   Index,
   AllowNull,
-} ,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 
 /**
@@ -26,7 +25,7 @@ import { Op } from 'sequelize';
 export enum BackupType {
   AUTOMATIC = 'AUTOMATIC',
   MANUAL = 'MANUAL',
-  SCHEDULED = 'SCHEDULED',
+  SCHEDULED = 'SCHEDULED'
 }
 
 /**
@@ -35,7 +34,7 @@ export enum BackupType {
 export enum BackupStatus {
   IN_PROGRESS = 'IN_PROGRESS',
   COMPLETED = 'COMPLETED',
-  FAILED = 'FAILED',
+  FAILED = 'FAILED'
 }
 
 /**
@@ -91,7 +90,7 @@ export interface CreateBackupLogAttributes {
   indexes: [
     { fields: ['status'] },
     { fields: ['startedAt'] },
-    { fields: ['type'] },,
+    { fields: ['type'] },
     {
       fields: ['createdAt'],
       name: 'idx_backup_log_created_at'
@@ -100,7 +99,7 @@ export interface CreateBackupLogAttributes {
       fields: ['updatedAt'],
       name: 'idx_backup_log_updated_at'
     }
-  ],
+  ]
 })
 export class BackupLog extends Model<BackupLogAttributes, CreateBackupLogAttributes> {
   @PrimaryKey
@@ -115,7 +114,7 @@ export class BackupLog extends Model<BackupLogAttributes, CreateBackupLogAttribu
       isIn: [Object.values(BackupType)]
     },
     allowNull: false,
-    comment: 'Type of backup operation',
+    comment: 'Type of backup operation'
   })
   type: BackupType;
 
@@ -126,7 +125,7 @@ export class BackupLog extends Model<BackupLogAttributes, CreateBackupLogAttribu
       isIn: [Object.values(BackupStatus)]
     },
     allowNull: false,
-    comment: 'Current status of the backup',
+    comment: 'Current status of the backup'
   })
   @Index
   status: BackupStatus;
@@ -135,7 +134,7 @@ export class BackupLog extends Model<BackupLogAttributes, CreateBackupLogAttribu
   @Column({
     type: DataType.STRING(255),
     allowNull: true,
-    comment: 'Name of the backup file',
+    comment: 'Name of the backup file'
   })
   fileName?: string;
 
@@ -143,7 +142,7 @@ export class BackupLog extends Model<BackupLogAttributes, CreateBackupLogAttribu
   @Column({
     type: DataType.BIGINT,
     allowNull: true,
-    comment: 'Size of the backup file in bytes',
+    comment: 'Size of the backup file in bytes'
   })
   fileSize?: number;
 
@@ -151,7 +150,7 @@ export class BackupLog extends Model<BackupLogAttributes, CreateBackupLogAttribu
   @Column({
     type: DataType.TEXT,
     allowNull: true,
-    comment: 'Location/path where the backup is stored',
+    comment: 'Location/path where the backup is stored'
   })
   location?: string;
 
@@ -159,7 +158,7 @@ export class BackupLog extends Model<BackupLogAttributes, CreateBackupLogAttribu
   @Column({
     type: DataType.UUID,
     allowNull: true,
-    comment: 'ID of the user who triggered the backup',
+    comment: 'ID of the user who triggered the backup'
   })
   triggeredBy?: string;
 
@@ -167,7 +166,7 @@ export class BackupLog extends Model<BackupLogAttributes, CreateBackupLogAttribu
   @Column({
     type: DataType.TEXT,
     allowNull: true,
-    comment: 'Error message if the backup failed',
+    comment: 'Error message if the backup failed'
   })
   error?: string;
 
@@ -175,7 +174,7 @@ export class BackupLog extends Model<BackupLogAttributes, CreateBackupLogAttribu
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    comment: 'Timestamp when the backup started',
+    comment: 'Timestamp when the backup started'
   })
   @Index
   startedAt: Date;
@@ -184,7 +183,7 @@ export class BackupLog extends Model<BackupLogAttributes, CreateBackupLogAttribu
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    comment: 'Timestamp when the backup completed',
+    comment: 'Timestamp when the backup completed'
   })
   completedAt?: Date;
 
@@ -192,7 +191,7 @@ export class BackupLog extends Model<BackupLogAttributes, CreateBackupLogAttribu
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    comment: 'Timestamp when the backup log was created',
+    comment: 'Timestamp when the backup log was created'
   })
   declare createdAt?: Date;
 
@@ -200,7 +199,7 @@ export class BackupLog extends Model<BackupLogAttributes, CreateBackupLogAttribu
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    comment: 'Timestamp when the backup log was last updated',
+    comment: 'Timestamp when the backup log was last updated'
   })
   declare updatedAt?: Date;
 

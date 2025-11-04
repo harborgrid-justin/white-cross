@@ -142,7 +142,6 @@ export class ChronicConditionService {
     await condition.update({
       isActive: false,
       status: ConditionStatus.RESOLVED,
-      updatedBy: user.id,
     });
     
     this.logger.log(`PHI Deleted: Chronic condition ${id} deactivated by user ${user.id}`);
@@ -183,7 +182,6 @@ export class ChronicConditionService {
     await condition.update({
       carePlan: plan,
       lastReviewDate: new Date(),
-      updatedBy: user.id,
     });
     
     this.logger.log(`PHI Updated: Care plan updated for chronic condition ${conditionId}`);

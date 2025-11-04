@@ -6,12 +6,11 @@ import {
   PrimaryKey,
   Default,
   AllowNull,
-  HasMany
-  } ,
+  HasMany,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -111,7 +110,7 @@ export interface PhiDisclosureAttributes {
   },
     {
       fields: ['followUpDate']
-  },,
+  },
     {
       fields: ['createdAt'],
       name: 'idx_phi_disclosure_created_at'

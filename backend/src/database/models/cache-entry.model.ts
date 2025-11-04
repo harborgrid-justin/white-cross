@@ -18,11 +18,10 @@ import {
   UpdatedAt,
   PrimaryKey,
   AutoIncrement,
-} ,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 
 export interface CacheEntryAttributes {
@@ -69,23 +68,23 @@ export interface CacheEntryCreationAttributes extends Omit<CacheEntryAttributes,
     {
       name: 'idx_cache_key',
       fields: ['cacheKey'],
-      unique: true,
+      unique: true
     },
     {
       name: 'idx_expires_at',
-      fields: ['expiresAt'],
+      fields: ['expiresAt']
     },
     {
       name: 'idx_compliance_level',
-      fields: ['complianceLevel'],
+      fields: ['complianceLevel']
     },
     {
       name: 'idx_query_hash',
-      fields: ['queryHash'],
+      fields: ['queryHash']
     },
     {
       name: 'idx_last_accessed',
-      fields: ['lastAccessed'],
+      fields: ['lastAccessed']
     },
     {
       name: 'idx_tags',
@@ -100,7 +99,7 @@ export interface CacheEntryCreationAttributes extends Omit<CacheEntryAttributes,
       fields: ['updatedAt'],
       name: 'idx_cache_entry_updated_at'
     }
-  ],
+  ]
 })
 export class CacheEntry extends Model<CacheEntryAttributes, CacheEntryCreationAttributes> {
   @PrimaryKey
@@ -113,14 +112,14 @@ export class CacheEntry extends Model<CacheEntryAttributes, CacheEntryCreationAt
     type: DataType.STRING(500),
     allowNull: false,
     unique: true,
-    comment: 'Unique cache key identifier',
+    comment: 'Unique cache key identifier'
   })
   cacheKey!: string;
 
   @Column({
     type: DataType.TEXT,
     allowNull: false,
-    comment: 'JSON serialized cached data - encrypted at rest for PHI',
+    comment: 'JSON serialized cached data - encrypted at rest for PHI'
   })
   data!: string;
 
@@ -129,7 +128,7 @@ export class CacheEntry extends Model<CacheEntryAttributes, CacheEntryCreationAt
     type: DataType.ENUM('PUBLIC', 'INTERNAL', 'CONFIDENTIAL', 'PHI', 'SENSITIVE_PHI'),
     allowNull: false,
     defaultValue: 'INTERNAL',
-    comment: 'HIPAA compliance level for audit and security',
+    comment: 'HIPAA compliance level for audit and security'
   })
   complianceLevel!: 'PUBLIC' | 'INTERNAL' | 'CONFIDENTIAL' | 'PHI' | 'SENSITIVE_PHI';
 
@@ -137,7 +136,7 @@ export class CacheEntry extends Model<CacheEntryAttributes, CacheEntryCreationAt
     type: DataType.JSONB,
     allowNull: false,
     defaultValue: '[]',
-    comment: 'Cache invalidation tags for bulk operations',
+    comment: 'Cache invalidation tags for bulk operations'
   })
   tags!: string;
 
@@ -145,7 +144,7 @@ export class CacheEntry extends Model<CacheEntryAttributes, CacheEntryCreationAt
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    comment: 'Cache entry expiration timestamp for TTL enforcement',
+    comment: 'Cache entry expiration timestamp for TTL enforcement'
   })
   expiresAt!: Date;
 
@@ -153,7 +152,7 @@ export class CacheEntry extends Model<CacheEntryAttributes, CacheEntryCreationAt
     type: DataType.INTEGER,
     allowNull: false,
     defaultValue: 0,
-    comment: 'Number of times this cache entry has been accessed',
+    comment: 'Number of times this cache entry has been accessed'
   })
   accessCount!: number;
 
@@ -162,7 +161,7 @@ export class CacheEntry extends Model<CacheEntryAttributes, CacheEntryCreationAt
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    comment: 'Last access timestamp for LRU eviction',
+    comment: 'Last access timestamp for LRU eviction'
   })
   lastAccessed!: Date;
 
@@ -170,7 +169,7 @@ export class CacheEntry extends Model<CacheEntryAttributes, CacheEntryCreationAt
     type: DataType.INTEGER,
     allowNull: false,
     defaultValue: 0,
-    comment: 'Size of cached data in bytes for memory management',
+    comment: 'Size of cached data in bytes for memory management'
   })
   dataSize!: number;
 
@@ -178,21 +177,21 @@ export class CacheEntry extends Model<CacheEntryAttributes, CacheEntryCreationAt
   @Column({
     type: DataType.STRING(64),
     allowNull: true,
-    comment: 'Hash of original query for deduplication and optimization',
+    comment: 'Hash of original query for deduplication and optimization'
   })
   queryHash!: string;
 
   @CreatedAt
   @Column({
     type: DataType.DATE,
-    comment: 'Cache entry creation timestamp',
+    comment: 'Cache entry creation timestamp'
   })
   declare createdAt: Date;
 
   @UpdatedAt
   @Column({
     type: DataType.DATE,
-    comment: 'Cache entry last update timestamp',
+    comment: 'Cache entry last update timestamp'
   })
   declare updatedAt: Date;
 

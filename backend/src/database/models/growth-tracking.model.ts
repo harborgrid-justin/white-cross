@@ -5,11 +5,10 @@ import {
   DataType,
   PrimaryKey,
   Default,
-} ,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -46,11 +45,11 @@ export interface GrowthTrackingAttributes {
   paranoid: true,
   indexes: [
     {
-      fields: ['studentId'],
+      fields: ['studentId']
     },
     {
-      fields: ['measurementDate'],
-    },,
+      fields: ['measurementDate']
+    },
     {
       fields: ['createdAt'],
       name: 'idx_growth_tracking_created_at'
@@ -59,7 +58,7 @@ export interface GrowthTrackingAttributes {
       fields: ['updatedAt'],
       name: 'idx_growth_tracking_updated_at'
     }
-  ],
+  ]
 })
 export class GrowthTracking extends Model<GrowthTrackingAttributes> implements GrowthTrackingAttributes {
   @PrimaryKey
@@ -69,13 +68,13 @@ export class GrowthTracking extends Model<GrowthTrackingAttributes> implements G
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: false
   })
   studentId: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
+    allowNull: false
   })
   measurementDate: Date;
 
@@ -110,7 +109,7 @@ export class GrowthTracking extends Model<GrowthTrackingAttributes> implements G
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: false
   })
   measuredBy: string;
 

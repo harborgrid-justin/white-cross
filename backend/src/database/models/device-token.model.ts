@@ -6,12 +6,13 @@ import {
   PrimaryKey,
   Default,
   AllowNull,
-  Index
-  } ,
+  Index,
   Scopes,
   BeforeCreate,
-  BeforeUpdate
-  } from 'sequelize-typescript';
+  BeforeUpdate,
+  UpdatedAt,
+  CreatedAt
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -87,7 +88,7 @@ export interface DeviceTokenCreationAttributes {
   },
     {
       fields: ['isActive', 'isValid']
-  },,
+  },
     {
       fields: ['createdAt'],
       name: 'idx_device_token_created_at'

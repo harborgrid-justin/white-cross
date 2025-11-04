@@ -1,4 +1,4 @@
-import { Table, Column, Model, DataType, PrimaryKey, Default, CreatedAt, UpdatedAt, DeletedAt, Index, Scopes } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, PrimaryKey, Default, CreatedAt, UpdatedAt, DeletedAt, Index, Scopes, BeforeCreate, BeforeUpdate } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { ContactType } from '../../contact/enums/contact-type.enum';
 
@@ -57,7 +57,6 @@ import { ContactType } from '../../contact/enums/contact-type.enum';
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt',
   paranoid: true, // Enable soft deletes
-,
   indexes: [
     {
       fields: ['createdAt'],

@@ -177,7 +177,7 @@ export interface IncidentReportAttributes {
     {
       fields: ['updatedAt'],
       name: 'idx_incident_reports_updated_at'
-  },
+  }
   ]
   })
 export class IncidentReport extends Model<IncidentReportAttributes> implements IncidentReportAttributes {

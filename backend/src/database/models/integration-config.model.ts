@@ -13,11 +13,10 @@ import {
   Default,
   Index,
   HasMany,
-} ,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 
 export enum IntegrationType {
@@ -28,7 +27,7 @@ export enum IntegrationType {
   INSURANCE = 'INSURANCE',
   PARENT_PORTAL = 'PARENT_PORTAL',
   HEALTH_APP = 'HEALTH_APP',
-  GOVERNMENT_REPORTING = 'GOVERNMENT_REPORTING',
+  GOVERNMENT_REPORTING = 'GOVERNMENT_REPORTING'
 }
 
 export enum IntegrationStatus {
@@ -36,7 +35,7 @@ export enum IntegrationStatus {
   ACTIVE = 'ACTIVE',
   TESTING = 'TESTING',
   SYNCING = 'SYNCING',
-  ERROR = 'ERROR',
+  ERROR = 'ERROR'
 }
 
 /**
@@ -60,7 +59,7 @@ export enum IntegrationStatus {
     { fields: ['status'] },
     { fields: ['isActive'] },
     { fields: ['lastSyncAt'] },
-    { fields: ['createdAt'] },,
+    { fields: ['createdAt'] },
     {
       fields: ['createdAt'],
       name: 'idx_integration_config_created_at'
@@ -69,7 +68,7 @@ export enum IntegrationStatus {
       fields: ['updatedAt'],
       name: 'idx_integration_config_updated_at'
     }
-  ],
+  ]
 })
 export class IntegrationConfig extends Model {
   @PrimaryKey
@@ -80,7 +79,7 @@ export class IntegrationConfig extends Model {
   @Column({
     type: DataType.STRING(100),
     allowNull: false,
-    comment: 'Human-readable name for this integration',
+    comment: 'Human-readable name for this integration'
   })
   name: string;
 
@@ -90,7 +89,7 @@ export class IntegrationConfig extends Model {
       isIn: [Object.values(IntegrationType)]
     },
     allowNull: false,
-    comment: 'Type of external system being integrated',
+    comment: 'Type of external system being integrated'
   })
   @Index
   type: IntegrationType;
@@ -102,7 +101,7 @@ export class IntegrationConfig extends Model {
     },
     allowNull: false,
     defaultValue: IntegrationStatus.INACTIVE,
-    comment: 'Current status of the integration',
+    comment: 'Current status of the integration'
   })
   @Index
   status: IntegrationStatus;
@@ -110,49 +109,49 @@ export class IntegrationConfig extends Model {
   @Column({
     type: DataType.TEXT,
     allowNull: true,
-    comment: 'API endpoint URL for the external system',
+    comment: 'API endpoint URL for the external system'
   })
   endpoint: string | null;
 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
-    comment: 'API key for authentication',
+    comment: 'API key for authentication'
   })
   apiKey: string | null;
 
   @Column({
     type: DataType.STRING(100),
     allowNull: true,
-    comment: 'Username for basic authentication',
+    comment: 'Username for basic authentication'
   })
   username: string | null;
 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
-    comment: 'Password for basic authentication',
+    comment: 'Password for basic authentication'
   })
   password: string | null;
 
   @Column({
     type: DataType.JSONB,
     allowNull: true,
-    comment: 'Additional configuration settings',
+    comment: 'Additional configuration settings'
   })
   settings: Record<string, any> | null;
 
   @Column({
     type: DataType.JSONB,
     allowNull: true,
-    comment: 'Authentication configuration details',
+    comment: 'Authentication configuration details'
   })
   authentication: Record<string, any> | null;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: true,
-    comment: 'Sync frequency in minutes',
+    comment: 'Sync frequency in minutes'
   })
   syncFrequency: number | null;
 
@@ -160,7 +159,7 @@ export class IntegrationConfig extends Model {
     type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: true,
-    comment: 'Whether this integration is active',
+    comment: 'Whether this integration is active'
   })
   @Index
   isActive: boolean;
@@ -168,7 +167,7 @@ export class IntegrationConfig extends Model {
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    comment: 'When the last sync operation occurred',
+    comment: 'When the last sync operation occurred'
   })
   @Index
   lastSyncAt: Date | null;
@@ -176,7 +175,7 @@ export class IntegrationConfig extends Model {
   @Column({
     type: DataType.STRING(20),
     allowNull: true,
-    comment: 'Status of the last sync operation',
+    comment: 'Status of the last sync operation'
   })
   lastSyncStatus: string | null;
 
@@ -184,7 +183,7 @@ export class IntegrationConfig extends Model {
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    comment: 'When this integration was configured',
+    comment: 'When this integration was configured'
   })
   declare createdAt: Date;
 
@@ -192,14 +191,14 @@ export class IntegrationConfig extends Model {
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    comment: 'When this integration was last updated',
+    comment: 'When this integration was last updated'
   })
   declare updatedAt: Date;
 
   // Relationships
   @HasMany(() => require('./integration-log.model').IntegrationLog, {
     foreignKey: 'integrationId',
-    as: 'logs',
+    as: 'logs'
   })
   declare logs: any[];
 

@@ -6,12 +6,11 @@ import {
   PrimaryKey,
   Default,
   AllowNull,
-  Index
-  } ,
+  Index,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 import { SyncEntityType, ConflictResolution } from './sync-queue-item.model';
@@ -63,7 +62,7 @@ export interface SyncConflictAttributes {
   },
     {
       fields: ['entityType']
-  },,
+  },
     {
       fields: ['createdAt'],
       name: 'idx_sync_conflict_created_at'

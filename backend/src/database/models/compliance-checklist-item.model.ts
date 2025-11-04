@@ -8,11 +8,10 @@ import {
   AllowNull,
   ForeignKey,
   BelongsTo,
-} ,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -64,19 +63,19 @@ export interface ComplianceChecklistItemAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['category'],
+      fields: ['category']
     },
     {
-      fields: ['status'],
+      fields: ['status']
     },
     {
-      fields: ['dueDate'],
+      fields: ['dueDate']
     },
     {
-      fields: ['completedAt'],
+      fields: ['completedAt']
     },
     {
-      fields: ['reportId'],
+      fields: ['reportId']
     },,
     {
       fields: ['createdAt'],
@@ -86,7 +85,7 @@ export interface ComplianceChecklistItemAttributes {
       fields: ['updatedAt'],
       name: 'idx_compliance_checklist_item_updated_at'
     }
-  ],
+  ]
 })
 export class ComplianceChecklistItem extends Model<ComplianceChecklistItemAttributes> implements ComplianceChecklistItemAttributes {
   @PrimaryKey
@@ -96,7 +95,7 @@ export class ComplianceChecklistItem extends Model<ComplianceChecklistItemAttrib
 
   @Column({
     type: DataType.STRING(500),
-    allowNull: false,
+    allowNull: false
   })
   requirement: string;
 
@@ -109,7 +108,7 @@ export class ComplianceChecklistItem extends Model<ComplianceChecklistItemAttrib
     validate: {
       isIn: [Object.values(ComplianceCategory)]
     },
-    allowNull: false,
+    allowNull: false
   })
   category: ComplianceCategory;
 
@@ -119,7 +118,7 @@ export class ComplianceChecklistItem extends Model<ComplianceChecklistItemAttrib
       isIn: [Object.values(ChecklistItemStatus)]
     },
     allowNull: false,
-    defaultValue: ChecklistItemStatus.PENDING,
+    defaultValue: ChecklistItemStatus.PENDING
   })
   status: ChecklistItemStatus;
 

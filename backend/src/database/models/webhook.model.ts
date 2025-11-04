@@ -5,11 +5,10 @@ import {
   DataType,
   PrimaryKey,
   Default,
-} ,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -37,7 +36,6 @@ export interface WebhookAttributes {
   tableName: 'webhooks',
   timestamps: true,
   underscored: false,
-,
   indexes: [
     {
       fields: ['createdAt'],
@@ -56,13 +54,13 @@ export class Webhook extends Model<WebhookAttributes> implements WebhookAttribut
 
   @Column({
     type: DataType.STRING(500),
-    allowNull: false,
+    allowNull: false
   })
   url: string;
 
   @Column({
     type: DataType.JSON,
-    allowNull: false,
+    allowNull: false
   })
   events: string[];
 
@@ -78,7 +76,7 @@ export class Webhook extends Model<WebhookAttributes> implements WebhookAttribut
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: false
   })
   createdBy: string;
 

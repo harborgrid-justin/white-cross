@@ -142,8 +142,8 @@ export interface HealthRecordAttributes {
     {
       fields: ['updatedAt'],
       name: 'idx_health_records_updated_at'
-    },
-  ],
+    }
+  ]
 })
 export class HealthRecord extends Model<HealthRecordAttributes> implements HealthRecordAttributes {
   @PrimaryKey
@@ -197,25 +197,25 @@ export class HealthRecord extends Model<HealthRecordAttributes> implements Healt
       'RADIOLOGY',
       'OTHER'
     ),
-    allowNull: false,
+    allowNull: false
   })
   recordType: string;
 
   @Column({
     type: DataType.STRING(200),
-    allowNull: false,
+    allowNull: false
   })
   title: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false,
+    allowNull: false
   })
   description: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
+    allowNull: false
   })
   recordDate: Date;
 
@@ -278,7 +278,7 @@ export class HealthRecord extends Model<HealthRecordAttributes> implements Healt
   @Default([])
   @Column({
     type: DataType.JSON,
-    allowNull: false,
+    allowNull: false
   })
   attachments: string[];
 

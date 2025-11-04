@@ -8,10 +8,11 @@ import {
   BeforeCreate,
   ForeignKey,
   BelongsTo,
-} ,
   Scopes,
-  BeforeUpdate
-  } from 'sequelize-typescript';
+  BeforeUpdate,
+  UpdatedAt,
+  CreatedAt
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -19,7 +20,7 @@ import {
   EmergencyPriority,
   BroadcastAudience,
   BroadcastStatus,
-  CommunicationChannel,
+  CommunicationChannel
 } from '../../emergency-broadcast/emergency-broadcast.enums';
 
 export interface EmergencyBroadcastAttributes {
@@ -63,22 +64,22 @@ export interface EmergencyBroadcastAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['type'],
+      fields: ['type']
     },
     {
-      fields: ['priority'],
+      fields: ['priority']
     },
     {
-      fields: ['status'],
+      fields: ['status']
     },
     {
-      fields: ['schoolId'],
+      fields: ['schoolId']
     },
     {
-      fields: ['sentAt'],
+      fields: ['sentAt']
     },
     {
-      fields: ['expiresAt'],
+      fields: ['expiresAt']
     },,
     {
       fields: ['createdAt'],
@@ -88,7 +89,7 @@ export interface EmergencyBroadcastAttributes {
       fields: ['updatedAt'],
       name: 'idx_emergency_broadcast_updated_at'
     }
-  ],
+  ]
 })
 export class EmergencyBroadcast extends Model<EmergencyBroadcastAttributes> implements EmergencyBroadcastAttributes {
   @PrimaryKey
@@ -101,7 +102,7 @@ export class EmergencyBroadcast extends Model<EmergencyBroadcastAttributes> impl
     validate: {
       isIn: [Object.values(EmergencyType)]
     },
-    allowNull: false,
+    allowNull: false
   })
   type: EmergencyType;
 
@@ -110,26 +111,26 @@ export class EmergencyBroadcast extends Model<EmergencyBroadcastAttributes> impl
     validate: {
       isIn: [Object.values(EmergencyPriority)]
     },
-    allowNull: false,
+    allowNull: false
   })
   priority: EmergencyPriority;
 
   @Column({
     type: DataType.STRING(200),
-    allowNull: false,
+    allowNull: false
   })
   title: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false,
+    allowNull: false
   })
   message: string;
 
   @Column({
     type: DataType.JSON,
     allowNull: false,
-    defaultValue: [],
+    defaultValue: []
   })
   audience: BroadcastAudience[];
 
@@ -148,13 +149,13 @@ export class EmergencyBroadcast extends Model<EmergencyBroadcastAttributes> impl
   @Column({
     type: DataType.JSON,
     allowNull: false,
-    defaultValue: [],
+    defaultValue: []
   })
   channels: CommunicationChannel[];
 
   @Column({
     type: DataType.BOOLEAN,
-    defaultValue: false,
+    defaultValue: false
   })
   requiresAcknowledgment?: boolean;
 
@@ -163,13 +164,13 @@ export class EmergencyBroadcast extends Model<EmergencyBroadcastAttributes> impl
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: false
   })
   sentBy: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
+    allowNull: false
   })
   sentAt: Date;
 
@@ -179,37 +180,37 @@ export class EmergencyBroadcast extends Model<EmergencyBroadcastAttributes> impl
       isIn: [Object.values(BroadcastStatus)]
     },
     allowNull: false,
-    defaultValue: BroadcastStatus.DRAFT,
+    defaultValue: BroadcastStatus.DRAFT
   })
   status: BroadcastStatus;
 
   @Column({
     type: DataType.INTEGER,
-    defaultValue: 0,
+    defaultValue: 0
   })
   totalRecipients?: number;
 
   @Column({
     type: DataType.INTEGER,
-    defaultValue: 0,
+    defaultValue: 0
   })
   deliveredCount?: number;
 
   @Column({
     type: DataType.INTEGER,
-    defaultValue: 0,
+    defaultValue: 0
   })
   failedCount?: number;
 
   @Column({
     type: DataType.INTEGER,
-    defaultValue: 0,
+    defaultValue: 0
   })
   acknowledgedCount?: number;
 
   @Column({
     type: DataType.BOOLEAN,
-    defaultValue: false,
+    defaultValue: false
   })
   followUpRequired?: boolean;
 

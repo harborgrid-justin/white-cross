@@ -202,7 +202,8 @@ export class AuthController {
     @CurrentUser('id') userId: string,
     @Body(new ValidationPipe({ transform: true, whitelist: true })) changePasswordDto: AuthChangePasswordDto,
   ): Promise<{ success: boolean; message: string }> {
-    return this.authService.changePassword(userId, changePasswordDto);
+    const result = await this.authService.changePassword(userId, changePasswordDto);
+    return { success: true, ...result };
   }
 
   @UseGuards(JwtAuthGuard)

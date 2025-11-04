@@ -5,11 +5,10 @@ import {
   DataType,
   PrimaryKey,
   Default,
-} ,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -40,14 +39,14 @@ export interface ThreatDetectionAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['threatType'],
+      fields: ['threatType']
     },
     {
-      fields: ['severity'],
+      fields: ['severity']
     },
     {
-      fields: ['isResolved'],
-    },,
+      fields: ['isResolved']
+    },
     {
       fields: ['createdAt'],
       name: 'idx_threat_detection_created_at'
@@ -56,7 +55,7 @@ export interface ThreatDetectionAttributes {
       fields: ['updatedAt'],
       name: 'idx_threat_detection_updated_at'
     }
-  ],
+  ]
 })
 export class ThreatDetection extends Model<ThreatDetectionAttributes> implements ThreatDetectionAttributes {
   @PrimaryKey
@@ -66,25 +65,25 @@ export class ThreatDetection extends Model<ThreatDetectionAttributes> implements
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: false,
+    allowNull: false
   })
   threatType: string;
 
   @Column({
     type: DataType.STRING(50),
-    allowNull: false,
+    allowNull: false
   })
   severity: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false,
+    allowNull: false
   })
   source: string;
 
   @Column({
     type: DataType.JSON,
-    allowNull: false,
+    allowNull: false
   })
   details: any;
 

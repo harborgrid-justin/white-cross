@@ -6,12 +6,11 @@ import {
   PrimaryKey,
   Default,
   AllowNull,
-  Index
-  } ,
+  Index,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 import { ProtocolStatus } from '../../clinical/enums/protocol-status.enum';
@@ -66,17 +65,17 @@ export interface ClinicalProtocolAttributes {
   indexes: [
     {
       fields: ['name']
-  },
+    },
     {
       fields: ['status']
-  },
+    },
     {
       fields: ['category']
-  },
+    },
     {
       fields: ['code'],
       unique: true
-  },,
+    },
     {
       fields: ['createdAt'],
       name: 'idx_clinical_protocol_created_at'

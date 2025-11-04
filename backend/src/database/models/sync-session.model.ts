@@ -13,11 +13,10 @@ import {
   Default,
   Index,
   HasMany,
-} ,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 
 export enum SyncStatus {
@@ -25,13 +24,13 @@ export enum SyncStatus {
   IN_PROGRESS = 'IN_PROGRESS',
   COMPLETED = 'COMPLETED',
   PARTIAL = 'PARTIAL',
-  FAILED = 'FAILED',
+  FAILED = 'FAILED'
 }
 
 export enum SyncDirection {
   PULL = 'PULL',
   PUSH = 'PUSH',
-  BIDIRECTIONAL = 'BIDIRECTIONAL',
+  BIDIRECTIONAL = 'BIDIRECTIONAL'
 }
 
 /**
@@ -56,7 +55,7 @@ export enum SyncDirection {
     { fields: ['startedAt'] },
     { fields: ['completedAt'] },
     { fields: ['triggeredBy'] },
-    { fields: ['createdAt'] },,
+    { fields: ['createdAt'] },
     {
       fields: ['createdAt'],
       name: 'idx_sync_session_created_at'
@@ -65,7 +64,7 @@ export enum SyncDirection {
       fields: ['updatedAt'],
       name: 'idx_sync_session_updated_at'
     }
-  ],
+  ]
 })
 export class SyncSession extends Model {
   @PrimaryKey
@@ -76,14 +75,14 @@ export class SyncSession extends Model {
   @Column({
     type: DataType.UUID,
     allowNull: false,
-    comment: 'Reference to the sync configuration used',
+    comment: 'Reference to the sync configuration used'
   })
   configId: string;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    comment: 'When the sync session started',
+    comment: 'When the sync session started'
   })
   @Index
   startedAt: Date;
@@ -91,7 +90,7 @@ export class SyncSession extends Model {
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    comment: 'When the sync session completed',
+    comment: 'When the sync session completed'
   })
   @Index
   completedAt: Date | null;
@@ -103,7 +102,7 @@ export class SyncSession extends Model {
     },
     allowNull: false,
     defaultValue: SyncStatus.PENDING,
-    comment: 'Current status of the sync session',
+    comment: 'Current status of the sync session'
   })
   @Index
   status: SyncStatus;
@@ -114,7 +113,7 @@ export class SyncSession extends Model {
       isIn: [Object.values(SyncDirection)]
     },
     allowNull: false,
-    comment: 'Direction of the sync operation',
+    comment: 'Direction of the sync operation'
   })
   @Index
   direction: SyncDirection;
@@ -122,7 +121,7 @@ export class SyncSession extends Model {
   @Column({
     type: DataType.JSONB,
     allowNull: false,
-    comment: 'Statistics about the sync operation',
+    comment: 'Statistics about the sync operation'
   })
   stats: {
     studentsProcessed: number;
@@ -137,7 +136,7 @@ export class SyncSession extends Model {
   @Column({
     type: DataType.ARRAY(DataType.STRING(255)),
     allowNull: false,
-    comment: 'Types of entities being synchronized',
+    comment: 'Types of entities being synchronized'
   })
   entities: string[];
 
@@ -145,7 +144,7 @@ export class SyncSession extends Model {
     type: DataType.INTEGER,
     allowNull: false,
     defaultValue: 0,
-    comment: 'Total number of records processed',
+    comment: 'Total number of records processed'
   })
   recordsProcessed: number;
 
@@ -153,7 +152,7 @@ export class SyncSession extends Model {
     type: DataType.INTEGER,
     allowNull: false,
     defaultValue: 0,
-    comment: 'Number of records processed successfully',
+    comment: 'Number of records processed successfully'
   })
   recordsSuccessful: number;
 
@@ -161,14 +160,14 @@ export class SyncSession extends Model {
     type: DataType.INTEGER,
     allowNull: false,
     defaultValue: 0,
-    comment: 'Number of records that failed processing',
+    comment: 'Number of records that failed processing'
   })
   recordsFailed: number;
 
   @Column({
     type: DataType.STRING(50),
     allowNull: false,
-    comment: 'User or system that triggered the sync',
+    comment: 'User or system that triggered the sync'
   })
   @Index
   triggeredBy: string;
@@ -176,7 +175,7 @@ export class SyncSession extends Model {
   @Column({
     type: DataType.TEXT,
     allowNull: true,
-    comment: 'Completion message or error details',
+    comment: 'Completion message or error details'
   })
   completionMessage: string | null;
 
@@ -184,7 +183,7 @@ export class SyncSession extends Model {
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    comment: 'When the sync session was created',
+    comment: 'When the sync session was created'
   })
   @Index
   declare createdAt: Date;
@@ -192,14 +191,14 @@ export class SyncSession extends Model {
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    comment: 'When the sync session was last updated',
+    comment: 'When the sync session was last updated'
   })
   declare updatedAt: Date | null;
 
   // Relationships
   @HasMany(() => require('./sis-sync-conflict.model').SISSyncConflict, {
     foreignKey: 'sessionId',
-    as: 'conflicts',
+    as: 'conflicts'
   })
   declare conflicts: any[];
 

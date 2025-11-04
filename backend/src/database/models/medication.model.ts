@@ -119,8 +119,8 @@ export interface MedicationAttributes {
     {
       fields: ['updatedAt'],
       name: 'idx_medications_updated_at'
-    },
-  ],
+    }
+  ]
 })
 export class Medication extends Model<MedicationAttributes> implements MedicationAttributes {
   @PrimaryKey
@@ -130,7 +130,7 @@ export class Medication extends Model<MedicationAttributes> implements Medicatio
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false,
+    allowNull: false
   })
   name: string;
 
@@ -139,13 +139,13 @@ export class Medication extends Model<MedicationAttributes> implements Medicatio
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false,
+    allowNull: false
   })
   dosageForm: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false,
+    allowNull: false
   })
   strength: string;
 
@@ -169,7 +169,7 @@ export class Medication extends Model<MedicationAttributes> implements Medicatio
   isControlled: boolean;
 
   @Column({
-    type: DataType.ENUM('I', 'II', 'III', 'IV', 'V'),
+    type: DataType.ENUM('I', 'II', 'III', 'IV', 'V')
   })
   deaSchedule?: 'I' | 'II' | 'III' | 'IV' | 'V';
 

@@ -8,12 +8,11 @@ import {
   AllowNull,
   ForeignKey,
   BelongsTo,
-  HasMany
-  } ,
+  HasMany,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -82,7 +81,7 @@ export interface ComplianceReportAttributes {
   },
     {
       fields: ['createdById']
-  },,
+  },
     {
       fields: ['createdAt'],
       name: 'idx_compliance_report_created_at'

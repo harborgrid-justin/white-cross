@@ -94,8 +94,8 @@ export interface CreateDistrictAttributes {
     { fields: ['isActive'] },
     { fields: ['state', 'city'], name: 'idx_districts_state_city' },
     { fields: ['createdAt'], name: 'idx_districts_created_at' },
-    { fields: ['updatedAt'], name: 'idx_districts_updated_at' },
-  ],
+    { fields: ['updatedAt'], name: 'idx_districts_updated_at' }
+  ]
 })
 export class District extends Model<DistrictAttributes, CreateDistrictAttributes> {
   @PrimaryKey
@@ -107,7 +107,7 @@ export class District extends Model<DistrictAttributes, CreateDistrictAttributes
   @Column({
     type: DataType.STRING(200),
     allowNull: false,
-    comment: 'Name of the district',
+    comment: 'Name of the district'
   })
   name: string;
 
@@ -124,7 +124,7 @@ export class District extends Model<DistrictAttributes, CreateDistrictAttributes
   @Column({
     type: DataType.TEXT,
     allowNull: true,
-    comment: 'Physical address of the district',
+    comment: 'Physical address of the district'
   })
   address?: string;
 
@@ -132,7 +132,7 @@ export class District extends Model<DistrictAttributes, CreateDistrictAttributes
   @Column({
     type: DataType.STRING(100),
     allowNull: true,
-    comment: 'City where the district is located',
+    comment: 'City where the district is located'
   })
   city?: string;
 
@@ -140,7 +140,7 @@ export class District extends Model<DistrictAttributes, CreateDistrictAttributes
   @Column({
     type: DataType.STRING(2),
     allowNull: true,
-    comment: 'State code (2-letter abbreviation)',
+    comment: 'State code (2-letter abbreviation)'
   })
   state?: string;
 
@@ -148,7 +148,7 @@ export class District extends Model<DistrictAttributes, CreateDistrictAttributes
   @Column({
     type: DataType.STRING(10),
     allowNull: true,
-    comment: 'ZIP code of the district',
+    comment: 'ZIP code of the district'
   })
   zipCode?: string;
 
@@ -156,7 +156,7 @@ export class District extends Model<DistrictAttributes, CreateDistrictAttributes
   @Column({
     type: DataType.STRING(20),
     allowNull: true,
-    comment: 'Primary phone number for the district',
+    comment: 'Primary phone number for the district'
   })
   phone?: string;
 
@@ -164,7 +164,7 @@ export class District extends Model<DistrictAttributes, CreateDistrictAttributes
   @Column({
     type: DataType.STRING(255),
     allowNull: true,
-    comment: 'Primary email address for the district',
+    comment: 'Primary email address for the district'
   })
   email?: string;
 
@@ -173,7 +173,7 @@ export class District extends Model<DistrictAttributes, CreateDistrictAttributes
     type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: true,
-    comment: 'Whether the district is active',
+    comment: 'Whether the district is active'
   })
   isActive?: boolean;
 
@@ -181,7 +181,7 @@ export class District extends Model<DistrictAttributes, CreateDistrictAttributes
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    comment: 'Timestamp when the district was created',
+    comment: 'Timestamp when the district was created'
   })
   declare createdAt?: Date;
 
@@ -189,7 +189,7 @@ export class District extends Model<DistrictAttributes, CreateDistrictAttributes
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    comment: 'Timestamp when the district was last updated',
+    comment: 'Timestamp when the district was last updated'
   })
   declare updatedAt?: Date;
 
@@ -208,13 +208,13 @@ export class District extends Model<DistrictAttributes, CreateDistrictAttributes
   // Relationships
   @HasMany(() => require('./school.model').School, {
     foreignKey: 'districtId',
-    as: 'schools',
+    as: 'schools'
   })
   declare schools?: any[];
 
   @HasMany(() => require('./license.model').License, {
     foreignKey: 'districtId',
-    as: 'licenses',
+    as: 'licenses'
   })
   declare licenses?: any[];
 }

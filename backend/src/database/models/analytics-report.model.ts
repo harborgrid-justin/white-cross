@@ -9,10 +9,9 @@ import {
   BeforeCreate,
   CreatedAt,
   UpdatedAt,
-} ,
   Scopes,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -26,7 +25,7 @@ export enum ReportType {
   NURSE_WORKLOAD = 'NURSE_WORKLOAD',
   EQUIPMENT_MAINTENANCE = 'EQUIPMENT_MAINTENANCE',
   BUDGET_ANALYSIS = 'BUDGET_ANALYSIS',
-  CUSTOM = 'CUSTOM',
+  CUSTOM = 'CUSTOM'
 }
 
 export enum ReportFormat {
@@ -34,7 +33,7 @@ export enum ReportFormat {
   CSV = 'CSV',
   EXCEL = 'EXCEL',
   JSON = 'JSON',
-  HTML = 'HTML',
+  HTML = 'HTML'
 }
 
 export enum ReportStatus {
@@ -42,14 +41,14 @@ export enum ReportStatus {
   GENERATING = 'GENERATING',
   COMPLETED = 'COMPLETED',
   FAILED = 'FAILED',
-  CANCELLED = 'CANCELLED',
+  CANCELLED = 'CANCELLED'
 }
 
 export enum ComplianceStatus {
   COMPLIANT = 'COMPLIANT',
   NON_COMPLIANT = 'NON_COMPLIANT',
   PARTIALLY_COMPLIANT = 'PARTIALLY_COMPLIANT',
-  UNDER_REVIEW = 'UNDER_REVIEW',
+  UNDER_REVIEW = 'UNDER_REVIEW'
 }
 
 export interface AnalyticsReportAttributes {
@@ -99,11 +98,11 @@ export interface AnalyticsReportAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['schoolId', 'reportType'],
+      fields: ['schoolId', 'reportType']
     },
     {
-      fields: ['generatedDate'],
-    },,
+      fields: ['generatedDate']
+    },
     {
       fields: ['createdAt'],
       name: 'idx_analytics_report_created_at'
@@ -112,7 +111,7 @@ export interface AnalyticsReportAttributes {
       fields: ['updatedAt'],
       name: 'idx_analytics_report_updated_at'
     }
-  ],
+  ]
 })
 export class AnalyticsReport extends Model<AnalyticsReportAttributes> implements AnalyticsReportAttributes {
   @PrimaryKey
@@ -125,13 +124,13 @@ export class AnalyticsReport extends Model<AnalyticsReportAttributes> implements
     validate: {
       isIn: [Object.values(ReportType)]
     },
-    allowNull: false,
+    allowNull: false
   })
   reportType: ReportType;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false,
+    allowNull: false
   })
   title: string;
 
@@ -140,19 +139,19 @@ export class AnalyticsReport extends Model<AnalyticsReportAttributes> implements
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
+    allowNull: false
   })
   periodStart: Date;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
+    allowNull: false
   })
   periodEnd: Date;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
+    allowNull: false
   })
   generatedDate: Date;
 
@@ -164,7 +163,7 @@ export class AnalyticsReport extends Model<AnalyticsReportAttributes> implements
 
   @Column({
     type: DataType.JSONB,
-    allowNull: false,
+    allowNull: false
   })
   summary: {
     totalRecords: number;
@@ -177,21 +176,21 @@ export class AnalyticsReport extends Model<AnalyticsReportAttributes> implements
   @Column({
     type: DataType.JSONB,
     allowNull: false,
-    defaultValue: [],
+    defaultValue: []
   })
   sections: any[];
 
   @Column({
     type: DataType.JSONB,
     allowNull: false,
-    defaultValue: [],
+    defaultValue: []
   })
   findings: any[];
 
   @Column({
     type: DataType.JSONB,
     allowNull: false,
-    defaultValue: [],
+    defaultValue: []
   })
   recommendations: string[];
 
@@ -201,7 +200,7 @@ export class AnalyticsReport extends Model<AnalyticsReportAttributes> implements
     validate: {
       isIn: [Object.values(ReportStatus)]
     },
-    allowNull: false,
+    allowNull: false
   })
   status: ReportStatus;
 
@@ -210,7 +209,7 @@ export class AnalyticsReport extends Model<AnalyticsReportAttributes> implements
     validate: {
       isIn: [Object.values(ReportFormat)]
     },
-    allowNull: false,
+    allowNull: false
   })
   format: ReportFormat;
 
@@ -222,7 +221,7 @@ export class AnalyticsReport extends Model<AnalyticsReportAttributes> implements
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: false
   })
   generatedBy: string;
 

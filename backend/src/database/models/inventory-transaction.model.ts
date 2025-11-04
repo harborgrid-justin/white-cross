@@ -8,10 +8,9 @@ import {
   ForeignKey,
   BelongsTo,
   BeforeCreate,
-} ,
   Scopes,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -21,7 +20,7 @@ export enum InventoryTransactionType {
   ADJUSTMENT = 'ADJUSTMENT',
   TRANSFER = 'TRANSFER',
   RETURN = 'RETURN',
-  DISPOSAL = 'DISPOSAL',
+  DISPOSAL = 'DISPOSAL'
 }
 
 export interface InventoryTransactionAttributes {
@@ -51,17 +50,17 @@ export interface InventoryTransactionAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['inventoryItemId'],
+      fields: ['inventoryItemId']
     },
     {
-      fields: ['type'],
+      fields: ['type']
     },
     {
-      fields: ['performedById'],
+      fields: ['performedById']
     },
     {
-      fields: ['createdAt'],
-    },,
+      fields: ['createdAt']
+    },
     {
       fields: ['createdAt'],
       name: 'idx_inventory_transaction_created_at'
@@ -70,7 +69,7 @@ export interface InventoryTransactionAttributes {
       fields: ['updatedAt'],
       name: 'idx_inventory_transaction_updated_at'
     }
-  ],
+  ]
 })
 export class InventoryTransaction extends Model<InventoryTransactionAttributes> implements InventoryTransactionAttributes {
   @PrimaryKey
@@ -81,7 +80,7 @@ export class InventoryTransaction extends Model<InventoryTransactionAttributes> 
   @ForeignKey(() => require('./inventory-item.model').InventoryItem)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: false
   })
   inventoryItemId: string;
 
@@ -90,18 +89,18 @@ export class InventoryTransaction extends Model<InventoryTransactionAttributes> 
     validate: {
       isIn: [Object.values(InventoryTransactionType)]
     },
-    allowNull: false,
+    allowNull: false
   })
   type: InventoryTransactionType;
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
+    allowNull: false
   })
   quantity: number;
 
   @Column({
-    type: DataType.DECIMAL(10, 2),
+    type: DataType.DECIMAL(10, 2)
   })
   unitCost?: number;
 
@@ -116,7 +115,7 @@ export class InventoryTransaction extends Model<InventoryTransactionAttributes> 
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: false
   })
   performedById: string;
 

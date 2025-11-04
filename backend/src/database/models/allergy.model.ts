@@ -124,7 +124,7 @@ export interface AllergyAttributes {
   },
     {
       fields: ['epiPenExpiration']
-  },,
+  },
     {
       fields: ['createdAt'],
       name: 'idx_allergy_created_at'

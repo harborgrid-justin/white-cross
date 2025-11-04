@@ -5,12 +5,11 @@ import {
   DataType,
   PrimaryKey,
   Default,
-  AllowNull
-  } ,
+  AllowNull,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -57,7 +56,7 @@ export interface ConsentFormAttributes {
   },
     {
       fields: ['expiresAt']
-  },,
+  },
     {
       fields: ['createdAt'],
       name: 'idx_consent_form_created_at'

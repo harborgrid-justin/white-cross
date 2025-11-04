@@ -7,9 +7,8 @@ import {
   Default,
   BeforeCreate,
   BeforeUpdate,
-} ,
   Scopes
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -50,26 +49,26 @@ export interface MedicalHistoryAttributes {
   paranoid: true,
   indexes: [
     {
-      fields: ['studentId'],
+      fields: ['studentId']
     },
     {
-      fields: ['recordType'],
+      fields: ['recordType']
     },
     {
-      fields: ['isActive'],
+      fields: ['isActive']
     },
     {
-      fields: ['isFamilyHistory'],
+      fields: ['isFamilyHistory']
     },
     {
-      fields: ['isCritical'],
+      fields: ['isCritical']
     },
     {
-      fields: ['requiresMonitoring'],
+      fields: ['requiresMonitoring']
     },
     {
-      fields: ['diagnosisDate'],
-    },,
+      fields: ['diagnosisDate']
+    },
     {
       fields: ['createdAt'],
       name: 'idx_medical_history_created_at'
@@ -78,7 +77,7 @@ export interface MedicalHistoryAttributes {
       fields: ['updatedAt'],
       name: 'idx_medical_history_updated_at'
     }
-  ],
+  ]
 })
 export class MedicalHistory extends Model<MedicalHistoryAttributes> implements MedicalHistoryAttributes {
   @PrimaryKey
@@ -88,19 +87,19 @@ export class MedicalHistory extends Model<MedicalHistoryAttributes> implements M
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: false
   })
   studentId: string;
 
   @Column({
     type: DataType.ENUM('condition', 'allergy', 'surgery', 'hospitalization', 'family_history', 'other'),
-    allowNull: false,
+    allowNull: false
   })
   recordType: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false,
+    allowNull: false
   })
   condition: string;
 

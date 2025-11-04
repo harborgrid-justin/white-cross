@@ -5,11 +5,10 @@ import {
   DataType,
   PrimaryKey,
   Default,
-} ,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -37,7 +36,6 @@ export interface SupplierAttributes {
   tableName: 'suppliers',
   timestamps: true,
   underscored: false,
-,
   indexes: [
     {
       fields: ['createdAt'],
@@ -56,7 +54,7 @@ export class Supplier extends Model<SupplierAttributes> implements SupplierAttri
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false,
+    allowNull: false
   })
   name: string;
 

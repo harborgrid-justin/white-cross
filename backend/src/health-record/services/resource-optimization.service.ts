@@ -449,7 +449,7 @@ export class ResourceOptimizationService implements OnModuleDestroy {
       }
       
       // Clear old query metrics
-      await this.queryAnalyzer.performPeriodicAnalysis();
+      await this.queryAnalyzer.storePerformanceAnalysisSnapshot();
       optimizationsApplied.push('Cleaned query performance history');
       
       // Clear old resource history

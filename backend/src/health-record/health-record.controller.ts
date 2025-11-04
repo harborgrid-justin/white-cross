@@ -469,7 +469,7 @@ export class HealthRecordController {
       });
     }
     
-    return this.phiAccessLogger.getRecentPHIAccesses(limit || 100);
+    return this.phiAccessLogger.getRecentPHIAccessLogs(limit || 100);
   }
 
   /**
@@ -624,7 +624,10 @@ export class HealthRecordController {
       complianceReport,
       healthStatus,
     ] = await Promise.all([
-      this.phiAccessLogger.getPHIAccessStatistics(),
+      this.phiAccessLogger.getPHIAccessStatistics(
+        new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours
+        new Date()
+      ),
       this.phiAccessLogger.getSecurityIncidents(10),
       this.metricsService.getHealthRecordMetricsSnapshot(),
       this.metricsService.getComplianceReport(),

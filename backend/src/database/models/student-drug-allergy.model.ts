@@ -11,10 +11,9 @@ import {
   UpdatedAt,
   ForeignKey,
   BelongsTo,
-} ,
   Scopes,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -45,17 +44,17 @@ export interface StudentDrugAllergyAttributes {
   indexes: [
     {
       fields: ['studentId', 'drugId'],
-      unique: true,
+      unique: true
     },
     {
-      fields: ['studentId'],
+      fields: ['studentId']
     },
     {
-      fields: ['drugId'],
+      fields: ['drugId']
     },
     {
-      fields: ['severity'],
-    },,
+      fields: ['severity']
+    },
     {
       fields: ['createdAt'],
       name: 'idx_student_drug_allergy_created_at'
@@ -64,7 +63,7 @@ export interface StudentDrugAllergyAttributes {
       fields: ['updatedAt'],
       name: 'idx_student_drug_allergy_updated_at'
     }
-  ],
+  ]
 })
 export class StudentDrugAllergy extends Model<StudentDrugAllergyAttributes> implements StudentDrugAllergyAttributes {
   @PrimaryKey
@@ -74,32 +73,32 @@ export class StudentDrugAllergy extends Model<StudentDrugAllergyAttributes> impl
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: false
   })
   studentId: string;
 
   @ForeignKey(() => require('./drug-catalog.model').DrugCatalog)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: false
   })
   drugId: string;
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: false,
+    allowNull: false
   })
   allergyType: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false,
+    allowNull: false
   })
   reaction: string;
 
   @Column({
     type: DataType.STRING(50),
-    allowNull: false,
+    allowNull: false
   })
   severity: string;
 
@@ -115,14 +114,14 @@ export class StudentDrugAllergy extends Model<StudentDrugAllergyAttributes> impl
   @CreatedAt
   @Column({
     type: DataType.DATE,
-    allowNull: false,
+    allowNull: false
   })
   declare createdAt: Date;
 
   @UpdatedAt
   @Column({
     type: DataType.DATE,
-    allowNull: false,
+    allowNull: false
   })
   declare updatedAt: Date;
 

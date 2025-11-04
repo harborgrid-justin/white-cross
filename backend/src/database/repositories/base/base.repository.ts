@@ -43,14 +43,14 @@ export abstract class BaseRepository<
 > implements IRepository<TAttributes, TCreationAttributes, Partial<TAttributes>> {
 
   protected readonly logger: Logger;
-  protected readonly model: ModelStatic<TModel>;
+  protected readonly model: any; // Using any for sequelize-typescript compatibility
   protected readonly auditLogger: IAuditLogger;
   protected readonly cacheManager: ICacheManager;
   protected readonly entityName: string;
   protected readonly cacheKeyBuilder: CacheKeyBuilder;
 
   constructor(
-    model: ModelStatic<TModel>,
+    model: any, // Using any for sequelize-typescript compatibility
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager,
     entityName: string

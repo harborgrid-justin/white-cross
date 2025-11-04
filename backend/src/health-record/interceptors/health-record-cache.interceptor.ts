@@ -100,7 +100,7 @@ export class HealthRecordCacheInterceptor implements NestInterceptor {
       this.logger.error(`Cache operation failed for key ${cacheKey}:`, error);
       
       // Record cache error but continue with normal execution
-      this.metricsService.recordCacheMetrics('MISS', this.getCacheType(complianceLevel));
+      this.metricsService.recordCacheMetrics('MISS', this.getCacheType(complianceLevel), 0);
       
       return next.handle();
     }

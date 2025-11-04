@@ -11,6 +11,8 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
+import { v4 as uuidv4 } from 'uuid';
 import { EnterpriseMetricsService } from '../../shared/enterprise/services/enterprise-metrics.service';
 import {
   HealthRecordMetrics,
@@ -357,6 +359,7 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
 
       // Bulk create metric snapshots
       const snapshotRecords = metricsToStore.map(metric => ({
+        id: uuidv4(),
         schoolId,
         metricName: metric.metricName,
         value: metric.value,
@@ -391,13 +394,13 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
       const whereClause: any = {
         schoolId,
         snapshotDate: {
-          [this.healthMetricSnapshotModel.sequelize.Sequelize.Op.between]: [startDate, endDate]
+          [Op.between]: [startDate, endDate]
         }
       };
 
       if (metricNames && metricNames.length > 0) {
         whereClause.metricName = {
-          [this.healthMetricSnapshotModel.sequelize.Sequelize.Op.in]: metricNames
+          [Op.in]: metricNames
         };
       }
 
@@ -406,39 +409,7 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
         order: [['snapshotDate', 'ASC'], ['metricName', 'ASC']]
       });
 
-      return snapshots.map(snapshot => ({
-        timestamp: snapshot.snapshotDate,
-        phiOperations: {
-          reads: this.getMetricValue(snapshots, 'phi_reads', snapshot.snapshotDate),
-          writes: this.getMetricValue(snapshots, 'phi_writes', snapshot.snapshotDate),
-          deletes: this.getMetricValue(snapshots, 'phi_deletes', snapshot.snapshotDate),
-          exports: this.getMetricValue(snapshots, 'phi_exports', snapshot.snapshotDate),
-          searches: this.getMetricValue(snapshots, 'phi_searches', snapshot.snapshotDate),
-        },
-        complianceLevels: {
-          phi: 0, // Would need additional metrics for this
-          sensitivePhi: 0,
-          internal: 0,
-          public: 0
-        },
-        dataTypes: {
-          healthRecords: 0,
-          allergies: 0,
-          vaccinations: 0,
-          chronicConditions: 0,
-          vitalSigns: 0
-        },
-        performanceMetrics: {
-          averageResponseTime: this.getMetricValue(snapshots, 'average_response_time', snapshot.snapshotDate),
-          errorRate: this.getMetricValue(snapshots, 'error_rate', snapshot.snapshotDate) / 100, // Convert from percentage
-          cacheHitRate: this.getMetricValue(snapshots, 'cache_hit_rate', snapshot.snapshotDate) / 100 // Convert from percentage
-        },
-        securityMetrics: {
-          securityIncidents: this.getMetricValue(snapshots, 'security_incidents', snapshot.snapshotDate),
-          suspiciousActivity: 0,
-          accessViolations: 0
-        }
-      }));
+      return snapshots;
 
     } catch (error) {
       this.logger.error('Failed to retrieve historical metrics:', error);
@@ -472,20 +443,20 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
         searches: this.enterpriseMetrics.getCounter('health_record_search') || 0,
       },
       complianceLevels: {
-        phi: this.enterpriseMetrics.getCounter('phi_access_by_compliance', { level: 'PHI' }) || 0,
-        sensitivePhi: this.enterpriseMetrics.getCounter('phi_access_by_compliance', { level: 'SENSITIVE_PHI' }) || 0,
-        internal: this.enterpriseMetrics.getCounter('phi_access_by_compliance', { level: 'INTERNAL' }) || 0,
-        public: this.enterpriseMetrics.getCounter('phi_access_by_compliance', { level: 'PUBLIC' }) || 0,
+        phi: this.enterpriseMetrics.getCounter('phi_access_phi') || 0,
+        sensitivePhi: this.enterpriseMetrics.getCounter('phi_access_sensitive_phi') || 0,
+        internal: this.enterpriseMetrics.getCounter('phi_access_internal') || 0,
+        public: this.enterpriseMetrics.getCounter('phi_access_public') || 0,
       },
       dataTypes: {
-        healthRecords: this.enterpriseMetrics.getCounter('phi_access_by_datatype', { data_type: 'healthRecords' }) || 0,
-        allergies: this.enterpriseMetrics.getCounter('phi_access_by_datatype', { data_type: 'allergies' }) || 0,
-        vaccinations: this.enterpriseMetrics.getCounter('phi_access_by_datatype', { data_type: 'vaccinations' }) || 0,
-        chronicConditions: this.enterpriseMetrics.getCounter('phi_access_by_datatype', { data_type: 'chronicConditions' }) || 0,
-        vitalSigns: this.enterpriseMetrics.getCounter('phi_access_by_datatype', { data_type: 'vitalSigns' }) || 0,
+        healthRecords: this.enterpriseMetrics.getCounter('datatype_health_records') || 0,
+        allergies: this.enterpriseMetrics.getCounter('datatype_allergies') || 0,
+        vaccinations: this.enterpriseMetrics.getCounter('datatype_vaccinations') || 0,
+        chronicConditions: this.enterpriseMetrics.getCounter('datatype_chronic_conditions') || 0,
+        vitalSigns: this.enterpriseMetrics.getCounter('datatype_vital_signs') || 0,
       },
       performanceMetrics: {
-        averageResponseTime: this.enterpriseMetrics.getHistogramAverage('phi_response_time') || 0,
+        averageResponseTime: this.enterpriseMetrics.getHistogram('phi_response_time')?.avg || 0,
         errorRate: this.calculateErrorRate(),
         cacheHitRate: this.calculateCacheHitRate(),
       },
@@ -586,8 +557,8 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
     securityIncidents: number;
     complianceScore: number;
   } {
-    const phiAccessCount = this.enterpriseMetrics.getCounter('phi_access_by_compliance', { level: 'PHI' }) || 0;
-    const sensitivePhiAccessCount = this.enterpriseMetrics.getCounter('phi_access_by_compliance', { level: 'SENSITIVE_PHI' }) || 0;
+    const phiAccessCount = this.enterpriseMetrics.getCounter('phi_access_phi') || 0;
+    const sensitivePhiAccessCount = this.enterpriseMetrics.getCounter('phi_access_sensitive_phi') || 0;
     const auditLogEntries = this.enterpriseMetrics.getCounter('compliance_audit_entries') || 0;
     const securityIncidents = this.enterpriseMetrics.getCounter('security_incident_unauthorized_access') || 0;
 
@@ -610,5 +581,31 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
    */
   onModuleDestroy(): void {
     this.logger.log('Health Record Metrics Service destroyed');
+  }
+
+  /**
+   * Record cache operation metrics
+   */
+  recordCacheMetrics(
+    operation: 'HIT' | 'MISS' | 'SET',
+    cacheType: string,
+    responseTime: number
+  ): void {
+    const metricKey = operation === 'HIT' ? 'cache_hits' : 'cache_misses';
+
+    this.enterpriseMetrics.incrementCounter(metricKey, 1, { cache_type: cacheType });
+    this.enterpriseMetrics.recordHistogram('cache_response_time', responseTime, {
+      cache_type: cacheType,
+      operation: operation.toLowerCase()
+    });
+
+    this.logger.debug(`Cache ${operation.toLowerCase()} recorded for type: ${cacheType}, response time: ${responseTime}ms`);
+  }
+
+  /**
+   * Get Prometheus-formatted metrics for external monitoring
+   */
+  getPrometheusMetrics(): string {
+    return this.enterpriseMetrics.getPrometheusMetrics();
   }
 }

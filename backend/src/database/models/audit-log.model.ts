@@ -13,11 +13,10 @@ import {
   PrimaryKey,
   Default,
   Index,
-  BeforeCreate
-  } ,
+  BeforeCreate,
   Scopes,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { AuditAction } from '../types/database.enums';
 

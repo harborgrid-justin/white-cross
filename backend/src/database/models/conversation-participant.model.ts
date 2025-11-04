@@ -8,11 +8,10 @@ import {
   ForeignKey,
   BelongsTo,
   Index,
-} ,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 import { Conversation } from './conversation.model';
 
@@ -24,7 +23,7 @@ export enum ParticipantRole {
   OWNER = 'OWNER',
   ADMIN = 'ADMIN',
   MEMBER = 'MEMBER',
-  VIEWER = 'VIEWER',
+  VIEWER = 'VIEWER'
 }
 
 /**
@@ -87,8 +86,8 @@ export interface ConversationParticipantCreationAttributes
     {
       unique: true,
       fields: ['conversationId', 'userId'],
-      name: 'conversation_participants_conversation_user_unique',
-    },,
+      name: 'conversation_participants_conversation_user_unique'
+    },
     {
       fields: ['createdAt'],
       name: 'idx_conversation_participant_created_at'
@@ -97,7 +96,7 @@ export interface ConversationParticipantCreationAttributes
       fields: ['updatedAt'],
       name: 'idx_conversation_participant_updated_at'
     }
-  ],
+  ]
 })
 export class ConversationParticipant extends Model<
   ConversationParticipantAttributes,
@@ -112,7 +111,7 @@ export class ConversationParticipant extends Model<
   @ForeignKey(() => Conversation)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: false
   })
   declare conversationId: string;
 
@@ -120,7 +119,7 @@ export class ConversationParticipant extends Model<
   @Column({
     type: DataType.UUID,
     allowNull: false,
-    comment: 'User ID who is a participant',
+    comment: 'User ID who is a participant'
   })
   declare userId: string;
 
@@ -131,7 +130,7 @@ export class ConversationParticipant extends Model<
     },
     allowNull: false,
     defaultValue: ParticipantRole.MEMBER,
-    comment: 'Role determining permissions in conversation',
+    comment: 'Role determining permissions in conversation'
   })
   declare role: ParticipantRole;
 
@@ -139,7 +138,7 @@ export class ConversationParticipant extends Model<
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    comment: 'Timestamp when user joined the conversation',
+    comment: 'Timestamp when user joined the conversation'
   })
   declare joinedAt: Date;
 
@@ -147,7 +146,7 @@ export class ConversationParticipant extends Model<
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    comment: 'Timestamp of last message read by this participant',
+    comment: 'Timestamp of last message read by this participant'
   })
   declare lastReadAt?: Date;
 
@@ -155,7 +154,7 @@ export class ConversationParticipant extends Model<
     type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: false,
-    comment: 'Whether notifications are muted for this conversation',
+    comment: 'Whether notifications are muted for this conversation'
   })
   declare isMuted: boolean;
 
@@ -163,14 +162,14 @@ export class ConversationParticipant extends Model<
     type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: false,
-    comment: 'Whether conversation is pinned to top of list',
+    comment: 'Whether conversation is pinned to top of list'
   })
   declare isPinned: boolean;
 
   @Column({
     type: DataType.STRING(255),
     allowNull: true,
-    comment: 'Custom display name for this participant in the conversation',
+    comment: 'Custom display name for this participant in the conversation'
   })
   declare customName?: string;
 
@@ -178,7 +177,7 @@ export class ConversationParticipant extends Model<
     type: DataType.ENUM('ALL', 'MENTIONS', 'NONE'),
     allowNull: false,
     defaultValue: 'ALL',
-    comment: 'Notification preference for this conversation',
+    comment: 'Notification preference for this conversation'
   })
   declare notificationPreference: 'ALL' | 'MENTIONS' | 'NONE';
 
@@ -186,7 +185,7 @@ export class ConversationParticipant extends Model<
     type: DataType.JSONB,
     allowNull: true,
     defaultValue: {},
-    comment: 'Extensible metadata field',
+    comment: 'Extensible metadata field'
   })
   declare metadata?: Record<string, any>;
 
@@ -196,14 +195,14 @@ export class ConversationParticipant extends Model<
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW,
+    defaultValue: DataType.NOW
   })
   declare createdAt: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW,
+    defaultValue: DataType.NOW
   })
   declare updatedAt: Date;
 

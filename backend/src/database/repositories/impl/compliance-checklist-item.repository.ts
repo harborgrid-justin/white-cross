@@ -2,76 +2,38 @@
  * Compliance Checklist Item Repository Implementation
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
-import { BaseRepository, RepositoryError } from '../base/base.repository';
-import { IAuditLogger } from '../../interfaces/audit/audit-logger.interface';
-import { sanitizeSensitiveData } from '../../interfaces/audit/audit-logger.interface';
-import { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
-import { ExecutionContext } from '../../types';
 import { ComplianceChecklistItem } from '../../models/compliance-checklist-item.model';
 
-export interface ComplianceChecklistItemAttributes {
-  id: string;
-  reportId: string;
-  itemText: string;
-  isCompleted: boolean;
-  completedAt?: Date;
-  completedBy?: string;
-  notes?: string;
-  priority?: string;
-  dueDate?: Date;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface CreateComplianceChecklistItemDTO {
-  reportId: string;
-  itemText: string;
-  isCompleted?: boolean;
-  completedAt?: Date;
-  completedBy?: string;
-  notes?: string;
-  priority?: string;
-  dueDate?: Date;
-}
-
-export interface UpdateComplianceChecklistItemDTO {
-  reportId?: string;
-  itemText?: string;
-  isCompleted?: boolean;
-  completedAt?: Date;
-  completedBy?: string;
-  notes?: string;
-  priority?: string;
-  dueDate?: Date;
-}
-
 @Injectable()
-export class ComplianceChecklistItemRepository extends BaseRepository<any, ComplianceChecklistItemAttributes, CreateComplianceChecklistItemDTO> {
+export class ComplianceChecklistItemRepository {
   constructor(
-    @InjectModel(ComplianceChecklistItem) model: typeof ComplianceChecklistItem,
-    @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
-  ) {
-    super(model, auditLogger, cacheManager, 'ComplianceChecklistItem');
+    @InjectModel(ComplianceChecklistItem)
+    private readonly complianceChecklistItemModel: typeof ComplianceChecklistItem,
+  ) {}
+
+  async findAll(): Promise<ComplianceChecklistItem[]> {
+    return this.complianceChecklistItemModel.findAll();
   }
 
-  protected async validateCreate(data: CreateComplianceChecklistItemDTO): Promise<void> {}
-  protected async validateUpdate(id: string, data: UpdateComplianceChecklistItemDTO): Promise<void> {}
-
-  protected async invalidateCaches(entity: any): Promise<void> {
-    try {
-      const entityData = entity.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, entityData.id));
-      await this.cacheManager.deletePattern(`white-cross:${this.entityName.toLowerCase()}:*`);
-    } catch (error) {
-      this.logger.warn(`Error invalidating ${this.entityName} caches:`, error);
-    }
+  async findById(id: string): Promise<ComplianceChecklistItem | null> {
+    return this.complianceChecklistItemModel.findByPk(id);
   }
 
-  protected sanitizeForAudit(data: any): any {
-    return sanitizeSensitiveData({ ...data });
+  async create(data: Partial<ComplianceChecklistItem>): Promise<ComplianceChecklistItem> {
+    return this.complianceChecklistItemModel.create(data as any);
+  }
+
+  async update(id: string, data: Partial<ComplianceChecklistItem>): Promise<[number]> {
+    return this.complianceChecklistItemModel.update(data as any, {
+      where: { id },
+    });
+  }
+
+  async delete(id: string): Promise<number> {
+    return this.complianceChecklistItemModel.destroy({
+      where: { id },
+    });
   }
 }

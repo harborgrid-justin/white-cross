@@ -113,7 +113,7 @@ export interface ClinicalNoteAttributes {
   },
     {
       fields: ['createdBy']
-  },,
+  },
     {
       fields: ['createdAt'],
       name: 'idx_clinical_note_created_at'

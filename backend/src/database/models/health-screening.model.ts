@@ -5,11 +5,10 @@ import {
   DataType,
   PrimaryKey,
   Default,
-} ,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -41,14 +40,14 @@ export interface HealthScreeningAttributes {
   paranoid: true,
   indexes: [
     {
-      fields: ['studentId'],
+      fields: ['studentId']
     },
     {
-      fields: ['screeningType'],
+      fields: ['screeningType']
     },
     {
-      fields: ['screeningDate'],
-    },,
+      fields: ['screeningDate']
+    },
     {
       fields: ['createdAt'],
       name: 'idx_health_screening_created_at'
@@ -57,7 +56,7 @@ export interface HealthScreeningAttributes {
       fields: ['updatedAt'],
       name: 'idx_health_screening_updated_at'
     }
-  ],
+  ]
 })
 export class HealthScreening extends Model<HealthScreeningAttributes> implements HealthScreeningAttributes {
   @PrimaryKey
@@ -67,31 +66,31 @@ export class HealthScreening extends Model<HealthScreeningAttributes> implements
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: false
   })
   studentId: string;
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: false,
+    allowNull: false
   })
   screeningType: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
+    allowNull: false
   })
   screeningDate: Date;
 
   @Column({
     type: DataType.JSON,
-    allowNull: false,
+    allowNull: false
   })
   results: any;
 
   @Column({
     type: DataType.BOOLEAN,
-    allowNull: false,
+    allowNull: false
   })
   passed: boolean;
 
@@ -100,7 +99,7 @@ export class HealthScreening extends Model<HealthScreeningAttributes> implements
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: false
   })
   conductedBy: string;
 

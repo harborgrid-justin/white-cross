@@ -2,79 +2,38 @@
  * Consent Signature Repository Implementation
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
-import { BaseRepository, RepositoryError } from '../base/base.repository';
-import { IAuditLogger } from '../../interfaces/audit/audit-logger.interface';
-import { sanitizeSensitiveData } from '../../interfaces/audit/audit-logger.interface';
-import { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
-import { ExecutionContext } from '../../types';
 import { ConsentSignature } from '../../models/consent-signature.model';
 
-export interface ConsentSignatureAttributes {
-  id: string;
-  consentFormId: string;
-  studentId: string;
-  signedBy: string;
-  relationship: string;
-  signatureData?: any;
-  ipAddress?: string;
-  signedAt: Date;
-  withdrawnAt?: Date;
-  withdrawnBy?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface CreateConsentSignatureDTO {
-  consentFormId: string;
-  studentId: string;
-  signedBy: string;
-  relationship: string;
-  signatureData?: any;
-  ipAddress?: string;
-  signedAt?: Date;
-  withdrawnAt?: Date;
-  withdrawnBy?: string;
-}
-
-export interface UpdateConsentSignatureDTO {
-  consentFormId?: string;
-  studentId?: string;
-  signedBy?: string;
-  relationship?: string;
-  signatureData?: any;
-  ipAddress?: string;
-  signedAt?: Date;
-  withdrawnAt?: Date;
-  withdrawnBy?: string;
-}
-
 @Injectable()
-export class ConsentSignatureRepository extends BaseRepository<any, ConsentSignatureAttributes, CreateConsentSignatureDTO> {
+export class ConsentSignatureRepository {
   constructor(
-    @InjectModel(ConsentSignature) model: typeof ConsentSignature,
-    @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
-  ) {
-    super(model, auditLogger, cacheManager, 'ConsentSignature');
+    @InjectModel(ConsentSignature)
+    private readonly consentSignatureModel: typeof ConsentSignature,
+  ) {}
+
+  async findAll(): Promise<ConsentSignature[]> {
+    return this.consentSignatureModel.findAll();
   }
 
-  protected async validateCreate(data: CreateConsentSignatureDTO): Promise<void> {}
-  protected async validateUpdate(id: string, data: UpdateConsentSignatureDTO): Promise<void> {}
-
-  protected async invalidateCaches(entity: any): Promise<void> {
-    try {
-      const entityData = entity.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, entityData.id));
-      await this.cacheManager.deletePattern(`white-cross:${this.entityName.toLowerCase()}:*`);
-    } catch (error) {
-      this.logger.warn(`Error invalidating ${this.entityName} caches:`, error);
-    }
+  async findById(id: string): Promise<ConsentSignature | null> {
+    return this.consentSignatureModel.findByPk(id);
   }
 
-  protected sanitizeForAudit(data: any): any {
-    return sanitizeSensitiveData({ ...data });
+  async create(data: Partial<ConsentSignature>): Promise<ConsentSignature> {
+    return this.consentSignatureModel.create(data as any);
+  }
+
+  async update(id: string, data: Partial<ConsentSignature>): Promise<[number]> {
+    return this.consentSignatureModel.update(data as any, {
+      where: { id },
+    });
+  }
+
+  async delete(id: string): Promise<number> {
+    return this.consentSignatureModel.destroy({
+      where: { id },
+    });
   }
 }

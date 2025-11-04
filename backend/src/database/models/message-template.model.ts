@@ -8,11 +8,10 @@ import {
   ForeignKey,
   BelongsTo,
   Index,
-} ,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 
 
@@ -20,7 +19,7 @@ export enum MessageType {
   EMAIL = 'EMAIL',
   SMS = 'SMS',
   PUSH_NOTIFICATION = 'PUSH_NOTIFICATION',
-  VOICE = 'VOICE',
+  VOICE = 'VOICE'
 }
 
 export enum MessageCategory {
@@ -28,7 +27,7 @@ export enum MessageCategory {
   MEDICATION = 'MEDICATION',
   EMERGENCY = 'EMERGENCY',
   NOTIFICATION = 'NOTIFICATION',
-  REMINDER = 'REMINDER',
+  REMINDER = 'REMINDER'
 }
 
 export interface MessageTemplateAttributes {
@@ -58,7 +57,6 @@ export interface MessageTemplateAttributes {
   timestamps: true,
   underscored: false,
   paranoid: true,
-,
   indexes: [
     {
       fields: ['createdAt'],
@@ -77,19 +75,19 @@ export class MessageTemplate extends Model<MessageTemplateAttributes> {
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: false,
+    allowNull: false
   })
   name: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: true,
+    allowNull: true
   })
   subject?: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false,
+    allowNull: false
   })
   content: string;
 
@@ -99,7 +97,7 @@ export class MessageTemplate extends Model<MessageTemplateAttributes> {
     validate: {
       isIn: [Object.values(MessageType)]
     },
-    allowNull: false,
+    allowNull: false
   })
   type: MessageType;
 
@@ -109,14 +107,14 @@ export class MessageTemplate extends Model<MessageTemplateAttributes> {
     validate: {
       isIn: [Object.values(MessageCategory)]
     },
-    allowNull: false,
+    allowNull: false
   })
   declare category: any;
 
   @Column({
     type: DataType.ARRAY(DataType.STRING(255)),
     allowNull: false,
-    defaultValue: [],
+    defaultValue: []
   })
   variables: string[];
 
@@ -124,7 +122,7 @@ export class MessageTemplate extends Model<MessageTemplateAttributes> {
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true,
+    defaultValue: true
   })
   isActive: boolean;
 
@@ -132,7 +130,7 @@ export class MessageTemplate extends Model<MessageTemplateAttributes> {
   @ForeignKey(() => require('./user.model').User)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: false
   })
   createdById: string;
 
@@ -142,14 +140,14 @@ export class MessageTemplate extends Model<MessageTemplateAttributes> {
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW,
+    defaultValue: DataType.NOW
   })
   declare createdAt?: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW,
+    defaultValue: DataType.NOW
   })
   declare updatedAt?: Date;
 

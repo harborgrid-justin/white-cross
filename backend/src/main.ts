@@ -2,6 +2,7 @@
  * NestJS Application Entry Point
  * White Cross School Health Platform
  */
+import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';

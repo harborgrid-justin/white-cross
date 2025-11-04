@@ -759,6 +759,9 @@ export class HealthRecordService {
     // Extract vital signs from metadata
     const vitals: VitalSigns[] = records
       .map((record) => ({
+        studentId,
+        measurementDate: record.recordDate,
+        isAbnormal: false, // Default value
         temperature: record.metadata?.temperature,
         bloodPressureSystolic: record.metadata?.bloodPressureSystolic,
         bloodPressureDiastolic: record.metadata?.bloodPressureDiastolic,

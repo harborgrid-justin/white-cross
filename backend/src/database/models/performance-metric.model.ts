@@ -13,11 +13,10 @@ import {
   Default,
   Index,
   AllowNull,
-} ,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 
 /**
@@ -31,7 +30,7 @@ export enum MetricType {
   DATABASE_QUERY_TIME = 'DATABASE_QUERY_TIME',
   ACTIVE_USERS = 'ACTIVE_USERS',
   ERROR_RATE = 'ERROR_RATE',
-  REQUEST_COUNT = 'REQUEST_COUNT',
+  REQUEST_COUNT = 'REQUEST_COUNT'
 }
 
 /**
@@ -78,7 +77,7 @@ export interface CreatePerformanceMetricAttributes {
   underscored: false,
   indexes: [
     { fields: ['metricType'] },
-    { fields: ['recordedAt'] },,
+    { fields: ['recordedAt'] },
     {
       fields: ['createdAt'],
       name: 'idx_performance_metric_created_at'
@@ -87,7 +86,7 @@ export interface CreatePerformanceMetricAttributes {
       fields: ['updatedAt'],
       name: 'idx_performance_metric_updated_at'
     }
-  ],
+  ]
 })
 export class PerformanceMetric extends Model<PerformanceMetricAttributes, CreatePerformanceMetricAttributes> {
   @PrimaryKey
@@ -102,7 +101,7 @@ export class PerformanceMetric extends Model<PerformanceMetricAttributes, Create
       isIn: [Object.values(MetricType)]
     },
     allowNull: false,
-    comment: 'Type of performance metric being recorded',
+    comment: 'Type of performance metric being recorded'
   })
   @Index
   metricType: MetricType;
@@ -111,7 +110,7 @@ export class PerformanceMetric extends Model<PerformanceMetricAttributes, Create
   @Column({
     type: DataType.DECIMAL(10, 2),
     allowNull: false,
-    comment: 'Numerical value of the metric',
+    comment: 'Numerical value of the metric'
   })
   value: number;
 
@@ -119,7 +118,7 @@ export class PerformanceMetric extends Model<PerformanceMetricAttributes, Create
   @Column({
     type: DataType.STRING(50),
     allowNull: true,
-    comment: 'Unit of measurement (e.g., %, ms, GB)',
+    comment: 'Unit of measurement (e.g., %, ms, GB)'
   })
   unit?: string;
 
@@ -127,7 +126,7 @@ export class PerformanceMetric extends Model<PerformanceMetricAttributes, Create
   @Column({
     type: DataType.JSONB,
     allowNull: true,
-    comment: 'Additional tags for categorizing the metric',
+    comment: 'Additional tags for categorizing the metric'
   })
   tags?: Record<string, any>;
 
@@ -135,7 +134,7 @@ export class PerformanceMetric extends Model<PerformanceMetricAttributes, Create
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    comment: 'Timestamp when the metric was recorded',
+    comment: 'Timestamp when the metric was recorded'
   })
   @Index
   recordedAt: Date;
@@ -144,7 +143,7 @@ export class PerformanceMetric extends Model<PerformanceMetricAttributes, Create
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    comment: 'Timestamp when the metric record was created',
+    comment: 'Timestamp when the metric record was created'
   })
   declare createdAt?: Date;
 

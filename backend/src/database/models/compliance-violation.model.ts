@@ -5,12 +5,11 @@ import {
   DataType,
   PrimaryKey,
   Default,
-  AllowNull
-  } ,
+  AllowNull,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -88,7 +87,7 @@ export interface ComplianceViolationAttributes {
   },
     {
       fields: ['discoveredAt']
-  },,
+  },
     {
       fields: ['createdAt'],
       name: 'idx_compliance_violation_created_at'

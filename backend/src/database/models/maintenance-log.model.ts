@@ -8,10 +8,9 @@ import {
   ForeignKey,
   BelongsTo,
   BeforeCreate,
-} ,
   Scopes,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -21,7 +20,7 @@ export enum MaintenanceType {
   INSPECTION = 'INSPECTION',
   CLEANING = 'CLEANING',
   REPLACEMENT = 'REPLACEMENT',
-  UPGRADE = 'UPGRADE',
+  UPGRADE = 'UPGRADE'
 }
 
 export interface MaintenanceLogAttributes {
@@ -50,17 +49,17 @@ export interface MaintenanceLogAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['inventoryItemId'],
+      fields: ['inventoryItemId']
     },
     {
-      fields: ['type'],
+      fields: ['type']
     },
     {
-      fields: ['performedById'],
+      fields: ['performedById']
     },
     {
-      fields: ['nextMaintenanceDate'],
-    },,
+      fields: ['nextMaintenanceDate']
+    },
     {
       fields: ['createdAt'],
       name: 'idx_maintenance_log_created_at'
@@ -69,7 +68,7 @@ export interface MaintenanceLogAttributes {
       fields: ['updatedAt'],
       name: 'idx_maintenance_log_updated_at'
     }
-  ],
+  ]
 })
 export class MaintenanceLog extends Model<MaintenanceLogAttributes> implements MaintenanceLogAttributes {
   @PrimaryKey
@@ -80,7 +79,7 @@ export class MaintenanceLog extends Model<MaintenanceLogAttributes> implements M
   @ForeignKey(() => require('./inventory-item.model').InventoryItem)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: false
   })
   inventoryItemId: string;
 
@@ -89,24 +88,24 @@ export class MaintenanceLog extends Model<MaintenanceLogAttributes> implements M
     validate: {
       isIn: [Object.values(MaintenanceType)]
     },
-    allowNull: false,
+    allowNull: false
   })
   type: MaintenanceType;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false,
+    allowNull: false
   })
   description: string;
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: false
   })
   performedById: string;
 
   @Column({
-    type: DataType.DECIMAL(10, 2),
+    type: DataType.DECIMAL(10, 2)
   })
   cost?: number;
 

@@ -7,10 +7,9 @@ import {
   Default,
   HasMany,
   BeforeCreate,
-} ,
   Scopes,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -45,24 +44,24 @@ export interface InventoryItemAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['name'],
+      fields: ['name']
     },
     {
-      fields: ['category'],
+      fields: ['category']
     },
     {
       fields: ['sku'],
-      unique: true,
+      unique: true
     },
     {
-      fields: ['supplier'],
+      fields: ['supplier']
     },
     {
-      fields: ['isActive'],
+      fields: ['isActive']
     },
     {
-      fields: ['reorderLevel'],
-    },,
+      fields: ['reorderLevel']
+    },
     {
       fields: ['createdAt'],
       name: 'idx_inventory_item_created_at'
@@ -71,7 +70,7 @@ export interface InventoryItemAttributes {
       fields: ['updatedAt'],
       name: 'idx_inventory_item_updated_at'
     }
-  ],
+  ]
 })
 export class InventoryItem extends Model<InventoryItemAttributes> implements InventoryItemAttributes {
   @PrimaryKey
@@ -81,13 +80,13 @@ export class InventoryItem extends Model<InventoryItemAttributes> implements Inv
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false,
+    allowNull: false
   })
   name: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false,
+    allowNull: false
   })
   category: string;
 
@@ -96,7 +95,7 @@ export class InventoryItem extends Model<InventoryItemAttributes> implements Inv
 
   @Column({
     type: DataType.STRING(255),
-    unique: true,
+    unique: true
   })
   sku?: string;
 
@@ -104,19 +103,19 @@ export class InventoryItem extends Model<InventoryItemAttributes> implements Inv
   supplier?: string;
 
   @Column({
-    type: DataType.DECIMAL(10, 2),
+    type: DataType.DECIMAL(10, 2)
   })
   unitCost?: number;
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
+    allowNull: false
   })
   reorderLevel: number;
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
+    allowNull: false
   })
   reorderQuantity: number;
 

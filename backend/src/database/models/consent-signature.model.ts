@@ -7,12 +7,11 @@ import {
   Default,
   AllowNull,
   ForeignKey,
-  BelongsTo
-  } ,
+  BelongsTo,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -51,7 +50,7 @@ export interface ConsentSignatureAttributes {
   },
     {
       fields: ['studentId']
-  },,
+  },
     {
       fields: ['createdAt'],
       name: 'idx_consent_signature_created_at'

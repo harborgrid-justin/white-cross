@@ -7,11 +7,10 @@ import {
   Default,
   ForeignKey,
   BelongsTo,
-  BeforeCreate
-  } ,
+  BeforeCreate,
   Scopes,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -67,7 +66,7 @@ export interface StudentMedicationAttributes {
   },
     {
       fields: ['createdBy']
-  },,
+  },
     {
       fields: ['createdAt'],
       name: 'idx_student_medication_created_at'

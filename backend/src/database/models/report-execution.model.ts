@@ -7,12 +7,11 @@ import {
   Default,
   AllowNull,
   ForeignKey,
-  BelongsTo
-  } ,
+  BelongsTo,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 import { ReportTemplate } from './report-template.model';

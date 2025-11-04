@@ -15,11 +15,10 @@ import {
   BelongsTo,
   Index,
   AllowNull,
-} ,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 
 /**
@@ -67,7 +66,7 @@ export interface CreateConfigurationHistoryAttributes {
   indexes: [
     { fields: ['configKey'] },
     { fields: ['changedBy'] },
-    { fields: ['configurationId'] },,
+    { fields: ['configurationId'] },
     {
       fields: ['createdAt'],
       name: 'idx_configuration_history_created_at'
@@ -76,7 +75,7 @@ export interface CreateConfigurationHistoryAttributes {
       fields: ['updatedAt'],
       name: 'idx_configuration_history_updated_at'
     }
-  ],
+  ]
 })
 export class ConfigurationHistory extends Model<ConfigurationHistoryAttributes, CreateConfigurationHistoryAttributes> {
   @PrimaryKey
@@ -88,7 +87,7 @@ export class ConfigurationHistory extends Model<ConfigurationHistoryAttributes, 
   @Column({
     type: DataType.STRING(100),
     allowNull: false,
-    comment: 'Configuration key that was changed',
+    comment: 'Configuration key that was changed'
   })
   @Index
   configKey: string;
@@ -97,7 +96,7 @@ export class ConfigurationHistory extends Model<ConfigurationHistoryAttributes, 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
-    comment: 'Previous value before the change',
+    comment: 'Previous value before the change'
   })
   oldValue?: string;
 
@@ -105,7 +104,7 @@ export class ConfigurationHistory extends Model<ConfigurationHistoryAttributes, 
   @Column({
     type: DataType.TEXT,
     allowNull: false,
-    comment: 'New value after the change',
+    comment: 'New value after the change'
   })
   newValue: string;
 
@@ -113,7 +112,7 @@ export class ConfigurationHistory extends Model<ConfigurationHistoryAttributes, 
   @Column({
     type: DataType.UUID,
     allowNull: false,
-    comment: 'ID of the user who made the change',
+    comment: 'ID of the user who made the change'
   })
   @Index
   changedBy: string;
@@ -123,7 +122,7 @@ export class ConfigurationHistory extends Model<ConfigurationHistoryAttributes, 
   @Column({
     type: DataType.UUID,
     allowNull: false,
-    comment: 'ID of the system configuration that was changed',
+    comment: 'ID of the system configuration that was changed'
   })
   @Index
   configurationId: string;
@@ -132,14 +131,14 @@ export class ConfigurationHistory extends Model<ConfigurationHistoryAttributes, 
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    comment: 'Timestamp when the configuration change was made',
+    comment: 'Timestamp when the configuration change was made'
   })
   declare createdAt?: Date;
 
   // Relationships
   @BelongsTo(() => require('./system-config.model').SystemConfig, {
     foreignKey: 'configurationId',
-    as: 'configuration',
+    as: 'configuration'
   })
   declare configuration?: any;
 

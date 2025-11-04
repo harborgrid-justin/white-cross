@@ -80,13 +80,13 @@ export interface VitalSignsAttributes {
   paranoid: true,
   indexes: [
     {
-      fields: ['studentId'],
+      fields: ['studentId']
     },
     {
-      fields: ['measurementDate'],
+      fields: ['measurementDate']
     },
     {
-      fields: ['isAbnormal'],
+      fields: ['isAbnormal']
     },
     {
       fields: ['createdAt'],
@@ -95,8 +95,8 @@ export interface VitalSignsAttributes {
     {
       fields: ['updatedAt'],
       name: 'idx_vital_signs_updated_at'
-    },
-  ],
+    }
+  ]
 })
 export class VitalSigns extends Model<VitalSignsAttributes> implements VitalSignsAttributes {
   @PrimaryKey
@@ -119,7 +119,7 @@ export class VitalSigns extends Model<VitalSignsAttributes> implements VitalSign
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
+    allowNull: false
   })
   measurementDate: Date;
 
@@ -166,8 +166,8 @@ export class VitalSigns extends Model<VitalSignsAttributes> implements VitalSign
     type: DataType.INTEGER,
     validate: {
       min: 0,
-      max: 10,
-    },
+      max: 10
+    }
   })
   pain?: number;
 

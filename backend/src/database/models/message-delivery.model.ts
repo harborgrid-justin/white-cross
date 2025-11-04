@@ -8,11 +8,10 @@ import {
   ForeignKey,
   BelongsTo,
   Index,
-} ,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 import { Message } from './message.model';
 
@@ -23,7 +22,7 @@ export enum RecipientType {
   EMERGENCY_CONTACT = 'EMERGENCY_CONTACT',
   STUDENT = 'STUDENT',
   STAFF = 'STAFF',
-  ADMINISTRATOR = 'ADMINISTRATOR',
+  ADMINISTRATOR = 'ADMINISTRATOR'
 }
 
 export enum DeliveryStatus {
@@ -31,14 +30,14 @@ export enum DeliveryStatus {
   SENT = 'SENT',
   DELIVERED = 'DELIVERED',
   FAILED = 'FAILED',
-  BOUNCED = 'BOUNCED',
+  BOUNCED = 'BOUNCED'
 }
 
 export enum DeliveryChannelType {
   EMAIL = 'EMAIL',
   SMS = 'SMS',
   PUSH = 'PUSH',
-  IN_APP = 'IN_APP',
+  IN_APP = 'IN_APP'
 }
 
 export interface MessageDeliveryAttributes {
@@ -76,7 +75,6 @@ export interface MessageDeliveryCreationAttributes
   timestamps: true,
   underscored: false,
   paranoid: true,
-,
   indexes: [
     {
       fields: ['createdAt'],
@@ -99,14 +97,14 @@ export class MessageDelivery extends Model<MessageDeliveryAttributes, MessageDel
     validate: {
       isIn: [Object.values(RecipientType)]
     },
-    allowNull: false,
+    allowNull: false
   })
   recipientType: RecipientType;
 
   @Index
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: false
   })
   recipientId: string;
 
@@ -116,7 +114,7 @@ export class MessageDelivery extends Model<MessageDeliveryAttributes, MessageDel
     validate: {
       isIn: [Object.values(DeliveryChannelType)]
     },
-    allowNull: false,
+    allowNull: false
   })
   declare channel: any;
 
@@ -126,38 +124,38 @@ export class MessageDelivery extends Model<MessageDeliveryAttributes, MessageDel
     validate: {
       isIn: [Object.values(DeliveryStatus)]
     },
-    allowNull: false,
+    allowNull: false
   })
   status: DeliveryStatus;
 
   @Column({
     type: DataType.STRING(500),
-    allowNull: true,
+    allowNull: true
   })
   contactInfo?: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: true,
+    allowNull: true
   })
   sentAt?: Date;
 
   @Column({
     type: DataType.DATE,
-    allowNull: true,
+    allowNull: true
   })
   deliveredAt?: Date;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: true,
+    allowNull: true
   })
   failureReason?: string;
 
   @Index
   @Column({
     type: DataType.STRING(255),
-    allowNull: true,
+    allowNull: true
   })
   externalId?: string;
 
@@ -165,7 +163,7 @@ export class MessageDelivery extends Model<MessageDeliveryAttributes, MessageDel
   @ForeignKey(() => require('./message.model').Message)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: false
   })
   messageId: string;
 
@@ -175,14 +173,14 @@ export class MessageDelivery extends Model<MessageDeliveryAttributes, MessageDel
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW,
+    defaultValue: DataType.NOW
   })
   declare createdAt?: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW,
+    defaultValue: DataType.NOW
   })
   declare updatedAt?: Date;
 

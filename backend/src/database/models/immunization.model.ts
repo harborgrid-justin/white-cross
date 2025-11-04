@@ -5,11 +5,10 @@ import {
   DataType,
   PrimaryKey,
   Default,
-} ,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -46,14 +45,14 @@ export interface ImmunizationAttributes {
   paranoid: true,
   indexes: [
     {
-      fields: ['studentId'],
+      fields: ['studentId']
     },
     {
-      fields: ['vaccineName'],
+      fields: ['vaccineName']
     },
     {
-      fields: ['administeredDate'],
-    },,
+      fields: ['administeredDate']
+    },
     {
       fields: ['createdAt'],
       name: 'idx_immunization_created_at'
@@ -62,7 +61,7 @@ export interface ImmunizationAttributes {
       fields: ['updatedAt'],
       name: 'idx_immunization_updated_at'
     }
-  ],
+  ]
 })
 export class Immunization extends Model<ImmunizationAttributes> implements ImmunizationAttributes {
   @PrimaryKey
@@ -72,13 +71,13 @@ export class Immunization extends Model<ImmunizationAttributes> implements Immun
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: false
   })
   studentId: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false,
+    allowNull: false
   })
   vaccineName: string;
 
@@ -87,7 +86,7 @@ export class Immunization extends Model<ImmunizationAttributes> implements Immun
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
+    allowNull: false
   })
   administeredDate: Date;
 
@@ -111,7 +110,7 @@ export class Immunization extends Model<ImmunizationAttributes> implements Immun
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: false
   })
   administeredBy: string;
 

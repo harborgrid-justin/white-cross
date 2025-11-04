@@ -7,9 +7,8 @@ import {
   Default,
   BeforeCreate,
   BeforeUpdate,
-} ,
   Scopes
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -55,23 +54,23 @@ export interface LabResultsAttributes {
   paranoid: true,
   indexes: [
     {
-      fields: ['studentId'],
+      fields: ['studentId']
     },
     {
-      fields: ['testType'],
+      fields: ['testType']
     },
     {
-      fields: ['status'],
+      fields: ['status']
     },
     {
-      fields: ['isAbnormal'],
+      fields: ['isAbnormal']
     },
     {
-      fields: ['orderedDate'],
+      fields: ['orderedDate']
     },
     {
-      fields: ['resultDate'],
-    },,
+      fields: ['resultDate']
+    },
     {
       fields: ['createdAt'],
       name: 'idx_lab_results_created_at'
@@ -80,7 +79,7 @@ export interface LabResultsAttributes {
       fields: ['updatedAt'],
       name: 'idx_lab_results_updated_at'
     }
-  ],
+  ]
 })
 export class LabResults extends Model<LabResultsAttributes> implements LabResultsAttributes {
   @PrimaryKey
@@ -90,19 +89,19 @@ export class LabResults extends Model<LabResultsAttributes> implements LabResult
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: false
   })
   studentId: string;
 
   @Column({
     type: DataType.ENUM('blood_test', 'urinalysis', 'culture', 'chemistry', 'hematology', 'microbiology', 'other'),
-    allowNull: false,
+    allowNull: false
   })
   testType: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false,
+    allowNull: false
   })
   testName: string;
 
@@ -111,7 +110,7 @@ export class LabResults extends Model<LabResultsAttributes> implements LabResult
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
+    allowNull: false
   })
   orderedDate: Date;
 
@@ -123,7 +122,7 @@ export class LabResults extends Model<LabResultsAttributes> implements LabResult
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false,
+    allowNull: false
   })
   result: string;
 

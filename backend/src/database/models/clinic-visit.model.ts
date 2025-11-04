@@ -92,7 +92,7 @@ export interface ClinicVisitAttributes {
   },
   returnedToClass: {
     where: {
-      disposition: VisitDisposition.RETURNED_TO_CLASS
+      disposition: VisitDisposition.RETURN_TO_CLASS
     },
     order: [['checkInTime', 'DESC']]
   }
@@ -117,7 +117,7 @@ export interface ClinicVisitAttributes {
   },
     {
       fields: ['attendedBy']
-  },,
+  },
     {
       fields: ['createdAt'],
       name: 'idx_clinic_visit_created_at'

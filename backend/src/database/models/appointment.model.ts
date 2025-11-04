@@ -152,7 +152,7 @@ export interface AppointmentAttributes {
     {
       fields: ['updatedAt'],
       name: 'idx_appointments_updated_at'
-    },
+    }
   ]
   })
 export class Appointment extends Model<AppointmentAttributes> {

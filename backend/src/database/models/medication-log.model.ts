@@ -9,12 +9,11 @@ import {
   BelongsTo,
   Index,
   CreatedAt,
-  UpdatedAt
-  } ,
+  UpdatedAt,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 
 export enum MedicationLogStatus {
@@ -59,7 +58,7 @@ export interface MedicationLogAttributes {
   indexes: [
     { fields: ['studentId', 'medicationId'] },
     { fields: ['administeredAt'] },
-    { fields: ['administeredBy'] },,
+    { fields: ['administeredBy'] },
     {
       fields: ['createdAt'],
       name: 'idx_medication_log_created_at'

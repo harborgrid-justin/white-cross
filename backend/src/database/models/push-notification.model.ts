@@ -6,12 +6,11 @@ import {
   PrimaryKey,
   Default,
   AllowNull,
-  Index
-  } ,
+  Index,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -168,7 +167,7 @@ export interface PushNotificationCreationAttributes {
   },
     {
       fields: ['createdAt']
-  },,
+  },
     {
       fields: ['createdAt'],
       name: 'idx_push_notification_created_at'

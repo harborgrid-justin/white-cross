@@ -5,11 +5,10 @@ import {
   DataType,
   PrimaryKey,
   Default,
-} ,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -39,7 +38,7 @@ export interface SyncStateAttributes {
   indexes: [
     {
       fields: ['entityType', 'entityId'],
-      unique: true,
+      unique: true
     },,
     {
       fields: ['createdAt'],
@@ -49,7 +48,7 @@ export interface SyncStateAttributes {
       fields: ['updatedAt'],
       name: 'idx_sync_state_updated_at'
     }
-  ],
+  ]
 })
 export class SyncState extends Model<SyncStateAttributes> implements SyncStateAttributes {
   @PrimaryKey
@@ -59,25 +58,25 @@ export class SyncState extends Model<SyncStateAttributes> implements SyncStateAt
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: false,
+    allowNull: false
   })
   entityType: string;
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: false
   })
   entityId: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
+    allowNull: false
   })
   lastSyncAt: Date;
 
   @Column({
     type: DataType.STRING(50),
-    allowNull: false,
+    allowNull: false
   })
   syncStatus: string;
 

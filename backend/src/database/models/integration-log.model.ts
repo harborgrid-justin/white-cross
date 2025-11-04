@@ -14,11 +14,10 @@ import {
   Index,
   ForeignKey,
   BelongsTo,
-} ,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 
 /**
@@ -44,7 +43,7 @@ import { Op } from 'sequelize';
     { fields: ['status'] },
     { fields: ['startedAt'] },
     { fields: ['completedAt'] },
-    { fields: ['createdAt'] },,
+    { fields: ['createdAt'] },
     {
       fields: ['createdAt'],
       name: 'idx_integration_log_created_at'
@@ -53,7 +52,7 @@ import { Op } from 'sequelize';
       fields: ['updatedAt'],
       name: 'idx_integration_log_updated_at'
     }
-  ],
+  ]
 })
 export class IntegrationLog extends Model {
   @PrimaryKey
@@ -65,7 +64,7 @@ export class IntegrationLog extends Model {
   @Column({
     type: DataType.UUID,
     allowNull: true,
-    comment: 'Reference to the integration configuration',
+    comment: 'Reference to the integration configuration'
   })
   @Index
   integrationId: string | null;
@@ -73,7 +72,7 @@ export class IntegrationLog extends Model {
   @Column({
     type: DataType.STRING(50),
     allowNull: false,
-    comment: 'Type of integration (SIS, EHR, etc.)',
+    comment: 'Type of integration (SIS, EHR, etc.)'
   })
   @Index
   integrationType: string;
@@ -81,7 +80,7 @@ export class IntegrationLog extends Model {
   @Column({
     type: DataType.STRING(50),
     allowNull: false,
-    comment: 'Action performed (sync, test, etc.)',
+    comment: 'Action performed (sync, test, etc.)'
   })
   @Index
   action: string;
@@ -89,7 +88,7 @@ export class IntegrationLog extends Model {
   @Column({
     type: DataType.STRING(20),
     allowNull: false,
-    comment: 'Status of the operation (success, error, etc.)',
+    comment: 'Status of the operation (success, error, etc.)'
   })
   @Index
   status: string;
@@ -97,28 +96,28 @@ export class IntegrationLog extends Model {
   @Column({
     type: DataType.INTEGER,
     allowNull: true,
-    comment: 'Total number of records processed',
+    comment: 'Total number of records processed'
   })
   recordsProcessed: number | null;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: true,
-    comment: 'Number of records processed successfully',
+    comment: 'Number of records processed successfully'
   })
   recordsSucceeded: number | null;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: true,
-    comment: 'Number of records that failed processing',
+    comment: 'Number of records that failed processing'
   })
   recordsFailed: number | null;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    comment: 'When the operation started',
+    comment: 'When the operation started'
   })
   @Index
   startedAt: Date | null;
@@ -126,7 +125,7 @@ export class IntegrationLog extends Model {
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    comment: 'When the operation completed',
+    comment: 'When the operation completed'
   })
   @Index
   completedAt: Date | null;
@@ -134,21 +133,21 @@ export class IntegrationLog extends Model {
   @Column({
     type: DataType.INTEGER,
     allowNull: true,
-    comment: 'Duration of the operation in milliseconds',
+    comment: 'Duration of the operation in milliseconds'
   })
   duration: number | null;
 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
-    comment: 'Error message if operation failed',
+    comment: 'Error message if operation failed'
   })
   errorMessage: string | null;
 
   @Column({
     type: DataType.JSONB,
     allowNull: true,
-    comment: 'Additional details about the operation',
+    comment: 'Additional details about the operation'
   })
   details: Record<string, any> | null;
 
@@ -156,21 +155,21 @@ export class IntegrationLog extends Model {
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    comment: 'When this log entry was created',
+    comment: 'When this log entry was created'
   })
   declare createdAt: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    comment: 'When this log entry was last updated',
+    comment: 'When this log entry was last updated'
   })
   declare updatedAt: Date | null;
 
   // Relationships
   @BelongsTo(() => require('./integration-config.model').IntegrationConfig, {
     foreignKey: 'integrationId',
-    as: 'integration',
+    as: 'integration'
   })
   declare integration: any;
 

@@ -7,12 +7,11 @@ import {
   Default,
   ForeignKey,
   BelongsTo,
-  Index
-  } ,
+  Index,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 
 export enum MessageType {

@@ -42,7 +42,7 @@ export class SearchService {
       return [];
     }
 
-    const results: any[] = [];
+    let results: any[] = [];
 
     // Build common where clause for filters
     const baseWhere: any = {};
@@ -357,9 +357,9 @@ export class SearchService {
         limit: Math.ceil(limit / 5) // Distribute limit across tables
       }),
       this.allergyModel.findAll({
-        where: { updatedAt: { [Op.gte]: cutoffDate }, active: true },
+        where: { active: true },
         include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
-        order: [['updatedAt', 'DESC']],
+        order: [['diagnosedDate', 'DESC']],
         limit: Math.ceil(limit / 5)
       }),
       this.chronicConditionModel.findAll({

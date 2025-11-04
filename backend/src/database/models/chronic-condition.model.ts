@@ -8,12 +8,11 @@ import {
   AllowNull,
   Index,
   ForeignKey,
-  BelongsTo
-  } ,
+  BelongsTo,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -93,7 +92,7 @@ export interface ChronicConditionAttributes {
   },
     {
       fields: ['requires504']
-  },,
+  },
     {
       fields: ['createdAt'],
       name: 'idx_chronic_condition_created_at'

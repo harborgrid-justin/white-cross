@@ -390,7 +390,7 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
       });
 
       return auditLogs.map(log => ({
-        eventId: log.id,
+        eventId: log.id || '',
         eventType: log.action === AuditAction.CACHE_DELETE ? 'CACHE_INVALIDATION' : 'UNKNOWN',
         sourceEntity: log.entityType,
         entityId: log.entityId || '',

@@ -7,10 +7,9 @@ import {
   Default,
   HasMany,
   BeforeCreate,
-} ,
   Scopes,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -43,15 +42,15 @@ export interface VendorAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['name'],
+      fields: ['name']
     },
     {
       fields: ['email'],
-      unique: true,
+      unique: true
     },
     {
-      fields: ['isActive'],
-    },,
+      fields: ['isActive']
+    },
     {
       fields: ['createdAt'],
       name: 'idx_vendor_created_at'
@@ -60,7 +59,7 @@ export interface VendorAttributes {
       fields: ['updatedAt'],
       name: 'idx_vendor_updated_at'
     }
-  ],
+  ]
 })
 export class Vendor extends Model<VendorAttributes> implements VendorAttributes {
   @PrimaryKey
@@ -70,7 +69,7 @@ export class Vendor extends Model<VendorAttributes> implements VendorAttributes 
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false,
+    allowNull: false
   })
   name: string;
 
@@ -79,7 +78,7 @@ export class Vendor extends Model<VendorAttributes> implements VendorAttributes 
 
   @Column({
     type: DataType.STRING(255),
-    unique: true,
+    unique: true
   })
   email?: string;
 
@@ -102,7 +101,7 @@ export class Vendor extends Model<VendorAttributes> implements VendorAttributes 
   notes?: string;
 
   @Column({
-    type: DataType.DECIMAL(3, 2),
+    type: DataType.DECIMAL(3, 2)
   })
   rating?: number;
 

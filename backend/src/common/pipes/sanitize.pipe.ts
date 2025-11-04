@@ -5,7 +5,7 @@
  */
 
 import { PipeTransform, Injectable } from '@nestjs/common';
-import * as sanitizeHtml from 'sanitize-html';
+import sanitizeHtml from 'sanitize-html';
 
 /**
  * Sanitize Pipe

@@ -362,13 +362,13 @@ export class User extends Model<UserAttributes> {
   // Associations
   @BelongsTo(() => require('./school.model').School, {
     foreignKey: 'schoolId',
-    as: 'school',
+    as: 'school'
   })
   declare school?: School;
 
   @BelongsTo(() => require('./district.model').District, {
     foreignKey: 'districtId',
-    as: 'district',
+    as: 'district'
   })
   declare district?: District;
 
@@ -449,8 +449,6 @@ export class User extends Model<UserAttributes> {
       emailVerificationToken,
       emailVerificationExpires,
       twoFactorSecret,
-      mfaSecret,
-      mfaBackupCodes,
       ...safeData
     } = this.get({ plain: true });
     return {

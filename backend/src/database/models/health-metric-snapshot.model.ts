@@ -8,10 +8,9 @@ import {
   Index,
   BeforeCreate,
   CreatedAt,
-} ,
   Scopes,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -19,7 +18,7 @@ export enum TrendDirection {
   INCREASING = 'INCREASING',
   DECREASING = 'DECREASING',
   STABLE = 'STABLE',
-  FLUCTUATING = 'FLUCTUATING',
+  FLUCTUATING = 'FLUCTUATING'
 }
 
 export interface HealthMetricSnapshotAttributes {
@@ -47,11 +46,11 @@ export interface HealthMetricSnapshotAttributes {
   timestamps: false, // Only createdAt, no updatedAt
   indexes: [
     {
-      fields: ['schoolId', 'snapshotDate'],
+      fields: ['schoolId', 'snapshotDate']
     },
     {
-      fields: ['metricName', 'snapshotDate'],
-    },,
+      fields: ['metricName', 'snapshotDate']
+    },
     {
       fields: ['createdAt'],
       name: 'idx_health_metric_snapshot_created_at'
@@ -60,7 +59,7 @@ export interface HealthMetricSnapshotAttributes {
       fields: ['updatedAt'],
       name: 'idx_health_metric_snapshot_updated_at'
     }
-  ],
+  ]
 })
 export class HealthMetricSnapshot extends Model<HealthMetricSnapshotAttributes> implements HealthMetricSnapshotAttributes {
   @PrimaryKey
@@ -70,31 +69,31 @@ export class HealthMetricSnapshot extends Model<HealthMetricSnapshotAttributes> 
 
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: false
   })
   schoolId: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false,
+    allowNull: false
   })
   metricName: string;
 
   @Column({
     type: DataType.DECIMAL(10, 2),
-    allowNull: false,
+    allowNull: false
   })
   value: number;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false,
+    allowNull: false
   })
   unit: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false,
+    allowNull: false
   })
   category: string;
 
@@ -102,7 +101,7 @@ export class HealthMetricSnapshot extends Model<HealthMetricSnapshotAttributes> 
     type: DataType.STRING(50),
     validate: {
       isIn: [Object.values(TrendDirection)]
-    },
+    }
   })
   trend?: TrendDirection;
 
@@ -111,14 +110,14 @@ export class HealthMetricSnapshot extends Model<HealthMetricSnapshotAttributes> 
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
+    allowNull: false
   })
   snapshotDate: Date;
 
   @CreatedAt
   @Column({
     type: DataType.DATE,
-    allowNull: false,
+    allowNull: false
   })
   declare createdAt: Date;
 

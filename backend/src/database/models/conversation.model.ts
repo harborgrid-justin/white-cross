@@ -8,11 +8,10 @@ import {
   HasMany,
   Index,
   DeletedAt,
-} ,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 import { ConversationParticipant } from './conversation-participant.model';
 
@@ -25,7 +24,7 @@ import { ConversationParticipant } from './conversation-participant.model';
 export enum ConversationType {
   DIRECT = 'DIRECT',
   GROUP = 'GROUP',
-  CHANNEL = 'CHANNEL',
+  CHANNEL = 'CHANNEL'
 }
 
 /**
@@ -82,7 +81,6 @@ export interface ConversationCreationAttributes
   timestamps: true,
   paranoid: true,
   underscored: false,
-,
   indexes: [
     {
       fields: ['createdAt'],
@@ -105,28 +103,28 @@ export class Conversation extends Model<ConversationAttributes, ConversationCrea
     validate: {
       isIn: [Object.values(ConversationType)]
     },
-    allowNull: false,
+    allowNull: false
   })
   declare type: ConversationType;
 
   @Column({
     type: DataType.STRING(255),
     allowNull: true,
-    comment: 'Display name for group conversations and channels',
+    comment: 'Display name for group conversations and channels'
   })
   declare name?: string;
 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
-    comment: 'Description for group conversations and channels',
+    comment: 'Description for group conversations and channels'
   })
   declare description?: string;
 
   @Column({
     type: DataType.STRING(500),
     allowNull: true,
-    comment: 'Avatar/profile image URL',
+    comment: 'Avatar/profile image URL'
   })
   declare avatarUrl?: string;
 
@@ -134,7 +132,7 @@ export class Conversation extends Model<ConversationAttributes, ConversationCrea
   @Column({
     type: DataType.UUID,
     allowNull: false,
-    comment: 'Tenant ID for multi-tenant isolation',
+    comment: 'Tenant ID for multi-tenant isolation'
   })
   declare tenantId: string;
 
@@ -142,7 +140,7 @@ export class Conversation extends Model<ConversationAttributes, ConversationCrea
   @Column({
     type: DataType.UUID,
     allowNull: false,
-    comment: 'User who created the conversation',
+    comment: 'User who created the conversation'
   })
   declare createdById: string;
 
@@ -150,7 +148,7 @@ export class Conversation extends Model<ConversationAttributes, ConversationCrea
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    comment: 'Timestamp of last message for sorting',
+    comment: 'Timestamp of last message for sorting'
   })
   declare lastMessageAt?: Date;
 
@@ -158,7 +156,7 @@ export class Conversation extends Model<ConversationAttributes, ConversationCrea
     type: DataType.JSONB,
     allowNull: true,
     defaultValue: {},
-    comment: 'Extensible metadata field for additional properties',
+    comment: 'Extensible metadata field for additional properties'
   })
   declare metadata?: Record<string, any>;
 
@@ -167,7 +165,7 @@ export class Conversation extends Model<ConversationAttributes, ConversationCrea
     type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: false,
-    comment: 'Whether the conversation is archived',
+    comment: 'Whether the conversation is archived'
   })
   declare isArchived: boolean;
 
@@ -180,14 +178,14 @@ export class Conversation extends Model<ConversationAttributes, ConversationCrea
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW,
+    defaultValue: DataType.NOW
   })
   declare createdAt: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW,
+    defaultValue: DataType.NOW
   })
   declare updatedAt: Date;
 
@@ -195,7 +193,7 @@ export class Conversation extends Model<ConversationAttributes, ConversationCrea
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    comment: 'Soft delete timestamp',
+    comment: 'Soft delete timestamp'
   })
   declare deletedAt?: Date;
 

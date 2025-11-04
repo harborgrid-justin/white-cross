@@ -6,8 +6,8 @@
 // Module
 export { AllergyModule } from './allergy.module';
 
-// Service
-export { AllergyService } from './allergy.service';
+// Services
+export * from './services';
 
 // Controller
 export { AllergyController } from './allergy.controller';

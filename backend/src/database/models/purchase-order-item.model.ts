@@ -8,10 +8,9 @@ import {
   ForeignKey,
   BelongsTo,
   BeforeCreate,
-} ,
   Scopes,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -39,11 +38,11 @@ export interface PurchaseOrderItemAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['purchaseOrderId'],
+      fields: ['purchaseOrderId']
     },
     {
-      fields: ['inventoryItemId'],
-    },,
+      fields: ['inventoryItemId']
+    },
     {
       fields: ['createdAt'],
       name: 'idx_purchase_order_item_created_at'
@@ -52,7 +51,7 @@ export interface PurchaseOrderItemAttributes {
       fields: ['updatedAt'],
       name: 'idx_purchase_order_item_updated_at'
     }
-  ],
+  ]
 })
 export class PurchaseOrderItem extends Model<PurchaseOrderItemAttributes> implements PurchaseOrderItemAttributes {
   @PrimaryKey
@@ -63,32 +62,32 @@ export class PurchaseOrderItem extends Model<PurchaseOrderItemAttributes> implem
   @ForeignKey(() => require('./purchase-order.model').PurchaseOrder)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: false
   })
   purchaseOrderId: string;
 
   @ForeignKey(() => require('./inventory-item.model').InventoryItem)
   @Column({
     type: DataType.UUID,
-    allowNull: false,
+    allowNull: false
   })
   inventoryItemId: string;
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
+    allowNull: false
   })
   quantity: number;
 
   @Column({
     type: DataType.DECIMAL(10, 2),
-    allowNull: false,
+    allowNull: false
   })
   unitCost: number;
 
   @Column({
     type: DataType.DECIMAL(12, 2),
-    allowNull: false,
+    allowNull: false
   })
   totalCost: number;
 

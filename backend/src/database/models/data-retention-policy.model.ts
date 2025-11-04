@@ -5,12 +5,13 @@ import {
   DataType,
   PrimaryKey,
   Default,
-  AllowNull
-  } ,
+  AllowNull,
   Scopes,
   BeforeCreate,
-  BeforeUpdate
-  } from 'sequelize-typescript';
+  BeforeUpdate,
+  UpdatedAt,
+  CreatedAt
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -68,7 +69,7 @@ export interface DataRetentionPolicyAttributes {
   },
     {
       fields: ['lastReviewedAt']
-  },,
+  },
     {
       fields: ['createdAt'],
       name: 'idx_data_retention_policy_created_at'

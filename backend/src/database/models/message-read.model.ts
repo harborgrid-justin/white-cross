@@ -8,11 +8,10 @@ import {
   ForeignKey,
   BelongsTo,
   Index,
-} ,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 import { Message } from './message.model';
 
@@ -68,7 +67,7 @@ export interface MessageReadCreationAttributes
     {
       unique: true,
       fields: ['messageId', 'userId'],
-      name: 'message_reads_message_user_unique',
+      name: 'message_reads_message_user_unique'
     },,
     {
       fields: ['createdAt'],
@@ -78,7 +77,7 @@ export interface MessageReadCreationAttributes
       fields: ['updatedAt'],
       name: 'idx_message_read_updated_at'
     }
-  ],
+  ]
 })
 export class MessageRead extends Model<MessageReadAttributes, MessageReadCreationAttributes> {
   @PrimaryKey
@@ -91,7 +90,7 @@ export class MessageRead extends Model<MessageReadAttributes, MessageReadCreatio
   @Column({
     type: DataType.UUID,
     allowNull: false,
-    comment: 'Message that was read',
+    comment: 'Message that was read'
   })
   declare messageId: string;
 
@@ -99,7 +98,7 @@ export class MessageRead extends Model<MessageReadAttributes, MessageReadCreatio
   @Column({
     type: DataType.UUID,
     allowNull: false,
-    comment: 'User who read the message',
+    comment: 'User who read the message'
   })
   declare userId: string;
 
@@ -108,7 +107,7 @@ export class MessageRead extends Model<MessageReadAttributes, MessageReadCreatio
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    comment: 'Timestamp when message was read',
+    comment: 'Timestamp when message was read'
   })
   declare readAt: Date;
 
@@ -118,14 +117,14 @@ export class MessageRead extends Model<MessageReadAttributes, MessageReadCreatio
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW,
+    defaultValue: DataType.NOW
   })
   declare createdAt: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW,
+    defaultValue: DataType.NOW
   })
   declare updatedAt: Date;
 

@@ -355,6 +355,178 @@ export class PHIAccessLogger implements OnModuleDestroy {
   }
 
   /**
+   * Search PHI access logs with filters
+   */
+  async searchPHIAccessLogs(filters: {
+    userId?: string;
+    studentId?: string;
+    operation?: string;
+    startDate?: Date;
+    endDate?: Date;
+    limit?: number;
+  }): Promise<PHIAccessLogEntry[]> {
+    try {
+      const whereClause: any = {
+        entityType: 'PHI_ACCESS'
+      };
+
+      if (filters.userId) {
+        whereClause.userId = filters.userId;
+      }
+
+      if (filters.studentId) {
+        whereClause.entityId = filters.studentId;
+      }
+
+      if (filters.startDate || filters.endDate) {
+        whereClause.createdAt = {};
+        if (filters.startDate) {
+          whereClause.createdAt[Op.gte] = filters.startDate;
+        }
+        if (filters.endDate) {
+          whereClause.createdAt[Op.lte] = filters.endDate;
+        }
+      }
+
+      const auditLogs = await this.auditLogModel.findAll({
+        where: whereClause,
+        order: [['createdAt', 'DESC']],
+        limit: filters.limit || 100
+      });
+
+      return auditLogs.map(log => {
+        const changes = log.changes as any;
+        return {
+          correlationId: changes?.correlationId || log.id || '',
+          timestamp: log.createdAt || new Date(),
+          userId: log.userId || undefined,
+          studentId: log.entityId || undefined,
+          operation: changes?.operation || 'UNKNOWN',
+          dataTypes: changes?.dataTypes || [],
+          recordCount: changes?.recordCount || 1,
+          sensitivityLevel: changes?.sensitivityLevel || 'PHI',
+          ipAddress: changes?.ipAddress || log.ipAddress || '',
+          userAgent: changes?.userAgent || log.userAgent || '',
+          success: changes?.success !== false
+        };
+      });
+
+    } catch (error) {
+      this.logger.error('Failed to search PHI access logs:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get security incidents for compliance review
+   */
+  async getSecurityIncidents(limit: number = 50): Promise<SecurityIncidentEntry[]> {
+    try {
+      const auditLogs = await this.auditLogModel.findAll({
+        where: {
+          entityType: 'PHI_SECURITY',
+          action: AuditAction.UPDATE // Security incidents are logged as UPDATE actions
+        },
+        order: [['createdAt', 'DESC']],
+        limit
+      });
+
+      return auditLogs.map(log => {
+        const changes = log.changes as any;
+        return {
+          correlationId: changes?.correlationId || log.id || '',
+          timestamp: log.createdAt || new Date(),
+          incidentType: changes?.incidentType || 'UNKNOWN',
+          userId: log.userId || undefined,
+          ipAddress: log.ipAddress || '',
+          operation: changes?.operation || 'UNKNOWN',
+          errorMessage: changes?.errorMessage || '',
+          severity: changes?.severity || 'MEDIUM'
+        };
+      });
+
+    } catch (error) {
+      this.logger.error('Failed to retrieve security incidents:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Generate comprehensive compliance report
+   */
+  async generateComplianceReport(startDate: Date, endDate: Date): Promise<{
+    phiAccessSummary: PHIAccessStatistics;
+    securityIncidents: SecurityIncidentEntry[];
+    complianceScore: number;
+    recommendations: string[];
+    period: { start: Date; end: Date };
+  }> {
+    try {
+      // Get PHI access statistics
+      const phiAccessSummary = await this.getPHIAccessStatistics(startDate, endDate);
+
+      // Get security incidents
+      const securityIncidents = await this.getSecurityIncidents(100);
+
+      // Calculate compliance score
+      let complianceScore = 100;
+      const recommendations: string[] = [];
+
+      // Deduct points for security incidents
+      if (securityIncidents.length > 0) {
+        const deduction = Math.min(securityIncidents.length * 5, 40);
+        complianceScore -= deduction;
+        recommendations.push(`Address ${securityIncidents.length} security incidents to improve compliance score`);
+      }
+
+      // Check for high-frequency access patterns
+      if (phiAccessSummary.totalAccesses > 1000) {
+        complianceScore -= 10;
+        recommendations.push('Implement rate limiting for high-volume PHI access');
+      }
+
+      // Check for lack of audit coverage
+      if (phiAccessSummary.totalAccesses === 0 && securityIncidents.length === 0) {
+        complianceScore -= 20;
+        recommendations.push('Ensure audit logging is properly configured and active');
+      }
+
+      // Check for sensitive PHI access patterns
+      const sensitiveAccessCount = phiAccessSummary.dataTypeCounts['SENSITIVE_PHI'] || 0;
+      if (sensitiveAccessCount > phiAccessSummary.totalAccesses * 0.1) {
+        complianceScore -= 15;
+        recommendations.push('Review access controls for sensitive PHI data');
+      }
+
+      return {
+        phiAccessSummary,
+        securityIncidents,
+        complianceScore: Math.max(complianceScore, 0),
+        recommendations,
+        period: { start: startDate, end: endDate }
+      };
+
+    } catch (error) {
+      this.logger.error('Failed to generate compliance report:', error);
+      return {
+        phiAccessSummary: {
+          totalAccesses: 0,
+          uniqueUsers: 0,
+          uniqueStudents: 0,
+          operationCounts: {},
+          dataTypeCounts: {},
+          securityIncidents: 0,
+          period: { start: startDate, end: endDate }
+        },
+        securityIncidents: [],
+        complianceScore: 0,
+        recommendations: ['Unable to generate compliance report due to system error'],
+        period: { start: startDate, end: endDate }
+      };
+    }
+  }
+
+  /**
    * Map operation string to AuditAction enum
    */
   private mapOperationToAuditAction(operation: string): AuditAction {

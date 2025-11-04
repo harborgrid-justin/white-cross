@@ -5,12 +5,11 @@ import {
   DataType,
   PrimaryKey,
   Default,
-  AllowNull
-  } ,
+  AllowNull,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -61,7 +60,7 @@ export interface ReportTemplateAttributes {
   indexes: [
     {
       fields: ['reportType']
-  },,
+  },
     {
       fields: ['createdAt'],
       name: 'idx_report_template_created_at'

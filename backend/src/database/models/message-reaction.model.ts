@@ -8,11 +8,10 @@ import {
   ForeignKey,
   BelongsTo,
   Index,
-} ,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 import { Message } from './message.model';
 
@@ -70,7 +69,7 @@ export interface MessageReactionCreationAttributes
     {
       unique: true,
       fields: ['messageId', 'userId', 'emoji'],
-      name: 'message_reactions_message_user_emoji_unique',
+      name: 'message_reactions_message_user_emoji_unique'
     },,
     {
       fields: ['createdAt'],
@@ -80,7 +79,7 @@ export interface MessageReactionCreationAttributes
       fields: ['updatedAt'],
       name: 'idx_message_reaction_updated_at'
     }
-  ],
+  ]
 })
 export class MessageReaction extends Model<MessageReactionAttributes, MessageReactionCreationAttributes> {
   @PrimaryKey
@@ -93,7 +92,7 @@ export class MessageReaction extends Model<MessageReactionAttributes, MessageRea
   @Column({
     type: DataType.UUID,
     allowNull: false,
-    comment: 'Message being reacted to',
+    comment: 'Message being reacted to'
   })
   declare messageId: string;
 
@@ -101,14 +100,14 @@ export class MessageReaction extends Model<MessageReactionAttributes, MessageRea
   @Column({
     type: DataType.UUID,
     allowNull: false,
-    comment: 'User who added the reaction',
+    comment: 'User who added the reaction'
   })
   declare userId: string;
 
   @Column({
     type: DataType.STRING(20),
     allowNull: false,
-    comment: 'Emoji character or code',
+    comment: 'Emoji character or code'
   })
   declare emoji: string;
 
@@ -118,14 +117,14 @@ export class MessageReaction extends Model<MessageReactionAttributes, MessageRea
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW,
+    defaultValue: DataType.NOW
   })
   declare createdAt: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW,
+    defaultValue: DataType.NOW
   })
   declare updatedAt: Date;
 

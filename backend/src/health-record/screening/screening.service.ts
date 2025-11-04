@@ -9,35 +9,19 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-
-/**
- * Screening entity interface (would normally import from model)
- */
-interface Screening {
-  id: string;
-  studentId: string;
-  screeningType: string;
-  screeningDate: Date;
-  result: string;
-  screenerName?: string;
-  notes?: string;
-  followUpRequired?: boolean;
-  followUpNotes?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
+import { HealthScreening, HealthScreeningAttributes } from '../../database/models/health-screening.model';
 
 @Injectable()
 export class ScreeningService {
   private readonly logger = new Logger(ScreeningService.name);
 
   // Mock data store (in production, use actual Sequelize models)
-  private screenings: Map<string, Screening> = new Map();
+  private screenings: Map<string, HealthScreeningAttributes> = new Map();
 
   /**
    * GAP-SCREEN-001: Get all screenings for a student
    */
-  async getStudentScreenings(studentId: string): Promise<Screening[]> {
+  async getStudentScreenings(studentId: string): Promise<HealthScreeningAttributes[]> {
     this.logger.log(`Getting screenings for student ${studentId}`);
 
     const studentScreenings = Array.from(this.screenings.values()).filter(
@@ -68,7 +52,7 @@ export class ScreeningService {
       try {
         const screening = await this.createScreening(screeningData);
         results.successCount++;
-        results.createdIds.push(screening.id);
+        results.createdIds.push(screening.id!);
       } catch (error) {
         results.errorCount++;
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -257,22 +241,22 @@ export class ScreeningService {
   /**
    * Helper method to create a screening record
    */
-  private async createScreening(data: any): Promise<Screening> {
-    const screening: Screening = {
-      id: this.generateId(),
+  private async createScreening(data: any): Promise<HealthScreeningAttributes> {
+    const id = this.generateId();
+    const screening: HealthScreeningAttributes = {
+      id,
       studentId: data.studentId,
       screeningType: data.screeningType,
       screeningDate: new Date(data.screeningDate),
-      result: data.result,
-      screenerName: data.screenerName,
+      results: data.result || data.results,
+      passed: data.passed ?? true,
       notes: data.notes,
-      followUpRequired: data.followUpRequired,
-      followUpNotes: data.followUpNotes,
+      conductedBy: data.screenerName || data.conductedBy,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
-    this.screenings.set(screening.id, screening);
+    this.screenings.set(id, screening);
 
     this.logger.log(
       `PHI Created: Screening ${screening.screeningType} created for student ${screening.studentId}`,

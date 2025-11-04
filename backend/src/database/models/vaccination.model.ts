@@ -8,12 +8,11 @@ import {
   AllowNull,
   Index,
   ForeignKey,
-  BelongsTo
-  } ,
+  BelongsTo,
   Scopes,
   BeforeCreate,
   BeforeUpdate
-  } from 'sequelize-typescript';
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -154,7 +153,7 @@ export interface VaccinationAttributes {
   },
     {
       fields: ['expirationDate']
-  },,
+  },
     {
       fields: ['createdAt'],
       name: 'idx_vaccination_created_at'

@@ -13,6 +13,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Model, Op } from 'sequelize';
 import { Vaccination } from '../../database/models/vaccination.model';
 import { Student } from '../../database/models/student.model';
+import { ComplianceStatus } from '../interfaces/vaccination.interface';
 
 /**
  * CDC CVX Vaccine Codes (subset of commonly used codes)
@@ -614,16 +615,20 @@ export class VaccinationService {
 
     // Create exemption vaccination record
     const exemption = await this.vaccinationModel.create({
+      id: require('uuid').v4(),
       studentId,
       vaccineName: exemptionDto.vaccineName,
       vaccineType: exemptionDto.vaccineName,
+      seriesComplete: false,
+      administrationDate: new Date(), // Record creation date
+      administeredBy: 'EXEMPT',
       exemptionStatus: true,
       exemptionReason: exemptionDto.reason,
-      exemptionType: exemptionDto.exemptionType,
+      complianceStatus: ComplianceStatus.EXEMPT,
+      vfcEligibility: false,
+      visProvided: false,
+      consentObtained: false,
       notes: `Exemption: ${exemptionDto.exemptionType} - ${exemptionDto.reason}`,
-      providerName: exemptionDto.providerName,
-      administrationDate: new Date(), // Record creation date
-      complianceStatus: 'EXEMPT',
     });
 
     this.logger.log(

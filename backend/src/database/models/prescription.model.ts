@@ -129,7 +129,7 @@ export interface PrescriptionAttributes {
     {
       fields: ['updatedAt'],
       name: 'idx_prescriptions_updated_at'
-  },
+  }
   ]
   })
 export class Prescription extends Model<PrescriptionAttributes> implements PrescriptionAttributes {
