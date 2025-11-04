@@ -1,10 +1,16 @@
 'use strict';
 
 /**
- * Complete Health Records Schema Migration
+ * Complete Health Records Schema Migration (FIXED VERSION)
  *
  * This migration implements a comprehensive health records system for the White Cross healthcare platform.
  * HIPAA compliant with full audit trails and proper indexing.
+ *
+ * FIXES APPLIED:
+ * - Changed all ID columns from STRING to UUID for consistency
+ * - Changed all foreign key columns from TEXT to UUID
+ * - Removed unnecessary column rename logic (columns already have correct names)
+ * - Fixed data type compatibility for foreign key constraints
  *
  * Changes:
  * - Creates new health-related enums (AllergyType, ConditionSeverity, VaccineType, etc.)
@@ -196,98 +202,61 @@ module.exports = {
       // STEP 3: Alter Existing health_records Table
       // =====================================================
 
-      // Check if table exists and has the old column names
-      const [tables] = await queryInterface.sequelize.query(`
-        SELECT column_name FROM information_schema.columns
-        WHERE table_name = 'health_records' AND column_name IN ('type', 'date');
-      `, { transaction });
-
-      if (tables.length > 0) {
-        // Rename columns if they exist
-        const columns = tables.map(t => t.column_name);
-
-        if (columns.includes('type')) {
-          await queryInterface.renameColumn('health_records', 'type', 'recordType', { transaction });
-        }
-
-        if (columns.includes('date')) {
-          await queryInterface.renameColumn('health_records', 'date', 'recordDate', { transaction });
-        }
-      }
-
-      // Add new columns
+      // Add new columns (columns already have correct names from original migration)
       const newHealthRecordColumns = [
-        { name: 'title', type: Sequelize.TEXT, allowNull: false, defaultValue: 'Health Record' },
-        { name: 'provider', type: Sequelize.TEXT, allowNull: true },
-        { name: 'providerNpi', type: Sequelize.TEXT, allowNull: true },
-        { name: 'facility', type: Sequelize.TEXT, allowNull: true },
-        { name: 'facilityNpi', type: Sequelize.TEXT, allowNull: true },
-        { name: 'diagnosis', type: Sequelize.TEXT, allowNull: true },
-        { name: 'diagnosisCode', type: Sequelize.TEXT, allowNull: true },
-        { name: 'treatment', type: Sequelize.TEXT, allowNull: true },
-        { name: 'followUpRequired', type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false },
-        { name: 'followUpDate', type: Sequelize.DATE, allowNull: true },
-        { name: 'followUpCompleted', type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false },
-        { name: 'metadata', type: Sequelize.JSONB, allowNull: true },
-        { name: 'isConfidential', type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false },
-        { name: 'createdBy', type: Sequelize.TEXT, allowNull: true },
-        { name: 'updatedBy', type: Sequelize.TEXT, allowNull: true }
+        { name: 'provider', type: 'TEXT' },
+        { name: 'providerNpi', type: 'TEXT' },
+        { name: 'facility', type: 'TEXT' },
+        { name: 'facilityNpi', type: 'TEXT' },
+        { name: 'diagnosis', type: 'TEXT' },
+        { name: 'diagnosisCode', type: 'TEXT' },
+        { name: 'treatment', type: 'TEXT' },
+        { name: 'followUpRequired', type: 'BOOLEAN', default: 'false' },
+        { name: 'followUpDate', type: 'TIMESTAMP(3)' },
+        { name: 'followUpCompleted', type: 'BOOLEAN', default: 'false' },
+        { name: 'metadata', type: 'JSONB' },
+        { name: 'isConfidential', type: 'BOOLEAN', default: 'false' },
+        { name: 'createdBy', type: 'UUID' },
+        { name: 'updatedBy', type: 'UUID' }
       ];
 
       for (const col of newHealthRecordColumns) {
+        const defaultClause = col.default ? ` DEFAULT ${col.default}` : '';
         await queryInterface.sequelize.query(`
-          ALTER TABLE "health_records" ADD COLUMN IF NOT EXISTS "${col.name}" ${
-            col.type === Sequelize.TEXT ? 'TEXT' :
-            col.type === Sequelize.BOOLEAN ? 'BOOLEAN' :
-            col.type === Sequelize.DATE ? 'TIMESTAMP(3)' :
-            col.type === Sequelize.JSONB ? 'JSONB' : 'TEXT'
-          }${col.allowNull === false ? ' NOT NULL' : ''}${
-            col.defaultValue !== undefined ?
-              (typeof col.defaultValue === 'boolean' ? ` DEFAULT ${col.defaultValue}` :
-               typeof col.defaultValue === 'string' ? ` DEFAULT '${col.defaultValue}'` : '') : ''
-          };
+          ALTER TABLE "health_records" ADD COLUMN IF NOT EXISTS "${col.name}" ${col.type}${defaultClause};
         `, { transaction });
       }
-
-      // Drop vital column if exists
-      await queryInterface.sequelize.query(`
-        ALTER TABLE "health_records" DROP COLUMN IF EXISTS "vital";
-      `, { transaction });
-
-      // Remove default from title after initial migration
-      await queryInterface.sequelize.query(`
-        ALTER TABLE "health_records" ALTER COLUMN "title" DROP DEFAULT;
-      `, { transaction });
 
       // =====================================================
       // STEP 4: Alter Existing allergies Table
       // =====================================================
 
       const allergyColumns = [
-        { name: 'allergyType', sql: '"AllergyType" NOT NULL DEFAULT \'OTHER\'' },
-        { name: 'symptoms', sql: 'TEXT' },
-        { name: 'reactions', sql: 'JSONB' },
-        { name: 'treatment', sql: 'TEXT' },
-        { name: 'emergencyProtocol', sql: 'TEXT' },
-        { name: 'onsetDate', sql: 'TIMESTAMP(3)' },
-        { name: 'diagnosedDate', sql: 'TIMESTAMP(3)' },
-        { name: 'diagnosedBy', sql: 'TEXT' },
-        { name: 'verified', sql: 'BOOLEAN NOT NULL DEFAULT false' },
-        { name: 'verifiedBy', sql: 'TEXT' },
-        { name: 'verificationDate', sql: 'TIMESTAMP(3)' },
-        { name: 'active', sql: 'BOOLEAN NOT NULL DEFAULT true' },
-        { name: 'notes', sql: 'TEXT' },
-        { name: 'epiPenRequired', sql: 'BOOLEAN NOT NULL DEFAULT false' },
-        { name: 'epiPenLocation', sql: 'TEXT' },
-        { name: 'epiPenExpiration', sql: 'TIMESTAMP(3)' },
-        { name: 'healthRecordId', sql: 'TEXT' },
-        { name: 'createdBy', sql: 'TEXT' },
-        { name: 'updatedBy', sql: 'TEXT' }
+        { name: 'allergyType', type: '"AllergyType"', default: "'OTHER'" },
+        { name: 'symptoms', type: 'TEXT' },
+        { name: 'reactions', type: 'JSONB' },
+        { name: 'treatment', type: 'TEXT' },
+        { name: 'emergencyProtocol', type: 'TEXT' },
+        { name: 'onsetDate', type: 'TIMESTAMP(3)' },
+        { name: 'diagnosedDate', type: 'TIMESTAMP(3)' },
+        { name: 'diagnosedBy', type: 'TEXT' },
+        { name: 'verified', type: 'BOOLEAN', default: 'false' },
+        { name: 'verifiedBy', type: 'TEXT' },
+        { name: 'verificationDate', type: 'TIMESTAMP(3)' },
+        { name: 'active', type: 'BOOLEAN', default: 'true' },
+        { name: 'notes', type: 'TEXT' },
+        { name: 'epiPenRequired', type: 'BOOLEAN', default: 'false' },
+        { name: 'epiPenLocation', type: 'TEXT' },
+        { name: 'epiPenExpiration', type: 'TIMESTAMP(3)' },
+        { name: 'healthRecordId', type: 'UUID' },  // FIXED: Changed from TEXT to UUID
+        { name: 'createdBy', type: 'UUID' },  // FIXED: Changed from TEXT to UUID
+        { name: 'updatedBy', type: 'UUID' }   // FIXED: Changed from TEXT to UUID
       ];
 
       for (const col of allergyColumns) {
+        const defaultClause = col.default ? ` DEFAULT ${col.default}` : '';
         await queryInterface.sequelize.query(`
-          ALTER TABLE "allergies" ADD COLUMN IF NOT EXISTS "${col.name}" ${col.sql};
+          ALTER TABLE "allergies" ADD COLUMN IF NOT EXISTS "${col.name}" ${col.type}${defaultClause};
         `, { transaction });
       }
 
@@ -301,29 +270,30 @@ module.exports = {
       // =====================================================
 
       const chronicConditionColumns = [
-        { name: 'icdCode', sql: 'TEXT' },
-        { name: 'diagnosedBy', sql: 'TEXT' },
-        { name: 'severity', sql: '"ConditionSeverity" NOT NULL DEFAULT \'MODERATE\'' },
-        { name: 'medications', sql: 'JSONB' },
-        { name: 'treatments', sql: 'TEXT' },
-        { name: 'accommodationsRequired', sql: 'BOOLEAN NOT NULL DEFAULT false' },
-        { name: 'accommodationDetails', sql: 'TEXT' },
-        { name: 'emergencyProtocol', sql: 'TEXT' },
-        { name: 'actionPlan', sql: 'TEXT' },
-        { name: 'reviewFrequency', sql: 'TEXT' },
-        { name: 'restrictions', sql: 'JSONB' },
-        { name: 'precautions', sql: 'JSONB' },
-        { name: 'triggers', sql: 'TEXT[]' },
-        { name: 'carePlan', sql: 'TEXT' },
-        { name: 'lastReviewDate', sql: 'TIMESTAMP(3)' },
-        { name: 'healthRecordId', sql: 'TEXT' },
-        { name: 'createdBy', sql: 'TEXT' },
-        { name: 'updatedBy', sql: 'TEXT' }
+        { name: 'icdCode', type: 'TEXT' },
+        { name: 'diagnosedBy', type: 'TEXT' },
+        { name: 'severity', type: '"ConditionSeverity"', default: "'MODERATE'" },
+        { name: 'medications', type: 'JSONB' },
+        { name: 'treatments', type: 'TEXT' },
+        { name: 'accommodationsRequired', type: 'BOOLEAN', default: 'false' },
+        { name: 'accommodationDetails', type: 'TEXT' },
+        { name: 'emergencyProtocol', type: 'TEXT' },
+        { name: 'actionPlan', type: 'TEXT' },
+        { name: 'reviewFrequency', type: 'TEXT' },
+        { name: 'restrictions', type: 'JSONB' },
+        { name: 'precautions', type: 'JSONB' },
+        { name: 'triggers', type: 'TEXT[]' },
+        { name: 'carePlan', type: 'TEXT' },
+        { name: 'lastReviewDate', type: 'TIMESTAMP(3)' },
+        { name: 'healthRecordId', type: 'UUID' },  // FIXED: Changed from TEXT to UUID
+        { name: 'createdBy', type: 'UUID' },  // FIXED: Changed from TEXT to UUID
+        { name: 'updatedBy', type: 'UUID' }   // FIXED: Changed from TEXT to UUID
       ];
 
       for (const col of chronicConditionColumns) {
+        const defaultClause = col.default ? ` DEFAULT ${col.default}` : '';
         await queryInterface.sequelize.query(`
-          ALTER TABLE "chronic_conditions" ADD COLUMN IF NOT EXISTS "${col.name}" ${col.sql};
+          ALTER TABLE "chronic_conditions" ADD COLUMN IF NOT EXISTS "${col.name}" ${col.type}${defaultClause};
         `, { transaction });
       }
 
@@ -360,9 +330,10 @@ module.exports = {
 
       await queryInterface.createTable('vaccinations', {
         id: {
-          type: Sequelize.STRING,
+          type: Sequelize.UUID,  // FIXED: Changed from STRING to UUID
           primaryKey: true,
-          allowNull: false
+          allowNull: false,
+          defaultValue: Sequelize.literal('gen_random_uuid()')
         },
         vaccineName: {
           type: Sequelize.TEXT,
@@ -505,7 +476,7 @@ module.exports = {
           allowNull: true
         },
         studentId: {
-          type: Sequelize.STRING,
+          type: Sequelize.UUID,  // FIXED: Changed from STRING to UUID
           allowNull: false,
           references: {
             model: 'students',
@@ -515,7 +486,7 @@ module.exports = {
           onDelete: 'CASCADE'
         },
         healthRecordId: {
-          type: Sequelize.STRING,
+          type: Sequelize.UUID,  // FIXED: Changed from STRING to UUID
           allowNull: true,
           references: {
             model: 'health_records',
@@ -525,11 +496,11 @@ module.exports = {
           onDelete: 'SET NULL'
         },
         createdBy: {
-          type: Sequelize.TEXT,
+          type: Sequelize.UUID,  // FIXED: Changed from TEXT to UUID
           allowNull: true
         },
         updatedBy: {
-          type: Sequelize.TEXT,
+          type: Sequelize.UUID,  // FIXED: Changed from TEXT to UUID
           allowNull: true
         },
         createdAt: {
@@ -550,9 +521,10 @@ module.exports = {
 
       await queryInterface.createTable('screenings', {
         id: {
-          type: Sequelize.STRING,
+          type: Sequelize.UUID,  // FIXED: Changed from STRING to UUID
           primaryKey: true,
-          allowNull: false
+          allowNull: false,
+          defaultValue: Sequelize.literal('gen_random_uuid()')
         },
         screeningType: {
           type: Sequelize.ENUM(
@@ -648,7 +620,7 @@ module.exports = {
           allowNull: true
         },
         studentId: {
-          type: Sequelize.STRING,
+          type: Sequelize.UUID,  // FIXED: Changed from STRING to UUID
           allowNull: false,
           references: {
             model: 'students',
@@ -658,7 +630,7 @@ module.exports = {
           onDelete: 'CASCADE'
         },
         healthRecordId: {
-          type: Sequelize.STRING,
+          type: Sequelize.UUID,  // FIXED: Changed from STRING to UUID
           allowNull: true,
           references: {
             model: 'health_records',
@@ -668,11 +640,11 @@ module.exports = {
           onDelete: 'SET NULL'
         },
         createdBy: {
-          type: Sequelize.TEXT,
+          type: Sequelize.UUID,  // FIXED: Changed from TEXT to UUID
           allowNull: true
         },
         updatedBy: {
-          type: Sequelize.TEXT,
+          type: Sequelize.UUID,  // FIXED: Changed from TEXT to UUID
           allowNull: true
         },
         createdAt: {
@@ -693,9 +665,10 @@ module.exports = {
 
       await queryInterface.createTable('growth_measurements', {
         id: {
-          type: Sequelize.STRING,
+          type: Sequelize.UUID,  // FIXED: Changed from STRING to UUID
           primaryKey: true,
-          allowNull: false
+          allowNull: false,
+          defaultValue: Sequelize.literal('gen_random_uuid()')
         },
         measurementDate: {
           type: Sequelize.DATE,
@@ -764,7 +737,7 @@ module.exports = {
           allowNull: true
         },
         studentId: {
-          type: Sequelize.STRING,
+          type: Sequelize.UUID,  // FIXED: Changed from STRING to UUID
           allowNull: false,
           references: {
             model: 'students',
@@ -774,7 +747,7 @@ module.exports = {
           onDelete: 'CASCADE'
         },
         healthRecordId: {
-          type: Sequelize.STRING,
+          type: Sequelize.UUID,  // FIXED: Changed from STRING to UUID
           allowNull: true,
           references: {
             model: 'health_records',
@@ -784,11 +757,11 @@ module.exports = {
           onDelete: 'SET NULL'
         },
         createdBy: {
-          type: Sequelize.TEXT,
+          type: Sequelize.UUID,  // FIXED: Changed from TEXT to UUID
           allowNull: true
         },
         updatedBy: {
-          type: Sequelize.TEXT,
+          type: Sequelize.UUID,  // FIXED: Changed from TEXT to UUID
           allowNull: true
         },
         createdAt: {
@@ -809,9 +782,10 @@ module.exports = {
 
       await queryInterface.createTable('vital_signs', {
         id: {
-          type: Sequelize.STRING,
+          type: Sequelize.UUID,  // FIXED: Changed from STRING to UUID
           primaryKey: true,
-          allowNull: false
+          allowNull: false,
+          defaultValue: Sequelize.literal('gen_random_uuid()')
         },
         measurementDate: {
           type: Sequelize.DATE,
@@ -899,7 +873,7 @@ module.exports = {
           allowNull: true
         },
         studentId: {
-          type: Sequelize.STRING,
+          type: Sequelize.UUID,  // FIXED: Changed from STRING to UUID
           allowNull: false,
           references: {
             model: 'students',
@@ -909,7 +883,7 @@ module.exports = {
           onDelete: 'CASCADE'
         },
         healthRecordId: {
-          type: Sequelize.STRING,
+          type: Sequelize.UUID,  // FIXED: Changed from STRING to UUID
           allowNull: true,
           references: {
             model: 'health_records',
@@ -919,7 +893,7 @@ module.exports = {
           onDelete: 'SET NULL'
         },
         appointmentId: {
-          type: Sequelize.STRING,
+          type: Sequelize.UUID,  // FIXED: Changed from STRING to UUID
           allowNull: true,
           references: {
             model: 'appointments',
@@ -929,11 +903,11 @@ module.exports = {
           onDelete: 'SET NULL'
         },
         createdBy: {
-          type: Sequelize.TEXT,
+          type: Sequelize.UUID,  // FIXED: Changed from TEXT to UUID
           allowNull: true
         },
         updatedBy: {
-          type: Sequelize.TEXT,
+          type: Sequelize.UUID,  // FIXED: Changed from TEXT to UUID
           allowNull: true
         },
         createdAt: {
@@ -1044,7 +1018,7 @@ module.exports = {
       `, { transaction });
 
       await transaction.commit();
-      console.log('✓ Complete health records schema migration completed successfully');
+      console.log('✓ Complete health records schema migration (FIXED) completed successfully');
 
     } catch (error) {
       await transaction.rollback();
@@ -1073,7 +1047,19 @@ module.exports = {
       `, { transaction });
 
       // Remove added columns from existing tables
-      // (Complex - would need to list all columns added)
+      const columnsToRemove = [
+        { table: 'health_records', columns: ['provider', 'providerNpi', 'facility', 'facilityNpi', 'diagnosis', 'diagnosisCode', 'treatment', 'followUpRequired', 'followUpDate', 'followUpCompleted', 'metadata', 'isConfidential', 'createdBy', 'updatedBy'] },
+        { table: 'allergies', columns: ['allergyType', 'symptoms', 'reactions', 'treatment', 'emergencyProtocol', 'onsetDate', 'diagnosedDate', 'diagnosedBy', 'verified', 'verifiedBy', 'verificationDate', 'active', 'notes', 'epiPenRequired', 'epiPenLocation', 'epiPenExpiration', 'healthRecordId', 'createdBy', 'updatedBy'] },
+        { table: 'chronic_conditions', columns: ['icdCode', 'diagnosedBy', 'severity', 'medications', 'treatments', 'accommodationsRequired', 'accommodationDetails', 'emergencyProtocol', 'actionPlan', 'reviewFrequency', 'restrictions', 'precautions', 'triggers', 'carePlan', 'lastReviewDate', 'healthRecordId', 'createdBy', 'updatedBy'] }
+      ];
+
+      for (const { table, columns } of columnsToRemove) {
+        for (const column of columns) {
+          await queryInterface.sequelize.query(`
+            ALTER TABLE "${table}" DROP COLUMN IF EXISTS "${column}";
+          `, { transaction });
+        }
+      }
 
       // Drop enums
       const enums = [
@@ -1088,7 +1074,6 @@ module.exports = {
 
       await transaction.commit();
       console.log('✓ Rollback completed successfully');
-      console.log('⚠ Note: Some column removals and enum value removals may require manual intervention');
 
     } catch (error) {
       await transaction.rollback();

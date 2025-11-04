@@ -1,3 +1,14 @@
+/**
+ * SECURITY UPDATE: Enhanced bcrypt Configuration
+ * 
+ * Salt rounds increased from 10 to 12 (configurable via BCRYPT_SALT_ROUNDS)
+ * - Meets healthcare security requirements for PHI protection
+ * - Configurable via environment variable for flexibility
+ * - Includes startup validation to ensure proper configuration
+ * 
+ * Environment Configuration:
+ * BCRYPT_SALT_ROUNDS=12 (recommended for healthcare applications)
+ */
 import {
   Injectable,
   UnauthorizedException,
@@ -18,7 +29,7 @@ import { TokenBlacklistService } from './services/token-blacklist.service';
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
-  private readonly saltRounds = 10;
+  private readonly saltRounds: number;
   private readonly accessTokenExpiry = '15m';
   private readonly refreshTokenExpiry = '7d';
 
@@ -28,7 +39,21 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly tokenBlacklistService: TokenBlacklistService,
-  ) {}
+  ) {
+    // SECURITY UPDATE: Configurable salt rounds, default increased to 12 for healthcare security
+    this.saltRounds = parseInt(
+      this.configService.get<string>('BCRYPT_SALT_ROUNDS', '12'),
+      10,
+    );
+
+    // Validate salt rounds on startup
+    if (this.saltRounds < 10 || this.saltRounds > 14) {
+      throw new Error(
+        'SECURITY WARNING: bcrypt salt rounds must be between 10 and 14. ' +
+        `Current value: ${this.saltRounds}. Recommended for healthcare: 12.`
+      );
+    }
+  }
 
   /**
    * Register a new user
@@ -365,5 +390,31 @@ export class AuthService {
     });
 
     return { accessToken, refreshToken };
+  }
+
+  /**
+   * Hash password with bcrypt
+   * 
+   * Salt rounds: Configurable (default 12 for healthcare)
+   * - 10 rounds: Fast, acceptable for general use  
+   * - 12 rounds: Balanced, recommended for healthcare (PHI protection)
+   * - 14 rounds: Very secure, slower (consider for admin accounts)
+   *
+   * @param password - Plaintext password
+   * @returns Hashed password
+   */
+  async hashPassword(password: string): Promise<string> {
+    return bcrypt.hash(password, this.saltRounds);
+  }
+
+  /**
+   * Compare password with hash
+   *
+   * @param password - Plaintext password
+   * @param hash - Stored hash
+   * @returns True if password matches
+   */
+  async comparePassword(password: string, hash: string): Promise<boolean> {
+    return bcrypt.compare(password, hash);
   }
 }

@@ -13,14 +13,33 @@ export class ComplianceReportService {
 
   async listReports(query: QueryComplianceReportDto) {
     const { page = 1, limit = 20, ...filters } = query;
-    const result = await this.reportRepository.findAll(filters, page, limit);
+    const allReports = await this.reportRepository.findAll();
+
+    // Apply filters manually since repository doesn't support them yet
+    let filteredReports = allReports;
+    if (filters.status) {
+      filteredReports = filteredReports.filter(report => report.status === filters.status);
+    }
+    if (filters.reportType) {
+      filteredReports = filteredReports.filter(report => report.reportType === filters.reportType);
+    }
+    if (filters.period) {
+      filteredReports = filteredReports.filter(report => report.period === filters.period);
+    }
+
+    // Apply pagination
+    const total = filteredReports.length;
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedReports = filteredReports.slice(startIndex, endIndex);
+
     return {
-      data: result.data,
+      data: paginatedReports,
       pagination: {
         page,
         limit,
-        total: result.total,
-        totalPages: Math.ceil(result.total / limit),
+        total,
+        totalPages: Math.ceil(total / limit),
       },
     };
   }

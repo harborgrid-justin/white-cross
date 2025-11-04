@@ -13,7 +13,10 @@ export { AppointmentService } from './appointment.service';
 export { AppointmentController } from './appointment.controller';
 
 // DTOs
-export * from './dto';
+export {
+	AppointmentStatus,
+	AppointmentType,
+} from './dto';
 
 // Entities (excluding conflicting enums)
 export { Appointment } from './entities';

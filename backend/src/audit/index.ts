@@ -23,6 +23,7 @@ export {
 } from './entities';
 
 // Enums
+export { AuditAction } from './entities';
 export * from './enums';
 
 // Interfaces

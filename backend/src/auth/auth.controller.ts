@@ -411,6 +411,54 @@ export class AuthController {
     return this.mfaService.getMfaStatus(userId);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Post('mfa/enable')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Enable MFA',
+    description: 'Enable MFA by verifying TOTP code from setup',
+  })
+  @ApiBody({ type: MfaEnableDto })
+  @ApiResponse({
+    status: 200,
+    description: 'MFA enabled successfully',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Invalid verification code',
+  })
+  async enableMfa(
+    @CurrentUser('id') userId: string,
+    @Body(ValidationPipe) dto: MfaEnableDto,
+  ) {
+    return this.mfaService.enableMfa(userId, dto.code, dto.secret);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('mfa/regenerate-backup-codes')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Regenerate MFA backup codes',
+    description: 'Generate new set of backup codes for MFA recovery',
+  })
+  @ApiBody({ type: MfaRegenerateBackupCodesDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Backup codes regenerated successfully',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Invalid password or verification code',
+  })
+  async regenerateBackupCodes(
+    @CurrentUser('id') userId: string,
+    @Body(ValidationPipe) dto: MfaRegenerateBackupCodesDto,
+  ) {
+    return this.mfaService.regenerateBackupCodes(userId, dto.password, dto.code);
+  }
+
   // ============================================================================
   // Password Reset Endpoints (GAP-AUTH-003)
   // ============================================================================
