@@ -1,9 +1,9 @@
 /**
  * Shared Hooks Index
- * 
+ *
  * Central export point for all shared utility hooks used across
  * the White Cross Healthcare Platform frontend application.
- * 
+ *
  * @module hooks/shared
  * @author White Cross Healthcare Platform
  * @version 3.0.0
@@ -18,11 +18,44 @@ export { useHealthcareCompliance } from './useHealthcareCompliance';
 // Redux Integration
 export * from './reduxHooks';
 
-// Audit Integration  
+// Audit Integration
 export * from './useAudit';
 
 // Legacy exports (to be migrated)
 export { usePrefetch } from './usePrefetch';
+
+// Advanced hooks modules
+export {
+  useHealthMetrics,
+  useTrendAnalysis,
+  useStudentRiskAssessment,
+  useComplianceReporting,
+} from './analyticsHooks';
+
+export {
+  useBulkOperations,
+  useBulkOperationProgress,
+} from './bulkOperationsHooks';
+
+export {
+  useWorkflowOrchestration,
+  useWorkflowProgress,
+} from './workflowHooks';
+
+export {
+  useAuditTrail,
+  useAuditQuery,
+} from './auditHooks';
+
+export {
+  useDataSync,
+} from './syncHooks';
+
+export {
+  useSystemMonitoring,
+  useEnterpriseDashboard,
+  usePerformanceTrends,
+} from './monitoringHooks';
 
 /**
  * Re-export commonly used types

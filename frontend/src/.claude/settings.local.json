@@ -15,7 +15,18 @@
       "Bash(printf:*)",
       "Bash(do echo \"=== $file ===\")",
       "Bash(wc:*)",
-      "Bash(do:*)"
+      "Bash(do:*)",
+      "Bash(test:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(npm run lint:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(if [ ! -f \"F:\\temp\\white-cross\\frontend\\src\\hooks\\domains\\compliance\\index.ts\" ])",
+      "Bash(then echo \"File does not exist\")",
+      "Bash(fi:*)",
+      "Bash(powershell -Command \"Get-ChildItem -Path ''F:\\temp\\white-cross\\frontend\\src\\hooks\\utilities\\routeState\\*.ts'' | Select-Object Name, @{Name=''Lines'';Expression={(Get-Content $_FullName | Measure-Object -Line).Lines}} | Format-Table -AutoSize\")",
+      "Bash(powershell -Command:*)",
+      "Bash(node -e:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

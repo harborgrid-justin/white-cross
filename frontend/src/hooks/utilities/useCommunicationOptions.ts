@@ -5,7 +5,7 @@
  * Downstream: Components, pages, app routing | Called by: React component tree
  * Related: Other components, hooks, services, types
  * Exports: constants, functions, interfaces | Key Features: component, arrow component
- * Last Updated: 2025-10-17 | File Type: .ts
+ * Last Updated: 2025-11-04 | File Type: .ts
  * Critical Path: Component mount → Render → User interaction → State updates
  * LLM Context: react component or utility module, part of React frontend architecture
  */
@@ -21,174 +21,17 @@
 
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 import { apiInstance } from '../services/config/apiConfig';
+import type {
+  CommunicationChannel,
+  NotificationType,
+  PriorityLevel,
+  CommunicationOptions,
+} from './useCommunicationOptions.types';
+import { CACHE_CONFIG, DEFAULT_OPTIONS } from './useCommunicationOptions.constants';
 
-// ============================================================================
-// Type Definitions
-// ============================================================================
-
-export interface CommunicationChannel {
-  id: string;
-  label: string;
-  value: string;
-  description?: string;
-  enabled: boolean;
-  icon?: string;
-}
-
-export interface NotificationType {
-  id: string;
-  label: string;
-  value: string;
-  description?: string;
-  defaultPriority?: string;
-  requiresApproval?: boolean;
-}
-
-export interface PriorityLevel {
-  id: string;
-  label: string;
-  value: string;
-  description?: string;
-  color?: string;
-}
-
-export interface CommunicationOptions {
-  channels: CommunicationChannel[];
-  notificationTypes: NotificationType[];
-  priorityLevels: PriorityLevel[];
-  verificationMethods: {
-    id: string;
-    label: string;
-    value: string;
-  }[];
-}
-
-// ============================================================================
-// Constants
-// ============================================================================
-
-/**
- * Cache configuration for communication options
- * These are static configurations that change infrequently
- */
-const CACHE_CONFIG = {
-  STALE_TIME: 24 * 60 * 60 * 1000, // 24 hours
-  CACHE_TIME: 7 * 24 * 60 * 60 * 1000, // 7 days
-};
-
-/**
- * Default fallback options if API fails
- * Ensures the application remains functional even if config endpoint is unavailable
- */
-const DEFAULT_OPTIONS: CommunicationOptions = {
-  channels: [
-    {
-      id: 'sms',
-      label: 'SMS',
-      value: 'sms',
-      description: 'Send text message notifications',
-      enabled: true,
-      icon: 'message-circle',
-    },
-    {
-      id: 'email',
-      label: 'Email',
-      value: 'email',
-      description: 'Send email notifications',
-      enabled: true,
-      icon: 'mail',
-    },
-    {
-      id: 'voice',
-      label: 'Voice Call',
-      value: 'voice',
-      description: 'Automated voice call',
-      enabled: true,
-      icon: 'phone',
-    },
-  ],
-  notificationTypes: [
-    {
-      id: 'emergency',
-      label: 'Emergency',
-      value: 'emergency',
-      description: 'Critical emergency notifications',
-      defaultPriority: 'critical',
-      requiresApproval: false,
-    },
-    {
-      id: 'health',
-      label: 'Health Update',
-      value: 'health',
-      description: 'General health updates and alerts',
-      defaultPriority: 'high',
-      requiresApproval: false,
-    },
-    {
-      id: 'medication',
-      label: 'Medication',
-      value: 'medication',
-      description: 'Medication-related notifications',
-      defaultPriority: 'medium',
-      requiresApproval: false,
-    },
-    {
-      id: 'general',
-      label: 'General',
-      value: 'general',
-      description: 'General information and updates',
-      defaultPriority: 'low',
-      requiresApproval: false,
-    },
-  ],
-  priorityLevels: [
-    {
-      id: 'low',
-      label: 'Low',
-      value: 'low',
-      description: 'Non-urgent information',
-      color: 'gray',
-    },
-    {
-      id: 'medium',
-      label: 'Medium',
-      value: 'medium',
-      description: 'Standard priority',
-      color: 'blue',
-    },
-    {
-      id: 'high',
-      label: 'High',
-      value: 'high',
-      description: 'Important, requires attention',
-      color: 'orange',
-    },
-    {
-      id: 'critical',
-      label: 'Critical',
-      value: 'critical',
-      description: 'Urgent, immediate action required',
-      color: 'red',
-    },
-  ],
-  verificationMethods: [
-    {
-      id: 'sms',
-      label: 'SMS',
-      value: 'sms',
-    },
-    {
-      id: 'email',
-      label: 'Email',
-      value: 'email',
-    },
-    {
-      id: 'voice',
-      label: 'Voice Call',
-      value: 'voice',
-    },
-  ],
-};
+// Re-export types and constants for backward compatibility
+export * from './useCommunicationOptions.types';
+export * from './useCommunicationOptions.constants';
 
 // ============================================================================
 // Query Keys

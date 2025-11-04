@@ -73,17 +73,12 @@
  */
 
 import { useState } from 'react'
-import { API_CONFIG } from '@/constants/config'
-import { API_ENDPOINTS } from '@/constants/api'
-import type {
-  TabType,
-  HealthRecord,
-  Allergy,
-  ChronicCondition,
-  Vaccination,
-  GrowthMeasurement,
-  Screening
-} from '@/types/healthRecords'
+import type { TabType } from '@/types/healthRecords'
+import { useAllergiesOperations } from './useHealthRecordsData.allergies'
+import { useChronicConditionsOperations } from './useHealthRecordsData.chronicConditions'
+import { useVaccinationsOperations } from './useHealthRecordsData.vaccinations'
+import { useGrowthMeasurementsOperations } from './useHealthRecordsData.growthMeasurements'
+import { useHealthRecordsOperations } from './useHealthRecordsData.healthRecords'
 
 /**
  * Health records data management hook with local state and direct API integration.
@@ -129,13 +124,42 @@ import type {
  * ```
  */
 export const useHealthRecordsData = () => {
-  const [healthRecords, setHealthRecords] = useState<HealthRecord[]>([])
-  const [allergies, setAllergies] = useState<Allergy[]>([])
-  const [chronicConditions, setChronicConditions] = useState<ChronicCondition[]>([])
-  const [vaccinations, setVaccinations] = useState<Vaccination[]>([])
-  const [growthMeasurements, setGrowthMeasurements] = useState<GrowthMeasurement[]>([])
-  const [screenings, setScreenings] = useState<Screening[]>([])
   const [loading, setLoading] = useState(false)
+
+  // Import operations from specialized modules
+  const {
+    healthRecords,
+    screenings,
+    loadHealthRecords,
+    loadScreenings,
+  } = useHealthRecordsOperations()
+
+  const {
+    allergies,
+    loadAllergies,
+    createAllergy,
+    updateAllergy,
+  } = useAllergiesOperations()
+
+  const {
+    chronicConditions,
+    loadChronicConditions,
+    createCondition,
+  } = useChronicConditionsOperations()
+
+  const {
+    vaccinations,
+    loadVaccinations,
+    createVaccination,
+    updateVaccination,
+    deleteVaccination,
+  } = useVaccinationsOperations()
+
+  const {
+    growthMeasurements,
+    loadGrowthMeasurements,
+    createGrowthMeasurement,
+  } = useGrowthMeasurementsOperations()
 
   /**
    * Load health records data for a specific tab type.
@@ -172,304 +196,30 @@ export const useHealthRecordsData = () => {
 
     try {
       switch (tab) {
-        case 'records': {
-          const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.STUDENTS.HEALTH_RECORDS(studentId)}${searchQuery ? `?search=${searchQuery}` : ''}`
-          const response = await fetch(url)
-          if (response.ok) {
-            const data = await response.json()
-            setHealthRecords(data.data?.records || [])
-          }
+        case 'records':
+          await loadHealthRecords(studentId, searchQuery)
           break
-        }
-        case 'allergies': {
-          const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.STUDENTS.ALLERGIES(studentId)}`
-          const allergyResponse = await fetch(url)
-          if (allergyResponse.ok) {
-            const allergyData = await allergyResponse.json()
-            setAllergies(allergyData.data?.allergies || [])
-          }
+        case 'allergies':
+          await loadAllergies(studentId)
           break
-        }
-        case 'chronic': {
-          const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.CHRONIC_CONDITIONS.BY_STUDENT(studentId)}`
-          const conditionResponse = await fetch(url)
-          if (conditionResponse.ok) {
-            const conditionData = await conditionResponse.json()
-            setChronicConditions(conditionData.data?.conditions || [])
-          }
+        case 'chronic':
+          await loadChronicConditions(studentId)
           break
-        }
-        case 'vaccinations': {
-          const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.STUDENTS.IMMUNIZATIONS(studentId)}`
-          const vaccinationResponse = await fetch(url)
-          if (vaccinationResponse.ok) {
-            const vaccinationData = await vaccinationResponse.json()
-            setVaccinations(vaccinationData.data?.vaccinations || [])
-          }
+        case 'vaccinations':
+          await loadVaccinations(studentId)
           break
-        }
-        case 'growth': {
-          const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.VITAL_SIGNS.BY_STUDENT(studentId)}`
-          const growthResponse = await fetch(url)
-          if (growthResponse.ok) {
-            const growthData = await growthResponse.json()
-            setGrowthMeasurements(growthData.data?.measurements || [])
-          }
+        case 'growth':
+          await loadGrowthMeasurements(studentId)
           break
-        }
-        case 'screenings': {
-          const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.VITAL_SIGNS.BY_STUDENT(studentId)}`
-          const screeningResponse = await fetch(url)
-          if (screeningResponse.ok) {
-            const screeningData = await screeningResponse.json()
-            setScreenings(screeningData.data?.screenings || [])
-          }
+        case 'screenings':
+          await loadScreenings(studentId)
           break
-        }
       }
     } catch (error) {
       console.error('Error loading tab data:', error)
     } finally {
       setLoading(false)
     }
-  }
-
-  /**
-   * Create a new allergy record for a student.
-   *
-   * @param {Partial<Allergy>} allergyData - Allergy data to create (requires allergen, type, severity, reaction)
-   * @returns {Promise<boolean>} Promise resolving to true if creation succeeded, false otherwise
-   *
-   * @example
-   * ```typescript
-   * const newAllergy = {
-   *   allergen: 'Penicillin',
-   *   type: 'DRUG',
-   *   severity: 'SEVERE',
-   *   reaction: 'Anaphylaxis',
-   *   notes: 'Carry EpiPen at all times'
-   * };
-   * const success = await createAllergy(newAllergy);
-   * ```
-   *
-   * @remarks
-   * - Automatically reloads allergies tab on success
-   * - studentId is hardcoded to '1' (consider parameterizing)
-   * - Safety-critical: Allergies should be verified by healthcare professional
-   */
-  const createAllergy = async (allergyData: Partial<Allergy>) => {
-    const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.HEALTH_RECORDS.BASE}/allergies`
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ studentId: '1', ...allergyData })
-    })
-    if (response.ok) {
-      loadTabData('allergies')
-    }
-    return response.ok
-  }
-
-  /**
-   * Update an existing allergy record.
-   *
-   * @param {string} id - Allergy record ID to update
-   * @param {Partial<Allergy>} allergyData - Partial allergy data to update
-   * @returns {Promise<boolean>} Promise resolving to true if update succeeded, false otherwise
-   *
-   * @example
-   * ```typescript
-   * const updates = {
-   *   severity: 'MODERATE',
-   *   notes: 'Severity downgraded after consultation'
-   * };
-   * const success = await updateAllergy(allergyId, updates);
-   * ```
-   *
-   * @remarks
-   * - Automatically reloads allergies tab on success
-   * - Consider audit logging for allergy modifications
-   */
-  const updateAllergy = async (id: string, allergyData: Partial<Allergy>) => {
-    const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.HEALTH_RECORDS.BASE}/allergies/${id}`
-    const response = await fetch(url, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(allergyData)
-    })
-    if (response.ok) {
-      loadTabData('allergies')
-    }
-    return response.ok
-  }
-
-  /**
-   * Create a new chronic condition record for a student.
-   *
-   * @param {Partial<ChronicCondition>} conditionData - Chronic condition data (requires name, diagnosedDate, status)
-   * @returns {Promise<boolean>} Promise resolving to true if creation succeeded, false otherwise
-   *
-   * @example
-   * ```typescript
-   * const condition = {
-   *   name: 'Type 1 Diabetes',
-   *   icdCode: 'E10',
-   *   diagnosedDate: '2023-05-10',
-   *   status: 'ACTIVE',
-   *   managementPlan: 'Insulin therapy, blood glucose monitoring'
-   * };
-   * const success = await createCondition(condition);
-   * ```
-   *
-   * @remarks
-   * - Automatically reloads chronic conditions tab on success
-   * - studentId is hardcoded to '1' (consider parameterizing)
-   */
-  const createCondition = async (conditionData: Partial<ChronicCondition>) => {
-    const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.HEALTH_RECORDS.BASE}/chronic-conditions`
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ studentId: '1', ...conditionData })
-    })
-    if (response.ok) {
-      loadTabData('chronic')
-    }
-    return response.ok
-  }
-
-  /**
-   * Create a new vaccination record for a student.
-   *
-   * @param {Partial<Vaccination>} vaccinationData - Vaccination data (requires vaccineName, dateAdministered, dose)
-   * @returns {Promise<boolean>} Promise resolving to true if creation succeeded, false otherwise
-   *
-   * @example
-   * ```typescript
-   * const vaccination = {
-   *   vaccineName: 'Tdap',
-   *   dateAdministered: '2024-09-15',
-   *   dose: 1,
-   *   manufacturer: 'Sanofi Pasteur',
-   *   lotNumber: 'U3458A',
-   *   administeredBy: 'Nurse Johnson',
-   *   site: 'Left deltoid'
-   * };
-   * const success = await createVaccination(vaccination);
-   * ```
-   *
-   * @remarks
-   * - Automatically reloads vaccinations tab on success
-   * - Vaccination records should follow CDC/ACIP guidelines
-   * - Consider checking for duplicate vaccinations
-   */
-  const createVaccination = async (vaccinationData: Partial<Vaccination>) => {
-    const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.STUDENTS.BASE}/1/vaccinations`
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(vaccinationData)
-    })
-    if (response.ok) {
-      loadTabData('vaccinations')
-    }
-    return response.ok
-  }
-
-  /**
-   * Update an existing vaccination record.
-   *
-   * @param {string} id - Vaccination record ID to update
-   * @param {Partial<Vaccination>} vaccinationData - Partial vaccination data to update
-   * @returns {Promise<boolean>} Promise resolving to true if update succeeded, false otherwise
-   *
-   * @example
-   * ```typescript
-   * const updates = {
-   *   notes: 'Patient tolerated vaccine well, no adverse reactions'
-   * };
-   * const success = await updateVaccination(vaccineId, updates);
-   * ```
-   */
-  const updateVaccination = async (id: string, vaccinationData: Partial<Vaccination>) => {
-    const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.STUDENTS.BASE}/1/vaccinations/${id}`
-    const response = await fetch(url, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(vaccinationData)
-    })
-    if (response.ok) {
-      loadTabData('vaccinations')
-    }
-    return response.ok
-  }
-
-  /**
-   * Delete a vaccination record.
-   *
-   * @param {string} id - Vaccination record ID to delete
-   * @returns {Promise<boolean>} Promise resolving to true if deletion succeeded, false otherwise
-   *
-   * @example
-   * ```typescript
-   * const success = await deleteVaccination(vaccineId);
-   * if (success) {
-   *   toast.success('Vaccination record deleted');
-   * }
-   * ```
-   *
-   * @remarks
-   * - Automatically reloads vaccinations tab on success
-   * - Consider soft delete with audit trail instead of hard delete
-   * - Deletion should require appropriate permissions
-   */
-  const deleteVaccination = async (id: string) => {
-    const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.STUDENTS.BASE}/1/vaccinations/${id}`
-    const response = await fetch(url, {
-      method: 'DELETE'
-    })
-    if (response.ok) {
-      loadTabData('vaccinations')
-    }
-    return response.ok
-  }
-
-  /**
-   * Create a new growth measurement record for a student.
-   *
-   * @param {Partial<GrowthMeasurement>} measurementData - Growth measurement data (requires height, weight, date)
-   * @returns {Promise<boolean>} Promise resolving to true if creation succeeded, false otherwise
-   *
-   * @example
-   * ```typescript
-   * const measurement = {
-   *   date: '2024-10-15',
-   *   height: '152.4', // cm
-   *   weight: '45.5',  // kg
-   *   bmi: '19.6',
-   *   headCircumference: '54.0', // cm (for younger students)
-   *   measuredBy: 'Nurse Smith'
-   * };
-   * const success = await createGrowthMeasurement(measurement);
-   * ```
-   *
-   * @remarks
-   * - Automatically reloads growth tab on success
-   * - Measurements should be plotted against CDC/WHO growth charts
-   * - BMI percentile calculations should be age and sex-specific
-   * - studentId is hardcoded to '1' (consider parameterizing)
-   */
-  const createGrowthMeasurement = async (measurementData: Partial<GrowthMeasurement>) => {
-    const url = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.HEALTH_RECORDS.BASE}/growth`
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ studentId: '1', ...measurementData })
-    })
-    if (response.ok) {
-      loadTabData('growth')
-    }
-    return response.ok
   }
 
   return {
@@ -481,7 +231,7 @@ export const useHealthRecordsData = () => {
     growthMeasurements,
     screenings,
     loading,
-    
+
     // Actions
     loadTabData,
     createAllergy,

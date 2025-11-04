@@ -26,7 +26,23 @@ export * from './useMedicationsRoute';
 // Student-related Utilities
 export { useStudentSelection } from './useStudentSelection';
 export { useStudentViewManagement } from './useStudentViewManagement';
-export * from './studentUtils';
+
+// Student utility hooks (modular exports for backward compatibility)
+export type {
+  ApiError,
+  InvalidationPattern,
+  PrefetchOptions,
+  CacheWarmingStrategy,
+  PHIHandlingOptions,
+  CacheStats,
+} from './studentUtilityTypes';
+export { useCacheManager } from './studentCacheUtils';
+export { useCacheInvalidation } from './studentCacheInvalidation';
+export { useCacheManipulation } from './studentCacheManipulation';
+export { usePrefetchManager, useCacheWarming } from './studentPrefetchUtils';
+export { usePHIHandler } from './studentPHIUtils';
+export { useOptimisticUpdates } from './studentOptimisticUtils';
+
 export * from './studentRedux';
 
 // System & Monitoring

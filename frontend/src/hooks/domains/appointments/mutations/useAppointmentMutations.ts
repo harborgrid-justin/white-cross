@@ -1,41 +1,49 @@
 /**
  * Appointment Mutation Hooks
- * 
+ *
  * Enterprise-grade mutations for appointment management with
  * proper PHI handling, optimistic updates, and compliance logging.
- * 
+ *
  * @module hooks/domains/appointments/mutations/useAppointmentMutations
  * @author White Cross Healthcare Platform
  * @version 3.0.0
  */
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
-import { appointmentsApi } from '@/services/api';
-import { useApiError } from '../../../shared/useApiError';
 import { useCacheManager } from '../../../shared/useCacheManager';
-import { useHealthcareCompliance } from '../../../shared/useHealthcareCompliance';
-import { 
-  appointmentQueryKeys, 
-  APPOINTMENT_OPERATIONS,
-  APPOINTMENT_ERROR_CODES,
-  APPOINTMENT_CACHE_CONFIG
-} from '../config';
+import { appointmentQueryKeys } from '../config';
 import type {
   Appointment,
   AppointmentFormData,
   WaitlistEntryData,
 } from '@/types';
-import toast from 'react-hot-toast';
+import {
+  useCreateAppointmentMutation,
+  useUpdateAppointmentMutation,
+  type CreateAppointmentMutation,
+  type UpdateAppointmentMutation,
+} from './useAppointmentCrudMutations';
+import {
+  useCancelAppointmentMutation,
+  useAddToWaitlistMutation,
+  type CancelAppointmentMutation,
+  type AddToWaitlistMutation,
+} from './useAppointmentActionMutations';
 
-/**
- * Appointment mutation options interface
- */
-export interface AppointmentMutationOptions {
-  onSuccess?: (data: any) => void;
-  onError?: (error: Error) => void;
-  enableOptimisticUpdates?: boolean;
-}
+// Re-export mutation options and types
+export type { AppointmentMutationOptions } from './useAppointmentCrudMutations';
+export type {
+  CreateAppointmentMutation,
+  UpdateAppointmentMutation,
+} from './useAppointmentCrudMutations';
+export type {
+  CancelAppointmentMutation,
+  AddToWaitlistMutation,
+} from './useAppointmentActionMutations';
+
+// Import the options interface locally
+import type { AppointmentMutationOptions } from './useAppointmentCrudMutations';
 
 /**
  * Appointment mutations result interface
@@ -50,7 +58,7 @@ export interface AppointmentMutationsResult {
     isError: boolean;
     isSuccess: boolean;
   };
-  
+
   // Update operations
   updateAppointment: {
     mutate: (data: { id: string; data: Partial<AppointmentFormData> }) => void;
@@ -60,7 +68,7 @@ export interface AppointmentMutationsResult {
     isError: boolean;
     isSuccess: boolean;
   };
-  
+
   // Cancel operations
   cancelAppointment: {
     mutate: (data: { id: string; reason?: string }) => void;
@@ -70,7 +78,7 @@ export interface AppointmentMutationsResult {
     isError: boolean;
     isSuccess: boolean;
   };
-  
+
   // Waitlist operations
   addToWaitlist: {
     mutate: (data: WaitlistEntryData) => void;
@@ -80,7 +88,7 @@ export interface AppointmentMutationsResult {
     isError: boolean;
     isSuccess: boolean;
   };
-  
+
   // Utility functions
   invalidateAppointmentData: (appointmentId?: string) => Promise<void>;
 }
@@ -92,208 +100,13 @@ export function useAppointmentMutations(
   options: AppointmentMutationOptions = {}
 ): AppointmentMutationsResult {
   const queryClient = useQueryClient();
-  const { handleError: handleApiError } = useApiError();
-  const { invalidateCache } = useCacheManager();
-  const { logCompliantAccess } = useHealthcareCompliance();
+  const { invalidateCache: invalidateCacheManager } = useCacheManager();
 
-  // Create appointment mutation
-  const createAppointmentMutation = useMutation({
-    mutationKey: [APPOINTMENT_OPERATIONS.CREATE],
-    mutationFn: async (data: AppointmentFormData) => {
-      try {
-        await logCompliantAccess(
-          'create_appointment',
-          'appointment',
-          'high',
-          { operation: 'create_appointment' }
-        );
-
-        // Convert AppointmentFormData to CreateAppointmentData
-        const createData = {
-          studentId: data.studentId,
-          nurseId: data.nurseId,
-          type: data.type,
-          scheduledAt: data.scheduledAt.toISOString(),
-          duration: data.duration,
-          reason: data.reason,
-          notes: data.notes,
-        };
-
-        const result = await appointmentsApi.create(createData);
-        
-        if (!result.appointment) {
-          throw new Error(APPOINTMENT_ERROR_CODES.CREATE_FAILED);
-        }
-
-        return result;
-      } catch (error: any) {
-        throw handleApiError(error, APPOINTMENT_OPERATIONS.CREATE);
-      }
-    },
-    onMutate: async (_newAppointment) => {
-      if (!options.enableOptimisticUpdates) return;
-
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: appointmentQueryKeys.base.lists() });
-
-      // Snapshot previous values
-      const previousAppointments = queryClient.getQueriesData({
-        queryKey: appointmentQueryKeys.base.lists()
-      });
-
-      return { previousAppointments };
-    },
-    onSuccess: (result) => {
-      const appointment = result.appointment;
-      
-      // Invalidate relevant queries
-      queryClient.invalidateQueries({ queryKey: appointmentQueryKeys.base.lists() });
-      queryClient.invalidateQueries({ queryKey: appointmentQueryKeys.base.statistics() });
-      queryClient.invalidateQueries({ 
-        queryKey: appointmentQueryKeys.lists.upcoming(appointment.nurseId) 
-      });
-
-      toast.success('Appointment scheduled successfully');
-      options.onSuccess?.(result);
-    },
-    onError: (error: Error, _variables, context: any) => {
-      // Rollback optimistic updates
-      if (context?.previousAppointments) {
-        context.previousAppointments.forEach(([queryKey, data]: [any, any]) => {
-          queryClient.setQueryData(queryKey, data);
-        });
-      }
-
-      toast.error('Failed to schedule appointment');
-      options.onError?.(error);
-    },
-    gcTime: APPOINTMENT_CACHE_CONFIG.mutations.gcTime,
-  });
-
-  // Update appointment mutation
-  const updateAppointmentMutation = useMutation({
-    mutationKey: [APPOINTMENT_OPERATIONS.UPDATE],
-    mutationFn: async ({ id, data }: { id: string; data: Partial<AppointmentFormData> }) => {
-      try {
-        await logCompliantAccess(
-          'update_appointment',
-          'appointment',
-          'high',
-          { appointmentId: id }
-        );
-
-        // Convert Partial<AppointmentFormData> to UpdateAppointmentData
-        const updateData = {
-          ...data,
-          scheduledAt: data.scheduledAt ? data.scheduledAt.toISOString() : undefined,
-        };
-
-        const result = await appointmentsApi.update(id, updateData);
-        
-        if (!result.appointment) {
-          throw new Error(APPOINTMENT_ERROR_CODES.UPDATE_FAILED);
-        }
-
-        return result;
-      } catch (error: any) {
-        throw handleApiError(error, APPOINTMENT_OPERATIONS.UPDATE);
-      }
-    },
-    onSuccess: (result, { id }) => {
-      // Update specific appointment cache
-      queryClient.setQueryData(
-        appointmentQueryKeys.details.byId(id),
-        result
-      );
-
-      // Invalidate related queries
-      queryClient.invalidateQueries({ queryKey: appointmentQueryKeys.base.lists() });
-      queryClient.invalidateQueries({ queryKey: appointmentQueryKeys.base.statistics() });
-
-      toast.success('Appointment updated successfully');
-      options.onSuccess?.(result);
-    },
-    onError: (error: Error) => {
-      toast.error('Failed to update appointment');
-      options.onError?.(error);
-    },
-    gcTime: APPOINTMENT_CACHE_CONFIG.mutations.gcTime,
-  });
-
-  // Cancel appointment mutation
-  const cancelAppointmentMutation = useMutation({
-    mutationKey: [APPOINTMENT_OPERATIONS.CANCEL],
-    mutationFn: async ({ id, reason }: { id: string; reason?: string }) => {
-      try {
-        await logCompliantAccess(
-          'cancel_appointment',
-          'appointment',
-          'high',
-          { appointmentId: id, reason }
-        );
-
-        const result = await appointmentsApi.cancel(id, reason);
-        
-        if (!result.appointment) {
-          throw new Error(APPOINTMENT_ERROR_CODES.DELETE_FAILED);
-        }
-
-        return result;
-      } catch (error: any) {
-        throw handleApiError(error, APPOINTMENT_OPERATIONS.CANCEL);
-      }
-    },
-    onSuccess: (result, { id }) => {
-      // Update cache with cancelled appointment
-      queryClient.setQueryData(
-        appointmentQueryKeys.details.byId(id),
-        result
-      );
-
-      // Invalidate lists and statistics
-      queryClient.invalidateQueries({ queryKey: appointmentQueryKeys.base.lists() });
-      queryClient.invalidateQueries({ queryKey: appointmentQueryKeys.base.statistics() });
-
-      toast.success('Appointment cancelled successfully');
-      options.onSuccess?.(result);
-    },
-    onError: (error: Error) => {
-      toast.error('Failed to cancel appointment');
-      options.onError?.(error);
-    },
-    gcTime: APPOINTMENT_CACHE_CONFIG.mutations.gcTime,
-  });
-
-  // Add to waitlist mutation
-  const addToWaitlistMutation = useMutation({
-    mutationKey: [APPOINTMENT_OPERATIONS.ADD_TO_WAITLIST],
-    mutationFn: async (data: WaitlistEntryData) => {
-      try {
-        await logCompliantAccess(
-          'add_to_waitlist',
-          'appointment',
-          'moderate',
-          { studentId: data.studentId }
-        );
-
-        return await appointmentsApi.addToWaitlist(data);
-      } catch (error: any) {
-        throw handleApiError(error, APPOINTMENT_OPERATIONS.ADD_TO_WAITLIST);
-      }
-    },
-    onSuccess: (result) => {
-      // Invalidate waitlist queries
-      queryClient.invalidateQueries({ queryKey: appointmentQueryKeys.base.waitlist() });
-      
-      toast.success('Student added to waitlist');
-      options.onSuccess?.(result);
-    },
-    onError: (error: Error) => {
-      toast.error('Failed to add student to waitlist');
-      options.onError?.(error);
-    },
-    gcTime: APPOINTMENT_CACHE_CONFIG.mutations.gcTime,
-  });
+  // Use modular mutation hooks
+  const createAppointmentMutation = useCreateAppointmentMutation(options);
+  const updateAppointmentMutation = useUpdateAppointmentMutation(options);
+  const cancelAppointmentMutation = useCancelAppointmentMutation(options);
+  const addToWaitlistMutation = useAddToWaitlistMutation(options);
 
   // Cache invalidation utility
   const invalidateAppointmentData = useCallback(async (appointmentId?: string) => {
@@ -364,16 +177,37 @@ export function useAppointmentMutations(
  */
 
 export function useCreateAppointment(options: AppointmentMutationOptions = {}) {
-  const { createAppointment } = useAppointmentMutations(options);
-  return createAppointment;
+  const mutation = useCreateAppointmentMutation(options);
+  return {
+    mutate: mutation.mutate,
+    mutateAsync: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+    error: mutation.error,
+    isError: mutation.isError,
+    isSuccess: mutation.isSuccess,
+  };
 }
 
 export function useUpdateAppointment(options: AppointmentMutationOptions = {}) {
-  const { updateAppointment } = useAppointmentMutations(options);
-  return updateAppointment;
+  const mutation = useUpdateAppointmentMutation(options);
+  return {
+    mutate: mutation.mutate,
+    mutateAsync: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+    error: mutation.error,
+    isError: mutation.isError,
+    isSuccess: mutation.isSuccess,
+  };
 }
 
 export function useCancelAppointment(options: AppointmentMutationOptions = {}) {
-  const { cancelAppointment } = useAppointmentMutations(options);
-  return cancelAppointment;
+  const mutation = useCancelAppointmentMutation(options);
+  return {
+    mutate: mutation.mutate,
+    mutateAsync: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+    error: mutation.error,
+    isError: mutation.isError,
+    isSuccess: mutation.isSuccess,
+  };
 }

@@ -1,11 +1,13 @@
-// Compliance Domain Exports
-export * from './config';
+/**
+ * Compliance domain configuration - Central export file.
+ *
+ * Re-exports all compliance configuration, types, query keys, cache config,
+ * and utilities from modular files.
+ *
+ * @module hooks/domains/compliance
+ */
 
-// Query Hooks
-export * from './queries/useComplianceQueries';
-
-// Mutation Hooks
-export * from './mutations/useComplianceMutations';
-
-// Composite Hooks
-export * from './composites/useComplianceComposites';
+export * from './query-keys';
+export * from './cache-config';
+export * from './types';
+export * from './cache-utils';

@@ -190,7 +190,7 @@ export {
   useNavigationState,
   usePageState,
   useSortState,
-} from './utilities/useRouteState';
+} from '../utilities/useRouteState';
 
 // Re-export all types
 export type {
@@ -202,4 +202,4 @@ export type {
   SortState,
   SortDirection,
   SortConfig,
-} from './utilities/useRouteState';
+} from '../utilities/useRouteState';

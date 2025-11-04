@@ -58,169 +58,22 @@ import type {
   FiveRightsVerificationResult,
   AdministrationRecord,
   AdministrationLog,
-  MedicationReminder,
-  AdministrationHistoryFilters,
 } from '@/services';
 import { useOfflineQueue } from './useOfflineQueue';
 import { useMedicationSafety } from './useMedicationSafety';
 
-/**
- * React Query cache keys for medication administration queries.
- *
- * Provides centralized, type-safe query key management for all medication
- * administration-related queries. Keys are hierarchical to enable efficient
- * cache invalidation.
- *
- * @constant
- * @example
- * ```ts
- * // Invalidate all administration queries
- * queryClient.invalidateQueries({ queryKey: administrationKeys.all });
- *
- * // Invalidate only today's administrations for specific nurse
- * queryClient.invalidateQueries({ queryKey: administrationKeys.today('nurse-123') });
- * ```
- */
-export const administrationKeys = {
-  /** Base key for all medication administration queries */
-  all: ['medication-administration'] as const,
-  /** All session-related queries */
-  sessions: () => [...administrationKeys.all, 'session'] as const,
-  /** Specific session by ID */
-  session: (id: string) => [...administrationKeys.sessions(), id] as const,
-  /** All administration history queries */
-  history: () => [...administrationKeys.all, 'history'] as const,
-  /** Filtered administration history */
-  historyFiltered: (filters?: AdministrationHistoryFilters) =>
-    [...administrationKeys.history(), filters] as const,
-  /** Today's administrations, optionally filtered by nurse */
-  today: (nurseId?: string) => [...administrationKeys.all, 'today', nurseId] as const,
-  /** All reminder queries */
-  reminders: () => [...administrationKeys.all, 'reminders'] as const,
-  /** Upcoming reminders within specified hours */
-  upcoming: (nurseId?: string, hours?: number) =>
-    [...administrationKeys.reminders(), 'upcoming', nurseId, hours] as const,
-  /** Overdue administrations requiring immediate attention */
-  overdue: () => [...administrationKeys.reminders(), 'overdue'] as const,
-  /** Student's medication schedule for specific date */
-  schedule: (studentId: string, date?: string) =>
-    [...administrationKeys.all, 'schedule', studentId, date] as const,
-} as const;
+// Re-export from submodules
+export { administrationKeys } from './administration/constants';
+export { MedicationSafetyError, AllergyWarningError } from './administration/errors';
+export type { UseMedicationAdministrationReturn } from './administration/types';
+export { isValidDose, isWithinAdministrationWindow } from './administration/validation';
+export { useAdministrationHistory, useStudentSchedule } from './administration/hooks';
 
-/**
- * Error thrown when medication safety verification fails.
- *
- * Indicates that one or more of the Five Rights verifications failed,
- * or other critical safety checks did not pass. This error should
- * HALT the administration process.
- *
- * @class MedicationSafetyError
- * @extends Error
- *
- * @property {string} name - Always 'MedicationSafetyError'
- * @property {string} message - Human-readable error summary
- * @property {string[]} errors - Array of specific safety violations
- *
- * @example
- * ```ts
- * throw new MedicationSafetyError(
- *   'Five Rights verification failed',
- *   ['Wrong patient barcode', 'Dose mismatch']
- * );
- * ```
- */
-export class MedicationSafetyError extends Error {
-  constructor(message: string, public errors: string[]) {
-    super(message);
-    this.name = 'MedicationSafetyError';
-  }
-}
-
-/**
- * Error thrown when patient has allergy to medication but warning not acknowledged.
- *
- * Indicates patient has documented allergies to the medication or its components,
- * and the healthcare provider has not properly acknowledged the allergy warning.
- * This error should HALT the administration process.
- *
- * @class AllergyWarningError
- * @extends Error
- *
- * @property {string} name - Always 'AllergyWarningError'
- * @property {string} message - Human-readable error summary
- * @property {any[]} allergies - Array of patient's relevant allergies
- *
- * @safety This error indicates a CRITICAL safety issue. Administration must not
- * proceed without explicit physician override and documented clinical rationale.
- *
- * @example
- * ```ts
- * throw new AllergyWarningError(
- *   'Patient is allergic to Penicillin',
- *   [{ allergen: 'Penicillin', severity: 'severe', reaction: 'anaphylaxis' }]
- * );
- * ```
- */
-export class AllergyWarningError extends Error {
-  constructor(message: string, public allergies: any[]) {
-    super(message);
-    this.name = 'AllergyWarningError';
-  }
-}
-
-/**
- * Return type for the useMedicationAdministration hook.
- *
- * Provides comprehensive medication administration workflow management including
- * session management, Five Rights verification, and administration recording.
- *
- * @interface UseMedicationAdministrationReturn
- */
-export interface UseMedicationAdministrationReturn {
-  // Session management
-  /** Current active administration session data, null if no active session */
-  sessionData: AdministrationSession | null;
-  /** Mutation to initialize a new administration session for a prescription */
-  initSession: ReturnType<typeof useMutation<AdministrationSession, Error, string>>;
-
-  // Five Rights verification
-  /** Client-side Five Rights verification (immediate, no network call) */
-  verifyFiveRights: (data: FiveRightsData) => FiveRightsVerificationResult;
-  /** Server-side Five Rights verification (authoritative, requires network) */
-  serverVerifyFiveRights: ReturnType<
-    typeof useMutation<FiveRightsVerificationResult, Error, FiveRightsData>
-  >;
-
-  // Administration recording
-  /** Records successful medication administration (NO OPTIMISTIC UPDATE) */
-  recordAdministration: ReturnType<typeof useMutation<AdministrationLog, Error, AdministrationRecord>>;
-  /** Records patient refusal to take medication */
-  recordRefusal: ReturnType<
-    typeof useMutation<AdministrationLog, Error, { prescriptionId: string; scheduledTime: string; reason: string; notes?: string }>
-  >;
-  /** Records missed medication dose */
-  recordMissed: ReturnType<
-    typeof useMutation<AdministrationLog, Error, { prescriptionId: string; scheduledTime: string; reason: string; notes?: string }>
-  >;
-  /** Records medication held by clinical decision */
-  recordHeld: ReturnType<
-    typeof useMutation<AdministrationLog, Error, { prescriptionId: string; scheduledTime: string; reason: string; clinicalRationale: string }>
-  >;
-
-  // Queries
-  /** Today's administrations for the nurse (auto-refreshes every minute) */
-  todayAdministrations: ReturnType<typeof useQuery<AdministrationLog[]>>;
-  /** Upcoming medication reminders within 4 hours (auto-refreshes every minute) */
-  upcomingReminders: ReturnType<typeof useQuery<MedicationReminder[]>>;
-  /** Overdue administrations requiring immediate attention (auto-refreshes every minute) */
-  overdueAdministrations: ReturnType<typeof useQuery<MedicationReminder[]>>;
-
-  // Helpers
-  /** Clears the current administration session */
-  clearSession: () => void;
-  /** True if there is an active administration session */
-  isSessionActive: boolean;
-}
+// Import internal dependencies
+import { administrationKeys } from './administration/constants';
+import { MedicationSafetyError, AllergyWarningError } from './administration/errors';
+import type { UseMedicationAdministrationReturn } from './administration/types';
+import { isValidDose, isWithinAdministrationWindow } from './administration/validation';
 
 /**
  * Hook for managing medication administration with Five Rights verification.
@@ -610,46 +463,4 @@ export function useMedicationAdministration(nurseId?: string): UseMedicationAdmi
     clearSession,
     isSessionActive: !!sessionData,
   };
-}
-
-// Helper functions
-function isValidDose(scannedDose: string, prescribedDose: string): boolean {
-  // Normalize doses for comparison
-  const normalize = (dose: string) => dose.toLowerCase().replace(/\s+/g, '');
-  return normalize(scannedDose) === normalize(prescribedDose);
-}
-
-function isWithinAdministrationWindow(
-  time: string,
-  window: { start: string; end: string }
-): boolean {
-  const administrationTime = new Date(time);
-  const windowStart = new Date(window.start);
-  const windowEnd = new Date(window.end);
-
-  return administrationTime >= windowStart && administrationTime <= windowEnd;
-}
-
-/**
- * Get administration history hook
- */
-export function useAdministrationHistory(filters?: AdministrationHistoryFilters) {
-  return useQuery({
-    queryKey: administrationKeys.historyFiltered(filters),
-    queryFn: () => administrationApi.getAdministrationHistory(filters),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-}
-
-/**
- * Get student schedule hook
- */
-export function useStudentSchedule(studentId: string | undefined, date?: string) {
-  return useQuery({
-    queryKey: administrationKeys.schedule(studentId!, date),
-    queryFn: () => administrationApi.getStudentSchedule(studentId!, date),
-    enabled: !!studentId,
-    staleTime: 60 * 1000, // 1 minute
-    refetchInterval: 60 * 1000,
-  });
 }

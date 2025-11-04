@@ -48,83 +48,17 @@
  */
 
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
+import { useAutoRefreshInterval, usePauseResume } from './useRefresh/autoRefresh';
+import { useManualRefresh } from './useRefresh/manualRefresh';
+import { UseRefreshOptions, UseRefreshReturn } from './useRefresh/types';
+import { useVisibilityManager } from './useRefresh/visibilityManager';
 
-/**
- * Configuration options for useRefresh hook
- */
-export interface UseRefreshOptions {
-  /**
-   * Auto-refresh interval in milliseconds
-   * Set to 0 or undefined to disable auto-refresh
-   * @default undefined
-   */
-  interval?: number;
+// Re-export types
+export type { UseRefreshOptions, UseRefreshReturn };
 
-  /**
-   * Only refresh when tab/window is visible
-   * Pauses refresh when user navigates away
-   * @default true
-   */
-  refreshWhenVisible?: boolean;
-
-  /**
-   * Callback function called after successful refresh
-   */
-  onRefreshSuccess?: () => void;
-
-  /**
-   * Callback function called if refresh fails
-   */
-  onRefreshError?: (error: Error) => void;
-
-  /**
-   * Enable debug logging for refresh operations
-   * @default false
-   */
-  debug?: boolean;
-}
-
-/**
- * Return type for useRefresh hook
- */
-export interface UseRefreshReturn {
-  /**
-   * Manually trigger a data refresh
-   * Returns a promise that resolves when refresh completes
-   */
-  refresh: () => Promise<void>;
-
-  /**
-   * Whether a refresh is currently in progress
-   */
-  isRefreshing: boolean;
-
-  /**
-   * Timestamp of last successful refresh
-   */
-  lastRefreshed: Date | null;
-
-  /**
-   * Number of refresh operations performed
-   */
-  refreshCount: number;
-
-  /**
-   * Pause automatic refreshes (if interval is set)
-   */
-  pause: () => void;
-
-  /**
-   * Resume automatic refreshes (if interval is set)
-   */
-  resume: () => void;
-
-  /**
-   * Whether automatic refresh is currently paused
-   */
-  isPaused: boolean;
-}
+// Re-export utilities
+export { useSimpleRefresh } from './useRefresh/manualRefresh';
 
 /**
  * Hook for refreshing server-side data with Next.js App Router
@@ -252,147 +186,53 @@ export function useRefresh(options: UseRefreshOptions = {}): UseRefreshReturn {
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
   const [refreshCount, setRefreshCount] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const isVisibleRef = useRef(true);
 
-  /**
-   * Manual refresh function
-   */
+  // Manual refresh logic
+  const manualRefreshFn = useManualRefresh(
+    router,
+    isRefreshing,
+    onRefreshSuccess,
+    onRefreshError,
+    debug
+  );
+
   const refresh = useCallback(async () => {
-    if (isRefreshing) {
-      if (debug) {
-        console.log('[useRefresh] Refresh already in progress, skipping');
-      }
-      return;
-    }
+    await manualRefreshFn(setIsRefreshing, setLastRefreshed, setRefreshCount);
+  }, [manualRefreshFn]);
 
-    try {
-      setIsRefreshing(true);
-      if (debug) {
-        console.log('[useRefresh] Starting refresh...');
-      }
+  // Pause/resume controls
+  const { pause: pauseFn, resume: resumeFn } = usePauseResume(debug);
 
-      // Trigger Next.js router refresh
-      router.refresh();
-
-      // Small delay to ensure refresh completes
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      setLastRefreshed(new Date());
-      setRefreshCount((prev) => prev + 1);
-
-      if (debug) {
-        console.log('[useRefresh] Refresh completed successfully');
-      }
-
-      onRefreshSuccess?.();
-    } catch (error) {
-      const err = error instanceof Error ? error : new Error('Refresh failed');
-      if (debug) {
-        console.error('[useRefresh] Refresh failed:', err);
-      }
-      onRefreshError?.(err);
-    } finally {
-      setIsRefreshing(false);
-    }
-  }, [router, isRefreshing, onRefreshSuccess, onRefreshError, debug]);
-
-  /**
-   * Pause automatic refreshes
-   */
   const pause = useCallback(() => {
     setIsPaused(true);
-    if (debug) {
-      console.log('[useRefresh] Auto-refresh paused');
-    }
-  }, [debug]);
+    pauseFn();
+  }, [pauseFn]);
 
-  /**
-   * Resume automatic refreshes
-   */
   const resume = useCallback(() => {
     setIsPaused(false);
-    if (debug) {
-      console.log('[useRefresh] Auto-refresh resumed');
-    }
-  }, [debug]);
+    resumeFn();
+  }, [resumeFn]);
 
-  /**
-   * Set up automatic refresh interval
-   */
-  useEffect(() => {
-    if (!interval || interval <= 0) {
-      return;
-    }
+  // Auto-refresh interval
+  useAutoRefreshInterval(
+    interval,
+    isPaused,
+    refreshWhenVisible,
+    isVisibleRef,
+    refresh,
+    debug
+  );
 
-    const startInterval = () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-
-      intervalRef.current = setInterval(() => {
-        // Check if refresh should be skipped
-        const shouldRefresh =
-          !isPaused &&
-          (!refreshWhenVisible || (refreshWhenVisible && isVisibleRef.current));
-
-        if (shouldRefresh) {
-          if (debug) {
-            console.log('[useRefresh] Auto-refresh triggered');
-          }
-          refresh();
-        } else if (debug) {
-          console.log('[useRefresh] Auto-refresh skipped (paused or not visible)');
-        }
-      }, interval);
-
-      if (debug) {
-        console.log(`[useRefresh] Auto-refresh interval set to ${interval}ms`);
-      }
-    };
-
-    startInterval();
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    };
-  }, [interval, isPaused, refreshWhenVisible, refresh, debug]);
-
-  /**
-   * Handle visibility change
-   */
-  useEffect(() => {
-    if (!refreshWhenVisible) {
-      return;
-    }
-
-    const handleVisibilityChange = () => {
-      isVisibleRef.current = !document.hidden;
-
-      if (debug) {
-        console.log(
-          `[useRefresh] Visibility changed: ${isVisibleRef.current ? 'visible' : 'hidden'}`
-        );
-      }
-
-      // Trigger immediate refresh when tab becomes visible again
-      if (isVisibleRef.current && interval && !isPaused) {
-        if (debug) {
-          console.log('[useRefresh] Tab became visible, triggering refresh');
-        }
-        refresh();
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [refreshWhenVisible, interval, isPaused, refresh, debug]);
+  // Visibility manager
+  useVisibilityManager(
+    refreshWhenVisible,
+    interval,
+    isPaused,
+    isVisibleRef,
+    refresh,
+    debug
+  );
 
   return {
     refresh,
@@ -403,20 +243,4 @@ export function useRefresh(options: UseRefreshOptions = {}): UseRefreshReturn {
     resume,
     isPaused,
   };
-}
-
-/**
- * Lightweight version for simple manual refresh only
- *
- * @example
- * ```tsx
- * const refresh = useSimpleRefresh();
- * <button onClick={refresh}>Refresh</button>
- * ```
- */
-export function useSimpleRefresh(): () => void {
-  const router = useRouter();
-  return useCallback(() => {
-    router.refresh();
-  }, [router]);
 }

@@ -114,3 +114,47 @@ export {
   useRecentVitals,
   useRecordVitals,
 } from './useVitalSigns';
+
+// Export patient and appointment query hooks (from useHealthQueries.ts breakdown)
+export {
+  usePatients,
+  usePatient,
+  usePatientSearch,
+  useAppointments,
+  useAppointment,
+  useAppointmentsByPatient,
+  useAppointmentsByProvider,
+  useAppointmentsToday,
+} from './usePatientAppointmentQueries';
+
+// Export medical record, provider, and facility query hooks (from useHealthQueries.ts breakdown)
+export {
+  useMedicalRecords,
+  useMedicalRecord,
+  useMedicalRecordsByPatient,
+  useProviders,
+  useProvider,
+  useProvidersByDepartment,
+  useFacilities,
+  useFacility,
+} from './useMedicalRecordProviderQueries';
+
+// Export clinical data query hooks (from useHealthQueries.ts breakdown)
+export {
+  useVitalsByPatient,
+  useVitalsByType,
+  useMedicationsByPatient,
+  useAllergiesByPatient,
+  useLabResultsByPatient,
+} from './useClinicalDataQueries';
+
+// Export clinical alert and analytics query hooks (from useHealthQueries.ts breakdown)
+export {
+  useClinicalAlertsByPatient,
+  useActiveClinicalAlerts,
+  useCriticalAlerts,
+  useHealthMetrics,
+  usePatientAnalytics,
+  useAppointmentAnalytics,
+  useProviderAnalytics,
+} from './useAlertAnalyticsQueries';
