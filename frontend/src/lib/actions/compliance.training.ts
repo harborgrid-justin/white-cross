@@ -13,7 +13,7 @@ import {
   BACKEND_URL,
   getAuthToken,
   logHIPAAAuditEntry,
-  getCurrentUserContext
+  getCurrentUserContext,
 } from './compliance.cache';
 
 // ============================================================================

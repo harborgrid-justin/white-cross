@@ -1,25 +1,30 @@
 /**
- * @fileoverview Compliance Reports & Training Actions - Next.js v16 App Router
+ * @fileoverview Compliance Reports Actions - Next.js v16 App Router
  *
- * Server actions for compliance reporting and training management.
+ * Server actions for compliance reporting and metrics.
  */
 
 'use server';
 
 import { revalidatePath, revalidateTag } from 'next/cache';
-import {
+import type {
   HIPAAReport,
   ComplianceMetrics,
   ComplianceAlert,
   ComplianceViolation,
 } from '@/schemas/compliance/compliance.schemas';
 
-import type { ActionResult, PaginatedResult, UIComplianceReport, UIReportTemplate } from './compliance.types';
+import type {
+  ActionResult,
+  PaginatedResult,
+  UIComplianceReport,
+  UIReportTemplate
+} from './compliance.types';
 import {
   BACKEND_URL,
   getAuthToken,
   logHIPAAAuditEntry,
-  getCurrentUserContext
+  getCurrentUserContext,
 } from './compliance.cache';
 
 // ============================================================================
@@ -301,7 +306,7 @@ export async function getComplianceReportsAction(
       }
     });
 
-    let reports: PaginatedResult<UIComplianceReport> = { data: [], pagination: { page: 1, pageSize: 10, total: 0, totalPages: 0 } };
+    let reports: PaginatedResult<UIComplianceReport> = { data: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 0 } };
     if (reportsResponse.ok) {
       reports = await reportsResponse.json();
     }

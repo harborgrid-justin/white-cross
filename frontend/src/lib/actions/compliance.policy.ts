@@ -8,17 +8,21 @@
 'use server';
 
 import { revalidatePath, revalidateTag } from 'next/cache';
-import {
+import type {
   PolicyDocument,
   PolicyAcknowledgment,
 } from '@/schemas/compliance/compliance.schemas';
 
-import type { ActionResult, PaginatedResult, UIPolicy } from './compliance.types';
+import type {
+  ActionResult,
+  PaginatedResult,
+  UIPolicy
+} from './compliance.types';
 import {
   BACKEND_URL,
   getAuthToken,
   logHIPAAAuditEntry,
-  getCurrentUserContext
+  getCurrentUserContext,
 } from './compliance.cache';
 
 // ============================================================================

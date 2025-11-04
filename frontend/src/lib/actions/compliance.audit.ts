@@ -8,21 +8,27 @@
 'use server';
 
 import { revalidatePath, revalidateTag } from 'next/cache';
-import {
+import type {
   AuditLog,
   AuditLogFilter,
   AuditLogExport,
 } from '@/schemas/compliance/compliance.schemas';
 import { createAuditLogEntry, exportAuditLogs, verifyAuditChain } from '@/lib/compliance/audit';
 
-import type { ActionResult, AuditLogContext, CreateAuditLogInput, PaginatedResult } from './compliance.types';
+import type {
+  ActionResult,
+  AuditLogContext,
+  CreateAuditLogInput,
+  PaginatedResult
+} from './compliance.types';
 import {
   BACKEND_URL,
   getAuthToken,
   getLatestAuditLog,
   logHIPAAAuditEntry,
   logToSecondaryStore,
-  detectAndLogViolations
+  detectAndLogViolations,
+  getCurrentUserId,
 } from './compliance.cache';
 
 // ============================================================================
@@ -293,9 +299,4 @@ export async function verifyAuditIntegrityAction(
       error: 'Failed to verify audit chain integrity',
     };
   }
-}
-
-// Helper function - should be in cache file
-async function getCurrentUserId(): Promise<string> {
-  return 'current-user-id';
 }
