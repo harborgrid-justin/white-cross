@@ -75,7 +75,7 @@
 import { Metadata } from 'next'
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
-import { LoadingSpinner } from '@/components'
+import { Spinner } from '@/components'
 import { DocumentTemplateEditor } from '@/components/documents'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
@@ -235,7 +235,8 @@ export default async function EditTemplatePage({ params }: EditTemplatePageProps
         Loads editor interface and template data asynchronously
         Provides immediate page shell with loading indicator
       */}
-      <Suspense fallback={<LoadingSpinner />}>
+            <Suspense fallback={<Spinner />}>
+        <DocumentTemplateEditor templateId={id} />
         <DocumentTemplateEditor templateId={isNew ? undefined : id} />
       </Suspense>
     </div>

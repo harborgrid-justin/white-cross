@@ -33,7 +33,7 @@ import {
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { SearchInput } from '@/components/ui/input';
+import { SearchInput } from '@/components/ui/inputs';
 
 // Import server actions
 import { 

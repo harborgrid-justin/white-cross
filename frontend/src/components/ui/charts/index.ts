@@ -25,3 +25,5 @@ export { StackedBarChart } from './StackedBarChart';
 export { HeatMapChart } from './HeatMapChart';
 export { GaugeChart } from './GaugeChart';
 export { FunnelChart } from './FunnelChart';
+export { ComposedChart } from './ComposedChart';
+export type { ComposedChartProps, ComposedChartDataPoint, ComposedChartSeries } from './ComposedChart';

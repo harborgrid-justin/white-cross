@@ -59,7 +59,7 @@
 
 import { Metadata } from 'next'
 import { Suspense } from 'react'
-import { LoadingSpinner } from '@/components'
+import { Spinner } from '@/components'
 import { DocumentTemplatesList } from '@/components/documents'
 import Link from 'next/link'
 import { ArrowLeft, Plus } from 'lucide-react'
@@ -176,7 +176,7 @@ export default async function DocumentTemplatesPage() {
         Enables progressive loading of template data
         Shows spinner while fetching from API
       */}
-      <Suspense fallback={<LoadingSpinner />}>
+      <Suspense fallback={<Spinner />}>
         <DocumentTemplatesList />
       </Suspense>
     </div>

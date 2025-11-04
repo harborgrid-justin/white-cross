@@ -92,7 +92,7 @@
 import { Metadata } from 'next'
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
-import { LoadingSpinner } from '@/components'
+import { Spinner } from '@/components'
 import { FormBuilder } from '@/components/forms'
 import Link from 'next/link'
 import { ArrowLeft, Eye } from 'lucide-react'
@@ -242,7 +242,7 @@ export default async function EditFormPage({ params }: EditFormPageProps) {
         Loads form structure from API and initializes builder
         Shows spinner during initial form load
       */}
-      <Suspense fallback={<LoadingSpinner />}>
+      <Suspense fallback={<Spinner />}>
         <FormBuilder formId={id} />
       </Suspense>
     </div>

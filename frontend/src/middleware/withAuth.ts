@@ -33,7 +33,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { extractToken, verifyToken, JWTPayload, hasRolePermission } from '@/lib/auth/jwtVerifier';
+import { extractToken, verifyAccessToken as verifyToken, TokenPayload as JWTPayload, hasMinimumRole as hasRolePermission } from '@/lib/auth';
 
 /**
  * Authenticated user context
@@ -135,13 +135,14 @@ export function withAuth(handler: AuthenticatedHandler) {
       }
 
       // Verify token signature and expiration
-      const verification = await verifyToken(token);
-
-      if (!verification.valid || !verification.payload) {
+      let payload: JWTPayload;
+      try {
+        payload = verifyToken(token);
+      } catch (error) {
         return NextResponse.json(
           {
             error: 'Unauthorized',
-            message: verification.error || 'Invalid or expired token',
+            message: error instanceof Error ? error.message : 'Invalid or expired token',
             code: 'AUTH_TOKEN_INVALID'
           },
           { status: 401 }
@@ -150,7 +151,7 @@ export function withAuth(handler: AuthenticatedHandler) {
 
       // Create authenticated context
       const auth: AuthenticatedContext = {
-        user: verification.payload,
+        user: payload,
         token
       };
 
@@ -213,16 +214,17 @@ export function withOptionalAuth(handler: OptionalAuthHandler) {
       }
 
       // Verify token signature and expiration
-      const verification = await verifyToken(token);
-
-      if (!verification.valid || !verification.payload) {
+      let payload: JWTPayload;
+      try {
+        payload = verifyToken(token);
+      } catch (error) {
         // Invalid token, continue without authentication
         return await handler(request, context, null);
       }
 
       // Create authenticated context
       const auth: AuthenticatedContext = {
-        user: verification.payload,
+        user: payload,
         token
       };
 
@@ -351,7 +353,7 @@ export function withMinimumRole(
     const userRole = auth.user.role;
 
     // Check if user meets minimum role requirement
-    if (!hasRolePermission(userRole, minimumRole)) {
+    if (!hasRolePermission({ id: auth.user.id, email: auth.user.email, role: auth.user.role }, minimumRole)) {
       return NextResponse.json(
         {
           error: 'Forbidden',
@@ -415,5 +417,5 @@ export function createForbiddenResponse(
 }
 
 // Re-export authentication utilities for convenience
-export { extractToken, verifyToken, hasRolePermission } from '@/lib/auth/jwtVerifier';
-export type { JWTPayload } from '@/lib/auth/jwtVerifier';
+export { extractToken, verifyAccessToken as verifyToken, hasMinimumRole as hasRolePermission } from '@/lib/auth';
+export type { TokenPayload as JWTPayload } from '@/lib/auth';

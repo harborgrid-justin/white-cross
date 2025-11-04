@@ -42,7 +42,7 @@
  * @since 2025-10-31
  */
 
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 // ==========================================
@@ -249,8 +249,11 @@ async function getAuthToken(): Promise<string | null> {
 
 /**
  * Generate unique request ID for tracing
+ * Made dynamic to avoid prerendering issues
  */
 function generateRequestId(): string {
+  // Access headers first to make this function dynamic during prerendering
+  headers();
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
 

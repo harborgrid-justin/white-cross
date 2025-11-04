@@ -51,7 +51,7 @@
 import { Metadata } from 'next'
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
-import { LoadingSpinner } from '@/components'
+import { Spinner } from '@/components'
 import { DocumentViewer } from '@/components/documents'
 import Link from 'next/link'
 import { ArrowLeft, FileSignature } from 'lucide-react'
@@ -180,7 +180,7 @@ export default async function DocumentViewPage({ params }: DocumentViewPageProps
         Allows page shell to render immediately while document loads
         Provides better perceived performance and user experience
       */}
-      <Suspense fallback={<LoadingSpinner />}>
+      <Suspense fallback={<Spinner />}>
         <DocumentViewer documentId={id} />
       </Suspense>
     </div>

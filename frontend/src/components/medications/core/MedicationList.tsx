@@ -15,7 +15,7 @@
 import React, { useState, useMemo } from 'react';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableEmptyState, TableLoadingState } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { SearchInput } from '@/components/ui/input';
+import { SearchInput } from '@/components/ui/inputs';
 
 /**
  * Medication data interface

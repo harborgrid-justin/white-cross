@@ -18,8 +18,6 @@ import { invalidateStudentData } from '@/lib/cache/invalidation';
  * Route segment configuration
  * Force dynamic rendering for authenticated routes with dynamic params
  */
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 /**
  * GET /api/students/:id

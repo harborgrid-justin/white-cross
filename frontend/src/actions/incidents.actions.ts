@@ -52,3 +52,27 @@ export async function getIncidentAnalytics(filters?: any) {
   // Placeholder implementation
   return { totalIncidents: 0, byType: {}, byStatus: {} };
 }
+
+export async function createFollowUpAction(incidentId: string, data: {
+  action: string;
+  assignedTo: string;
+  dueDate: string;
+  priority: 'low' | 'medium' | 'high';
+  notes?: string;
+}) {
+  // Placeholder implementation
+  revalidatePath(`/incidents/${incidentId}`);
+  return { success: true, id: 'followup-id' };
+}
+
+export async function submitWitnessStatement(incidentId: string, data: {
+  witnessName: string;
+  witnessContact: string;
+  statement: string;
+  dateTime: string;
+  relationship?: string;
+}) {
+  // Placeholder implementation
+  revalidatePath(`/incidents/${incidentId}`);
+  return { success: true, id: 'statement-id' };
+}

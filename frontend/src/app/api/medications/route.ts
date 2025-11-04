@@ -18,8 +18,6 @@ import { invalidateMedicationData } from '@/lib/cache/invalidation';
  * Route segment configuration
  * Force dynamic rendering for authenticated routes
  */
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 /**
  * GET /medications

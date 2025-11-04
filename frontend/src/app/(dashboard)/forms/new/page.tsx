@@ -98,14 +98,14 @@
  * @module app/forms/new
  * @requires next/Metadata - Next.js metadata type definitions
  * @requires @/components/forms/FormBuilder - Drag-and-drop form builder component
- * @requires @/components/LoadingSpinner - Loading state indicator
+ * @requires @/components/Spinner - Loading state indicator
  *
  * @see {@link https://www.hhs.gov/hipaa/for-professionals/privacy/laws-regulations/index.html|HIPAA Privacy Rule}
  */
 
 import { Metadata } from 'next'
 import { Suspense } from 'react'
-import { LoadingSpinner } from '@/components'
+import { Spinner } from '@/components'
 import { FormBuilder } from '@/components/forms'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
@@ -225,7 +225,7 @@ export default async function NewFormPage() {
         Loads builder interface asynchronously
         Shows spinner while initializing builder tools
       */}
-      <Suspense fallback={<LoadingSpinner />}>
+      <Suspense fallback={<Spinner />}>
         <FormBuilder />
       </Suspense>
     </div>

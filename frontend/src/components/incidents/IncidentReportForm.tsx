@@ -36,7 +36,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select } from '@/components/ui/select';
 import { Alert } from '@/components/ui/alert';
-import { LoadingSpinner } from '@/components/ui/skeleton';
+import { Spinner } from '@/components/ui/spinner';
 import { Card } from '@/components/ui/card';
 
 interface IncidentReportFormProps {
@@ -486,7 +486,7 @@ export function IncidentReportForm({
             <Button type="submit" variant="default" disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
-                  <LoadingSpinner size="sm" className="mr-2" />
+                  <Spinner className="mr-2" />
                   Submitting...
                 </>
               ) : (

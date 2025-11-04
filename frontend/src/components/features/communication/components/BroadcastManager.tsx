@@ -57,7 +57,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import type { Broadcast } from '@/lib/validations/broadcast.schemas';
-import { cancelBroadcastAction, deleteBroadcastAction } from '@/lib/actions/communications.actions';
+import { cancelBroadcast, deleteBroadcastAction } from '@/lib/actions/communications.actions';
 import { toast } from 'sonner';
 
 interface BroadcastManagerProps {
@@ -127,7 +127,7 @@ export function BroadcastManager({
     }
 
     try {
-      await cancelBroadcastAction({ broadcastId: broadcast.id });
+      await cancelBroadcast(broadcast.id);
       setBroadcasts(prev =>
         prev.map(b =>
           b.id === broadcast.id ? { ...b, status: 'cancelled' as const } : b
@@ -146,7 +146,7 @@ export function BroadcastManager({
     }
 
     try {
-      await deleteBroadcastAction({ broadcastId: broadcast.id });
+      await deleteBroadcastAction(broadcast.id);
       setBroadcasts(prev => prev.filter(b => b.id !== broadcast.id));
       toast.success('Broadcast deleted');
     } catch (error) {

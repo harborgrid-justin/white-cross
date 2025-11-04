@@ -19,8 +19,6 @@ import { ChevronLeft } from 'lucide-react';
  * Use Incremental Static Regeneration for student detail pages.
  * Student data changes occasionally, so we use a short revalidation time.
  */
-export const dynamic = 'force-dynamic';
-export const revalidate = 15; // Revalidate every 15 seconds for PHI data
 
 /**
  * Generate page metadata

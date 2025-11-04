@@ -105,7 +105,7 @@
 import { Metadata } from 'next'
 import { Suspense } from 'react'
 import { DocumentUploader } from '@/components/documents'
-import { LoadingSpinner } from '@/components'
+import { Spinner } from '@/components'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
@@ -254,7 +254,7 @@ export default async function UploadDocumentPage() {
         Loads upload interface asynchronously
         Shows spinner while initializing upload manager
       */}
-      <Suspense fallback={<LoadingSpinner />}>
+      <Suspense fallback={<Spinner />}>
         <DocumentUploader />
       </Suspense>
     </div>

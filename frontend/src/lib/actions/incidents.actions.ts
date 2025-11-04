@@ -806,3 +806,41 @@ export async function getTrendingIncidents(period: 'week' | 'month' | 'quarter' 
     return { success: false, error: err.message };
   }
 }
+
+// ==========================================
+// MISSING ACTION FUNCTIONS
+// ==========================================
+
+/**
+ * Create a new follow-up action
+ * Wrapper function for addFollowUpAction to match component expectations
+ */
+export async function createFollowUpAction(
+  data: { incidentId: string } & Partial<FollowUpAction>
+): Promise<{ success: boolean; id?: string; error?: string }> {
+  try {
+    const { incidentId, ...actionData } = data;
+    return await addFollowUpAction(incidentId, actionData);
+  } catch (error) {
+    const err = error as Error;
+    console.error('Error creating follow-up action:', err);
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Submit a witness statement
+ * Wrapper function for addWitnessStatement to match component expectations
+ */
+export async function submitWitnessStatement(
+  data: { incidentId: string } & Partial<WitnessStatement>
+): Promise<{ success: boolean; id?: string; error?: string }> {
+  try {
+    const { incidentId, ...statementData } = data;
+    return await addWitnessStatement(incidentId, statementData);
+  } catch (error) {
+    const err = error as Error;
+    console.error('Error submitting witness statement:', err);
+    return { success: false, error: err.message };
+  }
+}

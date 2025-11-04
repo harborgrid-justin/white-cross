@@ -111,8 +111,6 @@ import { invalidateResource } from '@/lib/cache/invalidation';
  * Route segment configuration
  * Force dynamic rendering for role-based data
  */
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 export const GET = withAuth(async (request: NextRequest, _context, auth) => {
   try {

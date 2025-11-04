@@ -65,7 +65,7 @@
 import { Metadata } from 'next'
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
-import { LoadingSpinner } from '@/components'
+import { Spinner } from '@/components'
 import { ESignatureInterface } from '@/components/documents'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
@@ -224,7 +224,7 @@ export default async function SignDocumentPage({ params }: SignDocumentPageProps
         Loads signature component and document preview asynchronously
         Provides immediate page shell for better UX
       */}
-      <Suspense fallback={<LoadingSpinner />}>
+      <Suspense fallback={<Spinner />}>
         <ESignatureInterface documentId={id} />
       </Suspense>
     </div>

@@ -15,4 +15,4 @@ export * from './errors'
 export * from './data'
 
 // Layout Components (re-export for backward compatibility)
-export { PageHeader } from '../layouts/PageHeader'
+export { PageHeader } from './PageHeader'

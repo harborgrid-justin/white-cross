@@ -102,7 +102,7 @@
 import { Metadata } from 'next'
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
-import { LoadingSpinner } from '@/components'
+import { Spinner } from '@/components'
 import { FormResponseViewer } from '@/components/forms'
 import Link from 'next/link'
 import { ArrowLeft, Edit } from 'lucide-react'
@@ -275,7 +275,7 @@ export default async function FormResponsesPage({ params }: FormResponsesPagePro
         Loads response data from API asynchronously
         Shows spinner while fetching responses
       */}
-      <Suspense fallback={<LoadingSpinner />}>
+      <Suspense fallback={<Spinner />}>
         <FormResponseViewer formId={id} />
       </Suspense>
     </div>

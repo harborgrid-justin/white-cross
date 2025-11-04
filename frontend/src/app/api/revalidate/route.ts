@@ -29,8 +29,6 @@ import { createAuditContext, auditLog, AUDIT_ACTIONS } from '@/lib/audit';
  * Route segment configuration
  * Force dynamic for admin operations
  */
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 /**
  * Revalidation request body type
