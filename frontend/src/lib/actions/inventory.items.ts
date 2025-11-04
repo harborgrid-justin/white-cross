@@ -20,10 +20,8 @@
  */
 
 'use server';
-'use cache';
 
 import { revalidatePath, revalidateTag } from 'next/cache';
-import { cacheLife, cacheTag } from 'next/cache';
 import type { InventoryItemFilter } from '@/schemas/inventory.schemas';
 import { auditLog } from '@/lib/audit';
 import type { ActionResult } from './inventory.types';
@@ -37,7 +35,7 @@ import { getAuthToken, createAuditContext, enhancedFetch, BACKEND_URL } from './
  * Create new inventory item
  */
 export async function createInventoryItemAction(
-  prevState: ActionResult,
+  _prevState: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
   const token = await getAuthToken();
@@ -99,8 +97,8 @@ export async function createInventoryItemAction(
     }
 
     // Enhanced cache invalidation
-    revalidateTag('inventory', {});
-    revalidateTag('inventory-items', {});
+    revalidateTag('inventory', 'default');
+    revalidateTag('inventory-items', 'default');
     revalidatePath('/inventory/items');
 
     return {
@@ -121,9 +119,6 @@ export async function createInventoryItemAction(
  * Get inventory items with enhanced caching
  */
 export async function getInventoryItemsAction(filter?: InventoryItemFilter) {
-  cacheLife('max');
-  cacheTag('inventory', 'inventory-items');
-
   try {
     const token = await getAuthToken();
     if (!token) {
@@ -165,9 +160,6 @@ export async function getInventoryItemsAction(filter?: InventoryItemFilter) {
  * Get inventory item by ID with stock levels
  */
 export async function getInventoryItemAction(itemId: string, includeStock = true) {
-  cacheLife('max');
-  cacheTag('inventory', `inventory-item-${itemId}`);
-
   try {
     const token = await getAuthToken();
     if (!token) {
@@ -205,7 +197,7 @@ export async function getInventoryItemAction(itemId: string, includeStock = true
  */
 export async function updateInventoryItemAction(
   itemId: string,
-  prevState: ActionResult,
+  _prevState: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
   const token = await getAuthToken();
@@ -267,9 +259,9 @@ export async function updateInventoryItemAction(
     }
 
     // Enhanced cache invalidation
-    revalidateTag('inventory', {});
-    revalidateTag('inventory-items', {});
-    revalidateTag(`inventory-item-${itemId}`, {});
+    revalidateTag('inventory', 'default');
+    revalidateTag('inventory-items', 'default');
+    revalidateTag(`inventory-item-${itemId}`, 'default');
     revalidatePath('/inventory/items');
     revalidatePath(`/inventory/items/${itemId}`);
 
@@ -323,9 +315,9 @@ export async function deleteInventoryItemAction(itemId: string): Promise<ActionR
     });
 
     // Enhanced cache invalidation
-    revalidateTag('inventory', {});
-    revalidateTag('inventory-items', {});
-    revalidateTag(`inventory-item-${itemId}`, {});
+    revalidateTag('inventory', 'default');
+    revalidateTag('inventory-items', 'default');
+    revalidateTag(`inventory-item-${itemId}`, 'default');
     revalidatePath('/inventory/items');
 
     return {

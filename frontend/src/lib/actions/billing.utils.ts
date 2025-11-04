@@ -11,7 +11,6 @@ import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
 
 // Types and cache
 import type {
-  BillingAnalytics,
   BillingRecord,
   BillingStats
 } from './billing.types';

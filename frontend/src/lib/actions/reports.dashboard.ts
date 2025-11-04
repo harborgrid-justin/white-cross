@@ -12,9 +12,6 @@
 import { getReports } from './reports.cache';
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
 
-// Types
-import type { Report } from './reports.types';
-
 // ==========================================
 // DASHBOARD FUNCTIONS
 // ==========================================
@@ -53,30 +50,34 @@ export async function getReportsStats(): Promise<{
     // Calculate statistics based on report schema properties
     const totalReports = reports.length;
     const completedReports = reports.filter(r => r.status === 'completed').length;
-    const scheduledReports = reports.filter(r => r.status === 'scheduled').length;
+    const scheduledReports = reports.filter(r => r.isScheduled).length;
     const failedReports = reports.filter(r => r.status === 'failed').length;
-    const processingReports = reports.filter(r => r.status === 'processing').length;
+    const processingReports = reports.filter(r => r.status === 'generating').length;
     const complianceReports = reports.filter(r => r.type === 'compliance').length;
     const customReports = reports.filter(r => r.type === 'custom').length;
-    const automatedReports = reports.filter(r => r.isAutomated).length;
+    const automatedReports = reports.filter(r => r.isScheduled).length; // Use isScheduled as proxy for automated
 
-    // Calculate average generation time (mock calculation)
-    const completedWithDuration = reports.filter(r => r.status === 'completed' && r.generationTime);
+    // Calculate average generation time (mock calculation - using simple estimation)
+    const completedWithDuration = reports.filter(r => r.status === 'completed' && r.completedAt && r.generatedAt);
     const averageGenerationTime = completedWithDuration.length > 0
-      ? completedWithDuration.reduce((sum, r) => sum + (r.generationTime || 0), 0) / completedWithDuration.length
+      ? completedWithDuration.reduce((sum, r) => {
+          const start = new Date(r.generatedAt!).getTime();
+          const end = new Date(r.completedAt!).getTime();
+          return sum + (end - start) / 1000; // Convert to seconds
+        }, 0) / completedWithDuration.length
       : 0;
 
-    // Mock total data processed
-    const totalDataProcessed = reports.reduce((sum, r) => sum + (r.recordsProcessed || 0), 0);
+    // Mock total data processed (use recordCount as proxy)
+    const totalDataProcessed = reports.reduce((sum, r) => sum + (r.recordCount || 0), 0);
 
     // Calculate reports by type
     const reportsByType = {
-      student_health: reports.filter(r => r.type === 'student_health').length,
+      student_health: reports.filter(r => r.type === 'student').length,
       medication: reports.filter(r => r.type === 'medication').length,
       incident: reports.filter(r => r.type === 'incident').length,
-      attendance: reports.filter(r => r.type === 'attendance').length,
+      attendance: reports.filter(r => r.type === 'student').length, // Use student as proxy
       compliance: reports.filter(r => r.type === 'compliance').length,
-      financial: reports.filter(r => r.type === 'financial').length,
+      financial: reports.filter(r => r.category === 'financial').length,
       custom: reports.filter(r => r.type === 'custom').length,
     };
 
@@ -209,19 +210,19 @@ export async function getReportsDashboardData(): Promise<{
       status: report.status,
       createdAt: report.createdAt,
       completedAt: report.completedAt,
-      recordsProcessed: report.recordsProcessed || 0,
-      generatedBy: report.generatedBy?.name || 'System',
+      recordsProcessed: report.recordCount || 0,
+      generatedBy: report.createdByName || 'System',
     }));
 
     // Get scheduled reports
     const scheduledReports = reports
-      .filter(r => r.status === 'scheduled' || r.schedule)
+      .filter(r => r.isScheduled && r.schedule)
       .slice(0, 5)
       .map(report => ({
         id: report.id,
         name: report.name,
         type: report.type,
-        nextRun: report.nextRun || report.scheduledAt || '',
+        nextRun: report.schedule?.nextRun || '',
         frequency: report.schedule?.frequency || 'once',
         isActive: report.schedule?.isActive !== false,
       }));
@@ -236,8 +237,8 @@ export async function getReportsDashboardData(): Promise<{
         name: report.name,
         type: report.type,
         failedAt: report.updatedAt,
-        errorMessage: report.errorMessage || 'Unknown error',
-        retryCount: report.retryCount || 0,
+        errorMessage: 'Report generation failed', // Static message as field doesn't exist
+        retryCount: 0, // Field doesn't exist in schema
       }));
 
     // Calculate generation trends

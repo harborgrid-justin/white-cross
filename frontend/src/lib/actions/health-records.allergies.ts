@@ -54,7 +54,7 @@ import type { ActionResult } from './health-records.types';
  * ```
  */
 export async function createAllergyAction(
-  prevState: ActionResult,
+  _prevState: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
   const token = await getAuthToken();

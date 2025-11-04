@@ -14,8 +14,8 @@ import { serverPost, serverPut, serverDelete, NextApiClientError } from '@/lib/a
 import { API_ENDPOINTS } from '@/constants/api';
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
 import { CACHE_TAGS } from '@/lib/cache/constants';
-import type { ApiResponse } from '@/types/api';
-import type { Medication } from '@/types/medications';
+import type { ApiResponse } from '@/types/core/api';
+import type { Medication } from '@/types/domain/medications';
 import type { ActionResult, CreateMedicationData, UpdateMedicationData } from './medications.types';
 
 // ==========================================
@@ -169,7 +169,7 @@ export async function updateMedication(
       resource: 'Medication',
       resourceId: medicationId,
       details: `Updated medication record`,
-      changes: data,
+      changes: data as Record<string, unknown>,
       success: true
     });
 

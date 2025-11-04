@@ -6,10 +6,8 @@
  */
 
 'use server';
-'use cache';
 
 import { revalidatePath, revalidateTag } from 'next/cache';
-import { cacheLife, cacheTag } from 'next/cache';
 import { auditLog } from '@/lib/audit';
 import type { ActionResult } from './inventory.types';
 import { getAuthToken, createAuditContext, enhancedFetch, BACKEND_URL } from './inventory.utils';
@@ -22,9 +20,6 @@ import { getAuthToken, createAuditContext, enhancedFetch, BACKEND_URL } from './
  * Get all inventory locations
  */
 export async function getInventoryLocationsAction(includeInactive = false) {
-  cacheLife('max');
-  cacheTag('inventory', 'inventory-locations');
-
   try {
     const token = await getAuthToken();
     if (!token) {
@@ -57,7 +52,7 @@ export async function getInventoryLocationsAction(includeInactive = false) {
  * Create new inventory location
  */
 export async function createInventoryLocationAction(
-  prevState: ActionResult,
+  _prevState: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
   const token = await getAuthToken();
@@ -111,8 +106,8 @@ export async function createInventoryLocationAction(
     });
 
     // Enhanced cache invalidation
-    revalidateTag('inventory', {});
-    revalidateTag('inventory-locations', {});
+    revalidateTag('inventory', 'default');
+    revalidateTag('inventory-locations', 'default');
     revalidatePath('/inventory/locations');
 
     return {

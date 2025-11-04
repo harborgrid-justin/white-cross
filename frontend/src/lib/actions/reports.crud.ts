@@ -15,7 +15,6 @@ import { serverPost, serverPut, serverDelete, NextApiClientError } from '@/lib/a
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
 
 // Types
-import type { ApiResponse } from '@/types/api';
 import type {
   ActionResult,
   Report,
@@ -42,7 +41,7 @@ export async function createReportAction(data: CreateReportData): Promise<Action
       };
     }
 
-    const response = await serverPost<ApiResponse<Report>>(
+    const response = await serverPost<{ success: boolean; data: Report; message?: string }>(
       `/api/reports`,
       data,
       {
@@ -117,7 +116,7 @@ export async function updateReportAction(
       };
     }
 
-    const response = await serverPut<ApiResponse<Report>>(
+    const response = await serverPut<{ success: boolean; data: Report; message?: string }>(
       `/api/reports/${reportId}`,
       data,
       {
@@ -193,7 +192,7 @@ export async function deleteReportAction(reportId: string): Promise<ActionResult
       };
     }
 
-    const response = await serverDelete<ApiResponse<void>>(
+    const response = await serverDelete<{ success: boolean; message?: string }>(
       `/api/reports/${reportId}`,
       {
         cache: 'no-store',

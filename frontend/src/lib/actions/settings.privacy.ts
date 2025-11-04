@@ -20,10 +20,8 @@
  */
 
 'use server';
-'use cache';
 
 import { revalidatePath, revalidateTag } from 'next/cache';
-import { cacheLife, cacheTag } from 'next/cache';
 import { type ZodIssue } from 'zod';
 import type { ActionResult } from './settings.types';
 import {
@@ -176,14 +174,11 @@ export async function exportUserDataAction(): Promise<ActionResult> {
 
 /**
  * Get user settings with enhanced caching
- * Retrieves all user settings with Next.js v16 caching
+ * Retrieves all user settings with Next.js caching
  * Cached for 5 minutes with automatic revalidation
  * @returns Action result with user settings data
  */
 export async function getUserSettingsAction() {
-  cacheLife('max');
-  cacheTag('user-settings');
-
   try {
     const user = await getAuthUser();
     if (!user) {

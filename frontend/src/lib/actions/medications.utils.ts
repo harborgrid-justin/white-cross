@@ -10,14 +10,13 @@
 
 import { revalidateTag, revalidatePath } from 'next/cache';
 import { CACHE_TAGS } from '@/lib/cache/constants';
-import type { Medication } from '@/types/medications';
 import type { MedicationFilters } from './medications.types';
+// Import individual functions rather than re-exporting to avoid duplicate 'use server'
 import {
   getMedication,
   getMedications,
   getPaginatedMedications,
-  getMedicationStats,
-  getOverdueMedications
+  getMedicationStats
 } from './medications.cache';
 
 // ==========================================
@@ -132,5 +131,4 @@ export async function getMedicationsDashboardData(options: {
   }
 }
 
-// Re-export getOverdueMedications for convenience
-export { getOverdueMedications };
+// Note: getOverdueMedications is exported from medications.cache.ts and re-exported in medications.actions.ts

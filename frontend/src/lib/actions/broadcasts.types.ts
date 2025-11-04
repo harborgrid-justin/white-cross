@@ -6,8 +6,6 @@
  * These types are shared across all broadcast modules.
  */
 
-'use server';
-
 // ==========================================
 // CACHE CONFIGURATION
 // ==========================================

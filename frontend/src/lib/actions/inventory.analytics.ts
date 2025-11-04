@@ -6,9 +6,6 @@
  */
 
 'use server';
-'use cache';
-
-import { cacheLife, cacheTag } from 'next/cache';
 import type { InventoryItem, StockLevel } from '@/schemas/inventory.schemas';
 import type { InventoryStats } from './inventory.types';
 import { getAuthToken, enhancedFetch, BACKEND_URL } from './inventory.utils';
@@ -24,9 +21,6 @@ import { getExpiringBatchesAction } from './inventory.batches';
  * Get inventory categories with counts
  */
 export async function getInventoryCategoriesAction() {
-  cacheLife('max');
-  cacheTag('inventory', 'inventory-categories');
-
   try {
     const token = await getAuthToken();
     if (!token) {

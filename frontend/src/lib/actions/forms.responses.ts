@@ -14,7 +14,6 @@ import { API_ENDPOINTS } from '@/constants/api';
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
 import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache/constants';
 import { generateId } from '@/utils/generators';
-import type { ApiResponse } from '@/types/api';
 import type {
   ActionResult,
   FormResponse,
@@ -104,7 +103,7 @@ export async function submitFormResponseAction(data: CreateFormResponseData): Pr
       phiFields
     };
 
-    const response = await serverPost<ApiResponse<FormResponse>>(
+    const response = await serverPost<{ success: boolean; data: FormResponse; message?: string }>(
       API_ENDPOINTS.FORMS.RESPONSES(data.formId),
       responseData,
       {
@@ -177,7 +176,7 @@ export async function getFormResponsesAction(
       };
     }
 
-    const response = await serverGet<ApiResponse<FormResponse[]>>(
+    const response = await serverGet<{ success: boolean; data: FormResponse[]; message?: string }>(
       API_ENDPOINTS.FORMS.RESPONSES(formId),
       filters as Record<string, string | number | boolean>,
       {
@@ -194,7 +193,7 @@ export async function getFormResponsesAction(
     }
 
     // Check if any responses contain PHI
-    const phiResponsesCount = response.data.filter(r => r.phiFields.length > 0).length;
+    const phiResponsesCount = response.data.filter((r: FormResponse) => r.phiFields.length > 0).length;
 
     // HIPAA AUDIT LOG - PHI access logging
     if (phiResponsesCount > 0) {

@@ -14,7 +14,7 @@ import { getDashboardStats } from './dashboard.statistics';
 import { getHealthAlerts } from './dashboard.alerts';
 import { getRecentActivities } from './dashboard.activities';
 import { getSystemStatus } from './dashboard.system';
-import type { DashboardFilters, DashboardStats, HealthAlert, RecentActivity, SystemStatus } from './dashboard.types';
+import type { DashboardFilters } from './dashboard.types';
 
 /**
  * Get Combined Dashboard Data

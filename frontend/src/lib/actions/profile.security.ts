@@ -18,15 +18,11 @@
 import { revalidateTag, revalidatePath } from 'next/cache';
 import { serverPost, serverDelete, NextApiClientError } from '@/lib/api/nextjs-client';
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
-import type { ApiResponse } from '@/types/api';
+import type { ApiResponse } from '@/types/core/api/responses';
 import type {
   ActionResult,
-  ChangePasswordData,
-  PROFILE_CACHE_TAGS
+  ChangePasswordData
 } from './profile.types';
-
-// Re-export cache tags for convenience
-export { PROFILE_CACHE_TAGS } from './profile.types';
 
 // ==========================================
 // PASSWORD MANAGEMENT

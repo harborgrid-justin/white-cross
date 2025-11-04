@@ -15,7 +15,6 @@ import { serverGet } from '@/lib/api/nextjs-client';
 import { CACHE_TTL } from '@/lib/cache/constants';
 
 // Types
-import type { ApiResponse } from '@/types/api';
 import type {
   Report,
   ReportTemplate,
@@ -34,7 +33,7 @@ import { REPORT_CACHE_TAGS } from './reports.types';
  */
 export const getReport = cache(async (id: string): Promise<Report | null> => {
   try {
-    const response = await serverGet<ApiResponse<Report>>(
+    const response = await serverGet<{ success: boolean; data: Report }>(
       `/api/reports/${id}`,
       undefined,
       {
@@ -58,7 +57,7 @@ export const getReport = cache(async (id: string): Promise<Report | null> => {
  */
 export const getReports = cache(async (filters?: ReportFilters): Promise<Report[]> => {
   try {
-    const response = await serverGet<ApiResponse<Report[]>>(
+    const response = await serverGet<{ success: boolean; data: Report[] }>(
       `/api/reports`,
       filters as Record<string, string | number | boolean>,
       {
@@ -82,7 +81,7 @@ export const getReports = cache(async (filters?: ReportFilters): Promise<Report[
  */
 export const getReportTemplates = cache(async (): Promise<ReportTemplate[]> => {
   try {
-    const response = await serverGet<ApiResponse<ReportTemplate[]>>(
+    const response = await serverGet<{ success: boolean; data: ReportTemplate[] }>(
       `/api/reports/templates`,
       undefined,
       {
@@ -106,7 +105,7 @@ export const getReportTemplates = cache(async (): Promise<ReportTemplate[]> => {
  */
 export const getReportAnalytics = cache(async (filters?: Record<string, unknown>): Promise<ReportAnalytics | null> => {
   try {
-    const response = await serverGet<ApiResponse<ReportAnalytics>>(
+    const response = await serverGet<{ success: boolean; data: ReportAnalytics }>(
       `/api/reports/analytics`,
       filters as Record<string, string | number | boolean>,
       {
@@ -130,7 +129,7 @@ export const getReportAnalytics = cache(async (filters?: Record<string, unknown>
  */
 export const getScheduledReports = cache(async (): Promise<Report[]> => {
   try {
-    const response = await serverGet<ApiResponse<Report[]>>(
+    const response = await serverGet<{ success: boolean; data: Report[] }>(
       `/api/reports/scheduled`,
       undefined,
       {

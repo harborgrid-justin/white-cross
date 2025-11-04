@@ -16,14 +16,13 @@ import { API_ENDPOINTS } from '@/constants/api';
 import { CACHE_TTL } from '@/lib/cache/constants';
 
 // Types
-import type { ApiResponse } from '@/types/api';
+import type { ApiResponse } from '@/types';
 import type {
   BudgetCategory,
   BudgetTransaction,
   BudgetSummary,
   BudgetFilters,
   TransactionFilters,
-  BUDGET_CACHE_TAGS,
 } from './budget.types';
 
 // Import cache tags

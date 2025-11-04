@@ -16,16 +16,15 @@ import { API_ENDPOINTS } from '@/constants/api';
 import { CACHE_TTL } from '@/lib/cache/constants';
 
 // Types
-import type { ApiResponse } from '@/types/api';
+import type { ApiResponse } from '@/types';
 import type {
   Broadcast,
   BroadcastTemplate,
   BroadcastFilters,
-  BroadcastAnalytics,
-  BROADCAST_CACHE_TAGS
+  BroadcastAnalytics
 } from './broadcasts.types';
 
-// Re-import constant for use
+// Import constant for use
 import { BROADCAST_CACHE_TAGS as CACHE_TAGS } from './broadcasts.types';
 
 // ==========================================

@@ -9,9 +9,8 @@
 'use server';
 
 import { cache } from 'react';
-import { serverGet } from '@/lib/api/nextjs-client';
+import { serverGet, type ApiResponse } from '@/lib/api/nextjs-client';
 import { CACHE_TTL } from '@/lib/cache/constants';
-import type { ApiResponse } from '@/types/api';
 import type {
   Notification,
   NotificationFilters,

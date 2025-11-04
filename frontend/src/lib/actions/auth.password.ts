@@ -35,7 +35,7 @@ import { AUTH_CACHE_TAGS, changePasswordSchema } from './auth.types';
  * Change password action
  */
 export async function changePasswordAction(
-  prevState: ChangePasswordFormState,
+  _prevState: ChangePasswordFormState,
   formData: FormData
 ): Promise<ChangePasswordFormState> {
   // Validate form data

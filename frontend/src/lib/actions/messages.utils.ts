@@ -10,7 +10,7 @@
 
 import { cache } from 'react';
 import { revalidatePath, revalidateTag } from 'next/cache';
-import type { MessageFilters, MESSAGE_CACHE_TAGS } from './messages.types';
+import type { MessageFilters } from './messages.types';
 import { getMessage, getMessages, getMessageThreads } from './messages.cache';
 import { MESSAGE_CACHE_TAGS as CACHE_TAGS } from './messages.types';
 

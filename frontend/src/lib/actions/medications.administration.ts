@@ -13,7 +13,7 @@ import { serverPost, NextApiClientError } from '@/lib/api/nextjs-client';
 import { API_ENDPOINTS } from '@/constants/api';
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
 import { CACHE_TAGS } from '@/lib/cache/constants';
-import type { ApiResponse } from '@/types/api';
+import type { ApiResponse } from '@/types/core/api';
 import type { ActionResult, AdministerMedicationData, MedicationLog } from './medications.types';
 
 // ==========================================

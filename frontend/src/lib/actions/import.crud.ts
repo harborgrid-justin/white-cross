@@ -15,7 +15,7 @@ import { serverPost, serverPut, NextApiClientError } from '@/lib/api/nextjs-clie
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
 
 // Types
-import type { ApiResponse } from '@/types/api';
+import type { ApiResponse } from '@/types/domain/administration';
 import type {
   ActionResult,
   ImportJob,
@@ -56,7 +56,7 @@ export async function createImportJobAction(data: CreateImportJobData): Promise<
     );
 
     if (!response.success || !response.data) {
-      throw new Error(response.message || 'Failed to create import job');
+      throw new Error(response.error?.message || 'Failed to create import job');
     }
 
     // AUDIT LOG - Import job creation
@@ -127,7 +127,7 @@ export async function updateImportJobAction(
     );
 
     if (!response.success || !response.data) {
-      throw new Error(response.message || 'Failed to update import job');
+      throw new Error(response.error?.message || 'Failed to update import job');
     }
 
     // AUDIT LOG - Import job update
@@ -199,7 +199,7 @@ export async function startImportJobAction(jobId: string): Promise<ActionResult<
     );
 
     if (!response.success || !response.data) {
-      throw new Error(response.message || 'Failed to start import job');
+      throw new Error(response.error?.message || 'Failed to start import job');
     }
 
     // AUDIT LOG - Import job start
@@ -271,7 +271,7 @@ export async function validateImportJobAction(jobId: string): Promise<ActionResu
     );
 
     if (!response.success || !response.data) {
-      throw new Error(response.message || 'Failed to validate import job');
+      throw new Error(response.error?.message || 'Failed to validate import job');
     }
 
     // AUDIT LOG - Import job validation
@@ -347,7 +347,7 @@ export async function createImportTemplateAction(data: CreateImportTemplateData)
     );
 
     if (!response.success || !response.data) {
-      throw new Error(response.message || 'Failed to create import template');
+      throw new Error(response.error?.message || 'Failed to create import template');
     }
 
     // AUDIT LOG - Template creation

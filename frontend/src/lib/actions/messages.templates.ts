@@ -11,12 +11,10 @@
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { serverPost, NextApiClientError } from '@/lib/api/nextjs-client';
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
-import type { ApiResponse } from '@/types/api';
 import type {
   ActionResult,
   MessageTemplate,
   CreateMessageTemplateData,
-  MESSAGE_CACHE_TAGS,
 } from './messages.types';
 
 // Import constants
@@ -40,7 +38,7 @@ export async function createMessageTemplateAction(data: CreateMessageTemplateDat
       };
     }
 
-    const response = await serverPost<ApiResponse<MessageTemplate>>(
+    const response = await serverPost<{ success: boolean; data: MessageTemplate; message?: string }>(
       `/api/messages/templates`,
       data,
       {

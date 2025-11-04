@@ -62,7 +62,7 @@ export const getInvoice = cache(async (id: string): Promise<Invoice | null> => {
       }
     );
 
-    return response.data;
+    return response.data ?? null;
   } catch (error) {
     console.error('Failed to get invoice:', error);
     return null;
@@ -114,7 +114,7 @@ export const getPayment = cache(async (id: string): Promise<Payment | null> => {
       }
     );
 
-    return response.data;
+    return response.data ?? null;
   } catch (error) {
     console.error('Failed to get payment:', error);
     return null;
@@ -166,7 +166,7 @@ export const getBillingAnalytics = cache(async (filters?: Record<string, unknown
       }
     );
 
-    return response.data;
+    return response.data ?? null;
   } catch (error) {
     console.error('Failed to get billing analytics:', error);
     return null;
@@ -180,15 +180,19 @@ export const getBillingAnalytics = cache(async (filters?: Record<string, unknown
 export const getBillingStats = cache(async (): Promise<BillingStats> => {
   try {
     // Fetch invoices for stats calculation
-    const invoices = await serverGet<Invoice[]>(
-      `${API_ENDPOINTS.BILLING?.BASE || '/api/billing'}/invoices`,
+    const response = await serverGet<ApiResponse<Invoice[]>>(
+      API_ENDPOINTS.BILLING.INVOICES,
+      undefined,
       {
+        cache: 'force-cache',
         next: {
           revalidate: 300, // 5 minutes
           tags: ['billing-stats', 'billing-dashboard']
         }
       }
     );
+
+    const invoices = response.data || [];
 
     // Calculate stats from invoices
     const paidInvoices = invoices.filter(inv => inv.status === 'paid');

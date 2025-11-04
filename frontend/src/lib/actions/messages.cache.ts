@@ -10,15 +10,12 @@
 
 import { cache } from 'react';
 import { serverGet } from '@/lib/api/nextjs-client';
-import type { ApiResponse } from '@/types/api';
 import type {
   Message,
   MessageThread,
   MessageTemplate,
   MessageAnalytics,
   MessageFilters,
-  MESSAGE_CACHE_TAGS,
-  CACHE_TTL,
 } from './messages.types';
 
 // Import constants
@@ -34,7 +31,7 @@ import { MESSAGE_CACHE_TAGS as CACHE_TAGS, CACHE_TTL as TTL } from './messages.t
  */
 export const getMessage = cache(async (id: string): Promise<Message | null> => {
   try {
-    const response = await serverGet<ApiResponse<Message>>(
+    const response = await serverGet<{ success: boolean; data: Message }>(
       `/api/messages/${id}`,
       undefined,
       {
@@ -58,7 +55,7 @@ export const getMessage = cache(async (id: string): Promise<Message | null> => {
  */
 export const getMessages = cache(async (filters?: MessageFilters): Promise<Message[]> => {
   try {
-    const response = await serverGet<ApiResponse<Message[]>>(
+    const response = await serverGet<{ success: boolean; data: Message[] }>(
       `/api/messages`,
       filters as Record<string, string | number | boolean>,
       {
@@ -82,7 +79,7 @@ export const getMessages = cache(async (filters?: MessageFilters): Promise<Messa
  */
 export const getMessageThread = cache(async (id: string): Promise<MessageThread | null> => {
   try {
-    const response = await serverGet<ApiResponse<MessageThread>>(
+    const response = await serverGet<{ success: boolean; data: MessageThread }>(
       `/api/messages/threads/${id}`,
       undefined,
       {
@@ -106,7 +103,7 @@ export const getMessageThread = cache(async (id: string): Promise<MessageThread 
  */
 export const getMessageThreads = cache(async (filters?: Record<string, unknown>): Promise<MessageThread[]> => {
   try {
-    const response = await serverGet<ApiResponse<MessageThread[]>>(
+    const response = await serverGet<{ success: boolean; data: MessageThread[] }>(
       `/api/messages/threads`,
       filters as Record<string, string | number | boolean>,
       {
@@ -130,7 +127,7 @@ export const getMessageThreads = cache(async (filters?: Record<string, unknown>)
  */
 export const getMessageTemplates = cache(async (): Promise<MessageTemplate[]> => {
   try {
-    const response = await serverGet<ApiResponse<MessageTemplate[]>>(
+    const response = await serverGet<{ success: boolean; data: MessageTemplate[] }>(
       `/api/messages/templates`,
       undefined,
       {
@@ -154,7 +151,7 @@ export const getMessageTemplates = cache(async (): Promise<MessageTemplate[]> =>
  */
 export const getMessageAnalytics = cache(async (filters?: Record<string, unknown>): Promise<MessageAnalytics | null> => {
   try {
-    const response = await serverGet<ApiResponse<MessageAnalytics>>(
+    const response = await serverGet<{ success: boolean; data: MessageAnalytics }>(
       `/api/messages/analytics`,
       filters as Record<string, string | number | boolean>,
       {

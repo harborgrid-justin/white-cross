@@ -142,7 +142,7 @@ export async function updateAdminUserAction(
       resource: 'AdminUser',
       resourceId: userId,
       details: 'Updated admin user information',
-      changes: data,
+      changes: data as Record<string, unknown>,
       success: true
     });
 

@@ -93,7 +93,7 @@ export function formatStockPercentage(current: number, max: number): string {
  */
 export function calculateReorderQuantity(
   currentStock: number,
-  minStock: number,
+  _minStock: number,
   maxStock: number,
   reorderPoint: number
 ): number {

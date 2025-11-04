@@ -14,7 +14,6 @@ import {
   UpdateTemplateSchema,
   TemplateFilterSchema,
   RenderTemplateSchema,
-  DeleteTemplateSchema,
   DuplicateTemplateSchema,
   type Template,
   type TemplateFilter,

@@ -143,7 +143,7 @@ export async function updateStudent(
       resource: 'Student',
       resourceId: studentId,
       details: `Updated student record`,
-      changes: data,
+      changes: data as Record<string, unknown>,
       success: true
     });
 

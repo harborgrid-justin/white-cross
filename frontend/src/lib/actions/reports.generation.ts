@@ -14,7 +14,6 @@ import { serverPost, NextApiClientError } from '@/lib/api/nextjs-client';
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
 
 // Types
-import type { ApiResponse } from '@/types/api';
 import type { ActionResult, Report } from './reports.types';
 import { REPORT_CACHE_TAGS } from './reports.types';
 
@@ -35,7 +34,7 @@ export async function generateReportAction(reportId: string): Promise<ActionResu
       };
     }
 
-    const response = await serverPost<ApiResponse<Report>>(
+    const response = await serverPost<{ success: boolean; data: Report; message?: string }>(
       `/api/reports/${reportId}/generate`,
       {},
       {
@@ -106,7 +105,7 @@ export async function downloadReportAction(reportId: string): Promise<ActionResu
       };
     }
 
-    const response = await serverPost<ApiResponse<{ downloadUrl: string }>>(
+    const response = await serverPost<{ success: boolean; data: { downloadUrl: string }; message?: string }>(
       `/api/reports/${reportId}/download`,
       {},
       {

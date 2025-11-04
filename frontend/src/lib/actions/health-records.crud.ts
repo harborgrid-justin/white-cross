@@ -56,7 +56,7 @@ import type { ActionResult } from './health-records.types';
  * ```
  */
 export async function createHealthRecordAction(
-  prevState: ActionResult,
+  _prevState: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
   const token = await getAuthToken();
@@ -297,7 +297,7 @@ export async function getHealthRecordsAction(studentId?: string, recordType?: st
  */
 export async function updateHealthRecordAction(
   id: string,
-  prevState: ActionResult,
+  _prevState: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
   const token = await getAuthToken();

@@ -6,6 +6,8 @@
  * This module serves as the foundation for all profile-related operations.
  */
 
+'use server';
+
 // ==========================================
 // CONFIGURATION
 // ==========================================

@@ -12,7 +12,6 @@ import { cache } from 'react';
 import { serverGet } from '@/lib/api/nextjs-client';
 import { API_ENDPOINTS } from '@/constants/api';
 import { CACHE_TTL } from '@/lib/cache/constants';
-import type { ApiResponse } from '@/types/api';
 import type { FormDefinition } from './forms.types';
 
 // ==========================================
@@ -40,7 +39,7 @@ export const FORMS_CACHE_TAGS = {
  */
 export const getForm = cache(async (id: string): Promise<FormDefinition | null> => {
   try {
-    const response = await serverGet<ApiResponse<FormDefinition>>(
+    const response = await serverGet<{ success: boolean; data: FormDefinition }>(
       API_ENDPOINTS.FORMS.BY_ID(id),
       undefined,
       {
@@ -65,7 +64,7 @@ export const getForm = cache(async (id: string): Promise<FormDefinition | null> 
  */
 export const getForms = cache(async (filters?: Record<string, unknown>): Promise<FormDefinition[]> => {
   try {
-    const response = await serverGet<ApiResponse<FormDefinition[]>>(
+    const response = await serverGet<{ success: boolean; data: FormDefinition[] }>(
       API_ENDPOINTS.FORMS.BASE,
       filters as Record<string, string | number | boolean>,
       {

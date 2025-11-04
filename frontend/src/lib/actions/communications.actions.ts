@@ -20,8 +20,7 @@ export type {
   ActionResult,
   MessageTemplate,
   CreateMessageTemplateData,
-  CommunicationAnalytics,
-  COMMUNICATIONS_CACHE_TAGS
+  CommunicationAnalytics
 } from './communications.types';
 
 export { COMMUNICATIONS_CACHE_TAGS } from './communications.types';
@@ -90,8 +89,8 @@ export {
 // BACKWARD COMPATIBILITY ALIASES
 // ============================================================================
 
-import { markMessageAsRead } from './communications.messages';
-import { deleteBroadcast } from './communications.broadcasts';
+import { markMessageAsRead, archiveMessages, deleteMessages } from './communications.messages';
+import { deleteBroadcast, acknowledgeBroadcast } from './communications.broadcasts';
 import type { ActionResult } from './communications.types';
 
 /**
@@ -103,9 +102,33 @@ export async function markAsReadAction(messageId: string): Promise<ActionResult<
 }
 
 /**
+ * Archive message (alias for archiveMessages)
+ * @deprecated Use archiveMessages instead
+ */
+export async function archiveMessageAction(messageId: string): Promise<ActionResult<void>> {
+  return archiveMessages([messageId]);
+}
+
+/**
+ * Delete message (alias for deleteMessages)
+ * @deprecated Use deleteMessages instead
+ */
+export async function deleteMessageAction(messageId: string, permanent = false): Promise<ActionResult<void>> {
+  return deleteMessages([messageId], permanent);
+}
+
+/**
  * Delete broadcast (alias for deleteBroadcast)
  * @deprecated Use deleteBroadcast instead
  */
 export async function deleteBroadcastAction(broadcastId: string): Promise<ActionResult<void>> {
   return deleteBroadcast(broadcastId);
+}
+
+/**
+ * Acknowledge broadcast (alias for acknowledgeBroadcast)
+ * @deprecated Use acknowledgeBroadcast instead
+ */
+export async function acknowledgeBroadcastAction(broadcastId: string): Promise<ActionResult<void>> {
+  return acknowledgeBroadcast(broadcastId);
 }

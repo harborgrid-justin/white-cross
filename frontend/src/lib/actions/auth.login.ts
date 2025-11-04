@@ -24,7 +24,7 @@ import { API_ENDPOINTS } from '@/constants/api';
 import { auditLog, AUDIT_ACTIONS, extractIPAddress, extractUserAgent } from '@/lib/audit';
 
 // Types
-import type { AuthResponse, LoginFormState, loginSchema } from './auth.types';
+import type { AuthResponse, LoginFormState } from './auth.types';
 import { AUTH_CACHE_TAGS } from './auth.types';
 
 // ==========================================
@@ -35,7 +35,7 @@ import { AUTH_CACHE_TAGS } from './auth.types';
  * Login action with form validation
  */
 export async function loginAction(
-  prevState: LoginFormState,
+  _prevState: LoginFormState,
   formData: FormData
 ): Promise<LoginFormState> {
   // Import schema dynamically to avoid circular dependency

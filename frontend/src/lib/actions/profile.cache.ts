@@ -17,17 +17,17 @@
 import { cache } from 'react';
 import { serverGet } from '@/lib/api/nextjs-client';
 import { CACHE_TTL } from '@/lib/cache/constants';
-import type { ApiResponse } from '@/types/api';
+import type { ApiResponse } from '@/types/core/api/responses';
+import { PROFILE_CACHE_TAGS } from './profile.types';
 import type {
   UserProfile,
   ProfileSettings,
   SecurityLog,
-  ActiveSession,
-  PROFILE_CACHE_TAGS
+  ActiveSession
 } from './profile.types';
 
 // Re-export cache tags for convenience
-export { PROFILE_CACHE_TAGS } from './profile.types';
+export { PROFILE_CACHE_TAGS };
 
 // ==========================================
 // CACHED DATA FUNCTIONS

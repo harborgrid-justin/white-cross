@@ -9,11 +9,13 @@
 'use server';
 
 import { revalidateTag, revalidatePath } from 'next/cache';
-import { serverPost, NextApiClientError } from '@/lib/api/nextjs-client';
+import { serverPost, NextApiClientError, type ApiResponse } from '@/lib/api/nextjs-client';
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
-import type { ApiResponse } from '@/types/api';
-import type { PurchaseOrder, ActionResult } from './purchase-orders.types';
-import { PURCHASE_ORDER_CACHE_TAGS } from './purchase-orders.types';
+import {
+  PURCHASE_ORDER_CACHE_TAGS,
+  type PurchaseOrder,
+  type ActionResult
+} from './purchase-orders.types';
 
 // ==========================================
 // APPROVAL WORKFLOW OPERATIONS

@@ -16,7 +16,7 @@ import { serverGet } from '@/lib/api/nextjs-client';
 import { CACHE_TTL } from '@/lib/cache/constants';
 
 // Types
-import type { ApiResponse } from '@/types/api';
+import type { ApiResponse } from '@/types/domain/administration';
 import type {
   ImportJob,
   ImportTemplate,
@@ -58,7 +58,7 @@ export const getImportJob = cache(async (id: string): Promise<ImportJob | null> 
       }
     );
 
-    return response.data;
+    return response.data || null;
   } catch (error) {
     console.error('Failed to get import job:', error);
     return null;
@@ -106,7 +106,7 @@ export const getImportTemplate = cache(async (id: string): Promise<ImportTemplat
       }
     );
 
-    return response.data;
+    return response.data || null;
   } catch (error) {
     console.error('Failed to get import template:', error);
     return null;
@@ -155,7 +155,7 @@ export const getImportAnalytics = cache(async (filters?: Record<string, unknown>
       }
     );
 
-    return response.data;
+    return response.data || null;
   } catch (error) {
     console.error('Failed to get import analytics:', error);
     return null;

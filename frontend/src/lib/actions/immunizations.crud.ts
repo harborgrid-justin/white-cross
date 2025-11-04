@@ -12,7 +12,7 @@ import { revalidateTag, revalidatePath } from 'next/cache';
 import { serverPost, serverPut, NextApiClientError } from '@/lib/api/nextjs-client';
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
 import { CACHE_TAGS } from '@/lib/cache/constants';
-import type { ApiResponse } from '@/types/api';
+import type { ApiResponse } from '@/types';
 import type {
   ActionResult,
   ImmunizationRecord,

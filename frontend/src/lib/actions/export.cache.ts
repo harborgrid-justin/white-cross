@@ -17,12 +17,9 @@ import type {
   ExportJob,
   ExportTemplate,
   ExportAnalytics,
-  ExportFilters,
-  EXPORT_CACHE_TAGS
+  ExportFilters
 } from './export.types';
-
-// Import the constant (not the type)
-import { EXPORT_CACHE_TAGS as CACHE_TAGS } from './export.types';
+import { EXPORT_CACHE_TAGS } from './export.types';
 
 // ==========================================
 // EXPORT JOB CACHE FUNCTIONS
@@ -41,7 +38,7 @@ export const getExportJob = cache(async (id: string): Promise<ExportJob | null> 
         cache: 'force-cache',
         next: {
           revalidate: CACHE_TTL.SESSION,
-          tags: [`export-job-${id}`, CACHE_TAGS.JOBS]
+          tags: [`export-job-${id}`, EXPORT_CACHE_TAGS.JOBS]
         }
       }
     );
@@ -65,7 +62,7 @@ export const getExportJobs = cache(async (filters?: ExportFilters): Promise<Expo
         cache: 'force-cache',
         next: {
           revalidate: CACHE_TTL.SESSION,
-          tags: [CACHE_TAGS.JOBS, 'export-job-list']
+          tags: [EXPORT_CACHE_TAGS.JOBS, 'export-job-list']
         }
       }
     );
@@ -93,7 +90,7 @@ export const getExportTemplate = cache(async (id: string): Promise<ExportTemplat
         cache: 'force-cache',
         next: {
           revalidate: CACHE_TTL.STATIC,
-          tags: [`export-template-${id}`, CACHE_TAGS.TEMPLATES]
+          tags: [`export-template-${id}`, EXPORT_CACHE_TAGS.TEMPLATES]
         }
       }
     );
@@ -118,7 +115,7 @@ export const getExportTemplates = cache(async (format?: string): Promise<ExportT
         cache: 'force-cache',
         next: {
           revalidate: CACHE_TTL.STATIC,
-          tags: [CACHE_TAGS.TEMPLATES, 'export-template-list']
+          tags: [EXPORT_CACHE_TAGS.TEMPLATES, 'export-template-list']
         }
       }
     );

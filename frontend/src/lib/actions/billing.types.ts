@@ -6,8 +6,6 @@
  * Shared types used across all billing modules.
  */
 
-'use server';
-
 // ==========================================
 // API RESPONSE TYPES
 // ==========================================

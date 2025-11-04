@@ -11,13 +11,11 @@
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { serverPost, serverPut, NextApiClientError } from '@/lib/api/nextjs-client';
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
-import type { ApiResponse } from '@/types/api';
 import type {
   ActionResult,
   Message,
   CreateMessageData,
   UpdateMessageData,
-  MESSAGE_CACHE_TAGS,
 } from './messages.types';
 
 // Import constants
@@ -41,7 +39,7 @@ export async function createMessageAction(data: CreateMessageData): Promise<Acti
       };
     }
 
-    const response = await serverPost<ApiResponse<Message>>(
+    const response = await serverPost<{ success: boolean; data: Message; message?: string }>(
       `/api/messages`,
       data,
       {
@@ -114,7 +112,7 @@ export async function updateMessageAction(
       };
     }
 
-    const response = await serverPut<ApiResponse<Message>>(
+    const response = await serverPut<{ success: boolean; data: Message; message?: string }>(
       `/api/messages/${messageId}`,
       data,
       {
@@ -187,7 +185,7 @@ export async function sendMessageAction(messageId: string): Promise<ActionResult
       };
     }
 
-    const response = await serverPost<ApiResponse<Message>>(
+    const response = await serverPost<{ success: boolean; data: Message; message?: string }>(
       `/api/messages/${messageId}/send`,
       {},
       {
@@ -260,7 +258,7 @@ export async function markMessageReadAction(messageId: string): Promise<ActionRe
       };
     }
 
-    const response = await serverPost<ApiResponse<Message>>(
+    const response = await serverPost<{ success: boolean; data: Message; message?: string }>(
       `/api/messages/${messageId}/read`,
       {},
       {

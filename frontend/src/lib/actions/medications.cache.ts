@@ -12,8 +12,8 @@ import { cache } from 'react';
 import { serverGet } from '@/lib/api/nextjs-client';
 import { API_ENDPOINTS } from '@/constants/api';
 import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache/constants';
-import type { ApiResponse } from '@/types/api';
-import type { Medication } from '@/types/medications';
+import type { ApiResponse } from '@/types/core/api';
+import type { Medication } from '@/types/domain/medications';
 import type {
   MedicationFilters,
   MedicationLog,

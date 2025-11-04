@@ -20,10 +20,7 @@ import {
   getActiveSessions,
   getSecurityLogs
 } from './profile.cache';
-import type { UserProfile, ProfileSettings, PROFILE_CACHE_TAGS } from './profile.types';
-
-// Re-export cache tags for convenience
-export { PROFILE_CACHE_TAGS } from './profile.types';
+import type { UserProfile, ProfileSettings } from './profile.types';
 
 // ==========================================
 // UTILITY FUNCTIONS

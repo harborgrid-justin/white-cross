@@ -9,19 +9,15 @@
 'use server';
 
 import { cache } from 'react';
-import { serverGet } from '@/lib/api/nextjs-client';
+import { serverGet, type ApiResponse } from '@/lib/api/nextjs-client';
 import { CACHE_TTL } from '@/lib/cache/constants';
-import type { ApiResponse } from '@/types/api';
-import type {
-  PurchaseOrder,
-  PurchaseOrderItem,
-  PurchaseOrderFilters,
-  PurchaseOrderAnalytics,
-  PURCHASE_ORDER_CACHE_TAGS
+import {
+  PURCHASE_ORDER_CACHE_TAGS,
+  type PurchaseOrder,
+  type PurchaseOrderItem,
+  type PurchaseOrderFilters,
+  type PurchaseOrderAnalytics,
 } from './purchase-orders.types';
-
-// Import the cache tags constant
-import { PURCHASE_ORDER_CACHE_TAGS as CACHE_TAGS } from './purchase-orders.types';
 
 // ==========================================
 // CACHED DATA FUNCTIONS
@@ -40,7 +36,7 @@ export const getPurchaseOrder = cache(async (id: string): Promise<PurchaseOrder 
         cache: 'force-cache',
         next: {
           revalidate: CACHE_TTL.SESSION,
-          tags: [`purchase-order-${id}`, CACHE_TAGS.ORDERS]
+          tags: [`purchase-order-${id}`, PURCHASE_ORDER_CACHE_TAGS.ORDERS]
         }
       }
     );
@@ -64,7 +60,7 @@ export const getPurchaseOrders = cache(async (filters?: PurchaseOrderFilters): P
         cache: 'force-cache',
         next: {
           revalidate: CACHE_TTL.SESSION,
-          tags: [CACHE_TAGS.ORDERS, 'purchase-order-list']
+          tags: [PURCHASE_ORDER_CACHE_TAGS.ORDERS, 'purchase-order-list']
         }
       }
     );
@@ -112,7 +108,7 @@ export const getPurchaseOrderItems = cache(async (purchaseOrderId: string): Prom
         cache: 'force-cache',
         next: {
           revalidate: CACHE_TTL.SESSION,
-          tags: [`purchase-order-items-${purchaseOrderId}`, CACHE_TAGS.ITEMS]
+          tags: [`purchase-order-items-${purchaseOrderId}`, PURCHASE_ORDER_CACHE_TAGS.ITEMS]
         }
       }
     );

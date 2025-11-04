@@ -3,8 +3,6 @@
  * @module app/transactions/types
  */
 
-'use server';
-
 // Re-export all transaction schema types
 export type {
   Transaction,

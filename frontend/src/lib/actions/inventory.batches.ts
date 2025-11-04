@@ -6,10 +6,8 @@
  */
 
 'use server';
-'use cache';
 
 import { revalidatePath, revalidateTag } from 'next/cache';
-import { cacheLife, cacheTag } from 'next/cache';
 import { auditLog } from '@/lib/audit';
 import type { ActionResult } from './inventory.types';
 import { getAuthToken, createAuditContext, enhancedFetch, BACKEND_URL } from './inventory.utils';
@@ -22,9 +20,6 @@ import { getAuthToken, createAuditContext, enhancedFetch, BACKEND_URL } from './
  * Get expiring batches with enhanced caching
  */
 export async function getExpiringBatchesAction(daysAhead: number = 90, locationId?: string) {
-  cacheLife('max');
-  cacheTag('inventory', 'expiring-batches');
-
   try {
     const token = await getAuthToken();
     if (!token) {
@@ -66,7 +61,7 @@ export async function getExpiringBatchesAction(daysAhead: number = 90, locationI
  * Create new batch
  */
 export async function createBatchAction(
-  prevState: ActionResult,
+  _prevState: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
   const token = await getAuthToken();
@@ -116,9 +111,9 @@ export async function createBatchAction(
     });
 
     // Enhanced cache invalidation
-    revalidateTag('inventory', {});
-    revalidateTag('inventory-batches', {});
-    revalidateTag(`item-batches-${rawData.itemId}`, {});
+    revalidateTag('inventory', 'default');
+    revalidateTag('inventory-batches', 'default');
+    revalidateTag(`item-batches-${rawData.itemId}`, 'default');
     revalidatePath('/inventory/stock');
 
     return {

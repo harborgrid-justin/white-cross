@@ -2,9 +2,9 @@
  * @fileoverview Server Actions for User Settings (Barrel File)
  * @module app/settings/actions
  *
- * Next.js v16 App Router Server Actions for user profile and settings management.
+ * Next.js v14+ App Router Server Actions for user profile and settings management.
  * Provides secure operations for profile updates, security settings, notification preferences, and privacy controls.
- * Enhanced with Next.js v16 caching capabilities and revalidation patterns.
+ * Enhanced with Next.js caching capabilities and revalidation patterns.
  *
  * This file serves as a barrel export for all settings-related actions and types.
  * For implementation details, see the individual module files:
@@ -30,7 +30,6 @@
  */
 
 'use server';
-'use cache';
 
 // ==========================================
 // TYPE EXPORTS
@@ -80,3 +79,17 @@ export {
   exportUserDataAction,
   getUserSettingsAction,
 } from './settings.privacy';
+
+// ==========================================
+// UTILITY FUNCTION EXPORTS
+// ==========================================
+
+export {
+  getAuthToken,
+  getCurrentUserId,
+  createAuditContext,
+  getAuthUser,
+  verifyCurrentPassword,
+  enhancedFetch,
+  BACKEND_URL
+} from './settings.utils';

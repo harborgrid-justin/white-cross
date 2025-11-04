@@ -17,16 +17,12 @@
 import { revalidateTag, revalidatePath } from 'next/cache';
 import { serverPut, serverPost, NextApiClientError } from '@/lib/api/nextjs-client';
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
-import type { ApiResponse } from '@/types/api';
+import type { ApiResponse } from '@/types/core/api/responses';
 import type {
   ActionResult,
   UserProfile,
-  UpdateProfileData,
-  PROFILE_CACHE_TAGS
+  UpdateProfileData
 } from './profile.types';
-
-// Re-export cache tags for convenience
-export { PROFILE_CACHE_TAGS } from './profile.types';
 
 // ==========================================
 // PROFILE CRUD OPERATIONS

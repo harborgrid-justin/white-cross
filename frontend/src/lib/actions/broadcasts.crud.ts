@@ -19,16 +19,15 @@ import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
 import { validateEmail } from '@/utils/validation/userValidation';
 
 // Types
-import type { ApiResponse } from '@/types/api';
+import type { ApiResponse } from '@/types';
 import type {
   Broadcast,
   CreateBroadcastData,
   UpdateBroadcastData,
-  ActionResult,
-  BROADCAST_CACHE_TAGS
+  ActionResult
 } from './broadcasts.types';
 
-// Re-import constant for use
+// Import constant for use
 import { BROADCAST_CACHE_TAGS as CACHE_TAGS } from './broadcasts.types';
 
 // ==========================================

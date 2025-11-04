@@ -7,7 +7,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { serverGet, serverPost, serverPut, serverDelete } from '@/lib/api/nextjs-client';
-import type { IncidentReport, IncidentsResponse, API_BASE as API_BASE_TYPE } from './incidents.types';
+import type { IncidentReport, IncidentsResponse } from './incidents.types';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 

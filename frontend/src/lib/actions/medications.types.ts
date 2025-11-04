@@ -6,7 +6,7 @@
  * Shared types used across medication modules.
  */
 
-import type { Medication } from '@/types/medications';
+import type { Medication } from '@/types/domain/medications';
 
 // ==========================================
 // ACTION RESULT TYPES

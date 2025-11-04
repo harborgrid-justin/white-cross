@@ -6,10 +6,8 @@
  */
 
 'use server';
-'use cache';
 
 import { revalidatePath, revalidateTag } from 'next/cache';
-import { cacheLife, cacheTag } from 'next/cache';
 import { auditLog } from '@/lib/audit';
 import type { ActionResult } from './inventory.types';
 import { getAuthToken, createAuditContext, enhancedFetch, BACKEND_URL } from './inventory.utils';
@@ -26,9 +24,6 @@ export async function getStockLevelsAction(filter?: {
   locationId?: string;
   belowReorderPoint?: boolean;
 }) {
-  cacheLife('max');
-  cacheTag('inventory', 'stock-levels');
-
   try {
     const token = await getAuthToken();
     if (!token) {
@@ -70,7 +65,7 @@ export async function getStockLevelsAction(filter?: {
  * Create stock level for item at location
  */
 export async function createStockLevelAction(
-  prevState: ActionResult,
+  _prevState: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
   const token = await getAuthToken();
@@ -117,10 +112,10 @@ export async function createStockLevelAction(
     });
 
     // Enhanced cache invalidation
-    revalidateTag('inventory', {});
-    revalidateTag('stock-levels', {});
-    revalidateTag(`stock-item-${rawData.itemId}`, {});
-    revalidateTag(`stock-location-${rawData.locationId}`, {});
+    revalidateTag('inventory', 'default');
+    revalidateTag('stock-levels', 'default');
+    revalidateTag(`stock-item-${rawData.itemId}`, 'default');
+    revalidateTag(`stock-location-${rawData.locationId}`, 'default');
     revalidatePath('/inventory/stock');
 
     return {

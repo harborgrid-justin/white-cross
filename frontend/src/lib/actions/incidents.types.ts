@@ -3,8 +3,6 @@
  * Shared type definitions for incident management
  */
 
-'use server';
-
 // ==========================================
 // CONSTANTS
 // ==========================================

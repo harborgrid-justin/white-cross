@@ -37,7 +37,9 @@ export const getBroadcastStats = cache(async (): Promise<BroadcastStats> => {
     // Fetch broadcasts for stats calculation
     const broadcasts = await serverGet<Broadcast[]>(
       `${API_ENDPOINTS.BROADCASTS?.BASE || '/api/broadcasts'}`,
+      undefined,
       {
+        cache: 'force-cache',
         next: {
           revalidate: 300, // 5 minutes
           tags: ['broadcast-stats', 'broadcast-dashboard']

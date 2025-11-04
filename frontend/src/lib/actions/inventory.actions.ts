@@ -2,9 +2,8 @@
  * @fileoverview Server Actions for Inventory Management
  * @module app/inventory/actions
  *
- * Next.js v16 App Router Server Actions for inventory item CRUD operations, stock management,
+ * Next.js App Router Server Actions for inventory item CRUD operations, stock management,
  * and multi-location tracking. HIPAA-compliant with audit logging for controlled substances.
- * Enhanced with Next.js v16 caching capabilities and revalidation patterns.
  *
  * This is a barrel file that re-exports from specialized modules for better organization.
  * Each module is under 300 lines for improved maintainability.
@@ -24,7 +23,6 @@
  */
 
 'use server';
-'use cache';
 
 // Re-export types
 export type { ActionResult, PaginatedResult, InventoryStats } from './inventory.types';

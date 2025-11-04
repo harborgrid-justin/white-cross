@@ -10,13 +10,10 @@
 import { fetchApi } from './communications.utils';
 import type { ActionResult } from './communications.types';
 import {
-  CreateNotificationSchema,
   NotificationFilterSchema,
   MarkNotificationAsReadSchema,
-  MarkAllAsReadSchema,
   ArchiveNotificationSchema,
   DeleteNotificationSchema,
-  UpdateNotificationPreferencesSchema,
   type Notification,
   type NotificationFilter,
   type NotificationPreferences,

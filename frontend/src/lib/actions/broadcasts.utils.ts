@@ -13,8 +13,7 @@ import { revalidateTag, revalidatePath } from 'next/cache';
 
 // Types
 import type {
-  BroadcastFilters,
-  BROADCAST_CACHE_TAGS
+  BroadcastFilters
 } from './broadcasts.types';
 
 // Import functions from other modules
@@ -25,7 +24,7 @@ import {
   getBroadcastTemplates
 } from './broadcasts.cache';
 
-// Re-import constant for use
+// Import constant for use
 import { BROADCAST_CACHE_TAGS as CACHE_TAGS } from './broadcasts.types';
 
 // ==========================================

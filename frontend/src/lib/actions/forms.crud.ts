@@ -12,8 +12,7 @@ import { revalidateTag, revalidatePath } from 'next/cache';
 import { serverGet, serverPost, serverPut, serverDelete, NextApiClientError } from '@/lib/api/nextjs-client';
 import { API_ENDPOINTS } from '@/constants/api';
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
-import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache/constants';
-import type { ApiResponse } from '@/types/api';
+import { CACHE_TTL } from '@/lib/cache/constants';
 import type {
   ActionResult,
   FormDefinition,
@@ -72,12 +71,12 @@ export async function createFormAction(data: CreateFormData): Promise<ActionResu
       }
     };
 
-    const response = await serverPost<ApiResponse<FormDefinition>>(
+    const response = await serverPost<{ success: boolean; data: FormDefinition; message?: string }>(
       API_ENDPOINTS.FORMS.BASE,
       formData,
       {
         cache: 'no-store',
-        next: { tags: [FORMS_CACHE_TAGS.FORMS, CACHE_TAGS.GENERAL] }
+        next: { tags: [FORMS_CACHE_TAGS.FORMS] }
       }
     );
 
@@ -178,12 +177,12 @@ export async function updateFormAction(
       };
     }
 
-    const response = await serverPut<ApiResponse<FormDefinition>>(
+    const response = await serverPut<{ success: boolean; data: FormDefinition; message?: string }>(
       API_ENDPOINTS.FORMS.BY_ID(formId),
       updateData,
       {
         cache: 'no-store',
-        next: { tags: [FORMS_CACHE_TAGS.FORMS, `form-${formId}`, CACHE_TAGS.GENERAL] }
+        next: { tags: [FORMS_CACHE_TAGS.FORMS, `form-${formId}`] }
       }
     );
 
@@ -197,7 +196,7 @@ export async function updateFormAction(
       resource: 'Form',
       resourceId: formId,
       details: `Updated form "${existingForm.name}"${response.data.metadata.isPHI ? ' (contains PHI)' : ''}`,
-      changes: data,
+      changes: data as Record<string, unknown>,
       success: true
     });
 
@@ -269,15 +268,14 @@ export async function deleteFormAction(formId: string, force: boolean = false): 
       };
     }
 
-    const endpoint = force
-      ? API_ENDPOINTS.FORMS.FORCE_DELETE(formId)
-      : API_ENDPOINTS.FORMS.BY_ID(formId);
+    const endpoint = API_ENDPOINTS.FORMS.BY_ID(formId);
+    const queryParam = force ? '?force=true' : '';
 
-    await serverDelete<ApiResponse<void>>(
-      endpoint,
+    await serverDelete<{ success: boolean; message?: string }>(
+      `${endpoint}${queryParam}`,
       {
         cache: 'no-store',
-        next: { tags: [FORMS_CACHE_TAGS.FORMS, `form-${formId}`, CACHE_TAGS.GENERAL] }
+        next: { tags: [FORMS_CACHE_TAGS.FORMS, `form-${formId}`] }
       }
     );
 
@@ -336,14 +334,14 @@ export async function getFormAction(formId: string): Promise<ActionResult<FormDe
       };
     }
 
-    const response = await serverGet<ApiResponse<FormDefinition>>(
+    const response = await serverGet<{ success: boolean; data: FormDefinition; message?: string }>(
       API_ENDPOINTS.FORMS.BY_ID(formId),
       undefined,
       {
         cache: 'force-cache',
         next: {
-          revalidate: CACHE_TTL.STANDARD,
-          tags: [`form-${formId}`, FORMS_CACHE_TAGS.FORMS, CACHE_TAGS.GENERAL]
+          revalidate: CACHE_TTL.STATIC,
+          tags: [`form-${formId}`, FORMS_CACHE_TAGS.FORMS]
         }
       }
     );
