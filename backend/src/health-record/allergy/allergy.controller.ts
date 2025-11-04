@@ -22,6 +22,7 @@ import {
 import { AllergyService } from './allergy.service';
 import { CreateAllergyDto } from './dto/create-allergy.dto';
 import { HealthRecordUpdateAllergyDto } from './dto/update-allergy.dto';
+import { CheckMedicationConflictsDto, MedicationConflictResponseDto } from './dto/check-conflicts.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
@@ -133,6 +134,74 @@ export class AllergyController {
     @Request() req: any,
   ) {
     return this.allergyService.update(id, updateAllergyDto, req.user);
+  }
+
+  /**
+   * Check medication-allergy conflicts
+   * CRITICAL SAFETY FEATURE - Prevents allergic reactions
+   * @requires Authentication
+   * @param checkDto Student ID and medication name
+   * @returns Conflict analysis with severity and recommendations
+   */
+  @Post('check-conflicts')
+  @Roles(UserRole.ADMIN, UserRole.NURSE, UserRole.COUNSELOR)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Check medication-allergy conflicts (CRITICAL SAFETY)',
+    description: 'Checks if a medication conflicts with student\'s known allergies. Returns severity level and recommendations.'
+  })
+  @ApiBody({ type: CheckMedicationConflictsDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Conflict check completed successfully',
+    type: MedicationConflictResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request - Invalid student ID or medication name',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Requires NURSE, COUNSELOR, or ADMIN role' })
+  @ApiResponse({ status: 404, description: 'Student not found' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  async checkMedicationConflicts(
+    @Body() checkDto: CheckMedicationConflictsDto,
+    @Request() req: any,
+  ): Promise<MedicationConflictResponseDto> {
+    const result = await this.allergyService.checkMedicationInteractions(
+      checkDto.studentId,
+      checkDto.medicationName,
+    );
+
+    // Enhanced response with safety recommendations
+    let recommendation: 'SAFE' | 'CONSULT_PHYSICIAN' | 'DO_NOT_ADMINISTER' = 'SAFE';
+    let warning: string | undefined;
+
+    if (result.hasInteractions) {
+      const hasSevere = result.interactions.some(
+        (i) => i.severity === 'SEVERE' || i.severity === 'LIFE_THREATENING',
+      );
+
+      if (hasSevere) {
+        recommendation = 'DO_NOT_ADMINISTER';
+        warning = `CRITICAL: Patient has life-threatening or severe allergy. DO NOT administer ${checkDto.medicationName}.`;
+      } else {
+        recommendation = 'CONSULT_PHYSICIAN';
+        warning = `CAUTION: Potential allergic reaction detected. Consult physician before administering ${checkDto.medicationName}.`;
+      }
+    }
+
+    return {
+      hasConflicts: result.hasInteractions,
+      conflicts: result.interactions.map((interaction) => ({
+        allergen: interaction.allergen,
+        severity: interaction.severity,
+        reaction: interaction.reaction,
+        conflictType: 'DIRECT_MATCH' as const,
+      })),
+      recommendation,
+      warning,
+    };
   }
 
   /**

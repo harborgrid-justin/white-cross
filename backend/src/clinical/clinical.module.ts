@@ -32,6 +32,8 @@ import { ClinicalProtocolController } from './controllers/clinical-protocol.cont
 import { ClinicalNoteController } from './controllers/clinical-note.controller';
 import { VitalSignsController } from './controllers/vital-signs.controller';
 import { FollowUpController } from './controllers/follow-up.controller';
+import { MedicationAdministrationController } from './controllers/medication-administration.controller';
+import { PrescriptionAliasController } from './controllers/prescription-alias.controller';
 
 /**
  * Clinical Module
@@ -45,6 +47,7 @@ import { FollowUpController } from './controllers/follow-up.controller';
  * - Drug-drug interaction checking
  * - Student allergy tracking
  * - Clinical decision support
+ * - LASA (Look-Alike Sound-Alike) warnings (GAP-MED-010)
  *
  * ### Feature 17: Clinic Visit Tracking
  * - Check-in/check-out workflow
@@ -63,6 +66,19 @@ import { FollowUpController } from './controllers/follow-up.controller';
  * - Pharmacy workflow integration
  * - Refill management
  * - Medication tracking
+ * - Path alias for frontend compatibility (GAP-MED-001)
+ *
+ * ### Medication Administration (GAP-MED-002)
+ * - CRITICAL PATIENT SAFETY MODULE
+ * - Five Rights verification workflow
+ * - Administration recording with full audit trail
+ * - Refusal and missed dose tracking
+ * - Witness signatures for controlled substances
+ * - Safety checks (allergies, drug interactions)
+ * - Due/overdue medication tracking
+ * - Comprehensive administration history
+ * - Batch administration support
+ * - Real-time administration statistics
  *
  * ### Clinical Protocols
  * - Standardized clinical protocols
@@ -87,6 +103,33 @@ import { FollowUpController } from './controllers/follow-up.controller';
  * - Reminder system
  * - Follow-up completion tracking
  * - Priority management
+ *
+ * ## Gap Analysis Fixes
+ *
+ * This module addresses the following critical patient safety gaps from the
+ * Backend-Frontend Gap Analysis (BACKEND_FRONTEND_GAP_ANALYSIS.md):
+ *
+ * - **GAP-MED-001**: Prescription path mismatch fixed with alias controller
+ *   - Frontend calls: /prescriptions/*
+ *   - Backend implements: /clinical/prescriptions/*
+ *   - Solution: PrescriptionAliasController provides transparent forwarding
+ *
+ * - **GAP-MED-002**: Medication Administration Module (CRITICAL)
+ *   - Complete 14-endpoint medication administration workflow
+ *   - Five Rights verification (Right Patient, Medication, Dose, Route, Time)
+ *   - Full audit trail for HIPAA compliance
+ *   - Controlled substance witness signatures
+ *   - Safety checks (allergies, interactions)
+ *
+ * - **GAP-MED-003**: Drug-Drug Interaction Checking (CRITICAL)
+ *   - Enhanced interaction checking endpoint
+ *   - Comprehensive safety analysis
+ *   - Clinical recommendations
+ *
+ * - **GAP-MED-010**: LASA Warnings (CRITICAL SAFETY)
+ *   - Look-Alike Sound-Alike medication warnings
+ *   - Prevention strategies
+ *   - Medication error prevention
  */
 @Module({
   imports: [
@@ -115,6 +158,10 @@ import { FollowUpController } from './controllers/follow-up.controller';
     ClinicalNoteController,
     VitalSignsController,
     FollowUpController,
+    // GAP-MED-002: Medication Administration Controller (14 endpoints)
+    MedicationAdministrationController,
+    // GAP-MED-001: Prescription path alias (/prescriptions -> /clinical/prescriptions)
+    PrescriptionAliasController,
   ],
   providers: [
     // Existing services

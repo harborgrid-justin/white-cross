@@ -50,6 +50,7 @@ import { ChronicConditionModule } from './chronic-condition/chronic-condition.mo
 import { ValidationModule } from './validation/validation.module';
 import { AllergyModule } from './allergy/allergy.module';
 import { MedicationModule } from './medication/medication.module';
+import { ScreeningModule } from './screening/screening.module';
 
 // Models
 import { HealthRecord } from '../database/models/health-record.model';
@@ -108,6 +109,7 @@ import { CacheEntry } from '../database/models/cache-entry.model';
     ValidationModule,
     AllergyModule,
     MedicationModule,
+    ScreeningModule,
   ],
   providers: [
     // Core Service
