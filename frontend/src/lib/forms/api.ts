@@ -6,15 +6,16 @@
  */
 
 import apiClient from '../api-client';
+import type { FormField } from './types';
 
 /**
- * Form definition interface
+ * Form definition interface for API operations
  */
 export interface FormDefinition {
   id?: string;
   name: string;
   description?: string;
-  fields: any[];
+  fields: FormField[];
   zodSchema?: string;
   createdBy?: string;
   metadata?: {

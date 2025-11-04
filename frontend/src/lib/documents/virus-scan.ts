@@ -165,10 +165,10 @@ export async function scanFile(
  */
 async function scanWithClamAV(
   buffer: Buffer,
-  filename: string,
-  config: ScannerConfig
+  _filename: string,
+  _config: ScannerConfig
 ): Promise<ScanResult> {
-  // TODO: Implement ClamAV integration
+  // TODO: Implement ClamAV integration (use _filename and _config)
   // Requires: npm install clamscan
   console.log('[VirusScan] ClamAV scanner not implemented yet');
 
@@ -201,10 +201,10 @@ async function scanWithClamAV(
  */
 async function scanWithVirusTotal(
   buffer: Buffer,
-  filename: string,
+  _filename: string,
   config: ScannerConfig
 ): Promise<ScanResult> {
-  // TODO: Implement VirusTotal integration
+  // TODO: Implement VirusTotal integration (use _filename)
   // Requires: npm install virustotal-api
   console.log('[VirusScan] VirusTotal scanner not implemented yet');
 
@@ -233,10 +233,10 @@ async function scanWithVirusTotal(
  */
 async function scanWithMetaDefender(
   buffer: Buffer,
-  filename: string,
+  _filename: string,
   config: ScannerConfig
 ): Promise<ScanResult> {
-  // TODO: Implement MetaDefender integration
+  // TODO: Implement MetaDefender integration (use _filename)
   console.log('[VirusScan] MetaDefender scanner not implemented yet');
 
   if (!config.apiKey) {

@@ -7,7 +7,7 @@
  * @module lib/utils/type-guards
  */
 
-import type { ApiResponse, PaginatedResponse, ApiError, ValidationError } from '@/types/common';
+import type { ApiResponse, PaginatedResponse, ApiError, ValidationError } from '@/types';
 
 // ============================================================================
 // BASIC TYPE GUARDS

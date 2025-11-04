@@ -8,8 +8,6 @@
  * @security HIPAA-compliant access control
  */
 
-import { hasMinimumRole } from '../auth';
-
 /**
  * Document permission types
  */
@@ -116,8 +114,8 @@ export function roleHasPermission(role: string, permission: DocumentPermission):
  * ```
  */
 export async function checkDocumentAccess(
-  userId: string,
-  documentId: string,
+  _userId: string,
+  _documentId: string,
   permission: DocumentPermission,
   userRole: string = 'VIEWER'
 ): Promise<boolean> {
@@ -128,11 +126,11 @@ export async function checkDocumentAccess(
     }
 
     // TODO: Fetch document access record from database
-    // const documentAccess = await fetchDocumentAccess(documentId);
+    // const documentAccess = await fetchDocumentAccess(_documentId);
 
     // Placeholder: For now, check role-based permissions only
     // In production, also check:
-    // 1. if (documentAccess.ownerId === userId) return true;
+    // 1. if (documentAccess.ownerId === _userId) return true;
     // 2. Check shared access records
     // 3. Verify expiration dates
     // 4. Check legal holds for delete operations
@@ -273,11 +271,11 @@ export function isAccessValid(access: SharedAccess): boolean {
  * @returns Array of effective permissions
  */
 export async function getEffectivePermissions(
-  userId: string,
-  documentId: string,
+  _userId: string,
+  _documentId: string,
   userRole: string
 ): Promise<DocumentPermission[]> {
-  // TODO: Fetch document access from database
+  // TODO: Fetch document access from database (_userId, _documentId)
   // For now, return role-based permissions
   return getRolePermissions(userRole);
 }

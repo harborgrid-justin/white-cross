@@ -33,12 +33,12 @@ import {
   useBudgetTransactions,
   useBudgetAnalytics,
   useBudgetStatus
-} from '../queries/useBudgetQueries';
+} from '../queries';
 import {
   useCreateBudgetCategory,
   useCreateBudgetTransaction,
   useApproveBudget
-} from '../mutations/useBudgetMutations';
+} from '../mutations';
 import type { Budget } from '../budgetTypes';
 
 /**

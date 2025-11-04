@@ -27,8 +27,6 @@ import {
   useQuery,
   useMutation,
   useQueryClient,
-  type UseQueryOptions,
-  type UseMutationOptions,
   type QueryKey,
 } from '@tanstack/react-query';
 
@@ -47,7 +45,7 @@ export interface ServerActionResult<T = unknown> {
 /**
  * Options for useServerQuery hook
  */
-export interface UseServerQueryOptions<TData = unknown, TError = Error> {
+export interface UseServerQueryOptions<TData = unknown> {
   queryKey: QueryKey;
   action: () => Promise<TData>;
   staleTime?: number;
@@ -66,10 +64,10 @@ export interface UseServerQueryOptions<TData = unknown, TError = Error> {
 /**
  * Options for useServerMutation hook
  */
-export interface UseServerMutationOptions<TData = unknown, TVariables = unknown, TError = Error> {
+export interface UseServerMutationOptions<TData = unknown, TVariables = unknown> {
   action: (variables: TVariables) => Promise<ServerActionResult<TData>>;
   onSuccess?: (data: TData, variables: TVariables) => void;
-  onError?: (error: TError, variables: TVariables) => void;
+  onError?: (error: Error, variables: TVariables) => void;
   invalidateQueries?: QueryKey[];
   meta?: {
     containsPHI?: boolean;
@@ -106,7 +104,7 @@ export interface UseServerMutationOptions<TData = unknown, TVariables = unknown,
  * ```
  */
 export function useServerQuery<TData = unknown, TError = Error>(
-  options: UseServerQueryOptions<TData, TError>
+  options: UseServerQueryOptions<TData>
 ) {
   const {
     queryKey,
@@ -170,9 +168,9 @@ export function useServerQuery<TData = unknown, TError = Error>(
  * ```
  */
 export function useServerMutation<TData = unknown, TVariables = unknown, TError = Error>(
-  options: UseServerMutationOptions<TData, TVariables, TError>
+  options: UseServerMutationOptions<TData, TVariables>
 ) {
-  const { action, onSuccess, onError, invalidateQueries, meta } = options;
+  const { action, onSuccess, onError, invalidateQueries } = options;
   const queryClient = useQueryClient();
 
   return useMutation<TData, TError, TVariables>({
@@ -201,10 +199,9 @@ export function useServerMutation<TData = unknown, TVariables = unknown, TError 
     onError: (error, variables) => {
       // Call custom error handler
       if (onError) {
-        onError(error, variables);
+        onError(error as Error, variables);
       }
     },
-    meta,
   });
 }
 
@@ -257,11 +254,11 @@ export function createQueryKey(
   resource: string,
   filters?: Record<string, unknown>
 ): QueryKey {
-  const key: QueryKey = [domain, resource];
+  const key: (string | Record<string, unknown>)[] = [domain, resource];
   if (filters && Object.keys(filters).length > 0) {
     key.push(filters);
   }
-  return key;
+  return key as QueryKey;
 }
 
 /**

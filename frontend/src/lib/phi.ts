@@ -210,6 +210,9 @@ const PHI_PATTERNS: Record<PHIPatternType, RegExp> = {
   // Email: user@example.com
   email: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/gi,
 
+  // Address: Basic pattern for street addresses
+  address: /\b\d+\s+[A-Za-z\s]+(?:Street|St|Avenue|Ave|Road|Rd|Boulevard|Blvd|Lane|Ln|Drive|Dr|Court|Ct|Circle|Cir)\b/gi,
+
   // Medical Record Number: MRN followed by digits
   mrn: /\b(MRN|mrn|medical\s*record\s*number|medical\s*record\s*#)\s*:?\s*\d+\b/gi,
 
@@ -286,7 +289,8 @@ export function isPHIField(fieldName: string): boolean {
   const normalized = fieldName.toLowerCase().replace(/[-_\s]/g, '');
 
   // Check against known PHI field names
-  for (const phiField of PHI_FIELD_NAMES) {
+  const phiFieldsArray = Array.from(PHI_FIELD_NAMES);
+  for (const phiField of phiFieldsArray) {
     const normalizedPHI = phiField.toLowerCase().replace(/[-_\s]/g, '');
     if (normalized === normalizedPHI || normalized.includes(normalizedPHI)) {
       return true;
@@ -294,7 +298,8 @@ export function isPHIField(fieldName: string): boolean {
   }
 
   // Check for medical terminology in field name
-  for (const keyword of MEDICAL_KEYWORDS) {
+  const keywordsArray = Array.from(MEDICAL_KEYWORDS);
+  for (const keyword of keywordsArray) {
     if (normalized.includes(keyword.toLowerCase())) {
       return true;
     }
@@ -357,9 +362,9 @@ function detectPatterns(value: unknown, fieldPath: string): PHIPattern[] {
   for (const [type, regex] of Object.entries(PHI_PATTERNS)) {
     if (type === 'custom') continue;
 
-    const matches = str.matchAll(regex);
+    const matchesArray = Array.from(str.matchAll(regex));
 
-    for (const match of matches) {
+    for (const match of matchesArray) {
       patterns.push({
         type: type as PHIPatternType,
         value: match[0],

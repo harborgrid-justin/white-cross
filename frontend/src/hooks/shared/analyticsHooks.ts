@@ -25,13 +25,13 @@ import {
   generateTrendAnalysis,
   assessStudentRisks,
   generateComplianceReport,
-} from '../analytics/analyticsEngine';
+} from '../legacy/analyticsEngine';
 
 // Import API hooks
 import {
   useGenerateHealthMetricsQuery,
   handlePhase3ApiError,
-} from '../api/advancedApiIntegration';
+} from '../legacy/advancedApiIntegration';
 
 /**
  * Hook for real-time health metrics with automatic refresh
@@ -161,3 +161,11 @@ export const useComplianceReporting = () => {
     isGenerating: false, // TODO: Add loading state tracking
   };
 };
+
+// Export types for consumers
+export type HealthMetricsHook = ReturnType<typeof useHealthMetrics>;
+export type TrendAnalysisHook = ReturnType<typeof useTrendAnalysis>;
+export type StudentRiskAssessmentHook = ReturnType<typeof useStudentRiskAssessment>;
+export type ComplianceReportingHook = ReturnType<typeof useComplianceReporting>;
+
+export type TrendPeriod = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY';

@@ -39,7 +39,9 @@ export async function encryptData(data: string, key: string): Promise<string> {
     combined.set(iv, 0);
     combined.set(new Uint8Array(encryptedBuffer), iv.length);
 
-    return btoa(String.fromCharCode(...combined));
+    // Convert to base64 using Array.from for TypeScript compatibility
+    const binaryString = Array.from(combined).map(byte => String.fromCharCode(byte)).join('');
+    return btoa(binaryString);
   } catch (error) {
     console.error('[Encryption] Failed to encrypt:', error);
     return data;

@@ -8,18 +8,9 @@
  * @version 2.0.0
  */
 
-// Export all individual hooks from the broken-down mutations.ts file
-export { useCreateStudent, useUpdateStudent } from './useStudentCRUDMutations';
-export { useDeactivateStudent, useReactivateStudent } from './useStudentStatusMutations';
-export { useTransferStudent } from './useStudentTransferMutations';
-export { useBulkUpdateStudents } from './useStudentBulkMutations';
-export { usePermanentDeleteStudent } from './useStudentDeleteMutations';
-export { useStudentMutationsComposite } from './useStudentMutationsComposite';
-
-// Re-export the existing useStudentMutations hook for backward compatibility
-export { useStudentMutations } from './useStudentMutations';
-
-// Export types
+// =====================
+// TYPE EXPORTS
+// =====================
 export type {
   ApiError,
   StudentMutationResult,
@@ -27,10 +18,55 @@ export type {
   PermanentDeleteResult,
 } from './types';
 
-// Export utilities
+// =====================
+// INDIVIDUAL MUTATION HOOKS
+// =====================
+
+// CRUD Mutations
+export { useCreateStudent, useUpdateStudent } from './useStudentCRUDMutations';
+
+// Status Mutations
+export { useDeactivateStudent, useReactivateStudent } from './useStudentStatusMutations';
+
+// Transfer Mutations
+export { useTransferStudent } from './useStudentTransferMutations';
+
+// Bulk Mutations
+export { useBulkUpdateStudents } from './useStudentBulkMutations';
+
+// Delete Mutations
+export { usePermanentDeleteStudent } from './useStudentDeleteMutations';
+
+// Composite Mutations
+export { useStudentMutationsComposite } from './useStudentMutationsComposite';
+
+// =====================
+// LEGACY MUTATION HOOKS
+// =====================
+
+// Re-export the original composite hooks for backward compatibility
+export { useStudentMutations } from './useStudentMutations';
+export { useOptimisticStudents } from './useOptimisticStudents';
+export { useStudentManagement } from './useStudentManagement';
+
+// Re-export individual mutation hooks from separate files
+export { useCreateStudentMutation } from './useCreateStudentMutation';
+export { useUpdateStudentMutation } from './useUpdateStudentMutation';
+export { useDeleteStudentMutation } from './useDeleteStudentMutation';
+export { useStudentMutationUtils } from './useStudentMutationUtils';
+
+// =====================
+// UTILITY EXPORTS
+// =====================
 export { invalidateStudentCache } from './utils';
 
-// Default export for backward compatibility with original mutations.ts file
+// =====================
+// DEFAULT EXPORT
+// =====================
+
+/**
+ * Default export for backward compatibility with original mutations.ts file
+ */
 import {
   useCreateStudent as createStudentHook,
   useUpdateStudent as updateStudentHook,

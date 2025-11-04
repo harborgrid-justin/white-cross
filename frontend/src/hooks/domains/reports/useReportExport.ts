@@ -16,135 +16,33 @@
 
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useState, useCallback } from 'react';
+import type { ExportOptions, ExportRequest } from '@/types/schemas/reports.schema';
+import { REPORTS_OPERATIONS } from './config';
+import { exportReportAPI } from './useReportExport.api';
+import { downloadFile } from './useReportExport.downloadUtils';
+import { getFileExtension } from './useReportExport.formatUtils';
 import type {
+  ExportProgress,
+  UseReportExportResult,
+  UseBulkReportExportResult
+} from './useReportExport.types';
+
+// Re-export types for convenience
+export type {
+  ExportProgress,
+  UseReportExportResult,
+  UseBulkReportExportResult,
   ExportFormat,
   ExportOptions,
   ExportRequest
-} from '@/types/schemas/reports.schema';
-import { REPORTS_OPERATIONS } from './config';
+} from './useReportExport.types';
 
-// ============================================================================
-// TYPES
-// ============================================================================
-
-interface ExportProgress {
-  status: 'idle' | 'preparing' | 'generating' | 'downloading' | 'complete' | 'error';
-  progress: number; // 0-100
-  message?: string;
-}
-
-interface UseReportExportResult {
-  exportReport: (reportId: string, options: ExportOptions) => Promise<void>;
-  isExporting: boolean;
-  progress: ExportProgress;
-  error: Error | null;
-  reset: () => void;
-}
-
-// ============================================================================
-// UTILITY FUNCTIONS
-// ============================================================================
-
-/**
- * Downloads a file from a blob
- */
-function downloadFile(blob: Blob, fileName: string): void {
-  const url = window.URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = fileName;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  window.URL.revokeObjectURL(url);
-}
-
-/**
- * Gets the appropriate MIME type for the export format
- */
-function getMimeType(format: ExportFormat): string {
-  const mimeTypes: Record<ExportFormat, string> = {
-    pdf: 'application/pdf',
-    excel: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    csv: 'text/csv',
-    json: 'application/json'
-  };
-  return mimeTypes[format];
-}
-
-/**
- * Gets the file extension for the export format
- */
-function getFileExtension(format: ExportFormat): string {
-  const extensions: Record<ExportFormat, string> = {
-    pdf: 'pdf',
-    excel: 'xlsx',
-    csv: 'csv',
-    json: 'json'
-  };
-  return extensions[format];
-}
-
-// ============================================================================
-// API FUNCTIONS
-// ============================================================================
-
-/**
- * Exports a report to the specified format
- */
-async function exportReportAPI(
-  request: ExportRequest,
-  onProgress: (progress: number) => void
-): Promise<Blob> {
-  const { reportId, options } = request;
-
-  const response = await fetch(`/api/reports/${reportId}/export`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include',
-    body: JSON.stringify(options)
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Export failed' }));
-    throw new Error(error.message || 'Failed to export report');
-  }
-
-  // Get total size for progress tracking
-  const contentLength = response.headers.get('content-length');
-  const total = contentLength ? parseInt(contentLength, 10) : 0;
-
-  // Read the response body with progress tracking
-  const reader = response.body?.getReader();
-  if (!reader) {
-    throw new Error('Failed to read response');
-  }
-
-  const chunks: Uint8Array[] = [];
-  let receivedLength = 0;
-
-  while (true) {
-    const { done, value } = await reader.read();
-
-    if (done) break;
-
-    chunks.push(value);
-    receivedLength += value.length;
-
-    if (total > 0) {
-      const progress = (receivedLength / total) * 100;
-      onProgress(progress);
-    }
-  }
-
-  // Combine chunks into a single blob
-  const blob = new Blob(chunks, { type: getMimeType(options.format) });
-  return blob;
-}
+// Re-export utilities for external use
+export { getMimeType, getFileExtension } from './useReportExport.formatUtils';
+export { downloadFile } from './useReportExport.downloadUtils';
+export { exportReportAPI } from './useReportExport.api';
 
 // ============================================================================
 // HOOK
@@ -167,8 +65,6 @@ async function exportReportAPI(
  * ```
  */
 export function useReportExport(): UseReportExportResult {
-  const queryClient = useQueryClient();
-
   const [progress, setProgress] = useState<ExportProgress>({
     status: 'idle',
     progress: 0
@@ -265,8 +161,22 @@ export function useReportExport(): UseReportExportResult {
 
 /**
  * Hook for bulk exporting multiple reports
+ *
+ * Exports reports sequentially with overall progress tracking.
+ *
+ * @example
+ * ```tsx
+ * const { exportReports, overallProgress } = useBulkReportExport();
+ *
+ * const handleBulkExport = async () => {
+ *   await exportReports([
+ *     { reportId: '1', options: { format: 'pdf' } },
+ *     { reportId: '2', options: { format: 'excel' } }
+ *   ]);
+ * };
+ * ```
  */
-export function useBulkReportExport() {
+export function useBulkReportExport(): UseBulkReportExportResult {
   const [exportQueue, setExportQueue] = useState<ExportRequest[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [overallProgress, setOverallProgress] = useState(0);

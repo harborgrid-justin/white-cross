@@ -12,9 +12,9 @@
  */
 
 import { useDispatch, useSelector, TypedUseSelectorHook } from 'react-redux';
-import { useCallback, useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import type { RootState, AppDispatch } from '../reduxStore';
-import type { BaseEntity, StandardEntityState, LoadingState } from '../types/entityTypes';
+import type { BaseEntity, StandardEntityState, LoadingState } from '../../stores/types/entityTypes';
 
 // ============================================================
 // CORE TYPED HOOKS

@@ -113,69 +113,84 @@ export function fieldToZodType(field: FormField): ZodTypeAny {
     case 'password':
     case 'hidden':
       schema = z.string({
-        required_error: field.validation?.find(v => v.type === 'required')?.message || ERROR_MESSAGES.required,
+        message: field.validation?.find(v => v.type === 'required')?.message || ERROR_MESSAGES.required,
       });
       break;
 
     case 'email':
       schema = z
         .string({
-          required_error: ERROR_MESSAGES.required,
+          message: ERROR_MESSAGES.required,
         })
-        .email(ERROR_MESSAGES.email);
+        .email({
+          message: ERROR_MESSAGES.email,
+        });
       break;
 
     case 'phone':
       schema = z
         .string({
-          required_error: ERROR_MESSAGES.required,
+          message: ERROR_MESSAGES.required,
         })
-        .regex(PATTERNS.phone, ERROR_MESSAGES.phone);
+        .regex(PATTERNS.phone, {
+          message: ERROR_MESSAGES.phone,
+        });
       break;
 
     case 'ssn':
       schema = z
         .string({
-          required_error: ERROR_MESSAGES.required,
+          message: ERROR_MESSAGES.required,
         })
-        .regex(PATTERNS.ssn, ERROR_MESSAGES.ssn);
+        .regex(PATTERNS.ssn, {
+          message: ERROR_MESSAGES.ssn,
+        });
       break;
 
     case 'mrn':
       schema = z
         .string({
-          required_error: ERROR_MESSAGES.required,
+          message: ERROR_MESSAGES.required,
         })
-        .regex(PATTERNS.mrn, ERROR_MESSAGES.mrn);
+        .regex(PATTERNS.mrn, {
+          message: ERROR_MESSAGES.mrn,
+        });
       break;
 
     case 'zipcode':
       schema = z
         .string({
-          required_error: ERROR_MESSAGES.required,
+          message: ERROR_MESSAGES.required,
         })
-        .regex(PATTERNS.zipcode, ERROR_MESSAGES.zipcode);
+        .regex(PATTERNS.zipcode, {
+          message: ERROR_MESSAGES.zipcode,
+        });
       break;
 
     case 'url':
       schema = z
         .string({
-          required_error: ERROR_MESSAGES.required,
+          message: ERROR_MESSAGES.required,
         })
-        .url(ERROR_MESSAGES.url);
+        .url({
+          message: ERROR_MESSAGES.url,
+        });
       break;
 
     case 'number':
       schema = z.number({
-        required_error: ERROR_MESSAGES.required,
-        invalid_type_error: 'Please enter a valid number',
+        message: 'Please enter a valid number',
       });
 
       if (field.min !== undefined) {
-        schema = schema.min(field.min, ERROR_MESSAGES.min(field.min));
+        schema = (schema as z.ZodNumber).min(field.min, {
+          message: ERROR_MESSAGES.min(field.min),
+        });
       }
       if (field.max !== undefined) {
-        schema = schema.max(field.max, ERROR_MESSAGES.max(field.max));
+        schema = (schema as z.ZodNumber).max(field.max, {
+          message: ERROR_MESSAGES.max(field.max),
+        });
       }
       break;
 
@@ -183,19 +198,21 @@ export function fieldToZodType(field: FormField): ZodTypeAny {
     case 'time':
     case 'datetime':
       schema = z.string({
-        required_error: ERROR_MESSAGES.required,
+        message: ERROR_MESSAGES.required,
       });
       // Could add date validation here
       schema = schema.refine(
-        val => !isNaN(Date.parse(val)),
-        'Please enter a valid date'
+        (val: unknown) => !isNaN(Date.parse(String(val))),
+        {
+          message: 'Please enter a valid date',
+        }
       );
       break;
 
     case 'boolean':
     case 'checkbox':
       schema = z.boolean({
-        required_error: ERROR_MESSAGES.required,
+        message: ERROR_MESSAGES.required,
       });
       break;
 
@@ -207,12 +224,16 @@ export function fieldToZodType(field: FormField): ZodTypeAny {
         if (typeof values[0] === 'number') {
           schema = z.number().refine(
             val => values.includes(val),
-            'Please select a valid option'
+            {
+              message: 'Please select a valid option',
+            }
           );
         } else {
           schema = z.string().refine(
             val => values.includes(val),
-            'Please select a valid option'
+            {
+              message: 'Please select a valid option',
+            }
           );
         }
       } else {
@@ -228,14 +249,18 @@ export function fieldToZodType(field: FormField): ZodTypeAny {
           schema = z.array(
             z.number().refine(
               val => values.includes(val),
-              'Invalid option selected'
+              {
+                message: 'Invalid option selected',
+              }
             )
           );
         } else {
           schema = z.array(
             z.string().refine(
               val => values.includes(val),
-              'Invalid option selected'
+              {
+                message: 'Invalid option selected',
+              }
             )
           );
         }
@@ -256,23 +281,27 @@ export function fieldToZodType(field: FormField): ZodTypeAny {
       if (field.accept) {
         const allowedTypes = field.accept.split(',').map(t => t.trim());
         schema = schema.refine(
-          file => allowedTypes.some(type => file.type.includes(type)),
-          `File must be one of: ${field.accept}`
+          (file: any) => allowedTypes.some(type => file.type.includes(type)),
+          {
+            message: `File must be one of: ${field.accept}`,
+          }
         );
       }
 
       if (field.metadata?.maxFileSize) {
-        const maxSize = field.metadata.maxFileSize;
+        const maxSize = field.metadata.maxFileSize as number;
         schema = schema.refine(
-          file => file.size <= maxSize,
-          `File size must be less than ${maxSize / 1024 / 1024}MB`
+          (file: any) => file.size <= maxSize,
+          {
+            message: `File size must be less than ${maxSize / 1024 / 1024}MB`,
+          }
         );
       }
       break;
 
     case 'richtext':
       schema = z.string({
-        required_error: ERROR_MESSAGES.required,
+        message: ERROR_MESSAGES.required,
       });
       break;
 
@@ -330,7 +359,8 @@ function applyValidationRule(
   rule: ValidationRule,
   field: FormField
 ): ZodTypeAny {
-  const message = rule.message || ERROR_MESSAGES[rule.type as keyof typeof ERROR_MESSAGES];
+  const errorMsg = rule.message || ERROR_MESSAGES[rule.type as keyof typeof ERROR_MESSAGES];
+  const message = typeof errorMsg === 'function' ? errorMsg(rule.value) : errorMsg;
 
   switch (rule.type) {
     case 'required':
@@ -339,82 +369,80 @@ function applyValidationRule(
 
     case 'min':
       if (schema instanceof z.ZodNumber || (schema as any)._def?.typeName === 'ZodNumber') {
-        return (schema as z.ZodNumber).min(
-          rule.value,
-          typeof message === 'function' ? message(rule.value) : message
-        );
+        return (schema as z.ZodNumber).min(rule.value, {
+          message: typeof errorMsg === 'function' ? errorMsg(rule.value) : message,
+        });
       }
       return schema;
 
     case 'max':
       if (schema instanceof z.ZodNumber || (schema as any)._def?.typeName === 'ZodNumber') {
-        return (schema as z.ZodNumber).max(
-          rule.value,
-          typeof message === 'function' ? message(rule.value) : message
-        );
+        return (schema as z.ZodNumber).max(rule.value, {
+          message: typeof errorMsg === 'function' ? errorMsg(rule.value) : message,
+        });
       }
       return schema;
 
     case 'minLength':
       if (schema instanceof z.ZodString || (schema as any)._def?.typeName === 'ZodString') {
-        return (schema as z.ZodString).min(
-          rule.value,
-          typeof message === 'function' ? message(rule.value) : message
-        );
+        return (schema as z.ZodString).min(rule.value, {
+          message: typeof errorMsg === 'function' ? errorMsg(rule.value) : message,
+        });
       }
       return schema;
 
     case 'maxLength':
       if (schema instanceof z.ZodString || (schema as any)._def?.typeName === 'ZodString') {
-        return (schema as z.ZodString).max(
-          rule.value,
-          typeof message === 'function' ? message(rule.value) : message
-        );
+        return (schema as z.ZodString).max(rule.value, {
+          message: typeof errorMsg === 'function' ? errorMsg(rule.value) : message,
+        });
       }
       return schema;
 
     case 'pattern':
       if (schema instanceof z.ZodString || (schema as any)._def?.typeName === 'ZodString') {
-        return (schema as z.ZodString).regex(
-          new RegExp(rule.value),
-          message as string
-        );
+        return (schema as z.ZodString).regex(new RegExp(rule.value), {
+          message: message as string,
+        });
       }
       return schema;
 
     case 'email':
       if (schema instanceof z.ZodString || (schema as any)._def?.typeName === 'ZodString') {
-        return (schema as z.ZodString).email(message as string);
+        return (schema as z.ZodString).email({
+          message: message as string,
+        });
       }
       return schema;
 
     case 'phone':
-      return schema.refine(
-        val => PATTERNS.phone.test(String(val)),
-        message as string
-      );
+      return schema.refine(val => PATTERNS.phone.test(String(val)), {
+        message: message as string,
+      });
 
     case 'ssn':
-      return schema.refine(
-        val => PATTERNS.ssn.test(String(val)),
-        message as string
-      );
+      return schema.refine(val => PATTERNS.ssn.test(String(val)), {
+        message: message as string,
+      });
 
     case 'mrn':
-      return schema.refine(
-        val => PATTERNS.mrn.test(String(val)),
-        message as string
-      );
+      return schema.refine(val => PATTERNS.mrn.test(String(val)), {
+        message: message as string,
+      });
 
     case 'url':
       if (schema instanceof z.ZodString || (schema as any)._def?.typeName === 'ZodString') {
-        return (schema as z.ZodString).url(message as string);
+        return (schema as z.ZodString).url({
+          message: message as string,
+        });
       }
       return schema;
 
     case 'custom':
       if (rule.validator) {
-        return schema.refine(rule.validator, message as string);
+        return schema.refine(rule.validator, {
+          message: message as string,
+        });
       }
       return schema;
 
@@ -631,22 +659,19 @@ export function addHealthcareValidation(
 
   switch (healthcareType) {
     case 'icd10':
-      return schema.refine(
-        val => PATTERNS.icd10.test(String(val)),
-        ERROR_MESSAGES.icd10
-      );
+      return schema.refine(val => PATTERNS.icd10.test(String(val)), {
+        message: ERROR_MESSAGES.icd10,
+      });
 
     case 'ndc':
-      return schema.refine(
-        val => PATTERNS.ndc.test(String(val)),
-        ERROR_MESSAGES.ndc
-      );
+      return schema.refine(val => PATTERNS.ndc.test(String(val)), {
+        message: ERROR_MESSAGES.ndc,
+      });
 
     case 'npi':
-      return schema.refine(
-        val => PATTERNS.npi.test(String(val)),
-        ERROR_MESSAGES.npi
-      );
+      return schema.refine(val => PATTERNS.npi.test(String(val)), {
+        message: ERROR_MESSAGES.npi,
+      });
 
     default:
       return schema;

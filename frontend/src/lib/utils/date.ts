@@ -86,7 +86,7 @@ export function formatDateForDisplay(
       return 'Invalid Date';
     }
 
-    const options: Intl.DateTimeFormatOptions = {
+    const optionsMap: Record<string, Intl.DateTimeFormatOptions> = {
       short: { year: 'numeric', month: 'short', day: 'numeric' },
       long: { year: 'numeric', month: 'long', day: 'numeric' },
       time: { hour: 'numeric', minute: '2-digit', hour12: true },
@@ -98,7 +98,9 @@ export function formatDateForDisplay(
         minute: '2-digit',
         hour12: true,
       },
-    }[format];
+    };
+
+    const options = optionsMap[format];
 
     return new Intl.DateTimeFormat('en-US', options).format(dateObj);
   } catch (error) {

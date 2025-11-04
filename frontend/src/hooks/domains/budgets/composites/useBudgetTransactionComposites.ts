@@ -26,11 +26,11 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { budgetKeys } from '../budgetQueryKeys';
-import { useBudgetTransactions } from '../queries/useBudgetQueries';
+import { useBudgetTransactions } from '../queries';
 import {
   useApproveTransaction,
   useBulkApproveTransactions
-} from '../mutations/useBudgetMutations';
+} from '../mutations';
 import type { BudgetTransaction } from '../budgetTypes';
 
 /**

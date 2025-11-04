@@ -4,7 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { checkRateLimit, RateLimitConfig } from '@/lib/rateLimit';
+import { checkRateLimit } from '@/lib/rateLimit';
+import type { RateLimitConfig } from '@/lib/rateLimit';
 
 /**
  * Route handler type

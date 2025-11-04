@@ -128,6 +128,7 @@ export interface FormField {
   accept?: string; // For file upload
   multiple?: boolean; // For select, file
   rows?: number; // For textarea
+  minLength?: number; // For text, textarea
   maxLength?: number; // For text, textarea
   pattern?: string; // For text validation
 

@@ -21,7 +21,7 @@ export enum StorageType {
 /**
  * Storage item with metadata
  */
-interface StorageItem<T> {
+export interface StorageItem<T> {
   value: T;
   timestamp: number;
   expiresAt?: number;
@@ -30,7 +30,7 @@ interface StorageItem<T> {
 /**
  * HIPAA-compliant storage configuration
  */
-interface StorageConfig {
+export interface StorageConfig {
   /** Prevent PHI storage in localStorage (default: true) */
   preventPHI: boolean;
   /** Encrypt data before storage (default: false) */
@@ -443,11 +443,14 @@ export function createNamespace(namespace: string) {
  * HIPAA-compliant audit log for storage operations.
  *
  * Logs storage operations without exposing PHI.
+ * Currently unused but reserved for future audit trail requirements.
  *
  * @param operation - Operation type
  * @param key - Storage key
  * @param storageType - Storage type
+ * @internal
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function auditStorageOperation(operation: 'get' | 'set' | 'remove', key: string, storageType: StorageType): void {
   // Only log in development or when audit logging is enabled
   if (process.env.NODE_ENV === 'development') {

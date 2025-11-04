@@ -30,7 +30,9 @@
  * ```
  */
 
-import { QueryClient, dehydrate, DehydratedState, QueryKey } from '@tanstack/react-query';
+import { QueryClient, QueryKey } from '@tanstack/react-query';
+import type { DehydratedState } from '@tanstack/query-core';
+import { dehydrate } from '@tanstack/query-core';
 import { getQueryClient } from '@/config/queryClient';
 
 /**
@@ -144,8 +146,8 @@ export async function dehydrateQueries(
   const client = queryClient || getQueryClient();
 
   // Dehydrate only safe queries (exclude PHI)
-  const dehydratedState = dehydrate(client, {
-    shouldDehydrateQuery: (query) => {
+  const dehydratedState = dehydrate(client as any, {
+    shouldDehydrateQuery: (query: any) => {
       const meta = query.meta as Record<string, unknown> | undefined;
 
       // Don't dehydrate queries marked as containing PHI

@@ -1,15 +1,29 @@
 /**
  * Server-side API client for Next.js Server Actions
  * Provides resilient HTTP requests with retry logic and proper error handling
+ *
+ * @module lib/server/api-client
+ * @version 1.0.0
+ *
+ * @deprecated This module provides a simple API client for Server Actions.
+ * For most use cases, prefer using @/lib/api/nextjs-client which provides
+ * comprehensive Next.js caching integration and better error handling.
+ * This client is suitable for simple, non-cached API calls in Server Actions.
  */
 
-interface FetchOptions extends RequestInit {
+/**
+ * Fetch options for simple server actions
+ */
+export interface ServerActionFetchOptions extends RequestInit {
   maxRetries?: number;
   retryDelay?: number;
   timeout?: number;
 }
 
-interface ApiResponse<T = any> {
+/**
+ * Response format for server action API calls
+ */
+export interface ServerActionApiResponse<T = any> {
   success: boolean;
   data?: T;
   error?: string;
@@ -18,11 +32,14 @@ interface ApiResponse<T = any> {
 
 /**
  * Makes a resilient fetch request with retry logic
+ *
+ * @note For Server Components, prefer using nextFetch from @/lib/api/nextjs-client
+ * This function is suitable for Server Actions where caching is not needed.
  */
 export async function serverFetch<T = any>(
   url: string,
-  options: FetchOptions = {}
-): Promise<ApiResponse<T>> {
+  options: ServerActionFetchOptions = {}
+): Promise<ServerActionApiResponse<T>> {
   const {
     maxRetries = 3,
     retryDelay = 1000,
@@ -125,8 +142,8 @@ export function getBackendUrl(): string {
  */
 export async function serverGet<T = any>(
   endpoint: string,
-  options: Omit<FetchOptions, 'method' | 'body'> = {}
-): Promise<ApiResponse<T>> {
+  options: Omit<ServerActionFetchOptions, 'method' | 'body'> = {}
+): Promise<ServerActionApiResponse<T>> {
   const url = endpoint.startsWith('http') ? endpoint : `${getBackendUrl()}${endpoint}`;
   return serverFetch<T>(url, {
     ...options,
@@ -140,8 +157,8 @@ export async function serverGet<T = any>(
 export async function serverPost<T = any>(
   endpoint: string,
   body?: any,
-  options: Omit<FetchOptions, 'method' | 'body'> = {}
-): Promise<ApiResponse<T>> {
+  options: Omit<ServerActionFetchOptions, 'method' | 'body'> = {}
+): Promise<ServerActionApiResponse<T>> {
   const url = endpoint.startsWith('http') ? endpoint : `${getBackendUrl()}${endpoint}`;
   return serverFetch<T>(url, {
     ...options,
@@ -160,8 +177,8 @@ export async function serverPost<T = any>(
 export async function serverPut<T = any>(
   endpoint: string,
   body?: any,
-  options: Omit<FetchOptions, 'method' | 'body'> = {}
-): Promise<ApiResponse<T>> {
+  options: Omit<ServerActionFetchOptions, 'method' | 'body'> = {}
+): Promise<ServerActionApiResponse<T>> {
   const url = endpoint.startsWith('http') ? endpoint : `${getBackendUrl()}${endpoint}`;
   return serverFetch<T>(url, {
     ...options,
@@ -179,8 +196,8 @@ export async function serverPut<T = any>(
  */
 export async function serverDelete<T = any>(
   endpoint: string,
-  options: Omit<FetchOptions, 'method' | 'body'> = {}
-): Promise<ApiResponse<T>> {
+  options: Omit<ServerActionFetchOptions, 'method' | 'body'> = {}
+): Promise<ServerActionApiResponse<T>> {
   const url = endpoint.startsWith('http') ? endpoint : `${getBackendUrl()}${endpoint}`;
   return serverFetch<T>(url, {
     ...options,

@@ -6,9 +6,11 @@
  */
 
 import { z } from 'zod';
+import type { FormField as TypesFormField } from './types';
 
 /**
- * Form field definition
+ * Form field definition (legacy - kept for backward compatibility)
+ * @deprecated Use FormField from './types' instead
  */
 export interface FormField {
   id: string;
@@ -73,44 +75,43 @@ function createFieldSchema(field: FormField): z.ZodTypeAny {
     case 'text':
     case 'textarea':
       schema = z.string({
-        required_error: validation.customMessage || `${field.label} is required`
+        message: validation.customMessage || `${field.label} is required`,
       });
 
       if (validation.minLength) {
         schema = (schema as z.ZodString).min(validation.minLength, {
-          message: `${field.label} must be at least ${validation.minLength} characters`
+          message: `${field.label} must be at least ${validation.minLength} characters`,
         });
       }
 
       if (validation.maxLength) {
         schema = (schema as z.ZodString).max(validation.maxLength, {
-          message: `${field.label} must be at most ${validation.maxLength} characters`
+          message: `${field.label} must be at most ${validation.maxLength} characters`,
         });
       }
 
       if (validation.pattern) {
         schema = (schema as z.ZodString).regex(new RegExp(validation.pattern), {
-          message: `${field.label} format is invalid`
+          message: `${field.label} format is invalid`,
         });
       }
       break;
 
     case 'email':
       schema = z.string().email({
-        message: 'Please enter a valid email address'
+        message: 'Please enter a valid email address',
       });
       break;
 
     case 'url':
       schema = z.string().url({
-        message: 'Please enter a valid URL'
+        message: 'Please enter a valid URL',
       });
       break;
 
     case 'number':
       schema = z.number({
-        required_error: validation.customMessage || `${field.label} is required`,
-        invalid_type_error: `${field.label} must be a number`
+        message: `${field.label} must be a number`,
       });
 
       if (validation.min !== undefined) {
@@ -141,28 +142,26 @@ function createFieldSchema(field: FormField): z.ZodTypeAny {
       break;
 
     case 'date':
-      schema = z.string().refine(
-        (val) => !isNaN(Date.parse(val)),
-        { message: 'Please enter a valid date' }
-      );
+      schema = z.string().refine((val) => !isNaN(Date.parse(val)), {
+        message: 'Please enter a valid date',
+      });
       break;
 
     case 'datetime':
       schema = z.string().datetime({
-        message: 'Please enter a valid date and time'
+        message: 'Please enter a valid date and time',
       });
       break;
 
     case 'time':
       schema = z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, {
-        message: 'Please enter a valid time (HH:MM)'
+        message: 'Please enter a valid time (HH:MM)',
       });
       break;
 
     case 'checkbox':
       schema = z.boolean({
-        required_error: `${field.label} must be checked`,
-        invalid_type_error: `${field.label} must be a boolean`
+        message: `${field.label} must be checked`,
       });
       break;
 
@@ -170,10 +169,12 @@ function createFieldSchema(field: FormField): z.ZodTypeAny {
     case 'radio':
       if (field.options && field.options.length > 0) {
         const validValues = field.options.map(opt => opt.value);
-        schema = z.enum(validValues as [string, ...string[]], {
-          required_error: validation.customMessage || `Please select ${field.label}`,
-          invalid_type_error: `Invalid ${field.label} selection`
-        });
+        schema = z.string().refine(
+          val => validValues.includes(val),
+          {
+            message: validation.customMessage || `Please select ${field.label}`,
+          }
+        );
       } else {
         schema = z.string();
       }
@@ -203,25 +204,22 @@ function createFieldSchema(field: FormField): z.ZodTypeAny {
       break;
 
     case 'phone':
-      schema = z.string().regex(
-        /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/,
-        { message: 'Please enter a valid phone number' }
-      );
+      schema = z.string().regex(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/, {
+        message: 'Please enter a valid phone number',
+      });
       break;
 
     case 'ssn':
       // SSN validation - PHI sensitive
-      schema = z.string().regex(
-        /^\d{3}-?\d{2}-?\d{4}$/,
-        { message: 'Please enter a valid SSN (XXX-XX-XXXX)' }
-      );
+      schema = z.string().regex(/^\d{3}-?\d{2}-?\d{4}$/, {
+        message: 'Please enter a valid SSN (XXX-XX-XXXX)',
+      });
       break;
 
     case 'zip':
-      schema = z.string().regex(
-        /^\d{5}(-\d{4})?$/,
-        { message: 'Please enter a valid ZIP code' }
-      );
+      schema = z.string().regex(/^\d{5}(-\d{4})?$/, {
+        message: 'Please enter a valid ZIP code',
+      });
       break;
 
     default:

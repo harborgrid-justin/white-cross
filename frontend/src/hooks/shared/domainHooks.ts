@@ -8,8 +8,8 @@
  */
 
 import { useDispatch, useSelector, TypedUseSelectorHook } from 'react-redux';
-import type { RootState, AppDispatch } from '../reduxStore';
-import { loginUser, registerUser, logoutUser, refreshUser, clearError, setUser } from '../slices/authSlice';
+import type { RootState, AppDispatch } from '../../stores/reduxStore';
+import { loginUser, registerUser, logoutUser, refreshUser, clearError, setUser } from '../../stores/slices/authSlice';
 import {
   fetchIncidentReports,
   fetchIncidentReportById,
@@ -32,7 +32,7 @@ import {
   resetState,
   invalidateCache,
   optimisticUpdateReport,
-} from '../slices/incidentReportsSlice';
+} from '../../stores/slices/incidentReportsSlice';
 import type {
   IncidentReportFilters,
   IncidentSearchParams,
@@ -41,7 +41,7 @@ import type {
   CreateWitnessStatementRequest,
   CreateFollowUpActionRequest,
   IncidentReport,
-} from '../../types/incidents';
+} from '../../types/domain/incidents';
 
 // Core hooks - these are also exported from index.ts for convenience
 const useAppDispatch = () => useDispatch<AppDispatch>();

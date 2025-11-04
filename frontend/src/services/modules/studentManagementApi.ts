@@ -4,7 +4,7 @@
  */
 
 import type { ApiClient } from '@/services/core/ApiClient';
-import { ApiResponse, PaginatedResponse, buildPaginationParams } from '../utils/apiUtils';
+import { ApiResponse, PaginatedResponse } from '../utils/apiUtils';
 
 /**
  * Student Management API interfaces
@@ -132,11 +132,16 @@ export class StudentManagementApi {
     page?: number;
     limit?: number;
   }): Promise<PaginatedResponse<AcademicTranscript>> {
-    const paginationParams = buildPaginationParams(params?.page, params?.limit);
-    const allParams = params ? Object.assign({}, paginationParams, params) : paginationParams;
+    const queryParams: Record<string, unknown> = {
+      page: params?.page ?? 1,
+      limit: params?.limit ?? 10,
+    };
+    if (params?.academicYear) {
+      queryParams.academicYear = params.academicYear;
+    }
     const response = await this.client.get<PaginatedResponse<AcademicTranscript>>(
       `/student-management/${studentId}/transcripts`,
-      { params: allParams }
+      { params: queryParams }
     );
     return response.data;
   }
@@ -229,11 +234,17 @@ export class StudentManagementApi {
     page?: number;
     limit?: number;
   }): Promise<PaginatedResponse<WaitlistEntry>> {
-    const paginationParams = buildPaginationParams(params?.page, params?.limit);
-    const allParams = params ? Object.assign({}, paginationParams, params) : paginationParams;
+    const queryParams: Record<string, unknown> = {
+      page: params?.page ?? 1,
+      limit: params?.limit ?? 10,
+    };
+    if (params?.serviceType) queryParams.serviceType = params.serviceType;
+    if (params?.priority) queryParams.priority = params.priority;
+    if (params?.status) queryParams.status = params.status;
+
     const response = await this.client.get<PaginatedResponse<WaitlistEntry>>(
       '/student-management/waitlist',
-      { params: allParams }
+      { params: queryParams }
     );
     return response.data;
   }

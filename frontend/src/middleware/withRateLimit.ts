@@ -26,7 +26,6 @@ import {
   RateLimiter,
   RATE_LIMIT_CONFIGS,
   getIdentifier,
-  getRouteType,
   createRateLimitHeaders,
 } from '@/lib/middleware/rateLimiter';
 

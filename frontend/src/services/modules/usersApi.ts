@@ -90,8 +90,9 @@
  */
 
 import type { ApiClient } from '@/services/core/ApiClient';
-import { ApiResponse, PaginatedResponse, buildPaginationParams } from '../utils/apiUtils';
-import { User } from '../types';
+import type { ApiResponse, PaginatedResponse } from '../utils/apiUtils';
+import { buildPaginationParams } from '../utils/apiUtils';
+import type { User } from '../types';
 
 /**
  * User API interfaces

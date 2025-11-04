@@ -401,11 +401,13 @@ export function clearPermissionCache(userId: string, userRole?: string): void {
     permissionCache.delete(`${userId}:${userRole}`);
   } else {
     // Clear all cache entries for this user
-    for (const key of permissionCache.keys()) {
+    const keysToDelete: string[] = [];
+    permissionCache.forEach((_, key) => {
       if (key.startsWith(`${userId}:`)) {
-        permissionCache.delete(key);
+        keysToDelete.push(key);
       }
-    }
+    });
+    keysToDelete.forEach(key => permissionCache.delete(key));
   }
 }
 

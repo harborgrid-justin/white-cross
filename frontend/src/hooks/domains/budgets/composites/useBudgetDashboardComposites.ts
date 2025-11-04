@@ -24,7 +24,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { budgetKeys } from '../budgetQueryKeys';
-import { useBudgets } from '../queries/useBudgetQueries';
+import { useBudgets } from '../queries';
 
 /**
  * Budget performance dashboard data aggregation hook.

@@ -5,7 +5,7 @@
  * @module lib/forms/security
  */
 
-import DOMPurify from 'isomorphic-dompurify';
+import * as DOMPurify from 'isomorphic-dompurify';
 
 /**
  * PHI (Protected Health Information) field patterns

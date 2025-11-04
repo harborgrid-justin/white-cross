@@ -54,7 +54,7 @@ import {
   HealthAlert,
   QuickAction,
   CompleteDashboardData,
-} from '../../types/dashboard';
+} from '@/types/domain/dashboard';
 
 /**
  * Backend API response wrapper matching Hapi response structure

@@ -168,16 +168,7 @@ export type RenderedTemplate = z.infer<typeof RenderedTemplateSchema>;
  */
 export const DeleteTemplateSchema = z.object({
   id: z.string().uuid()
-}).refine(
-  async (data) => {
-    // In real implementation, check if template is system template
-    // System templates cannot be deleted
-    return true;
-  },
-  {
-    message: 'System templates cannot be deleted'
-  }
-);
+});
 export type DeleteTemplateInput = z.infer<typeof DeleteTemplateSchema>;
 
 /**

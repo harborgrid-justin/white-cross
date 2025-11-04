@@ -79,9 +79,84 @@ export const createDocumentVersionSchema = z.object({
 
 export const signDocumentSchema = z.object({
   documentId: z.string().min(1, 'Document ID is required'),
+  signedBy: z.string().min(1, 'Signer ID is required'),
+  signedByRole: z.string().optional(),
+  signatureType: z.enum(['ELECTRONIC', 'DIGITAL', 'BIOMETRIC', 'PIN']).default('ELECTRONIC'),
   signatureData: z.string().min(1, 'Signature data is required'),
-  signatureType: z.enum(['electronic', 'digital', 'biometric']).default('electronic'),
-  metadata: z.record(z.string(), z.unknown()).optional(),
+  ipAddress: z.string().optional(),
+  certificateId: z.string().optional(),
+  location: z.string().optional(),
+  deviceInfo: z.string().optional(),
+  pin: z.string().optional(),
+  biometricData: z.string().optional(),
+});
+
+// ============================================================================
+// Advanced Search Schemas
+// ============================================================================
+
+export const advancedSearchFiltersSchema = z.object({
+  query: z.string().optional(),
+  category: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  studentId: z.string().optional(),
+  createdBy: z.string().optional(),
+  signedBy: z.string().optional(),
+  dateRange: z.object({
+    startDate: z.string().datetime(),
+    endDate: z.string().datetime(),
+  }).optional(),
+  expiringWithinDays: z.number().int().positive().optional(),
+  hasSignatures: z.boolean().optional(),
+  isExpired: z.boolean().optional(),
+  isArchived: z.boolean().optional(),
+  minFileSize: z.number().positive().optional(),
+  maxFileSize: z.number().positive().optional(),
+  fileTypes: z.array(z.string()).optional(),
+});
+
+export const searchSortOptionsSchema = z.object({
+  field: z.enum(['createdAt', 'updatedAt', 'title', 'category', 'fileSize', 'expirationDate']),
+  order: z.enum(['asc', 'desc']).default('desc'),
+});
+
+export const searchDocumentsRequestSchema = z.object({
+  filters: advancedSearchFiltersSchema,
+  sort: searchSortOptionsSchema.optional(),
+  page: z.number().int().positive().optional().default(1),
+  limit: z.number().int().positive().max(100).optional().default(20),
+  includeAggregations: z.boolean().optional().default(false),
+  includeHighlights: z.boolean().optional().default(true),
+});
+
+// ============================================================================
+// Version Comparison Schemas
+// ============================================================================
+
+export const versionComparisonSchema = z.object({
+  documentId: z.string().uuid('Invalid document ID format'),
+  versionId1: z.string().uuid('Invalid version ID format'),
+  versionId2: z.string().uuid('Invalid version ID format'),
+  comparisonType: z.enum(['text', 'metadata', 'full']).optional().default('full'),
+  includeContent: z.boolean().optional().default(false),
+});
+
+// ============================================================================
+// Bulk Operations Schemas
+// ============================================================================
+
+export const bulkDownloadRequestSchema = z.object({
+  documentIds: z.array(z.string().uuid('Invalid document ID format')).min(1, 'At least one document ID is required'),
+  includeVersions: z.boolean().optional().default(false),
+  includeMetadata: z.boolean().optional().default(true),
+  format: z.enum(['zip', 'tar', 'tar.gz']).optional().default('zip'),
+  fileName: z.string().optional(),
+  excludeArchived: z.boolean().optional().default(true),
+  excludeExpired: z.boolean().optional().default(false),
+  maxFileSize: z.number().positive().optional(),
+  metadataFormat: z.enum(['json', 'csv', 'xml']).optional().default('json'),
+  includeSignatures: z.boolean().optional().default(true),
+  includeAuditTrail: z.boolean().optional().default(false),
 });
 
 // ============================================================================

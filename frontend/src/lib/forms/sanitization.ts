@@ -28,7 +28,7 @@
  * ```
  */
 
-import DOMPurify from 'isomorphic-dompurify';
+import * as DOMPurify from 'isomorphic-dompurify';
 import type { FormField } from './types';
 
 /**
@@ -159,7 +159,7 @@ export function createSanitizer(config: SanitizationConfig = {}): (html: string)
       IN_PLACE: false,
     };
 
-    return DOMPurify.sanitize(html, purifyConfig);
+    return DOMPurify.sanitize(html, purifyConfig) as unknown as string;
   };
 }
 

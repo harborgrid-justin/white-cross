@@ -1,50 +1,132 @@
 /**
- * WF-COMP-147 | index.ts - Student query hooks barrel export
- * Purpose: Re-exports all student query hooks for backward compatibility
- * Upstream: Student query modules
- * Downstream: Components consuming student hooks
- * Exports: All student hooks, types, and utilities
- * Last Updated: 2025-11-04
- * File Type: .ts
+ * Student Query Hooks - Barrel Export
+ *
+ * Central export point for all student query hooks, providing comprehensive
+ * access to student data fetching, search, filtering, statistics, and utilities.
+ *
+ * This index re-exports from modular files while maintaining backward compatibility
+ * with the original monolithic structure.
+ *
+ * @module hooks/students/queries
+ * @author White Cross Healthcare Platform
+ * @version 2.0.0
  */
 
 // =====================
-// QUERY KEY FACTORY AND CACHE CONFIG
+// CONFIGURATION EXPORTS
 // =====================
-export { studentKeys, CACHE_CONFIG } from './studentQueryKeys';
+export { studentQueryKeys } from './queryKeys';
+export { cacheConfig } from './cacheConfig';
 
 // =====================
 // TYPE EXPORTS
 // =====================
+
+// Core query types
 export type {
+  ApiError,
+  PaginatedResponse,
+  StudentProfile,
   UseStudentsReturn,
   UseStudentDetailReturn,
+  UseStudentProfileReturn,
+  UseInfiniteStudentsReturn,
+} from './types';
+
+// Legacy types (for backward compatibility with old structure)
+export type {
+  UseStudentsReturn as UseStudentsReturn_Legacy,
+  UseStudentDetailReturn as UseStudentDetailReturn_Legacy,
   UseStudentSearchReturn,
   UseAssignedStudentsReturn,
   UseStudentStatsReturn,
   StudentStats,
-  UseStudentsReturn_Legacy,
 } from './studentQueryTypes';
+
+// Search and filter types
+export type {
+  SearchSuggestion,
+  AdvancedFilters,
+  SortOption,
+  SavedSearch,
+  SearchOptions,
+  FilterOptions,
+  SearchAndFilterOptions,
+} from './searchAndFilter';
+
+// Statistics types
+export type {
+  EnrollmentStats,
+  HealthStats,
+  ActivityStats,
+  RiskStats,
+  ComplianceStats,
+  DashboardMetrics,
+  TimeRange,
+  CustomTimeRange,
+} from './statistics';
 
 // =====================
 // CORE QUERY HOOKS
 // =====================
-export {
-  useStudents,
-  useStudentDetail,
-  useStudentSearch,
-} from './useStudentCoreQueries';
 
-// =====================
-// SPECIALIZED QUERY HOOKS
-// =====================
+// List queries
+export { useStudents, useInfiniteStudents } from './listQueries';
+
+// Detail queries
+export { useStudentDetail, useStudentProfile } from './detailQueries';
+
+// Specialized queries
 export {
   useAssignedStudents,
+  useRecentStudents,
+  useStudentsByGrade,
+} from './specializedQueries';
+
+// =====================
+// SEARCH AND FILTER HOOKS
+// =====================
+export {
+  SORT_OPTIONS,
+  useStudentSearch,
+  useAdvancedFilters,
+  useStudentSorting,
+  useSavedSearches,
+  useStudentSearchAndFilter,
+} from './searchAndFilter';
+
+// =====================
+// STATISTICS AND ANALYTICS HOOKS
+// =====================
+export {
+  useEnrollmentStats,
+  useHealthStats,
+  useActivityStats,
+  useRiskStats,
+  useComplianceStats,
+  useDashboardMetrics,
+  useTrendAnalysis,
+  useComparativeStats,
+} from './statistics';
+
+// =====================
+// LEGACY HOOKS (for backward compatibility with old structure)
+// =====================
+
+// Re-export from legacy files that still exist
+export {
+  useStudents as useStudents_Core,
+  useStudentDetail as useStudentDetail_Core,
+  useStudentSearch as useStudentSearch_Core,
+} from './useStudentCoreQueries';
+
+export {
+  useAssignedStudents as useAssignedStudents_Specialized,
   useStudentStats,
 } from './useStudentSpecializedQueries';
 
 // =====================
-// MUTATION HOOKS
+// MUTATION HOOKS (in queries for backward compatibility)
 // =====================
 export {
   useCreateStudent,
@@ -63,11 +145,11 @@ export {
 } from './useStudentUtilities';
 
 // =====================
-// BACKWARD COMPATIBILITY EXPORTS
+// COMPOSITE RE-EXPORT
 // =====================
 
 /**
- * @deprecated Use useStudentSearch instead
- * Maintained for backward compatibility
+ * Re-export everything from useStudents for maximum backward compatibility
+ * This allows imports like: import { useStudents } from '@/hooks/domains/students/queries'
  */
-export { useStudentSearch as useStudentSearch_Legacy } from './useStudentCoreQueries';
+export * from './useStudents';

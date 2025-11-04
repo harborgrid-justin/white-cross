@@ -258,7 +258,7 @@ export function removePHIFromObject<T extends Record<string, any>>(obj: T, phiFi
     } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
       sanitized[key] = removePHIFromObject(value, phiFields) as any;
     } else if (Array.isArray(value)) {
-      sanitized[key] = value.map((item) =>
+      sanitized[key] = value.map((item: any) =>
         typeof item === 'object' && item !== null ? removePHIFromObject(item, phiFields) : item
       ) as any;
     }

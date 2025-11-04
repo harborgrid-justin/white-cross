@@ -5,6 +5,8 @@
  * Provides centralized cache invalidation functions for inventory alert operations.
  */
 
+'use server';
+
 import { revalidatePath, revalidateTag } from 'next/cache';
 
 /**

@@ -29,6 +29,11 @@ export type {
 } from './useBulkStudentOperations';
 
 // Default export for backward compatibility
+import { useStudentManager } from './useStudentManager';
+import { useStudentDashboard } from './useStudentDashboard';
+import { useStudentProfile } from './useStudentProfile';
+import { useBulkStudentOperations } from './useBulkStudentOperations';
+
 export default {
   useStudentManager,
   useStudentDashboard,

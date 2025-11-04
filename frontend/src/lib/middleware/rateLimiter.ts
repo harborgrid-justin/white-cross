@@ -8,7 +8,7 @@
  * @since 2025-10-26
  */
 
-interface RateLimitConfig {
+export interface RateLimitConfig {
   windowMs: number; // Time window in milliseconds
   maxRequests: number; // Max requests per window
   message?: string; // Error message
@@ -16,7 +16,7 @@ interface RateLimitConfig {
   skipFailedRequests?: boolean; // Don't count failed requests
 }
 
-interface RateLimitStore {
+export interface RateLimitStore {
   count: number;
   resetTime: number;
 }

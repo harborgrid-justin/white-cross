@@ -36,15 +36,43 @@ export type {
   CancellableRequestConfig,
   RequestInterceptor,
   ResponseInterceptor,
+  ResilienceHook,
 } from './ApiClient';
 
-export { BaseApiService, createApiService } from './BaseApiService';
+// Additional exports from extracted modules (for advanced usage)
+export { normalizeError } from './ApiClient.errors';
+export type { CancellableRequest } from './ApiClient.cancellation';
+export {
+  createAuthRequestInterceptor,
+  createAuthResponseInterceptor,
+  isRetryableError as isRetryableApiError,
+  generateRequestId,
+  sleep,
+} from './ApiClient.interceptors';
+export type { ResponseInterceptorOptions } from './ApiClient.interceptors';
+export {
+  getAuthToken,
+  refreshAuthToken,
+  handleAuthFailure,
+} from './ApiClient.auth';
+
+// Resilient API Client and components
+export { ResilientApiClient, createResilientApiClient } from './ResilientApiClient';
+export { ResilientRequestExecutor } from './ResilientRequestExecutor';
+export type { RequestExecutorConfig } from './ResilientRequestExecutor';
+export { ResilienceContextBuilder, resilienceContextBuilder } from './ResilienceContextBuilder';
+export { ResilienceMetricsCollector } from './ResilienceMetricsCollector';
+export type { AggregatedResilienceMetrics, MetricsCollectorConfig, HealthReport } from './ResilienceMetricsCollector';
+
+// Export from new modular base-api structure (backward compatible)
+export { BaseApiService, createApiService } from './base-api';
 export type {
   BaseEntity,
   PaginationParams,
   FilterParams,
   CrudOperations,
-} from './BaseApiService';
+  PaginatedResponse as BaseApiPaginatedResponse,
+} from './base-api';
 
 export { QueryHooksFactory, createQueryHooks } from './QueryHooksFactory';
 export type {

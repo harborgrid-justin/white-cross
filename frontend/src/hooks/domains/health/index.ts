@@ -108,9 +108,9 @@
  * - Vital signs monitoring (real-time critical, NO cache)
  * - Health summaries and timelines
  *
- * @see {@link module:hooks/domains/health/queries/useHealthRecords}
+ * @see {@link module:hooks/domains/health/queries}
  */
-export * from './queries/useHealthRecords';
+export * from './queries';
 
 /**
  * Data management hook for health records with local state and CRUD operations.

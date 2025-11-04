@@ -15,7 +15,6 @@ import {
   encryptDocument,
   decryptDocument,
   createEncryptedMetadata,
-  parseEncryptedMetadata,
   type EncryptedDocument
 } from './encryption';
 

@@ -10,7 +10,7 @@
  */
 
 import { useCallback } from 'react';
-import { useAuthContext } from '../utilities/AuthContext';
+import { useAuthContext } from '../../contexts/AuthContext';
 
 /**
  * Audit event severity levels
@@ -61,7 +61,6 @@ export function useAuditLog(options: UseAuditLogOptions = {}) {
   const {
     enableConsoleLog = process.env.NODE_ENV === 'development',
     enableRemoteLog = process.env.NODE_ENV === 'production',
-    context = 'unknown'
   } = options;
 
   const { user } = useAuthContext();
@@ -73,7 +72,7 @@ export function useAuditLog(options: UseAuditLogOptions = {}) {
     const enhancedEvent: AuditEvent = {
       ...event,
       userId: user?.id || 'anonymous',
-      sessionId: user?.sessionId || 'unknown',
+      sessionId: getSessionId(),
       ipAddress: await getUserIP(),
       userAgent: navigator.userAgent,
     };
@@ -196,6 +195,30 @@ export function useAuditLog(options: UseAuditLogOptions = {}) {
 // =============================================================================
 // HELPER FUNCTIONS
 // =============================================================================
+
+/**
+ * Get or create session ID for audit logging
+ *
+ * Session ID is stored in sessionStorage and persists for the browser session.
+ * This helps track user activities within a single session for audit purposes.
+ */
+function getSessionId(): string {
+  try {
+    const SESSION_KEY = 'audit_session_id';
+    let sessionId = sessionStorage.getItem(SESSION_KEY);
+
+    if (!sessionId) {
+      // Generate a new session ID using timestamp and random string
+      sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+      sessionStorage.setItem(SESSION_KEY, sessionId);
+    }
+
+    return sessionId;
+  } catch {
+    // Fallback if sessionStorage is not available
+    return `session_${Date.now()}_fallback`;
+  }
+}
 
 /**
  * Get user IP address (with privacy considerations)

@@ -60,3 +60,9 @@ export { useAuthContext } from './AuthContext';
 export * from './useUrlState';
 export * from './useFormPersistence';
 export * from './useMemoizedSelectors';
+
+// Advanced Selector Utilities
+export * from './selectors';
+
+// Refresh & Polling Utilities
+export * from './useRefresh'; // Note: This is useRefresh.ts not useRefresh/ directory

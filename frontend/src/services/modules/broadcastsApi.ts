@@ -4,6 +4,7 @@
  */
 
 import type { ApiClient } from '../core/ApiClient';
+import { apiClient } from '../core/ApiClient';
 import { ApiResponse, PaginatedResponse, buildPaginationParams } from '../utils/apiUtils';
 
 /**
@@ -255,6 +256,8 @@ export function createBroadcastsApi(client: ApiClient): BroadcastsApi {
   return new BroadcastsApi(client);
 }
 
-// Export singleton instance
-import { apiClient } from '../core/ApiClient'
-export const broadcastsApi = createBroadcastsApi(apiClient)
+/**
+ * Singleton instance of BroadcastsApi
+ * Pre-configured with the default apiClient
+ */
+export const broadcastsApi = createBroadcastsApi(apiClient);

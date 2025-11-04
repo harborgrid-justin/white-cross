@@ -6,7 +6,6 @@
  */
 
 import { z } from 'zod';
-import { Gender } from '@/types/student.types';
 
 /**
  * Gender enum schema

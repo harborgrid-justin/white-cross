@@ -26,6 +26,7 @@ export * from './modules/broadcastsApi';
 export * from './modules/budgetApi';
 export * from './modules/communicationApi';
 export * from './modules/complianceApi';
+export * from './modules/contactsApi';
 export * from './modules/dashboardApi';
 export * from './modules/documentsApi';
 export * from './modules/emergencyContactsApi';
@@ -33,9 +34,11 @@ export * from './modules/incidentsApi';
 export * from './modules/integrationApi';
 export * from './modules/inventoryApi';
 export * from './modules/messagesApi';
+export * from './modules/mfaApi';
 export * from './modules/purchaseOrderApi';
 export * from './modules/reportsApi';
 export * from './modules/studentManagementApi';
+export * from './modules/systemApi';
 export * from './modules/usersApi';
 export * from './modules/vendorApi';
 
@@ -130,4 +133,9 @@ export {
   type ServiceCategory
 } from './modules/billingApi';
 
+// Export refactored communications API - consolidated from communicationApi, messagesApi, broadcastsApi
+// This is the new refactored version with sub-modules for better organization
+export * from './modules/communicationsApi';
+
 // Note: AdministrationService exports same classes as administrationApi, so we only export administrationApi to avoid ambiguity
+// Note: communicationApi (singular) is deprecated - use communicationsApi (plural) for refactored version

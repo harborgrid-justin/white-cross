@@ -1,32 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Read(//f/temp/white-cross/frontend/**)",
-      "Bash(for file in administrationQueryKeys.ts administrationCacheConfig.ts administrationUserTypes.ts administrationDepartmentTypes.ts administrationSettingsTypes.ts administrationAuditTypes.ts administrationNotificationTypes.ts administrationSystemTypes.ts)",
-      "Bash(done)",
-      "Bash(for file in F:/temp/white-cross/frontend/src/hooks/utilities/routeValidation/*.ts)",
-      "Bash(for file in useUserAdminMutations.ts useUserStatusMutations.ts useDepartmentAdminMutations.ts useSettingsAdminMutations.ts useNotificationAdminMutations.ts useBulkAdminMutations.ts index.ts)",
-      "Bash(awk:*)",
-      "Bash(for:*)",
+      "Bash(npx madge:*)",
+      "Bash([ -d \"F:\\temp\\white-cross\\frontend\\.temp\" ])",
       "Bash(npx tsc:*)",
+      "Bash(awk:*)",
       "Bash(find:*)",
-      "Bash(tree:*)",
-      "Bash(sort:*)",
-      "Bash(printf:*)",
-      "Bash(do echo \"=== $file ===\")",
-      "Bash(wc:*)",
-      "Bash(do:*)",
-      "Bash(test:*)",
-      "Bash(npm run type-check:*)",
-      "Bash(npm run lint:*)",
-      "mcp__ide__getDiagnostics",
-      "Bash(if [ ! -f \"F:\\temp\\white-cross\\frontend\\src\\hooks\\domains\\compliance\\index.ts\" ])",
-      "Bash(then echo \"File does not exist\")",
-      "Bash(fi:*)",
-      "Bash(powershell -Command \"Get-ChildItem -Path ''F:\\temp\\white-cross\\frontend\\src\\hooks\\utilities\\routeState\\*.ts'' | Select-Object Name, @{Name=''Lines'';Expression={(Get-Content $_FullName | Measure-Object -Line).Lines}} | Format-Table -AutoSize\")",
-      "Bash(powershell -Command:*)",
-      "Bash(node -e:*)",
-      "Bash(npm run build:*)"
+      "mcp__ide__getDiagnostics"
     ],
     "deny": [],
     "ask": []

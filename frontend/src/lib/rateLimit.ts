@@ -46,8 +46,14 @@ function getClientIdentifier(request: NextRequest): string {
     return realIp;
   }
 
-  // Fallback to request IP
-  return request.ip || 'unknown';
+  // Fallback to CF connecting IP
+  const cfConnectingIp = request.headers.get('cf-connecting-ip');
+  if (cfConnectingIp) {
+    return cfConnectingIp;
+  }
+
+  // No IP available
+  return 'unknown';
 }
 
 /**
@@ -98,13 +104,18 @@ export function checkRateLimit(
 export function cleanupRateLimits(): void {
   const now = Date.now();
   let cleaned = 0;
+  const keysToDelete: string[] = [];
 
-  for (const [key, entry] of rateLimitStore.entries()) {
+  rateLimitStore.forEach((entry, key) => {
     if (now >= entry.resetTime) {
-      rateLimitStore.delete(key);
-      cleaned++;
+      keysToDelete.push(key);
     }
-  }
+  });
+
+  keysToDelete.forEach(key => {
+    rateLimitStore.delete(key);
+    cleaned++;
+  });
 
   if (cleaned > 0) {
     console.log(`Cleaned up ${cleaned} expired rate limit entries`);

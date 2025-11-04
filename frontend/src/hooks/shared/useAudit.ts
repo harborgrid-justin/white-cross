@@ -44,14 +44,14 @@
 import { useEffect, useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../stores/reduxStore';
-import { auditService, initializeAuditService, cleanupAuditService } from './AuditService';
+import { auditService, initializeAuditService, cleanupAuditService } from '@/services/audit';
 import {
   AuditLogParams,
   AuditAction,
   AuditResourceType,
   AuditChange,
   AuditServiceStatus,
-} from './types';
+} from '@/services/audit';
 
 /**
  * Audit hook interface

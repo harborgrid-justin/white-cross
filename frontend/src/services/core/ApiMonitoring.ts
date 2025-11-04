@@ -1,69 +1,77 @@
 /**
- * WF-COMP-256 | ApiMonitoring.ts - React component or utility module
- * Purpose: react component or utility module
+ * WF-COMP-256 | ApiMonitoring.ts - API Monitoring Core Module
+ * Purpose: Provides request/response monitoring, performance metrics, and error tracking
  * Upstream: ./ApiClient | Dependencies: axios, ./ApiClient
  * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants, interfaces, classes | Key Features: Standard module
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
+ * Related: ApiMonitoring.types, ApiMonitoring.metrics, ApiMonitoring.logging, ApiMonitoring.utils
+ * Exports: ApiMonitoring class, singleton instance | Key Features: Request/response interceptors
+ * Last Updated: 2025-11-04 | File Type: .ts
+ * Critical Path: API call → Request interceptor → Response interceptor → Metrics recording
+ * LLM Context: API monitoring with metrics collection, part of React frontend architecture
  */
 
 /**
  * API Monitoring and Performance Tracking
  * Provides request/response monitoring, performance metrics, and error tracking
+ *
+ * This module has been refactored into smaller, focused modules:
+ * - ApiMonitoring.types.ts: Type definitions
+ * - ApiMonitoring.utils.ts: Utility functions (sanitization, formatting)
+ * - ApiMonitoring.logging.ts: Logging functions
+ * - ApiMonitoring.metrics.ts: Metrics tracking and aggregation
  */
 
 import { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { RequestInterceptor, ResponseInterceptor } from './ApiClient';
 
-// ==========================================
-// TYPE DEFINITIONS
-// ==========================================
+// Import from extracted modules
+import type { ApiMetrics, PerformanceStats, MonitoringConfig } from './ApiMonitoring.types';
+import { MetricsTracker } from './ApiMonitoring.metrics';
+import { logRequest, logResponse, logError, logSlowRequest } from './ApiMonitoring.logging';
+import { sanitizeUrl, generateRequestId } from './ApiMonitoring.utils';
 
-export interface ApiMetrics {
-  requestId: string;
-  method: string;
-  url: string;
-  status?: number;
-  duration: number;
-  timestamp: number;
-  success: boolean;
-  error?: string;
-  size?: number;
-}
-
-export interface PerformanceStats {
-  totalRequests: number;
-  successfulRequests: number;
-  failedRequests: number;
-  averageResponseTime: number;
-  slowestRequest: ApiMetrics | null;
-  fastestRequest: ApiMetrics | null;
-  errorRate: number;
-}
-
-export interface MonitoringConfig {
-  enabled: boolean;
-  logRequests: boolean;
-  logResponses: boolean;
-  logErrors: boolean;
-  trackPerformance: boolean;
-  slowRequestThreshold: number; // ms
-  onSlowRequest?: (metrics: ApiMetrics) => void;
-  onError?: (metrics: ApiMetrics) => void;
-}
+// Re-export types for backward compatibility
+export type { ApiMetrics, PerformanceStats, MonitoringConfig } from './ApiMonitoring.types';
 
 // ==========================================
 // API MONITORING CLASS
 // ==========================================
 
+/**
+ * API Monitoring Service
+ *
+ * Provides comprehensive monitoring capabilities for HTTP API requests:
+ * - Request/response interceptors for automatic tracking
+ * - Performance metrics collection and aggregation
+ * - Error tracking and slow request detection
+ * - Configurable logging and callbacks
+ * - Metrics export for analysis
+ *
+ * @example
+ * ```typescript
+ * // Create monitoring instance
+ * const monitoring = new ApiMonitoring({
+ *   enabled: true,
+ *   logRequests: true,
+ *   slowRequestThreshold: 3000,
+ *   onSlowRequest: (metrics) => {
+ *     console.warn('Slow request detected:', metrics);
+ *   }
+ * });
+ *
+ * // Attach to API client
+ * apiClient.addRequestInterceptor(monitoring.createRequestInterceptor());
+ * apiClient.addResponseInterceptor(monitoring.createResponseInterceptor());
+ *
+ * // Get performance stats
+ * const stats = monitoring.getPerformanceStats();
+ * console.log(`Average response time: ${stats.averageResponseTime}ms`);
+ * ```
+ */
 export class ApiMonitoring {
+  private static instance: ApiMonitoring | null = null;
   private config: MonitoringConfig;
-  private metrics: Map<string, ApiMetrics> = new Map();
-  private metricsHistory: ApiMetrics[] = [];
-  private maxHistorySize = 100;
+  private metricsTracker: MetricsTracker;
 
   constructor(config: Partial<MonitoringConfig> = {}) {
     this.config = {
@@ -76,6 +84,31 @@ export class ApiMonitoring {
       onSlowRequest: config.onSlowRequest,
       onError: config.onError,
     };
+
+    this.metricsTracker = new MetricsTracker(this.config);
+  }
+
+  // ==========================================
+  // SINGLETON PATTERN
+  // ==========================================
+
+  /**
+   * Get singleton instance (for backward compatibility with ServiceRegistry)
+   * @returns ApiMonitoring singleton instance
+   */
+  public static getInstance(): ApiMonitoring {
+    if (!ApiMonitoring.instance) {
+      ApiMonitoring.instance = new ApiMonitoring();
+    }
+    return ApiMonitoring.instance;
+  }
+
+  /**
+   * Set singleton instance (for testing or custom configuration)
+   * @param instance - ApiMonitoring instance to use as singleton
+   */
+  public static setInstance(instance: ApiMonitoring): void {
+    ApiMonitoring.instance = instance;
   }
 
   // ==========================================
@@ -84,24 +117,26 @@ export class ApiMonitoring {
 
   /**
    * Create request interceptor for monitoring
+   * Tracks request start time and logs request details
+   * @returns RequestInterceptor for Axios
    */
   public createRequestInterceptor(): RequestInterceptor {
     return {
       onFulfilled: (config: AxiosRequestConfig) => {
         if (!this.config.enabled) return config;
 
-        const requestId = config.headers?.['X-Request-ID'] as string || this.generateRequestId();
+        const requestId = config.headers?.['X-Request-ID'] as string || generateRequestId();
         const startTime = Date.now();
 
-        // Store request start time
-        this.metrics.set(requestId, {
+        // Store request start time and basic info
+        const metrics: ApiMetrics = {
           requestId,
           method: config.method?.toUpperCase() || 'UNKNOWN',
-          url: this.sanitizeUrl(config.url || ''),
+          url: sanitizeUrl(config.url || ''),
           duration: 0,
           timestamp: startTime,
           success: false,
-        });
+        };
 
         // Attach metadata to config for response interceptor
         (config as any).__monitoringStartTime = startTime;
@@ -109,7 +144,7 @@ export class ApiMonitoring {
 
         // Log request
         if (this.config.logRequests) {
-          this.logRequest(config);
+          logRequest(config);
         }
 
         return config;
@@ -125,6 +160,8 @@ export class ApiMonitoring {
 
   /**
    * Create response interceptor for monitoring
+   * Records metrics, logs responses/errors, and detects slow requests
+   * @returns ResponseInterceptor for Axios
    */
   public createResponseInterceptor(): ResponseInterceptor {
     return {
@@ -142,7 +179,7 @@ export class ApiMonitoring {
           const metrics: ApiMetrics = {
             requestId,
             method: config.method?.toUpperCase() || 'UNKNOWN',
-            url: this.sanitizeUrl(config.url || ''),
+            url: sanitizeUrl(config.url || ''),
             status: response.status,
             duration,
             timestamp: startTime,
@@ -150,16 +187,16 @@ export class ApiMonitoring {
             size: this.calculateResponseSize(response),
           };
 
-          this.recordMetrics(metrics);
+          this.metricsTracker.recordMetrics(metrics);
 
           // Log response
           if (this.config.logResponses) {
-            this.logResponse(response, duration);
+            logResponse(response, duration);
           }
 
           // Check for slow requests
           if (duration > this.config.slowRequestThreshold) {
-            this.handleSlowRequest(metrics);
+            logSlowRequest(metrics, this.config.onSlowRequest);
           }
         }
 
@@ -179,7 +216,7 @@ export class ApiMonitoring {
           const metrics: ApiMetrics = {
             requestId,
             method: config.method?.toUpperCase() || 'UNKNOWN',
-            url: this.sanitizeUrl(config.url || ''),
+            url: sanitizeUrl(config.url || ''),
             status: error.response?.status,
             duration,
             timestamp: startTime,
@@ -187,11 +224,11 @@ export class ApiMonitoring {
             error: error.message || 'Unknown error',
           };
 
-          this.recordMetrics(metrics);
+          this.metricsTracker.recordMetrics(metrics);
 
           // Log error
           if (this.config.logErrors) {
-            this.logError(error, duration);
+            logError(error, duration);
           }
 
           // Handle error callback
@@ -206,201 +243,89 @@ export class ApiMonitoring {
   }
 
   // ==========================================
-  // METRICS RECORDING
-  // ==========================================
-
-  private recordMetrics(metrics: ApiMetrics): void {
-    if (!this.config.trackPerformance) return;
-
-    // Update current metrics
-    this.metrics.set(metrics.requestId, metrics);
-
-    // Add to history
-    this.metricsHistory.push(metrics);
-
-    // Limit history size
-    if (this.metricsHistory.length > this.maxHistorySize) {
-      this.metricsHistory.shift();
-    }
-
-    // Cleanup old metrics
-    this.metrics.delete(metrics.requestId);
-  }
-
-  // ==========================================
-  // LOGGING
-  // ==========================================
-
-  private logRequest(config: AxiosRequestConfig): void {
-    const method = config.method?.toUpperCase();
-    const url = this.sanitizeUrl(config.url || '');
-
-    console.group(`🚀 [API Request] ${method} ${url}`);
-    console.log('Headers:', config.headers);
-    if (config.data) {
-      console.log('Body:', config.data);
-    }
-    if (config.params) {
-      console.log('Params:', config.params);
-    }
-    console.groupEnd();
-  }
-
-  private logResponse(response: AxiosResponse, duration: number): void {
-    const method = response.config.method?.toUpperCase();
-    const url = this.sanitizeUrl(response.config.url || '');
-    const status = response.status;
-
-    const emoji = status >= 200 && status < 300 ? '✅' : '⚠️';
-
-    console.group(`${emoji} [API Response] ${method} ${url} (${duration}ms)`);
-    console.log('Status:', status);
-    console.log('Duration:', `${duration}ms`);
-    console.log('Size:', this.formatBytes(this.calculateResponseSize(response)));
-    console.log('Data:', response.data);
-    console.groupEnd();
-  }
-
-  private logError(error: any, duration: number): void {
-    const method = error.config?.method?.toUpperCase();
-    const url = this.sanitizeUrl(error.config?.url || '');
-    const status = error.response?.status || 'Network Error';
-
-    console.group(`❌ [API Error] ${method} ${url} (${duration}ms)`);
-    console.log('Status:', status);
-    console.log('Duration:', `${duration}ms`);
-    console.log('Message:', error.message);
-    if (error.response?.data) {
-      console.log('Response Data:', error.response.data);
-    }
-    console.groupEnd();
-  }
-
-  private handleSlowRequest(metrics: ApiMetrics): void {
-    console.warn(
-      `⏱️ [Slow Request] ${metrics.method} ${metrics.url} took ${metrics.duration}ms`,
-      metrics
-    );
-
-    if (this.config.onSlowRequest) {
-      this.config.onSlowRequest(metrics);
-    }
-  }
-
-  // ==========================================
-  // PERFORMANCE STATS
+  // METRICS ACCESS METHODS
   // ==========================================
 
   /**
-   * Get performance statistics
+   * Get aggregated performance statistics
+   * @returns Performance statistics including success rate, response times, error rate
    */
   public getPerformanceStats(): PerformanceStats {
-    const history = this.metricsHistory;
-
-    if (history.length === 0) {
-      return {
-        totalRequests: 0,
-        successfulRequests: 0,
-        failedRequests: 0,
-        averageResponseTime: 0,
-        slowestRequest: null,
-        fastestRequest: null,
-        errorRate: 0,
-      };
-    }
-
-    const successfulRequests = history.filter(m => m.success).length;
-    const failedRequests = history.filter(m => !m.success).length;
-    const totalRequests = history.length;
-
-    const durations = history.map(m => m.duration);
-    const averageResponseTime = durations.reduce((a, b) => a + b, 0) / durations.length;
-
-    const sortedByDuration = [...history].sort((a, b) => a.duration - b.duration);
-    const slowestRequest = sortedByDuration[sortedByDuration.length - 1];
-    const fastestRequest = sortedByDuration[0];
-
-    const errorRate = failedRequests / totalRequests;
-
-    return {
-      totalRequests,
-      successfulRequests,
-      failedRequests,
-      averageResponseTime: Math.round(averageResponseTime),
-      slowestRequest,
-      fastestRequest,
-      errorRate: Math.round(errorRate * 100) / 100,
-    };
+    return this.metricsTracker.getPerformanceStats();
   }
 
   /**
    * Get metrics for a specific endpoint
+   * @param endpoint - Endpoint URL or partial URL to filter by
+   * @returns Array of metrics matching the endpoint
    */
   public getEndpointMetrics(endpoint: string): ApiMetrics[] {
-    return this.metricsHistory.filter(m => m.url.includes(endpoint));
+    return this.metricsTracker.getEndpointMetrics(endpoint);
   }
 
   /**
    * Get recent errors
+   * @param limit - Maximum number of errors to return (default: 10)
+   * @returns Array of error metrics
    */
   public getRecentErrors(limit: number = 10): ApiMetrics[] {
-    return this.metricsHistory
-      .filter(m => !m.success)
-      .slice(-limit)
-      .reverse();
+    return this.metricsTracker.getRecentErrors(limit);
   }
 
   /**
    * Get slow requests
+   * @param limit - Maximum number of slow requests to return (default: 10)
+   * @returns Array of slow request metrics
    */
   public getSlowRequests(limit: number = 10): ApiMetrics[] {
-    return [...this.metricsHistory]
-      .filter(m => m.duration > this.config.slowRequestThreshold)
-      .sort((a, b) => b.duration - a.duration)
-      .slice(0, limit);
+    return this.metricsTracker.getSlowRequests(limit);
   }
 
   /**
    * Clear metrics history
    */
   public clearHistory(): void {
-    this.metricsHistory = [];
-    this.metrics.clear();
+    this.metricsTracker.clearHistory();
   }
 
   /**
    * Export metrics to JSON
+   * @returns JSON string containing stats, history, and timestamp
    */
   public exportMetrics(): string {
-    return JSON.stringify({
-      stats: this.getPerformanceStats(),
-      history: this.metricsHistory,
-      timestamp: new Date().toISOString(),
-    }, null, 2);
+    return this.metricsTracker.exportMetrics();
   }
 
   // ==========================================
-  // UTILITY METHODS
+  // CONFIGURATION METHODS
   // ==========================================
 
-  private sanitizeUrl(url: string): string {
-    // Remove sensitive query parameters
-    try {
-      const urlObj = new URL(url, 'http://dummy.com');
-      const sensitiveParams = ['token', 'password', 'secret', 'key', 'apiKey'];
-
-      sensitiveParams.forEach(param => {
-        if (urlObj.searchParams.has(param)) {
-          urlObj.searchParams.set(param, '***');
-        }
-      });
-
-      return urlObj.pathname + urlObj.search;
-    } catch {
-      return url;
-    }
+  /**
+   * Update monitoring configuration
+   * @param config - Partial monitoring configuration to update
+   */
+  public updateConfig(config: Partial<MonitoringConfig>): void {
+    this.config = { ...this.config, ...config };
+    this.metricsTracker.updateConfig(this.config);
   }
 
+  /**
+   * Get current configuration
+   * @returns Current monitoring configuration
+   */
+  public getConfig(): MonitoringConfig {
+    return { ...this.config };
+  }
+
+  // ==========================================
+  // PRIVATE HELPER METHODS
+  // ==========================================
+
+  /**
+   * Calculate response size from Axios response
+   * @param response - Axios response object
+   * @returns Response size in bytes
+   */
   private calculateResponseSize(response: AxiosResponse): number {
     try {
       const contentLength = response.headers['content-length'];
@@ -415,40 +340,16 @@ export class ApiMonitoring {
       return 0;
     }
   }
-
-  private formatBytes(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
-
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-  }
-
-  private generateRequestId(): string {
-    return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  }
-
-  /**
-   * Update configuration
-   */
-  public updateConfig(config: Partial<MonitoringConfig>): void {
-    this.config = { ...this.config, ...config };
-  }
-
-  /**
-   * Get current configuration
-   */
-  public getConfig(): MonitoringConfig {
-    return { ...this.config };
-  }
 }
 
 // ==========================================
 // SINGLETON INSTANCE
 // ==========================================
 
+/**
+ * Default singleton instance of ApiMonitoring
+ * Pre-configured for development environment
+ */
 export const apiMonitoring = new ApiMonitoring({
   enabled: true,
   logRequests: process.env.NODE_ENV === 'development',
@@ -457,3 +358,6 @@ export const apiMonitoring = new ApiMonitoring({
   trackPerformance: true,
   slowRequestThreshold: 3000,
 });
+
+// Set as singleton instance for getInstance() calls
+ApiMonitoring.setInstance(apiMonitoring);

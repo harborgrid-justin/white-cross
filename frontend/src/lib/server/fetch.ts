@@ -10,6 +10,10 @@
  *
  * @module lib/server/fetch
  * @version 1.0.0
+ *
+ * @deprecated This module provides legacy fetch utilities.
+ * For new code, prefer using @/lib/api/nextjs-client which provides
+ * the same functionality with better Next.js integration.
  */
 
 import { cookies } from 'next/headers';
@@ -19,7 +23,11 @@ import { notFound, redirect } from 'next/navigation';
 // TYPES
 // ==========================================
 
-export interface FetchOptions extends RequestInit {
+/**
+ * Legacy fetch options for server-side requests
+ * @deprecated Use NextFetchOptions from @/lib/api/nextjs-client instead
+ */
+export interface LegacyServerFetchOptions extends RequestInit {
   /**
    * Whether to include authentication token
    * @default true
@@ -55,7 +63,11 @@ export interface FetchOptions extends RequestInit {
   tags?: string[];
 }
 
-export interface ApiError {
+/**
+ * Legacy API error type
+ * @deprecated Use NextApiClientError from @/lib/api/nextjs-client instead
+ */
+export interface LegacyServerApiError {
   message: string;
   status: number;
   statusText: string;
@@ -87,10 +99,12 @@ async function getAuthToken(): Promise<string | null> {
 
 /**
  * Server-side fetch with authentication and error handling
+ *
+ * @deprecated Use nextFetch from @/lib/api/nextjs-client for better Next.js integration
  */
 export async function serverFetch<T>(
   endpoint: string,
-  options: FetchOptions = {}
+  options: LegacyServerFetchOptions = {}
 ): Promise<T> {
   const {
     requiresAuth = true,
@@ -177,7 +191,7 @@ export async function serverFetch<T>(
 
       // Don't retry on client errors (except 408, 429)
       if (error instanceof Error && 'status' in error) {
-        const status = (error as ApiError).status;
+        const status = (error as LegacyServerApiError).status;
         if (status >= 400 && status < 500 && status !== 408 && status !== 429) {
           break;
         }
@@ -205,7 +219,7 @@ export async function serverFetch<T>(
 /**
  * Handle error responses
  */
-async function handleErrorResponse(response: Response): Promise<ApiError> {
+async function handleErrorResponse(response: Response): Promise<LegacyServerApiError> {
   let details: unknown;
 
   try {
@@ -219,7 +233,7 @@ async function handleErrorResponse(response: Response): Promise<ApiError> {
     details = null;
   }
 
-  const error: ApiError = {
+  const error: LegacyServerApiError = {
     message: typeof details === 'object' && details !== null && 'message' in details
       ? (details as any).message
       : response.statusText || 'Request failed',
@@ -237,11 +251,13 @@ async function handleErrorResponse(response: Response): Promise<ApiError> {
 
 /**
  * GET request
+ *
+ * @deprecated Use serverGet from @/lib/api/nextjs-client for better Next.js integration
  */
 export async function serverGet<T>(
   endpoint: string,
   params?: Record<string, string | number | boolean>,
-  options: FetchOptions = {}
+  options: LegacyServerFetchOptions = {}
 ): Promise<T> {
   const queryString = params
     ? '?' + new URLSearchParams(
@@ -257,11 +273,13 @@ export async function serverGet<T>(
 
 /**
  * POST request
+ *
+ * @deprecated Use serverPost from @/lib/api/nextjs-client for better Next.js integration
  */
 export async function serverPost<T>(
   endpoint: string,
   data?: unknown,
-  options: FetchOptions = {}
+  options: LegacyServerFetchOptions = {}
 ): Promise<T> {
   return serverFetch<T>(endpoint, {
     ...options,
@@ -272,11 +290,13 @@ export async function serverPost<T>(
 
 /**
  * PUT request
+ *
+ * @deprecated Use serverPut from @/lib/api/nextjs-client for better Next.js integration
  */
 export async function serverPut<T>(
   endpoint: string,
   data?: unknown,
-  options: FetchOptions = {}
+  options: LegacyServerFetchOptions = {}
 ): Promise<T> {
   return serverFetch<T>(endpoint, {
     ...options,
@@ -287,11 +307,13 @@ export async function serverPut<T>(
 
 /**
  * PATCH request
+ *
+ * @deprecated Use serverPatch from @/lib/api/nextjs-client for better Next.js integration
  */
 export async function serverPatch<T>(
   endpoint: string,
   data?: unknown,
-  options: FetchOptions = {}
+  options: LegacyServerFetchOptions = {}
 ): Promise<T> {
   return serverFetch<T>(endpoint, {
     ...options,
@@ -302,10 +324,12 @@ export async function serverPatch<T>(
 
 /**
  * DELETE request
+ *
+ * @deprecated Use serverDelete from @/lib/api/nextjs-client for better Next.js integration
  */
 export async function serverDelete<T>(
   endpoint: string,
-  options: FetchOptions = {}
+  options: LegacyServerFetchOptions = {}
 ): Promise<T> {
   return serverFetch<T>(endpoint, {
     ...options,

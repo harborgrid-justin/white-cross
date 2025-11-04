@@ -57,6 +57,14 @@ export {
   documentMutations,
 } from './mutations/useDocumentMutations';
 
+// Upload Hooks
+export {
+  useDocumentUpload,
+  useBulkDocumentUpload,
+} from './mutations/useDocumentUpload';
+export type { UploadOptions, UploadState } from './mutations/useDocumentUpload.types';
+export { API_BASE_URL } from './mutations/useDocumentUpload.types';
+
 // Composite Hooks
 export {
   useDocumentManagement,
@@ -71,6 +79,21 @@ export {
   useMultipleDocuments,
   documentComposites,
 } from './composites/useDocumentComposites';
+
+// Signature Workflow Hooks
+export {
+  useSignatureWorkflow,
+  useCreateSignatureWorkflow,
+  usePendingSignatures,
+  signatureKeys,
+  fetchWorkflow,
+  createWorkflow,
+  signDocument,
+  declineSignature,
+  cancelWorkflow,
+  sendReminder,
+  fetchPendingSignatures,
+} from './composites/useSignatureWorkflow';
 
 // Domain-specific utilities and constants
 export const DOCUMENTS_DOMAIN = 'documents';

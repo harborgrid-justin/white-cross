@@ -25,17 +25,33 @@ export {
   healthcarePrefetch,
 } from './serverQuery';
 
+// Server action hooks and utilities
+export {
+  useServerQuery,
+  useServerMutation,
+  useServerPaginatedQuery,
+  createQueryKey,
+  prefetchServerQuery,
+  QUERY_DEFAULTS,
+} from './useServerAction';
+
+// Server action types
+export type {
+  ServerActionResult,
+  UseServerQueryOptions,
+  UseServerMutationOptions,
+} from './useServerAction';
+
 // Query client configuration (re-export from config)
 export { getQueryClient, queryClient, invalidateByTags, clearAllData, getCacheStats } from '@/config/queryClient';
 
 // Re-export TanStack Query hooks for convenience
-export {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  useIsFetching,
-  useIsMutating,
-  useSuspenseQuery,
-  useInfiniteQuery,
-  useSuspenseInfiniteQuery,
+export { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+// Re-export TanStack Query types for convenience
+export type {
+  QueryClient,
+  QueryKey,
+  UseQueryResult,
+  UseMutationResult,
 } from '@tanstack/react-query';

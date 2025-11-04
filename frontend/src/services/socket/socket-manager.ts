@@ -11,8 +11,7 @@ import { Socket } from 'socket.io-client';
 import {
   ConnectionState,
   StateChangeListener,
-  ConnectionMetrics,
-  SocketError
+  ConnectionMetrics
 } from './socket.types';
 import { SocketConfig } from './socket.config';
 
@@ -104,7 +103,7 @@ export class SocketConnectionManager {
   /**
    * Handle reconnection with exponential backoff
    */
-  scheduleReconnect(socket: Socket, token: string, reconnectFn: () => void): void {
+  scheduleReconnect(reconnectFn: () => void): void {
     if (!this.config.reconnection.enabled) {
       console.log('[SocketManager] Reconnection disabled');
       return;

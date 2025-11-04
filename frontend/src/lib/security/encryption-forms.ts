@@ -111,7 +111,9 @@ function uint8ArrayToString(arr: Uint8Array): string {
  */
 function uint8ArrayToBase64(arr: Uint8Array): string {
   if (isBrowser()) {
-    return btoa(String.fromCharCode(...arr));
+    // Convert to base64 using Array.from for TypeScript compatibility
+    const binaryString = Array.from(arr).map(byte => String.fromCharCode(byte)).join('');
+    return btoa(binaryString);
   }
 
   return Buffer.from(arr).toString('base64');
@@ -175,7 +177,7 @@ async function importKey(
 
   return crypto.importKey(
     'raw',
-    keyBytes,
+    keyBytes as BufferSource,
     { name: algorithm },
     false,
     ['encrypt', 'decrypt']
@@ -243,14 +245,14 @@ export async function encryptFormData(
 
     // Add additional authenticated data if provided
     if (options.additionalData) {
-      encryptParams.additionalData = stringToUint8Array(options.additionalData);
+      encryptParams.additionalData = stringToUint8Array(options.additionalData) as BufferSource;
     }
 
     // Encrypt
     const encryptedBuffer = await crypto.encrypt(
       encryptParams,
       key,
-      plaintextBytes
+      plaintextBytes as BufferSource
     );
 
     const encryptedBytes = new Uint8Array(encryptedBuffer);
@@ -316,10 +318,10 @@ export async function decryptFormData(
     const decryptedBuffer = await crypto.decrypt(
       {
         name: encryptedData.algorithm,
-        iv: iv,
+        iv: iv as BufferSource,
       },
       key,
-      combined
+      combined as BufferSource
     );
 
     const decryptedBytes = new Uint8Array(decryptedBuffer);
@@ -446,10 +448,10 @@ export async function decryptDocument(
     const decryptedBuffer = await crypto.decrypt(
       {
         name: encryptedData.algorithm,
-        iv: iv,
+        iv: iv as BufferSource,
       },
       key,
-      combined
+      combined as BufferSource
     );
 
     return decryptedBuffer;
@@ -487,7 +489,7 @@ export async function generateUserKey(
     // Import master key
     const importedKey = await crypto.importKey(
       'raw',
-      base64ToUint8Array(masterKey),
+      base64ToUint8Array(masterKey) as BufferSource,
       { name: 'PBKDF2' },
       false,
       ['deriveBits', 'deriveKey']
@@ -500,7 +502,7 @@ export async function generateUserKey(
     const derivedKey = await crypto.deriveKey(
       {
         name: 'PBKDF2',
-        salt: salt,
+        salt: salt as BufferSource,
         iterations: 100000,
         hash: 'SHA-256',
       },

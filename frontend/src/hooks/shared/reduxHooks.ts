@@ -1,6 +1,8 @@
 import { useDispatch, useSelector, TypedUseSelectorHook } from 'react-redux';
 import type { RootState, AppDispatch } from '../reduxStore';
-import { loginUser, registerUser, logoutUser, refreshUser, clearError, setUser } from '../slices/authSlice';
+import { loginUser, registerUser, logoutUser, refreshUser, clearError, setUser } from '../../stores/slices/authSlice';
+import type { LoginCredentials, RegisterData } from '../../services/modules/authApi';
+import type { User } from '../../types';
 import {
   fetchIncidentReports,
   fetchIncidentReportById,
@@ -23,7 +25,7 @@ import {
   resetState,
   invalidateCache,
   optimisticUpdateReport,
-} from '../slices/incidentReportsSlice';
+} from '../../stores/slices/incidentReportsSlice';
 import type {
   IncidentReportFilters,
   IncidentSearchParams,
@@ -32,7 +34,7 @@ import type {
   CreateWitnessStatementRequest,
   CreateFollowUpActionRequest,
   IncidentReport,
-} from '../../types/incidents';
+} from '../../types/domain/incidents';
 
 // =====================
 // BASE TYPED HOOKS
@@ -86,14 +88,14 @@ export const useAuthActions = () => {
   const dispatch = useAppDispatch();
 
   return {
-    login: (credentials: { email: string; password: string }) =>
+    login: (credentials: LoginCredentials) =>
       dispatch(loginUser(credentials)),
-    register: (userData: any) =>
+    register: (userData: RegisterData) =>
       dispatch(registerUser(userData)),
     logout: () => dispatch(logoutUser()),
     refreshUser: () => dispatch(refreshUser()),
     clearError: () => dispatch(clearError()),
-    setUser: (user: any) => dispatch(setUser(user)),
+    setUser: (user: User | null) => dispatch(setUser(user)),
   };
 };
 
@@ -244,8 +246,8 @@ export const useIncidentActions = () => {
     // Error handling
     clearErrors: () =>
       dispatch(clearErrors()),
-    clearError: (errorKey: string) =>
-      dispatch(clearIncidentError(errorKey as any)),
+    clearError: (errorKey: 'list' | 'detail' | 'witnesses' | 'actions' | 'create' | 'update' | 'delete' | 'search') =>
+      dispatch(clearIncidentError(errorKey)),
 
     // Cache management
     resetState: () =>

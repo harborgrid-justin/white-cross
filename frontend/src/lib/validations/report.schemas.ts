@@ -8,8 +8,8 @@ import { z } from 'zod';
  * Date range schema
  */
 export const dateRangeSchema = z.object({
-  start: z.coerce.date(),
-  end: z.coerce.date(),
+  start: z.date().or(z.string().transform((val) => new Date(val))),
+  end: z.date().or(z.string().transform((val) => new Date(val))),
 });
 
 /**
@@ -180,7 +180,7 @@ export const dashboardWidgetSchema = z.object({
     w: z.number().min(1).max(12),
     h: z.number().min(1),
   }),
-  config: z.record(z.any()),
+  config: z.record(z.string(), z.any()),
   refreshInterval: z.number().min(0).optional(),
 });
 
@@ -202,7 +202,7 @@ export const dashboardConfigSchema = z.object({
 export const analyticsQuerySchema = z.object({
   metric: z.string(),
   dimensions: z.array(z.string()).optional(),
-  filters: z.record(z.any()).optional(),
+  filters: z.record(z.string(), z.any()).optional(),
   dateRange: dateRangeSchema,
   granularity: timeGranularitySchema.optional(),
   limit: z.number().min(1).max(1000).optional(),
@@ -264,7 +264,7 @@ export const scheduledReportSchema = z.object({
   ),
   format: exportFormatSchema,
   enabled: z.boolean().default(true),
-  nextRunAt: z.coerce.date().optional(),
+  nextRunAt: z.date().or(z.string().transform((val) => new Date(val))).optional(),
 });
 
 /**

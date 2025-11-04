@@ -25,161 +25,70 @@
  * @since 2025-10-31
  */
 
+// ==========================================
+// CLIENT-SIDE API EXPORTS
+// ==========================================
+
 // Export client-side API functions (safe for Client Components)
-export { 
+export {
   clientFetch,
-  clientGet, 
-  clientPost, 
-  clientPut, 
-  clientPatch, 
+  clientGet,
+  clientPost,
+  clientPut,
+  clientPatch,
   clientDelete,
   apiClient,
-  fetchApi
+  fetchApi,
+  ClientApiError
 } from './client';
 
-// Re-export client functions with server naming for compatibility
-export { 
-  clientGet as serverGet,
-  clientPost as serverPost,
-  clientPut as serverPut,
-  clientPatch as serverPatch,
-  clientDelete as serverDelete,
-  clientFetch as nextFetch
-} from './client';
-
-// Export types
+// Export client types
 export type {
   ClientFetchOptions,
   ApiClientOptions,
   ApiErrorResponse
 } from './client';
 
-// Import for internal use
-import type { ClientFetchOptions } from './client';
+// ==========================================
+// SERVER-SIDE API EXPORTS
+// ==========================================
 
-// Provide stub functions for server-only functions to maintain compatibility
-export function buildCacheTags(
-  resourceType: string,
-  isPHI: boolean = true,
-  additionalTags: string[] = []
-): string[] {
-  const tags: string[] = [resourceType];
-  if (isPHI) {
-    tags.push('phi-data');
-  }
-  return [...tags, ...additionalTags];
-}
+// Re-export Next.js server functions from nextjs-client
+export {
+  nextFetch,
+  serverGet,
+  serverPost,
+  serverPut,
+  serverPatch,
+  serverDelete,
+  buildCacheTags,
+  buildResourceTag,
+  NextApiClientError
+} from './nextjs-client';
 
-export function buildResourceTag(
-  resourceType: string,
-  resourceId: string
-): string {
-  return `${resourceType}-${resourceId}`;
-}
+// Export Next.js server types
+export type {
+  NextFetchOptions,
+  NextCacheConfig,
+  CacheLifeConfig,
+  ApiResponse as NextApiResponse
+} from './nextjs-client';
 
-// Export additional types for compatibility
-export interface NextFetchOptions extends ClientFetchOptions {
-  cache?: RequestCache;
-  next?: {
-    revalidate?: number | false;
-    tags?: string[];
-  };
-}
-
-export interface NextCacheConfig {
-  cache?: RequestCache;
-  next?: {
-    revalidate?: number | false;
-    tags?: string[];
-  };
-}
-
-export interface CacheLifeConfig {
-  ttl: number;
-  stale?: number;
-  max?: number;
-}
-
-export interface ApiResponse<T = unknown> {
-  success: boolean;
-  data: T;
-  message?: string;
-  errors?: Record<string, string[]>;
-}
-
-export interface NextApiClientError extends Error {
-  code?: string;
-  status?: number;
-  details?: unknown;
-  traceId?: string;
-  isNetworkError?: boolean;
-  isServerError?: boolean;
-  isValidationError?: boolean;
-}
-
-// Import all API services
-import * as servicesApi from '@/services/api';
 
 /**
  * Centralized API Actions Hub
- * 
+ *
  * This object provides a single point of access to all API operations
  * organized by domain. Each domain uses the centralized client for
  * consistent behavior across the application.
+ *
+ * @note Service API integrations should be imported directly from their
+ * respective modules when available. This is a placeholder for future
+ * service integrations.
  */
 export const apiActions = {
-  // Authentication & Authorization
-  auth: servicesApi.authApi,
-  
-  // User Management
-  users: servicesApi.usersApi,
-  administration: servicesApi.administrationApi,
-  accessControl: servicesApi.accessControlApi,
-  
-  // Student Management
-  students: servicesApi.studentsApi,
-  studentManagement: servicesApi.studentManagementApi,
-  
-  // Health Records & Medical
-  healthRecords: servicesApi.healthRecordsApi,
-  healthAssessments: servicesApi.healthAssessmentsApi,
-  medications: servicesApi.medicationsApi,
-  
-  // Appointments & Scheduling
-  appointments: servicesApi.appointmentsApi,
-  
-  // Communication & Messaging
-  communication: servicesApi.communicationApi,
-  messages: servicesApi.messagesApi,
-  broadcasts: servicesApi.broadcastsApi,
-  
-  // Emergency & Incidents
-  emergencyContacts: servicesApi.emergencyContactsApi,
-  incidents: servicesApi.incidentsApi,
-  
-  // Documents & Records
-  documents: servicesApi.documentsApi,
-  
-  // Analytics & Reporting
-  analytics: servicesApi.analyticsApi,
-  reports: servicesApi.reportsApi,
-  dashboard: servicesApi.dashboardApi,
-  
-  // Financial Management
-  billing: servicesApi.billingApi,
-  budget: servicesApi.budgetApi,
-  purchaseOrders: servicesApi.purchaseOrderApi,
-  vendors: servicesApi.vendorApi,
-  
-  // Inventory Management
-  inventory: servicesApi.inventoryApi,
-  
-  // Compliance & Audit
-  compliance: servicesApi.complianceApi,
-  audit: servicesApi.auditApi,
-  
-  // System Integration
-  integration: servicesApi.integrationApi,
+  // Placeholder for future service API integrations
+  // Services should be imported from their respective modules as needed
 } as const;
 
 /**
