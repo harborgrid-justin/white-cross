@@ -337,8 +337,8 @@ export function AdminContent({ searchParams }: AdminContentProps) {
     return (
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i}>
+          {['admin-loading-card-1', 'admin-loading-card-2', 'admin-loading-card-3', 'admin-loading-card-4'].map((id) => (
+            <Card key={id}>
               <div className="p-6">
                 <div className="animate-pulse space-y-2">
                   <div className="h-4 bg-gray-200 rounded w-1/2"></div>
@@ -353,8 +353,8 @@ export function AdminContent({ searchParams }: AdminContentProps) {
             <div className="animate-pulse space-y-4">
               <div className="h-6 bg-gray-200 rounded w-1/4"></div>
               <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-16 bg-gray-200 rounded"></div>
+                {['admin-loading-item-1', 'admin-loading-item-2', 'admin-loading-item-3'].map((id) => (
+                  <div key={id} className="h-16 bg-gray-200 rounded"></div>
                 ))}
               </div>
             </div>

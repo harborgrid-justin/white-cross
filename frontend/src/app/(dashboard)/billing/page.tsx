@@ -63,12 +63,12 @@ export default function BillingPage() {
         description="Manage healthcare billing, insurance claims, and financial operations"
         actions={
           <div className="flex space-x-3">
-            <Button variant="secondary">
-              <DollarSign className="h-4 w-4 mr-2" />
+            <Button variant="secondary" aria-label="Process payment for billing">
+              <DollarSign className="h-4 w-4 mr-2" aria-hidden="true" />
               Process Payment
             </Button>
-            <Button variant="default">
-              <Plus className="h-4 w-4 mr-2" />
+            <Button variant="default" aria-label="Create new invoice">
+              <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
               Create Invoice
             </Button>
           </div>

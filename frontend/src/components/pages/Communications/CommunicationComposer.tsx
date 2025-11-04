@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import DOMPurify from 'isomorphic-dompurify';
 import {
   EnvelopeIcon,
   PhoneIcon,
@@ -168,6 +169,7 @@ const CommunicationComposer = ({
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const contentRef = useRef<HTMLTextAreaElement | null>(null);
+  const fileReadersRef = useRef<FileReader[]>([]);
 
   /**
    * Get the appropriate icon for communication type
@@ -270,10 +272,17 @@ const CommunicationComposer = ({
       // Create preview for images
       if (file.type.startsWith('image/')) {
         const reader = new FileReader();
+        fileReadersRef.current.push(reader);
+
         reader.onload = (e: ProgressEvent<FileReader>) => {
           attachment.preview = e.target?.result as string;
           setAttachments(prev => prev.map(a => a.id === attachment.id ? attachment : a));
         };
+
+        reader.onerror = () => {
+          console.error('Failed to read file:', file.name);
+        };
+
         reader.readAsDataURL(file);
       }
 
@@ -377,7 +386,7 @@ const CommunicationComposer = ({
   /**
    * Handle save draft
    */
-  const handleSaveDraft = () => {
+  const handleSaveDraft = useCallback(() => {
     setIsDraft(true);
     onSaveDraft?.({
       type: communicationType,
@@ -389,7 +398,22 @@ const CommunicationComposer = ({
       scheduledAt: scheduledAt || undefined,
       tags
     });
-  };
+  }, [communicationType, recipients, subject, content, priority, attachments, scheduledAt, tags, onSaveDraft]);
+
+  /**
+   * Cleanup file readers on unmount
+   */
+  useEffect(() => {
+    return () => {
+      // Abort all pending file readers
+      fileReadersRef.current.forEach(reader => {
+        if (reader.readyState === FileReader.LOADING) {
+          reader.abort();
+        }
+      });
+      fileReadersRef.current = [];
+    };
+  }, []);
 
   /**
    * Auto-save draft
@@ -402,7 +426,7 @@ const CommunicationComposer = ({
     }, 30000); // Auto-save every 30 seconds
 
     return () => clearTimeout(timer);
-  }, [subject, content, recipients, isDraft]);
+  }, [subject, content, recipients.length, isDraft, handleSaveDraft]);
 
   return (
     <div className={`bg-white border border-gray-200 rounded-lg shadow-sm ${className}`}>
@@ -634,7 +658,14 @@ const CommunicationComposer = ({
           {showPreview ? (
             <div className="min-h-32 p-3 border border-gray-300 rounded-md bg-gray-50">
               <div className="prose max-w-none">
-                <div dangerouslySetInnerHTML={{ __html: content.replace(/\n/g, '<br>') }} />
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: DOMPurify.sanitize(content.replace(/\n/g, '<br>'), {
+                      ALLOWED_TAGS: ['br', 'p', 'b', 'i', 'u', 'strong', 'em'],
+                      ALLOWED_ATTR: []
+                    })
+                  }}
+                />
               </div>
             </div>
           ) : (

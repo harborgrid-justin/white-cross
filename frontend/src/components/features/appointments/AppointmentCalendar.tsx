@@ -75,7 +75,7 @@ interface AppointmentCalendarProps {
 // COMPONENT
 // ==========================================
 
-export default function AppointmentCalendar({
+const AppointmentCalendar = React.memo(function AppointmentCalendar({
   appointments,
   initialView = 'timeGridWeek',
   editable = true,
@@ -391,7 +391,9 @@ export default function AppointmentCalendar({
       `}</style>
     </div>
   );
-}
+});
+
+export default AppointmentCalendar;
 
 // ==========================================
 // USAGE EXAMPLE

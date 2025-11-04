@@ -58,8 +58,8 @@
 
 'use client';
 
-import { useState } from 'react';
-import { IncidentTrendChart } from '@/components/analytics/IncidentTrendChart';
+import { useState, Suspense } from 'react';
+import { LazyIncidentTrendChart, ChartSkeleton } from '@/components/lazy';
 import { DataExporter } from '@/components/analytics/DataExporter';
 import { Download, Filter, RefreshCw } from 'lucide-react';
 
@@ -238,12 +238,14 @@ export default function IncidentTrendsPage() {
         />
       )}
 
-      <IncidentTrendChart
-        data={trendData}
-        view={view}
-        chartType={chartType}
-        title="Incident Trends Over Time"
-      />
+      <Suspense fallback={<ChartSkeleton />}>
+        <LazyIncidentTrendChart
+          data={trendData}
+          view={view}
+          chartType={chartType}
+          title="Incident Trends Over Time"
+        />
+      </Suspense>
     </div>
   );
 }

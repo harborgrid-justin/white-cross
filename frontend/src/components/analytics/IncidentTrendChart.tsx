@@ -4,6 +4,7 @@
 
 'use client';
 
+import React from 'react';
 import {
   LineChart,
   Line,
@@ -40,7 +41,7 @@ interface IncidentTrendChartProps {
   title?: string;
 }
 
-export function IncidentTrendChart({
+export const IncidentTrendChart = React.memo(function IncidentTrendChart({
   data,
   view = 'total',
   chartType = 'line',
@@ -235,4 +236,4 @@ export function IncidentTrendChart({
       </div>
     </div>
   );
-}
+});

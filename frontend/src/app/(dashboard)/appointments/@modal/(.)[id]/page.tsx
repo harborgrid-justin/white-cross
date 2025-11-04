@@ -158,11 +158,11 @@ export default async function ModalAppointmentPage({ params }: ModalAppointmentP
   };
 
   return (
-    <Modal defaultOpen>
+    <Modal defaultOpen ariaLabelledBy="appointment-modal-title">
       <Card className="w-full max-w-2xl mx-auto">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Appointment Details</CardTitle>
+            <CardTitle id="appointment-modal-title">Appointment Details</CardTitle>
             <div className="flex gap-2">
               <StatusBadge status={appointment.status} />
               <PriorityBadge priority={appointment.priority} />

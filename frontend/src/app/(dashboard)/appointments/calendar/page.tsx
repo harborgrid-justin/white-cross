@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { PageHeader } from '@/components/layouts/PageHeader';
 import { Container } from '@/components/layouts/Container';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AppointmentCalendar } from '@/components/features/appointments';
+import { LazyAppointmentCalendar, CalendarSkeleton } from '@/components/lazy';
 import { Skeleton } from '@/components/ui/skeleton';
 import { API_ENDPOINTS } from '@/constants/api';
 import { revalidateTag, unstable_cache } from 'next/cache';
@@ -272,18 +272,20 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <AppointmentCalendar
-                  appointments={appointments}
-                  initialView={view}
-                  editable={true}
-                  selectable={true}
-                  showWeekends={false}
-                  workingHours={{
-                    start: '08:00',
-                    end: '17:00',
-                    daysOfWeek: [1, 2, 3, 4, 5],
-                  }}
-                />
+                <Suspense fallback={<CalendarSkeleton />}>
+                  <LazyAppointmentCalendar
+                    appointments={appointments}
+                    initialView={view}
+                    editable={true}
+                    selectable={true}
+                    showWeekends={false}
+                    workingHours={{
+                      start: '08:00',
+                      end: '17:00',
+                      daysOfWeek: [1, 2, 3, 4, 5],
+                    }}
+                  />
+                </Suspense>
               </CardContent>
             </Card>
           )}

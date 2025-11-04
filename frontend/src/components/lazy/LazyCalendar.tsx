@@ -63,7 +63,7 @@ const CalendarLoadingFallback = () => (
  * Primary calendar component for appointment scheduling
  */
 export const LazyAppointmentCalendar = dynamic(
-  () => import('@/components/appointments/AppointmentCalendar').then((mod) => mod.default),
+  () => import('@/components/features/appointments/AppointmentCalendar').then((mod) => mod.default),
   {
     loading: () => <CalendarLoadingFallback />,
     ssr: false, // Calendar is interactive and doesn't benefit from SSR

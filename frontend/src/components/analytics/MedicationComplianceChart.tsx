@@ -4,6 +4,7 @@
 
 'use client';
 
+import React from 'react';
 import {
   PieChart,
   Pie,
@@ -33,7 +34,7 @@ interface MedicationComplianceChartProps {
   title?: string;
 }
 
-export function MedicationComplianceChart({
+export const MedicationComplianceChart = React.memo(function MedicationComplianceChart({
   data,
   trendData,
   title = 'Medication Compliance',
@@ -157,4 +158,4 @@ export function MedicationComplianceChart({
       </div>
     </div>
   );
-}
+});

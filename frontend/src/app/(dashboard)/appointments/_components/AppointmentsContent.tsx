@@ -73,6 +73,8 @@ const AppointmentsContent: React.FC<AppointmentsContentProps> = ({
 
   // Load appointments
   useEffect(() => {
+    let cancelled = false;
+
     const loadAppointments = async () => {
       setLoading(true);
       try {
@@ -80,21 +82,34 @@ const AppointmentsContent: React.FC<AppointmentsContentProps> = ({
           dateFrom: selectedDate.toISOString().split('T')[0],
           dateTo: new Date(selectedDate.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
         };
-        
+
         if (statusFilter !== 'all') filters.status = statusFilter;
         if (typeFilter !== 'all') filters.type = typeFilter;
-        
+
         const result = await getAppointments(filters);
-        setAppointments(result.appointments);
+
+        // Only update state if component is still mounted
+        if (!cancelled) {
+          setAppointments(result.appointments);
+        }
       } catch (error) {
-        console.error('Failed to load appointments:', error);
-        setAppointments([]);
+        if (!cancelled) {
+          console.error('Failed to load appointments:', error);
+          setAppointments([]);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
 
     loadAppointments();
+
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      cancelled = true;
+    };
   }, [selectedDate, statusFilter, typeFilter]);
 
   // Set initial appointments
@@ -271,12 +286,23 @@ const AppointmentsContent: React.FC<AppointmentsContentProps> = ({
     setCurrentWeek(newWeek);
   };
 
+  // Generate stable loading skeleton keys
+  const loadingStatsCards = useMemo(() =>
+    Array.from({ length: 4 }, (_, i) => ({ id: `loading-stats-${i}` })),
+    []
+  );
+
+  const loadingListItems = useMemo(() =>
+    Array.from({ length: 6 }, (_, i) => ({ id: `loading-item-${i}` })),
+    []
+  );
+
   if (loading) {
     return (
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-4">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i}>
+          {loadingStatsCards.map((card) => (
+            <Card key={card.id}>
               <div className="p-4 animate-pulse">
                 <div className="h-4 bg-gray-200 rounded mb-2"></div>
                 <div className="h-8 bg-gray-200 rounded"></div>
@@ -288,8 +314,8 @@ const AppointmentsContent: React.FC<AppointmentsContentProps> = ({
           <div className="p-6 animate-pulse">
             <div className="h-6 bg-gray-200 rounded mb-4"></div>
             <div className="space-y-3">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="h-16 bg-gray-200 rounded"></div>
+              {loadingListItems.map((item) => (
+                <div key={item.id} className="h-16 bg-gray-200 rounded"></div>
               ))}
             </div>
           </div>

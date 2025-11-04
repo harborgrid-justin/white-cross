@@ -480,7 +480,7 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Available Times</h3>
           <div className="text-center py-8 text-gray-500">
-            <Clock size={48} className="mx-auto mb-3 text-gray-300" />
+            <Clock size={48} className="mx-auto mb-3 text-gray-300" aria-hidden="true" />
             <p>Select a provider and date to view available times</p>
           </div>
         </div>
@@ -492,18 +492,18 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-medium text-gray-900">Available Times</h3>
           {loading && (
-            <RefreshCw size={20} className="text-blue-500 animate-spin" />
+            <RefreshCw size={20} className="text-blue-500 animate-spin" aria-hidden="true" />
           )}
         </div>
 
         {loading ? (
-          <div className="text-center py-8 text-gray-500">
-            <Clock size={48} className="mx-auto mb-3 text-gray-300" />
+          <div className="text-center py-8 text-gray-500" role="status" aria-live="polite">
+            <Clock size={48} className="mx-auto mb-3 text-gray-300" aria-hidden="true" />
             <p>Loading available times...</p>
           </div>
         ) : availableTimeSlots.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
-            <Clock size={48} className="mx-auto mb-3 text-gray-300" />
+            <Clock size={48} className="mx-auto mb-3 text-gray-300" aria-hidden="true" />
             <p>No available times for the selected date</p>
           </div>
         ) : (
@@ -568,19 +568,19 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({
             <button
               onClick={handleSchedule}
               disabled={!isFormValid() || saving}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent 
-                       rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent
+                       rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2
                        focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed
                        inline-flex items-center"
             >
               {saving ? (
                 <>
-                  <RefreshCw size={16} className="mr-2 animate-spin" />
+                  <RefreshCw size={16} className="mr-2 animate-spin" aria-hidden="true" />
                   Scheduling...
                 </>
               ) : (
                 <>
-                  <Save size={16} className="mr-2" />
+                  <Save size={16} className="mr-2" aria-hidden="true" />
                   Schedule Appointment
                 </>
               )}
@@ -601,19 +601,25 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({
           {/* Patient Selection */}
           {showPatientSelection && (
             <div className="bg-white border border-gray-200 rounded-lg p-4">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Patient</h3>
-              
+              <h3 className="text-lg font-medium text-gray-900 mb-4" id="patient-selection-label">Patient</h3>
+
               <div className="relative">
                 <div className="relative">
-                  <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                  <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" aria-hidden="true" />
+                  <label htmlFor="patient-search-input" className="sr-only">Search for a patient</label>
                   <input
                     type="text"
+                    id="patient-search-input"
                     placeholder="Search patients..."
                     value={patientSearchQuery}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => handlePatientSearch(e.target.value)}
                     onFocus={() => setShowPatientSearch(true)}
-                    className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md 
+                    className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md
                              focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    aria-labelledby="patient-selection-label"
+                    aria-autocomplete="list"
+                    aria-controls="patient-search-results"
+                    aria-expanded={showPatientSearch && (patientSearchResults.length > 0 || patients.length > 0)}
                   />
                   {patientSearchQuery && (
                     <button
@@ -623,15 +629,21 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({
                         setShowPatientSearch(false);
                       }}
                       className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                      aria-label="Clear patient search"
                     >
-                      <X size={16} />
+                      <X size={16} aria-hidden="true" />
                     </button>
                   )}
                 </div>
 
                 {/* Patient Search Results */}
                 {showPatientSearch && (patientSearchResults.length > 0 || patients.length > 0) && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                  <div
+                    id="patient-search-results"
+                    className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto"
+                    role="listbox"
+                    aria-label="Patient search results"
+                  >
                     {(patientSearchResults.length > 0 ? patientSearchResults : patients.slice(0, 10)).map((patient) => (
                       <button
                         key={patient.id}
@@ -641,19 +653,21 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({
                           setShowPatientSearch(false);
                           onPatientChange?.(patient.id);
                         }}
-                        className="w-full text-left px-4 py-3 hover:bg-gray-50 focus:bg-gray-50 
+                        className="w-full text-left px-4 py-3 hover:bg-gray-50 focus:bg-gray-50
                                  focus:outline-none border-b border-gray-100 last:border-b-0"
+                        role="option"
+                        aria-selected={selectedPatient === patient.id}
                       >
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                             {patient.avatar ? (
                               <img
                                 src={patient.avatar}
-                                alt={patient.name}
+                                alt=""
                                 className="w-8 h-8 rounded-full object-cover"
                               />
                             ) : (
-                              <User size={16} className="text-blue-600" />
+                              <User size={16} className="text-blue-600" aria-hidden="true" />
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
@@ -679,11 +693,11 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({
                       {getSelectedPatient()?.avatar ? (
                         <img
                           src={getSelectedPatient()?.avatar}
-                          alt={getSelectedPatient()?.name}
+                          alt=""
                           className="w-10 h-10 rounded-full object-cover"
                         />
                       ) : (
-                        <User size={20} className="text-blue-600" />
+                        <User size={20} className="text-blue-600" aria-hidden="true" />
                       )}
                     </div>
                     <div className="flex-1">
@@ -708,19 +722,25 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({
           {/* Provider Selection */}
           {showProviderSelection && (
             <div className="bg-white border border-gray-200 rounded-lg p-4">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Provider</h3>
-              
+              <h3 className="text-lg font-medium text-gray-900 mb-4" id="provider-selection-label">Provider</h3>
+
               <div className="relative">
                 <div className="relative">
-                  <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                  <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" aria-hidden="true" />
+                  <label htmlFor="provider-search-input" className="sr-only">Search for a provider</label>
                   <input
                     type="text"
+                    id="provider-search-input"
                     placeholder="Search providers..."
                     value={providerSearchQuery}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleProviderSearch(e.target.value)}
                     onFocus={() => setShowProviderSearch(true)}
-                    className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md 
+                    className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md
                              focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    aria-labelledby="provider-selection-label"
+                    aria-autocomplete="list"
+                    aria-controls="provider-search-results"
+                    aria-expanded={showProviderSearch && (providerSearchResults.length > 0 || providers.length > 0)}
                   />
                   {providerSearchQuery && (
                     <button
@@ -730,15 +750,21 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({
                         setShowProviderSearch(false);
                       }}
                       className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                      aria-label="Clear provider search"
                     >
-                      <X size={16} />
+                      <X size={16} aria-hidden="true" />
                     </button>
                   )}
                 </div>
 
                 {/* Provider Search Results */}
                 {showProviderSearch && (providerSearchResults.length > 0 || providers.length > 0) && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                  <div
+                    id="provider-search-results"
+                    className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto"
+                    role="listbox"
+                    aria-label="Provider search results"
+                  >
                     {(providerSearchResults.length > 0 ? providerSearchResults : providers.slice(0, 10)).map((provider) => (
                       <button
                         key={provider.id}
@@ -747,19 +773,21 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({
                           setProviderSearchQuery(provider.name);
                           setShowProviderSearch(false);
                         }}
-                        className="w-full text-left px-4 py-3 hover:bg-gray-50 focus:bg-gray-50 
+                        className="w-full text-left px-4 py-3 hover:bg-gray-50 focus:bg-gray-50
                                  focus:outline-none border-b border-gray-100 last:border-b-0"
+                        role="option"
+                        aria-selected={selectedProvider === provider.id}
                       >
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                             {provider.avatar ? (
                               <img
                                 src={provider.avatar}
-                                alt={provider.name}
+                                alt=""
                                 className="w-8 h-8 rounded-full object-cover"
                               />
                             ) : (
-                              <Stethoscope size={16} className="text-green-600" />
+                              <Stethoscope size={16} className="text-green-600" aria-hidden="true" />
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
@@ -785,11 +813,11 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({
                       {getSelectedProvider()?.avatar ? (
                         <img
                           src={getSelectedProvider()?.avatar}
-                          alt={getSelectedProvider()?.name}
+                          alt=""
                           className="w-10 h-10 rounded-full object-cover"
                         />
                       ) : (
-                        <Stethoscope size={20} className="text-green-600" />
+                        <Stethoscope size={20} className="text-green-600" aria-hidden="true" />
                       )}
                     </div>
                     <div className="flex-1">
@@ -833,7 +861,7 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({
                         className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                       />
                       <span className="ml-2 text-sm text-gray-700 flex items-center">
-                        <MapPin size={16} className="mr-1" />
+                        <MapPin size={16} className="mr-1" aria-hidden="true" />
                         In-Person
                       </span>
                     </label>
@@ -849,7 +877,7 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({
                         className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                       />
                       <span className="ml-2 text-sm text-gray-700 flex items-center">
-                        <Video size={16} className="mr-1" />
+                        <Video size={16} className="mr-1" aria-hidden="true" />
                         Virtual
                       </span>
                     </label>
@@ -860,15 +888,17 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({
               {/* Room Selection (for in-person appointments) */}
               {!isVirtual && showRoomSelection && (
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  <label htmlFor="room-select" className="text-sm font-medium text-gray-700 mb-2 block">
                     Room
                   </label>
                   <select
+                    id="room-select"
                     value={selectedRoom}
                     onChange={(e) => setSelectedRoom(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md 
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md
                              focus:ring-blue-500 focus:border-blue-500 text-sm"
                     required={!isVirtual}
+                    aria-required={!isVirtual}
                   >
                     <option value="">Select a room...</option>
                     {rooms.filter(room => !room.isVirtual).map((room) => (
@@ -882,13 +912,14 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({
 
               {/* Appointment Type */}
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                <label htmlFor="appointment-type-select" className="text-sm font-medium text-gray-700 mb-2 block">
                   Type
                 </label>
                 <select
+                  id="appointment-type-select"
                   value={appointmentType}
                   onChange={(e) => setAppointmentType(e.target.value as AppointmentType)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md 
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md
                            focus:ring-blue-500 focus:border-blue-500 text-sm"
                 >
                   <option value="consultation">Consultation</option>
@@ -906,13 +937,14 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({
 
               {/* Priority */}
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                <label htmlFor="appointment-priority-select" className="text-sm font-medium text-gray-700 mb-2 block">
                   Priority
                 </label>
                 <select
+                  id="appointment-priority-select"
                   value={appointmentPriority}
                   onChange={(e) => setAppointmentPriority(e.target.value as AppointmentPriority)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md 
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md
                            focus:ring-blue-500 focus:border-blue-500 text-sm"
                 >
                   <option value="low">Low</option>
@@ -924,48 +956,52 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({
 
               {/* Duration */}
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                <label htmlFor="appointment-duration-input" className="text-sm font-medium text-gray-700 mb-2 block">
                   Duration (minutes)
                 </label>
                 <input
                   type="number"
+                  id="appointment-duration-input"
                   min={minDuration}
                   max={maxDuration}
                   step={15}
                   value={duration}
                   onChange={(e) => setDuration(parseInt(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md 
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md
                            focus:ring-blue-500 focus:border-blue-500 text-sm"
                 />
               </div>
 
               {/* Reason */}
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                <label htmlFor="appointment-reason-input" className="text-sm font-medium text-gray-700 mb-2 block">
                   Reason for Visit *
                 </label>
                 <input
                   type="text"
+                  id="appointment-reason-input"
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   placeholder="Enter reason for appointment..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md 
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md
                            focus:ring-blue-500 focus:border-blue-500 text-sm"
                   required
+                  aria-required="true"
                 />
               </div>
 
               {/* Notes */}
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                <label htmlFor="appointment-notes-textarea" className="text-sm font-medium text-gray-700 mb-2 block">
                   Notes
                 </label>
                 <textarea
+                  id="appointment-notes-textarea"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Additional notes..."
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md 
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md
                            focus:ring-blue-500 focus:border-blue-500 text-sm"
                 />
               </div>
@@ -996,21 +1032,21 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({
                           const newInstructions = preparationInstructions.filter((_, i) => i !== index);
                           setPreparationInstructions(newInstructions);
                         }}
-                        className="p-2 text-red-400 hover:text-red-600 focus:outline-none 
+                        className="p-2 text-red-400 hover:text-red-600 focus:outline-none
                                  focus:ring-2 focus:ring-red-500 rounded-md"
-                        aria-label="Remove instruction"
+                        aria-label={`Remove preparation instruction ${index + 1}`}
                       >
-                        <X size={16} />
+                        <X size={16} aria-hidden="true" />
                       </button>
                     </div>
                   ))}
                   <button
                     type="button"
                     onClick={() => setPreparationInstructions([...preparationInstructions, ''])}
-                    className="flex items-center text-sm text-blue-600 hover:text-blue-700 
+                    className="flex items-center text-sm text-blue-600 hover:text-blue-700
                              focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md"
                   >
-                    <Plus size={16} className="mr-1" />
+                    <Plus size={16} className="mr-1" aria-hidden="true" />
                     Add instruction
                   </button>
                 </div>
