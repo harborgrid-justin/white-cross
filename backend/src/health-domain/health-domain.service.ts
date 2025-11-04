@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/commo
 import {
   HealthDomainCreateRecordDto,
   HealthDomainUpdateRecordDto,
-  CreateAllergyDto,
+  HealthDomainCreateAllergyDto,
   HealthDomainUpdateAllergyDto,
   CreateImmunizationDto,
   UpdateImmunizationDto,
@@ -121,7 +121,7 @@ export class HealthDomainService {
    * Allergies Operations
    * Delegates to AllergyService from health-record module
    */
-  async createAllergy(data: CreateAllergyDto): Promise<any> {
+  async createAllergy(data: HealthDomainCreateAllergyDto): Promise<any> {
     // Delegate to existing AllergyService (user context would come from request)
     const mockUser = { id: 'system', role: 'admin' };
     return this.allergyService.create(data, mockUser);

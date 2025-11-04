@@ -156,19 +156,6 @@ async function getFilteredAppointments(filters: {
   }
 }
 
-function CalendarSkeleton() {
-  return (
-    <Card>
-      <CardHeader>
-        <Skeleton className="h-8 w-48" />
-      </CardHeader>
-      <CardContent>
-        <Skeleton className="h-96 w-full" />
-      </CardContent>
-    </Card>
-  );
-}
-
 /**
  * Error Boundary Component for Calendar
  */
@@ -312,5 +299,3 @@ export const metadata = {
   title: 'Appointments Calendar',
   description: 'View and manage appointments in calendar format',
 };
-
-

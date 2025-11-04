@@ -29,6 +29,8 @@ import {
   Filter,
   Search
 } from 'lucide-react';
+import { getMessages } from '@/lib/actions/communications.actions';
+import { type Message } from '@/lib/validations/message.schemas';
 
 interface CommunicationsContentProps {
   searchParams: {
@@ -44,36 +46,6 @@ interface CommunicationsContentProps {
   };
 }
 
-interface Message {
-  id: string;
-  subject: string;
-  content: string;
-  type: 'EMAIL' | 'SMS' | 'PUSH_NOTIFICATION' | 'BROADCAST' | 'EMERGENCY' | 'REMINDER';
-  status: 'DRAFT' | 'SENT' | 'DELIVERED' | 'READ' | 'FAILED' | 'SCHEDULED';
-  priority: 'HIGH' | 'MEDIUM' | 'LOW' | 'URGENT';
-  sender: {
-    id: string;
-    name: string;
-    role: string;
-    avatar?: string;
-  };
-  recipients: {
-    id: string;
-    name: string;
-    type: 'PARENT' | 'GUARDIAN' | 'STUDENT' | 'STAFF' | 'EMERGENCY_CONTACT';
-    email?: string;
-    phone?: string;
-    status: 'SENT' | 'DELIVERED' | 'READ' | 'FAILED';
-  }[];
-  sentAt: string;
-  readAt?: string;
-  scheduledFor?: string;
-  isEmergency: boolean;
-  hasAttachments: boolean;
-  threadId?: string;
-  replyToId?: string;
-  tags: string[];
-}
 
 interface CommunicationStats {
   totalMessages: number;
@@ -86,181 +58,45 @@ interface CommunicationStats {
   averageResponseTime: number;
 }
 
-// Mock data for demonstration
-const mockMessages: Message[] = [
-  {
-    id: '1',
-    subject: 'EMERGENCY: Student Injury - John Doe',
-    content: 'Student John Doe has sustained a minor injury during recess. Parents have been contacted and student is being monitored in the health office.',
-    type: 'EMERGENCY',
-    status: 'SENT',
-    priority: 'URGENT',
-    sender: {
-      id: '1',
-      name: 'Sarah Johnson',
-      role: 'School Nurse'
-    },
-    recipients: [
-      {
-        id: '1',
-        name: 'Mary Doe',
-        type: 'PARENT',
-        email: 'mary.doe@example.com',
-        phone: '+1-555-0101',
-        status: 'READ'
-      },
-      {
-        id: '2',
-        name: 'Principal Smith',
-        type: 'STAFF',
-        email: 'principal@school.edu',
-        status: 'DELIVERED'
-      }
-    ],
-    sentAt: '2024-02-01T14:30:00Z',
-    readAt: '2024-02-01T14:32:00Z',
-    isEmergency: true,
-    hasAttachments: false,
-    tags: ['injury', 'emergency', 'parent-contact']
-  },
-  {
-    id: '2',
-    subject: 'Medication Reminder - Emma Wilson',
-    content: 'Reminder: Emma Wilson needs to take her daily medication at 12:00 PM. Please ensure she comes to the health office.',
-    type: 'REMINDER',
-    status: 'DELIVERED',
-    priority: 'HIGH',
-    sender: {
-      id: '1',
-      name: 'Sarah Johnson',
-      role: 'School Nurse'
-    },
-    recipients: [
-      {
-        id: '3',
-        name: 'Emma Wilson',
-        type: 'STUDENT',
-        status: 'DELIVERED'
-      },
-      {
-        id: '4',
-        name: 'Teacher Adams',
-        type: 'STAFF',
-        email: 'adams@school.edu',
-        status: 'READ'
-      }
-    ],
-    sentAt: '2024-02-01T11:45:00Z',
-    isEmergency: false,
-    hasAttachments: false,
-    tags: ['medication', 'reminder', 'daily']
-  },
-  {
-    id: '3',
-    subject: 'Health Screening Results Available',
-    content: 'Annual health screening results are now available in the parent portal. Please review and contact us with any questions.',
-    type: 'EMAIL',
-    status: 'SENT',
-    priority: 'MEDIUM',
-    sender: {
-      id: '1',
-      name: 'Sarah Johnson',
-      role: 'School Nurse'
-    },
-    recipients: [
-      {
-        id: '5',
-        name: 'All Parents Group',
-        type: 'PARENT',
-        status: 'SENT'
-      }
-    ],
-    sentAt: '2024-02-01T09:00:00Z',
-    isEmergency: false,
-    hasAttachments: true,
-    tags: ['health-screening', 'results', 'annual']
-  },
-  {
-    id: '4',
-    subject: 'Flu Season Prevention Tips',
-    content: 'With flu season approaching, here are some important prevention tips to keep our school community healthy...',
-    type: 'BROADCAST',
-    status: 'SCHEDULED',
-    priority: 'MEDIUM',
-    sender: {
-      id: '1',
-      name: 'Sarah Johnson',
-      role: 'School Nurse'
-    },
-    recipients: [
-      {
-        id: '6',
-        name: 'All Families',
-        type: 'PARENT',
-        status: 'SENT'
-      }
-    ],
-    sentAt: '2024-02-01T08:00:00Z',
-    scheduledFor: '2024-02-02T08:00:00Z',
-    isEmergency: false,
-    hasAttachments: false,
-    tags: ['flu-season', 'prevention', 'health-tips']
-  }
-];
-
-const mockStats: CommunicationStats = {
-  totalMessages: 1247,
-  sentToday: 23,
-  deliveredCount: 1198,
-  readCount: 956,
-  failedCount: 12,
-  emergencyCount: 5,
-  scheduledCount: 8,
-  averageResponseTime: 145 // minutes
-};
 
 function getStatusBadgeVariant(status: string) {
-  switch (status) {
-    case 'SENT': return 'success';
-    case 'DELIVERED': return 'info';
-    case 'READ': return 'success';
-    case 'FAILED': return 'danger';
-    case 'DRAFT': return 'secondary';
-    case 'SCHEDULED': return 'warning';
+  switch (status.toLowerCase()) {
+    case 'sent': return 'default';
+    case 'delivered': return 'secondary';
+    case 'read': return 'default';
+    case 'failed': return 'destructive';
+    case 'draft': return 'secondary';
+    case 'scheduled': return 'outline';
+    case 'archived': return 'outline';
+    case 'deleted': return 'destructive';
     default: return 'secondary';
   }
 }
 
 function getPriorityBadgeVariant(priority: string) {
-  switch (priority) {
-    case 'URGENT': return 'danger';
-    case 'HIGH': return 'warning';
-    case 'MEDIUM': return 'info';
-    case 'LOW': return 'secondary';
+  switch (priority.toLowerCase()) {
+    case 'urgent': return 'destructive';
+    case 'high': return 'destructive';
+    case 'normal': return 'secondary';
+    case 'low': return 'outline';
     default: return 'secondary';
   }
 }
 
 function getTypeIcon(type: string) {
-  switch (type) {
-    case 'EMAIL': return Mail;
-    case 'SMS': return Phone;
-    case 'PUSH_NOTIFICATION': return Bell;
-    case 'BROADCAST': return Megaphone;
-    case 'EMERGENCY': return AlertTriangle;
-    case 'REMINDER': return Clock;
+  switch (type.toLowerCase()) {
+    case 'direct': return MessageCircle;
+    case 'group': return Users;
+    case 'system': return Bell;
     default: return MessageCircle;
   }
 }
 
 function getTypeColor(type: string) {
-  switch (type) {
-    case 'EMAIL': return 'text-blue-600';
-    case 'SMS': return 'text-green-600';
-    case 'PUSH_NOTIFICATION': return 'text-purple-600';
-    case 'BROADCAST': return 'text-orange-600';
-    case 'EMERGENCY': return 'text-red-600';
-    case 'REMINDER': return 'text-yellow-600';
+  switch (type.toLowerCase()) {
+    case 'direct': return 'text-blue-600';
+    case 'group': return 'text-green-600';
+    case 'system': return 'text-purple-600';
     default: return 'text-gray-600';
   }
 }
@@ -272,14 +108,88 @@ export function CommunicationsContent({ searchParams }: CommunicationsContentPro
   // const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    // Simulate API call
-    const timer = setTimeout(() => {
-      setMessages(mockMessages);
-      setStats(mockStats);
-      setLoading(false);
-    }, 800);
+    const loadData = async () => {
+      try {
+        setLoading(true);
 
-    return () => clearTimeout(timer);
+        // Load messages with filters from searchParams
+        const page = searchParams.page ? parseInt(searchParams.page) : 1;
+        const limit = searchParams.limit ? parseInt(searchParams.limit) : 10;
+        const messageFilter = {
+          limit,
+          offset: (page - 1) * limit,
+          search: searchParams.search,
+          type: searchParams.type as 'direct' | 'group' | 'system' | undefined,
+          status: searchParams.status as 'draft' | 'sent' | 'delivered' | 'read' | 'archived' | 'deleted' | undefined,
+          priority: searchParams.priority as 'low' | 'normal' | 'high' | 'urgent' | undefined,
+          sortBy: (searchParams.sortBy as 'priority' | 'subject' | 'sentAt' | 'createdAt') || 'createdAt',
+          sortOrder: (searchParams.sortOrder as 'asc' | 'desc') || 'desc'
+        };
+
+        const messagesResponse = await getMessages(messageFilter);
+        
+        if (messagesResponse.success && messagesResponse.data) {
+          setMessages(messagesResponse.data.messages);
+          
+          // Calculate stats from real data
+          const messagesList = messagesResponse.data.messages;
+          const totalMessages = messagesResponse.data.total;
+          const today = new Date().toDateString();
+          
+          const calculatedStats: CommunicationStats = {
+            totalMessages,
+            sentToday: messagesList.filter(m => 
+              new Date(m.sentAt || m.createdAt).toDateString() === today
+            ).length,
+            deliveredCount: messagesList.filter(m => 
+              m.status === 'delivered'
+            ).length,
+            readCount: messagesList.filter(m => 
+              m.status === 'read'
+            ).length,
+            failedCount: 0, // No 'failed' status in current schema
+            emergencyCount: messagesList.filter(m => 
+              m.priority === 'urgent'
+            ).length,
+            scheduledCount: 0, // scheduledFor not available in current Message schema
+            averageResponseTime: 145 // This would need to be calculated from actual response data
+          };
+          
+          setStats(calculatedStats);
+        } else {
+          console.error('Failed to load messages:', messagesResponse.error);
+          // Set empty state
+          setMessages([]);
+          setStats({
+            totalMessages: 0,
+            sentToday: 0,
+            deliveredCount: 0,
+            readCount: 0,
+            failedCount: 0,
+            emergencyCount: 0,
+            scheduledCount: 0,
+            averageResponseTime: 0
+          });
+        }
+      } catch (error) {
+        console.error('Error loading communications data:', error);
+        setMessages([]);
+        setStats({
+          totalMessages: 0,
+          sentToday: 0,
+          deliveredCount: 0,
+          readCount: 0,
+          failedCount: 0,
+          emergencyCount: 0,
+          scheduledCount: 0,
+          averageResponseTime: 0
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
   }, [searchParams]);
 
   // Future enhancement: Message selection handlers
@@ -454,12 +364,13 @@ export function CommunicationsContent({ searchParams }: CommunicationsContentPro
           <div className="space-y-4">
             {messages.map((message) => {
               const TypeIcon = getTypeIcon(message.type);
+              const isEmergency = message.priority === 'urgent';
               
               return (
                 <div 
                   key={message.id}
                   className={`p-4 border rounded-lg transition-all hover:shadow-sm ${
-                    message.isEmergency ? 'border-red-200 bg-red-50' : 'border-gray-200 hover:bg-gray-50'
+                    isEmergency ? 'border-red-200 bg-red-50' : 'border-gray-200 hover:bg-gray-50'
                   }`}
                 >
                   <div className="flex items-start justify-between">
@@ -467,9 +378,9 @@ export function CommunicationsContent({ searchParams }: CommunicationsContentPro
                       <div className="flex items-center gap-3 mb-2">
                         <TypeIcon className={`h-5 w-5 ${getTypeColor(message.type)}`} />
                         <h4 className={`text-lg font-medium ${
-                          message.isEmergency ? 'text-red-900' : 'text-gray-900'
+                          isEmergency ? 'text-red-900' : 'text-gray-900'
                         }`}>
-                          {message.subject}
+                          {message.subject || 'No Subject'}
                         </h4>
                         <Badge variant={getStatusBadgeVariant(message.status)} className="text-xs">
                           {message.status}
@@ -477,34 +388,34 @@ export function CommunicationsContent({ searchParams }: CommunicationsContentPro
                         <Badge variant={getPriorityBadgeVariant(message.priority)} className="text-xs">
                           {message.priority}
                         </Badge>
-                        {message.isEmergency && (
-                          <Badge variant="danger" className="text-xs">
+                        {isEmergency && (
+                          <Badge variant="destructive" className="text-xs">
                             <AlertTriangle className="h-3 w-3 mr-1" />
-                            EMERGENCY
+                            URGENT
                           </Badge>
                         )}
                       </div>
                       
                       <p className={`text-sm mb-3 ${
-                        message.isEmergency ? 'text-red-800' : 'text-gray-600'
+                        isEmergency ? 'text-red-800' : 'text-gray-600'
                       }`}>
-                        {message.content}
+                        {message.body || 'No content'}
                       </p>
                       
                       <div className="flex items-center gap-6 text-sm text-gray-500">
                         <div className="flex items-center gap-1">
                           <Users className="h-4 w-4" />
-                          <span>{message.recipients.length} recipient{message.recipients.length !== 1 ? 's' : ''}</span>
+                          <span>{message.recipientIds?.length || 0} recipient{(message.recipientIds?.length || 0) !== 1 ? 's' : ''}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Clock className="h-4 w-4" />
-                          <span>{new Date(message.sentAt).toLocaleString()}</span>
+                          <span>{new Date(message.sentAt || message.createdAt).toLocaleString()}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Send className="h-4 w-4" />
-                          <span>From: {message.sender.name}</span>
+                          <span>From: {message.senderName}</span>
                         </div>
-                        {message.hasAttachments && (
+                        {message.attachments && message.attachments.length > 0 && (
                           <div className="flex items-center gap-1">
                             <FileText className="h-4 w-4" />
                             <span>Has attachments</span>
@@ -512,36 +423,29 @@ export function CommunicationsContent({ searchParams }: CommunicationsContentPro
                         )}
                       </div>
 
-                      {/* Tags */}
-                      {message.tags.length > 0 && (
-                        <div className="flex gap-2 mt-3">
-                          {message.tags.map((tag) => (
-                            <Badge key={tag} variant="secondary" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
+                      {/* Tags - Note: metadata not available in current Message schema */}
 
                       {/* Recipients Summary */}
-                      <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                        <p className="text-xs font-medium text-gray-700 mb-2">Recipients:</p>
-                        <div className="flex flex-wrap gap-2">
-                          {message.recipients.slice(0, 3).map((recipient) => (
-                            <div key={recipient.id} className="flex items-center gap-2 text-xs">
-                              <span className="text-gray-600">{recipient.name}</span>
-                              <Badge variant={getStatusBadgeVariant(recipient.status)} className="text-xs">
-                                {recipient.status}
-                              </Badge>
-                            </div>
-                          ))}
-                          {message.recipients.length > 3 && (
-                            <span className="text-xs text-gray-500">
-                              +{message.recipients.length - 3} more
-                            </span>
-                          )}
+                      {message.recipients && message.recipients.length > 0 && (
+                        <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                          <p className="text-xs font-medium text-gray-700 mb-2">Recipients:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {message.recipients.slice(0, 3).map((recipient) => (
+                              <div key={recipient.id} className="flex items-center gap-2 text-xs">
+                                <span className="text-gray-600">{recipient.name}</span>
+                                <Badge variant="secondary" className="text-xs">
+                                  Recipient
+                                </Badge>
+                              </div>
+                            ))}
+                            {message.recipients.length > 3 && (
+                              <span className="text-xs text-gray-500">
+                                +{message.recipients.length - 3} more
+                              </span>
+                            )}
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                     
                     <div className="flex gap-2 ml-4">
@@ -582,7 +486,7 @@ export function CommunicationsContent({ searchParams }: CommunicationsContentPro
                     <p className="text-xs text-blue-700">98.5% delivery rate</p>
                   </div>
                 </div>
-                <Badge variant="success" className="text-xs">Active</Badge>
+                <Badge variant="default" className="text-xs bg-green-100 text-green-800">Active</Badge>
               </div>
               <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
                 <div className="flex items-center gap-3">
@@ -592,7 +496,7 @@ export function CommunicationsContent({ searchParams }: CommunicationsContentPro
                     <p className="text-xs text-green-700">95.2% delivery rate</p>
                   </div>
                 </div>
-                <Badge variant="success" className="text-xs">Active</Badge>
+                <Badge variant="default" className="text-xs bg-green-100 text-green-800">Active</Badge>
               </div>
               <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
                 <div className="flex items-center gap-3">
@@ -602,7 +506,7 @@ export function CommunicationsContent({ searchParams }: CommunicationsContentPro
                     <p className="text-xs text-purple-700">92.8% delivery rate</p>
                   </div>
                 </div>
-                <Badge variant="success" className="text-xs">Active</Badge>
+                <Badge variant="default" className="text-xs bg-green-100 text-green-800">Active</Badge>
               </div>
             </div>
           </div>
@@ -622,21 +526,21 @@ export function CommunicationsContent({ searchParams }: CommunicationsContentPro
                   <p className="text-sm font-medium text-yellow-900">Flu Season Tips</p>
                   <p className="text-xs text-yellow-700">Scheduled for tomorrow 8:00 AM</p>
                 </div>
-                <Badge variant="warning" className="text-xs">Pending</Badge>
+                <Badge variant="outline" className="text-xs bg-yellow-100 text-yellow-800">Pending</Badge>
               </div>
               <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
                 <div>
                   <p className="text-sm font-medium text-blue-900">Weekly Health Report</p>
                   <p className="text-xs text-blue-700">Scheduled for Friday 3:00 PM</p>
                 </div>
-                <Badge variant="info" className="text-xs">Scheduled</Badge>
+                <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800">Scheduled</Badge>
               </div>
               <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
                 <div>
                   <p className="text-sm font-medium text-green-900">Medication Reminders</p>
                   <p className="text-xs text-green-700">Daily at 11:45 AM</p>
                 </div>
-                <Badge variant="success" className="text-xs">Recurring</Badge>
+                <Badge variant="default" className="text-xs bg-green-100 text-green-800">Recurring</Badge>
               </div>
             </div>
           </div>
@@ -645,6 +549,3 @@ export function CommunicationsContent({ searchParams }: CommunicationsContentPro
     </div>
   );
 }
-
-
-

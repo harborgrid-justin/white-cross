@@ -34,7 +34,7 @@ import {
   CreateUserDto,
   UpdateUserDto,
   UserChangePasswordDto,
-  ResetPasswordDto,
+  AdminResetPasswordDto,
   UserFiltersDto,
   UserResponseDto,
   UserListResponseDto,
@@ -228,7 +228,7 @@ export class UserController {
   @ApiResponse({ status: 404, description: 'User not found' })
   async resetPassword(
     @Param('id') id: string,
-    @Body() resetPasswordDto: ResetPasswordDto,
+    @Body() resetPasswordDto: AdminResetPasswordDto,
   ) {
     return this.userService.resetUserPassword(id, resetPasswordDto.newPassword);
   }

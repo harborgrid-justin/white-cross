@@ -37,10 +37,8 @@ export class SanitizationInterceptor implements NestInterceptor {
       request.body = this.sanitizeObject(request.body);
     }
 
-    // Sanitize query parameters
-    if (request.query) {
-      request.query = this.sanitizeObject(request.query);
-    }
+    // Note: request.query is read-only in Express, so we skip sanitizing it
+    // Query parameters are typically handled by validation pipes instead
 
     return next.handle().pipe(
       map(data => {

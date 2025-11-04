@@ -216,7 +216,7 @@ export class QueryPerformanceAnalyzer implements OnModuleDestroy {
 
       const metrics = await this.performanceMetricModel.findAll({
         where: whereClause,
-        attributes: ['value', 'metadata']
+        attributes: ['value', 'tags']
       });
 
       const totalQueries = metrics.length;
@@ -287,7 +287,7 @@ export class QueryPerformanceAnalyzer implements OnModuleDestroy {
         where: whereClause,
         order: [['value', 'DESC']],
         limit,
-        attributes: ['value', 'metadata', 'createdAt']
+        attributes: ['value', 'tags', 'createdAt']
       });
 
       return slowMetrics.map(metric => {

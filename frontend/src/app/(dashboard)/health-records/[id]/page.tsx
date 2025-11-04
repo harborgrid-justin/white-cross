@@ -1,6 +1,5 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
-import { cookies } from 'next/headers';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,71 +18,30 @@ import {
   CheckCircle
 } from 'lucide-react';
 import Link from 'next/link';
+import { serverGet } from '@/lib/api/nextjs-client';
+import type { ApiResponse } from '@/types';
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-const BACKEND_URL = process.env.API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-
-// Fetch health record from backend
+// Fetch health record from backend using our API client
 async function getHealthRecord(id: string) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('auth_token')?.value;
-
-    if (!token) {
-      throw new Error('Authentication required');
-    }
-
-    const response = await fetch(`${BACKEND_URL}/health-record/${id}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      cache: 'no-store', // Don't cache for fresh data
-    });
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        return null;
+    // Use serverGet which handles authentication automatically
+    const wrappedResponse = await serverGet<ApiResponse<any>>(
+      `/health-record/${id}`,
+      undefined,
+      {
+        cache: 'no-store', // Don't cache for fresh data
       }
-      throw new Error(`Failed to fetch health record: ${response.statusText}`);
-    }
+    );
 
-    const result = await response.json();
-    return result.data || result;
+    // Extract the health record from the wrapped response
+    return wrappedResponse?.data || null;
   } catch (error) {
     console.error('Error fetching health record:', error);
-    // Return mock data as fallback for development
-    return {
-      id,
-      studentId: '123e4567-e89b-12d3-a456-426614174000',
-      recordType: 'PHYSICAL_EXAM',
-      title: 'Annual Physical Examination',
-      description: 'Routine annual physical examination showing normal vital signs and overall good health.',
-      recordDate: '2024-01-15',
-      provider: 'Dr. Sarah Johnson',
-      providerNpi: '1234567890',
-      facility: 'School Health Center',
-      facilityNpi: '0987654321',
-      diagnosis: 'Healthy - No concerns',
-      diagnosisCode: 'Z00.00',
-      treatment: 'Continue regular diet and exercise. Follow up in one year.',
-      followUpRequired: true,
-      followUpDate: '2025-01-15',
-      followUpCompleted: false,
-      isConfidential: false,
-      notes: 'Patient is active in sports. Recommend continued physical activity.',
-      createdAt: '2024-01-15T10:30:00Z',
-      updatedAt: '2024-01-15T10:30:00Z',
-      student: {
-        firstName: 'John',
-        lastName: 'Doe',
-        dateOfBirth: '2010-05-15',
-      }
-    };
+    return null;
   }
 }
 

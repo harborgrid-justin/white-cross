@@ -42,6 +42,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FileText, CheckCircle, Clock, AlertTriangle, Plus } from 'lucide-react';
 import Link from 'next/link';
+import { getPoliciesAction } from '@/lib/actions/compliance.actions';
 
 /**
  * Page metadata for SEO and browser display
@@ -133,8 +134,12 @@ export default async function PoliciesPage({ searchParams }: PoliciesPageProps) 
     category: searchParams.category,
   };
 
-  // TODO: Replace with actual server action
-  const { policies, stats } = await getPolicies(filters);
+  // Fetch policies using server action
+  const policiesResult = await getPoliciesAction(filters);
+  if (!policiesResult.success || !policiesResult.data) {
+    throw new Error(policiesResult.error || 'Failed to load policies');
+  }
+  const { data: policies, stats } = policiesResult.data;
 
   return (
     <div className="space-y-6">
@@ -326,66 +331,6 @@ export default async function PoliciesPage({ searchParams }: PoliciesPageProps) 
  * @todo Add database query with proper indexes
  * @todo Implement acknowledgment rate caching
  */
-async function getPolicies(filters: any) {
-  const mockPolicies = [
-    {
-      id: '1',
-      title: 'HIPAA Privacy Rule Compliance Policy',
-      category: 'HIPAA',
-      status: 'ACTIVE',
-      version: '2.1.0',
-      effectiveDate: '2024-01-01T00:00:00Z',
-      reviewDate: '2025-01-01T00:00:00Z',
-      acknowledgments: {
-        completed: 42,
-        pending: 5,
-        total: 47,
-      },
-    },
-    {
-      id: '2',
-      title: 'Medication Administration Protocol',
-      category: 'MEDICATION',
-      status: 'ACTIVE',
-      version: '1.5.0',
-      effectiveDate: '2024-03-15T00:00:00Z',
-      reviewDate: '2024-12-15T00:00:00Z',
-      acknowledgments: {
-        completed: 38,
-        pending: 9,
-        total: 47,
-      },
-    },
-    {
-      id: '3',
-      title: 'Emergency Response Procedures',
-      category: 'EMERGENCY',
-      status: 'ACTIVE',
-      version: '3.0.0',
-      effectiveDate: '2024-02-01T00:00:00Z',
-      reviewDate: '2025-02-01T00:00:00Z',
-      acknowledgments: {
-        completed: 45,
-        pending: 2,
-        total: 47,
-      },
-    },
-  ];
-
-  return {
-    policies: mockPolicies,
-    stats: {
-      active: 12,
-      total: 15,
-      acknowledgmentRate: 89,
-      acknowledged: 378,
-      required: 423,
-      pending: 45,
-      reviewDue: 3,
-    },
-  };
-}
-
 /**
  * Maps policy status to UI badge variant
  *

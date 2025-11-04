@@ -27,7 +27,9 @@ import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
 import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache/constants';
 
 // Types
-import type { ApiResponse } from '@/types/api';
+import type {
+  SystemHealth,
+} from '@/types/domain/admin';
 
 // Utils
 import { formatDate } from '@/utils/dateUtils';
@@ -37,23 +39,6 @@ import { formatName, formatPhone } from '@/utils/formatters';
 
 // ==========================================
 // CONFIGURATION
-// ==========================================
-
-// Custom cache tags for admin operations
-export const ADMIN_CACHE_TAGS = {
-  USERS: 'admin-users',
-  DISTRICTS: 'admin-districts',
-  SCHOOLS: 'admin-schools',
-  SETTINGS: 'admin-settings',
-  LICENSES: 'admin-licenses',
-  BACKUPS: 'admin-backups',
-  METRICS: 'admin-metrics',
-  TRAINING: 'admin-training',
-  AUDIT_LOGS: 'admin-audit-logs',
-} as const;
-
-// ==========================================
-// TYPE DEFINITIONS
 // ==========================================
 
 export interface ActionResult<T = unknown> {
@@ -180,7 +165,7 @@ export const getAdminUser = cache(async (id: string): Promise<AdminUser | null> 
         cache: 'force-cache',
         next: { 
           revalidate: CACHE_TTL.SESSION,
-          tags: [`admin-user-${id}`, ADMIN_CACHE_TAGS.USERS] 
+          tags: [`admin-user-${id}`, CACHE_TAGS.ADMIN_USERS] 
         }
       }
     );
@@ -204,7 +189,7 @@ export const getAdminUsers = cache(async (filters?: Record<string, unknown>): Pr
         cache: 'force-cache',
         next: { 
           revalidate: CACHE_TTL.SESSION,
-          tags: [ADMIN_CACHE_TAGS.USERS, 'admin-user-list'] 
+          tags: [CACHE_TAGS.ADMIN_USERS, 'admin-user-list'] 
         }
       }
     );
@@ -228,7 +213,7 @@ export const getDistrict = cache(async (id: string): Promise<District | null> =>
         cache: 'force-cache',
         next: { 
           revalidate: CACHE_TTL.STATIC,
-          tags: [`district-${id}`, ADMIN_CACHE_TAGS.DISTRICTS] 
+          tags: [`district-${id}`, CACHE_TAGS.ADMIN_DISTRICTS] 
         }
       }
     );
@@ -252,7 +237,7 @@ export const getDistricts = cache(async (filters?: Record<string, unknown>): Pro
         cache: 'force-cache',
         next: { 
           revalidate: CACHE_TTL.STATIC,
-          tags: [ADMIN_CACHE_TAGS.DISTRICTS, 'district-list'] 
+          tags: [CACHE_TAGS.ADMIN_DISTRICTS, 'district-list'] 
         }
       }
     );
@@ -276,7 +261,7 @@ export const getSchool = cache(async (id: string): Promise<School | null> => {
         cache: 'force-cache',
         next: { 
           revalidate: CACHE_TTL.STATIC,
-          tags: [`school-${id}`, ADMIN_CACHE_TAGS.SCHOOLS] 
+          tags: [`school-${id}`, CACHE_TAGS.ADMIN_SCHOOLS] 
         }
       }
     );
@@ -300,7 +285,7 @@ export const getSchools = cache(async (filters?: Record<string, unknown>): Promi
         cache: 'force-cache',
         next: { 
           revalidate: CACHE_TTL.STATIC,
-          tags: [ADMIN_CACHE_TAGS.SCHOOLS, 'school-list'] 
+          tags: [CACHE_TAGS.ADMIN_SCHOOLS, 'school-list'] 
         }
       }
     );
@@ -343,7 +328,7 @@ export async function createAdminUserAction(data: CreateAdminUserData): Promise<
       data,
       {
         cache: 'no-store',
-        next: { tags: [ADMIN_CACHE_TAGS.USERS] }
+        next: { tags: [CACHE_TAGS.ADMIN_USERS] }
       }
     );
 
@@ -361,7 +346,7 @@ export async function createAdminUserAction(data: CreateAdminUserData): Promise<
     });
 
     // Cache invalidation
-    revalidateTag(ADMIN_CACHE_TAGS.USERS, 'default');
+    revalidateTag(CACHE_TAGS.ADMIN_USERS, 'default');
     revalidateTag('admin-user-list', 'default');
     revalidatePath('/admin/users', 'page');
 
@@ -422,7 +407,7 @@ export async function updateAdminUserAction(
       data,
       {
         cache: 'no-store',
-        next: { tags: [ADMIN_CACHE_TAGS.USERS, `admin-user-${userId}`] }
+        next: { tags: [CACHE_TAGS.ADMIN_USERS, `admin-user-${userId}`] }
       }
     );
 
@@ -441,7 +426,7 @@ export async function updateAdminUserAction(
     });
 
     // Cache invalidation
-    revalidateTag(ADMIN_CACHE_TAGS.USERS, 'default');
+    revalidateTag(CACHE_TAGS.ADMIN_USERS, 'default');
     revalidateTag(`admin-user-${userId}`, 'default');
     revalidateTag('admin-user-list', 'default');
     revalidatePath('/admin/users', 'page');
@@ -493,7 +478,7 @@ export async function deleteAdminUserAction(userId: string): Promise<ActionResul
       API_ENDPOINTS.ADMIN.USER_BY_ID(userId),
       {
         cache: 'no-store',
-        next: { tags: [ADMIN_CACHE_TAGS.USERS, `admin-user-${userId}`] }
+        next: { tags: [CACHE_TAGS.ADMIN_USERS, `admin-user-${userId}`] }
       }
     );
 
@@ -507,7 +492,7 @@ export async function deleteAdminUserAction(userId: string): Promise<ActionResul
     });
 
     // Cache invalidation
-    revalidateTag(ADMIN_CACHE_TAGS.USERS, 'default');
+    revalidateTag(CACHE_TAGS.ADMIN_USERS, 'default');
     revalidateTag(`admin-user-${userId}`, 'default');
     revalidateTag('admin-user-list', 'default');
     revalidatePath('/admin/users', 'page');
@@ -579,7 +564,7 @@ export async function createDistrictAction(data: CreateDistrictData): Promise<Ac
       data,
       {
         cache: 'no-store',
-        next: { tags: [ADMIN_CACHE_TAGS.DISTRICTS] }
+        next: { tags: [CACHE_TAGS.ADMIN_DISTRICTS] }
       }
     );
 
@@ -597,7 +582,7 @@ export async function createDistrictAction(data: CreateDistrictData): Promise<Ac
     });
 
     // Cache invalidation
-    revalidateTag(ADMIN_CACHE_TAGS.DISTRICTS, 'default');
+    revalidateTag(CACHE_TAGS.ADMIN_DISTRICTS, 'default');
     revalidateTag('district-list', 'default');
     revalidatePath('/admin/districts', 'page');
 
@@ -666,7 +651,7 @@ export async function updateDistrictAction(
       data,
       {
         cache: 'no-store',
-        next: { tags: [ADMIN_CACHE_TAGS.DISTRICTS, `district-${districtId}`] }
+        next: { tags: [CACHE_TAGS.ADMIN_DISTRICTS, `district-${districtId}`] }
       }
     );
 
@@ -685,7 +670,7 @@ export async function updateDistrictAction(
     });
 
     // Cache invalidation
-    revalidateTag(ADMIN_CACHE_TAGS.DISTRICTS, 'default');
+    revalidateTag(CACHE_TAGS.ADMIN_DISTRICTS, 'default');
     revalidateTag(`district-${districtId}`, 'default');
     revalidateTag('district-list', 'default');
     revalidatePath('/admin/districts', 'page');
@@ -766,7 +751,7 @@ export async function createSchoolAction(data: CreateSchoolData): Promise<Action
       data,
       {
         cache: 'no-store',
-        next: { tags: [ADMIN_CACHE_TAGS.SCHOOLS] }
+        next: { tags: [CACHE_TAGS.ADMIN_SCHOOLS] }
       }
     );
 
@@ -784,7 +769,7 @@ export async function createSchoolAction(data: CreateSchoolData): Promise<Action
     });
 
     // Cache invalidation
-    revalidateTag(ADMIN_CACHE_TAGS.SCHOOLS, 'default');
+    revalidateTag(CACHE_TAGS.ADMIN_SCHOOLS, 'default');
     revalidateTag('school-list', 'default');
     revalidatePath('/admin/schools', 'page');
 
@@ -860,7 +845,7 @@ export async function updateSchoolAction(
       data,
       {
         cache: 'no-store',
-        next: { tags: [ADMIN_CACHE_TAGS.SCHOOLS, `school-${schoolId}`] }
+        next: { tags: [CACHE_TAGS.ADMIN_SCHOOLS, `school-${schoolId}`] }
       }
     );
 
@@ -879,7 +864,7 @@ export async function updateSchoolAction(
     });
 
     // Cache invalidation
-    revalidateTag(ADMIN_CACHE_TAGS.SCHOOLS, 'default');
+    revalidateTag(CACHE_TAGS.ADMIN_SCHOOLS, 'default');
     revalidateTag(`school-${schoolId}`, 'default');
     revalidateTag('school-list', 'default');
     revalidatePath('/admin/schools', 'page');
@@ -939,7 +924,7 @@ export async function updateSystemSettingAction(
       { value },
       {
         cache: 'no-store',
-        next: { tags: [ADMIN_CACHE_TAGS.SETTINGS] }
+        next: { tags: [CACHE_TAGS.ADMIN_SETTINGS] }
       }
     );
 
@@ -958,7 +943,7 @@ export async function updateSystemSettingAction(
     });
 
     // Cache invalidation
-    revalidateTag(ADMIN_CACHE_TAGS.SETTINGS, 'default');
+    revalidateTag(CACHE_TAGS.ADMIN_SETTINGS, 'default');
     revalidatePath('/admin/settings', 'page');
 
     return {
@@ -1178,7 +1163,7 @@ export async function clearAdminCache(resourceType?: string, resourceId?: string
   }
   
   // Clear all admin caches
-  Object.values(ADMIN_CACHE_TAGS).forEach(tag => {
+  [CACHE_TAGS.ADMIN_USERS, CACHE_TAGS.ADMIN_DISTRICTS, CACHE_TAGS.ADMIN_SCHOOLS, CACHE_TAGS.ADMIN_SETTINGS, CACHE_TAGS.ADMIN_LICENSES, CACHE_TAGS.ADMIN_BACKUPS, CACHE_TAGS.ADMIN_METRICS, CACHE_TAGS.ADMIN_TRAINING, CACHE_TAGS.ADMIN_AUDIT_LOGS].forEach(tag => {
     revalidateTag(tag, 'default');
   });
 
@@ -1194,3 +1179,120 @@ export async function clearAdminCache(resourceType?: string, resourceId?: string
   revalidatePath('/admin/schools', 'page');
   revalidatePath('/admin/settings', 'page');
 }
+
+// ==========================================
+// SYSTEM MONITORING ACTIONS
+// ==========================================
+
+/**
+ * Get system health information
+ * Cached for 30 seconds to prevent excessive monitoring calls
+ */
+export const getSystemHealth = cache(async (): Promise<SystemHealth> => {
+  try {
+    // In production, fetch from actual monitoring service
+    // For now, returning mock data
+    const mockHealth: SystemHealth = {
+      status: 'healthy',
+      overall: {
+        uptime: 2592000, // 30 days in seconds
+        lastRestart: new Date('2025-09-26T00:00:00'),
+        version: '1.0.0',
+      },
+      services: [
+        {
+          name: 'Database',
+          status: 'operational',
+          responseTime: 15,
+          uptime: 99.9,
+          lastCheck: new Date(),
+        },
+        {
+          name: 'API Server',
+          status: 'operational',
+          responseTime: 45,
+          uptime: 99.8,
+          lastCheck: new Date(),
+        },
+        {
+          name: 'Redis Cache',
+          status: 'operational',
+          responseTime: 5,
+          uptime: 99.95,
+          lastCheck: new Date(),
+        },
+        {
+          name: 'Email Service',
+          status: 'degraded',
+          responseTime: 250,
+          uptime: 98.5,
+          lastCheck: new Date(),
+          errorRate: 0.5,
+        },
+      ],
+      metrics: {
+        cpu: {
+          usage: 45.2,
+          cores: 8,
+          temperature: 65,
+        },
+        memory: {
+          used: 12884901888, // 12 GB
+          total: 17179869184, // 16 GB
+          percentage: 75,
+        },
+        disk: {
+          used: 214748364800, // 200 GB
+          total: 536870912000, // 500 GB
+          percentage: 40,
+        },
+        network: {
+          incoming: 1048576, // 1 MB/s
+          outgoing: 524288, // 512 KB/s
+        },
+      },
+      alerts: [
+        {
+          id: '1',
+          severity: 'warning',
+          service: 'Email Service',
+          message: 'Response time above threshold (250ms > 200ms)',
+          timestamp: new Date(),
+          acknowledged: false,
+        },
+      ],
+    };
+
+    return mockHealth;
+  } catch (error) {
+    console.error('Failed to get system health:', error);
+    throw new Error('Failed to retrieve system health information');
+  }
+});
+
+/**
+ * Get system metrics for dashboard
+ */
+export const getSystemMetrics = cache(async () => {
+  // Mock metrics data - replace with actual implementation
+  return {
+    cpu: {
+      usage: 35,
+      cores: 8
+    },
+    memory: {
+      used: 2048,
+      total: 8192,
+      percentage: 25
+    },
+    disk: {
+      used: 120,
+      total: 500,
+      percentage: 24
+    },
+    network: {
+      incoming: 1024,
+      outgoing: 512
+    }
+  };
+});

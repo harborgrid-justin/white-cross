@@ -2,10 +2,35 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type AlertDto {
+  actionUrl: String
+  createdAt: DateTime!
+  expiresAt: DateTime
+  id: ID!
+  isRead: Boolean!
+  message: String!
+  recipientId: ID
+  recipientRole: String
+  studentId: String
+  title: String!
+  type: AlertType!
+}
+
+"""Type of alert notification"""
+enum AlertType {
+  APPOINTMENT
+  CRITICAL
+  EMERGENCY
+  ERROR
+  INFO
+  MEDICATION
+  WARNING
+}
+
 type ContactDto {
   address: String
   city: String
-  createdAt: Timestamp!
+  createdAt: DateTime!
   createdBy: ID
   customFields: JSON
   displayName: String!
@@ -23,7 +48,7 @@ type ContactDto {
   state: String
   title: String
   type: ContactType!
-  updatedAt: Timestamp!
+  updatedAt: DateTime!
   updatedBy: ID
   zip: String
 }
@@ -93,10 +118,16 @@ input ContactUpdateInputDto {
   zip: String
 }
 
+"""ISO 8601 DateTime string (e.g., 2024-01-15T10:30:00Z)"""
+scalar DateTime
+
 type DeleteResponseDto {
   message: String!
   success: Boolean!
 }
+
+"""Valid email address (RFC 5322 compliant)"""
+scalar EmailAddress
 
 """Student gender"""
 enum Gender {
@@ -108,7 +139,7 @@ enum Gender {
 
 type HealthRecordDto {
   attachments: [String!]!
-  createdAt: Timestamp!
+  createdAt: DateTime!
   createdBy: ID
   description: String!
   diagnosis: String
@@ -116,7 +147,7 @@ type HealthRecordDto {
   facility: String
   facilityNpi: String
   followUpCompleted: Boolean!
-  followUpDate: Timestamp
+  followUpDate: DateTime
   followUpRequired: Boolean!
   id: ID!
   isConfidential: Boolean!
@@ -124,24 +155,24 @@ type HealthRecordDto {
   notes: String
   provider: String
   providerNpi: String
-  recordDate: Timestamp!
+  recordDate: DateTime!
   recordType: String!
   studentId: ID!
   title: String!
   treatment: String
-  updatedAt: Timestamp!
+  updatedAt: DateTime!
   updatedBy: ID
 }
 
 input HealthRecordFilterInputDto {
   followUpCompleted: Boolean
   followUpRequired: Boolean
-  fromDate: Timestamp
+  fromDate: DateTime
   isConfidential: Boolean
   recordType: String
   search: String
   studentId: ID
-  toDate: Timestamp
+  toDate: DateTime
 }
 
 input HealthRecordInputDto {
@@ -151,14 +182,14 @@ input HealthRecordInputDto {
   diagnosisCode: String
   facility: String
   facilityNpi: String
-  followUpDate: Timestamp
+  followUpDate: DateTime
   followUpRequired: Boolean! = false
   isConfidential: Boolean! = false
   metadata: JSON
   notes: String
   provider: String
   providerNpi: String
-  recordDate: Timestamp!
+  recordDate: DateTime!
   recordType: String!
   studentId: ID!
   title: String!
@@ -178,14 +209,14 @@ input HealthRecordUpdateInputDto {
   facility: String
   facilityNpi: String
   followUpCompleted: Boolean
-  followUpDate: Timestamp
+  followUpDate: DateTime
   followUpRequired: Boolean
   isConfidential: Boolean
   metadata: JSON
   notes: String
   provider: String
   providerNpi: String
-  recordDate: Timestamp
+  recordDate: DateTime
   recordType: String
   title: String
   treatment: String
@@ -197,9 +228,9 @@ The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://
 scalar JSON @specifiedBy(url: "http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf")
 
 type MedicationDto {
-  createdAt: Timestamp!
+  createdAt: DateTime!
   dosage: String
-  endDate: Timestamp
+  endDate: DateTime
   frequency: String
   id: ID!
   instructions: String
@@ -207,9 +238,9 @@ type MedicationDto {
   name: String!
   prescribedBy: String
   route: String
-  startDate: Timestamp
+  startDate: DateTime
   studentId: ID!
-  updatedAt: Timestamp!
+  updatedAt: DateTime!
 }
 
 type Mutation {
@@ -230,6 +261,9 @@ type PaginationDto {
   totalPages: Float!
 }
 
+"""Valid phone number in E.164 format (+1234567890)"""
+scalar PhoneNumber
+
 type Query {
   contact(id: ID!): ContactDto
   contactStats: ContactStatsDto!
@@ -246,9 +280,9 @@ type Query {
 type StudentDto {
   contactCount: Float!
   contacts: [ContactDto]!
-  createdAt: Timestamp!
-  dateOfBirth: Timestamp!
-  enrollmentDate: Timestamp!
+  createdAt: DateTime!
+  dateOfBirth: DateTime!
+  enrollmentDate: DateTime!
   firstName: String!
   fullName: String!
   gender: Gender!
@@ -262,7 +296,7 @@ type StudentDto {
   nurseId: ID
   photo: String
   studentNumber: String!
-  updatedAt: Timestamp!
+  updatedAt: DateTime!
 }
 
 input StudentFilterInputDto {
@@ -277,7 +311,34 @@ type StudentListResponseDto {
   students: [StudentDto!]!
 }
 
-"""
-`Date` type as integer. Type represents date and time as number of milliseconds from start of UNIX epoch.
-"""
-scalar Timestamp
+type Subscription {
+  alertCreated: AlertDto!
+  criticalAlert: AlertDto!
+  healthRecordCreated(studentId: ID): HealthRecordDto!
+  healthRecordUpdated(studentId: ID): HealthRecordDto!
+  studentUpdated(studentId: ID): StudentDto!
+  vitalsUpdated(studentId: ID!): VitalsDto!
+}
+
+"""Universally Unique Identifier (UUID v4)"""
+scalar UUID
+
+type VitalsDto {
+  bloodPressureDiastolic: Float
+  bloodPressureSystolic: Float
+  createdAt: DateTime!
+  heartRate: Float
+  height: Float
+  heightUnit: String
+  id: ID!
+  notes: String
+  oxygenSaturation: Float
+  recordedAt: DateTime!
+  recordedById: ID
+  respiratoryRate: Float
+  studentId: ID!
+  temperature: Float
+  temperatureUnit: String
+  weight: Float
+  weightUnit: String
+}

@@ -210,6 +210,51 @@ export const CACHE_TAGS = {
    * Medication formulary (non-PHI)
    */
   FORMULARY: 'medication-formulary',
+
+  /**
+   * Admin user data (non-PHI)
+   */
+  ADMIN_USERS: 'admin-users',
+
+  /**
+   * Admin districts data (non-PHI)
+   */
+  ADMIN_DISTRICTS: 'admin-districts',
+
+  /**
+   * Admin schools data (non-PHI)
+   */
+  ADMIN_SCHOOLS: 'admin-schools',
+
+  /**
+   * Admin settings data (non-PHI)
+   */
+  ADMIN_SETTINGS: 'admin-settings',
+
+  /**
+   * Admin licenses data (non-PHI)
+   */
+  ADMIN_LICENSES: 'admin-licenses',
+
+  /**
+   * Admin backups data (non-PHI)
+   */
+  ADMIN_BACKUPS: 'admin-backups',
+
+  /**
+   * Admin metrics data (non-PHI)
+   */
+  ADMIN_METRICS: 'admin-metrics',
+
+  /**
+   * Admin training data (non-PHI)
+   */
+  ADMIN_TRAINING: 'admin-training',
+
+  /**
+   * Admin audit logs data (non-PHI)
+   */
+  ADMIN_AUDIT_LOGS: 'admin-audit-logs',
 } as const;
 
 // ==========================================
@@ -406,10 +451,12 @@ export function buildResourceTag(
  */
 
 // Export all constants and utilities
-export default {
+const cacheConstants = {
   CACHE_TTL,
   CACHE_TAGS,
   getCacheTTL,
   getCacheTags,
   buildResourceTag,
 };
+
+export default cacheConstants;

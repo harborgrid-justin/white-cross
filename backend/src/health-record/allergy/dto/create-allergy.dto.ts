@@ -6,7 +6,7 @@ import { AllergyType, AllergySeverity } from '../../interfaces/allergy.interface
  * DTO for creating a new allergy record
  * PHI-protected endpoint requiring authentication
  */
-export class CreateAllergyDto {
+export class HealthRecordCreateAllergyDto {
   @ApiProperty({
     description: 'Student UUID',
     example: '550e8400-e29b-41d4-a716-446655440000',

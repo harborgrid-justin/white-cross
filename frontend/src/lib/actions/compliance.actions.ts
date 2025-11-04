@@ -1,5 +1,4 @@
 'use server';
-'use cache';
 
 /**
  * Compliance Server Actions - Next.js v16 App Router
@@ -98,14 +97,22 @@ interface CreateAuditLogInput {
   complianceFlags?: string[];
 }
 
-interface PaginatedResult<T> {
-  data: T[];
-  pagination: {
-    page: number;
-    pageSize: number;
-    total: number;
-    pages: number;
-  };
+interface UIComplianceReport {
+  id: string;
+  title: string;
+  type: string;
+  status: string;
+  generatedAt: string;
+  generatedBy: string;
+  period: { start: string; end: string };
+}
+
+interface UIReportTemplate {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  requiredParams: string[];
 }
 
 // ============================================================================
@@ -562,6 +569,109 @@ export async function getPolicyAcknowledgmentsAction(
   }
 }
 
+/**
+ * Get Policies with filtering and pagination
+ * Cache: 5 minutes for policy lists
+ */
+export async function getPoliciesAction(
+  filters?: {
+    category?: string;
+    status?: string;
+    search?: string;
+    page?: number;
+    pageSize?: number;
+  }
+): Promise<ActionResult<PaginatedResult<UIPolicy> & { stats: { active: number; total: number; acknowledgmentRate: number; acknowledged: number; required: number; pending: number; reviewDue: number } }>> {
+
+  try {
+    // Build query parameters
+    const params = new URLSearchParams();
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          params.append(key, String(value));
+        }
+      });
+    }
+
+    // Enhanced fetch with Next.js v16 capabilities
+    const response = await fetch(`${BACKEND_URL}/compliance/policies?${params}`, {
+      headers: {
+        'Authorization': `Bearer ${await getAuthToken()}`,
+        'X-Request-ID': crypto.randomUUID(),
+        'X-Cache-Control': 'max-age=300'
+      },
+      next: {
+        revalidate: 300,
+        tags: ['policies']
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const result = await response.json() as PaginatedResult<PolicyDocument>;
+
+    // Transform policies to match UI expectations
+    const transformedPolicies: UIPolicy[] = result.data.map((policy: PolicyDocument) => ({
+      id: policy.id,
+      title: policy.title,
+      category: policy.policyType.replace('_', ' ').toLowerCase().replace(/\b\w/g, (l: string) => l.toUpperCase()),
+      status: policy.status,
+      version: policy.version,
+      effectiveDate: policy.effectiveDate,
+      reviewDate: policy.reviewDate,
+      acknowledgments: {
+        completed: 0, // TODO: Calculate from acknowledgments API
+        pending: 0,   // TODO: Calculate from acknowledgments API
+        total: 0,     // TODO: Calculate from applicable users
+      },
+    }));
+
+    // Get policy statistics
+    const statsResponse = await fetch(`${BACKEND_URL}/compliance/policies/stats`, {
+      headers: {
+        'Authorization': `Bearer ${await getAuthToken()}`,
+        'X-Request-ID': crypto.randomUUID()
+      },
+      next: {
+        revalidate: 300,
+        tags: ['policies', 'compliance-stats']
+      }
+    });
+
+    let stats = {
+      active: 0,
+      total: 0,
+      acknowledgmentRate: 0,
+      acknowledged: 0,
+      required: 0,
+      pending: 0,
+      reviewDue: 0,
+    };
+
+    if (statsResponse.ok) {
+      stats = await statsResponse.json();
+    }
+
+    return {
+      success: true,
+      data: {
+        data: transformedPolicies,
+        pagination: result.pagination,
+        stats,
+      },
+    };
+  } catch (error) {
+    console.error('Get policies error:', error);
+    return {
+      success: false,
+      error: 'Failed to retrieve policies',
+    };
+  }
+}
+
 // ============================================================================
 // Compliance Reporting Actions
 // ============================================================================
@@ -704,7 +814,7 @@ export async function getComplianceAlertsAction(
 
   try {
     const params = filters ? new URLSearchParams(
-      Object.entries(filters).filter(([_, value]) => value !== undefined)
+      Object.entries(filters).filter(([, value]) => value !== undefined)
     ) : '';
 
     // Enhanced fetch with Next.js v16 capabilities
@@ -969,6 +1079,278 @@ export async function getOverdueTrainingAction(): Promise<ActionResult<Record<st
   }
 }
 
+/**
+ * Get Compliance Reports and Templates
+ * Cache: 10 minutes for reports list
+ */
+export async function getComplianceReportsAction(
+  filters?: {
+    type?: string;
+    status?: string;
+    search?: string;
+    page?: number;
+    pageSize?: number;
+  }
+): Promise<ActionResult<{
+  reports: PaginatedResult<{
+    id: string;
+    title: string;
+    type: string;
+    status: string;
+    generatedAt: string;
+    generatedBy: string;
+    period: { start: string; end: string };
+  }>;
+  templates: Array<{
+    id: string;
+    name: string;
+    description: string;
+    category: string;
+    requiredParams: string[];
+  }>;
+}>> {
+  try {
+    // Build query parameters
+    const params = new URLSearchParams();
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          params.append(key, String(value));
+        }
+      });
+    }
+
+    // Fetch reports
+    const reportsResponse = await fetch(`${BACKEND_URL}/compliance/reports?${params}`, {
+      headers: {
+        'Authorization': `Bearer ${await getAuthToken()}`,
+        'X-Request-ID': crypto.randomUUID(),
+        'X-Cache-Control': 'max-age=600'
+      },
+      next: {
+        revalidate: 600,
+        tags: ['compliance-reports']
+      }
+    });
+
+    let reports: PaginatedResult<UIComplianceReport> = { data: [], pagination: { page: 1, pageSize: 10, total: 0, pages: 0 } };
+    if (reportsResponse.ok) {
+      reports = await reportsResponse.json();
+    }
+
+    // Fetch report templates
+    const templatesResponse = await fetch(`${BACKEND_URL}/compliance/reports/templates`, {
+      headers: {
+        'Authorization': `Bearer ${await getAuthToken()}`,
+        'X-Request-ID': crypto.randomUUID()
+      },
+      next: {
+        revalidate: 3600, // 1 hour for templates
+        tags: ['compliance-report-templates']
+      }
+    });
+
+    let templates: UIReportTemplate[] = [];
+    if (templatesResponse.ok) {
+      templates = await templatesResponse.json();
+    } else {
+      // Fallback to default templates if API not available
+      templates = [
+        {
+          id: 'hipaa-security',
+          name: 'HIPAA Security Assessment',
+          description: 'Comprehensive security risk assessment report',
+          category: 'HIPAA',
+          requiredParams: ['period']
+        },
+        {
+          id: 'audit-trail',
+          name: 'Audit Trail Report',
+          description: 'Detailed audit log analysis and compliance verification',
+          category: 'AUDIT',
+          requiredParams: ['period']
+        },
+        {
+          id: 'training-compliance',
+          name: 'Training Compliance',
+          description: 'Staff training completion and certification status',
+          category: 'TRAINING',
+          requiredParams: ['period']
+        },
+        {
+          id: 'data-breach',
+          name: 'Data Breach Analysis',
+          description: 'Breach notification and incident response report',
+          category: 'INCIDENT',
+          requiredParams: ['period']
+        }
+      ];
+    }
+
+    return {
+      success: true,
+      data: {
+        reports,
+        templates,
+      },
+    };
+  } catch (error) {
+    console.error('Get compliance reports error:', error);
+    return {
+      success: false,
+      error: 'Failed to retrieve compliance reports',
+    };
+  }
+}
+
+/**
+ * Get Training Records and Compliance Data
+ * Cache: 10 minutes for training data
+ */
+export async function getTrainingRecordsAction(
+  filters?: {
+    userId?: string;
+    courseId?: string;
+    status?: string;
+    priority?: string;
+    page?: number;
+    pageSize?: number;
+  }
+): Promise<ActionResult<{
+  stats: {
+    total: number;
+    completed: number;
+    inProgress: number;
+    overdue: number;
+    completionRate: number;
+    certifications: number;
+    expiringSoon: number;
+  };
+  courses: Array<{
+    id: string;
+    title: string;
+    description: string;
+    priority: string;
+    stats: { completed: number; inProgress: number; overdue: number };
+  }>;
+  users: Array<{
+    id: string;
+    name: string;
+    role: string;
+    training: {
+      required: number;
+      completed: number;
+      overdue: number;
+      status: string;
+    };
+  }>;
+}>> {
+  try {
+    // Build query parameters
+    const params = new URLSearchParams();
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          params.append(key, String(value));
+        }
+      });
+    }
+
+    // Fetch training stats
+    const statsResponse = await fetch(`${BACKEND_URL}/compliance/training/stats`, {
+      headers: {
+        'Authorization': `Bearer ${await getAuthToken()}`,
+        'X-Request-ID': crypto.randomUUID()
+      },
+      next: {
+        revalidate: 600,
+        tags: ['training', 'training-stats']
+      }
+    });
+
+    let stats = {
+      total: 0,
+      completed: 0,
+      inProgress: 0,
+      overdue: 0,
+      completionRate: 0,
+      certifications: 0,
+      expiringSoon: 0,
+    };
+
+    if (statsResponse.ok) {
+      stats = await statsResponse.json();
+    }
+
+    // Fetch training courses
+    const coursesResponse = await fetch(`${BACKEND_URL}/compliance/training/courses?${params}`, {
+      headers: {
+        'Authorization': `Bearer ${await getAuthToken()}`,
+        'X-Request-ID': crypto.randomUUID()
+      },
+      next: {
+        revalidate: 600,
+        tags: ['training', 'training-courses']
+      }
+    });
+
+    let courses: Array<{
+      id: string;
+      title: string;
+      description: string;
+      priority: string;
+      stats: { completed: number; inProgress: number; overdue: number };
+    }> = [];
+
+    if (coursesResponse.ok) {
+      courses = await coursesResponse.json();
+    }
+
+    // Fetch user training status
+    const usersResponse = await fetch(`${BACKEND_URL}/compliance/training/users?${params}`, {
+      headers: {
+        'Authorization': `Bearer ${await getAuthToken()}`,
+        'X-Request-ID': crypto.randomUUID()
+      },
+      next: {
+        revalidate: 600,
+        tags: ['training', 'user-training']
+      }
+    });
+
+    let users: Array<{
+      id: string;
+      name: string;
+      role: string;
+      training: {
+        required: number;
+        completed: number;
+        overdue: number;
+        status: string;
+      };
+    }> = [];
+
+    if (usersResponse.ok) {
+      users = await usersResponse.json();
+    }
+
+    return {
+      success: true,
+      data: {
+        stats,
+        courses,
+        users,
+      },
+    };
+  } catch (error) {
+    console.error('Get training records error:', error);
+    return {
+      success: false,
+      error: 'Failed to retrieve training records',
+    };
+  }
+}
+
 // ============================================================================
 // Helper Functions
 // ============================================================================
@@ -993,7 +1375,7 @@ async function getCurrentUserId(): Promise<string> {
     const token = await getAuthToken();
     const payload = verifyAccessToken(token);
     return payload.id;
-  } catch (error) {
+  } catch {
     return 'anonymous';
   }
 }

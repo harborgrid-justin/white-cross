@@ -70,11 +70,6 @@ export const metadata: Metadata = {
     index: false, // Prevent indexing of healthcare platform
     follow: false,
   },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-  },
   icons: {
     icon: '/favicon.ico',
     apple: '/apple-icon.png',
@@ -97,6 +92,17 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/',
   },
+};
+
+/**
+ * Viewport configuration
+ * Separated from metadata as per Next.js 14+ best practices
+ * @see {@link https://nextjs.org/docs/app/api-reference/functions/generate-viewport | Next.js Viewport}
+ */
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 /**

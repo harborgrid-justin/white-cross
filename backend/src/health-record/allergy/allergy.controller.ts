@@ -20,7 +20,7 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { AllergyService } from './allergy.service';
-import { CreateAllergyDto } from './dto/create-allergy.dto';
+import { HealthRecordCreateAllergyDto } from './dto/create-allergy.dto';
 import { HealthRecordUpdateAllergyDto } from './dto/update-allergy.dto';
 import { CheckMedicationConflictsDto, MedicationConflictResponseDto } from './dto/check-conflicts.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -92,7 +92,7 @@ export class AllergyController {
   @Post()
   @Roles(UserRole.ADMIN, UserRole.NURSE)
   @ApiOperation({ summary: 'Create new allergy record' })
-  @ApiBody({ type: CreateAllergyDto })
+  @ApiBody({ type: HealthRecordCreateAllergyDto })
   @ApiResponse({
     status: 201,
     description: 'Allergy created successfully with audit trail entry',
@@ -104,7 +104,7 @@ export class AllergyController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - Requires NURSE or ADMIN role' })
   @ApiResponse({ status: 404, description: 'Student not found' })
-  async createAllergy(@Body() createAllergyDto: CreateAllergyDto, @Request() req: any) {
+  async createAllergy(@Body() createAllergyDto: HealthRecordCreateAllergyDto, @Request() req: any) {
     return this.allergyService.create(createAllergyDto, req.user);
   }
 

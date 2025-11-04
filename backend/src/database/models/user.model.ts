@@ -10,7 +10,8 @@ import {
   ForeignKey,
   BelongsTo,
   HasMany,
-  Scopes
+  Scopes,
+  DeletedAt
   } from 'sequelize-typescript';
 import * as bcrypt from 'bcrypt';
 import { Op } from 'sequelize';
@@ -358,6 +359,15 @@ export class User extends Model<UserAttributes> {
     comment: 'Timestamp when email was verified'
   })
   declare emailVerifiedAt?: Date | null;
+
+  // Soft delete timestamp (paranoid mode)
+  @DeletedAt
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+    comment: 'Soft delete timestamp for paranoid mode'
+  })
+  declare deletedAt?: Date | null;
 
   // Associations
   @BelongsTo(() => require('./school.model').School, {

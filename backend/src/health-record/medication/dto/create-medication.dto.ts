@@ -6,7 +6,7 @@ import { DosageForm, DEASchedule } from '../../interfaces/medication.interface';
  * DTO for creating a new medication record
  * Used for medication catalog management
  */
-export class CreateMedicationDto {
+export class HealthRecordCreateMedicationDto {
   @ApiProperty({
     description: 'Brand name of the medication',
     example: 'Advil',

@@ -1,10 +1,29 @@
 /**
  * Communications Server Actions
  *
+ * HIPAA-compliant server actions for communication management with comprehensive
+ * caching, audit logging, and error handling.
+ * 
  * Server actions for messages, broadcasts, notifications, and templates
  */
 
 'use server';
+
+import { cache } from 'react';
+import { revalidateTag, revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
+
+// Core API integrations
+import { serverGet, serverPost, serverPut, serverDelete, NextApiClientError } from '@/lib/api/nextjs-client';
+import { API_ENDPOINTS } from '@/constants/api';
+import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
+import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache/constants';
+
+// Utils (optional imports - may not exist in all projects)
+// import { formatDate } from '@/utils/dateUtils';
+// import { validateEmail, validatePhone } from '@/utils/validation/userValidation';
+// import { generateId } from '@/utils/generators';
+// import { formatName, formatPhone } from '@/utils/formatters';
 
 import { z } from 'zod';
 import {
@@ -56,8 +75,87 @@ import {
   type TemplateFilter,
   type RenderedTemplate
 } from '@/lib/validations/template.schemas';
-import { ActionResponse } from '@/types/actions';
-import { serverGet, serverPost, serverPut, serverDelete, serverFetch } from '@/lib/server/fetch';
+// Define ActionResponse locally if not available
+interface ActionResponse<T = any> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+import { serverFetch } from '@/lib/server/fetch';
+
+// ==========================================
+// CONFIGURATION
+// ==========================================
+
+// Custom cache tags for communications
+export const COMMUNICATIONS_CACHE_TAGS = {
+  MESSAGES: 'communications-messages',
+  THREADS: 'communications-threads',
+  TEMPLATES: 'communications-templates',
+  CONTACTS: 'communications-contacts',
+  ATTACHMENTS: 'communications-attachments',
+} as const;
+
+// ==========================================
+// ENHANCED TYPE DEFINITIONS FROM DASHBOARD
+// ==========================================
+
+export interface ActionResult<T = unknown> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  message?: string;
+  validationErrors?: string | Record<string, string[]>;
+}
+
+export interface MessageTemplate {
+  id: string;
+  name: string;
+  description: string;
+  subject: string;
+  content: string;
+  type: 'email' | 'sms' | 'internal' | 'system';
+  category: 'general' | 'medical' | 'academic' | 'emergency' | 'reminder' | 'notification';
+  variables: string[];
+  isActive: boolean;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateMessageTemplateData {
+  name: string;
+  description: string;
+  subject: string;
+  content: string;
+  type: 'email' | 'sms' | 'internal' | 'system';
+  category: 'general' | 'medical' | 'academic' | 'emergency' | 'reminder' | 'notification';
+  variables?: string[];
+  isActive?: boolean;
+}
+
+export interface CommunicationAnalytics {
+  totalMessages: number;
+  sentMessages: number;
+  failedMessages: number;
+  averageResponseTime: number;
+  deliveryRate: number;
+  typeBreakdown: {
+    type: 'email' | 'sms' | 'internal' | 'system';
+    count: number;
+    percentage: number;
+  }[];
+  statusBreakdown: {
+    status: 'draft' | 'sent' | 'delivered' | 'read' | 'archived' | 'deleted';
+    count: number;
+    percentage: number;
+  }[];
+  recentActivity: {
+    date: string;
+    sent: number;
+    received: number;
+  }[];
+}
 
 // ============================================================================
 // HELPER FUNCTION - Wrapper for server fetch to match old API contract
@@ -71,8 +169,9 @@ async function fetchApi<T>(
   endpoint: string,
   options?: {
     method?: string;
-    body?: any;
-    params?: Record<string, any>;
+    body?: unknown;
+    params?: Record<string, unknown>;
+    headers?: Record<string, string>;
   }
 ): Promise<{ success: boolean; data?: T; error?: string }> {
   try {
@@ -1006,7 +1105,7 @@ export async function getTemplateById(
  * Create template
  */
 export async function createTemplate(
-  data: CreateTemplateInput
+  data: any
 ): Promise<ActionResponse<Template>> {
   try {
     const validatedData = CreateTemplateSchema.parse(data);
@@ -1043,7 +1142,7 @@ export async function createTemplate(
  * Update template
  */
 export async function updateTemplate(
-  data: UpdateTemplateInput
+  data: any
 ): Promise<ActionResponse<Template>> {
   try {
     const validatedData = UpdateTemplateSchema.parse(data);

@@ -31,7 +31,7 @@ import { auditLog, AUDIT_ACTIONS, extractIPAddress, extractUserAgent } from '@/l
 import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache/constants';
 
 // Types
-import type { ApiResponse } from '@/types/api';
+import type { ApiResponse } from '@/types';
 
 // Utils
 import { formatDate } from '@/utils/dateUtils';
@@ -142,16 +142,32 @@ export async function loginAction(
     const { email, password } = validatedFields.data;
 
     // Call backend authentication endpoint
-    const response = await serverPost<AuthResponse>(
+    const wrappedResponse = await serverPost<any>(
       API_ENDPOINTS.AUTH.LOGIN,
       { email, password },
       {
         cache: 'no-store',
+        requiresAuth: false, // Don't require auth for login endpoint
         next: { tags: [AUTH_CACHE_TAGS.AUTH] }
       }
     );
 
-    // Backend returns AuthResponseDto directly, not wrapped in ApiResponse
+    console.log('[Login Action] Response received:', { 
+      hasResponse: !!wrappedResponse,
+      hasData: !!wrappedResponse?.data,
+      responseKeys: wrappedResponse ? Object.keys(wrappedResponse) : [],
+    });
+
+    // Backend wraps response in ApiResponse format - extract data
+    const response: AuthResponse = wrappedResponse?.data || wrappedResponse;
+
+    console.log('[Login Action] Extracted auth data:', {
+      hasAccessToken: !!response?.accessToken,
+      hasRefreshToken: !!response?.refreshToken,
+      hasUser: !!response?.user,
+    });
+
+    // Check if we have valid authentication data
     if (!response || !response.accessToken) {
       // Audit failed login attempt
       const headersList = await headers();
@@ -185,12 +201,22 @@ export async function loginAction(
     // Set HTTP-only cookies
     const cookieStore = await cookies();
 
+    console.log('[Login Action] Setting auth token:', {
+      tokenLength: token?.length,
+      tokenStart: token?.substring(0, 20)
+    });
+
     cookieStore.set('auth_token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',
+    });
+
+    console.log('[Login Action] Auth token cookie set, verifying:', {
+      cookieExists: !!cookieStore.get('auth_token'),
+      cookieValue: cookieStore.get('auth_token')?.value?.substring(0, 20)
     });
 
     if (refreshToken) {
@@ -224,12 +250,56 @@ export async function loginAction(
     return { success: true };
   } catch (error) {
     console.error('[Login Action] Error:', error);
+    
+    // Handle NextApiClientError with more specific messaging
+    if (error instanceof NextApiClientError) {
+      const errorMessage = error.message || 'Authentication failed. Please check your credentials.';
+      return {
+        errors: {
+          _form: [errorMessage],
+        },
+      };
+    }
+    
     return {
       errors: {
         _form: ['An unexpected error occurred. Please try again.'],
       },
     };
   }
+}
+
+// ==========================================
+// LOGIN PAGE ACTIONS
+// ==========================================
+
+/**
+ * Handle login form submission from login page
+ * Delegates to centralized loginAction and handles redirect
+ */
+export async function handleLoginSubmission(
+  prevState: LoginFormState,
+  formData: FormData
+): Promise<LoginFormState> {
+  const result = await loginAction(prevState, formData);
+
+  if (result.success) {
+    // Successful login - redirect to dashboard
+    revalidatePath('/dashboard', 'page');
+    redirect('/dashboard');
+  }
+
+  return result;
+}
+
+/**
+ * Clear login form state
+ */
+export async function clearLoginForm(): Promise<LoginFormState> {
+  return {
+    success: false,
+    errors: undefined
+  };
 }
 
 /**

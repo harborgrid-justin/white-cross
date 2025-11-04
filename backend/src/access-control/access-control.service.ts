@@ -1231,6 +1231,16 @@ export class AccessControlService {
   async checkIpRestriction(ipAddress: string, userId?: string): Promise<IpRestrictionCheckResult> {
     try {
       const IpRestriction = this.getModel('IpRestriction');
+
+      // If IpRestriction model doesn't exist, skip IP restriction check
+      if (!IpRestriction) {
+        this.logger.warn('IpRestriction model not found, skipping IP restriction check');
+        return {
+          isRestricted: false,
+          reason: undefined,
+        };
+      }
+
       const restriction = await IpRestriction.findOne({
         where: {
           ipAddress,

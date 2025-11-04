@@ -15,7 +15,7 @@ import { HealthDomainService } from './health-domain.service';
 import {
   HealthDomainCreateRecordDto,
   HealthDomainUpdateRecordDto,
-  CreateAllergyDto,
+  HealthDomainCreateAllergyDto,
   HealthDomainUpdateAllergyDto,
   CreateImmunizationDto,
   UpdateImmunizationDto,
@@ -28,7 +28,7 @@ import {
   PaginationDto,
 } from './dto';
 import {
-  CreateExemptionDto,
+  HealthDomainCreateExemptionDto,
   UpdateExemptionDto,
   ExemptionFilterDto,
 } from './dto/exemption.dto';
@@ -136,7 +136,7 @@ export class HealthDomainController {
   @Post('allergies')
   @ApiOperation({ summary: 'Create a new allergy record' })
   @ApiResponse({ status: 201, description: 'Allergy record created successfully' })
-  async createAllergy(@Body() createDto: CreateAllergyDto) {
+  async createAllergy(@Body() createDto: HealthDomainCreateAllergyDto) {
     return this.healthDomainService.createAllergy(createDto);
   }
 
@@ -270,7 +270,7 @@ export class HealthDomainController {
   })
   @ApiResponse({ status: 201, description: 'Exemption created successfully' })
   @ApiResponse({ status: 400, description: 'Invalid exemption data' })
-  async createExemption(@Body() createDto: CreateExemptionDto) {
+  async createExemption(@Body() createDto: HealthDomainCreateExemptionDto) {
     return this.healthDomainService.createExemption(createDto);
   }
 

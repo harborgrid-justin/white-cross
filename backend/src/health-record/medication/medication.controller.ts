@@ -19,7 +19,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { MedicationService } from './medication.service';
-import { CreateMedicationDto } from './dto/create-medication.dto';
+import { HealthRecordCreateMedicationDto } from './dto/create-medication.dto';
 import { UpdateMedicationDto } from './dto/update-medication.dto';
 import { Medication } from '../../database/models/medication.model';
 
@@ -37,7 +37,7 @@ export class MedicationController {
     type: Medication,
   })
   @ApiResponse({ status: 409, description: 'Medication with this NDC already exists' })
-  async create(@Body() createDto: CreateMedicationDto): Promise<Medication> {
+  async create(@Body() createDto: HealthRecordCreateMedicationDto): Promise<Medication> {
     return this.medicationService.create(createDto);
   }
 

@@ -20,8 +20,9 @@
 
 'use server';
 
-import { revalidateTag, revalidatePath } from 'next/cache';
-import { unstable_cache } from 'next/cache';
+import { revalidatePath } from 'next/cache';
+import { serverGet } from '@/lib/api/nextjs-client';
+import type { ApiResponse } from '@/types';
 
 /**
  * Dashboard Statistics Interface
@@ -104,49 +105,47 @@ export interface DashboardFilters {
  * @param filters - Optional filters for statistics
  * @returns Promise<DashboardStats>
  */
-export const getDashboardStats = unstable_cache(
-  async (filters: DashboardFilters = {}): Promise<DashboardStats> => {
-    try {
-      console.log('[Dashboard] Loading dashboard statistics with filters:', filters);
+export async function getDashboardStats(filters: DashboardFilters = {}): Promise<DashboardStats> {
+  try {
+    console.log('[Dashboard] Loading dashboard statistics from backend with filters:', filters);
 
-      // In production, this would query the database
-      // For now, return realistic healthcare statistics
-      const stats: DashboardStats = {
-        totalStudents: 847,
-        activeStudents: 823,
-        healthAlerts: 12,
-        pendingMedications: 8,
-        appointmentsToday: 15,
-        completedScreenings: 95,
-        immunizationCompliance: 94.8,
-        emergencyContacts: 98.2
-      };
+    const wrappedResponse = await serverGet<ApiResponse<any>>('/dashboard/stats', undefined, {
+      cache: 'no-store', // Fresh data for dashboard
+    });
 
-      console.log('[Dashboard] Dashboard statistics loaded successfully');
-      return stats;
+    const backendStats = wrappedResponse?.data || {};
+    
+    // Map backend response to frontend interface
+    const stats: DashboardStats = {
+      totalStudents: backendStats.totalStudents || 0,
+      activeStudents: backendStats.activeStudents || 0,
+      healthAlerts: backendStats.criticalHealthAlerts || 0,
+      pendingMedications: backendStats.activeMedications || 0,
+      appointmentsToday: backendStats.todaysAppointments || 0,
+      completedScreenings: backendStats.completedScreenings || 0,
+      immunizationCompliance: backendStats.immunizationCompliance || 0,
+      emergencyContacts: backendStats.emergencyContacts || 0
+    };
 
-    } catch (error) {
-      console.error('[Dashboard] Failed to load dashboard statistics:', error);
-      
-      // Return safe defaults on error
-      return {
-        totalStudents: 0,
-        activeStudents: 0,
-        healthAlerts: 0,
-        pendingMedications: 0,
-        appointmentsToday: 0,
-        completedScreenings: 0,
-        immunizationCompliance: 0,
-        emergencyContacts: 0
-      };
-    }
-  },
-  ['dashboard-stats'],
-  {
-    revalidate: 300, // 5 minutes for real-time dashboard
-    tags: ['dashboard', 'statistics']
+    console.log('[Dashboard] Dashboard statistics loaded successfully from backend');
+    return stats;
+
+  } catch (error) {
+    console.error('[Dashboard] Failed to load dashboard statistics:', error);
+    
+    // Return safe defaults on error
+    return {
+      totalStudents: 0,
+      activeStudents: 0,
+      healthAlerts: 0,
+      pendingMedications: 0,
+      appointmentsToday: 0,
+      completedScreenings: 0,
+      immunizationCompliance: 0,
+      emergencyContacts: 0
+    };
   }
-);
+}
 
 /**
  * Get Health Alerts
@@ -155,8 +154,7 @@ export const getDashboardStats = unstable_cache(
  * @param filters - Alert filtering options
  * @returns Promise<HealthAlert[]>
  */
-export const getHealthAlerts = unstable_cache(
-  async (filters: DashboardFilters = {}): Promise<HealthAlert[]> => {
+export async function getHealthAlerts(filters: DashboardFilters = {}): Promise<HealthAlert[]> {
     try {
       console.log('[Dashboard] Loading health alerts with filters:', filters);
 
@@ -215,13 +213,7 @@ export const getHealthAlerts = unstable_cache(
       console.error('[Dashboard] Failed to load health alerts:', error);
       return [];
     }
-  },
-  ['health-alerts'],
-  {
-    revalidate: 60, // 1 minute for critical health alerts
-    tags: ['dashboard', 'health-alerts']
-  }
-);
+}
 
 /**
  * Get Recent Activities
@@ -231,8 +223,7 @@ export const getHealthAlerts = unstable_cache(
  * @param limit - Maximum number of activities to return
  * @returns Promise<RecentActivity[]>
  */
-export const getRecentActivities = unstable_cache(
-  async (filters: DashboardFilters = {}, limit: number = 10): Promise<RecentActivity[]> => {
+export async function getRecentActivities(filters: DashboardFilters = {}, limit: number = 10): Promise<RecentActivity[]> {
     try {
       console.log('[Dashboard] Loading recent activities with filters:', filters);
 
@@ -304,13 +295,7 @@ export const getRecentActivities = unstable_cache(
       console.error('[Dashboard] Failed to load recent activities:', error);
       return [];
     }
-  },
-  ['recent-activities'],
-  {
-    revalidate: 180, // 3 minutes for activity updates
-    tags: ['dashboard', 'activities']
-  }
-);
+}
 
 /**
  * Get System Status
@@ -318,49 +303,42 @@ export const getRecentActivities = unstable_cache(
  * 
  * @returns Promise<SystemStatus>
  */
-export const getSystemStatus = unstable_cache(
-  async (): Promise<SystemStatus> => {
-    try {
-      console.log('[Dashboard] Loading system status');
+export async function getSystemStatus(): Promise<SystemStatus> {
+  try {
+    console.log('[Dashboard] Loading system status');
 
-      // In production, this would check actual system health
-      const status: SystemStatus = {
-        apiHealth: 'healthy',
-        databaseHealth: 'healthy',
-        integrationStatus: 'connected',
-        backupStatus: 'current',
-        securityStatus: 'secure',
-        lastHealthCheck: new Date().toISOString(),
-        activeUsers: 45,
-        systemLoad: 23.5,
-        uptime: '99.8%'
-      };
+    // In production, this would check actual system health
+    const status: SystemStatus = {
+      apiHealth: 'healthy',
+      databaseHealth: 'healthy',
+      integrationStatus: 'connected',
+      backupStatus: 'current',
+      securityStatus: 'secure',
+      lastHealthCheck: new Date().toISOString(),
+      activeUsers: 45,
+      systemLoad: 23.5,
+      uptime: '99.8%'
+    };
 
-      console.log('[Dashboard] System status loaded successfully');
-      return status;
+    console.log('[Dashboard] System status loaded successfully');
+    return status;
 
-    } catch (error) {
-      console.error('[Dashboard] Failed to load system status:', error);
-      
-      return {
-        apiHealth: 'down',
-        databaseHealth: 'down',
-        integrationStatus: 'disconnected',
-        backupStatus: 'failed',
-        securityStatus: 'warning',
-        lastHealthCheck: new Date().toISOString(),
-        activeUsers: 0,
-        systemLoad: 0,
-        uptime: 'Unknown'
-      };
-    }
-  },
-  ['system-status'],
-  {
-    revalidate: 120, // 2 minutes for system monitoring
-    tags: ['dashboard', 'system-status']
+  } catch (error) {
+    console.error('[Dashboard] Failed to load system status:', error);
+    
+    return {
+      apiHealth: 'down',
+      databaseHealth: 'down',
+      integrationStatus: 'disconnected',
+      backupStatus: 'failed',
+      securityStatus: 'warning',
+      lastHealthCheck: new Date().toISOString(),
+      activeUsers: 0,
+      systemLoad: 0,
+      uptime: 'Unknown'
+    };
   }
-);
+}
 
 /**
  * Get Combined Dashboard Data
@@ -383,22 +361,25 @@ export const getDashboardData = async (filters: DashboardFilters = {}) => {
 
     console.log('[Dashboard] Combined dashboard data loaded successfully');
 
-    return {
-      stats,
-      alerts,
-      activities,
-      systemStatus
+    // Ensure data is fully serializable by removing any non-serializable properties
+    const serializedData = {
+      stats: JSON.parse(JSON.stringify(stats)),
+      alerts: JSON.parse(JSON.stringify(alerts)),
+      activities: JSON.parse(JSON.stringify(activities)),
+      systemStatus: JSON.parse(JSON.stringify(systemStatus))
     };
+
+    return serializedData;
 
   } catch (error) {
     console.error('[Dashboard] Failed to load combined dashboard data:', error);
     
     // Return safe defaults on error
     return {
-      stats: await getDashboardStats({}),
+      stats: JSON.parse(JSON.stringify(await getDashboardStats({}))),
       alerts: [],
       activities: [],
-      systemStatus: await getSystemStatus()
+      systemStatus: JSON.parse(JSON.stringify(await getSystemStatus()))
     };
   }
 };

@@ -2,7 +2,7 @@ import { IsString, IsEnum, IsOptional, IsBoolean } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AllergySeverity, AllergyType } from '../../health-record/interfaces/allergy.interface';
 
-export class CreateAllergyDto {
+export class HealthDomainCreateAllergyDto {
   @ApiProperty()
   @IsString()
   studentId: string;

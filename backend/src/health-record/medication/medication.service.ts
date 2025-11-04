@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Medication } from '../../database/models/medication.model';
-import { CreateMedicationDto } from './dto/create-medication.dto';
+import { HealthRecordCreateMedicationDto } from './dto/create-medication.dto';
 import { UpdateMedicationDto } from './dto/update-medication.dto';
 import { Op } from 'sequelize';
 
@@ -15,7 +15,7 @@ export class MedicationService {
   /**
    * Create a new medication
    */
-  async create(createDto: CreateMedicationDto): Promise<Medication> {
+  async create(createDto: HealthRecordCreateMedicationDto): Promise<Medication> {
     // Check if medication with same NDC already exists
     if (createDto.ndc) {
       const existing = await this.medicationModel.findOne({

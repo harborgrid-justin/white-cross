@@ -36,8 +36,8 @@ import type {
   TransferStudentRequest,
   BulkUpdateStudentsRequest,
   Gender
-} from '@/types/student.types';
-import type { ApiResponse } from '@/types/api';
+} from '@/types/domain/student.types';
+import type { ApiResponse } from '@/types';
 
 // Utils
 import { formatDate } from '@/utils/dateUtils';
@@ -66,7 +66,8 @@ export interface ActionResult<T = unknown> {
  */
 export const getStudent = cache(async (id: string): Promise<Student | null> => {
   try {
-    const response = await serverGet<Student>(
+    // Backend wraps response in ApiResponse format
+    const wrappedResponse = await serverGet<ApiResponse<Student>>(
       API_ENDPOINTS.STUDENTS.BY_ID(id),
       undefined,
       {
@@ -78,7 +79,8 @@ export const getStudent = cache(async (id: string): Promise<Student | null> => {
       }
     );
 
-    return response;
+    // Extract the student from wrappedResponse.data
+    return wrappedResponse?.data || null;
   } catch (error) {
     console.error('Failed to get student:', error);
     return null;
@@ -91,8 +93,8 @@ export const getStudent = cache(async (id: string): Promise<Student | null> => {
  */
 export const getStudents = cache(async (filters?: StudentFilters): Promise<Student[]> => {
   try {
-    // Backend returns { data: Student[] } format
-    const response = await serverGet<{ data: Student[] }>(
+    // Backend wraps response in ApiResponse format: { success, statusCode, message, data, meta }
+    const wrappedResponse = await serverGet<ApiResponse<{ data: Student[] }>>(
       API_ENDPOINTS.STUDENTS.BASE,
       filters as Record<string, string | number | boolean>,
       {
@@ -104,8 +106,10 @@ export const getStudents = cache(async (filters?: StudentFilters): Promise<Stude
       }
     );
 
-    // Extract the students array from response.data
-    return response?.data || [];
+    // Extract the students array from wrappedResponse.data.data
+    // Backend returns: { data: { data: Student[] } }
+    const students = wrappedResponse?.data?.data || wrappedResponse?.data || [];
+    return Array.isArray(students) ? students : [];
   } catch (error) {
     console.error('Failed to get students:', error);
     return [];
@@ -123,7 +127,8 @@ export const searchStudents = cache(async (query: string, filters?: StudentFilte
       ...filters
     };
 
-    const response = await serverGet<{ data: Student[] }>(
+    // Backend wraps response in ApiResponse format
+    const wrappedResponse = await serverGet<ApiResponse<{ data: Student[] }>>(
       API_ENDPOINTS.STUDENTS.SEARCH,
       searchParams as Record<string, string | number | boolean>,
       {
@@ -135,8 +140,9 @@ export const searchStudents = cache(async (query: string, filters?: StudentFilte
       }
     );
 
-    // Extract the students array from response.data
-    return response?.data || [];
+    // Extract the students array from wrappedResponse.data.data
+    const students = wrappedResponse?.data?.data || wrappedResponse?.data || [];
+    return Array.isArray(students) ? students : [];
   } catch (error) {
     console.error('Failed to search students:', error);
     return [];
@@ -158,7 +164,8 @@ export const getPaginatedStudents = cache(async (
       ...filters
     };
 
-    const response = await serverGet<ApiResponse<PaginatedStudentsResponse>>(
+    // Backend wraps response in ApiResponse format
+    const wrappedResponse = await serverGet<ApiResponse<PaginatedStudentsResponse>>(
       API_ENDPOINTS.STUDENTS.BASE,
       params as Record<string, string | number | boolean>,
       {
@@ -170,7 +177,8 @@ export const getPaginatedStudents = cache(async (
       }
     );
 
-    return response.data;
+    // Extract the pagination response from wrappedResponse.data
+    return wrappedResponse?.data || null;
   } catch (error) {
     console.error('Failed to get paginated students:', error);
     return null;

@@ -9,7 +9,7 @@ import {
   Server,
   AlertCircle,
 } from 'lucide-react';
-import type { getSystemHealth } from '@/app/admin/_actions/monitoring';
+import type { getSystemHealth } from '@/lib/actions/admin.actions';
 
 interface SystemHealthDisplayProps {
   health: Awaited<ReturnType<typeof getSystemHealth>>;

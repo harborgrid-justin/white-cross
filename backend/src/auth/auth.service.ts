@@ -375,6 +375,8 @@ export class AuthService {
     const accessToken = this.jwtService.sign(payload, {
       secret: jwtSecret,
       expiresIn: this.accessTokenExpiry,
+      issuer: 'white-cross-healthcare',
+      audience: 'white-cross-api',
     });
 
     const refreshPayload: JwtPayload = {
@@ -387,6 +389,8 @@ export class AuthService {
     const refreshToken = this.jwtService.sign(refreshPayload, {
       secret: refreshSecret,
       expiresIn: this.refreshTokenExpiry,
+      issuer: 'white-cross-healthcare',
+      audience: 'white-cross-api',
     });
 
     return { accessToken, refreshToken };

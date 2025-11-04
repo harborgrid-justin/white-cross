@@ -49,7 +49,7 @@ export enum ExemptionStatus {
  * Create Exemption Request DTO
  * Used when recording a new vaccine exemption
  */
-export class CreateExemptionDto {
+export class HealthDomainCreateExemptionDto {
   @ApiProperty({
     description: 'Student UUID',
     example: '123e4567-e89b-12d3-a456-426614174000',
@@ -223,7 +223,7 @@ export class CreateExemptionDto {
  * Update Exemption DTO
  * Partial update of existing exemption
  */
-export class UpdateExemptionDto extends PartialType(CreateExemptionDto) {
+export class UpdateExemptionDto extends PartialType(HealthDomainCreateExemptionDto) {
   @ApiProperty({
     description: 'Exemption status',
     enum: ExemptionStatus,

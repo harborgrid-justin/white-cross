@@ -47,6 +47,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Users, CheckCircle, AlertTriangle, Clock, Award } from 'lucide-react';
+import { getTrainingRecordsAction } from '@/lib/actions/compliance.actions';
 
 /**
  * Page metadata for SEO and browser display
@@ -117,8 +118,12 @@ export const metadata: Metadata = {
  * @see {@link getTrainingData} for server-side data fetching
  */
 export default async function TrainingCompliancePage() {
-  // TODO: Replace with actual server action
-  const { stats, users, courses } = await getTrainingData();
+  // Fetch training data using server action
+  const trainingResult = await getTrainingRecordsAction();
+  if (!trainingResult.success || !trainingResult.data) {
+    throw new Error(trainingResult.error || 'Failed to load training data');
+  }
+  const { stats, users, courses } = trainingResult.data;
 
   return (
     <div className="space-y-6">
@@ -285,130 +290,6 @@ export default async function TrainingCompliancePage() {
       </Card>
     </div>
   );
-}
-
-/**
- * Fetches comprehensive training compliance data
- *
- * Retrieves aggregated training statistics, course information, and individual
- * staff training status from the Learning Management System.
- *
- * @async
- * @returns {Promise<Object>} Training compliance data
- * @returns {Object} return.stats - Aggregated training statistics
- * @returns {Array<Object>} return.courses - Required training courses
- * @returns {Array<Object>} return.users - Individual staff training status
- *
- * @description
- * **Stats Structure:**
- * - total: Total training assignments
- * - completed: Completed training count
- * - inProgress: Currently in-progress count
- * - overdue: Past deadline count
- * - completionRate: Percentage (0-100)
- * - certifications: Active certification count
- * - expiringSoon: Certifications expiring within 30 days
- *
- * **Course Structure:**
- * - id: Unique course identifier
- * - title: Course display name
- * - description: Course content summary
- * - priority: Training priority level (MANDATORY, REQUIRED, RECOMMENDED)
- * - stats: Course-specific completion statistics
- *
- * **User Structure:**
- * - id: User identifier
- * - name: Full name
- * - role: Job role/title
- * - training: User's training status
- *   - required: Count of required courses
- *   - completed: Count of completed courses
- *   - overdue: Count of overdue assignments
- *   - status: Overall compliance status
- *
- * @example
- * ```typescript
- * const { stats, courses, users } = await getTrainingData();
- * console.log(`Completion rate: ${stats.completionRate}%`);
- * console.log(`Overdue users: ${users.filter(u => u.training.overdue > 0).length}`);
- * ```
- *
- * @todo Replace with actual LMS integration
- * @todo Implement caching with 15-minute TTL
- * @todo Add real-time progress tracking from LMS webhooks
- */
-async function getTrainingData() {
-  const mockStats = {
-    total: 150,
-    completed: 127,
-    inProgress: 18,
-    overdue: 5,
-    completionRate: 85,
-    certifications: 42,
-    expiringSoon: 3,
-  };
-
-  const mockCourses = [
-    {
-      id: '1',
-      title: 'HIPAA Privacy and Security Training',
-      description: 'Annual HIPAA compliance training for all staff',
-      priority: 'MANDATORY',
-      stats: { completed: 42, inProgress: 3, overdue: 2 },
-    },
-    {
-      id: '2',
-      title: 'Medication Administration Certification',
-      description: 'Required certification for medication administration',
-      priority: 'MANDATORY',
-      stats: { completed: 15, inProgress: 2, overdue: 1 },
-    },
-    {
-      id: '3',
-      title: 'Emergency Response Procedures',
-      description: 'Emergency preparedness and response training',
-      priority: 'REQUIRED',
-      stats: { completed: 38, inProgress: 5, overdue: 2 },
-    },
-  ];
-
-  const mockUsers = [
-    {
-      id: '1',
-      name: 'Jane Smith',
-      role: 'School Nurse',
-      training: {
-        required: 8,
-        completed: 7,
-        overdue: 1,
-        status: 'OVERDUE',
-      },
-    },
-    {
-      id: '2',
-      name: 'John Doe',
-      role: 'Administrator',
-      training: {
-        required: 6,
-        completed: 6,
-        overdue: 0,
-        status: 'COMPLIANT',
-      },
-    },
-    {
-      id: '3',
-      name: 'Sarah Johnson',
-      role: 'School Nurse',
-      training: {
-        required: 8,
-        completed: 6,
-        overdue: 0,
-        status: 'IN_PROGRESS',
-      },
-    },
-  ];
-
-  return { stats: mockStats, courses: mockCourses, users: mockUsers };
 }
 
 /**

@@ -8,8 +8,7 @@
  * @wcag WCAG 2.1 AA Compliant
  */
 
-@layer base {
-  :root {
+:root {
     /* ==========================================
      * SEMANTIC COLOR TOKENS (HSL Format)
      * These are the primary tokens to use in components
@@ -421,7 +420,6 @@
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
     --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   }
-}
 
 /* ==========================================
  * ACCESSIBILITY UTILITIES

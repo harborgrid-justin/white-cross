@@ -48,6 +48,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import Link from 'next/link';
+import { getAuditLogsAction } from '@/lib/actions/compliance.actions';
 
 /**
  * Page metadata for SEO and browser display
@@ -160,8 +161,28 @@ export default async function AuditLogsPage({ searchParams }: AuditLogsPageProps
     phiOnly: searchParams.phiOnly === 'true',
   };
 
-  // TODO: Replace with actual server action
-  const { logs, pagination, chainStatus } = await getAuditLogs(page, filters);
+  // Get audit logs with proper server action
+  const result = await getAuditLogsAction({
+    ...filters,
+    page,
+    pageSize: 50 // Default page size
+  });
+
+  if (!result.success) {
+    throw new Error(result.error || 'Failed to fetch audit logs');
+  }
+
+  const auditData = result.data!;
+  const logs = auditData.data;
+  const pagination = {
+    ...auditData.pagination,
+    start: (auditData.pagination.page - 1) * auditData.pagination.pageSize + 1,
+    end: Math.min(auditData.pagination.page * auditData.pagination.pageSize, auditData.pagination.total),
+  };
+  const chainStatus = {
+    ...auditData.chainStatus,
+    verifiedCount: logs.length, // Assume all logs are verified for now
+  };
 
   return (
     <div className="space-y-6">
@@ -431,87 +452,9 @@ export default async function AuditLogsPage({ searchParams }: AuditLogsPageProps
  * console.log(`Retrieved ${logs.length} audit entries`);
  * ```
  *
- * @todo Replace with actual server action connected to database
  * @todo Implement real SHA-256 hash verification
  * @todo Add rate limiting to prevent audit log enumeration
  */
-async function getAuditLogs(page: number, filters: any) {
-  const mockLogs = [
-    {
-      id: '1',
-      timestamp: new Date().toISOString(),
-      action: 'PHI_VIEW',
-      severity: 'INFO',
-      userId: 'user-1',
-      userName: 'Jane Smith',
-      userRole: 'School Nurse',
-      resourceType: 'HEALTH_RECORD',
-      resourceId: '123e4567-e89b-12d3-a456-426614174000',
-      ipAddress: '192.168.1.100',
-      status: 'SUCCESS',
-      phiAccessed: true,
-      verificationHash: 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6',
-      previousHash: 'z6y5x4w3v2u1t0s9r8q7p6o5n4m3l2k1j0i9h8g7f6e5d4c3b2a1',
-      verified: true,
-      complianceFlags: [],
-      details: { recordType: 'Medical History' },
-    },
-    {
-      id: '2',
-      timestamp: new Date(Date.now() - 300000).toISOString(),
-      action: 'POLICY_ACKNOWLEDGMENT',
-      severity: 'INFO',
-      userId: 'user-2',
-      userName: 'John Doe',
-      userRole: 'Administrator',
-      resourceType: 'POLICY',
-      resourceId: '987f6543-c21b-43d2-a765-876543210987',
-      ipAddress: '192.168.1.101',
-      status: 'SUCCESS',
-      phiAccessed: false,
-      verificationHash: 'b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a7',
-      previousHash: 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6',
-      verified: true,
-      complianceFlags: [],
-      details: { policyId: 'HIPAA-2024-001' },
-    },
-    {
-      id: '3',
-      timestamp: new Date(Date.now() - 600000).toISOString(),
-      action: 'PHI_BULK_ACCESS',
-      severity: 'CRITICAL',
-      userId: 'user-1',
-      userName: 'Jane Smith',
-      userRole: 'School Nurse',
-      resourceType: 'HEALTH_RECORD',
-      ipAddress: '192.168.1.100',
-      status: 'SUCCESS',
-      phiAccessed: true,
-      verificationHash: 'c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a7b8',
-      previousHash: 'b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a7',
-      verified: true,
-      complianceFlags: ['BULK_OPERATION', 'AFTER_HOURS_ACCESS'],
-      details: { recordCount: 75 },
-    },
-  ];
-
-  return {
-    logs: mockLogs,
-    pagination: {
-      page,
-      pages: 10,
-      total: 127,
-      start: (page - 1) * 20 + 1,
-      end: Math.min(page * 20, 127),
-    },
-    chainStatus: {
-      valid: true,
-      verifiedCount: 127,
-      firstInvalidIndex: null,
-    },
-  };
-}
-
 /**
  * Maps audit log severity level to UI badge variant
  *

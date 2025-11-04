@@ -13,7 +13,8 @@ import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
-  Logger
+  Logger,
+  Optional
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import {
@@ -56,7 +57,7 @@ export class PermissionsGuard implements CanActivate {
 
   constructor(
     private readonly reflector: Reflector,
-    config?: RbacConfig
+    @Optional() config?: RbacConfig
   ) {
     this.config = {
       enableHierarchy: true,

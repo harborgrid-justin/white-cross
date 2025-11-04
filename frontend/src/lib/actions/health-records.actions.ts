@@ -28,6 +28,8 @@ import { revalidatePath, revalidateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z, type ZodIssue } from 'zod';
 import { cacheLife, cacheTag } from 'next/cache';
+import { serverGet } from '@/lib/api/nextjs-client';
+import type { ApiResponse } from '@/types';
 
 // Import schemas
 import {
@@ -249,58 +251,39 @@ export async function createHealthRecordAction(
  */
 export async function getHealthRecordsAction(studentId?: string, recordType?: string) {
   try {
-    const token = await getAuthToken();
-    if (!token) {
-      console.error('[Health Records] Authentication token not found');
-      throw new Error('Authentication required. Please log in.');
-    }
-
-    // Backend uses different endpoints based on whether studentId is provided
-    let url: string;
+    // Build endpoint and params based on whether studentId is provided
+    let endpoint: string;
+    const params: Record<string, string> = {};
+    
     if (studentId) {
       // Get records for a specific student
-      url = `${BACKEND_URL}/health-record/student/${studentId}`;
-      // Add recordType as query param if provided
+      endpoint = `/health-record/student/${studentId}`;
       if (recordType) {
-        url += `?recordType=${recordType}`;
+        params.recordType = recordType;
       }
     } else {
       // Get all health records across all students
-      url = `${BACKEND_URL}/health-record`;
-      // Add recordType as query param if provided
+      endpoint = '/health-record';
       if (recordType) {
-        url += `?type=${recordType}`;
+        params.type = recordType;
       }
     }
 
-    console.log('[Health Records] Fetching from:', url);
+    console.log('[Health Records] Fetching from:', endpoint, params);
+    
+    const wrappedResponse = await serverGet<ApiResponse<{ data: unknown[] }>>(
+      endpoint,
+      params,
+      {
+        cache: 'no-store', // Fresh data for health records
+      }
+    );
 
-    const response = await enhancedFetch(url, {
-      method: 'GET'
+    console.log('[Health Records] Response structure:', {
+      hasData: !!wrappedResponse.data,
+      dataType: typeof wrappedResponse.data,
+      isArray: Array.isArray(wrappedResponse.data)
     });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      let errorMessage = `Backend error (${response.status}): ${response.statusText}`;
-      
-      try {
-        const errorJson = JSON.parse(errorText);
-        errorMessage = errorJson.message || errorMessage;
-      } catch {
-        // If not JSON, use the text or default message
-        errorMessage = errorText || errorMessage;
-      }
-      
-      console.error('[Health Records] Backend error:', {
-        status: response.status,
-        statusText: response.statusText,
-        error: errorMessage
-      });
-      
-      throw new Error(errorMessage);
-    }
-
-    const result = await response.json();
 
     // HIPAA AUDIT LOG - PHI access
     const auditContext = await createAuditContext();
@@ -312,13 +295,36 @@ export async function getHealthRecordsAction(studentId?: string, recordType?: st
       success: true
     });
 
-    console.log('[Health Records] Successfully fetched records:', result.data?.length || result?.length || 0);
+    // Backend wraps response in ApiResponse format: { success, statusCode, data: {...} }
+    // The actual health records might be in wrappedResponse.data.data or wrappedResponse.data
+    let healthRecords: unknown[] = [];
+    
+    if (wrappedResponse.data) {
+      // If wrappedResponse.data is an array, use it directly
+      if (Array.isArray(wrappedResponse.data)) {
+        healthRecords = wrappedResponse.data;
+      }
+      // If wrappedResponse.data has a data property (double-wrapped), extract it
+      else if (typeof wrappedResponse.data === 'object' && 'data' in wrappedResponse.data) {
+        const nested = wrappedResponse.data as { data?: unknown[] };
+        if (nested.data && Array.isArray(nested.data)) {
+          healthRecords = nested.data;
+        }
+      }
+      // If wrappedResponse.data is an object with records property
+      else if (typeof wrappedResponse.data === 'object' && 'records' in wrappedResponse.data) {
+        const nested = wrappedResponse.data as { records?: unknown[] };
+        if (nested.records && Array.isArray(nested.records)) {
+          healthRecords = nested.records;
+        }
+      }
+    }
 
-    // Backend returns: { data: HealthRecord[], meta: {...} }
-    // Extract the health records array from result.data
+    console.log('[Health Records] Successfully fetched records:', healthRecords.length);
+
     return {
       success: true,
-      data: result.data || []
+      data: healthRecords
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to fetch health records';

@@ -1,4 +1,4 @@
-import { QueryInterface, DataTypes } from 'sequelize';
+﻿'use strict';
 
 /**
  * Migration: Add MFA, OAuth, and Email Verification fields to users table
@@ -8,8 +8,9 @@ import { QueryInterface, DataTypes } from 'sequelize';
  * - OAuth provider integration
  * - Enhanced email verification tracking
  */
-export default {
-  async up(queryInterface: QueryInterface): Promise<void> {
+
+module.exports = {
+  up: async (queryInterface, Sequelize) => {
     const transaction = await queryInterface.sequelize.transaction();
 
     try {
@@ -22,7 +23,7 @@ export default {
           'users',
           'mfaEnabled',
           {
-            type: DataTypes.BOOLEAN,
+            type: Sequelize.BOOLEAN,
             allowNull: false,
             defaultValue: false,
             comment: 'Whether multi-factor authentication is enabled',
@@ -36,7 +37,7 @@ export default {
           'users',
           'mfaSecret',
           {
-            type: DataTypes.STRING(255),
+            type: Sequelize.STRING(255),
             allowNull: true,
             comment: 'TOTP secret for MFA (encrypted)',
           },
@@ -49,7 +50,7 @@ export default {
           'users',
           'mfaBackupCodes',
           {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: true,
             comment: 'JSON array of hashed backup codes for MFA recovery',
           },
@@ -62,7 +63,7 @@ export default {
           'users',
           'mfaEnabledAt',
           {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             allowNull: true,
             comment: 'Timestamp when MFA was enabled',
           },
@@ -76,7 +77,7 @@ export default {
           'users',
           'oauthProvider',
           {
-            type: DataTypes.STRING(50),
+            type: Sequelize.STRING(50),
             allowNull: true,
             comment: 'OAuth provider (google, microsoft, etc.)',
           },
@@ -89,7 +90,7 @@ export default {
           'users',
           'oauthProviderId',
           {
-            type: DataTypes.STRING(255),
+            type: Sequelize.STRING(255),
             allowNull: true,
             comment: 'User ID from OAuth provider',
           },
@@ -102,7 +103,7 @@ export default {
           'users',
           'profilePictureUrl',
           {
-            type: DataTypes.STRING(500),
+            type: Sequelize.STRING(500),
             allowNull: true,
             comment: 'URL to user profile picture',
           },
@@ -116,7 +117,7 @@ export default {
           'users',
           'isEmailVerified',
           {
-            type: DataTypes.BOOLEAN,
+            type: Sequelize.BOOLEAN,
             allowNull: false,
             defaultValue: false,
             comment: 'Whether email address has been verified',
@@ -130,7 +131,7 @@ export default {
           'users',
           'emailVerifiedAt',
           {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             allowNull: true,
             comment: 'Timestamp when email was verified',
           },
@@ -163,7 +164,7 @@ export default {
     }
   },
 
-  async down(queryInterface: QueryInterface): Promise<void> {
+  down: async (queryInterface, Sequelize) => {
     const transaction = await queryInterface.sequelize.transaction();
 
     try {

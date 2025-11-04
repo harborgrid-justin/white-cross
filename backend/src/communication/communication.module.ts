@@ -12,6 +12,9 @@ import { ConversationParticipant } from '../database/models/conversation-partici
 import { EncryptionModule } from '../infrastructure/encryption/encryption.module';
 import { MessageQueueModule } from '../infrastructure/queue/message-queue.module';
 
+// Auth Module for JWT and token services
+import { AuthModule } from '../auth/auth.module';
+
 // Controllers
 import { MessageController } from './controllers/message.controller';
 import { BroadcastController } from './controllers/broadcast.controller';
@@ -45,6 +48,7 @@ import { CommunicationGateway } from './gateways/communication.gateway';
     ]),
     EncryptionModule,
     MessageQueueModule,
+    AuthModule,
   ],
   controllers: [
     MessageController,

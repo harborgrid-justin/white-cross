@@ -50,7 +50,7 @@ import { useSearchParams } from 'next/navigation';
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import Link from 'next/link';
-import { handleLoginSubmission } from './actions';
+import { handleLoginSubmission } from '@/lib/actions/auth.actions';
 
 /**
  * Submit Button Component with loading state

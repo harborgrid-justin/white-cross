@@ -43,6 +43,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FileText, Download, Plus, TrendingUp } from 'lucide-react';
+import { getComplianceReportsAction } from '@/lib/actions/compliance.actions';
 
 /**
  * Page metadata for SEO and browser display
@@ -104,8 +105,12 @@ export const metadata: Metadata = {
  * @see {@link getComplianceReports} for retrieving generated reports
  */
 export default async function ComplianceReportsPage() {
-  // TODO: Replace with actual server action
-  const { reports, templates } = await getComplianceReports();
+  // Fetch reports and templates using server action
+  const reportsResult = await getComplianceReportsAction();
+  if (!reportsResult.success || !reportsResult.data) {
+    throw new Error(reportsResult.error || 'Failed to load compliance reports');
+  }
+  const { reports, templates } = reportsResult.data;
 
   return (
     <div className="space-y-6">
@@ -231,60 +236,6 @@ export default async function ComplianceReportsPage() {
  * @todo Implement report retention policy (auto-delete after 2 years)
  * @todo Add report generation queue status
  */
-async function getComplianceReports() {
-  const mockTemplates = [
-    {
-      id: '1',
-      name: 'HIPAA Security Assessment',
-      description: 'Comprehensive security risk assessment report',
-    },
-    {
-      id: '2',
-      name: 'Audit Trail Report',
-      description: 'Detailed audit log analysis and compliance verification',
-    },
-    {
-      id: '3',
-      name: 'Training Compliance',
-      description: 'Staff training completion and certification status',
-    },
-    {
-      id: '4',
-      name: 'Data Breach Analysis',
-      description: 'Breach notification and incident response report',
-    },
-  ];
-
-  const mockReports = [
-    {
-      id: '1',
-      title: 'Q1 2024 HIPAA Compliance Report',
-      type: 'SECURITY_RISK_ASSESSMENT',
-      status: 'FINALIZED',
-      generatedAt: '2024-04-01T00:00:00Z',
-      generatedBy: 'Admin User',
-      period: {
-        start: '2024-01-01T00:00:00Z',
-        end: '2024-03-31T23:59:59Z',
-      },
-    },
-    {
-      id: '2',
-      title: 'March 2024 Audit Trail Report',
-      type: 'AUDIT_TRAIL',
-      status: 'FINALIZED',
-      generatedAt: '2024-04-01T00:00:00Z',
-      generatedBy: 'Compliance Officer',
-      period: {
-        start: '2024-03-01T00:00:00Z',
-        end: '2024-03-31T23:59:59Z',
-      },
-    },
-  ];
-
-  return { templates: mockTemplates, reports: mockReports };
-}
-
 /**
  * Maps report status to UI badge variant
  *

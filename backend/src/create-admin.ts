@@ -15,15 +15,28 @@ async function createAdminUser() {
     // Create NestJS application
     const app = await NestFactory.create(AppModule, { logger: false });
     
-    console.log('📋 Creating admin user...');
+    console.log('📋 Checking for existing admin user...');
     
-    // Hash the password
-    const hashedPassword = await bcrypt.hash('admin123', 10);
+    // Check if admin user already exists
+    const existingAdmin = await User.findOne({
+      where: { email: 'admin@whitecross.health' }
+    });
     
-    // Create admin user
+    if (existingAdmin) {
+      console.log('⚠️  Admin user already exists!');
+      console.log('📧 Email: admin@whitecross.health');
+      console.log('👤 User ID:', existingAdmin.id);
+      console.log('ℹ️  If you need to reset the password, delete the user first.');
+      await app.close();
+      return;
+    }
+    
+    console.log('📝 Creating new admin user...');
+    
+    // Create admin user - password will be hashed by @BeforeCreate hook
     const adminUser = await User.create({
       email: 'admin@whitecross.health',
-      password: hashedPassword,
+      password: 'admin123', // Will be hashed by the model's @BeforeCreate hook
       firstName: 'Admin',
       lastName: 'User',
       role: UserRole.ADMIN,

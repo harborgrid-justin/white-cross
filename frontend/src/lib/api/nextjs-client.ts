@@ -297,7 +297,7 @@ export async function nextFetch<T>(
   options: NextFetchOptions = {}
 ): Promise<T> {
   const {
-    requiresAuth = false, // Temporarily disabled for development
+    requiresAuth = true, // Enable authentication by default
     onError,
     retry = { attempts: 3, delay: 1000 },
     timeout = 30000,
@@ -337,13 +337,26 @@ export async function nextFetch<T>(
                           endpoint.includes('/forgot-password') ||
                           endpoint.includes('/reset-password');
 
+    console.log('[Next API Client] Auth check:', {
+      endpoint,
+      hasToken: !!token,
+      tokenStart: token?.substring(0, 20),
+      isAuthEndpoint,
+      requiresAuth
+    });
+
     if (!token && !isAuthEndpoint) {
       // Redirect to login if no token (but not during auth operations)
+      console.log('[Next API Client] No token found, redirecting to login');
       redirect('/login');
     }
 
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
+      console.log('[Next API Client] Added Authorization header:', {
+        authHeaderStart: headers['Authorization'].substring(0, 30),
+        fullAuthHeaderLength: headers['Authorization'].length
+      });
     }
   }
 
@@ -395,10 +408,24 @@ export async function nextFetch<T>(
 
       // Handle different response status codes
       if (!response.ok) {
+        // Log 401 errors for debugging before consuming the response
+        if (response.status === 401) {
+          console.error('[Next API Client] 401 Unauthorized:', {
+            endpoint,
+            status: response.status,
+            statusText: response.statusText,
+            hasAuthHeader: !!headers['Authorization'],
+            authHeaderStart: headers['Authorization']?.substring(0, 30)
+          });
+        }
+        
         const error = await handleErrorResponse(response);
 
         // Handle specific errors with redirects
-        if (response.status === 401) {
+        // Don't redirect on login/auth endpoints to avoid redirect loops
+        const isAuthEndpoint = endpoint.includes('/auth/login') || endpoint.includes('/auth/register');
+        
+        if (response.status === 401 && !isAuthEndpoint) {
           redirect('/login');
         } else if (response.status === 403) {
           redirect('/access-denied');
