@@ -38,11 +38,11 @@ export const utilsLogger = createLogger('utils');
 
 // Utility functions for common logging patterns
 export const logger = {
-  info: (namespace: string, message: string, ...args: any[]) => {
+  info: (namespace: string, message: string, ...args: readonly unknown[]) => {
     createLogger(namespace)('INFO:', message, ...args);
   },
 
-  error: (namespace: string, message: string, error?: Error, ...args: any[]) => {
+  error: (namespace: string, message: string, error?: Error, ...args: readonly unknown[]) => {
     const log = createLogger(namespace);
     log('ERROR:', message, error?.message || error, ...args);
     if (error?.stack) {
@@ -50,11 +50,11 @@ export const logger = {
     }
   },
 
-  warn: (namespace: string, message: string, ...args: any[]) => {
+  warn: (namespace: string, message: string, ...args: readonly unknown[]) => {
     createLogger(namespace)('WARN:', message, ...args);
   },
 
-  debug: (namespace: string, message: string, ...args: any[]) => {
+  debug: (namespace: string, message: string, ...args: readonly unknown[]) => {
     createLogger(namespace)('DEBUG:', message, ...args);
   },
 

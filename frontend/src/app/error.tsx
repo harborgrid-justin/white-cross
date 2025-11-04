@@ -26,11 +26,17 @@ interface AuthErrorProps {
  */
 export default function AuthError({ error, reset }: AuthErrorProps) {
   useEffect(() => {
-    // Log error to monitoring service
+    // Item 234: Log error to monitoring service
     console.error('[Auth Error]', error);
 
-    // TODO: Send to external monitoring service
-    // Example: Sentry.captureException(error, { tags: { route: 'auth' } });
+    // Send to Sentry in production
+    if (process.env.NODE_ENV === 'production') {
+      import('@/monitoring/sentry').then(({ captureException }) => {
+        captureException(error, { route: 'auth' }, 'error');
+      }).catch(err => {
+        console.error('Failed to send error to Sentry:', err);
+      });
+    }
   }, [error]);
 
   return (

@@ -41,6 +41,7 @@ const inter = Inter({
  * Provides base SEO and application metadata for the entire application
  */
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://whitecross.healthcare'),
   title: {
     template: '%s | White Cross Healthcare',
     default: 'White Cross Healthcare Platform',
@@ -85,11 +86,16 @@ export const metadata: Metadata = {
     title: 'White Cross Healthcare Platform',
     description: 'Comprehensive healthcare management platform for student health services with HIPAA-compliant medical records and health analytics.',
     locale: 'en_US',
+    url: '/',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'White Cross Healthcare Platform',
     description: 'Comprehensive healthcare management platform for student health services.',
+    creator: '@whitecrosshc',
+  },
+  alternates: {
+    canonical: '/',
   },
 };
 

@@ -69,9 +69,10 @@ TableRow.displayName = "TableRow"
 const TableHead = React.forwardRef<
   HTMLTableCellElement,
   React.ThHTMLAttributes<HTMLTableCellElement>
->(({ className, ...props }, ref) => (
+>(({ className, scope = "col", ...props }, ref) => (
   <th
     ref={ref}
+    scope={scope}
     className={cn(
       "h-10 px-2 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
       className
@@ -132,8 +133,8 @@ const TableLoadingState = React.forwardRef<
 >(({ className, colSpan = 1, message = "Loading...", ...props }, ref) => (
   <TableRow ref={ref} className={cn("hover:bg-transparent", className)} {...props}>
     <TableCell colSpan={colSpan} className="h-24 text-center">
-      <div className="flex items-center justify-center space-x-2">
-        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+      <div className="flex items-center justify-center space-x-2" role="status" aria-live="polite">
+        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" aria-hidden="true"></div>
         <span>{message}</span>
       </div>
     </TableCell>

@@ -231,7 +231,7 @@ export const calculateTotalInventory = (medication: Medication): {
   lowStock: number
 } => {
   // Check if medication has inventory property (it might be optional in the type)
-  const inventory = (medication as any).inventory || []
+  const inventory = (medication as Record<string, unknown>).inventory as unknown[] || []
 
   if (!inventory || inventory.length === 0) {
     return { totalQuantity: 0, totalBatches: 0, nearExpiry: 0, expired: 0, lowStock: 0 }
@@ -242,19 +242,25 @@ export const calculateTotalInventory = (medication: Medication): {
   let expired = 0
   let lowStock = 0
 
-  inventory.forEach((item: any) => {
-    totalQuantity += item.quantity || 0
+  inventory.forEach((item: unknown) => {
+    const itemRecord = item as Record<string, unknown>;
+    const quantity = typeof itemRecord.quantity === 'number' ? itemRecord.quantity : 0;
+    totalQuantity += quantity;
 
-    const expirationStatus = getExpirationStatus(item.expirationDate)
-    if (expirationStatus.status === 'expired') {
-      expired++
-    } else if (expirationStatus.status === 'critical' || expirationStatus.status === 'warning') {
-      nearExpiry++
+    const expirationDate = typeof itemRecord.expirationDate === 'string' ? itemRecord.expirationDate : undefined;
+    if (expirationDate) {
+      const expirationStatus = getExpirationStatus(expirationDate);
+      if (expirationStatus.status === 'expired') {
+        expired++;
+      } else if (expirationStatus.status === 'critical' || expirationStatus.status === 'warning') {
+        nearExpiry++;
+      }
     }
 
-    const stockStatus = getStockStatus(item.quantity || 0, item.reorderLevel)
+    const reorderLevel = typeof itemRecord.reorderLevel === 'number' ? itemRecord.reorderLevel : undefined;
+    const stockStatus = getStockStatus(quantity, reorderLevel);
     if (stockStatus.status === 'critical' || stockStatus.status === 'low') {
-      lowStock++
+      lowStock++;
     }
   })
 

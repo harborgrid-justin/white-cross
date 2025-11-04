@@ -1,148 +1,125 @@
 /**
- * @fileoverview Student GraphQL Fragments
+ * GraphQL Fragments for Student Entity
  *
- * Reusable GraphQL fragments for student queries
- * Supports basic, detailed, and nested data fetching
+ * Reusable fragments reduce duplication and ensure consistency
+ * across queries and mutations.
  *
- * @module graphql/fragments/student
- * @since 1.0.0
+ * Item 192: GraphQL fragments used for reusability
  */
 
 import { gql } from '@apollo/client';
 
 /**
- * Basic student fields
+ * Basic student information fragment
  * Use for lists and minimal data requirements
  */
 export const STUDENT_BASIC_FRAGMENT = gql`
   fragment StudentBasic on Student {
     id
-    studentNumber
+    studentId
     firstName
     lastName
-    fullName
-    grade
-    isActive
-  }
-`;
-
-/**
- * Detailed student fields
- * Use for student detail pages
- */
-export const STUDENT_DETAILED_FRAGMENT = gql`
-  fragment StudentDetailed on Student {
-    id
-    studentNumber
-    firstName
-    lastName
-    fullName
     dateOfBirth
     grade
-    gender
-    photo
-    medicalRecordNum
-    isActive
-    enrollmentDate
-    nurseId
+    status
     createdAt
     updatedAt
   }
 `;
 
 /**
- * Student with emergency contacts
- * Use when emergency contact information is needed
+ * Student with contact information
+ * Use when displaying student profiles
  */
 export const STUDENT_WITH_CONTACTS_FRAGMENT = gql`
+  ${STUDENT_BASIC_FRAGMENT}
   fragment StudentWithContacts on Student {
-    ...StudentDetailed
+    ...StudentBasic
     emergencyContacts {
       id
-      fullName
-      email
-      phone
-      relationshipType
+      firstName
+      lastName
+      relationship
+      phoneNumber
       isPrimary
-      canPickup
+    }
+    parentGuardians {
+      id
+      firstName
+      lastName
+      email
+      phoneNumber
+      relationship
     }
   }
-  ${STUDENT_DETAILED_FRAGMENT}
 `;
 
 /**
- * Student with health summary
- * Use for health overview pages
+ * Student with medical information
+ * Use for health records and medical management
  */
-export const STUDENT_WITH_HEALTH_FRAGMENT = gql`
-  fragment StudentWithHealth on Student {
-    ...StudentDetailed
+export const STUDENT_WITH_MEDICAL_FRAGMENT = gql`
+  ${STUDENT_BASIC_FRAGMENT}
+  fragment StudentWithMedical on Student {
+    ...StudentBasic
     allergies {
       id
       allergen
-      reaction
       severity
-      diagnosedDate
+      reaction
+      notes
     }
-    chronicConditions {
-      id
-      condition
-      diagnosedDate
-      status
-    }
-    currentMedications {
+    medications {
       id
       medicationName
       dosage
       frequency
+      prescribedBy
+      startDate
+      endDate
+      active
     }
-  }
-  ${STUDENT_DETAILED_FRAGMENT}
-`;
-
-/**
- * Complete student data
- * Use for comprehensive views requiring all data
- */
-export const STUDENT_COMPLETE_FRAGMENT = gql`
-  fragment StudentComplete on Student {
-    ...StudentDetailed
-    emergencyContacts {
-      id
-      fullName
-      email
-      phone
-      relationshipType
-      isPrimary
-      canPickup
-    }
-    allergies {
-      id
-      allergen
-      reaction
-      severity
-      diagnosedDate
-    }
-    chronicConditions {
+    medicalConditions {
       id
       condition
       diagnosedDate
-      status
+      severity
+      notes
+    }
+  }
+`;
+
+/**
+ * Full student fragment with all relations
+ * Use sparingly - only when all data is needed
+ */
+export const STUDENT_FULL_FRAGMENT = gql`
+  ${STUDENT_WITH_CONTACTS_FRAGMENT}
+  ${STUDENT_WITH_MEDICAL_FRAGMENT}
+  fragment StudentFull on Student {
+    ...StudentWithContacts
+    ...StudentWithMedical
+    school {
+      id
+      name
+      district {
+        id
+        name
+      }
     }
     immunizations {
       id
       vaccineName
       dateAdministered
       nextDueDate
+      compliant
     }
-    currentMedications {
+    incidents {
       id
-      medicationName
-      dosage
-      frequency
-      startDate
-      endDate
+      incidentType
+      dateOccurred
+      severity
+      resolved
     }
   }
-  ${STUDENT_DETAILED_FRAGMENT}
 `;

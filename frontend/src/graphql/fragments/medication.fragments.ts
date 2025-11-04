@@ -1,109 +1,66 @@
 /**
- * @fileoverview Medication GraphQL Fragments
+ * GraphQL Fragments for Medication Entity
  *
- * Reusable GraphQL fragments for medication queries
- *
- * @module graphql/fragments/medication
- * @since 1.0.0
+ * Item 192: GraphQL fragments for medication management
  */
 
 import { gql } from '@apollo/client';
 
-/**
- * Basic medication fields
- */
 export const MEDICATION_BASIC_FRAGMENT = gql`
   fragment MedicationBasic on Medication {
     id
     medicationName
     dosage
-    frequency
-    route
-    isActive
-  }
-`;
-
-/**
- * Detailed medication fields
- */
-export const MEDICATION_DETAILED_FRAGMENT = gql`
-  fragment MedicationDetailed on Medication {
-    id
-    studentId
-    medicationName
-    genericName
-    dosage
     unit
     frequency
     route
-    prescribedBy
-    prescriptionDate
+    active
     startDate
     endDate
-    reason
-    specialInstructions
-    isActive
-    isControlled
-    requiresRefrigeration
     createdAt
     updatedAt
   }
 `;
 
-/**
- * Medication with administration history
- */
-export const MEDICATION_WITH_HISTORY_FRAGMENT = gql`
-  fragment MedicationWithHistory on Medication {
-    ...MedicationDetailed
-    administrationHistory {
+export const MEDICATION_WITH_PRESCRIBER_FRAGMENT = gql`
+  ${MEDICATION_BASIC_FRAGMENT}
+  fragment MedicationWithPrescriber on Medication {
+    ...MedicationBasic
+    prescribedBy
+    prescriptionDate
+    instructions
+    sideEffects
+    contraindications
+  }
+`;
+
+export const MEDICATION_WITH_ADMINISTRATIONS_FRAGMENT = gql`
+  ${MEDICATION_BASIC_FRAGMENT}
+  fragment MedicationWithAdministrations on Medication {
+    ...MedicationBasic
+    administrations {
       id
       administeredAt
       administeredBy
       dosageGiven
       notes
-      status
+      studentResponse
     }
+    nextScheduledAdministration
   }
-  ${MEDICATION_DETAILED_FRAGMENT}
 `;
 
-/**
- * Medication with inventory
- */
-export const MEDICATION_WITH_INVENTORY_FRAGMENT = gql`
-  fragment MedicationWithInventory on Medication {
-    ...MedicationDetailed
-    inventory {
+export const MEDICATION_FULL_FRAGMENT = gql`
+  ${MEDICATION_WITH_PRESCRIBER_FRAGMENT}
+  ${MEDICATION_WITH_ADMINISTRATIONS_FRAGMENT}
+  fragment MedicationFull on Medication {
+    ...MedicationWithPrescriber
+    ...MedicationWithAdministrations
+    student {
       id
-      quantityOnHand
-      quantityUsed
-      expirationDate
-      lotNumber
-      lastRestocked
+      firstName
+      lastName
+      studentId
     }
-  }
-  ${MEDICATION_DETAILED_FRAGMENT}
-`;
-
-/**
- * Medication administration record
- */
-export const MEDICATION_ADMINISTRATION_FRAGMENT = gql`
-  fragment MedicationAdministration on MedicationAdministrationRecord {
-    id
-    medicationId
-    studentId
-    administeredAt
-    administeredBy
-    dosageGiven
-    unit
-    route
-    notes
-    status
-    witnessedBy
-    refusedReason
-    sideEffects
-    createdAt
   }
 `;

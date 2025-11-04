@@ -281,10 +281,16 @@ const cache = new InMemoryCache({
  */
 let apolloClient: ApolloClient<any> | null = null;
 
+/**
+ * Import query complexity link (Item 193)
+ */
+import { queryComplexityLink } from '../plugins/query-complexity';
+
 export const createApolloClient = () => {
   return new ApolloClient({
     ssrMode: typeof window === 'undefined',
     link: from([
+      queryComplexityLink, // Item 193: Query complexity management
       errorLink,
       retryLink,
       authLink,

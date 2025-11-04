@@ -392,8 +392,16 @@ const config: Config = {
      * - .status-error: Error status badge (red)
      * - .healthcare-input: Standardized form input styling
      *
+     * Utility Classes Added:
+     * - .scrollbar-hide: Hide scrollbar while maintaining scroll functionality
+     * - .focus-ring: Standard focus ring for accessibility
+     * - .focus-ring-inset: Inset focus ring
+     * - .touch-target: Minimum touch target size (44px)
+     * - .glass-effect: Glassmorphism effect
+     *
      * @param {object} helpers - Tailwind CSS plugin helpers
      * @param {function} helpers.addComponents - Function to add component classes
+     * @param {function} helpers.addUtilities - Function to add utility classes
      * @param {function} helpers.theme - Function to access theme values
      *
      * @example
@@ -406,9 +414,12 @@ const config: Config = {
      *
      * // Use status badge
      * <span className="status-active">Active</span>
+     *
+     * // Use utility class
+     * <div className="scrollbar-hide overflow-auto">...</div>
      * ```
      */
-    function({ addComponents, theme }: any) {
+    function({ addComponents, addUtilities, theme }: any) {
       addComponents({
         // Healthcare Card Component
         '.healthcare-card': {
@@ -533,6 +544,118 @@ const config: Config = {
           '&::placeholder': {
             color: theme('colors.gray.400'),
           },
+        },
+      });
+
+      // Add custom utility classes
+      addUtilities({
+        // Hide scrollbar while maintaining scroll functionality
+        '.scrollbar-hide': {
+          '-ms-overflow-style': 'none',
+          'scrollbar-width': 'none',
+          '&::-webkit-scrollbar': {
+            display: 'none',
+          },
+        },
+
+        // Thin scrollbar
+        '.scrollbar-thin': {
+          'scrollbar-width': 'thin',
+          '&::-webkit-scrollbar': {
+            width: '8px',
+            height: '8px',
+          },
+          '&::-webkit-scrollbar-track': {
+            backgroundColor: theme('colors.gray.100'),
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: theme('colors.gray.400'),
+            borderRadius: theme('borderRadius.full'),
+          },
+          '&::-webkit-scrollbar-thumb:hover': {
+            backgroundColor: theme('colors.gray.500'),
+          },
+        },
+
+        // Focus ring utilities for accessibility
+        '.focus-ring': {
+          outline: 'none',
+          '&:focus-visible': {
+            outlineWidth: '2px',
+            outlineStyle: 'solid',
+            outlineColor: theme('colors.primary.500'),
+            outlineOffset: '2px',
+          },
+        },
+
+        '.focus-ring-inset': {
+          outline: 'none',
+          '&:focus-visible': {
+            outlineWidth: '2px',
+            outlineStyle: 'solid',
+            outlineColor: theme('colors.primary.500'),
+            outlineOffset: '-2px',
+          },
+        },
+
+        // Minimum touch target for accessibility
+        '.touch-target': {
+          minWidth: '44px',
+          minHeight: '44px',
+        },
+
+        // Glass effect (glassmorphism)
+        '.glass-effect': {
+          background: 'rgba(255, 255, 255, 0.7)',
+          backdropFilter: 'blur(10px)',
+          '-webkit-backdrop-filter': 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.3)',
+        },
+
+        '.glass-effect-dark': {
+          background: 'rgba(0, 0, 0, 0.4)',
+          backdropFilter: 'blur(10px)',
+          '-webkit-backdrop-filter': 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+        },
+
+        // Text truncation utilities
+        '.truncate-2': {
+          display: '-webkit-box',
+          '-webkit-line-clamp': '2',
+          '-webkit-box-orient': 'vertical',
+          overflow: 'hidden',
+        },
+
+        '.truncate-3': {
+          display: '-webkit-box',
+          '-webkit-line-clamp': '3',
+          '-webkit-box-orient': 'vertical',
+          overflow: 'hidden',
+        },
+
+        '.truncate-4': {
+          display: '-webkit-box',
+          '-webkit-line-clamp': '4',
+          '-webkit-box-orient': 'vertical',
+          overflow: 'hidden',
+        },
+
+        // Safe area insets for mobile devices
+        '.safe-top': {
+          paddingTop: 'env(safe-area-inset-top)',
+        },
+
+        '.safe-bottom': {
+          paddingBottom: 'env(safe-area-inset-bottom)',
+        },
+
+        '.safe-left': {
+          paddingLeft: 'env(safe-area-inset-left)',
+        },
+
+        '.safe-right': {
+          paddingRight: 'env(safe-area-inset-right)',
         },
       });
     },

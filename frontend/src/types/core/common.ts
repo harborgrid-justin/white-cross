@@ -44,7 +44,7 @@
  * };
  * ```
  */
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   data: T;
   success: boolean;
   message?: string;
@@ -76,7 +76,7 @@ export interface ApiResponse<T = any> {
  * };
  * ```
  */
-export interface PaginatedResponse<T = any> {
+export interface PaginatedResponse<T = unknown> {
   data: T[];
   pagination: {
     page: number;
@@ -149,7 +149,7 @@ export interface DateRangeFilter {
  */
 export interface SearchParams {
   q?: string;
-  filters?: Record<string, any>;
+  filters?: Record<string, unknown>;
   sort?: string;
   order?: 'asc' | 'desc';
 }
@@ -210,7 +210,7 @@ export interface User {
   lastName: string;
   role: string;
   permissions?: string[]; // User permissions for RBAC
-  user?: any; // Optional nested user data for complex authentication scenarios
+  user?: unknown; // Optional nested user data for complex authentication scenarios
   isActive: boolean;
   lastLogin?: string;
   schoolId?: string;

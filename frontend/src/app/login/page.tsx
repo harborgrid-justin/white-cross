@@ -48,21 +48,13 @@
 import { useState, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import Link from 'next/link';
 import { handleLoginSubmission } from './actions';
 
 /**
- * Hook to get form status in React 19
- */
-function useFormStatus() {
-  // In React 19, form status is handled differently
-  // For now, we'll use a simple pending state
-  return { pending: false };
-}
-
-/**
  * Submit Button Component with loading state
- * Uses useFormStatus to show loading state during server action execution
+ * Uses React 19 useFormStatus hook to show loading state during server action execution
  */
 function SubmitButton() {
   const { pending } = useFormStatus();
