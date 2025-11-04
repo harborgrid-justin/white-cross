@@ -143,7 +143,7 @@ export const PolicyAcknowledgmentSchema = z.object({
   signatureType: z.enum(['TYPED', 'DRAWN', 'UPLOADED', 'CERTIFICATE']).optional(),
 
   // Verification
-  ipAddress: z.string().regex(/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/),
+  ipAddress: z.string(),
   userAgent: z.string(),
   verificationCode: z.string().optional(),
   witnessedBy: z.string().uuid().optional(),
