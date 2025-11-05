@@ -74,7 +74,7 @@ export function useRequireAuth(redirectTo = '/login'): AuthGuardState {
       // Not authenticated - redirect to login
       if (typeof window !== 'undefined') {
         const currentPath = window.location.pathname;
-        const redirectPath = \`\${redirectTo}?redirect=\${encodeURIComponent(currentPath)}\`;
+        const redirectPath = `${redirectTo}?redirect=${encodeURIComponent(currentPath)}`;
         router.push(redirectPath);
       }
       setState({ isLoading: false, isAuthorized: false });
@@ -119,7 +119,7 @@ export function useRequirePermission(
     if (!isAuthenticated) {
       if (typeof window !== 'undefined') {
         const currentPath = window.location.pathname;
-        router.push(\`/login?redirect=\${encodeURIComponent(currentPath)}\`);
+        router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
       }
       setState({ isLoading: false, isAuthorized: false });
       return;
@@ -173,7 +173,7 @@ export function useRequireRole(
     if (!isAuthenticated) {
       if (typeof window !== 'undefined') {
         const currentPath = window.location.pathname;
-        router.push(\`/login?redirect=\${encodeURIComponent(currentPath)}\`);
+        router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
       }
       setState({ isLoading: false, isAuthorized: false });
       return;
