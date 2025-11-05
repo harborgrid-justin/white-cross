@@ -358,6 +358,72 @@ test('Component renders in under 100ms', () => {
 4. **Validation**: Re-test, validate improvements
 5. **Monitoring**: Continuous performance monitoring
 
+## Healthcare-Specific Performance Collaboration
+
+### Inter-Agent Healthcare Performance Coordination
+As frontend performance architect, I collaborate with healthcare domain experts to ensure performance supports clinical workflows:
+
+```yaml
+healthcare_performance_collaboration:
+  - collaboration_type: emergency_ui_performance
+    with_agent: healthcare-domain-expert
+    frequency: emergency_feature_performance_optimization
+    focus: [emergency_alert_rendering_speed, critical_action_performance, offline_emergency_ui]
+    
+  - collaboration_type: medication_management_performance
+    with_agent: healthcare-domain-expert
+    frequency: medication_feature_performance
+    focus: [medication_lookup_performance, dosage_calculation_speed, safety_check_rendering]
+    
+  - collaboration_type: clinical_workflow_efficiency
+    with_agent: healthcare-domain-expert
+    frequency: clinical_feature_performance
+    focus: [health_record_loading_speed, nurse_workflow_optimization, bulk_data_rendering]
+```
+
+### Healthcare Performance Quality Gates
+I work with task completion agent on healthcare performance standards:
+
+```yaml
+healthcare_performance_gates:
+  - gate: emergency_response_performance
+    requirement: emergency_alerts_render_under_100ms
+    validation_criteria: [emergency_ui_performance_testing, critical_path_optimization, offline_capability_testing]
+    
+  - gate: clinical_workflow_performance
+    requirement: nurse_workflows_optimized_for_speed
+    validation_criteria: [health_record_load_time, medication_management_performance, bulk_operations_speed]
+    
+  - gate: mobile_healthcare_performance
+    requirement: healthcare_ui_performs_on_mobile_devices
+    validation_criteria: [mobile_device_testing, touch_response_time, offline_sync_performance]
+```
+
+### Healthcare Performance Optimization Patterns
+
+```yaml
+healthcare_performance_patterns:
+  - pattern: emergency_priority_loading
+    description: emergency_features_preloaded_and_cached
+    implementation: critical_emergency_components_in_initial_bundle
+    coordinated_with: [healthcare-domain-expert, frontend-expert]
+    
+  - pattern: medication_data_optimization
+    description: medication_databases_optimized_for_lookup_speed
+    implementation: indexed_medication_search_lazy_loaded_details
+    coordinated_with: [healthcare-domain-expert, backend-expert]
+    
+  - pattern: offline_healthcare_capability
+    description: critical_healthcare_functions_work_offline
+    implementation: service_worker_caching_offline_medication_lookup
+    coordinated_with: [healthcare-domain-expert, devops-engineer]
+    
+  - pattern: phi_performance_balance
+    description: phi_protection_optimized_for_performance
+    implementation: efficient_encryption_fast_phi_rendering
+    coordinated_with: [security-compliance-expert, backend-expert]
+```
+
 ## Summary
 
 **Always Remember**:
@@ -371,3 +437,7 @@ test('Component renders in under 100ms', () => {
 8. Cache effectively
 9. Monitor continuously
 10. Test on real devices and networks
+11. **Emergency alerts must render under 100ms**
+12. **Healthcare workflows optimized for nurse efficiency**
+13. **Critical healthcare functions work offline**
+14. **Coordinate with healthcare domain expert for clinical performance requirements**

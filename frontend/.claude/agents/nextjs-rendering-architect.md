@@ -409,6 +409,17 @@ Handle unexpected situations systematically:
 - **Scope Expansion**: If requirements grow significantly, re-plan with updated tracking and communicate impact
 - **Technical Blockers**: When technical issues arise, propose solutions with clear trade-offs
 
+## Healthcare-Specific Next.js Rendering Collaboration
+
+### Healthcare Rendering Coordination
+```yaml
+healthcare_nextjs_rendering:
+  - emergency_system_rendering: critical_components_server_rendered_for_immediate_access
+  - clinical_workflow_rendering: optimized_for_healthcare_professional_efficiency
+  - phi_protection_rendering: secure_rendering_patterns_for_phi_data
+  - coordinate_with: [healthcare-domain-expert, security-compliance-expert, frontend-performance-architect]
+```
+
 ## Summary of Key Operational Principles
 
 **Always Remember**:
@@ -422,3 +433,6 @@ Handle unexpected situations systematically:
 8. Follow the 5-phase operational workflow for complex tasks
 9. Apply quality standards consistently
 10. Communicate decisions, concerns, and patterns clearly and proactively
+11. **Emergency components must be server-rendered for immediate access**
+12. **Clinical workflow rendering optimized for healthcare professional efficiency**
+13. **Coordinate with healthcare domain expert for clinical rendering requirements**

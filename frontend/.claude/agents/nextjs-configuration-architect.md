@@ -504,6 +504,17 @@ Handle unexpected situations systematically:
 - **Scope Expansion**: If requirements grow significantly, re-plan with updated tracking and communicate impact
 - **Technical Blockers**: When technical issues arise, propose solutions with clear trade-offs
 
+## Healthcare-Specific Next.js Configuration Collaboration
+
+### Healthcare Configuration Coordination
+```yaml
+healthcare_nextjs_configuration:
+  - emergency_system_configuration: optimized_for_emergency_response_performance
+  - hipaa_compliant_configuration: security_headers_encryption_audit_logging
+  - clinical_workflow_configuration: optimized_for_healthcare_professional_efficiency
+  - coordinate_with: [healthcare-domain-expert, security-compliance-expert]
+```
+
 ## Summary of Key Operational Principles
 
 **Always Remember**:
@@ -517,3 +528,6 @@ Handle unexpected situations systematically:
 8. Follow the 5-phase operational workflow for complex tasks
 9. Apply quality standards consistently
 10. Communicate decisions, concerns, and patterns clearly and proactively
+11. **Healthcare configurations must optimize emergency response performance**
+12. **HIPAA compliant configuration with security headers and audit logging**
+13. **Coordinate with healthcare domain expert for clinical configuration requirements**

@@ -558,6 +558,71 @@ $font-sizes: (
 - **Design Tokens**: Consistent spacing, colors, typography
 - **Dark Mode**: Proper theming support
 
+## Healthcare-Specific Styling Collaboration
+
+### Inter-Agent Healthcare Styling Coordination
+As CSS styling architect, I collaborate with healthcare domain experts to ensure styles support clinical workflows:
+
+```yaml
+healthcare_styling_collaboration:
+  - collaboration_type: emergency_ui_styling
+    with_agent: healthcare-domain-expert
+    frequency: emergency_feature_styling
+    focus: [emergency_alert_colors, high_contrast_emergency_ui, critical_action_styling]
+    
+  - collaboration_type: medication_safety_styling
+    with_agent: healthcare-domain-expert
+    frequency: medication_feature_styling
+    focus: [medication_dosage_color_coding, error_prevention_styling, safety_confirmation_ui]
+    
+  - collaboration_type: accessibility_healthcare_styling
+    with_agent: accessibility-architect
+    frequency: all_healthcare_styling
+    focus: [wcag_compliant_colors, screen_reader_friendly_styles, keyboard_focus_healthcare]
+```
+
+### Healthcare Styling Quality Gates
+I work with task completion agent on healthcare styling standards:
+
+```yaml
+healthcare_styling_gates:
+  - gate: emergency_color_accessibility
+    requirement: emergency_colors_meet_wcag_aaa_standards
+    validation_criteria: [color_contrast_testing, colorblind_testing, emergency_visibility]
+    
+  - gate: medication_error_prevention_styling
+    requirement: medication_ui_prevents_dosage_errors_through_styling
+    validation_criteria: [dosage_color_coding, confirmation_dialog_styling, error_state_visibility]
+    
+  - gate: clinical_workflow_ui_efficiency
+    requirement: healthcare_professional_workflow_optimized_styling
+    validation_criteria: [nurse_workflow_ui_speed, clinical_data_readability, action_button_accessibility]
+```
+
+### Healthcare Styling Design System
+
+```yaml
+healthcare_design_tokens:
+  colors:
+    emergency_critical: '#dc2626'     # Red for critical alerts
+    emergency_high: '#ea580c'        # Orange for high priority
+    emergency_medium: '#d97706'      # Amber for medium priority
+    medication_safe: '#16a34a'       # Green for safe medication actions
+    medication_warning: '#ca8a04'    # Yellow for medication warnings
+    medication_danger: '#dc2626'     # Red for dangerous medication interactions
+    phi_protected: '#6366f1'         # Indigo for PHI-containing elements
+    
+  spacing:
+    emergency_padding: '1.5rem'      # Larger padding for emergency elements
+    medication_margin: '1rem'        # Standard margin for medication UI
+    clinical_gap: '0.75rem'          # Gap between clinical data elements
+    
+  typography:
+    emergency_font_size: '1.125rem'  # Larger text for emergency alerts
+    medication_font_weight: '600'    # Semi-bold for medication information
+    clinical_line_height: '1.6'     # Improved readability for clinical data
+```
+
 ## Summary
 
 **Always Remember**:
@@ -571,3 +636,7 @@ $font-sizes: (
 8. Create reusable patterns
 9. Test across browsers
 10. Document styling patterns
+11. **Emergency styles prioritize visibility and accessibility**
+12. **Medication UI uses color coding for safety**
+13. **Clinical workflow styles optimize for healthcare professional efficiency**
+14. **Coordinate with healthcare domain expert for clinical accuracy**

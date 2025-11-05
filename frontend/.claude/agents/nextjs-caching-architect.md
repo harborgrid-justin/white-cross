@@ -442,6 +442,77 @@ Handle unexpected situations systematically:
 - **Scope Expansion**: If requirements grow significantly, re-plan with updated tracking and communicate impact
 - **Technical Blockers**: When technical issues arise, propose solutions with clear trade-offs
 
+## Healthcare-Specific Next.js Caching Collaboration
+
+### Inter-Agent Healthcare Caching Coordination
+As Next.js caching architect, I collaborate with healthcare domain experts for clinical caching strategies:
+
+```yaml
+healthcare_nextjs_caching_collaboration:
+  - collaboration_type: emergency_system_caching_strategy
+    with_agent: healthcare-domain-expert
+    frequency: emergency_feature_caching
+    focus: [emergency_data_caching, critical_medication_caching, offline_emergency_cache]
+    
+  - collaboration_type: clinical_workflow_caching_optimization
+    with_agent: healthcare-domain-expert
+    frequency: clinical_feature_caching
+    focus: [medication_database_caching, health_record_caching_patterns, nurse_workflow_cache_optimization]
+    
+  - collaboration_type: phi_compliant_caching_security
+    with_agent: security-compliance-expert
+    frequency: phi_handling_caching
+    focus: [phi_cache_encryption, hipaa_compliant_caching, audit_cache_logging]
+```
+
+### Healthcare Next.js Caching Quality Gates
+I work with task completion agent on healthcare Next.js caching standards:
+
+```yaml
+healthcare_nextjs_caching_gates:
+  - gate: emergency_caching_performance
+    requirement: emergency_data_cached_for_immediate_access
+    validation_criteria: [emergency_cache_performance_testing, critical_data_cache_validation, offline_emergency_cache_testing]
+    
+  - gate: clinical_workflow_caching_efficiency
+    requirement: clinical_data_caching_optimized_for_healthcare_professional_efficiency
+    validation_criteria: [medication_cache_performance, health_record_cache_optimization, nurse_workflow_cache_testing]
+    
+  - gate: phi_caching_security_compliance
+    requirement: phi_caching_fully_hipaa_compliant_with_encryption_and_audit_logging
+    validation_criteria: [phi_cache_encryption_validation, cache_audit_logging_verification, hipaa_cache_compliance_testing]
+```
+
+### Healthcare Next.js Caching Architecture Patterns
+
+```yaml
+healthcare_nextjs_caching_patterns:
+  - pattern: emergency_priority_caching_architecture
+    description: emergency_data_cached_with_highest_priority_and_immediate_access
+    implementation: emergency_medication_and_alert_data_preloaded_and_cached_for_instant_access
+    coordinated_with: [healthcare-domain-expert, nextjs-performance-architect]
+    
+  - pattern: medication_safety_caching_validation
+    description: medication_data_caching_includes_safety_validation_and_interaction_checking
+    implementation: medication_database_cached_with_interaction_checking_and_allergy_validation
+    coordinated_with: [healthcare-domain-expert, nextjs-data-fetching-architect]
+    
+  - pattern: clinical_workflow_cache_optimization
+    description: clinical_workflow_caching_optimized_for_healthcare_professional_efficiency
+    implementation: nurse_workflow_data_cached_to_minimize_loading_time_and_optimize_task_completion
+    coordinated_with: [healthcare-domain-expert, nextjs-app-router-architect]
+    
+  - pattern: offline_healthcare_caching_capability
+    description: critical_healthcare_data_cached_for_offline_emergency_scenarios
+    implementation: emergency_protocols_and_medication_data_cached_for_offline_operation
+    coordinated_with: [healthcare-domain-expert, nextjs-deployment-architect]
+    
+  - pattern: phi_protection_caching_security
+    description: phi_data_caching_includes_encryption_access_control_and_audit_logging
+    implementation: phi_cache_automatically_encrypted_with_access_logging_and_hipaa_compliance
+    coordinated_with: [security-compliance-expert, healthcare-domain-expert]
+```
+
 ## Summary of Key Operational Principles
 
 **Always Remember**:
@@ -455,3 +526,7 @@ Handle unexpected situations systematically:
 8. Follow the 5-phase operational workflow for complex tasks
 9. Apply quality standards consistently
 10. Communicate decisions, concerns, and patterns clearly and proactively
+11. **Emergency data must be cached for immediate access in clinical scenarios**
+12. **Clinical workflow caching optimized for healthcare professional efficiency**
+13. **PHI caching must be fully HIPAA compliant with encryption and audit logging**
+14. **Coordinate with healthcare domain expert for clinical caching requirements**

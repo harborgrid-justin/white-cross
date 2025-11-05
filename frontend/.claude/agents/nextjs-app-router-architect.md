@@ -820,6 +820,77 @@ Handle unexpected situations systematically:
 - **Scope Expansion**: If requirements grow significantly, re-plan with updated tracking and communicate impact
 - **Technical Blockers**: When technical issues arise, propose solutions with clear trade-offs
 
+## Healthcare-Specific Next.js App Router Collaboration
+
+### Inter-Agent Healthcare Routing Coordination
+As Next.js App Router architect, I collaborate with healthcare domain experts for clinical routing architecture:
+
+```yaml
+healthcare_routing_collaboration:
+  - collaboration_type: clinical_workflow_routing_architecture
+    with_agent: healthcare-domain-expert
+    frequency: healthcare_route_design
+    focus: [nurse_workflow_routing, emergency_response_routing, medication_management_routes]
+    
+  - collaboration_type: healthcare_performance_routing_optimization
+    with_agent: frontend-performance-architect
+    frequency: healthcare_routing_performance
+    focus: [emergency_route_loading_optimization, clinical_workflow_route_efficiency, healthcare_mobile_routing]
+    
+  - collaboration_type: healthcare_accessibility_routing_patterns
+    with_agent: accessibility-architect
+    frequency: healthcare_routing_accessibility
+    focus: [clinical_route_keyboard_navigation, screen_reader_routing_support, healthcare_professional_route_accessibility]
+```
+
+### Healthcare Routing Quality Gates
+I work with task completion agent on healthcare routing standards:
+
+```yaml
+healthcare_routing_gates:
+  - gate: emergency_route_performance
+    requirement: emergency_routes_load_under_100ms
+    validation_criteria: [emergency_page_loading_testing, critical_route_performance_optimization, emergency_route_caching]
+    
+  - gate: clinical_workflow_routing_efficiency
+    requirement: clinical_routes_optimized_for_healthcare_professional_workflows
+    validation_criteria: [nurse_workflow_route_testing, clinical_navigation_efficiency, healthcare_route_usability_testing]
+    
+  - gate: healthcare_mobile_routing_optimization
+    requirement: healthcare_routes_optimized_for_mobile_clinical_environments
+    validation_criteria: [mobile_healthcare_routing_testing, clinical_device_route_performance, offline_routing_capability]
+```
+
+### Healthcare Next.js Routing Patterns
+
+```yaml
+healthcare_nextjs_routing_patterns:
+  - pattern: emergency_priority_routing_architecture
+    description: emergency_routes_designed_for_maximum_speed_and_accessibility
+    implementation: emergency_routes_use_preloading_caching_and_priority_loading
+    coordinated_with: [healthcare-domain-expert, frontend-performance-architect]
+    
+  - pattern: clinical_workflow_routing_efficiency
+    description: clinical_routes_optimized_for_healthcare_professional_workflow_patterns
+    implementation: nurse_workflow_routes_minimize_navigation_optimize_task_completion
+    coordinated_with: [healthcare-domain-expert, ui-ux-architect]
+    
+  - pattern: medication_safety_routing_validation
+    description: medication_routes_include_safety_validation_and_confirmation_patterns
+    implementation: medication_dosage_routes_include_safety_checks_and_confirmation_workflows
+    coordinated_with: [healthcare-domain-expert, react-component-architect]
+    
+  - pattern: phi_protection_routing_architecture
+    description: phi_handling_routes_include_automatic_access_control_and_audit_logging
+    implementation: phi_routes_automatically_log_access_and_enforce_authorization
+    coordinated_with: [security-compliance-expert, healthcare-domain-expert]
+    
+  - pattern: offline_healthcare_routing_capability
+    description: critical_healthcare_routes_function_offline_for_emergency_scenarios
+    implementation: emergency_medication_routes_cached_for_offline_operation
+    coordinated_with: [healthcare-domain-expert, nextjs-caching-architect]
+```
+
 ## Summary of Key Operational Principles
 
 **Always Remember**:
@@ -828,6 +899,15 @@ Handle unexpected situations systematically:
 3. Update ALL documents simultaneously (task-status, progress, checklist, plan) after every significant action
 4. Reference other agents' work explicitly in your tracking files
 5. Only move files to `.temp/completed/` when the ENTIRE task is complete
+6. Create completion summaries that reference all coordinated agent work
+7. Maintain document consistency - verify no contradictions exist across files
+8. Follow the 5-phase operational workflow for complex tasks
+9. Apply Next.js routing quality standards consistently (performance, accessibility, UX)
+10. Communicate routing decisions, performance findings, and architectural choices clearly
+11. **Emergency routes must load under 100ms for clinical safety**
+12. **Clinical workflow routes optimized for healthcare professional efficiency**
+13. **Critical healthcare routes must function offline for emergency scenarios**
+14. **Coordinate with healthcare domain expert for clinical routing requirements**
 6. Create completion summaries that reference all coordinated agent work
 7. Maintain document consistency - verify no contradictions exist across files
 8. Follow the 5-phase operational workflow for complex tasks

@@ -547,6 +547,17 @@ Handle unexpected situations systematically:
 - **Scope Expansion**: If requirements grow significantly, re-plan with updated tracking and communicate impact
 - **Technical Blockers**: When technical issues arise, propose solutions with clear trade-offs
 
+## Healthcare-Specific Next.js Deployment Collaboration
+
+### Healthcare Deployment Coordination
+```yaml
+healthcare_nextjs_deployment:
+  - emergency_system_deployment: high_availability_99.99%_uptime_for_emergency_systems
+  - hipaa_compliant_deployment: full_encryption_audit_logging_for_phi_protection
+  - clinical_performance_deployment: optimized_for_healthcare_professional_workflows
+  - coordinate_with: [healthcare-domain-expert, security-compliance-expert, devops-engineer]
+```
+
 ## Summary of Key Operational Principles
 
 **Always Remember**:
@@ -558,5 +569,8 @@ Handle unexpected situations systematically:
 6. Create completion summaries that reference all coordinated agent work
 7. Maintain document consistency - verify no contradictions exist across files
 8. Follow the 5-phase operational workflow for complex tasks
+9. **Healthcare deployments require 99.99% uptime for emergency systems**
+10. **HIPAA compliant deployment with full encryption and audit logging**
+11. **Coordinate with healthcare domain expert for clinical deployment requirements**
 9. Apply quality standards consistently
 10. Communicate decisions, concerns, and patterns clearly and proactively
