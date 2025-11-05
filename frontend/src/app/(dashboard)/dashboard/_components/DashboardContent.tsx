@@ -40,21 +40,16 @@ import {
   AlertTriangle,
   TrendingUp,
   TrendingDown,
-  Activity,
   RefreshCw,
   Calendar,
   Shield,
   UserCheck,
   Filter,
   Search,
-  X,
-  Check,
   CheckCircle,
   FileText,
   Plus,
-  Calendar as CalendarIcon,
   Pill,
-  ClipboardList,
   MessageSquare,
   Eye,
   MoreVertical,
@@ -66,12 +61,6 @@ import type {
   RecentActivity,
   SystemStatus
 } from '@/lib/actions/dashboard.actions';
-import { DashboardHeader } from './DashboardHeader';
-import { DashboardStatsCards } from './DashboardStatsCards';
-import { HealthAlertsPanel } from './HealthAlertsPanel';
-import { RecentActivitiesPanel } from './RecentActivitiesPanel';
-import { DashboardAnalytics } from './DashboardAnalytics';
-import { QuickActionsGrid } from './QuickActionsGrid';
 import { useDashboardFilters } from './useDashboardFilters';
 import { useAlertActions } from './useAlertActions';
 import { Badge } from '@/components/ui/badge';
@@ -130,12 +119,11 @@ interface DashboardContentProps {
   systemStatus?: SystemStatus;
 }
 
-export default function DashboardContent({ stats: initialStats, alerts: initialAlerts, activities: initialActivities, systemStatus: initialSystemStatus }: DashboardContentProps) {
+export default function DashboardContent({ stats: initialStats, alerts: initialAlerts, activities: initialActivities }: DashboardContentProps) {
   // Client-side data fetching
   const [stats, setStats] = useState<DashboardStats | undefined>(initialStats);
   const [alerts, setAlerts] = useState<HealthAlert[] | undefined>(initialAlerts);
   const [activities, setActivities] = useState<RecentActivity[] | undefined>(initialActivities);
-  const [systemStatus, setSystemStatus] = useState<SystemStatus | undefined>(initialSystemStatus);
   const [isLoading, setIsLoading] = useState(!initialStats);
 
   useEffect(() => {
@@ -148,7 +136,6 @@ export default function DashboardContent({ stats: initialStats, alerts: initialA
           setStats(data.stats);
           setAlerts(data.alerts);
           setActivities(data.activities);
-          setSystemStatus(data.systemStatus);
         } catch (error) {
           console.error('Failed to fetch dashboard data:', error);
         } finally {
@@ -171,8 +158,6 @@ export default function DashboardContent({ stats: initialStats, alerts: initialA
 
   // Custom hook for alert actions
   const {
-    isRefreshing,
-    handleAcknowledgeAlert,
     handleRefresh,
   } = useAlertActions();
 
@@ -336,7 +321,7 @@ export default function DashboardContent({ stats: initialStats, alerts: initialA
                       <SelectItem value="low">Low Priority</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button variant="outline" size="sm" aria-label="Show filter options">
+                  <Button variant="outline" size="sm" onClick={() => console.log('Show filter options')} aria-label="Show filter options">
                     <Filter className="h-4 w-4" aria-hidden="true" />
                   </Button>
                 </div>
@@ -372,13 +357,13 @@ export default function DashboardContent({ stats: initialStats, alerts: initialA
                             {alert.type} • {alert.severity}
                           </Badge>
                           <div className="flex space-x-1" role="group" aria-label="Alert actions">
-                            <Button variant="ghost" size="sm" aria-label={`View details for ${alert.studentName} alert`}>
+                            <Button variant="ghost" size="sm" onClick={() => console.log(`View ${alert.id}`)} aria-label={`View details for ${alert.studentName} alert`}>
                               <Eye className="h-4 w-4" aria-hidden="true" />
                             </Button>
-                            <Button variant="ghost" size="sm" aria-label={`Mark ${alert.studentName} alert as acknowledged`}>
+                            <Button variant="ghost" size="sm" onClick={() => console.log(`Acknowledge ${alert.id}`)} aria-label={`Mark ${alert.studentName} alert as acknowledged`}>
                               <CheckCircle className="h-4 w-4" aria-hidden="true" />
                             </Button>
-                            <Button variant="ghost" size="sm" aria-label={`More options for ${alert.studentName} alert`}>
+                            <Button variant="ghost" size="sm" onClick={() => console.log(`More options ${alert.id}`)} aria-label={`More options for ${alert.studentName} alert`}>
                               <MoreVertical className="h-4 w-4" aria-hidden="true" />
                             </Button>
                           </div>
@@ -389,7 +374,7 @@ export default function DashboardContent({ stats: initialStats, alerts: initialA
                 })}
               </div>
               <div className="mt-4 pt-4 border-t">
-                <Button variant="outline" className="w-full" aria-label={`View all ${safeAlerts.length + 8} health alerts`}>
+                <Button variant="outline" className="w-full" onClick={() => console.log('View All Alerts')} aria-label={`View all ${safeAlerts.length + 8} health alerts`}>
                   View All Alerts ({safeAlerts.length + 8} total)
                 </Button>
               </div>
@@ -414,7 +399,7 @@ export default function DashboardContent({ stats: initialStats, alerts: initialA
                       aria-label="Search recent activities"
                     />
                   </div>
-                  <Button variant="outline" size="sm" aria-label="Export activities to file">
+                  <Button variant="outline" size="sm" onClick={() => console.log('Export activities')} aria-label="Export activities to file">
                     <Download className="h-4 w-4 mr-2" aria-hidden="true" />
                     Export
                   </Button>
@@ -467,7 +452,7 @@ export default function DashboardContent({ stats: initialStats, alerts: initialA
                 })}
               </div>
               <div className="mt-4 pt-4 border-t">
-                <Button variant="outline" className="w-full" aria-label="View all recent activities">
+                <Button variant="outline" className="w-full" onClick={() => console.log('View All Activities')} aria-label="View all recent activities">
                   View All Activities
                 </Button>
               </div>
@@ -550,29 +535,25 @@ export default function DashboardContent({ stats: initialStats, alerts: initialA
 
         {/* Quick Actions Tab */}
         <TabsContent value="quickactions" className="space-y-4" role="tabpanel" id="quickactions-panel" aria-labelledby="quickactions-tab">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4" role="list" aria-label="Quick action shortcuts">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4" aria-label="Quick action shortcuts">
             <Card
               className="cursor-pointer hover:bg-gray-50 focus-within:ring-2 focus-within:ring-blue-500"
-              role="listitem"
-              tabIndex={0}
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); /* Navigate to new appointment */ }}}
               aria-label="Schedule a new health appointment"
             >
-              <CardContent className="p-6 text-center">
+              <CardContent className="p-6 text-center focus:outline-none">
                 <Plus className="h-8 w-8 text-blue-600 mx-auto mb-3" aria-hidden="true" />
-                <h3 className="font-medium text-gray-900 mb-1">New Appointment</h3>
+                                <h3 className="font-medium text-gray-900 mb-1">New Appointment</h3>
                 <p className="text-sm text-gray-600">Schedule a health appointment</p>
               </CardContent>
             </Card>
 
             <Card
               className="cursor-pointer hover:bg-gray-50 focus-within:ring-2 focus-within:ring-blue-500"
-              role="listitem"
-              tabIndex={0}
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); /* Navigate to medication log */ }}}
               aria-label="Record medication administration"
             >
-              <CardContent className="p-6 text-center">
+              <CardContent className="p-6 text-center focus:outline-none">
                 <Pill className="h-8 w-8 text-green-600 mx-auto mb-3" aria-hidden="true" />
                 <h3 className="font-medium text-gray-900 mb-1">Medication Log</h3>
                 <p className="text-sm text-gray-600">Record medication administration</p>
@@ -581,12 +562,10 @@ export default function DashboardContent({ stats: initialStats, alerts: initialA
 
             <Card
               className="cursor-pointer hover:bg-gray-50 focus-within:ring-2 focus-within:ring-blue-500"
-              role="listitem"
-              tabIndex={0}
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); /* Navigate to emergency alert */ }}}
               aria-label="Send emergency notification"
             >
-              <CardContent className="p-6 text-center">
+              <CardContent className="p-6 text-center focus:outline-none">
                 <AlertTriangle className="h-8 w-8 text-red-600 mx-auto mb-3" aria-hidden="true" />
                 <h3 className="font-medium text-gray-900 mb-1">Emergency Alert</h3>
                 <p className="text-sm text-gray-600">Send emergency notification</p>
@@ -595,12 +574,10 @@ export default function DashboardContent({ stats: initialStats, alerts: initialA
 
             <Card
               className="cursor-pointer hover:bg-gray-50 focus-within:ring-2 focus-within:ring-blue-500"
-              role="listitem"
-              tabIndex={0}
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); /* Navigate to health report */ }}}
               aria-label="Generate health summary report"
             >
-              <CardContent className="p-6 text-center">
+              <CardContent className="p-6 text-center focus:outline-none">
                 <FileText className="h-8 w-8 text-purple-600 mx-auto mb-3" aria-hidden="true" />
                 <h3 className="font-medium text-gray-900 mb-1">Health Report</h3>
                 <p className="text-sm text-gray-600">Generate health summary</p>
@@ -609,12 +586,10 @@ export default function DashboardContent({ stats: initialStats, alerts: initialA
 
             <Card
               className="cursor-pointer hover:bg-gray-50 focus-within:ring-2 focus-within:ring-blue-500"
-              role="listitem"
-              tabIndex={0}
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); /* Navigate to health screening */ }}}
               aria-label="Conduct health assessment"
             >
-              <CardContent className="p-6 text-center">
+              <CardContent className="p-6 text-center focus:outline-none">
                 <UserCheck className="h-8 w-8 text-indigo-600 mx-auto mb-3" aria-hidden="true" />
                 <h3 className="font-medium text-gray-900 mb-1">Health Screening</h3>
                 <p className="text-sm text-gray-600">Conduct health assessment</p>
@@ -623,12 +598,10 @@ export default function DashboardContent({ stats: initialStats, alerts: initialA
 
             <Card
               className="cursor-pointer hover:bg-gray-50 focus-within:ring-2 focus-within:ring-blue-500"
-              role="listitem"
-              tabIndex={0}
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); /* Navigate to send message */ }}}
               aria-label="Contact parents or staff"
             >
-              <CardContent className="p-6 text-center">
+              <CardContent className="p-6 text-center focus:outline-none">
                 <MessageSquare className="h-8 w-8 text-orange-600 mx-auto mb-3" aria-hidden="true" />
                 <h3 className="font-medium text-gray-900 mb-1">Send Message</h3>
                 <p className="text-sm text-gray-600">Contact parents or staff</p>

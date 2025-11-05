@@ -8,7 +8,10 @@
  * @category UI Components
  */
 
+"use client"
+
 import React from 'react';
+import Link from 'next/link';
 import { LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -102,25 +105,47 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         {(actionLabel || secondaryActionLabel) && (
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             {actionLabel && (
-              <Button
-                variant="default"
-                href={actionHref}
-                onClick={onAction}
-                className="w-full sm:w-auto"
-              >
-                {actionLabel}
-              </Button>
+              actionHref ? (
+                <Link href={actionHref}>
+                  <Button
+                    variant="default"
+                    onClick={onAction}
+                    className="w-full sm:w-auto"
+                  >
+                    {actionLabel}
+                  </Button>
+                </Link>
+              ) : (
+                <Button
+                  variant="default"
+                  onClick={onAction}
+                  className="w-full sm:w-auto"
+                >
+                  {actionLabel}
+                </Button>
+              )
             )}
 
             {secondaryActionLabel && (
-              <Button
-                variant="outline"
-                href={secondaryActionHref}
-                onClick={onSecondaryAction}
-                className="w-full sm:w-auto"
-              >
-                {secondaryActionLabel}
-              </Button>
+              secondaryActionHref ? (
+                <Link href={secondaryActionHref}>
+                  <Button
+                    variant="outline"
+                    onClick={onSecondaryAction}
+                    className="w-full sm:w-auto"
+                  >
+                    {secondaryActionLabel}
+                  </Button>
+                </Link>
+              ) : (
+                <Button
+                  variant="outline"
+                  onClick={onSecondaryAction}
+                  className="w-full sm:w-auto"
+                >
+                  {secondaryActionLabel}
+                </Button>
+              )
             )}
           </div>
         )}

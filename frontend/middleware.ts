@@ -9,13 +9,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-
-// Stub for auth verification - will be implemented later
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function verifyAccessToken(_token: string) {
-  // TODO: Implement proper JWT verification
-  return { id: 'user1', email: 'test@test.com', role: 'USER' };
-}
+import { extractTokenFromRequest } from './src/identity-access/lib/utils/token-utils';
+import { verifyAccessToken } from './src/lib/auth';
 
 // Stub for rate limiter - will be implemented later
 function getRateLimiter() {
@@ -97,6 +92,11 @@ export default async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
+  // Redirect authenticated users from root to dashboard
+  if (pathname === '/') {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+
   // Role-based access control for admin routes
   if (ADMIN_ROUTES.some(route => pathname.startsWith(route))) {
     if (!['ADMIN', 'SYSTEM_ADMIN'].includes(authResult.user?.role || '')) {
@@ -131,7 +131,7 @@ export default async function middleware(request: NextRequest) {
  */
 async function authenticateRequest(request: NextRequest) {
   try {
-    const token = request.cookies.get('auth_token')?.value;
+    const token = extractTokenFromRequest(request);
 
     if (!token) {
       return { authenticated: false };
@@ -198,3 +198,9 @@ export const config = {
     '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 };
+
+/**
+ * Force Node.js runtime for JWT verification
+ * Edge runtime doesn't support Node.js crypto module
+ */
+export const runtime = 'nodejs';

@@ -58,19 +58,19 @@ export default function DashboardSidebar({ alerts, stats, systemStatus }: Dashbo
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            <Button variant="outline" className="w-full justify-start text-left">
+            <Button variant="outline" className="w-full justify-start text-left" onClick={() => console.log('New Appointment')}>
               <Plus className="h-4 w-4 mr-2" />
               New Appointment
             </Button>
-            <Button variant="outline" className="w-full justify-start text-left">
+            <Button variant="outline" className="w-full justify-start text-left" onClick={() => console.log('Log Medication')}>
               <Pill className="h-4 w-4 mr-2" />
               Log Medication
             </Button>
-            <Button variant="outline" className="w-full justify-start text-left">
+            <Button variant="outline" className="w-full justify-start text-left" onClick={() => console.log('Health Report')}>
               <FileText className="h-4 w-4 mr-2" />
               Health Report
             </Button>
-            <Button variant="outline" className="w-full justify-start text-left">
+            <Button variant="outline" className="w-full justify-start text-left" onClick={() => console.log('Send Message')}>
               <MessageSquare className="h-4 w-4 mr-2" />
               Send Message
             </Button>
@@ -129,7 +129,7 @@ export default function DashboardSidebar({ alerts, stats, systemStatus }: Dashbo
               );
             })}
           </div>
-          <Button variant="outline" className="w-full mt-3" size="sm">
+          <Button variant="outline" className="w-full mt-3" size="sm" onClick={() => console.log('View All Alerts')}>
             <Eye className="h-4 w-4 mr-2" />
             View All Alerts
           </Button>
@@ -197,7 +197,7 @@ export default function DashboardSidebar({ alerts, stats, systemStatus }: Dashbo
               );
             })}
           </div>
-          <Button variant="outline" className="w-full mt-3" size="sm">
+          <Button variant="outline" className="w-full mt-3" size="sm" onClick={() => console.log('View Full Schedule')}>
             <Calendar className="h-4 w-4 mr-2" />
             View Full Schedule
           </Button>
@@ -320,7 +320,7 @@ export default function DashboardSidebar({ alerts, stats, systemStatus }: Dashbo
               );
             })}
           </div>
-          <Button variant="outline" className="w-full mt-3" size="sm">
+          <Button variant="outline" className="w-full mt-3" size="sm" onClick={() => console.log('View All Activity')}>
             <Activity className="h-4 w-4 mr-2" />
             View All Activity
           </Button>
@@ -375,7 +375,7 @@ export default function DashboardSidebar({ alerts, stats, systemStatus }: Dashbo
             </div>
           </div>
           
-          <Button variant="outline" className="w-full mt-3" size="sm">
+          <Button variant="outline" className="w-full mt-3" size="sm" onClick={() => console.log('System Settings')}>
             <Settings className="h-4 w-4 mr-2" />
             System Settings
           </Button>
@@ -389,15 +389,15 @@ export default function DashboardSidebar({ alerts, stats, systemStatus }: Dashbo
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            <Button variant="outline" className="w-full justify-start text-left" size="sm">
+            <Button variant="outline" className="w-full justify-start text-left" size="sm" onClick={() => console.log('Configure Alerts')}>
               <Bell className="h-4 w-4 mr-2" />
               Configure Alerts
             </Button>
-            <Button variant="outline" className="w-full justify-start text-left" size="sm">
+            <Button variant="outline" className="w-full justify-start text-left" size="sm" onClick={() => console.log('Filter Settings')}>
               <Filter className="h-4 w-4 mr-2" />
               Filter Settings
             </Button>
-            <Button variant="outline" className="w-full justify-start text-left" size="sm">
+            <Button variant="outline" className="w-full justify-start text-left" size="sm" onClick={() => console.log('Message Preferences')}>
               <MessageSquare className="h-4 w-4 mr-2" />
               Message Preferences
             </Button>

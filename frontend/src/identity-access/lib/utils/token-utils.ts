@@ -10,19 +10,20 @@
 
 import { cookies, headers } from 'next/headers';
 import type { NextRequest } from 'next/server';
+import { COOKIE_NAMES } from '../config/cookies';
 
 /**
  * Token cookie configuration
  * Centralized cookie names and settings
  */
 export const TOKEN_CONFIG = {
-  // Cookie names
-  ACCESS_TOKEN: 'authToken',
-  REFRESH_TOKEN: 'refreshToken',
+  // Cookie names - use centralized COOKIE_NAMES
+  ACCESS_TOKEN: COOKIE_NAMES.ACCESS_TOKEN,
+  REFRESH_TOKEN: COOKIE_NAMES.REFRESH_TOKEN,
 
   // Alternative cookie names to check (for backwards compatibility)
-  ALT_ACCESS_NAMES: ['auth_token', 'access_token', 'token', 'jwt'],
-  ALT_REFRESH_NAMES: ['refresh_token'],
+  ALT_ACCESS_NAMES: ['auth_token', 'access_token', 'token', 'jwt', 'authToken'],
+  ALT_REFRESH_NAMES: ['refresh_token', 'refreshToken'],
 
   // Cookie options
   OPTIONS: {

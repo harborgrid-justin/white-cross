@@ -7,7 +7,7 @@
  * @version 1.0.0
  */
 
-import React from 'react';
+"use client"
 
 interface SkeletonCardProps {
   className?: string;
