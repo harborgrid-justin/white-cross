@@ -1,7 +1,58 @@
 /**
- * Bulkhead Pattern Implementation
- * Isolates critical resources through separate concurrency pools
- * Prevents resource exhaustion from cascading across the system
+ * @fileoverview Bulkhead Pattern Implementation for Resource Isolation
+ * @module services/resilience/Bulkhead
+ * @category Services
+ *
+ * Implements the Bulkhead pattern to isolate critical resources through separate concurrency pools,
+ * preventing resource exhaustion and cascading failures across the healthcare system.
+ *
+ * Key Concepts:
+ * - **Resource Isolation**: Separate pools for different priority levels
+ * - **Priority-Based Queueing**: Critical operations get priority access
+ * - **Concurrency Control**: Limits concurrent operations per priority
+ * - **Queue Management**: Bounded queues with configurable limits
+ *
+ * Healthcare Application:
+ * - CRITICAL: Emergency medical data access, life-threatening alerts
+ * - HIGH: Urgent care operations, medication administration
+ * - NORMAL: Standard patient care, routine appointments
+ * - LOW: Analytics, reporting, background tasks
+ *
+ * Pattern Benefits:
+ * - Prevents low-priority work from starving critical operations
+ * - Isolates failures to specific resource pools
+ * - Ensures critical healthcare operations always have capacity
+ * - Provides predictable performance under load
+ *
+ * @example
+ * ```typescript
+ * // Configure bulkhead with priority-based pools
+ * const bulkhead = new Bulkhead({
+ *   criticalMaxConcurrent: 10,    // Max concurrent critical ops
+ *   highMaxConcurrent: 5,          // Max concurrent high priority ops
+ *   normalMaxConcurrent: 3,        // Max concurrent normal ops
+ *   lowMaxConcurrent: 1,           // Max concurrent low priority ops
+ *   maxQueuedPerPriority: 100,     // Max queued per priority
+ *   operationTimeout: 30000,       // 30 second timeout
+ *   rejectWhenFull: true           // Reject if queue full
+ * });
+ *
+ * // Submit critical healthcare operation
+ * const patientData = await bulkhead.submit(
+ *   () => fetchEmergencyPatientData(id),
+ *   OperationPriority.CRITICAL
+ * );
+ *
+ * // Submit normal priority operation
+ * const report = await bulkhead.submit(
+ *   () => generateReport(),
+ *   OperationPriority.NORMAL
+ * );
+ *
+ * // Monitor resource usage
+ * const metrics = bulkhead.getMetrics();
+ * console.log(`Critical active: ${metrics.activeByCriticality.CRITICAL}`);
+ * ```
  */
 
 import {
@@ -13,8 +64,20 @@ import {
 } from './types';
 
 /**
- * Priority Queue
- * Manages queued operations with priority-based ordering
+ * Priority Queue for Bulkhead Operations
+ *
+ * @class
+ * @classdesc Manages queued operations with strict priority-based ordering.
+ * Higher priority operations are always dequeued before lower priority ones.
+ *
+ * Priority Order (highest to lowest):
+ * 1. CRITICAL - Emergency, life-threatening operations
+ * 2. HIGH - Urgent care operations
+ * 3. NORMAL - Standard operations
+ * 4. LOW - Background tasks, analytics
+ *
+ * @template T - Type of items in the queue
+ * @private
  */
 class PriorityQueue<T> {
   private queues: Map<OperationPriority, T[]> = new Map();
@@ -27,7 +90,10 @@ class PriorityQueue<T> {
   }
 
   /**
-   * Enqueue item with priority
+   * Add item to priority queue
+   *
+   * @param {T} item - Item to enqueue
+   * @param {OperationPriority} priority - Priority level for the item
    */
   public enqueue(item: T, priority: OperationPriority): void {
     const queue = this.queues.get(priority) || [];
@@ -36,7 +102,12 @@ class PriorityQueue<T> {
   }
 
   /**
-   * Dequeue item (respects priority)
+   * Remove and return highest priority item from queue
+   *
+   * @returns {T | undefined} Next item to process, or undefined if queue empty
+   * @description
+   * Always returns items from higher priority queues first. Within a priority level,
+   * items are processed FIFO (first in, first out).
    */
   public dequeue(): T | undefined {
     const priorities = [
@@ -105,8 +176,59 @@ class PriorityQueue<T> {
 
 /**
  * Bulkhead Class
- * Isolates operations by priority with separate concurrency pools
- * Prevents critical operations from being starved by lower-priority work
+ *
+ * @class
+ * @classdesc Isolates operations by priority with separate concurrency pools,
+ * preventing critical operations from being starved by lower-priority work.
+ *
+ * Architecture:
+ * - Separate concurrency limits per priority level
+ * - Priority-based queue for operations waiting for capacity
+ * - Automatic timeout handling for queued and executing operations
+ * - Comprehensive metrics for monitoring resource usage
+ *
+ * Healthcare Safety:
+ * - Ensures critical medical operations always have capacity
+ * - Prevents non-critical work from blocking urgent care
+ * - Provides predictable latency for high-priority operations
+ * - Maintains system responsiveness under heavy load
+ *
+ * Resource Management:
+ * - Tracks active operations per priority level
+ * - Monitors queue depth and wait times
+ * - Provides rejection when resources exhausted (configurable)
+ * - Automatically processes queue as capacity becomes available
+ *
+ * Performance Characteristics:
+ * - O(1) submission and capacity checking
+ * - O(p) queue processing where p = number of priority levels
+ * - Minimal overhead for operations that execute immediately
+ *
+ * @example
+ * ```typescript
+ * const bulkhead = new Bulkhead({
+ *   criticalMaxConcurrent: 10,
+ *   highMaxConcurrent: 5,
+ *   normalMaxConcurrent: 3,
+ *   lowMaxConcurrent: 1,
+ *   maxQueuedPerPriority: 100,
+ *   operationTimeout: 30000,
+ *   rejectWhenFull: true
+ * });
+ *
+ * // Critical healthcare operation - gets priority
+ * try {
+ *   const data = await bulkhead.submit(
+ *     async () => await fetchPatientEmergencyData(id),
+ *     OperationPriority.CRITICAL,
+ *     5000  // 5 second timeout
+ *   );
+ * } catch (error) {
+ *   if (error.type === 'bulkheadRejected') {
+ *     console.error('No capacity available');
+ *   }
+ * }
+ * ```
  */
 export class Bulkhead {
   private config: Required<BulkheadConfig>;
@@ -135,8 +257,54 @@ export class Bulkhead {
   }
 
   /**
-   * Submit operation to bulkhead
-   * Returns promise that resolves when operation completes
+   * Submit operation to bulkhead with priority and timeout
+   *
+   * @template T - Return type of the operation
+   * @param {() => Promise<T>} operation - Async operation to execute
+   * @param {OperationPriority} [priority=OperationPriority.NORMAL] - Priority level for the operation
+   * @param {number} [timeout] - Operation timeout in milliseconds (defaults to config value)
+   * @returns {Promise<T>} Result of the operation when executed
+   * @throws {ResilienceError} If bulkhead rejects operation (queue full) or operation times out
+   *
+   * @description
+   * Submits an operation to the bulkhead with specified priority. The operation will:
+   * 1. Execute immediately if capacity available for its priority level
+   * 2. Queue if capacity exhausted but queue not full
+   * 3. Reject if queue is full (when rejectWhenFull=true)
+   *
+   * Higher priority operations are always processed before lower priority ones.
+   * Critical operations should be used sparingly for truly life-critical scenarios.
+   *
+   * **Priority Guidelines**:
+   * - CRITICAL: Emergency care, life-threatening alerts, critical medication admin
+   * - HIGH: Urgent care, medication orders, immediate patient needs
+   * - NORMAL: Standard patient care, appointments, routine operations
+   * - LOW: Reports, analytics, background sync, non-urgent tasks
+   *
+   * @example
+   * ```typescript
+   * // Submit critical operation with short timeout
+   * const emergencyData = await bulkhead.submit(
+   *   () => fetchEmergencyMedicalData(patientId),
+   *   OperationPriority.CRITICAL,
+   *   5000  // 5 second timeout
+   * );
+   *
+   * // Submit normal operation with default timeout
+   * const report = await bulkhead.submit(
+   *   () => generateMonthlyReport(),
+   *   OperationPriority.NORMAL
+   * );
+   *
+   * // Handle rejection
+   * try {
+   *   await bulkhead.submit(() => heavyComputation(), OperationPriority.LOW);
+   * } catch (error) {
+   *   if (error.type === 'bulkheadRejected') {
+   *     console.log('System at capacity, retry later');
+   *   }
+   * }
+   * ```
    */
   public async submit<T>(
     operation: () => Promise<T>,
@@ -316,7 +484,37 @@ export class Bulkhead {
   }
 
   /**
-   * Get current metrics
+   * Get current bulkhead metrics and statistics
+   *
+   * @returns {BulkheadMetrics} Current metrics including active/queued operations and performance stats
+   *
+   * @description
+   * Returns comprehensive metrics for monitoring bulkhead health and resource usage:
+   * - Active operations count per priority level
+   * - Queued operations count per priority level
+   * - Total rejected operations
+   * - Average queue wait time
+   * - Peak concurrent requests
+   *
+   * Use this for dashboards, capacity planning, and performance monitoring.
+   *
+   * @example
+   * ```typescript
+   * const metrics = bulkhead.getMetrics();
+   *
+   * console.log('Active Operations:');
+   * console.log(`  Critical: ${metrics.activeByCriticality.CRITICAL}`);
+   * console.log(`  High: ${metrics.activeByCriticality.HIGH}`);
+   * console.log(`  Normal: ${metrics.activeByCriticality.NORMAL}`);
+   *
+   * console.log(`\nQueued: ${Object.values(metrics.queuedByCriticality).reduce((a,b) => a+b, 0)}`);
+   * console.log(`Rejected: ${metrics.totalRejected}`);
+   * console.log(`Avg Wait: ${metrics.averageQueueWaitTime.toFixed(0)}ms`);
+   *
+   * if (metrics.totalRejected > 100) {
+   *   console.warn('High rejection rate - consider increasing capacity');
+   * }
+   * ```
    */
   public getMetrics(): BulkheadMetrics {
     const activeByCriticality = {

@@ -45,8 +45,36 @@ import { secureTokenManager } from '../services/security/SecureTokenManager';
 // TYPE DEFINITIONS
 // ==========================================
 
+/**
+ * WebSocket event handler function type.
+ *
+ * Callback function that processes WebSocket event data.
+ *
+ * @callback WebSocketEventHandler
+ * @param {unknown} data - Event data from WebSocket server (should be validated before use)
+ */
 export type WebSocketEventHandler = (data: unknown) => void;
 
+/**
+ * Return type for useWebSocket hook.
+ *
+ * Provides WebSocket connection state, control operations, and event subscription methods.
+ *
+ * @interface UseWebSocketReturn
+ *
+ * @property {boolean} isConnected - Whether WebSocket is currently connected
+ * @property {ConnectionState} connectionState - Current connection state (CONNECTING, CONNECTED, DISCONNECTING, DISCONNECTED)
+ * @property {string | undefined} socketId - Unique socket connection ID from server, undefined if not connected
+ * @property {() => void} connect - Establish WebSocket connection
+ * @property {() => void} disconnect - Close WebSocket connection
+ * @property {() => void} reconnect - Force reconnection (disconnect and connect)
+ * @property {(event: WebSocketEvent | string, handler: WebSocketEventHandler) => void} subscribe - Subscribe to WebSocket event
+ * @property {(event: WebSocketEvent | string, handler: WebSocketEventHandler) => void} unsubscribe - Unsubscribe from WebSocket event
+ * @property {(channel: string) => void} subscribeChannel - Subscribe to a specific channel for filtered events
+ * @property {(channel: string) => void} unsubscribeChannel - Unsubscribe from a channel
+ * @property {(notificationId: string) => void} markNotificationAsRead - Mark a notification as read via WebSocket
+ * @property {() => void} ping - Send ping message to check connection
+ */
 export interface UseWebSocketReturn {
   // Connection state
   isConnected: boolean;
@@ -71,6 +99,14 @@ export interface UseWebSocketReturn {
   ping: () => void;
 }
 
+/**
+ * Configuration options for useWebSocket hook.
+ *
+ * @interface UseWebSocketOptions
+ *
+ * @property {boolean} [autoConnect=true] - Whether to automatically connect on mount
+ * @property {boolean} [reconnectOnTokenRefresh=true] - Whether to reconnect when auth token is refreshed
+ */
 export interface UseWebSocketOptions {
   autoConnect?: boolean;
   reconnectOnTokenRefresh?: boolean;
@@ -80,6 +116,100 @@ export interface UseWebSocketOptions {
 // HOOK IMPLEMENTATION
 // ==========================================
 
+/**
+ * Hook for WebSocket real-time communication.
+ *
+ * Provides React integration for WebSocket connections including lifecycle management,
+ * event subscriptions, and automatic reconnection handling. Manages connection state,
+ * handles token-based authentication, and provides methods for subscribing to events.
+ *
+ * @param {UseWebSocketOptions} [options] - Configuration options
+ * @returns {UseWebSocketReturn} WebSocket state and operations
+ *
+ * @example
+ * ```typescript
+ * function NotificationCenter() {
+ *   const {
+ *     isConnected,
+ *     subscribe,
+ *     unsubscribe
+ *   } = useWebSocket();
+ *
+ *   useEffect(() => {
+ *     const handleNotification = (data: unknown) => {
+ *       const notification = data as Notification;
+ *       toast.info(notification.message);
+ *     };
+ *
+ *     subscribe('notification:new', handleNotification);
+ *     return () => unsubscribe('notification:new', handleNotification);
+ *   }, [subscribe, unsubscribe]);
+ *
+ *   return <StatusBadge connected={isConnected} />;
+ * }
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Manual connection control
+ * function WebSocketControl() {
+ *   const {
+ *     isConnected,
+ *     connect,
+ *     disconnect,
+ *     connectionState
+ *   } = useWebSocket({ autoConnect: false });
+ *
+ *   return (
+ *     <div>
+ *       <p>Status: {connectionState}</p>
+ *       {isConnected ? (
+ *         <button onClick={disconnect}>Disconnect</button>
+ *       ) : (
+ *         <button onClick={connect}>Connect</button>
+ *       )}
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Channel subscriptions for filtered events
+ * function StudentUpdates({ studentId }: { studentId: string }) {
+ *   const { subscribeChannel, unsubscribeChannel, subscribe } = useWebSocket();
+ *
+ *   useEffect(() => {
+ *     const channel = `student:${studentId}`;
+ *     subscribeChannel(channel);
+ *
+ *     const handleUpdate = (data: unknown) => {
+ *       console.log('Student updated:', data);
+ *     };
+ *
+ *     subscribe('student:update', handleUpdate);
+ *
+ *     return () => {
+ *       unsubscribeChannel(channel);
+ *     };
+ *   }, [studentId, subscribeChannel, unsubscribeChannel, subscribe]);
+ *
+ *   return <StudentView />;
+ * }
+ * ```
+ *
+ * @remarks
+ * - Automatically connects on mount by default (configurable with autoConnect option)
+ * - Requires authentication token from SecureTokenManager
+ * - Automatically reconnects when page visibility changes
+ * - Cleans up subscriptions and connection on unmount
+ * - Handles token refresh reconnection (configurable with reconnectOnTokenRefresh)
+ * - Connection state updates trigger React re-renders
+ * - Event handlers should be memoized to prevent subscription churn
+ *
+ * @see {@link WebSocketService} for underlying WebSocket implementation
+ * @see {@link SecureTokenManager} for authentication token management
+ */
 export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketReturn {
   const {
     autoConnect = true,
