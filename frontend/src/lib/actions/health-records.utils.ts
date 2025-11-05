@@ -5,9 +5,11 @@
  * Shared utility functions for authentication, audit context creation,
  * and enhanced fetch operations with Next.js v16 caching capabilities.
  * HIPAA CRITICAL: These utilities support mandatory audit logging for PHI access.
+ *
+ * NOTE: This file does NOT use 'use server' because it exports constants
+ * and utility functions that can be used in both server and client contexts.
+ * Individual async functions can be imported and used in server actions.
  */
-
-'use server';
 
 import { cookies } from 'next/headers';
 import { headers } from 'next/headers';

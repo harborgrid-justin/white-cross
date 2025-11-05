@@ -2,9 +2,11 @@
  * Incident Actions
  * Main entry point for comprehensive incident management
  * This file re-exports all incident-related functions from specialized modules
+ *
+ * NOTE: This barrel file does NOT have 'use server' directive.
+ * The 'use server' directive is present in implementation files that define
+ * actual Server Actions. Barrel files cannot have 'use server' when re-exporting.
  */
-
-'use server';
 
 // ==========================================
 // CONSTANTS

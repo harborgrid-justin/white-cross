@@ -14,9 +14,11 @@
  * - broadcasts.analytics.ts - Statistics and analytics
  * - broadcasts.forms.ts - Form data handling
  * - broadcasts.utils.ts - Utility functions
+ *
+ * NOTE: This barrel file does NOT have 'use server' directive.
+ * The 'use server' directive is present in implementation files that define
+ * actual Server Actions. Barrel files cannot have 'use server' when re-exporting.
  */
-
-'use server';
 
 // ==========================================
 // TYPE EXPORTS

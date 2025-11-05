@@ -7,6 +7,7 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import {
   CheckCircle,
@@ -41,6 +42,8 @@ interface MetricCardProps {
   value: string | number;
   /** Secondary metric description */
   subtitle: string;
+  /** Optional click handler for navigation */
+  onClick?: () => void;
 }
 
 /**
@@ -53,9 +56,10 @@ const MetricCard = React.memo<MetricCardProps>(({
   iconColor,
   label,
   value,
-  subtitle
+  subtitle,
+  onClick
 }) => (
-  <Card>
+  <Card className={onClick ? 'cursor-pointer hover:shadow-lg transition-shadow' : ''} onClick={onClick}>
     <div className="p-6">
       <div className="flex items-center">
         <div className={`p-2 ${iconBgColor} rounded-lg`}>
@@ -88,6 +92,8 @@ MetricCard.displayName = 'MetricCard';
  * ```
  */
 export const SystemHealthMetrics = React.memo<SystemHealthMetricsProps>(({ systemStats }) => {
+  const router = useRouter();
+
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <MetricCard
@@ -97,6 +103,7 @@ export const SystemHealthMetrics = React.memo<SystemHealthMetricsProps>(({ syste
         label="System Health"
         value={`${systemStats.systemHealth}%`}
         subtitle={`Uptime: ${systemStats.uptime}`}
+        onClick={() => router.push('/admin/monitoring/health')}
       />
 
       <MetricCard
@@ -106,6 +113,7 @@ export const SystemHealthMetrics = React.memo<SystemHealthMetricsProps>(({ syste
         label="Active Users"
         value={formatNumber(systemStats.activeUsers)}
         subtitle={`of ${formatNumber(systemStats.totalUsers)} total`}
+        onClick={() => router.push('/admin/settings/users')}
       />
 
       <MetricCard
@@ -115,6 +123,7 @@ export const SystemHealthMetrics = React.memo<SystemHealthMetricsProps>(({ syste
         label="Storage Usage"
         value={`${Math.round((systemStats.storageUsed / systemStats.storageTotal) * 100)}%`}
         subtitle={`${formatBytes(systemStats.storageUsed * 1024 * 1024 * 1024)} used`}
+        onClick={() => router.push('/admin/settings/configuration')}
       />
 
       <MetricCard
@@ -124,6 +133,7 @@ export const SystemHealthMetrics = React.memo<SystemHealthMetricsProps>(({ syste
         label="Response Time"
         value={`${systemStats.responseTime}ms`}
         subtitle={`Error rate: ${systemStats.errorRate}%`}
+        onClick={() => router.push('/admin/monitoring/health')}
       />
     </div>
   );

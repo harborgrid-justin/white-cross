@@ -368,6 +368,65 @@ export function ComplianceContent({ searchParams }: ComplianceContentProps) {
         </Card>
       </div>
 
+      {/* Quick Navigation Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+          <a href="/compliance/audits" className="block p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors">
+                <Activity className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 group-hover:text-blue-600">Audit Logs</h3>
+                <p className="text-sm text-gray-600">HIPAA audit trail</p>
+              </div>
+            </div>
+          </a>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+          <a href="/compliance/reports" className="block p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
+                <FileText className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 group-hover:text-green-600">Reports</h3>
+                <p className="text-sm text-gray-600">Generate compliance reports</p>
+              </div>
+            </div>
+          </a>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+          <a href="/compliance/policies" className="block p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-purple-100 rounded-lg group-hover:bg-purple-200 transition-colors">
+                <BookOpen className="h-6 w-6 text-purple-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 group-hover:text-purple-600">Policies</h3>
+                <p className="text-sm text-gray-600">Policy management</p>
+              </div>
+            </div>
+          </a>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+          <a href="/compliance/training" className="block p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-orange-100 rounded-lg group-hover:bg-orange-200 transition-colors">
+                <Users className="h-6 w-6 text-orange-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 group-hover:text-orange-600">Training</h3>
+                <p className="text-sm text-gray-600">Staff certification</p>
+              </div>
+            </div>
+          </a>
+        </Card>
+      </div>
+
       {/* Compliance Requirements List */}
       <Card>
         <div className="px-6 py-4 border-b border-gray-200">

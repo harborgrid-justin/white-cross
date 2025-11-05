@@ -14,6 +14,10 @@
  * - health-records.allergies.ts - Allergy record operations (emergency-critical PHI)
  * - health-records.stats.ts - Statistics and dashboard data operations
  *
+ * NOTE: This file does NOT have 'use server' directive because it only re-exports
+ * server actions from other files. The 'use server' directive is in the individual
+ * implementation files (crud, immunizations, allergies, stats).
+ *
  * @example
  * ```typescript
  * 'use client';
@@ -28,8 +32,6 @@
  * ```
  */
 
-'use server';
-
 // ==========================================
 // TYPE DEFINITIONS
 // ==========================================
@@ -37,16 +39,10 @@
 export type { ActionResult, HealthRecordsStats } from './health-records.types';
 
 // ==========================================
-// UTILITY FUNCTIONS
+// NOTE: Utility functions and constants are NOT re-exported here
+// because "use server" files can only export async functions.
+// Import directly from './health-records.utils' if needed.
 // ==========================================
-
-export {
-  BACKEND_URL,
-  getAuthToken,
-  getCurrentUserId,
-  createAuditContext,
-  enhancedFetch
-} from './health-records.utils';
 
 // ==========================================
 // HEALTH RECORD CRUD ACTIONS

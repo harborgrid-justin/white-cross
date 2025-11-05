@@ -1,241 +1,138 @@
 /**
- * @fileoverview District Management Operations
+ * @fileoverview Admin Districts Management Server Actions
  * @module lib/actions/admin.districts
- *
- * HIPAA-compliant server actions for district management with comprehensive
- * caching, audit logging, and error handling.
- *
- * Features:
- * - Server actions with proper 'use server' directive
- * - Next.js cache integration with revalidateTag/revalidatePath
- * - HIPAA audit logging for all district operations
- * - Type-safe CRUD operations
- * - Form data handling for UI integration
- * - Comprehensive error handling and validation
+ * @category Admin - Server Actions
  */
 
 'use server';
 
-import { revalidateTag, revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
-import { serverPost, serverPut, NextApiClientError } from '@/lib/api/nextjs-client';
+import { revalidateTag } from 'next/cache';
+import { serverGet } from '@/lib/api/nextjs-client';
 import { API_ENDPOINTS } from '@/constants/api';
-import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
-import { CACHE_TAGS } from '@/lib/cache/constants';
-import { validateEmail, validatePhone } from '@/utils/validation/userValidation';
-import type {
-  ActionResult,
-  District,
-  CreateDistrictData,
-  ApiResponse,
-} from './admin.types';
+import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache/constants';
 
-// ==========================================
-// DISTRICT CRUD OPERATIONS
-// ==========================================
+export interface District {
+  id: string;
+  name: string;
+  code: string;
+  address: string;
+  phoneNumber: string;
+  email: string;
+  schoolCount: number;
+  status: 'active' | 'inactive';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DistrictSearchParams {
+  search?: string;
+  status?: 'all' | 'active' | 'inactive';
+  page?: number;
+  limit?: number;
+}
 
 /**
- * Create district
- * Includes audit logging and cache invalidation
+ * Fetch districts data with server-side caching
+ * Uses 'use cache' directive for Next.js v16 server-side caching
  */
-export async function createDistrictAction(data: CreateDistrictData): Promise<ActionResult<District>> {
+async function fetchDistrictsData(searchParams: DistrictSearchParams = {}) {
+  'use cache';
+  
+  const params = new URLSearchParams();
+  if (searchParams.search) params.append('search', searchParams.search);
+  if (searchParams.status && searchParams.status !== 'all') {
+    params.append('status', searchParams.status);
+  }
+  if (searchParams.page) params.append('page', searchParams.page.toString());
+  if (searchParams.limit) params.append('limit', searchParams.limit.toString());
+
+  const response = await serverGet<{
+    districts: District[];
+    total: number;
+    page: number;
+    totalPages: number;
+  }>(`${API_ENDPOINTS.ADMIN.DISTRICTS}?${params.toString()}`, {
+    cache: 'default',
+    next: {
+      revalidate: CACHE_TTL.STATIC,
+      tags: [CACHE_TAGS.ADMIN_DISTRICTS]
+    }
+  });
+
+  return response;
+}
+
+/**
+ * Get districts data for admin management
+ * Server component compatible data fetcher
+ */
+export async function getAdminDistricts(searchParams: DistrictSearchParams = {}) {
   try {
-    // Validate required fields
-    if (!data.name || !data.code || !data.email) {
-      return {
-        success: false,
-        error: 'Missing required fields: name, code, email'
-      };
-    }
-
-    // Validate email format
-    if (!validateEmail(data.email)) {
-      return {
-        success: false,
-        error: 'Invalid email format'
-      };
-    }
-
-    // Validate phone if provided
-    if (data.phone && !validatePhone(data.phone)) {
-      return {
-        success: false,
-        error: 'Invalid phone format'
-      };
-    }
-
-    const response = await serverPost<ApiResponse<District>>(
-      API_ENDPOINTS.ADMIN.DISTRICTS,
-      data,
-      {
-        cache: 'no-store',
-        next: { tags: [CACHE_TAGS.ADMIN_DISTRICTS] }
-      }
-    );
-
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Failed to create district');
-    }
-
-    // AUDIT LOG - District creation
-    await auditLog({
-      action: AUDIT_ACTIONS.CREATE_ORGANIZATION,
-      resource: 'District',
-      resourceId: response.data.id,
-      details: `Created district: ${data.name} (${data.code})`,
-      success: true
-    });
-
-    // Cache invalidation
-    revalidateTag(CACHE_TAGS.ADMIN_DISTRICTS, 'default');
-    revalidateTag('district-list', 'default');
-    revalidatePath('/admin/districts', 'page');
-
+    const data = await fetchDistrictsData(searchParams);
+    
     return {
-      success: true,
-      data: response.data,
-      message: 'District created successfully'
+      success: true as const,
+      data,
     };
   } catch (error) {
-    const errorMessage = error instanceof NextApiClientError
-      ? error.message
-      : error instanceof Error
-      ? error.message
-      : 'Failed to create district';
-
-    // AUDIT LOG - Log failed attempt
-    await auditLog({
-      action: AUDIT_ACTIONS.CREATE_ORGANIZATION,
-      resource: 'District',
-      details: `Failed to create district: ${errorMessage}`,
-      success: false,
-      errorMessage
-    });
-
+    console.error('Error fetching admin districts:', error);
     return {
-      success: false,
-      error: errorMessage
+      success: false as const,
+      error: error instanceof Error ? error.message : 'Failed to fetch districts',
+      data: {
+        districts: [],
+        total: 0,
+        page: 1,
+        totalPages: 0,
+      },
     };
   }
 }
 
 /**
- * Update district
- * Includes audit logging and cache invalidation
+ * Get single district by ID
  */
-export async function updateDistrictAction(
-  districtId: string,
-  data: Partial<CreateDistrictData>
-): Promise<ActionResult<District>> {
-  try {
-    if (!districtId) {
-      return {
-        success: false,
-        error: 'District ID is required'
-      };
-    }
-
-    // Validate email if provided
-    if (data.email && !validateEmail(data.email)) {
-      return {
-        success: false,
-        error: 'Invalid email format'
-      };
-    }
-
-    // Validate phone if provided
-    if (data.phone && !validatePhone(data.phone)) {
-      return {
-        success: false,
-        error: 'Invalid phone format'
-      };
-    }
-
-    const response = await serverPut<ApiResponse<District>>(
-      API_ENDPOINTS.ADMIN.DISTRICT_BY_ID(districtId),
-      data,
-      {
-        cache: 'no-store',
-        next: { tags: [CACHE_TAGS.ADMIN_DISTRICTS, `district-${districtId}`] }
+async function fetchDistrictById(id: string) {
+  'use cache';
+  
+  const response = await serverGet<District>(
+    `${API_ENDPOINTS.ADMIN.DISTRICTS}/${id}`,
+    {
+      next: {
+        revalidate: CACHE_TTL.STATIC,
+        tags: [CACHE_TAGS.ADMIN_DISTRICTS, `admin-district-${id}`]
       }
-    );
-
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Failed to update district');
     }
+  );
 
-    // AUDIT LOG - District update
-    await auditLog({
-      action: AUDIT_ACTIONS.UPDATE_ORGANIZATION,
-      resource: 'District',
-      resourceId: districtId,
-      details: 'Updated district information',
-      changes: data,
-      success: true
-    });
+  return response;
+}
 
-    // Cache invalidation
-    revalidateTag(CACHE_TAGS.ADMIN_DISTRICTS, 'default');
-    revalidateTag(`district-${districtId}`, 'default');
-    revalidateTag('district-list', 'default');
-    revalidatePath('/admin/districts', 'page');
-    revalidatePath(`/admin/districts/${districtId}`, 'page');
-
+/**
+ * Get district by ID for admin management
+ */
+export async function getAdminDistrictById(id: string) {
+  try {
+    const data = await fetchDistrictById(id);
+    
     return {
-      success: true,
-      data: response.data,
-      message: 'District updated successfully'
+      success: true as const,
+      data,
     };
   } catch (error) {
-    const errorMessage = error instanceof NextApiClientError
-      ? error.message
-      : error instanceof Error
-      ? error.message
-      : 'Failed to update district';
-
-    // AUDIT LOG - Log failed attempt
-    await auditLog({
-      action: AUDIT_ACTIONS.UPDATE_ORGANIZATION,
-      resource: 'District',
-      resourceId: districtId,
-      details: `Failed to update district: ${errorMessage}`,
-      success: false,
-      errorMessage
-    });
-
+    console.error('Error fetching district:', error);
     return {
-      success: false,
-      error: errorMessage
+      success: false as const,
+      error: error instanceof Error ? error.message : 'Failed to fetch district',
+      data: null,
     };
   }
 }
 
-// ==========================================
-// FORM HANDLING OPERATIONS
-// ==========================================
-
 /**
- * Create district from form data
- * Form-friendly wrapper for createDistrictAction
+ * Invalidate districts cache
+ * Used after mutations to ensure fresh data
  */
-export async function createDistrictFromForm(formData: FormData): Promise<ActionResult<District>> {
-  const districtData: CreateDistrictData = {
-    name: formData.get('name') as string,
-    code: formData.get('code') as string,
-    address: formData.get('address') as string,
-    city: formData.get('city') as string,
-    state: formData.get('state') as string,
-    zipCode: formData.get('zipCode') as string,
-    phone: formData.get('phone') as string,
-    email: formData.get('email') as string,
-    isActive: formData.get('isActive') === 'true',
-  };
-
-  const result = await createDistrictAction(districtData);
-
-  if (result.success && result.data) {
-    redirect(`/admin/districts/${result.data.id}`);
-  }
-
-  return result;
+export async function revalidateDistrictsCache() {
+  revalidateTag(CACHE_TAGS.ADMIN_DISTRICTS, 'default');
 }

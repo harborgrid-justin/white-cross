@@ -15,9 +15,11 @@
  * - Form handling (purchase-orders.forms.ts)
  * - Utility functions (purchase-orders.utils.ts)
  * - Dashboard analytics (purchase-orders.dashboard.ts)
+ *
+ * NOTE: This barrel file does NOT have 'use server' directive.
+ * The 'use server' directive is present in implementation files that define
+ * actual Server Actions. Barrel files cannot have 'use server' when re-exporting.
  */
-
-'use server';
 
 // ==========================================
 // TYPE DEFINITIONS

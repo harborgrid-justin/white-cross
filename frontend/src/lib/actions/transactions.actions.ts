@@ -14,9 +14,11 @@
  * - transactions.counts.ts - Physical count operations
  * - transactions.queries.ts - Query and statistics operations
  * - transactions.dashboard.ts - Dashboard analytics operations
+ *
+ * NOTE: This barrel file does NOT have 'use server' directive.
+ * The 'use server' directive is present in implementation files that define
+ * actual Server Actions. Barrel files cannot have 'use server' when re-exporting.
  */
-
-'use server';
 
 // Re-export all types from types module
 export type {

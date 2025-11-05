@@ -5,3 +5,4 @@
  * Provides clean imports for consumers of the WebSocket infrastructure.
  */
 export * from './rate-limiter.service';
+export * from './admin-metrics.service';

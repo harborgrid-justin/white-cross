@@ -15,6 +15,10 @@
  * - settings.notifications.ts - Notification preferences
  * - settings.privacy.ts - Privacy settings and data export
  *
+ * NOTE: This barrel file does NOT have 'use server' directive.
+ * The 'use server' directive is present in implementation files that define
+ * actual Server Actions. Barrel files cannot have 'use server' when re-exporting.
+ *
  * @example
  * ```typescript
  * 'use client';
@@ -28,8 +32,6 @@
  * }
  * ```
  */
-
-'use server';
 
 // ==========================================
 // TYPE EXPORTS

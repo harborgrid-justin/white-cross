@@ -171,7 +171,7 @@ export default function DashboardLayoutClient({ children }: DashboardLayoutClien
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuGroup>
                     <DropdownMenuItem asChild>
-                      <Link href="/profile">Profile</Link>
+                      <Link href="/settings/profile">Profile</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link href="/settings">Settings</Link>

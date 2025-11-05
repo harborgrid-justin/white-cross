@@ -6,7 +6,7 @@
  * caching, audit logging, and error handling.
  *
  * Features:
- * - Server actions with proper 'use server' directive
+ * - Server actions with proper 'use server' directive (in implementation files)
  * - Next.js cache integration with revalidateTag/revalidatePath
  * - HIPAA audit logging for all budget operations
  * - Type-safe CRUD operations
@@ -22,9 +22,11 @@
  * - budget.transactions.ts: Transaction CRUD operations
  * - budget.forms.ts: FormData handling
  * - budget.utils.ts: Utility functions
+ *
+ * NOTE: This barrel file does NOT have 'use server' directive.
+ * The 'use server' directive is present in implementation files that define
+ * actual Server Actions. Barrel files cannot have 'use server' when re-exporting.
  */
-
-'use server';
 
 // ==========================================
 // RE-EXPORTS - TYPE DEFINITIONS

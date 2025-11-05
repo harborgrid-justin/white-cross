@@ -19,15 +19,17 @@
  * - admin.utils.ts: Utility functions
  *
  * Features:
- * - Server actions with proper 'use server' directive
+ * - Server actions with proper 'use server' directive (in implementation files)
  * - Next.js cache integration with revalidateTag/revalidatePath
  * - HIPAA audit logging for all admin operations
  * - Type-safe CRUD operations
  * - Form data handling for UI integration
  * - Comprehensive error handling and validation
+ *
+ * NOTE: This barrel file does NOT have 'use server' directive.
+ * The 'use server' directive is present in implementation files that define
+ * actual Server Actions. Barrel files cannot have 'use server' when re-exporting.
  */
-
-'use server';
 
 // ==========================================
 // TYPE EXPORTS
@@ -57,9 +59,29 @@ export {
   getDistricts,
   getSchool,
   getSchools,
-  getSystemHealth,
   getSystemMetrics,
 } from './admin.cache';
+
+// ==========================================
+// MONITORING OPERATION EXPORTS
+// ==========================================
+
+export {
+  getSystemHealth,
+  getPerformanceMetrics,
+  getApiMetrics,
+  getErrorLogs,
+  getUserActivity,
+  getRealTimeMetrics,
+} from './admin.monitoring';
+
+export type {
+  SystemHealth,
+  PerformanceMetrics,
+  ApiMetrics,
+  ErrorLog,
+  UserActivity,
+} from './admin.monitoring';
 
 // ==========================================
 // ADMIN USER OPERATION EXPORTS
@@ -78,9 +100,13 @@ export {
 // ==========================================
 
 export {
-  createDistrictAction,
-  updateDistrictAction,
-  createDistrictFromForm,
+  getAdminDistricts,
+  getAdminDistrictById,
+  revalidateDistrictsCache,
+} from './admin.districts';
+
+export type {
+  DistrictSearchParams,
 } from './admin.districts';
 
 // ==========================================
@@ -88,9 +114,13 @@ export {
 // ==========================================
 
 export {
-  createSchoolAction,
-  updateSchoolAction,
-  createSchoolFromForm,
+  getAdminSchools,
+  getAdminSchoolById,
+  revalidateSchoolsCache,
+} from './admin.schools';
+
+export type {
+  SchoolSearchParams,
 } from './admin.schools';
 
 // ==========================================

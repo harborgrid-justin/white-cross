@@ -7,10 +7,13 @@
 
 import { Suspense } from 'react';
 import { Metadata } from 'next';
+import Link from 'next/link';
 import ComplianceReport from '@/components/medications/reports/ComplianceReport';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { fetchWithAuth } from '@/lib/server/fetch';
 import { API_ENDPOINTS } from '@/constants/api';
+import { Shield, Activity } from 'lucide-react';
+import { Card } from '@/components/ui/card';
 
 export const metadata: Metadata = {
   title: 'Compliance Report | White Cross',
@@ -64,12 +67,57 @@ export default async function ComplianceReportPage({ searchParams }: ComplianceR
 
   return (
     <div className="space-y-6">
+      {/* Breadcrumb Navigation */}
+      <div className="flex items-center gap-2 text-sm text-gray-600">
+        <Link href="/compliance" className="hover:text-blue-600 transition-colors flex items-center gap-1">
+          <Shield className="h-4 w-4" />
+          Compliance Dashboard
+        </Link>
+        <span>/</span>
+        <Link href="/compliance/audits" className="hover:text-blue-600 transition-colors flex items-center gap-1">
+          <Activity className="h-4 w-4" />
+          Audit Logs
+        </Link>
+        <span>/</span>
+        <span className="text-gray-900 font-medium">Medication Compliance</span>
+      </div>
+
       <PageHeader
         title="HIPAA Compliance & Adherence Report"
-        description="Audit compliance, medication adherence, and violation tracking"
         backLink="/medications/reports"
         backLabel="Back to Reports"
       />
+
+      {/* Quick Links to Main Compliance System */}
+      <Card className="p-4 bg-blue-50 border-blue-200">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h3 className="text-sm font-semibold text-blue-900 mb-1">
+              Part of Organization-Wide Compliance Tracking
+            </h3>
+            <p className="text-xs text-blue-700">
+              This medication compliance data contributes to your overall HIPAA compliance score. 
+              View comprehensive audit logs and compliance reports in the main compliance dashboard.
+            </p>
+          </div>
+          <div className="flex gap-2 ml-4">
+            <Link
+              href="/compliance/audits"
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-blue-700 bg-white rounded-md hover:bg-blue-100 transition-colors"
+            >
+              <Activity className="h-3.5 w-3.5" />
+              View Audit Logs
+            </Link>
+            <Link
+              href="/compliance"
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-blue-700 bg-white rounded-md hover:bg-blue-100 transition-colors"
+            >
+              <Shield className="h-3.5 w-3.5" />
+              Compliance Dashboard
+            </Link>
+          </div>
+        </div>
+      </Card>
 
       {/* Compliance Score Banner */}
       {reportData.complianceScore < 90 && (

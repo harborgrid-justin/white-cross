@@ -3,9 +3,11 @@
  *
  * Main entry point that re-exports all analytics functionality from specialized modules.
  * This file maintains backward compatibility while organizing code into logical groupings.
+ *
+ * NOTE: This barrel file does NOT have 'use server' directive.
+ * The 'use server' directive is present in implementation files that define
+ * actual Server Actions. Barrel files cannot have 'use server' when re-exporting.
  */
-
-'use server';
 
 // Export all types
 export type {

@@ -9,7 +9,7 @@
  * from specialized modules for better code organization and maintainability.
  *
  * Features:
- * - Server actions with proper 'use server' directive
+ * - Server actions with proper 'use server' directive (in implementation files)
  * - Next.js cache integration with revalidateTag/revalidatePath
  * - HIPAA audit logging for all immunization operations
  * - Type-safe CRUD operations
@@ -24,9 +24,11 @@
  * - immunizations.compliance.ts: Compliance checking
  * - immunizations.utils.ts: Utility functions
  * - immunizations.reports.ts: Statistics and reporting
+ *
+ * NOTE: This barrel file does NOT have 'use server' directive.
+ * The 'use server' directive is present in implementation files that define
+ * actual Server Actions. Barrel files cannot have 'use server' when re-exporting.
  */
-
-'use server';
 
 // ==========================================
 // TYPE EXPORTS
@@ -79,14 +81,6 @@ export {
 } from './immunizations.forms';
 
 // ==========================================
-// COMPLIANCE EXPORTS
-// ==========================================
-
-export {
-  getStudentImmunizationCompliance,
-} from './immunizations.compliance';
-
-// ==========================================
 // UTILITY EXPORTS
 // ==========================================
 
@@ -95,6 +89,38 @@ export {
   getImmunizationRecordCount,
   getImmunizationOverview,
 } from './immunizations.utils';
+
+// ==========================================
+// ACTIVITY EXPORTS
+// ==========================================
+
+export {
+  getRecentImmunizationActivity,
+  getStudentImmunizationActivity,
+} from './immunizations.activity';
+
+export type {
+  ImmunizationActivity,
+} from './immunizations.activity';
+
+// ==========================================
+// COMPLIANCE EXPORTS
+// ==========================================
+
+export {
+  getStudentImmunizationCompliance,
+} from './immunizations.compliance';
+
+export {
+  getComplianceMetrics,
+  getVaccineComplianceMetrics,
+  getStudentComplianceSummary,
+} from './immunizations.compliances';
+
+export type {
+  ComplianceMetric,
+  ComplianceOverview,
+} from './immunizations.compliances';
 
 // ==========================================
 // REPORTING EXPORTS

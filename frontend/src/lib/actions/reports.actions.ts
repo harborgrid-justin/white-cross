@@ -6,7 +6,7 @@
  * caching, audit logging, and error handling.
  *
  * Features:
- * - Server actions with proper 'use server' directive
+ * - Server actions with proper 'use server' directive (in implementation files)
  * - Next.js cache integration with revalidateTag/revalidatePath
  * - HIPAA audit logging for all report operations
  * - Type-safe CRUD operations
@@ -21,9 +21,11 @@
  * - reports.forms.ts - Form data handling
  * - reports.utils.ts - Utility functions
  * - reports.dashboard.ts - Dashboard statistics and analytics
+ *
+ * NOTE: This barrel file does NOT have 'use server' directive.
+ * The 'use server' directive is present in implementation files that define
+ * actual Server Actions. Barrel files cannot have 'use server' when re-exporting.
  */
-
-'use server';
 
 // ==========================================
 // TYPE EXPORTS

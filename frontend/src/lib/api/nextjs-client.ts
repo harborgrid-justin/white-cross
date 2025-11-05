@@ -44,6 +44,7 @@
 
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { COOKIE_NAMES } from '@/identity-access/lib/config/cookies';
 
 // ==========================================
 // TYPE DEFINITIONS
@@ -240,7 +241,8 @@ function getApiBaseUrl(): string {
 async function getAuthToken(): Promise<string | null> {
   try {
     const cookieStore = await cookies();
-    return cookieStore.get('__Host-auth.token')?.value || null;
+    // Use centralized cookie name configuration (environment-aware)
+    return cookieStore.get(COOKIE_NAMES.ACCESS_TOKEN)?.value || null;
   } catch (error) {
     console.error('[Next API Client] Failed to get auth token:', error);
     return null;

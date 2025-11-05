@@ -39,10 +39,11 @@
  */
 
 import { Metadata } from 'next';
+import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { FileText, Download, Plus, TrendingUp } from 'lucide-react';
+import { FileText, Download, Plus, TrendingUp, Pill, Syringe, ArrowRight } from 'lucide-react';
 import { getComplianceReportsAction } from '@/lib/actions/compliance.actions';
 
 /**
@@ -127,6 +128,58 @@ export default async function ComplianceReportsPage() {
           Generate Report
         </Button>
       </div>
+
+      {/* Module-Specific Compliance Reports */}
+      <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+        <CardHeader>
+          <CardTitle className="text-blue-900">Module-Specific Compliance Reports</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 md:grid-cols-2">
+            <Link href="/medications/reports/compliance" className="block">
+              <div className="p-4 bg-white rounded-lg border border-blue-200 hover:shadow-md transition-all group cursor-pointer">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <Pill className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900 group-hover:text-blue-600">
+                        Medication Compliance
+                      </h4>
+                      <p className="text-xs text-gray-600">
+                        HIPAA adherence & audit logs
+                      </p>
+                    </div>
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+                </div>
+              </div>
+            </Link>
+
+            <Link href="/immunizations/compliance" className="block">
+              <div className="p-4 bg-white rounded-lg border border-blue-200 hover:shadow-md transition-all group cursor-pointer">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <Syringe className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900 group-hover:text-green-600">
+                        Immunization Compliance
+                      </h4>
+                      <p className="text-xs text-gray-600">
+                        CDC guidelines & state requirements
+                      </p>
+                    </div>
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-green-600 group-hover:translate-x-1 transition-all" />
+                </div>
+              </div>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Report Templates */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

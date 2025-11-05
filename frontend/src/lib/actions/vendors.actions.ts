@@ -6,7 +6,7 @@
  * caching, audit logging, and error handling.
  *
  * Features:
- * - Server actions with proper 'use server' directive
+ * - Server actions with proper 'use server' directive (in implementation files)
  * - Next.js cache integration with revalidateTag/revalidatePath
  * - HIPAA audit logging for all vendor operations
  * - Type-safe CRUD operations
@@ -18,13 +18,14 @@
  * organized into the following modules:
  * - vendors.types.ts: TypeScript type definitions and interfaces
  * - vendors.cache.ts: Caching layer and cache invalidation
- * - vendors.crud.ts: Create, Read, Update, Delete operations
  * - vendors.evaluations.ts: Vendor evaluation management
  * - vendors.forms.ts: Form data handling and parsing
  * - vendors.utils.ts: Utility functions and helpers
+ *
+ * NOTE: This barrel file does NOT have 'use server' directive.
+ * The 'use server' directive is present in implementation files that define
+ * actual Server Actions. Barrel files cannot have 'use server' when re-exporting.
  */
-
-'use server';
 
 // ==========================================
 // TYPE EXPORTS

@@ -7,10 +7,12 @@
  * This file serves as the main entry point, re-exporting all communications
  * functionality from specialized modules for backward compatibility.
  *
+ * NOTE: This barrel file does NOT have 'use server' directive.
+ * The 'use server' directive is present in implementation files that define
+ * actual Server Actions. Barrel files cannot have 'use server' when re-exporting.
+ *
  * @module communications.actions
  */
-
-'use server';
 
 // ============================================================================
 // RE-EXPORTS - Types and Utilities

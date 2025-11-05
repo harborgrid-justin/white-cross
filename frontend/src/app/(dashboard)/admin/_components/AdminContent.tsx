@@ -6,6 +6,7 @@
 
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { Shield, RefreshCw, Download, Plus } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -33,6 +34,7 @@ import { AdminActivityLog } from './AdminActivityLog';
  * @param searchParams - URL search parameters for filtering and pagination
  */
 export function AdminContent({ searchParams }: AdminContentProps) {
+  const router = useRouter();
   const { data, loading, error, refresh } = useAdminData(searchParams);
   const { systemStats, adminActivity, systemAlerts, userSummary } = data;
 
@@ -119,8 +121,7 @@ export function AdminContent({ searchParams }: AdminContentProps) {
   };
 
   const handleManageUsers = () => {
-    console.log('Manage users');
-    // TODO: Navigate to user management page
+    router.push('/admin/settings/users');
   };
 
   const handleFilter = () => {
@@ -139,8 +140,7 @@ export function AdminContent({ searchParams }: AdminContentProps) {
   };
 
   const handleViewAuditLog = () => {
-    console.log('View full audit log');
-    // TODO: Navigate to full audit log page
+    router.push('/admin/settings/audit-logs');
   };
 
   return (
@@ -175,13 +175,13 @@ export function AdminContent({ searchParams }: AdminContentProps) {
       {/* Quick Actions */}
       <AdminQuickActions
         onManageUsers={handleManageUsers}
-        onSystemSettings={() => console.log('System settings')}
-        onSystemMonitor={() => console.log('System monitor')}
+        onSystemSettings={() => router.push('/admin/settings/configuration')}
+        onSystemMonitor={() => router.push('/admin/monitoring/health')}
         onAuditLogs={handleViewAuditLog}
-        onSecurityCenter={() => console.log('Security center')}
-        onDataImport={() => console.log('Data import')}
-        onNotifications={() => console.log('Notifications')}
-        onSystemReports={() => console.log('System reports')}
+        onSecurityCenter={() => router.push('/admin/settings/configuration')}
+        onDataImport={() => router.push('/admin/settings')}
+        onNotifications={() => router.push('/settings/notifications')}
+        onSystemReports={() => router.push('/admin/settings')}
       />
 
       {/* System Alerts and User Summary */}

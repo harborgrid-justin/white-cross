@@ -30,16 +30,19 @@ import { ResponseCookie } from 'next/dist/compiled/@edge-runtime/cookies';
  * - Cookie must be set from a secure origin (HTTPS)
  * - Cookie must NOT have a Domain attribute (preventing subdomain access)
  * - Cookie path must be /
+ *
+ * NOTE: __Host- prefix requires HTTPS. In development (localhost), we use
+ * regular cookie names without the prefix.
  */
 export const COOKIE_NAMES = {
   /** Access token for API authentication */
-  ACCESS_TOKEN: '__Host-auth.token',
+  ACCESS_TOKEN: process.env.NODE_ENV === 'production' ? '__Host-auth.token' : 'auth.token',
 
   /** Refresh token for obtaining new access tokens */
-  REFRESH_TOKEN: '__Host-auth.refresh',
+  REFRESH_TOKEN: process.env.NODE_ENV === 'production' ? '__Host-auth.refresh' : 'auth.refresh',
 
   /** Session identifier (if using session-based auth alongside JWT) */
-  SESSION_ID: '__Host-auth.session',
+  SESSION_ID: process.env.NODE_ENV === 'production' ? '__Host-auth.session' : 'auth.session',
 } as const;
 
 /**

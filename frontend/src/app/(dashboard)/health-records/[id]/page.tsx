@@ -117,7 +117,8 @@ async function HealthRecordDetailContent({ id }: { id: string }) {
     notFound();
   }
 
-  const getRecordTypeDisplay = (type: string) => {
+  const getRecordTypeDisplay = (type: string | undefined | null) => {
+    if (!type) return 'Not specified';
     return type.split('_').map(word => 
       word.charAt(0) + word.slice(1).toLowerCase()
     ).join(' ');
@@ -137,7 +138,9 @@ async function HealthRecordDetailContent({ id }: { id: string }) {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">{record.title}</h1>
             <p className="text-gray-600 mt-1">
-              {record.student.firstName} {record.student.lastName} • {getRecordTypeDisplay(record.recordType)}
+              {record.student?.firstName && record.student?.lastName 
+                ? `${record.student.firstName} ${record.student.lastName} • ` 
+                : ''}{getRecordTypeDisplay(record.recordType)}
             </p>
           </div>
         </div>
@@ -292,19 +295,23 @@ async function HealthRecordDetailContent({ id }: { id: string }) {
               <div>
                 <label className="text-sm font-medium text-gray-600">Name</label>
                 <p className="mt-1 text-gray-900">
-                  {record.student.firstName} {record.student.lastName}
+                  {record.student?.firstName && record.student?.lastName 
+                    ? `${record.student.firstName} ${record.student.lastName}`
+                    : 'Student information not available'}
                 </p>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-600">Student ID</label>
                 <p className="mt-1 text-sm text-gray-700 font-mono">{record.studentId}</p>
               </div>
-              <div>
-                <label className="text-sm font-medium text-gray-600">Date of Birth</label>
-                <p className="mt-1 text-gray-900">
-                  {new Date(record.student.dateOfBirth).toLocaleDateString()}
-                </p>
-              </div>
+              {record.student?.dateOfBirth && (
+                <div>
+                  <label className="text-sm font-medium text-gray-600">Date of Birth</label>
+                  <p className="mt-1 text-gray-900">
+                    {new Date(record.student.dateOfBirth).toLocaleDateString()}
+                  </p>
+                </div>
+              )}
             </div>
           </Card>
 
