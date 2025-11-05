@@ -96,7 +96,7 @@ module.exports = {
       `, { transaction });
 
       // Check if medications table has the expected columns before creating indexes
-      const [medicationColumns] = await queryInterface.sequelize.query(`
+      const medicationColumns = await queryInterface.sequelize.query(`
         SELECT column_name FROM information_schema.columns
         WHERE table_name = 'medications' AND column_name IN ('category', 'isActive', 'stockQuantity', 'minimumStock', 'expirationDate');
       `, { transaction });
@@ -133,7 +133,7 @@ module.exports = {
       // ============================================
 
       // Check if health_records uses new column names
-      const [hrColumns] = await queryInterface.sequelize.query(`
+      const hrColumns = await queryInterface.sequelize.query(`
         SELECT column_name FROM information_schema.columns
         WHERE table_name = 'health_records' AND column_name IN ('recordDate', 'recordType', 'isConfidential', 'providerNpi', 'date');
       `, { transaction });
@@ -144,12 +144,12 @@ module.exports = {
 
       await queryInterface.sequelize.query(`
         CREATE INDEX IF NOT EXISTS "idx_health_records_student_date" ON "health_records"
-          ("studentId", "${dateCol}" DESC, "${typeCol}");
+          ("studentId", "recordDate" DESC, "recordType");
       `, { transaction });
 
       await queryInterface.sequelize.query(`
         CREATE INDEX IF NOT EXISTS "idx_health_records_type_date" ON "health_records"
-          ("${typeCol}", "${dateCol}" DESC);
+          ("recordType", "recordDate" DESC);
       `, { transaction });
 
       if (hrColNames.includes('isConfidential')) {
@@ -201,7 +201,7 @@ module.exports = {
       `, { transaction });
 
       // Check if status column exists
-      const [irColumns] = await queryInterface.sequelize.query(`
+      const irColumns = await queryInterface.sequelize.query(`
         SELECT column_name FROM information_schema.columns
         WHERE table_name = 'incident_reports' AND column_name = 'status';
       `, { transaction });
@@ -210,12 +210,12 @@ module.exports = {
 
       await queryInterface.sequelize.query(`
         CREATE INDEX IF NOT EXISTS "idx_incident_reports_filters" ON "incident_reports"
-          ("type", "severity"${hasStatus ? ', "status"' : ''}, "occurredAt" DESC);
+          ("type", "severity", "occurredAt" DESC);
       `, { transaction });
 
       await queryInterface.sequelize.query(`
         CREATE INDEX IF NOT EXISTS "idx_incident_reports_critical" ON "incident_reports"
-          ("severity", "occurredAt" DESC${hasStatus ? ', "status"' : ''})
+          ("severity", "occurredAt" DESC)
           WHERE "severity" IN ('HIGH', 'CRITICAL');
       `, { transaction });
 
@@ -229,7 +229,7 @@ module.exports = {
       `, { transaction });
 
       // Check if isPrimary column exists
-      const [ecColumns] = await queryInterface.sequelize.query(`
+      const ecColumns = await queryInterface.sequelize.query(`
         SELECT column_name FROM information_schema.columns
         WHERE table_name = 'emergency_contacts' AND column_name = 'isPrimary';
       `, { transaction });
@@ -245,12 +245,14 @@ module.exports = {
       // DOCUMENT INDEXES (if table exists)
       // ============================================
 
-      const [docTables] = await queryInterface.sequelize.query(`
+      const docTablesResult = await queryInterface.sequelize.query(`
         SELECT table_name FROM information_schema.tables
         WHERE table_name = 'documents';
       `, { transaction });
 
-      if (docTables.length > 0) {
+      const docTables = Array.isArray(docTablesResult) ? docTablesResult[0] : docTablesResult;
+
+      if (docTables && docTables.length > 0) {
         await queryInterface.sequelize.query(`
           CREATE INDEX IF NOT EXISTS "idx_documents_student" ON "documents"
             ("studentId", "uploadedAt" DESC) WHERE "studentId" IS NOT NULL;
@@ -266,7 +268,7 @@ module.exports = {
             ("category", "uploadedAt" DESC);
         `, { transaction });
 
-        const [docCols] = await queryInterface.sequelize.query(`
+        const docCols = await queryInterface.sequelize.query(`
           SELECT column_name FROM information_schema.columns
           WHERE table_name = 'documents' AND column_name = 'expirationDate';
         `, { transaction });
@@ -283,7 +285,7 @@ module.exports = {
       // AUDIT LOG INDEXES (if table exists)
       // ============================================
 
-      const [auditTables] = await queryInterface.sequelize.query(`
+      const auditTables = await queryInterface.sequelize.query(`
         SELECT table_name FROM information_schema.tables
         WHERE table_name = 'audit_logs';
       `, { transaction });
@@ -314,15 +316,15 @@ module.exports = {
       // COMMUNICATION INDEXES (if tables exist)
       // ============================================
 
-      const [msgTables] = await queryInterface.sequelize.query(`
+      const msgTables = await queryInterface.sequelize.query(`
         SELECT table_name FROM information_schema.tables
         WHERE table_name IN ('messages', 'message_recipients');
       `, { transaction });
 
-      const msgTableNames = msgTables.map(t => t.table_name);
+      const msgTableNames = (Array.isArray(msgTables) ? msgTables : []).map(t => t.table_name);
 
       if (msgTableNames.includes('messages')) {
-        const [msgCols] = await queryInterface.sequelize.query(`
+        const msgCols = await queryInterface.sequelize.query(`
           SELECT column_name FROM information_schema.columns
           WHERE table_name = 'messages' AND column_name = 'sentAt';
         `, { transaction });
@@ -351,7 +353,7 @@ module.exports = {
       // INVENTORY INDEXES (if tables exist)
       // ============================================
 
-      const [invTables] = await queryInterface.sequelize.query(`
+      const invTables = await queryInterface.sequelize.query(`
         SELECT table_name FROM information_schema.tables
         WHERE table_name IN ('inventory_items', 'inventory_transactions');
       `, { transaction });
@@ -359,7 +361,7 @@ module.exports = {
       const invTableNames = invTables.map(t => t.table_name);
 
       if (invTableNames.includes('inventory_items')) {
-        const [invCols] = await queryInterface.sequelize.query(`
+        const invCols = await queryInterface.sequelize.query(`
           SELECT column_name FROM information_schema.columns
           WHERE table_name = 'inventory_items' AND column_name IN ('category', 'location', 'quantity', 'minimumStock');
         `, { transaction });
@@ -383,7 +385,7 @@ module.exports = {
       }
 
       if (invTableNames.includes('inventory_transactions')) {
-        const [invTransCols] = await queryInterface.sequelize.query(`
+        const invTransCols = await queryInterface.sequelize.query(`
           SELECT column_name FROM information_schema.columns
           WHERE table_name = 'inventory_transactions' AND column_name IN ('transactionDate', 'performedBy');
         `, { transaction });
@@ -409,13 +411,13 @@ module.exports = {
       // COMPLIANCE INDEXES (if table exists)
       // ============================================
 
-      const [compTables] = await queryInterface.sequelize.query(`
+      const compTables = await queryInterface.sequelize.query(`
         SELECT table_name FROM information_schema.tables
         WHERE table_name = 'compliance_records';
       `, { transaction });
 
       if (compTables.length > 0) {
-        const [compCols] = await queryInterface.sequelize.query(`
+        const compCols = await queryInterface.sequelize.query(`
           SELECT column_name FROM information_schema.columns
           WHERE table_name = 'compliance_records' AND column_name IN ('type', 'status', 'dueDate');
         `, { transaction });
@@ -444,13 +446,13 @@ module.exports = {
       // SESSION INDEXES (if table exists)
       // ============================================
 
-      const [sessTables] = await queryInterface.sequelize.query(`
+      const sessTables = await queryInterface.sequelize.query(`
         SELECT table_name FROM information_schema.tables
         WHERE table_name = 'sessions';
       `, { transaction });
 
       if (sessTables.length > 0) {
-        const [sessCols] = await queryInterface.sequelize.query(`
+        const sessCols = await queryInterface.sequelize.query(`
           SELECT column_name FROM information_schema.columns
           WHERE table_name = 'sessions' AND column_name IN ('lastActivity', 'isActive', 'expiresAt');
         `, { transaction });
@@ -481,7 +483,7 @@ module.exports = {
           ("studentId", "severity") WHERE "isActive" = true;
       `, { transaction });
 
-      const [allergyCols] = await queryInterface.sequelize.query(`
+      const allergyCols = await queryInterface.sequelize.query(`
         SELECT column_name FROM information_schema.columns
         WHERE table_name = 'allergies' AND column_name = 'active';
       `, { transaction });
@@ -494,7 +496,7 @@ module.exports = {
         `, { transaction });
       }
 
-      const [ccCols] = await queryInterface.sequelize.query(`
+      const ccCols = await queryInterface.sequelize.query(`
         SELECT column_name FROM information_schema.columns
         WHERE table_name = 'chronic_conditions' AND column_name = 'status';
       `, { transaction });
@@ -510,7 +512,7 @@ module.exports = {
       // VACCINATION INDEXES (if table exists)
       // ============================================
 
-      const [vacTables] = await queryInterface.sequelize.query(`
+      const vacTables = await queryInterface.sequelize.query(`
         SELECT table_name FROM information_schema.tables
         WHERE table_name = 'vaccinations';
       `, { transaction });
@@ -529,7 +531,7 @@ module.exports = {
         await queryInterface.sequelize.query(`
           CREATE INDEX IF NOT EXISTS "idx_vaccinations_due" ON "vaccinations"
             ("nextDueDate", "studentId")
-            WHERE "nextDueDate" IS NOT NULL AND "nextDueDate" > CURRENT_DATE;
+            WHERE "nextDueDate" IS NOT NULL;
         `, { transaction });
       }
 
@@ -538,7 +540,7 @@ module.exports = {
       // ============================================
 
       // Student health overview (dashboard query)
-      const [studentCols] = await queryInterface.sequelize.query(`
+      const studentCols = await queryInterface.sequelize.query(`
         SELECT column_name FROM information_schema.columns
         WHERE table_name = 'students' AND column_name = 'schoolId';
       `, { transaction });

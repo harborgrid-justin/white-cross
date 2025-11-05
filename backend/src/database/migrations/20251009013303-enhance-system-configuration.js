@@ -217,7 +217,7 @@ module.exports = {
           allowNull: true
         },
         configurationId: {
-          type: Sequelize.TEXT,
+          type: Sequelize.UUID,
           allowNull: false,
           references: {
             model: 'system_configurations',

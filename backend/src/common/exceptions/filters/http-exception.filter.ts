@@ -319,17 +319,17 @@ export class HttpExceptionFilter implements ExceptionFilter {
    * Get audit action based on error type
    */
   private getAuditAction(statusCode: number, errorCode: string): string {
-    if (statusCode === 401) return 'authentication_failed';
-    if (statusCode === 403) return 'authorization_failed';
-    if (statusCode === 429) return 'rate_limit_exceeded';
-    if (statusCode >= 500) return 'server_error';
+    if (statusCode === 401) return 'AUTHENTICATION_FAILED';
+    if (statusCode === 403) return 'AUTHORIZATION_FAILED';
+    if (statusCode === 429) return 'RATE_LIMIT_EXCEEDED';
+    if (statusCode >= 500) return 'SERVER_ERROR';
 
     const category = getErrorCodeCategory(errorCode);
-    if (category === 'HEALTH') return 'healthcare_error';
-    if (category === 'COMPLY') return 'compliance_error';
-    if (category === 'SECURITY') return 'security_error';
+    if (category === 'HEALTH') return 'HEALTHCARE_ERROR';
+    if (category === 'COMPLY') return 'COMPLIANCE_ERROR';
+    if (category === 'SECURITY') return 'SECURITY_ERROR';
 
-    return 'application_error';
+    return 'APPLICATION_ERROR';
   }
 
   /**
