@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { Transaction } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { PurchaseOrder, PurchaseOrderStatus } from '../../database/models/purchase-order.model';
 import { PurchaseOrderItem } from '../../database/models/purchase-order-item.model';
@@ -27,7 +28,9 @@ export class PurchaseOrderService {
    * Create purchase order with comprehensive validation
    */
   async createPurchaseOrder(data: CreatePurchaseOrderDto): Promise<PurchaseOrder> {
-    const transaction = await this.sequelize.transaction();
+    const transaction = await this.sequelize.transaction({
+      isolationLevel: Transaction.ISOLATION_LEVELS.READ_COMMITTED,
+    });
 
     try {
       // Verify vendor exists and is active
@@ -115,9 +118,7 @@ export class PurchaseOrderService {
         }, { transaction });
       }
 
-      await transaction.commit();
-
-      // Reload with associations
+      // Reload with associations BEFORE commit (while still in transaction)
       const completeOrder = await this.purchaseOrderModel.findByPk(purchaseOrder.id, {
         include: [
           { model: Vendor, as: 'vendor' },
@@ -134,6 +135,8 @@ export class PurchaseOrderService {
         throw new Error('Failed to reload purchase order after creation');
       }
 
+      await transaction.commit();
+
       this.logger.log(
         `Purchase order created: ${completeOrder.orderNumber} (${orderItems.length} items, $${subtotal.toFixed(2)})`,
       );
@@ -142,7 +145,11 @@ export class PurchaseOrderService {
     } catch (error) {
       await transaction.rollback();
       this.logger.error('Error creating purchase order:', error);
-      throw error;
+      // Generic error to avoid exposing internal details
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new Error('Failed to create purchase order. Please try again.');
     }
   }
 
@@ -209,7 +216,9 @@ export class PurchaseOrderService {
     status: PurchaseOrderStatus,
     receivedDate?: Date,
   ): Promise<PurchaseOrder> {
-    const transaction = await this.sequelize.transaction();
+    const transaction = await this.sequelize.transaction({
+      isolationLevel: Transaction.ISOLATION_LEVELS.READ_COMMITTED,
+    });
 
     try {
       const purchaseOrder = await this.purchaseOrderModel.findByPk(id, {
@@ -268,7 +277,11 @@ export class PurchaseOrderService {
     } catch (error) {
       await transaction.rollback();
       this.logger.error('Error updating purchase order status:', error);
-      throw error;
+      // Generic error to avoid exposing internal details
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new Error('Failed to update purchase order status. Please try again.');
     }
   }
 }

@@ -22,10 +22,12 @@ import { Sequelize } from 'sequelize-typescript';
 // Services
 import { CacheService } from './services/cache.service';
 import { AuditService } from './services/audit.service';
+import { ModelAuditHelper } from './services/model-audit-helper.service';
 import { SequelizeUnitOfWorkService } from './uow/sequelize-unit-of-work.service';
 import { ConnectionMonitorService } from './services/connection-monitor.service';
 import { QueryLoggerService } from './services/query-logger.service';
 import { QueryCacheService } from './services/query-cache.service';
+import { CacheMonitoringService } from './services/cache-monitoring.service';
 
 // Core Models
 import { AuditLog } from './models/audit-log.model';
@@ -190,14 +192,19 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
             synchronize: false,
             alter: false,
             // OPTIMIZATION: Enhanced logging with slow query detection
-            logging: isDevelopment
-              ? console.log
-              : (sql: string, timing?: number) => {
-                  // Log slow queries in production (over 1 second)
+            // HIPAA COMPLIANCE: Always log in production for audit trail
+            logging: isProduction
+              ? (sql: string, timing?: number) => {
+                  // Always log queries in production for HIPAA compliance
+                  console.log(`[DB] ${sql.substring(0, 200)}${sql.length > 200 ? '...' : ''}`);
+                  // Also warn about slow queries
                   if (timing && timing > 1000) {
                     console.warn(`SLOW QUERY (${timing}ms): ${sql.substring(0, 200)}...`);
                   }
-                },
+                }
+              : isDevelopment
+              ? console.log
+              : false,
             benchmark: true,
             // V6 recommended options
             define: {
@@ -205,17 +212,12 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
               underscored: false,
               freezeTableName: true,
             },
-            // OPTIMIZATION: Production-ready connection pool configuration
-            // - Max 20 connections for high concurrency (adjustable based on load)
-            // - Min 5 connections to handle baseline traffic
-            // - 30s acquire timeout for peak traffic scenarios
-            // - 10s idle timeout to free up unused connections
-            // - Connection validation to prevent stale connections
+            // OPTIMIZATION: Production-ready connection pool configuration from environment
             pool: {
-              max: isProduction ? 20 : 10,
-              min: isProduction ? 5 : 2,   // Higher min for production to handle baseline traffic
-              acquire: 30000,               // 30s max time to acquire connection
-              idle: 10000,                  // 10s idle time before releasing
+              max: configService.get<number>('DB_POOL_MAX', isProduction ? 20 : 10),
+              min: configService.get<number>('DB_POOL_MIN', isProduction ? 5 : 2),
+              acquire: configService.get<number>('DB_ACQUIRE_TIMEOUT', 60000),
+              idle: configService.get<number>('DB_IDLE_TIMEOUT', 10000),
               evict: 1000,                  // Check for idle connections every 1s
               handleDisconnects: true,
               validate: (connection: any) => {
@@ -232,24 +234,30 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
                 /EHOSTDOWN/,
                 /ENETDOWN/,
                 /ENETUNREACH/,
-                /EAI_AGAIN/
+                /EAI_AGAIN/,
+                /connection is insecure/,
+                /SSL connection has been closed unexpectedly/
               ],
-              max: 3
+              max: 5  // Increased retry attempts for cloud databases
             },
             dialectOptions: {
               ...(databaseUrl.includes('sslmode=require') ? {
                 ssl: {
                   require: true,
-                  rejectUnauthorized: false
+                  // SECURITY: Only validate certificates in production for security
+                  rejectUnauthorized: isProduction
                 }
               } : {}),
               application_name: 'white-cross-app',
-              statement_timeout: 30000,
+              statement_timeout: 60000,  // Increased to 60s for index operations
               idle_in_transaction_session_timeout: 30000
             },
           };
         } else {
           // Use individual connection parameters for local development
+          const sslEnabled = configService.get<boolean>('database.ssl', false) || 
+                            configService.get<boolean>('DB_SSL', false);
+          
           return {
             dialect: 'postgres',
             host: configService.get('database.host', 'localhost'),
@@ -261,14 +269,19 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
             synchronize: isDevelopment,
             alter: isDevelopment,
             // OPTIMIZATION: Enhanced logging with slow query detection
-            logging: isDevelopment
-              ? console.log
-              : (sql: string, timing?: number) => {
-                  // Log slow queries in production (over 1 second)
+            // HIPAA COMPLIANCE: Always log in production for audit trail
+            logging: isProduction
+              ? (sql: string, timing?: number) => {
+                  // Always log queries in production for HIPAA compliance
+                  console.log(`[DB] ${sql.substring(0, 200)}${sql.length > 200 ? '...' : ''}`);
+                  // Also warn about slow queries
                   if (timing && timing > 1000) {
                     console.warn(`SLOW QUERY (${timing}ms): ${sql.substring(0, 200)}...`);
                   }
-                },
+                }
+              : isDevelopment
+              ? console.log
+              : false,
             benchmark: true,
             // V6 recommended options
             define: {
@@ -276,17 +289,12 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
               underscored: false,
               freezeTableName: true,
             },
-            // OPTIMIZATION: Production-ready connection pool configuration
-            // - Max 20 connections for high concurrency (adjustable based on load)
-            // - Min 5 connections to handle baseline traffic
-            // - 30s acquire timeout for peak traffic scenarios
-            // - 10s idle timeout to free up unused connections
-            // - Connection validation to prevent stale connections
+            // OPTIMIZATION: Production-ready connection pool configuration from environment
             pool: {
-              max: isProduction ? 20 : 10,
-              min: isProduction ? 5 : 2,   // Higher min for production to handle baseline traffic
-              acquire: 30000,               // 30s max time to acquire connection
-              idle: 10000,                  // 10s idle time before releasing
+              max: configService.get<number>('DB_POOL_MAX', isProduction ? 20 : 10),
+              min: configService.get<number>('DB_POOL_MIN', isProduction ? 5 : 2),
+              acquire: configService.get<number>('DB_ACQUIRE_TIMEOUT', 60000),
+              idle: configService.get<number>('DB_IDLE_TIMEOUT', 10000),
               evict: 1000,                  // Check for idle connections every 1s
               handleDisconnects: true,
               validate: (connection: any) => {
@@ -303,13 +311,22 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
                 /EHOSTDOWN/,
                 /ENETDOWN/,
                 /ENETUNREACH/,
-                /EAI_AGAIN/
+                /EAI_AGAIN/,
+                /connection is insecure/,
+                /SSL connection has been closed unexpectedly/
               ],
-              max: 3
+              max: 5  // Increased retry attempts for cloud databases
             },
             dialectOptions: {
+              ...(sslEnabled ? {
+                ssl: {
+                  require: true,
+                  // SECURITY: Only validate certificates in production for security
+                  rejectUnauthorized: isProduction
+                }
+              } : {}),
               application_name: 'white-cross-app',
-              statement_timeout: 30000,    // 30s query timeout
+              statement_timeout: 60000,    // 60s query timeout for index operations
               idle_in_transaction_session_timeout: 30000  // 30s idle transaction timeout
             },
           };
@@ -453,10 +470,15 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
       useClass: SequelizeUnitOfWorkService
     },
 
+    // Audit Services
+    AuditService,
+    ModelAuditHelper,
+
     // Performance Monitoring Services
     ConnectionMonitorService,
     QueryLoggerService,
     QueryCacheService,
+    CacheMonitoringService,
 
     // Repository Implementations
     // Add repositories as they are migrated following this pattern:
@@ -491,10 +513,15 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
     'IAuditLogger',
     'IUnitOfWork',
 
+    // Export audit services
+    AuditService,
+    ModelAuditHelper,
+
     // Export performance monitoring services
     ConnectionMonitorService,
     QueryLoggerService,
     QueryCacheService,
+    CacheMonitoringService,
 
     // Export repositories as they are added
     StudentRepository,

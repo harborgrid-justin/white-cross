@@ -13,10 +13,18 @@ import {
   Scopes,
   DeletedAt
   } from 'sequelize-typescript';
+import { Optional } from 'sequelize';
 import * as bcrypt from 'bcrypt';
 import { Op } from 'sequelize';
 import type { School } from './school.model';
 import type { District } from './district.model';
+import type { Appointment } from './appointment.model';
+import type { ClinicalNote } from './clinical-note.model';
+import type { Message } from './message.model';
+import type { Alert } from './alert.model';
+import type { IncidentReport } from './incident-report.model';
+import type { Prescription } from './prescription.model';
+import type { ClinicVisit } from './clinic-visit.model';
 
 export enum UserRole {
   ADMIN = 'ADMIN',
@@ -28,30 +36,77 @@ export enum UserRole {
   }
 
 export interface UserAttributes {
-  id?: string;
+  id: string;
   email: string;
   password: string;
   firstName: string;
   lastName: string;
   role: UserRole;
   isActive: boolean;
-  lastLogin?: Date;
-  schoolId?: string;
-  districtId?: string;
-  phone?: string;
+  lastLogin?: Date | null;
+  schoolId?: string | null;
+  districtId?: string | null;
+  phone?: string | null;
   emailVerified: boolean;
-  emailVerificationToken?: string;
-  emailVerificationExpires?: Date;
-  passwordResetToken?: string;
-  passwordResetExpires?: Date;
-  passwordChangedAt?: Date;
+  emailVerificationToken?: string | null;
+  emailVerificationExpires?: Date | null;
+  passwordResetToken?: string | null;
+  passwordResetExpires?: Date | null;
+  passwordChangedAt?: Date | null;
   twoFactorEnabled: boolean;
-  twoFactorSecret?: string;
+  twoFactorSecret?: string | null;
   failedLoginAttempts: number;
-  lockoutUntil?: Date;
-  lastPasswordChange?: Date;
+  lockoutUntil?: Date | null;
+  lastPasswordChange?: Date | null;
   mustChangePassword: boolean;
+  mfaEnabled: boolean;
+  mfaSecret?: string | null;
+  mfaBackupCodes?: string | null;
+  mfaEnabledAt?: Date | null;
+  oauthProvider?: string | null;
+  oauthProviderId?: string | null;
+  profilePictureUrl?: string | null;
+  isEmailVerified: boolean;
+  emailVerifiedAt?: Date | null;
+  deletedAt?: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
+
+export interface UserCreationAttributes
+  extends Optional<
+    UserAttributes,
+    | 'id'
+    | 'isActive'
+    | 'lastLogin'
+    | 'schoolId'
+    | 'districtId'
+    | 'phone'
+    | 'emailVerified'
+    | 'emailVerificationToken'
+    | 'emailVerificationExpires'
+    | 'passwordResetToken'
+    | 'passwordResetExpires'
+    | 'passwordChangedAt'
+    | 'twoFactorEnabled'
+    | 'twoFactorSecret'
+    | 'failedLoginAttempts'
+    | 'lockoutUntil'
+    | 'lastPasswordChange'
+    | 'mustChangePassword'
+    | 'mfaEnabled'
+    | 'mfaSecret'
+    | 'mfaBackupCodes'
+    | 'mfaEnabledAt'
+    | 'oauthProvider'
+    | 'oauthProviderId'
+    | 'profilePictureUrl'
+    | 'isEmailVerified'
+    | 'emailVerifiedAt'
+    | 'deletedAt'
+    | 'createdAt'
+    | 'updatedAt'
+  > {}
 
 @Scopes(() => ({
   active: {
@@ -122,7 +177,7 @@ export interface UserAttributes {
     { fields: ['updatedAt'], name: 'idx_users_updated_at' }
   ]
   })
-export class User extends Model<UserAttributes> {
+export class User extends Model<UserAttributes, UserCreationAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
@@ -292,6 +347,18 @@ export class User extends Model<UserAttributes> {
   })
   declare mustChangePassword: boolean;
 
+  @Column({
+    type: DataType.DATE,
+    allowNull: false
+  })
+  declare createdAt: Date;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: false
+  })
+  declare updatedAt: Date;
+
   // MFA fields
   @Column({
     type: DataType.BOOLEAN,
@@ -384,31 +451,31 @@ export class User extends Model<UserAttributes> {
 
   // One-to-many relationships
   @HasMany(() => require('./appointment.model').Appointment, { foreignKey: 'nurseId', as: 'appointments' })
-  declare appointments?: any[];
+  declare appointments?: Appointment[];
 
   @HasMany(() => require('./clinical-note.model').ClinicalNote, { foreignKey: 'createdBy', as: 'clinicalNotes' })
-  declare clinicalNotes?: any[];
+  declare clinicalNotes?: ClinicalNote[];
 
   @HasMany(() => require('./message.model').Message, { foreignKey: 'senderId', as: 'sentMessages' })
-  declare sentMessages?: any[];
+  declare sentMessages?: Message[];
 
   @HasMany(() => require('./alert.model').Alert, { foreignKey: 'createdBy', as: 'createdAlerts' })
-  declare createdAlerts?: any[];
+  declare createdAlerts?: Alert[];
 
   @HasMany(() => require('./alert.model').Alert, { foreignKey: 'acknowledgedBy', as: 'acknowledgedAlerts' })
-  declare acknowledgedAlerts?: any[];
+  declare acknowledgedAlerts?: Alert[];
 
   @HasMany(() => require('./alert.model').Alert, { foreignKey: 'resolvedBy', as: 'resolvedAlerts' })
-  declare resolvedAlerts?: any[];
+  declare resolvedAlerts?: Alert[];
 
   @HasMany(() => require('./incident-report.model').IncidentReport, { foreignKey: 'reportedById', as: 'reportedIncidents' })
-  declare reportedIncidents?: any[];
+  declare reportedIncidents?: IncidentReport[];
 
   @HasMany(() => require('./prescription.model').Prescription, { foreignKey: 'prescribedBy', as: 'prescriptions' })
-  declare prescriptions?: any[];
+  declare prescriptions?: Prescription[];
 
   @HasMany(() => require('./clinic-visit.model').ClinicVisit, { foreignKey: 'attendedBy', as: 'clinicVisits' })
-  declare clinicVisits?: any[];
+  declare clinicVisits?: ClinicVisit[];
 
   @BeforeCreate
   static async hashPasswordBeforeCreate(user: User) {
@@ -433,13 +500,20 @@ export class User extends Model<UserAttributes> {
     if (user.changed()) {
       const changedFields = user.changed() as string[];
       const phiFields = ['email', 'firstName', 'lastName', 'phone'];
-      const phiChanged = changedFields.some(field => phiFields.includes(field));
 
-      if (phiChanged) {
-        console.log(`[AUDIT] User ${user.id} PHI modified at ${new Date().toISOString()}`);
-        console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-        // TODO: Integrate with AuditLog service for persistent audit trail
-      }
+      // Import the helper function dynamically to avoid circular dependencies
+      const { logModelPHIFieldChanges } = await import('@/database/services/model-audit-helper.service');
+
+      // Get the transaction if available
+      const transaction = (user as any).sequelize?.transaction || undefined;
+
+      await logModelPHIFieldChanges(
+        'User',
+        user.id,
+        changedFields,
+        phiFields,
+        transaction,
+      );
     }
   }
 

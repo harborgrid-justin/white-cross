@@ -241,11 +241,11 @@ export class AnalyticsService {
       const appointments = await this.appointmentModel.findAll({
         where: {
           studentId,
-          appointmentDate: {
+          scheduledAt: {
             [Op.between]: [startDate, endDate],
           },
         },
-        order: [['appointmentDate', 'DESC']],
+        order: [['scheduledAt', 'DESC']],
         limit: 50,
       });
 
@@ -617,7 +617,7 @@ export class AnalyticsService {
       // Query active appointments for today
       const todayAppointments = await this.appointmentModel.findAll({
         where: {
-          appointmentDate: {
+          scheduledAt: {
             [Op.between]: [startDate, endDate],
           },
           status: {
@@ -683,8 +683,8 @@ export class AnalyticsService {
             ...todayAppointments.slice(0, 10).map(apt => ({
               type: 'Appointment',
               studentId: apt.studentId,
-              appointmentType: apt.appointmentType,
-              time: apt.appointmentDate,
+              appointmentType: apt.type,
+              time: apt.scheduledAt,
               priority: 'MEDIUM',
             })),
           ]

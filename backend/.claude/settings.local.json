@@ -53,7 +53,14 @@
       "Read(//f/temp/white-cross/**)",
       "Bash(test:*)",
       "Bash(npx next build:*)",
-      "WebFetch(domain:sequelize.org)"
+      "WebFetch(domain:sequelize.org)",
+      "mcp__ide__getDiagnostics",
+      "Bash(npx tsc:*)",
+      "Bash(npx sequelize-cli:*)",
+      "Bash(npm run lint:*)",
+      "Bash(git diff:*)",
+      "Bash(find:*)",
+      "Bash(npm test:*)"
     ],
     "deny": [],
     "ask": []

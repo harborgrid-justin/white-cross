@@ -70,6 +70,43 @@ export const validationSchema = Joi.object({
     .default(false)
     .description('Enable database query logging (safe default: false)'),
 
+  // DATABASE_URL (alternative to individual params, for cloud deployments)
+  DATABASE_URL: Joi.string()
+    .uri()
+    .optional()
+    .description('Database connection URL (alternative to DB_HOST, DB_PORT, etc.)'),
+
+  // Connection Pool Configuration
+  DB_POOL_MIN: Joi.number()
+    .integer()
+    .min(1)
+    .max(100)
+    .default(2)
+    .description('Minimum database connections in pool (safe default: 2)'),
+
+  DB_POOL_MAX: Joi.number()
+    .integer()
+    .min(1)
+    .max(100)
+    .default(10)
+    .when('DB_POOL_MIN', {
+      is: Joi.number().required(),
+      then: Joi.number().min(Joi.ref('DB_POOL_MIN')),
+    })
+    .description('Maximum database connections in pool (safe default: 10, must be >= DB_POOL_MIN)'),
+
+  DB_ACQUIRE_TIMEOUT: Joi.number()
+    .integer()
+    .positive()
+    .default(60000)
+    .description('Database connection acquire timeout in ms (safe default: 60000)'),
+
+  DB_IDLE_TIMEOUT: Joi.number()
+    .integer()
+    .positive()
+    .default(10000)
+    .description('Database connection idle timeout in ms (safe default: 10000)'),
+
   // ===================
   // JWT & AUTHENTICATION
   // ===================
@@ -287,6 +324,7 @@ export const validationSchema = Joi.object({
       .try(
         Joi.string().uri(),
         Joi.string().valid('*'),
+        Joi.string().allow(''),
       )
       .default('http://localhost:3000'),
   })
@@ -329,6 +367,7 @@ export const validationSchema = Joi.object({
   SENTRY_DSN: Joi.string()
     .uri()
     .optional()
+    .allow('')
     .description('Sentry DSN for error tracking (optional)'),
 
   REQUEST_TIMEOUT: Joi.number()
@@ -345,27 +384,26 @@ export const validationSchema = Joi.object({
     .description('AWS region (safe default: us-east-1)'),
 
   AWS_ACCESS_KEY_ID: Joi.string()
-    .when('NODE_ENV', {
-      is: 'production',
-      then: Joi.optional(), // May use IAM roles instead
-      otherwise: Joi.optional(),
-    })
+    .optional()
+    .allow('')
     .description('AWS access key ID (optional, prefer IAM roles)'),
 
   AWS_SECRET_ACCESS_KEY: Joi.string()
     .when('AWS_ACCESS_KEY_ID', {
-      is: Joi.exist(),
+      is: Joi.string().min(1),
       then: Joi.required(),
-      otherwise: Joi.optional(),
+      otherwise: Joi.optional().allow(''),
     })
     .description('AWS secret access key (required if access key provided)'),
 
   AWS_S3_BUCKET: Joi.string()
     .optional()
+    .allow('')
     .description('AWS S3 bucket name (optional)'),
 
   AWS_SECRET_NAME: Joi.string()
     .optional()
+    .allow('')
     .description('AWS Secrets Manager secret name (optional)'),
 
   // ===================

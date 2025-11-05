@@ -13,7 +13,11 @@ import {
   BeforeCreate,
   BeforeUpdate
   } from 'sequelize-typescript';
+import { Optional } from 'sequelize';
 import { Op } from 'sequelize';
+import type { User } from './user.model';
+import type { Student } from './student.model';
+import type { AppointmentReminder } from './appointment-reminder.model';
 
 
 
@@ -37,20 +41,35 @@ export enum AppointmentStatus {
   }
 
 export interface AppointmentAttributes {
+  id: string;
   studentId: string;
   nurseId: string;
   type: AppointmentType;
-  appointmentType?: AppointmentType; // Alias for type
   scheduledAt: Date;
-  appointmentDate?: Date; // Alias for scheduledAt
   duration: number;
   status: AppointmentStatus;
   reason: string;
-  notes?: string;
-  recurringGroupId?: string;
-  recurringFrequency?: string;
-  recurringEndDate?: Date;
+  notes?: string | null;
+  recurringGroupId?: string | null;
+  recurringFrequency?: string | null;
+  recurringEndDate?: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
+
+export interface AppointmentCreationAttributes
+  extends Optional<
+    AppointmentAttributes,
+    | 'id'
+    | 'duration'
+    | 'status'
+    | 'notes'
+    | 'recurringGroupId'
+    | 'recurringFrequency'
+    | 'recurringEndDate'
+    | 'createdAt'
+    | 'updatedAt'
+  > {}
 
 @Scopes(() => ({
   upcoming: {
@@ -155,11 +174,11 @@ export interface AppointmentAttributes {
     }
   ]
   })
-export class Appointment extends Model<AppointmentAttributes> {
+export class Appointment extends Model<AppointmentAttributes, AppointmentCreationAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
-  declare id?: string;
+  declare id: string;
 
   @Index
   @ForeignKey(() => require('./student.model').Student)
@@ -192,10 +211,10 @@ export class Appointment extends Model<AppointmentAttributes> {
   nurseId: string;
 
   @BelongsTo(() => require('./user.model').User, { foreignKey: 'nurseId', as: 'nurse', constraints: true })
-  declare nurse: any;
+  declare nurse?: User;
 
   @BelongsTo(() => require('./student.model').Student, { foreignKey: 'studentId', as: 'student', constraints: true })
-  declare student: any;
+  declare student?: Student;
 
   @Index
   @Column({
@@ -302,19 +321,19 @@ export class Appointment extends Model<AppointmentAttributes> {
   recurringEndDate?: Date;
 
   @HasMany(() => require('./appointment-reminder.model').AppointmentReminder)
-  declare reminders: any[];
+  declare reminders?: AppointmentReminder[];
 
   @Column({
     type: DataType.DATE,
     allowNull: false
   })
-  declare createdAt?: Date;
+  declare createdAt: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: false
   })
-  declare updatedAt?: Date;
+  declare updatedAt: Date;
 
   /**
    * Virtual attribute: Check if appointment is upcoming

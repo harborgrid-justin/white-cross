@@ -97,10 +97,17 @@ export class MessageReaction extends Model<MessageReactionAttributes, MessageRea
   declare messageId: string;
 
   @Index
+  @ForeignKey(() => require('./user.model').User)
   @Column({
     type: DataType.UUID,
     allowNull: false,
-    comment: 'User who added the reaction'
+    comment: 'User who added the reaction',
+    references: {
+      model: 'users',
+      key: 'id'
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE'
   })
   declare userId: string;
 
@@ -113,6 +120,9 @@ export class MessageReaction extends Model<MessageReactionAttributes, MessageRea
 
   @BelongsTo(() => Message, { foreignKey: 'messageId', as: 'message' })
   declare message?: Message;
+
+  @BelongsTo(() => require('./user.model').User, { foreignKey: 'userId', as: 'user' })
+  declare user?: any;
 
   @Column({
     type: DataType.DATE,

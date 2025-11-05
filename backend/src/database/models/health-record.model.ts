@@ -12,8 +12,10 @@ import {
   BeforeUpdate,
   Scopes
 } from 'sequelize-typescript';
+import { Optional } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 import { Op } from 'sequelize';
+import type { Student } from './student.model';
 
 export interface HealthRecordAttributes {
   id: string;
@@ -22,23 +24,49 @@ export interface HealthRecordAttributes {
   title: string;
   description: string;
   recordDate: Date;
-  provider?: string;
-  providerNpi?: string;
-  facility?: string;
-  facilityNpi?: string;
-  diagnosis?: string;
-  diagnosisCode?: string;
-  treatment?: string;
+  provider?: string | null;
+  providerNpi?: string | null;
+  facility?: string | null;
+  facilityNpi?: string | null;
+  diagnosis?: string | null;
+  diagnosisCode?: string | null;
+  treatment?: string | null;
   followUpRequired: boolean;
-  followUpDate?: Date;
+  followUpDate?: Date | null;
   followUpCompleted: boolean;
   attachments: string[];
-  metadata?: Record<string, any>;
+  metadata?: Record<string, any> | null;
   isConfidential: boolean;
-  notes?: string;
-  createdBy?: string;
-  updatedBy?: string;
+  notes?: string | null;
+  createdBy?: string | null;
+  updatedBy?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
+
+export interface HealthRecordCreationAttributes
+  extends Optional<
+    HealthRecordAttributes,
+    | 'id'
+    | 'provider'
+    | 'providerNpi'
+    | 'facility'
+    | 'facilityNpi'
+    | 'diagnosis'
+    | 'diagnosisCode'
+    | 'treatment'
+    | 'followUpRequired'
+    | 'followUpDate'
+    | 'followUpCompleted'
+    | 'attachments'
+    | 'metadata'
+    | 'isConfidential'
+    | 'notes'
+    | 'createdBy'
+    | 'updatedBy'
+    | 'createdAt'
+    | 'updatedAt'
+  > {}
 
 @Scopes(() => ({
   byStudent: (studentId: string) => ({
@@ -145,7 +173,7 @@ export interface HealthRecordAttributes {
     }
   ]
 })
-export class HealthRecord extends Model<HealthRecordAttributes> implements HealthRecordAttributes {
+export class HealthRecord extends Model<HealthRecordAttributes, HealthRecordCreationAttributes> implements HealthRecordAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -307,7 +335,7 @@ export class HealthRecord extends Model<HealthRecordAttributes> implements Healt
   // Relationships
   // Using lazy evaluation with require() to prevent circular dependencies
   @BelongsTo(() => require('./student.model').Student, { foreignKey: 'studentId', as: 'student', constraints: true })
-  declare student?: any;
+  declare student?: Student;
 
   // Note: Other relationships will be added as related models are converted
   // @HasMany(() => Vaccination)
@@ -339,8 +367,22 @@ export class HealthRecord extends Model<HealthRecordAttributes> implements Healt
   static async auditPHIAccess(instance: HealthRecord) {
     // Log PHI access for HIPAA compliance
     if (instance.changed()) {
-      console.log(`[AUDIT] Health record ${instance.id} modified for student ${instance.studentId} at ${new Date().toISOString()}`);
-      // TODO: Integrate with AuditLog model when available
+      const changedFields = instance.changed() as string[];
+
+      // Import the helper function dynamically to avoid circular dependencies
+      const { logModelPHIAccess } = await import('@/database/services/model-audit-helper.service');
+
+      // Get the transaction if available
+      const transaction = (instance as any).sequelize?.transaction || undefined;
+
+      // All fields in HealthRecord are considered PHI
+      await logModelPHIAccess(
+        'HealthRecord',
+        instance.id,
+        'UPDATE',
+        changedFields,
+        transaction,
+      );
     }
   }
 

@@ -1,6 +1,7 @@
 import { Table, Column, Model, DataType, PrimaryKey, Default, CreatedAt, UpdatedAt, Index, ForeignKey, BelongsTo, Scopes, BeforeCreate, BeforeUpdate } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 import { Op } from 'sequelize';
+import type { Student } from './student.model';
 
 import { ContactPriority } from '../../contact/enums/contact-priority.enum';
 import { VerificationStatus } from '../../contact/enums/verification-status.enum';
@@ -262,7 +263,7 @@ export class EmergencyContact extends Model<EmergencyContactAttributes, Emergenc
 
   // Relationships
   @BelongsTo(() => require('./student.model').Student, { foreignKey: 'studentId', as: 'student' })
-  declare student: any;
+  declare student?: Student;
 
   /**
    * Get full name
@@ -304,9 +305,21 @@ export class EmergencyContact extends Model<EmergencyContactAttributes, Emergenc
   static async auditPHIAccess(instance: EmergencyContact) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] EmergencyContact ${instance.id} modified at ${new Date().toISOString()}`);
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
+      const phiFields = ['firstName', 'lastName', 'phoneNumber', 'email', 'address'];
+
+      // Import the helper function dynamically to avoid circular dependencies
+      const { logModelPHIFieldChanges } = await import('@/database/services/model-audit-helper.service');
+
+      // Get the transaction if available
+      const transaction = (instance as any).sequelize?.transaction || undefined;
+
+      await logModelPHIFieldChanges(
+        'EmergencyContact',
+        instance.id,
+        changedFields,
+        phiFields,
+        transaction,
+      );
     }
   }
 }

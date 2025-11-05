@@ -83,9 +83,17 @@ export class MedicationLog extends Model<MedicationLogAttributes> implements Med
   })
   studentId: string;
 
+  @ForeignKey(() => require('./medication.model').Medication)
+  @Index
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
+    references: {
+      model: 'medications',
+      key: 'id'
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'RESTRICT'
   })
   medicationId: string;
 
@@ -174,6 +182,9 @@ export class MedicationLog extends Model<MedicationLogAttributes> implements Med
   // Relations
   @BelongsTo(() => require('./student.model').Student, { foreignKey: 'studentId', as: 'student' })
   declare student?: any;
+
+  @BelongsTo(() => require('./medication.model').Medication, { foreignKey: 'medicationId', as: 'medication' })
+  declare medication?: any;
 
 
   // Hooks for HIPAA compliance

@@ -260,6 +260,89 @@ export class AcademicTranscriptService {
   }
 
   /**
+   * Batch fetch academic histories for multiple students
+   *
+   * OPTIMIZATION: Prevents N+1 query problem by fetching all transcripts in a single query
+   * Before: N queries (one per student)
+   * After: 1 query (all students at once)
+   * Performance improvement: ~99% query reduction for graduating students endpoint
+   *
+   * @param {string[]} studentIds - Array of student UUIDs
+   * @returns {Promise<Map<string, AcademicRecord[]>>} Map of studentId to their academic records
+   *
+   * @example
+   * ```typescript
+   * const studentIds = ['uuid1', 'uuid2', 'uuid3'];
+   * const transcriptsMap = await transcriptService.batchGetAcademicHistories(studentIds);
+   * const student1Transcripts = transcriptsMap.get('uuid1') || [];
+   * ```
+   *
+   * @remarks
+   * - Returns empty array for students with no transcripts
+   * - Orders transcripts by academic year and semester (DESC)
+   * - More efficient than calling getAcademicHistory repeatedly
+   * - Use this for bulk operations like graduating students report
+   */
+  async batchGetAcademicHistories(studentIds: string[]): Promise<Map<string, AcademicRecord[]>> {
+    try {
+      if (!studentIds || studentIds.length === 0) {
+        return new Map();
+      }
+
+      this.logger.log(
+        `Batch fetching academic histories for ${studentIds.length} students`,
+      );
+
+      // OPTIMIZATION: Single query to fetch all transcripts for all students
+      const transcriptResults = await this.academicTranscriptRepository.findMany({
+        where: {
+          studentId: { in: studentIds }, // Sequelize will translate this to IN clause
+        },
+        orderBy: { academicYear: 'DESC', semester: 'DESC' }
+      });
+      const allTranscripts = transcriptResults.data;
+
+      // Group transcripts by student ID using Map for O(1) lookup
+      const transcriptsByStudent = new Map<string, AcademicRecord[]>();
+
+      // Initialize map with empty arrays for all student IDs
+      studentIds.forEach(id => transcriptsByStudent.set(id, []));
+
+      // Group transcripts by student
+      allTranscripts.forEach(transcript => {
+        const studentId = transcript.studentId;
+        const academicRecord: AcademicRecord = {
+          id: transcript.id,
+          studentId: transcript.studentId,
+          academicYear: transcript.academicYear,
+          semester: transcript.semester,
+          grade: transcript.grade,
+          gpa: transcript.gpa,
+          subjects: transcript.subjects,
+          attendance: transcript.attendance,
+          behavior: transcript.behavior,
+          createdAt: transcript.createdAt || new Date(),
+          updatedAt: transcript.updatedAt || new Date(),
+        };
+
+        const studentTranscripts = transcriptsByStudent.get(studentId);
+        if (studentTranscripts) {
+          studentTranscripts.push(academicRecord);
+        }
+      });
+
+      this.logger.log(
+        `Batch fetched ${allTranscripts.length} transcripts for ${studentIds.length} students`,
+      );
+
+      return transcriptsByStudent;
+    } catch (error) {
+      this.logger.error(`Error batch fetching academic histories: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  /**
    * Generate academic transcript report
    *
    * Generates a formatted academic transcript report in the specified format (PDF, HTML, or JSON).

@@ -19,6 +19,8 @@ import {
   BeforeUpdate
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
+import type { School } from './school.model';
+import type { License } from './license.model';
 
 
 /**
@@ -210,11 +212,11 @@ export class District extends Model<DistrictAttributes, CreateDistrictAttributes
     foreignKey: 'districtId',
     as: 'schools'
   })
-  declare schools?: any[];
+  declare schools?: School[];
 
   @HasMany(() => require('./license.model').License, {
     foreignKey: 'districtId',
     as: 'licenses'
   })
-  declare licenses?: any[];
+  declare licenses?: License[];
 }

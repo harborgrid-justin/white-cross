@@ -213,6 +213,15 @@ export class Message extends Model<MessageAttributes, MessageCreationAttributes>
   @BelongsTo(() => require('./conversation.model').Conversation, { foreignKey: 'conversationId', as: 'conversation' })
   declare conversation?: any;
 
+  @HasMany(() => require('./message-read.model').MessageRead, { foreignKey: 'messageId', as: 'messageReads' })
+  declare messageReads?: any[];
+
+  @HasMany(() => require('./message-reaction.model').MessageReaction, { foreignKey: 'messageId', as: 'messageReactions' })
+  declare messageReactions?: any[];
+
+  @HasMany(() => require('./message-delivery.model').MessageDelivery, { foreignKey: 'messageId', as: 'messageDeliveries' })
+  declare messageDeliveries?: any[];
+
   @Column({
     type: DataType.UUID,
     allowNull: true,

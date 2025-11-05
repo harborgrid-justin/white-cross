@@ -95,10 +95,17 @@ export class MessageRead extends Model<MessageReadAttributes, MessageReadCreatio
   declare messageId: string;
 
   @Index
+  @ForeignKey(() => require('./user.model').User)
   @Column({
     type: DataType.UUID,
     allowNull: false,
-    comment: 'User who read the message'
+    comment: 'User who read the message',
+    references: {
+      model: 'users',
+      key: 'id'
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE'
   })
   declare userId: string;
 
@@ -113,6 +120,9 @@ export class MessageRead extends Model<MessageReadAttributes, MessageReadCreatio
 
   @BelongsTo(() => Message, { foreignKey: 'messageId', as: 'message' })
   declare message?: Message;
+
+  @BelongsTo(() => require('./user.model').User, { foreignKey: 'userId', as: 'user' })
+  declare user?: any;
 
   @Column({
     type: DataType.DATE,

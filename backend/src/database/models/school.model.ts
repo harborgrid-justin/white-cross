@@ -21,6 +21,11 @@ import {
   BeforeUpdate
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
+import type { District } from './district.model';
+import type { User } from './user.model';
+import type { Student } from './student.model';
+import type { Alert } from './alert.model';
+import type { IncidentReport } from './incident-report.model';
 
 /**
  * School attributes interface
@@ -248,21 +253,21 @@ export class School extends Model<SchoolAttributes, CreateSchoolAttributes> {
     foreignKey: 'districtId',
     as: 'district'
   })
-  declare district?: any;
+  declare district?: District;
 
   @HasMany(() => require('./user.model').User, { foreignKey: 'schoolId', as: 'users' })
-  declare users?: any[];
+  declare users?: User[];
 
   @HasMany(() => require('./student.model').Student, { foreignKey: 'schoolId', as: 'students' })
-  declare students?: any[];
+  declare students?: Student[];
 
   @HasMany(() => require('./alert.model').Alert, { foreignKey: 'schoolId', as: 'alerts' })
-  declare alerts?: any[];
+  declare alerts?: Alert[];
 
   @HasMany(() => require('./incident-report.model').IncidentReport, {
     foreignKey: 'schoolId',
     as: 'incidentReports',
     constraints: false
   })
-  declare incidentReports?: any[];
+  declare incidentReports?: IncidentReport[];
 }

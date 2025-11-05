@@ -16,13 +16,14 @@ export interface IAuditLogger {
     entityType: string,
     entityId: string,
     context: ExecutionContext,
-    data: Record<string, unknown>
+    data: Record<string, unknown>,
+    transaction?: any
   ): Promise<void>;
 
   /**
    * Logs read/access of an entity
    */
-  logRead(entityType: string, entityId: string, context: ExecutionContext): Promise<void>;
+  logRead(entityType: string, entityId: string, context: ExecutionContext, transaction?: any): Promise<void>;
 
   /**
    * Logs entity updates with before/after values
@@ -31,7 +32,8 @@ export interface IAuditLogger {
     entityType: string,
     entityId: string,
     context: ExecutionContext,
-    changes: Record<string, { before: unknown; after: unknown }>
+    changes: Record<string, { before: unknown; after: unknown }>,
+    transaction?: any
   ): Promise<void>;
 
   /**
@@ -41,7 +43,8 @@ export interface IAuditLogger {
     entityType: string,
     entityId: string,
     context: ExecutionContext,
-    data: Record<string, unknown>
+    data: Record<string, unknown>,
+    transaction?: any
   ): Promise<void>;
 
   /**
@@ -51,7 +54,8 @@ export interface IAuditLogger {
     operation: string,
     entityType: string,
     context: ExecutionContext,
-    metadata: Record<string, unknown>
+    metadata: Record<string, unknown>,
+    transaction?: any
   ): Promise<void>;
 
   /**
@@ -68,6 +72,25 @@ export interface IAuditLogger {
    * Logs cache access operations for PHI tracking
    */
   logCacheAccess(operation: string, cacheKey: string, metadata?: Record<string, unknown>): Promise<void>;
+
+  /**
+   * Logs PHI access for HIPAA compliance
+   * Used by model hooks to track PHI field modifications
+   */
+  logPHIAccess?(
+    options: {
+      entityType: string;
+      entityId: string;
+      action: 'CREATE' | 'UPDATE' | 'READ' | 'DELETE';
+      changedFields?: string[];
+      userId?: string;
+      userName?: string;
+      ipAddress?: string;
+      userAgent?: string;
+      metadata?: Record<string, unknown>;
+    },
+    transaction?: any
+  ): Promise<void>;
 }
 
 /**

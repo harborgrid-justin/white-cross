@@ -189,7 +189,13 @@ export class IncidentReport extends Model<IncidentReportAttributes> implements I
   @ForeignKey(() => require('./student.model').Student)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
+    references: {
+      model: 'students',
+      key: 'id'
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'RESTRICT'
   })
   studentId: string;
 

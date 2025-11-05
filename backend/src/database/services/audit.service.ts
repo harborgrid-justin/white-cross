@@ -103,6 +103,7 @@ export class AuditService implements IAuditLogger {
     entityId: string,
     context: ExecutionContext,
     data: Record<string, unknown>,
+    transaction?: any,
   ): Promise<void> {
     await this.createAuditEntry({
       action: AuditAction.CREATE,
@@ -113,6 +114,7 @@ export class AuditService implements IAuditLogger {
       previousValues: null,
       changes: data,
       success: true,
+      transaction,
     });
   }
 
@@ -124,6 +126,7 @@ export class AuditService implements IAuditLogger {
     entityType: string,
     entityId: string,
     context: ExecutionContext,
+    transaction?: any,
   ): Promise<void> {
     // Only log PHI entity access for performance
     if (isPHIEntity(entityType)) {
@@ -136,6 +139,7 @@ export class AuditService implements IAuditLogger {
         previousValues: null,
         newValues: null,
         success: true,
+        transaction,
       });
     }
   }
@@ -148,6 +152,7 @@ export class AuditService implements IAuditLogger {
     entityId: string,
     context: ExecutionContext,
     changes: Record<string, { before: unknown; after: unknown }>,
+    transaction?: any,
   ): Promise<void> {
     const previousValues: Record<string, unknown> = {};
     const newValues: Record<string, unknown> = {};
@@ -166,6 +171,7 @@ export class AuditService implements IAuditLogger {
       previousValues: this.sanitizeSensitiveData(previousValues),
       newValues: this.sanitizeSensitiveData(newValues),
       success: true,
+      transaction,
     });
   }
 
@@ -177,6 +183,7 @@ export class AuditService implements IAuditLogger {
     entityId: string,
     context: ExecutionContext,
     data: Record<string, unknown>,
+    transaction?: any,
   ): Promise<void> {
     await this.createAuditEntry({
       action: AuditAction.DELETE,
@@ -187,6 +194,7 @@ export class AuditService implements IAuditLogger {
       newValues: null,
       changes: data,
       success: true,
+      transaction,
     });
   }
 
@@ -198,6 +206,7 @@ export class AuditService implements IAuditLogger {
     entityType: string,
     context: ExecutionContext,
     metadata: Record<string, unknown>,
+    transaction?: any,
   ): Promise<void> {
     const action = operation.includes('DELETE')
       ? AuditAction.BULK_DELETE
@@ -214,6 +223,7 @@ export class AuditService implements IAuditLogger {
       metadata,
       success: true,
       severity: AuditSeverity.HIGH,
+      transaction,
     });
   }
 
@@ -392,6 +402,54 @@ export class AuditService implements IAuditLogger {
       success: true,
       severity,
       tags: ['security', eventType],
+    });
+  }
+
+  /**
+   * Log PHI access for HIPAA compliance
+   * Used by model hooks to track PHI field modifications
+   */
+  async logPHIAccess(
+    options: {
+      entityType: string;
+      entityId: string;
+      action: 'CREATE' | 'UPDATE' | 'READ' | 'DELETE';
+      changedFields?: string[];
+      userId?: string;
+      userName?: string;
+      ipAddress?: string;
+      userAgent?: string;
+      metadata?: Record<string, unknown>;
+    },
+    transaction?: any,
+  ): Promise<void> {
+    const action = AuditAction[options.action];
+    const context: ExecutionContext = {
+      userId: options.userId || 'system',
+      userName: options.userName || 'SYSTEM',
+      userRole: 'SYSTEM',
+      ipAddress: options.ipAddress || null,
+      userAgent: options.userAgent || null,
+      timestamp: new Date(),
+    };
+
+    await this.createAuditEntry({
+      action,
+      entityType: options.entityType,
+      entityId: options.entityId,
+      context,
+      changes: options.changedFields ? { changedFields: options.changedFields } : null,
+      previousValues: null,
+      newValues: null,
+      metadata: {
+        ...options.metadata,
+        phiAccess: true,
+        changedFields: options.changedFields,
+      },
+      success: true,
+      severity: AuditSeverity.MEDIUM,
+      tags: ['phi', 'model-hook', options.entityType.toLowerCase()],
+      transaction,
     });
   }
 
@@ -1002,6 +1060,7 @@ export class AuditService implements IAuditLogger {
     errorMessage?: string | null;
     severity?: AuditSeverity;
     tags?: string[];
+    transaction?: any;
   }): Promise<void> {
     const {
       action,
@@ -1016,6 +1075,7 @@ export class AuditService implements IAuditLogger {
       errorMessage = null,
       severity,
       tags = [],
+      transaction = null,
     } = params;
 
     try {
@@ -1035,8 +1095,8 @@ export class AuditService implements IAuditLogger {
         : null;
       const sanitizedNewValues = newValues ? this.sanitizeSensitiveData(newValues) : null;
 
-      // Create audit log entry
-      await (this.auditLogModel as any).create({
+      // Create options for the audit log entry
+      const createOptions: any = {
         action,
         entityType,
         entityId,
@@ -1056,10 +1116,17 @@ export class AuditService implements IAuditLogger {
         errorMessage,
         metadata,
         tags: [...tags, entityType.toLowerCase(), action.toLowerCase()],
-      });
+      };
+
+      // If transaction is provided, use it for atomicity
+      if (transaction) {
+        await (this.auditLogModel as any).create(createOptions, { transaction });
+      } else {
+        await (this.auditLogModel as any).create(createOptions);
+      }
 
       this.logger.debug(
-        `AUDIT [${action}] ${entityType}:${entityId || 'bulk'} by ${context.userId || 'SYSTEM'} - ${success ? 'SUCCESS' : 'FAILED'}`,
+        `AUDIT [${action}] ${entityType}:${entityId || 'bulk'} by ${context.userId || 'SYSTEM'} - ${success ? 'SUCCESS' : 'FAILED'}${transaction ? ' [IN TRANSACTION]' : ''}`,
       );
     } catch (error) {
       this.logger.error(`Failed to create audit entry: ${error.message}`, error.stack);

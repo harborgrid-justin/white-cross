@@ -4,7 +4,7 @@ import { Document } from './entities/document.entity';
 import { DocumentSignature } from './entities/document-signature.entity';
 import { DocumentAuditTrail } from './entities/document-audit-trail.entity';
 import { CreateDocumentDto, UpdateDocumentDto, SignDocumentDto } from './dto';
-import { Op } from 'sequelize';
+import { Op, Transaction } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 
 /**
@@ -89,7 +89,9 @@ export class DocumentService {
    * Create a new document with validation and audit trail
    */
   async createDocument(createDto: CreateDocumentDto) {
-    const transaction = await this.sequelize.transaction();
+    const transaction = await this.sequelize.transaction({
+      isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE,
+    });
 
     try {
       const document = await this.documentModel.create(
@@ -122,7 +124,11 @@ export class DocumentService {
       return this.getDocumentById(document.id);
     } catch (error) {
       await transaction.rollback();
-      throw error;
+      // HIPAA-compliant error handling - never expose PHI
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new Error('Failed to create document. Please try again.');
     }
   }
 
@@ -130,7 +136,9 @@ export class DocumentService {
    * Update an existing document
    */
   async updateDocument(id: string, updateDto: UpdateDocumentDto, updatedBy: string) {
-    const transaction = await this.sequelize.transaction();
+    const transaction = await this.sequelize.transaction({
+      isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE,
+    });
 
     try {
       const document = await this.documentModel.findByPk(id);
@@ -155,7 +163,11 @@ export class DocumentService {
       return this.getDocumentById(id);
     } catch (error) {
       await transaction.rollback();
-      throw error;
+      // HIPAA-compliant error handling - never expose PHI
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new Error('Failed to update document. Please try again.');
     }
   }
 
@@ -163,7 +175,9 @@ export class DocumentService {
    * Delete a document
    */
   async deleteDocument(id: string, deletedBy: string) {
-    const transaction = await this.sequelize.transaction();
+    const transaction = await this.sequelize.transaction({
+      isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE,
+    });
 
     try {
       const document = await this.documentModel.findByPk(id);
@@ -178,7 +192,11 @@ export class DocumentService {
       return { success: true };
     } catch (error) {
       await transaction.rollback();
-      throw error;
+      // HIPAA-compliant error handling - never expose PHI
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new Error('Failed to delete document. Please try again.');
     }
   }
 
@@ -186,7 +204,9 @@ export class DocumentService {
    * Sign a document
    */
   async signDocument(signDto: SignDocumentDto) {
-    const transaction = await this.sequelize.transaction();
+    const transaction = await this.sequelize.transaction({
+      isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE,
+    });
 
     try {
       const document = await this.documentModel.findByPk(signDto.documentId);

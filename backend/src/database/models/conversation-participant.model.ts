@@ -116,10 +116,17 @@ export class ConversationParticipant extends Model<
   declare conversationId: string;
 
   @Index
+  @ForeignKey(() => require('./user.model').User)
   @Column({
     type: DataType.UUID,
     allowNull: false,
-    comment: 'User ID who is a participant'
+    comment: 'User ID who is a participant',
+    references: {
+      model: 'users',
+      key: 'id'
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE'
   })
   declare userId: string;
 
@@ -191,6 +198,9 @@ export class ConversationParticipant extends Model<
 
   @BelongsTo(() => Conversation, { foreignKey: 'conversationId', as: 'conversation' })
   declare conversation?: Conversation;
+
+  @BelongsTo(() => require('./user.model').User, { foreignKey: 'userId', as: 'user' })
+  declare user?: any;
 
   @Column({
     type: DataType.DATE,

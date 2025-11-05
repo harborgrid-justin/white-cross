@@ -12,7 +12,7 @@
  * @since 2025-11-05
  */
 
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, OnModuleDestroy, Inject, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WebSocketService } from '../websocket.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -125,6 +125,7 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
   };
 
   constructor(
+    @Inject(forwardRef(() => WebSocketService))
     private readonly webSocketService: WebSocketService,
     private readonly configService: ConfigService,
   ) {}

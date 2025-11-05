@@ -144,7 +144,13 @@ export class Allergy extends Model<AllergyAttributes> implements AllergyAttribut
   @ForeignKey(() => require('./student.model').Student)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
+    references: {
+      model: 'students',
+      key: 'id'
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE'
   })
   studentId: string;
 

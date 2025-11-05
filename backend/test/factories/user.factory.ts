@@ -83,17 +83,17 @@ export class UserFactory {
   }
 
   /**
-   * Create a doctor user
+   * Create a counselor user
    */
-  static createDoctor(overrides: CreateUserOptions = {}): any {
-    return this.create({ ...overrides, role: UserRole.DOCTOR });
+  static createCounselor(overrides: CreateUserOptions = {}): any {
+    return this.create({ ...overrides, role: UserRole.COUNSELOR });
   }
 
   /**
-   * Create a parent user
+   * Create a school admin user
    */
-  static createParent(overrides: CreateUserOptions = {}): any {
-    return this.create({ ...overrides, role: UserRole.PARENT });
+  static createSchoolAdmin(overrides: CreateUserOptions = {}): any {
+    return this.create({ ...overrides, role: UserRole.SCHOOL_ADMIN });
   }
 
   /**

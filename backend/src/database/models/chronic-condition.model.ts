@@ -112,7 +112,13 @@ export class ChronicCondition extends Model<ChronicConditionAttributes> implemen
   @ForeignKey(() => require('./student.model').Student)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
+    references: {
+      model: 'students',
+      key: 'id'
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE'
   })
   @Index
   studentId: string;

@@ -308,9 +308,11 @@ export class AuditLog extends Model<AuditLogAttributes> {
   static async auditPHIAccess(instance: AuditLog) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
+      // AuditLog modifications should be logged but we avoid infinite recursion
+      // by just logging to console for audit log changes
       console.log(`[AUDIT] AuditLog ${instance.id} modified at ${new Date().toISOString()}`);
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
+      // NOTE: We do NOT call audit service here to avoid infinite recursion
     }
   }
 

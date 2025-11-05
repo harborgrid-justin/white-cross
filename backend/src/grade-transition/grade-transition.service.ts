@@ -1,5 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { Transaction } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { Student } from '../database/models/student.model';
 import { TransitionResultDto, BulkTransitionResultDto } from './dto';
@@ -49,7 +50,9 @@ export class GradeTransitionService {
     effectiveDate: Date = new Date(),
     dryRun: boolean = false,
   ): Promise<BulkTransitionResultDto> {
-    const transaction = await this.sequelize.transaction();
+    const transaction = await this.sequelize.transaction({
+      isolationLevel: Transaction.ISOLATION_LEVELS.READ_COMMITTED,
+    });
 
     try {
       // Get all active students

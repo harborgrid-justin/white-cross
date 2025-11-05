@@ -7,7 +7,8 @@ import {
   Default,
   BeforeCreate,
   BeforeUpdate,
-  Scopes
+  Scopes,
+  HasMany
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 import { Op } from 'sequelize';
@@ -192,6 +193,13 @@ export class Medication extends Model<MedicationAttributes> implements Medicatio
 
   @Column(DataType.DATE)
   declare updatedAt: Date;
+
+  // Relationships
+  @HasMany(() => require('./student-medication.model').StudentMedication, { foreignKey: 'medicationId', as: 'studentMedications' })
+  declare studentMedications?: any[];
+
+  @HasMany(() => require('./medication-log.model').MedicationLog, { foreignKey: 'medicationId', as: 'medicationLogs' })
+  declare medicationLogs?: any[];
 
   // Hooks for HIPAA compliance and validation
   @BeforeCreate

@@ -14,8 +14,24 @@ import {
   BeforeUpdate,
   Scopes
   } from 'sequelize-typescript';
+import { Optional } from 'sequelize';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
+import type { User } from './user.model';
+import type { School } from './school.model';
+import type { District } from './district.model';
+import type { HealthRecord } from './health-record.model';
+import type { AcademicTranscript } from './academic-transcript.model';
+import type { MentalHealthRecord } from './mental-health-record.model';
+import type { Appointment } from './appointment.model';
+import type { Prescription } from './prescription.model';
+import type { ClinicVisit } from './clinic-visit.model';
+import type { Allergy } from './allergy.model';
+import type { ChronicCondition } from './chronic-condition.model';
+import type { Vaccination } from './vaccination.model';
+import type { VitalSigns } from './vital-signs.model';
+import type { ClinicalNote } from './clinical-note.model';
+import type { IncidentReport } from './incident-report.model';
 
 /**
  * Student gender enumeration
@@ -35,18 +51,37 @@ export interface StudentAttributes {
   dateOfBirth: Date;
   grade: string;
   gender: Gender;
-  photo?: string;
-  medicalRecordNum?: string;
+  photo?: string | null;
+  medicalRecordNum?: string | null;
   isActive: boolean;
   enrollmentDate: Date;
-  nurseId?: string;
-  schoolId?: string;
-  districtId?: string;
-  createdBy?: string;
-  updatedBy?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
+  nurseId?: string | null;
+  schoolId?: string | null;
+  districtId?: string | null;
+  createdBy?: string | null;
+  updatedBy?: string | null;
+  deletedAt?: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
+
+export interface StudentCreationAttributes
+  extends Optional<
+    StudentAttributes,
+    | 'id'
+    | 'photo'
+    | 'medicalRecordNum'
+    | 'isActive'
+    | 'enrollmentDate'
+    | 'nurseId'
+    | 'schoolId'
+    | 'districtId'
+    | 'createdBy'
+    | 'updatedBy'
+    | 'deletedAt'
+    | 'createdAt'
+    | 'updatedAt'
+  > {}
 
 @Scopes(() => ({
   active: {
@@ -137,7 +172,7 @@ export interface StudentAttributes {
     }
   ]
   })
-export class Student extends Model<StudentAttributes> implements StudentAttributes {
+export class Student extends Model<StudentAttributes, StudentCreationAttributes> implements StudentAttributes {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
@@ -326,12 +361,12 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
   @Column({
     type: DataType.DATE
   })
-  declare createdAt?: Date;
+  declare createdAt: Date;
 
   @Column({
     type: DataType.DATE
   })
-  declare updatedAt?: Date;
+  declare updatedAt: Date;
 
   @Column({
     type: DataType.DATE
@@ -368,62 +403,70 @@ export class Student extends Model<StudentAttributes> implements StudentAttribut
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
       const phiFields = ['firstName', 'lastName', 'dateOfBirth', 'medicalRecordNum', 'photo'];
-      const phiChanged = changedFields.some(field => phiFields.includes(field));
 
-      if (phiChanged) {
-        console.log(`[AUDIT] PHI modified for student ${instance.id} at ${new Date().toISOString()}`);
-        // TODO: Integrate with AuditLog model when available
-      }
+      // Import the helper function dynamically to avoid circular dependencies
+      const { logModelPHIFieldChanges } = await import('@/database/services/model-audit-helper.service');
+
+      // Get the transaction if available
+      const transaction = (instance as any).sequelize?.transaction || undefined;
+
+      await logModelPHIFieldChanges(
+        'Student',
+        instance.id,
+        changedFields,
+        phiFields,
+        transaction,
+      );
     }
   }
 
   // Relationships
   // Using lazy evaluation with require() to prevent circular dependencies
   @BelongsTo(() => require('./user.model').User, { foreignKey: 'nurseId', as: 'nurse' })
-  declare nurse?: any;
+  declare nurse?: User;
 
   @BelongsTo(() => require('./school.model').School, { foreignKey: 'schoolId', as: 'school' })
-  declare school?: any;
+  declare school?: School;
 
   @BelongsTo(() => require('./district.model').District, { foreignKey: 'districtId', as: 'district' })
-  declare district?: any;
+  declare district?: District;
 
   // One-to-many relationships
   @HasMany(() => require('./health-record.model').HealthRecord, { foreignKey: 'studentId', as: 'healthRecords' })
-  declare healthRecords?: any[];
+  declare healthRecords?: HealthRecord[];
 
   @HasMany(() => require('./academic-transcript.model').AcademicTranscript, { foreignKey: 'studentId', as: 'academicTranscripts' })
-  declare academicTranscripts?: any[];
+  declare academicTranscripts?: AcademicTranscript[];
 
   @HasMany(() => require('./mental-health-record.model').MentalHealthRecord, { foreignKey: 'studentId', as: 'mentalHealthRecords' })
-  declare mentalHealthRecords?: any[];
+  declare mentalHealthRecords?: MentalHealthRecord[];
 
   @HasMany(() => require('./appointment.model').Appointment, { foreignKey: 'studentId', as: 'appointments' })
-  declare appointments?: any[];
+  declare appointments?: Appointment[];
 
   @HasMany(() => require('./prescription.model').Prescription, { foreignKey: 'studentId', as: 'prescriptions' })
-  declare prescriptions?: any[];
+  declare prescriptions?: Prescription[];
 
   @HasMany(() => require('./clinic-visit.model').ClinicVisit, { foreignKey: 'studentId', as: 'clinicVisits' })
-  declare clinicVisits?: any[];
+  declare clinicVisits?: ClinicVisit[];
 
   @HasMany(() => require('./allergy.model').Allergy, { foreignKey: 'studentId', as: 'allergies' })
-  declare allergies?: any[];
+  declare allergies?: Allergy[];
 
   @HasMany(() => require('./chronic-condition.model').ChronicCondition, { foreignKey: 'studentId', as: 'chronicConditions' })
-  declare chronicConditions?: any[];
+  declare chronicConditions?: ChronicCondition[];
 
   @HasMany(() => require('./vaccination.model').Vaccination, { foreignKey: 'studentId', as: 'vaccinations' })
-  declare vaccinations?: any[];
+  declare vaccinations?: Vaccination[];
 
   @HasMany(() => require('./vital-signs.model').VitalSigns, { foreignKey: 'studentId', as: 'vitalSigns' })
-  declare vitalSigns?: any[];
+  declare vitalSigns?: VitalSigns[];
 
   @HasMany(() => require('./clinical-note.model').ClinicalNote, { foreignKey: 'studentId', as: 'clinicalNotes' })
-  declare clinicalNotes?: any[];
+  declare clinicalNotes?: ClinicalNote[];
 
   @HasMany(() => require('./incident-report.model').IncidentReport, { foreignKey: 'studentId', as: 'incidentReports' })
-  declare incidentReports?: any[];
+  declare incidentReports?: IncidentReport[];
 
   /**
    * Get student's full name

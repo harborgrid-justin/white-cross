@@ -5,7 +5,9 @@
       "Bash(cloc:*)",
       "Bash(/tmp/auth-controller-backup.ts)",
       "Bash(npm ls:*)",
-      "Bash(openssl rand:*)"
+      "Bash(openssl rand:*)",
+      "Bash(node -e:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []
