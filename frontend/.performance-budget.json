@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json.schemastore.org/bundlesize",
+  "description": "Performance budgets for White Cross Healthcare Frontend",
+  "budgets": [
+    {
+      "route": "/dashboard",
+      "resourceType": "script",
+      "budget": {
+        "initialJS": 200,
+        "totalJS": 500
+      },
+      "metrics": {
+        "firstContentfulPaint": 1.5,
+        "largestContentfulPaint": 2.5,
+        "timeToInteractive": 3.5
+      }
+    },
+    {
+      "route": "/students",
+      "resourceType": "script",
+      "budget": {
+        "initialJS": 150,
+        "totalJS": 400
+      },
+      "metrics": {
+        "firstContentfulPaint": 1.2,
+        "largestContentfulPaint": 2.0
+      }
+    },
+    {
+      "route": "/medications",
+      "resourceType": "script",
+      "budget": {
+        "initialJS": 180,
+        "totalJS": 450
+      }
+    },
+    {
+      "route": "/appointments/calendar",
+      "resourceType": "script",
+      "budget": {
+        "initialJS": 250,
+        "totalJS": 600
+      },
+      "note": "Higher budget due to FullCalendar library"
+    },
+    {
+      "route": "/analytics",
+      "resourceType": "script",
+      "budget": {
+        "initialJS": 220,
+        "totalJS": 550
+      },
+      "note": "Higher budget due to Recharts library"
+    }
+  ],
+  "globalBudgets": {
+    "vendor": 300,
+    "framework": 150,
+    "application": 200,
+    "total": 650
+  },
+  "enforcement": {
+    "ci": true,
+    "failOnExceed": true,
+    "warningThreshold": 0.9
+  }
+}

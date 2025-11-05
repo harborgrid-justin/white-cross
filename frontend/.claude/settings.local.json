@@ -11,7 +11,12 @@
       "Bash(else echo \"node_modules MISSING\")",
       "Bash(fi)",
       "Bash(ls:*)",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "Bash(npm ls:*)",
+      "Bash(wc:*)",
+      "Bash(npm audit:*)",
+      "Bash(npm run build:*)",
+      "Bash(python3 -c \"import json, sys; deps = json.load(sys.stdin)[''''dependencies'''']; heavy = [(k, v[''''version'''']) for k, v in deps.items() if any(x in k for x in [''''@fullcalendar'''', ''''recharts'''', ''''framer-motion'''', ''''@radix-ui'''', ''''jspdf'''', ''''html2pdf'''', ''''socket.io''''])]; print(''''\\n''''.join([f''''{k}: {v}'''' for k, v in heavy]))\")"
     ],
     "deny": [],
     "ask": []
