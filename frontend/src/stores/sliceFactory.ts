@@ -1,13 +1,63 @@
 /**
- * WF-COMP-501 | sliceFactory.ts - Redux Slice Factory
+ * @fileoverview Redux Slice Factory for Standardized Entity Management
+ * @module stores/sliceFactory
+ * @category Store - Factories
+ *
+ * Comprehensive factory functions for creating Redux Toolkit slices with standardized
+ * CRUD operations, normalized state management using EntityAdapter, and built-in
+ * async thunk generation. Dramatically reduces boilerplate while ensuring consistency
+ * across all entity slices in the application.
+ *
+ * Key Features:
+ * - **Standardized CRUD Operations**: Auto-generated create, read, update, delete thunks
+ * - **Normalized State**: RTK EntityAdapter for optimized lookups and updates
+ * - **Bulk Operations**: Optional bulk delete and bulk update support
+ * - **Loading States**: Granular loading tracking for each operation type
+ * - **Pagination Support**: Built-in pagination state management
+ * - **Filter & Sort**: Advanced filtering, searching, and sorting capabilities
+ * - **Selection Management**: Multi-select with single/multiple modes
+ * - **UI State**: View mode, column visibility, density settings
+ * - **Cache Management**: Stale data tracking and cache invalidation
+ * - **HIPAA Compliance**: Healthcare-specific factory with audit trail support
+ *
+ * Architecture:
+ * - Uses Redux Toolkit's createSlice and createAsyncThunk
+ * - EntityAdapter for normalized state (entities dictionary + ids array)
+ * - Generic type support for any entity extending BaseEntity
+ * - Extensible with custom reducers and extra actions
+ * - Type-safe throughout with full TypeScript inference
+ *
+ * Usage Pattern:
+ * ```typescript
+ * // 1. Define API service
+ * const apiService: EntityApiService<Student> = {
+ *   getAll: async () => { ... },
+ *   getById: async (id) => { ... },
+ *   create: async (data) => { ... },
+ *   update: async (id, data) => { ... },
+ *   delete: async (id) => { ... },
+ * };
+ *
+ * // 2. Create slice
+ * const { slice, thunks, actions, adapter } = createEntitySlice(
+ *   'students',
+ *   apiService,
+ *   { enableBulkOperations: true }
+ * );
+ *
+ * // 3. Use in components
+ * dispatch(thunks.fetchList());
+ * const students = useAppSelector(state => state.students.entities);
+ * ```
+ *
+ * @see {@link createEntitySlice} Main factory for standard entities
+ * @see {@link createHealthcareEntitySlice} HIPAA-compliant factory for PHI entities
+ * @see {@link createSimpleSlice} Minimal factory without bulk operations
+ * @see {@link EntityApiService} Required API service interface
+ *
+ * WF-COMP-501: Redux Slice Factory
  * Purpose: Factory function for creating standardized Redux slices with CRUD operations
- * Upstream: @reduxjs/toolkit, ./types/entityTypes | Dependencies: @reduxjs/toolkit, ./types/entityTypes
- * Downstream: All domain slices | Called by: Domain slice implementations
- * Related: Entity types, selectors, async thunks
- * Exports: factory functions, slice creators | Key Features: CRUD operations, async thunks
- * Last Updated: 2025-10-20 | File Type: .ts
  * Critical Path: Slice creation → Store configuration → Component usage
- * LLM Context: Redux slice factory for healthcare platform entity management
  */
 
 import {
@@ -76,27 +126,151 @@ export interface EnhancedEntityState<T extends BaseEntity> extends EntityState<T
 }
 
 /**
- * Generic API service interface that entity services must implement
+ * Generic API service interface that entity services must implement.
+ *
+ * Defines the contract for CRUD operations that the slice factory expects.
+ * Entity-specific API implementations must conform to this interface to be
+ * compatible with createEntitySlice factory.
+ *
+ * @interface EntityApiService
+ * @template T - Entity type extending BaseEntity
+ * @template TCreate - Shape of data for entity creation (defaults to Partial<T>)
+ * @template TUpdate - Shape of data for entity updates (defaults to Partial<T>)
+ *
+ * @example
+ * ```typescript
+ * // Implement for a Student entity
+ * const studentApiService: EntityApiService<Student, CreateStudentData, UpdateStudentData> = {
+ *   getAll: async (params) => {
+ *     const response = await api.get('/students', { params });
+ *     return { data: response.data, total: response.total };
+ *   },
+ *   getById: async (id) => {
+ *     const response = await api.get(`/students/${id}`);
+ *     return { data: response.data };
+ *   },
+ *   create: async (data) => {
+ *     const response = await api.post('/students', data);
+ *     return { data: response.data };
+ *   },
+ *   update: async (id, data) => {
+ *     const response = await api.patch(`/students/${id}`, data);
+ *     return { data: response.data };
+ *   },
+ *   delete: async (id) => {
+ *     await api.delete(`/students/${id}`);
+ *     return { success: true };
+ *   },
+ * };
+ * ```
+ *
+ * @remarks
+ * - All methods should throw errors that can be caught by thunks
+ * - Use consistent response shapes for proper state management
+ * - Bulk operations are optional but recommended for performance
  */
 export interface EntityApiService<T extends BaseEntity, TCreate = Partial<T>, TUpdate = Partial<T>> {
-  /** Fetch a list of entities */
+  /**
+   * Fetch a list of entities with optional filtering, sorting, and pagination.
+   *
+   * @async
+   * @param {EntityQueryParams} [params] - Query parameters for filtering and pagination
+   * @returns {Promise<{data: T[], total?: number, pagination?: Partial<PaginationState>}>} List of entities with metadata
+   */
   getAll(params?: EntityQueryParams): Promise<{ data: T[]; total?: number; pagination?: Partial<PaginationState> }>;
-  /** Fetch a single entity by ID */
+
+  /**
+   * Fetch a single entity by its unique identifier.
+   *
+   * @async
+   * @param {string} id - Unique entity ID
+   * @returns {Promise<{data: T}>} The entity data
+   * @throws {NotFoundError} If entity doesn't exist
+   */
   getById(id: string): Promise<{ data: T }>;
-  /** Create a new entity */
+
+  /**
+   * Create a new entity.
+   *
+   * @async
+   * @param {TCreate} data - Entity creation data
+   * @returns {Promise<{data: T}>} Created entity with generated ID and timestamps
+   * @throws {ValidationError} If data validation fails
+   */
   create(data: TCreate): Promise<{ data: T }>;
-  /** Update an existing entity */
+
+  /**
+   * Update an existing entity.
+   *
+   * @async
+   * @param {string} id - Entity ID to update
+   * @param {TUpdate} data - Partial entity data to update
+   * @returns {Promise<{data: T}>} Updated entity
+   * @throws {NotFoundError} If entity doesn't exist
+   * @throws {ValidationError} If update data is invalid
+   */
   update(id: string, data: TUpdate): Promise<{ data: T }>;
-  /** Delete an entity */
+
+  /**
+   * Delete an entity.
+   *
+   * @async
+   * @param {string} id - Entity ID to delete
+   * @returns {Promise<{success: boolean}>} Deletion success status
+   * @throws {NotFoundError} If entity doesn't exist
+   * @throws {ForbiddenError} If user lacks permission
+   */
   delete(id: string): Promise<{ success: boolean }>;
-  /** Bulk delete entities */
+
+  /**
+   * Bulk delete multiple entities (optional).
+   *
+   * @async
+   * @param {string[]} ids - Array of entity IDs to delete
+   * @returns {Promise<{success: boolean}>} Bulk deletion success status
+   * @throws {Error} If any deletion fails
+   */
   bulkDelete?(ids: string[]): Promise<{ success: boolean }>;
-  /** Bulk update entities */
+
+  /**
+   * Bulk update multiple entities (optional).
+   *
+   * @async
+   * @param {Array<{id: string, data: TUpdate}>} updates - Array of entity updates
+   * @returns {Promise<{data: T[]}>} Updated entities
+   * @throws {Error} If any update fails
+   */
   bulkUpdate?(updates: Array<{ id: string; data: TUpdate }>): Promise<{ data: T[] }>;
 }
 
 /**
- * Options for slice factory configuration
+ * Configuration options for slice factory.
+ *
+ * Allows customization of generated slice behavior, including bulk operations,
+ * custom reducers, and initial state overrides.
+ *
+ * @interface SliceFactoryOptions
+ * @template T - Entity type extending BaseEntity
+ *
+ * @property {boolean} [enableBulkOperations=true] - Enable bulk delete and update operations
+ * @property {Record<string, Function>} [extraReducers] - Additional custom reducers to include in slice
+ * @property {Partial<EnhancedEntityState<T>>} [customInitialState] - Override default initial state values
+ *
+ * @example
+ * ```typescript
+ * const options: SliceFactoryOptions<Student> = {
+ *   enableBulkOperations: true,
+ *   extraReducers: {
+ *     markAsActive: (state, action) => {
+ *       const { id } = action.payload;
+ *       state.entities[id].status = 'active';
+ *     },
+ *   },
+ *   customInitialState: {
+ *     pagination: { pageSize: 50 }, // Override default page size
+ *   },
+ * };
+ * ```
  */
 export interface SliceFactoryOptions<T extends BaseEntity> {
   /** Whether to include bulk operations */
@@ -108,7 +282,48 @@ export interface SliceFactoryOptions<T extends BaseEntity> {
 }
 
 /**
- * Result of slice factory containing slice and related utilities
+ * Result object returned by slice factory containing all generated artifacts.
+ *
+ * Provides the complete set of Redux slice components including the slice itself,
+ * entity adapter, async thunks, action creators, and reducer. Use these to integrate
+ * the generated slice into your Redux store and components.
+ *
+ * @interface SliceFactoryResult
+ * @template T - Entity type extending BaseEntity
+ * @template TCreate - Entity creation data shape
+ * @template TUpdate - Entity update data shape
+ *
+ * @property {Slice} slice - Complete Redux Toolkit slice with reducers and actions
+ * @property {EntityAdapter<T, string>} adapter - Entity adapter for normalized state access
+ * @property {Object} thunks - Auto-generated async thunks for CRUD operations
+ * @property {Record<string, unknown>} actions - Synchronous action creators from slice.actions
+ * @property {Reducer} reducer - Reducer function to add to store configuration
+ *
+ * @example
+ * ```typescript
+ * // Create slice
+ * const {
+ *   slice,
+ *   adapter,
+ *   thunks,
+ *   actions,
+ *   reducer
+ * } = createEntitySlice('students', studentApiService);
+ *
+ * // Export for use in store
+ * export const studentsReducer = reducer;
+ * export const studentsActions = actions;
+ * export const studentsThunks = thunks;
+ *
+ * // Use adapter for selectors
+ * export const studentsSelectors = adapter.getSelectors(
+ *   (state: RootState) => state.students
+ * );
+ *
+ * // Use in components
+ * const dispatch = useAppDispatch();
+ * dispatch(thunks.fetchList());
+ * ```
  */
 export interface SliceFactoryResult<T extends BaseEntity, TCreate = Partial<T>, TUpdate = Partial<T>> {
   /** The generated slice */
@@ -188,7 +403,191 @@ function createInitialEnhancedState<T extends BaseEntity>(
 }
 
 /**
- * Create a standardized entity slice with CRUD operations
+ * Create a standardized Redux Toolkit slice with complete CRUD operations.
+ *
+ * This is the primary factory function for creating entity management slices.
+ * Generates a fully-featured Redux slice with:
+ * - EntityAdapter for normalized state management
+ * - Async thunks for all CRUD operations
+ * - Granular loading states (list, detail, create, update, delete, bulk)
+ * - Pagination, sorting, filtering, and selection management
+ * - Optional bulk operations
+ * - UI state management
+ * - Cache invalidation support
+ *
+ * The generated slice dramatically reduces boilerplate while ensuring consistency
+ * across all entity management in the application.
+ *
+ * @template T - Entity type extending BaseEntity with id, createdAt, updatedAt
+ * @template TCreate - Shape of data for entity creation (defaults to Partial<T>)
+ * @template TUpdate - Shape of data for entity updates (defaults to Partial<T>)
+ *
+ * @param {string} name - Slice name (e.g., 'students', 'medications'). Used as Redux action prefix.
+ * @param {EntityApiService<T, TCreate, TUpdate>} apiService - API service implementing EntityApiService interface
+ * @param {SliceFactoryOptions<T>} [options={}] - Configuration options for slice customization
+ * @param {boolean} [options.enableBulkOperations=true] - Enable bulk delete/update thunks
+ * @param {Record<string, Function>} [options.extraReducers={}] - Custom reducers to add to slice
+ * @param {Partial<EnhancedEntityState<T>>} [options.customInitialState={}] - Override default initial state
+ *
+ * @returns {SliceFactoryResult<T, TCreate, TUpdate>} Complete slice with thunks, actions, adapter, and reducer
+ *
+ * @example
+ * ```typescript
+ * // 1. Define your entity type
+ * interface Student extends BaseEntity {
+ *   firstName: string;
+ *   lastName: string;
+ *   grade: number;
+ * }
+ *
+ * // 2. Implement API service
+ * const studentApiService: EntityApiService<Student> = {
+ *   getAll: async (params) => {
+ *     const response = await api.get('/students', { params });
+ *     return { data: response.data, total: response.total };
+ *   },
+ *   getById: async (id) => {
+ *     const response = await api.get(`/students/${id}`);
+ *     return { data: response.data };
+ *   },
+ *   create: async (data) => {
+ *     const response = await api.post('/students', data);
+ *     return { data: response.data };
+ *   },
+ *   update: async (id, data) => {
+ *     const response = await api.patch(`/students/${id}`, data);
+ *     return { data: response.data };
+ *   },
+ *   delete: async (id) => {
+ *     await api.delete(`/students/${id}`);
+ *     return { success: true };
+ *   },
+ * };
+ *
+ * // 3. Create the slice
+ * const {
+ *   slice: studentsSlice,
+ *   thunks: studentsThunks,
+ *   actions: studentsActions,
+ *   adapter: studentsAdapter,
+ *   reducer: studentsReducer,
+ * } = createEntitySlice('students', studentApiService, {
+ *   enableBulkOperations: true,
+ * });
+ *
+ * // 4. Export for store configuration
+ * export { studentsReducer, studentsThunks, studentsActions };
+ *
+ * // 5. Create selectors
+ * export const studentsSelectors = studentsAdapter.getSelectors(
+ *   (state: RootState) => state.students
+ * );
+ *
+ * // 6. Use in components
+ * function StudentList() {
+ *   const dispatch = useAppDispatch();
+ *   const students = useAppSelector(studentsSelectors.selectAll);
+ *   const loading = useAppSelector(state => state.students.loading.list.isLoading);
+ *
+ *   useEffect(() => {
+ *     dispatch(studentsThunks.fetchList());
+ *   }, [dispatch]);
+ *
+ *   if (loading) return <Spinner />;
+ *   return <div>{students.map(s => <StudentCard key={s.id} student={s} />)}</div>;
+ * }
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Advanced usage with custom reducers
+ * const { slice, thunks, actions, reducer } = createEntitySlice(
+ *   'students',
+ *   studentApiService,
+ *   {
+ *     enableBulkOperations: true,
+ *     extraReducers: {
+ *       // Custom action to mark student as graduated
+ *       markAsGraduated: (state, action: PayloadAction<{ id: string }>) => {
+ *         const { id } = action.payload;
+ *         if (state.entities[id]) {
+ *           state.entities[id].status = 'graduated';
+ *           state.entities[id].updatedAt = new Date().toISOString();
+ *         }
+ *       },
+ *     },
+ *     customInitialState: {
+ *       pagination: { pageSize: 50 }, // Override default 25
+ *       sort: { field: 'lastName', direction: 'asc' },
+ *     },
+ *   }
+ * );
+ * ```
+ *
+ * @remarks
+ * **Generated Thunks**:
+ * - `fetchList`: Fetch paginated list with filters/sort
+ * - `fetchById`: Fetch single entity
+ * - `create`: Create new entity
+ * - `update`: Update existing entity
+ * - `delete`: Delete entity
+ * - `bulkDelete`: Delete multiple entities (if enabled)
+ * - `bulkUpdate`: Update multiple entities (if enabled)
+ *
+ * **Generated Actions**:
+ * - `setEntities`: Replace all entities
+ * - `addEntity`: Add single entity
+ * - `updateEntity`: Update single entity
+ * - `removeEntity`: Remove single entity
+ * - `setPagination`: Update pagination state
+ * - `setSort`: Update sort configuration
+ * - `setFilters`: Update active filters
+ * - `clearFilters`: Clear all filters
+ * - `selectEntity`: Select entity (multi-select support)
+ * - `deselectEntity`: Deselect entity
+ * - `clearSelection`: Clear all selections
+ * - `selectAll`: Select all entities
+ * - `setUI`: Update UI state (view mode, columns, etc.)
+ * - `invalidateCache`: Mark cache as stale
+ * - `clearErrors`: Clear all error states
+ *
+ * **State Structure**:
+ * ```typescript
+ * {
+ *   ids: string[],                    // Ordered entity IDs
+ *   entities: { [id]: Entity },       // Normalized entities
+ *   loading: {
+ *     list: LoadingState,              // List operation loading
+ *     detail: LoadingState,            // Detail operation loading
+ *     create: LoadingState,            // Create operation loading
+ *     update: LoadingState,            // Update operation loading
+ *     delete: LoadingState,            // Delete operation loading
+ *     bulk: LoadingState,              // Bulk operation loading
+ *   },
+ *   pagination: PaginationState,       // Page, pageSize, total, etc.
+ *   sort: SortState,                   // Sort field and direction
+ *   filters: FilterState,              // Active filters and search
+ *   selection: SelectionState,         // Selected IDs and focus
+ *   ui: UIState,                       // View mode, columns, density
+ *   cache: { lastFetched, isStale },   // Cache metadata
+ * }
+ * ```
+ *
+ * **Performance Considerations**:
+ * - EntityAdapter provides O(1) lookups and optimized updates
+ * - Normalized state prevents duplication
+ * - Granular loading states prevent unnecessary re-renders
+ * - Cache metadata supports intelligent refetching
+ *
+ * **Error Handling**:
+ * - All thunks catch errors and store in loading[operation].error
+ * - Use `.unwrap()` on dispatch to handle errors in components
+ * - Errors include message, status code, and validation errors
+ *
+ * @see {@link EntityApiService} for API service requirements
+ * @see {@link SliceFactoryOptions} for configuration options
+ * @see {@link SliceFactoryResult} for return value details
+ * @see {@link createHealthcareEntitySlice} for HIPAA-compliant variant
  */
 export function createEntitySlice<
   T extends BaseEntity,
@@ -732,7 +1131,132 @@ export function createEntitySlice<
 }
 
 /**
- * Healthcare-specific slice factory with HIPAA compliance features
+ * Healthcare-specific slice factory with HIPAA compliance features.
+ *
+ * Extends the standard entity slice factory with healthcare-specific functionality
+ * including audit trail management and data classification tracking. Use this for
+ * entities that contain Protected Health Information (PHI) or require HIPAA compliance.
+ *
+ * Additional Features Beyond Standard Slice:
+ * - **Audit Trail Management**: addAuditRecord action for tracking PHI access
+ * - **Data Classification**: updateDataClassification action for sensitivity updates
+ * - **Compliance Fields**: Automatic handling of createdBy, modifiedBy, auditTrail
+ * - **PHI Protection**: Inherits all entity management with compliance awareness
+ *
+ * @template T - Entity type extending HealthcareEntity (includes audit fields)
+ * @template TCreate - Shape of data for entity creation
+ * @template TUpdate - Shape of data for entity updates
+ *
+ * @param {string} name - Slice name (e.g., 'healthRecords', 'medications')
+ * @param {EntityApiService<T, TCreate, TUpdate>} apiService - API service implementing EntityApiService
+ * @param {SliceFactoryOptions<T>} [options={}] - Configuration options
+ *
+ * @returns {SliceFactoryResult<T, TCreate, TUpdate>} Complete slice with HIPAA compliance actions
+ *
+ * @example
+ * ```typescript
+ * interface HealthRecord extends HealthcareEntity {
+ *   studentId: string;
+ *   diagnosis: string;
+ *   treatment: string;
+ *   notes: string;
+ * }
+ *
+ * const healthRecordsApiService: EntityApiService<HealthRecord> = {
+ *   getAll: async (params) => {
+ *     const response = await api.get('/health-records', { params });
+ *     // API automatically logs PHI access
+ *     return { data: response.data, total: response.total };
+ *   },
+ *   // ... other CRUD operations with audit logging
+ * };
+ *
+ * const {
+ *   slice,
+ *   thunks,
+ *   actions,
+ *   reducer
+ * } = createHealthcareEntitySlice('healthRecords', healthRecordsApiService);
+ *
+ * // Export for use in store
+ * export { reducer as healthRecordsReducer, thunks as healthRecordsThunks };
+ *
+ * // Use in components (same as standard slice)
+ * function HealthRecordsList() {
+ *   const dispatch = useAppDispatch();
+ *   const records = useAppSelector(state => state.healthRecords.entities);
+ *
+ *   useEffect(() => {
+ *     dispatch(thunks.fetchList());
+ *   }, [dispatch]);
+ *
+ *   return <div>{Object.values(records).map(r => <RecordCard key={r.id} record={r} />)}</div>;
+ * }
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Adding audit records programmatically
+ * import { actions } from './healthRecordsSlice';
+ *
+ * // After viewing a health record
+ * dispatch(actions.addAuditRecord({
+ *   entityId: recordId,
+ *   auditRecord: {
+ *     timestamp: new Date().toISOString(),
+ *     userId: currentUser.id,
+ *     action: 'VIEW',
+ *     ipAddress: userIpAddress,
+ *     context: 'Viewed from student detail page',
+ *   },
+ * }));
+ *
+ * // Updating data classification
+ * dispatch(actions.updateDataClassification({
+ *   entityId: recordId,
+ *   classification: 'PHI', // PHI, CONFIDENTIAL, INTERNAL, PUBLIC
+ * }));
+ * ```
+ *
+ * @remarks
+ * **HIPAA Compliance Requirements**:
+ * - All API operations must log PHI access to audit trail
+ * - Audit records include timestamp, user, action, IP address
+ * - Data classification must be set appropriately (PHI for patient data)
+ * - No PHI should be persisted to browser storage
+ * - Access logs must be maintained for 6 years minimum
+ *
+ * **Additional Actions Beyond Standard Slice**:
+ * - `addAuditRecord`: Add audit trail entry to entity
+ * - `updateDataClassification`: Update sensitivity classification
+ *
+ * **Healthcare Entity Fields**:
+ * ```typescript
+ * {
+ *   id: string;
+ *   createdAt: string;
+ *   updatedAt: string;
+ *   createdBy: string;           // User who created
+ *   modifiedBy: string;          // User who last modified
+ *   auditTrail: AuditRecord[];   // Complete access history
+ *   dataClassification: 'PHI' | 'CONFIDENTIAL' | 'INTERNAL' | 'PUBLIC';
+ * }
+ * ```
+ *
+ * **Audit Record Structure**:
+ * ```typescript
+ * {
+ *   timestamp: string;
+ *   userId: string;
+ *   action: 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'VIEW' | 'EXPORT' | 'PRINT';
+ *   ipAddress?: string;
+ *   context?: string;
+ * }
+ * ```
+ *
+ * @see {@link createEntitySlice} for standard entity slice factory
+ * @see {@link HealthcareEntity} for healthcare entity interface
+ * @see {@link AuditRecord} for audit record structure
  */
 export function createHealthcareEntitySlice<
   T extends HealthcareEntity,
@@ -782,7 +1306,53 @@ export function createHealthcareEntitySlice<
 }
 
 /**
- * Utility function to create slice with minimal configuration
+ * Utility function to create a simple entity slice with minimal configuration.
+ *
+ * Convenience wrapper around createEntitySlice with bulk operations disabled.
+ * Use this for entities that don't require bulk delete/update operations,
+ * reducing the number of generated thunks and keeping the slice lightweight.
+ *
+ * @template T - Entity type extending BaseEntity
+ *
+ * @param {string} name - Slice name (e.g., 'settings', 'profile')
+ * @param {EntityApiService<T>} apiService - API service implementing EntityApiService interface
+ *
+ * @returns {SliceFactoryResult<T>} Complete slice without bulk operations
+ *
+ * @example
+ * ```typescript
+ * interface UserProfile extends BaseEntity {
+ *   firstName: string;
+ *   lastName: string;
+ *   email: string;
+ * }
+ *
+ * const profileApiService: EntityApiService<UserProfile> = {
+ *   getAll: async () => ({ data: [] }),       // Not used for profiles
+ *   getById: async (id) => ({ data: await api.get(`/profile/${id}`) }),
+ *   create: async (data) => ({ data: await api.post('/profile', data) }),
+ *   update: async (id, data) => ({ data: await api.patch(`/profile/${id}`, data) }),
+ *   delete: async (id) => ({ success: await api.delete(`/profile/${id}`) }),
+ * };
+ *
+ * // Create simple slice without bulk operations
+ * const {
+ *   slice,
+ *   thunks,
+ *   actions,
+ *   reducer
+ * } = createSimpleSlice('profile', profileApiService);
+ *
+ * export { reducer as profileReducer, thunks as profileThunks };
+ * ```
+ *
+ * @remarks
+ * - Bulk operations (bulkDelete, bulkUpdate) are disabled
+ * - All other features of createEntitySlice are included
+ * - Use for singleton or low-volume entities
+ * - Equivalent to: `createEntitySlice(name, apiService, { enableBulkOperations: false })`
+ *
+ * @see {@link createEntitySlice} for full-featured slice factory
  */
 export function createSimpleSlice<T extends BaseEntity>(
   name: string,

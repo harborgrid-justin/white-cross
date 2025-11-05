@@ -13,7 +13,16 @@ import { ApiError, isApiError, getErrorMessage, isAuthError } from '@/types/erro
 import { ERROR_MESSAGES, getApiErrorMessage } from '@/constants/errorMessages';
 
 /**
- * Error handler context options
+ * Error handler context configuration.
+ *
+ * Provides context and configuration options for error handling behavior,
+ * including operation identification, retry functionality, and notification control.
+ *
+ * @property {string} operation - Operation identifier for logging (e.g., 'fetch_students', 'update_profile')
+ * @property {string} [resource] - Resource being operated on for user-friendly messages (e.g., 'students', 'profile')
+ * @property {boolean} [silent] - If true, suppresses toast notifications (default: false)
+ * @property {Function} [retry] - Retry function to offer user for failed operations
+ * @property {string} [redirectPath] - Path to redirect to on authentication errors
  */
 export interface ErrorHandlerContext {
   /** Operation identifier (e.g., 'fetch_students') */
@@ -29,11 +38,56 @@ export interface ErrorHandlerContext {
 }
 
 /**
- * Global API error handler with automatic user notification
+ * Global error handler for consistent error handling and user feedback.
+ *
+ * Provides centralized error handling with automatic user notifications,
+ * error logging, authentication error handling, and integration points
+ * for error tracking services like Sentry.
+ *
+ * @example
+ * ```typescript
+ * try {
+ *   await fetchStudents();
+ * } catch (error) {
+ *   ErrorHandler.handleApiError(error, {
+ *     operation: 'fetch_students',
+ *     resource: 'students',
+ *     retry: () => fetchStudents()
+ *   });
+ * }
+ * ```
  */
 export class ErrorHandler {
   /**
-   * Handle API errors with automatic user feedback
+   * Handles API errors with automatic user feedback and logging.
+   *
+   * Performs comprehensive error handling:
+   * 1. Converts unknown errors to ApiError format
+   * 2. Logs error details for debugging/tracking
+   * 3. Handles authentication errors with optional redirect
+   * 4. Shows user-friendly toast notifications
+   * 5. Returns normalized ApiError
+   *
+   * @param {unknown} error - Error to handle (any type)
+   * @param {ErrorHandlerContext} context - Error handling context and options
+   * @returns {ApiError} Normalized API error object
+   *
+   * @example
+   * ```typescript
+   * try {
+   *   await api.updateStudent(id, data);
+   * } catch (error) {
+   *   const apiError = ErrorHandler.handleApiError(error, {
+   *     operation: 'update_student',
+   *     resource: 'student',
+   *     redirectPath: '/students'
+   *   });
+   *   // apiError contains normalized error information
+   * }
+   * ```
+   *
+   * @see {@link handleValidationError} for validation-specific errors
+   * @see {@link handleUnexpectedError} for unexpected errors
    */
   static handleApiError(
     error: unknown,
@@ -91,7 +145,34 @@ export class ErrorHandler {
   }
 
   /**
-   * Handle validation errors with field-level feedback
+   * Handles validation errors with field-level feedback.
+   *
+   * Processes validation errors from API responses and:
+   * 1. Extracts field-level validation errors
+   * 2. Calls setFieldErrors callback to update form state
+   * 3. Shows user-friendly validation error toast
+   *
+   * Expects validation errors in format:
+   * ```
+   * { validation: [{ field: 'email', message: 'Invalid email' }] }
+   * ```
+   *
+   * @param {unknown} error - Error object potentially containing validation errors
+   * @param {Function} [setFieldErrors] - Optional callback to set field-level errors in form state
+   *
+   * @example
+   * ```typescript
+   * try {
+   *   await submitForm(formData);
+   * } catch (error) {
+   *   ErrorHandler.handleValidationError(error, (errors) => {
+   *     // errors = { email: 'Invalid email', password: 'Too short' }
+   *     setFormErrors(errors);
+   *   });
+   * }
+   * ```
+   *
+   * @see {@link handleApiError} for general API errors
    */
   static handleValidationError(
     error: unknown,
@@ -117,7 +198,28 @@ export class ErrorHandler {
   }
 
   /**
-   * Handle unexpected errors
+   * Handles unexpected errors with fallback error messaging.
+   *
+   * Use this for errors that don't fit the API error pattern,
+   * such as client-side JavaScript errors, network failures,
+   * or other unexpected exceptions.
+   *
+   * Logs the error and shows a generic error message to the user.
+   *
+   * @param {unknown} error - Unexpected error to handle
+   * @param {string} [context] - Optional context description (e.g., 'form submission', 'data loading')
+   *
+   * @example
+   * ```typescript
+   * try {
+   *   // Complex client-side operation
+   *   processData(data);
+   * } catch (error) {
+   *   ErrorHandler.handleUnexpectedError(error, 'data processing');
+   * }
+   * ```
+   *
+   * @see {@link handleApiError} for API-specific errors
    */
   static handleUnexpectedError(error: unknown, context?: string): void {
     const message = getErrorMessage(error);
@@ -131,7 +233,35 @@ export class ErrorHandler {
   }
 
   /**
-   * Log error to external service (Sentry, LogRocket, etc.)
+   * Logs error to external error tracking service.
+   *
+   * Integration point for external error tracking services like
+   * Sentry, LogRocket, or custom logging solutions.
+   *
+   * Currently logs to console with structured data. Replace with
+   * actual service integration in production.
+   *
+   * @param {unknown} error - Error to log
+   * @param {Record<string, any>} [context] - Additional context data to log with error
+   *
+   * @example
+   * ```typescript
+   * try {
+   *   await criticalOperation();
+   * } catch (error) {
+   *   ErrorHandler.logToService(error, {
+   *     userId: user.id,
+   *     operation: 'critical_operation',
+   *     environment: 'production'
+   *   });
+   * }
+   * ```
+   *
+   * @remarks
+   * Production implementation should integrate with services like:
+   * - Sentry: `Sentry.captureException(error, { extra: context })`
+   * - LogRocket: `LogRocket.captureException(error, context)`
+   * - Custom logging: Send to your error tracking endpoint
    */
   static logToService(error: unknown, context?: Record<string, any>): void {
     // Integrate with your error tracking service

@@ -1,10 +1,114 @@
 /**
- * @fileoverview Domain Events for White Cross Healthcare Platform
+ * @fileoverview Domain Event Definitions for Healthcare Platform
  * @module services/domain/events/DomainEvents
  * @category Domain Services
- * 
- * Defines all domain events that can occur in the system.
- * Used for event-driven architecture and service orchestration.
+ *
+ * Comprehensive collection of domain events representing all business-significant occurrences
+ * in the White Cross healthcare platform. Events enable event-driven architecture, service
+ * orchestration, and audit trail maintenance.
+ *
+ * Event Categories:
+ * - **Student Events**: Enrollment, transfer, withdrawal lifecycle events
+ * - **Health Record Events**: Health profile creation, updates, allergy tracking
+ * - **Medication Events**: Prescription, administration, discontinuation
+ * - **Emergency Events**: Alerts, incident reporting, critical notifications
+ * - **Communication Events**: Parent notifications, messaging
+ * - **Appointment Events**: Scheduling, completion, cancellation
+ * - **Compliance Events**: Audit logging, violation detection
+ *
+ * Healthcare Compliance:
+ * - All events contain only identifiers, no PHI (Protected Health Information)
+ * - Events support HIPAA-compliant audit trails
+ * - Timestamps and event IDs enable complete traceability
+ * - Events are immutable (readonly properties)
+ * - Events follow semantic versioning for schema evolution
+ *
+ * Event Design Principles:
+ * - Named in past tense (e.g., StudentEnrolled, not StudentEnroll)
+ * - Self-contained with all necessary context
+ * - Lightweight (identifiers only, no full objects)
+ * - Versionable for backward compatibility
+ * - Type-safe with TypeScript
+ *
+ * Usage Pattern:
+ * ```
+ * Publisher → Create Event → EventBus.publish() → Subscribers React
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Student enrollment workflow
+ * import { StudentEnrolledEvent, HealthRecordCreatedEvent } from './DomainEvents';
+ * import { eventBus } from './EventBus';
+ *
+ * // Publish student enrollment event
+ * const enrollmentEvent = new StudentEnrolledEvent(
+ *   'student-123',
+ *   'SN-2024-001',
+ *   'John',
+ *   'Doe'
+ * );
+ * await eventBus.publish(enrollmentEvent);
+ *
+ * // Subscribers automatically initialize health record
+ * eventBus.subscribe('StudentEnrolled', async (event: StudentEnrolledEvent) => {
+ *   const healthRecord = await healthService.initialize(event.studentId);
+ *   await eventBus.publish(new HealthRecordCreatedEvent(
+ *     event.studentId,
+ *     healthRecord.id,
+ *     'INITIAL'
+ *   ));
+ * });
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Emergency alert workflow
+ * import { EmergencyAlertCreatedEvent, ParentNotificationSentEvent } from './DomainEvents';
+ *
+ * // Create emergency alert
+ * const alert = new EmergencyAlertCreatedEvent(
+ *   'alert-789',
+ *   'student-456',
+ *   'Allergic Reaction',
+ *   'CRITICAL'
+ * );
+ * await eventBus.publish(alert);
+ *
+ * // High-priority handler notifies emergency contacts
+ * eventBus.subscribe('EmergencyAlertCreated', async (event) => {
+ *   const contacts = await contactService.getEmergencyContacts(event.studentId);
+ *   await Promise.all(contacts.map(c => notificationService.sendUrgent(c)));
+ * }, 100); // Very high priority
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Medication administration workflow
+ * import { MedicationPrescribedEvent, MedicationAdministeredEvent } from './DomainEvents';
+ *
+ * // Prescribe medication
+ * await eventBus.publish(new MedicationPrescribedEvent(
+ *   'student-123',
+ *   'med-456',
+ *   'Amoxicillin',
+ *   'Dr. Smith'
+ * ));
+ *
+ * // Later, record administration
+ * await eventBus.publish(new MedicationAdministeredEvent(
+ *   'student-123',
+ *   'med-456',
+ *   'Nurse Johnson',
+ *   '500mg',
+ *   new Date()
+ * ));
+ * ```
+ *
+ * @see {@link EventBus} for event publishing and subscription
+ * @see {@link DomainEvent} for base event class
+ * @see {@link ServiceOrchestrator} for workflow coordination using events
+ * @see {@link SagaManager} for transaction orchestration with events
  */
 
 import { DomainEvent } from './EventBus';
