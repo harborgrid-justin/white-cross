@@ -10,6 +10,7 @@
 
 'use server';
 
+import { headers } from 'next/headers';
 import type { RecentActivity, DashboardFilters } from './dashboard.types';
 
 /**
@@ -21,6 +22,9 @@ import type { RecentActivity, DashboardFilters } from './dashboard.types';
  * @returns Promise<RecentActivity[]>
  */
 export async function getRecentActivities(filters: DashboardFilters = {}, limit: number = 10): Promise<RecentActivity[]> {
+  // Access headers to enable dynamic rendering (required before using Date)
+  await headers();
+  
   try {
     console.log('[Dashboard] Loading recent activities with filters:', filters);
 

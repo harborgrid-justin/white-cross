@@ -92,13 +92,14 @@ export { StoreProvider, StoreProvider as ReduxProvider } from './StoreProvider';
  */
 
 // Auth slice
+// Auth actions moved to @/identity-access/stores
 export {
   loginUser,
   logoutUser,
   refreshAuthToken,
   setUserFromSession,
   clearAuthError,
-} from './slices/authSlice';
+} from '@/identity-access/stores/authSlice';
 
 // Export other slices as needed
 // Example:

@@ -39,12 +39,14 @@
 /**
  * Authentication Context
  * Manages user authentication, session, and permissions
+ * 
+ * @deprecated Import from @/identity-access/contexts instead
  */
 export {
   AuthProvider,
   useAuth,
   useAuthContext, // Backward compatibility
-} from './AuthContext';
+} from '@/identity-access/contexts/AuthContext';
 
 /**
  * Navigation Context

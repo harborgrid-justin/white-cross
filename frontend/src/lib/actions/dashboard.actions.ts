@@ -20,16 +20,18 @@
  * Module Organization:
  * This file serves as the main entry point for all dashboard functionality.
  * Implementation is organized into focused modules:
- * - dashboard.types.ts - TypeScript type definitions
- * - dashboard.statistics.ts - Statistics fetching and processing
- * - dashboard.alerts.ts - Health alerts management
- * - dashboard.activities.ts - Recent activities tracking
- * - dashboard.system.ts - System status monitoring
- * - dashboard.aggregation.ts - Combined data fetching
- * - dashboard.utils.ts - Utility functions
+ * - dashboard.types.ts - TypeScript type definitions (no 'use server')
+ * - dashboard.statistics.ts - Statistics fetching and processing (marked with 'use server')
+ * - dashboard.alerts.ts - Health alerts management (marked with 'use server')
+ * - dashboard.activities.ts - Recent activities tracking (marked with 'use server')
+ * - dashboard.system.ts - System status monitoring (marked with 'use server')
+ * - dashboard.aggregation.ts - Combined data fetching (marked with 'use server')
+ * - dashboard.utils.ts - Utility functions (marked with 'use server')
+ *
+ * NOTE: This file does NOT have 'use server' at the file level to allow imports
+ * from both Client and Server Components. Individual modules have their own
+ * 'use server' directives to mark functions as server actions.
  */
-
-'use server';
 
 // Re-export all types
 export type {

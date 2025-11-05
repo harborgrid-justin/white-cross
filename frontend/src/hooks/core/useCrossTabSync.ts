@@ -29,7 +29,7 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { useAppDispatch, useAppSelector } from '@/stores/hooks';
-import { setUser } from '@/stores/slices/authSlice';
+import { setUser } from '@/identity-access/stores/authSlice';
 
 /**
  * Cross-tab message types

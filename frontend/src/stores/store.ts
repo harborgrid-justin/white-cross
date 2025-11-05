@@ -57,12 +57,13 @@
 
 import { configureStore, combineReducers, Middleware } from '@reduxjs/toolkit';
 
+// Import identity-access reducers
+import { authReducer, accessControlReducer } from '@/identity-access/stores';
+
 // Import all domain reducers
 import {
   // Core
-  authReducer,
   usersReducer,
-  accessControlReducer,
 
   // Dashboard
   dashboardReducer,
@@ -106,11 +107,11 @@ import {
  */
 const rootReducer = combineReducers({
   // ============================================================
-  // AUTHENTICATION & AUTHORIZATION
+  // AUTHENTICATION & AUTHORIZATION (from @/identity-access)
   // ============================================================
   auth: authReducer,
-  users: usersReducer,
   accessControl: accessControlReducer,
+  users: usersReducer,
 
   // ============================================================
   // DASHBOARD & OVERVIEW

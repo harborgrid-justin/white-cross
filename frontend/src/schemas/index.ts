@@ -67,7 +67,7 @@
  * ```typescript
  * // Namespace import - explicit and conflict-free
  * import * as UserSchemas from '@/schemas/user.schemas';
- * import * as RoleSchemas from '@/schemas/role.schemas';
+ * import * as RoleSchemas from '@/identity-access/schemas/role.schemas';
  *
  * const user = UserSchemas.createUserSchema.parse(data);
  * const role = RoleSchemas.createRoleSchema.parse(roleData);
@@ -131,11 +131,11 @@ export * from './user.schemas';
  * Role and Permission Schemas
  * @description Role-based access control and permission management
  * @note NOT exported via wildcard to avoid conflicts with user.schemas
- * @note Use: import * as RoleSchemas from '@/schemas/role.schemas';
- * @note Or: import { createRoleSchema } from '@/schemas/role.schemas';
+ * @note Use: import * as RoleSchemas from '@/identity-access/schemas/role.schemas';
+ * @note Or: import { createRoleSchema } from '@/identity-access/schemas/role.schemas';
  * @see RoleSchemas namespace export at end of file
  */
-// export * from './role.schemas'; // Conflicts with user.schemas - use namespace or direct import
+// export * from '@/identity-access/schemas/role.schemas'; // Conflicts with user.schemas - use namespace or direct import
 
 /**
  * Allergy Management Schemas
@@ -311,7 +311,7 @@ export * from './documents';
  * ```typescript
  * // Namespace import - clear organization, no conflicts
  * import * as UserSchemas from '@/schemas/user.schemas';
- * import * as RoleSchemas from '@/schemas/role.schemas';
+ * import * as RoleSchemas from '@/identity-access/schemas/role.schemas';
  * import * as AppointmentSchemas from '@/schemas/appointment.schemas';
  *
  * // Usage with explicit namespace
@@ -345,7 +345,7 @@ export * from './documents';
 
 // Core domain namespace exports
 export * as UserSchemas from './user.schemas';
-export * as RoleSchemas from './role.schemas';
+export * as RoleSchemas from '@/identity-access/schemas/role.schemas';
 export * as AllergySchemas from './allergy.schemas';
 export * as HealthRecordSchemas from './health-record.schemas';
 export * as ImmunizationSchemas from './immunization.schemas';

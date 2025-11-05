@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withMinimumRole } from '@/middleware/withAuth';
+import { withMinimumRole } from '@/identity-access/middleware/withAuth';
 import { proxyToBackend } from '@/lib/apiProxy';
 import { auditLog, AUDIT_ACTIONS, createAuditContext } from '@/lib/audit';
 

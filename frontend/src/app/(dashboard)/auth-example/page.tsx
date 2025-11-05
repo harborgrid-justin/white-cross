@@ -26,7 +26,7 @@ import { Shield, Users, Activity, Settings } from 'lucide-react';
 import { PageBreadcrumbs } from '@/components/common/PageBreadcrumbs';
 
 // Server actions - following the established pattern
-import { logoutAction } from '@/lib/actions/auth.actions';
+import { logoutAction } from '@/identity-access/actions/auth.actions';
 
 export const metadata: Metadata = {
   title: 'Authentication Example',

@@ -10,7 +10,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath, revalidateTag } from 'next/cache';
-import { withAuth } from '@/middleware/withAuth';
+import { withAuth } from '@/identity-access/middleware/withAuth';
 import { RESOURCE_CACHE_CONFIG } from '@/lib/cache/config';
 import {
   invalidateResource,

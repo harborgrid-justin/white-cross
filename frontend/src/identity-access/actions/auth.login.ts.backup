@@ -1,0 +1,214 @@
+/**
+ * @fileoverview Authentication Login Operations
+ * @module lib/actions/auth.login
+ *
+ * Server actions for login and authentication operations.
+ *
+ * Features:
+ * - Login form validation and processing
+ * - Session creation and cookie management
+ * - HIPAA audit logging for login events
+ * - Error handling and validation
+ */
+
+'use server';
+
+import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
+
+// API integration
+import { serverPost, NextApiClientError } from '@/lib/api/nextjs-client';
+import { API_ENDPOINTS } from '@/constants/api';
+import { auditLog, AUDIT_ACTIONS, extractIPAddress, extractUserAgent } from '@/lib/audit';
+
+// Types
+import type { AuthResponse, LoginFormState } from './auth.types';
+import { AUTH_CACHE_TAGS } from './auth.constants';
+
+// ==========================================
+// LOGIN ACTIONS
+// ==========================================
+
+/**
+ * Login action with form validation
+ */
+export async function loginAction(
+  _prevState: LoginFormState,
+  formData: FormData
+): Promise<LoginFormState> {
+  // Import schema dynamically to avoid circular dependency
+  const { loginSchema } = await import('./auth.constants');
+
+  // Validate form data
+  const validatedFields = loginSchema.safeParse({
+    email: formData.get('email'),
+    password: formData.get('password'),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+    };
+  }
+
+  try {
+    const { email, password } = validatedFields.data;
+
+    // Call backend authentication endpoint
+    const wrappedResponse = await serverPost<any>(
+      API_ENDPOINTS.AUTH.LOGIN,
+      { email, password },
+      {
+        cache: 'no-store',
+        requiresAuth: false, // Don't require auth for login endpoint
+        next: { tags: [AUTH_CACHE_TAGS.AUTH] }
+      }
+    );
+
+    console.log('[Login Action] Response received:', {
+      hasResponse: !!wrappedResponse,
+      hasData: !!wrappedResponse?.data,
+      responseKeys: wrappedResponse ? Object.keys(wrappedResponse) : [],
+    });
+
+    // Backend wraps response in ApiResponse format - extract data
+    const response: AuthResponse = wrappedResponse?.data || wrappedResponse;
+
+    console.log('[Login Action] Extracted auth data:', {
+      hasAccessToken: !!response?.accessToken,
+      hasRefreshToken: !!response?.refreshToken,
+      hasUser: !!response?.user,
+    });
+
+    // Check if we have valid authentication data
+    if (!response || !response.accessToken) {
+      // Audit failed login attempt
+      const headersList = await headers();
+      const mockRequest = {
+        headers: {
+          get: (name: string) => headersList.get(name)
+        }
+      } as Request;
+
+      await auditLog({
+        userId: email,
+        action: AUDIT_ACTIONS.LOGIN_FAILED,
+        resource: 'Authentication',
+        details: `Failed login attempt for ${email}`,
+        ipAddress: extractIPAddress(mockRequest),
+        userAgent: extractUserAgent(mockRequest),
+        success: false,
+        errorMessage: 'Invalid credentials'
+      });
+
+      return {
+        errors: {
+          _form: ['Invalid credentials'],
+        },
+      };
+    }
+
+    // Extract data from successful response (backend returns AuthResponseDto directly)
+    const { accessToken: token, refreshToken, user } = response;
+
+    // Set HTTP-only cookies
+    const cookieStore = await cookies();
+
+    console.log('[Login Action] Setting auth token:', {
+      tokenLength: token?.length,
+      tokenStart: token?.substring(0, 20)
+    });
+
+    cookieStore.set('auth_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      path: '/',
+    });
+
+    console.log('[Login Action] Auth token cookie set, verifying:', {
+      cookieExists: !!cookieStore.get('auth_token'),
+      cookieValue: cookieStore.get('auth_token')?.value?.substring(0, 20)
+    });
+
+    if (refreshToken) {
+      cookieStore.set('refresh_token', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 60 * 60 * 24 * 30, // 30 days
+        path: '/',
+      });
+    }
+
+    // Audit successful login
+    const headersList = await headers();
+    const mockRequest = {
+      headers: {
+        get: (name: string) => headersList.get(name)
+      }
+    } as Request;
+
+    await auditLog({
+      userId: user.id,
+      action: AUDIT_ACTIONS.LOGIN,
+      resource: 'Authentication',
+      details: `User ${email} logged in successfully`,
+      ipAddress: extractIPAddress(mockRequest),
+      userAgent: extractUserAgent(mockRequest),
+      success: true
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('[Login Action] Error:', error);
+
+    // Handle NextApiClientError with more specific messaging
+    if (error instanceof NextApiClientError) {
+      const errorMessage = error.message || 'Authentication failed. Please check your credentials.';
+      return {
+        errors: {
+          _form: [errorMessage],
+        },
+      };
+    }
+
+    return {
+      errors: {
+        _form: ['An unexpected error occurred. Please try again.'],
+      },
+    };
+  }
+}
+
+/**
+ * Handle login form submission from login page
+ * Delegates to centralized loginAction and handles redirect
+ */
+export async function handleLoginSubmission(
+  prevState: LoginFormState,
+  formData: FormData
+): Promise<LoginFormState> {
+  const result = await loginAction(prevState, formData);
+
+  if (result.success) {
+    // Successful login - redirect to dashboard
+    revalidatePath('/dashboard', 'page');
+    redirect('/dashboard');
+  }
+
+  return result;
+}
+
+/**
+ * Clear login form state
+ */
+export async function clearLoginForm(): Promise<LoginFormState> {
+  return {
+    success: false,
+    errors: undefined
+  };
+}

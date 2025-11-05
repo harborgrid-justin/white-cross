@@ -1,7 +1,7 @@
 import { useDispatch, useSelector, TypedUseSelectorHook } from 'react-redux';
 import type { RootState, AppDispatch } from '../reduxStore';
-import { loginUser, registerUser, logoutUser, refreshUser, clearError, setUser } from '../../stores/slices/authSlice';
-import type { LoginCredentials, RegisterData } from '../../services/modules/authApi';
+import { loginUser, registerUser, logoutUser, refreshUser, clearError, setUser } from '@/identity-access/stores/authSlice';
+import type { LoginCredentials, RegisterData } from '@/identity-access/services/authApi';
 import type { User } from '../../types';
 import {
   fetchIncidentReports,

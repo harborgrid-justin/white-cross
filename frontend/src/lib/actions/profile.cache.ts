@@ -18,7 +18,6 @@ import { cache } from 'react';
 import { serverGet } from '@/lib/api/nextjs-client';
 import { CACHE_TTL } from '@/lib/cache/constants';
 import type { ApiResponse } from '@/types/core/api/responses';
-import { PROFILE_CACHE_TAGS } from './profile.types';
 import type {
   UserProfile,
   ProfileSettings,
@@ -26,8 +25,9 @@ import type {
   ActiveSession
 } from './profile.types';
 
-// Re-export cache tags for convenience
-export { PROFILE_CACHE_TAGS };
+// NOTE: Cache tags are hardcoded as strings in this file.
+// If you need to reference PROFILE_CACHE_TAGS constant, import from './profile.constants'
+// (cannot be imported here due to "use server" restrictions on re-exports).
 
 // ==========================================
 // CACHED DATA FUNCTIONS

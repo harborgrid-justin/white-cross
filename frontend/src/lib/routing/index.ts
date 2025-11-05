@@ -37,8 +37,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { redirect } from 'next/navigation';
 
 // Import middleware components
-import { authMiddleware } from '@/middleware/auth';
-import { rbacMiddleware } from '@/middleware/rbac';
+import { authMiddleware } from '@/identity-access/middleware/auth';
+import { rbacMiddleware } from '@/identity-access/middleware/rbac';
 import { securityHeadersMiddleware } from '@/middleware/security';
 import { rateLimitMiddleware } from '@/middleware/rateLimit';
 import { auditMiddleware } from '@/middleware/audit';

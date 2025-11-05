@@ -20,7 +20,7 @@ import { Provider } from 'react-redux';
 import { configureStore, PreloadedState } from '@reduxjs/toolkit';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RootState } from '@/stores/store';
-import authReducer from '@/stores/slices/authSlice';
+import { authReducer } from '@/identity-access/stores';
 
 /**
  * Extended render options including preloaded Redux state

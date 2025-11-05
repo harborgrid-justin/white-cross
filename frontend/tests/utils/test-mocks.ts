@@ -9,7 +9,7 @@
  * @module tests/utils/test-mocks
  */
 
-import type { User } from '@/stores/slices/authSlice';
+import type { User } from '@/identity-access/stores/authSlice';
 
 /**
  * AuthContextValue type matching the actual context interface

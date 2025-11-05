@@ -347,7 +347,9 @@ export async function nextFetch<T>(
 
     if (!token && !isAuthEndpoint) {
       // Redirect to login if no token (but not during auth operations)
-      console.log('[Next API Client] No token found, redirecting to login');
+      console.error('[Next API Client] No auth token found for protected endpoint:', endpoint);
+      // Note: redirect() in server components/actions can cause issues
+      // Consider using middleware for auth protection instead
       redirect('/login');
     }
 
@@ -425,9 +427,14 @@ export async function nextFetch<T>(
         // Don't redirect on login/auth endpoints to avoid redirect loops
         const isAuthEndpoint = endpoint.includes('/auth/login') || endpoint.includes('/auth/register');
         
+        // Note: Redirects in Server Components/Actions can be tricky
+        // These will throw NEXT_REDIRECT which Next.js catches
+        // Consider using middleware for auth protection instead
         if (response.status === 401 && !isAuthEndpoint) {
+          console.error('[Next API Client] 401 error - authentication required');
           redirect('/login');
         } else if (response.status === 403) {
+          console.error('[Next API Client] 403 error - access denied');
           redirect('/access-denied');
         }
 

@@ -31,7 +31,11 @@ export { ReduxProvider } from './ReduxProvider';
 export { ApolloProvider } from './ApolloProvider';
 
 // Context providers (re-export from contexts)
-export { AuthProvider, useAuth } from '@/contexts/AuthContext';
+/**
+ * Auth Context Exports (for convenience)
+ * @deprecated Import from @/identity-access/contexts instead
+ */
+export { AuthProvider, useAuth } from '@/identity-access/contexts/AuthContext';
 export { NavigationProvider, useNavigation } from '@/contexts/NavigationContext';
 
 // Main app providers composition

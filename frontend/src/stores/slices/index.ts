@@ -10,11 +10,10 @@
 // ============================================================
 // CORE SLICES - Authentication & Authorization
 // ============================================================
-export { default as authReducer } from './authSlice';
+// MOVED: authReducer → @/identity-access/stores/authSlice
+// MOVED: accessControlReducer → @/identity-access/stores/accessControlSlice
 
 export { usersReducer, usersSlice } from './usersSlice';
-
-export { default as accessControlReducer } from './accessControlSlice';
 
 // ============================================================
 // DASHBOARD & OVERVIEW

@@ -22,7 +22,7 @@ import { getQueryClient } from '@/config/queryClient';
 // Import consolidated providers
 import { ReduxProvider } from '@/providers/ReduxProvider';
 import { ApolloProvider } from '@/providers/ApolloProvider';
-import { AuthProvider } from '@/contexts/AuthContext';
+import { AuthProvider } from '@/identity-access/contexts/AuthContext';
 import { NavigationProvider } from '@/contexts/NavigationContext';
 
 interface ProvidersProps {

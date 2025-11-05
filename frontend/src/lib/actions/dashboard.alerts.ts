@@ -15,6 +15,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { headers } from 'next/headers';
 import type { HealthAlert, DashboardFilters } from './dashboard.types';
 
 /**
@@ -25,6 +26,9 @@ import type { HealthAlert, DashboardFilters } from './dashboard.types';
  * @returns Promise<HealthAlert[]>
  */
 export async function getHealthAlerts(filters: DashboardFilters = {}): Promise<HealthAlert[]> {
+  // Access headers to enable dynamic rendering (required before using Date)
+  await headers();
+  
   try {
     console.log('[Dashboard] Loading health alerts with filters:', filters);
 

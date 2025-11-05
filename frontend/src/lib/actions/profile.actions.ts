@@ -9,7 +9,7 @@
  * functionality from specialized modules for better organization and maintainability.
  *
  * Features:
- * - Server actions with proper 'use server' directive
+ * - Server actions with proper 'use server' directive (in individual modules)
  * - Next.js cache integration with revalidateTag/revalidatePath
  * - HIPAA audit logging for all profile operations
  * - Type-safe CRUD operations
@@ -18,15 +18,17 @@
  *
  * Module Organization:
  * - profile.types.ts - TypeScript type definitions and interfaces
- * - profile.cache.ts - Cached data retrieval functions
- * - profile.crud.ts - Basic profile CRUD operations
- * - profile.settings.ts - Settings management actions
- * - profile.security.ts - Security operations (passwords, 2FA, sessions)
- * - profile.forms.ts - Form data handling wrappers
- * - profile.utils.ts - Utility and helper functions
+ * - profile.cache.ts - Cached data retrieval functions (marked with 'use server')
+ * - profile.crud.ts - Basic profile CRUD operations (marked with 'use server')
+ * - profile.settings.ts - Settings management actions (marked with 'use server')
+ * - profile.security.ts - Security operations (marked with 'use server')
+ * - profile.forms.ts - Form data handling wrappers (marked with 'use server')
+ * - profile.utils.ts - Utility and helper functions (marked with 'use server')
+ *
+ * NOTE: This file does NOT have 'use server' at the file level to allow imports
+ * from both Client and Server Components. Individual modules have their own
+ * 'use server' directives to mark functions as server actions.
  */
-
-'use server';
 
 // ==========================================
 // TYPE DEFINITIONS
@@ -43,7 +45,8 @@ export type {
   ActiveSession,
 } from './profile.types';
 
-export { PROFILE_CACHE_TAGS } from './profile.types';
+// NOTE: PROFILE_CACHE_TAGS cannot be re-exported from this "use server" file.
+// Import directly from './profile.constants' when needed in client components.
 
 // ==========================================
 // CACHED DATA FUNCTIONS

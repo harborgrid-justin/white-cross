@@ -6,8 +6,25 @@
 import { NextRequest } from 'next/server';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || '';
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET || '';
+// CRITICAL: Validate JWT secrets at module load time
+// This prevents the application from starting with missing or empty secrets
+if (!process.env.JWT_SECRET) {
+  throw new Error(
+    'FATAL: JWT_SECRET environment variable is not set. ' +
+    'This is a critical security requirement. The application cannot start without it. ' +
+    'Please configure JWT_SECRET in your environment variables.'
+  );
+}
+
+if (!process.env.JWT_REFRESH_SECRET) {
+  console.warn(
+    'WARNING: JWT_REFRESH_SECRET not set, falling back to JWT_SECRET. ' +
+    'For production environments, use separate secrets for access and refresh tokens.'
+  );
+}
+
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET;
 
 /**
  * Token payload interface
@@ -59,10 +76,7 @@ export function extractToken(request: NextRequest): string | null {
  * @throws Error if token is invalid or expired
  */
 export function verifyAccessToken(token: string): TokenPayload {
-  if (!JWT_SECRET) {
-    throw new Error('JWT_SECRET not configured');
-  }
-
+  // Note: JWT_SECRET is validated at module load time, guaranteed to exist
   try {
     const decoded = jwt.verify(token, JWT_SECRET, {
       issuer: 'white-cross-healthcare',
@@ -91,10 +105,7 @@ export function verifyAccessToken(token: string): TokenPayload {
  * @throws Error if token is invalid or expired
  */
 export function verifyRefreshToken(token: string): TokenPayload {
-  if (!JWT_REFRESH_SECRET) {
-    throw new Error('JWT_REFRESH_SECRET not configured');
-  }
-
+  // Note: JWT_REFRESH_SECRET is validated at module load time, guaranteed to exist
   try {
     const decoded = jwt.verify(token, JWT_REFRESH_SECRET, {
       issuer: 'white-cross-healthcare'
@@ -163,26 +174,21 @@ export function hasRole(user: AuthenticatedUser, requiredRole: string | string[]
 
 /**
  * Role hierarchy for permission checking
+ * @deprecated Import from @/identity-access/lib/config/roles instead
+ *
+ * This is maintained for backward compatibility only.
+ * New code should use the centralized role configuration.
  */
-const ROLE_HIERARCHY: Record<string, number> = {
-  SUPER_ADMIN: 100,
-  ADMIN: 90,
-  SCHOOL_ADMIN: 80,
-  NURSE: 70,
-  COUNSELOR: 60,
-  VIEWER: 50,
-  PARENT: 40,
-  STUDENT: 30
-};
+import { ROLE_HIERARCHY as CENTRALIZED_ROLE_HIERARCHY, hasMinimumRole as hasMinimumRoleLevel } from '@/identity-access/lib/config/roles';
+
+const ROLE_HIERARCHY = CENTRALIZED_ROLE_HIERARCHY;
 
 /**
  * Check if user has minimum role level
+ * @deprecated Use hasMinimumRoleLevel from @/identity-access/lib/config/roles
  */
 export function hasMinimumRole(user: AuthenticatedUser, minimumRole: string): boolean {
-  const userLevel = ROLE_HIERARCHY[user.role] || 0;
-  const requiredLevel = ROLE_HIERARCHY[minimumRole] || 0;
-
-  return userLevel >= requiredLevel;
+  return hasMinimumRoleLevel(user.role, minimumRole);
 }
 
 /**

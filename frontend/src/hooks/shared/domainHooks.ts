@@ -9,7 +9,7 @@
 
 import { useDispatch, useSelector, TypedUseSelectorHook } from 'react-redux';
 import type { RootState, AppDispatch } from '../../stores/reduxStore';
-import { loginUser, registerUser, logoutUser, refreshUser, clearError, setUser } from '../../stores/slices/authSlice';
+import { loginUser, registerUser, logoutUser, refreshUser, clearError, setUser } from '@/identity-access/stores/authSlice';
 import {
   fetchIncidentReports,
   fetchIncidentReportById,

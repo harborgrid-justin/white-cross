@@ -10,6 +10,7 @@
 
 'use server';
 
+import { headers } from 'next/headers';
 import type { SystemStatus } from './dashboard.types';
 
 /**
@@ -19,6 +20,9 @@ import type { SystemStatus } from './dashboard.types';
  * @returns Promise<SystemStatus>
  */
 export async function getSystemStatus(): Promise<SystemStatus> {
+  // Access headers to enable dynamic rendering (required before using Date)
+  await headers();
+  
   try {
     console.log('[Dashboard] Loading system status');
 

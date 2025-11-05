@@ -26,7 +26,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withOptionalAuth } from '@/middleware/withAuth';
+import { withOptionalAuth } from '@/identity-access/middleware/withAuth';
 import type { AnalyticsEvent } from '@/monitoring/types';
 
 /**

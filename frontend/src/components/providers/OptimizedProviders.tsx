@@ -42,7 +42,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { Provider as ReduxProvider } from 'react-redux';
 import { getQueryClient } from '@/config/queryClient';
 import { store } from '@/stores/store';
-import { AuthProvider } from '@/contexts/AuthContext';
+import { AuthProvider } from '@/identity-access/contexts/AuthContext';
 
 // Lazy load heavy providers
 const ApolloProvider = lazy(() =>

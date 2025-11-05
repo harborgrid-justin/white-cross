@@ -16,7 +16,7 @@
  * @module tests/utils/test-factories
  */
 
-import type { User } from '@/stores/slices/authSlice';
+import type { User } from '@/identity-access/stores/authSlice';
 
 /**
  * Student type for testing (synthetic patient data)

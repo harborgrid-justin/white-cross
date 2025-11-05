@@ -53,26 +53,9 @@ export type {
 // SERVER-SIDE API EXPORTS
 // ==========================================
 
-// Re-export Next.js server functions from nextjs-client
-export {
-  nextFetch,
-  serverGet,
-  serverPost,
-  serverPut,
-  serverPatch,
-  serverDelete,
-  buildCacheTags,
-  buildResourceTag,
-  NextApiClientError
-} from './nextjs-client';
-
-// Export Next.js server types
-export type {
-  NextFetchOptions,
-  NextCacheConfig,
-  CacheLifeConfig,
-  ApiResponse as NextApiResponse
-} from './nextjs-client';
+// NOTE: Server-side API exports have been moved to './server' to prevent
+// client components from importing 'next/headers' which causes build errors.
+// Use: import { serverGet, serverPost, ... } from '@/lib/api/server'
 
 
 /**

@@ -26,7 +26,8 @@ export enum Permission {
   ADMIN = 'admin'
 }
 
-// Export authentication middleware
+// Export authentication middleware (moved to identity-access)
+// @deprecated Import from @/identity-access/middleware instead
 export {
   withAuth,
   withOptionalAuth,
@@ -37,7 +38,7 @@ export {
   type AuthenticatedContext,
   type AuthenticatedHandler,
   type OptionalAuthHandler
-} from './withAuth';
+} from '@/identity-access/middleware/withAuth';
 
 export default {
   UserRole,

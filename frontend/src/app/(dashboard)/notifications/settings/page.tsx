@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { NotificationSettings } from '@/features/notifications/components';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/identity-access/contexts/AuthContext';
 
 /**
  * Notification Settings Page

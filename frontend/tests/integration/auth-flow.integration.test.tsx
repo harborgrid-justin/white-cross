@@ -18,7 +18,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { server } from '../mocks/server';
 import { http, HttpResponse } from 'msw';
-import authReducer from '@/stores/slices/authSlice';
+import { authReducer } from '@/identity-access/stores';
 
 // Mock Login Component
 function LoginForm({ onSuccess }: { onSuccess?: () => void }) {

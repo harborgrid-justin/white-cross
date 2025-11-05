@@ -4,24 +4,11 @@
  *
  * TypeScript type definitions and interfaces for profile management.
  * This module serves as the foundation for all profile-related operations.
+ *
+ * NOTE: This file contains only TypeScript types and interfaces, so it does NOT
+ * need the 'use server' directive. Types are compile-time only and don't affect
+ * the runtime bundle.
  */
-
-'use server';
-
-// ==========================================
-// CONFIGURATION
-// ==========================================
-
-/**
- * Custom cache tags for profile-related operations
- */
-export const PROFILE_CACHE_TAGS = {
-  PROFILES: 'profiles',
-  SETTINGS: 'profile-settings',
-  PREFERENCES: 'profile-preferences',
-  SECURITY: 'profile-security',
-  SESSIONS: 'profile-sessions',
-} as const;
 
 // ==========================================
 // CORE ACTION TYPES

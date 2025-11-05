@@ -23,6 +23,42 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Users,
+  Bell,
+  Clock,
+  AlertTriangle,
+  TrendingUp,
+  TrendingDown,
+  Activity,
+  RefreshCw,
+  Calendar,
+  Shield,
+  UserCheck,
+  Filter,
+  Search,
+  X,
+  Check,
+  CheckCircle,
+  FileText,
+  Plus,
+  Calendar as CalendarIcon,
+  Pill,
+  ClipboardList,
+  MessageSquare,
+  Eye,
+  MoreVertical,
+  Download,
+} from 'lucide-react';
 import type {
   DashboardStats,
   HealthAlert,
@@ -37,6 +73,54 @@ import { DashboardAnalytics } from './DashboardAnalytics';
 import { QuickActionsGrid } from './QuickActionsGrid';
 import { useDashboardFilters } from './useDashboardFilters';
 import { useAlertActions } from './useAlertActions';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+
+// Helper functions
+function getAlertIcon(type: string) {
+  switch (type) {
+    case 'medication':
+      return Pill;
+    case 'allergy':
+      return AlertTriangle;
+    case 'appointment':
+      return Calendar;
+    case 'immunization':
+      return Shield;
+    default:
+      return Bell;
+  }
+}
+
+function getAlertColor(severity: string) {
+  switch (severity) {
+    case 'critical':
+      return 'border-red-300 bg-red-50';
+    case 'high':
+      return 'border-orange-300 bg-orange-50';
+    case 'medium':
+      return 'border-yellow-300 bg-yellow-50';
+    case 'low':
+      return 'border-blue-300 bg-blue-50';
+    default:
+      return 'border-gray-300 bg-gray-50';
+  }
+}
+
+function getActivityIcon(type: string) {
+  switch (type) {
+    case 'appointment':
+      return Calendar;
+    case 'medication':
+      return Pill;
+    case 'health_record':
+      return FileText;
+    case 'note':
+      return MessageSquare;
+    default:
+      return Bell;
+  }
+}
 
 interface DashboardContentProps {
   stats: DashboardStats;

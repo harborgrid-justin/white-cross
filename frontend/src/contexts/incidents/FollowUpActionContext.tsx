@@ -29,7 +29,7 @@
 import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { incidentReportsApi } from '@/services';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/identity-access/contexts/AuthContext';
 import {
   ActionStatus,
   ActionPriority,
