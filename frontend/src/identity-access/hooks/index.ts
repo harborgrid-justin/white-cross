@@ -12,3 +12,16 @@ export * from './auth-permission-hooks';
 export * as PermissionHooks from './permissions';
 export * from './permission-checks';
 export * from './roles';
+
+// Subdirectory exports
+export * from './accessibility';
+export * from './performance';
+// Explicit re-exports to resolve conflicts
+export { 
+  useAuthUser,
+  useAuthStatus,
+  type AuthStatus,
+  usePermissions,
+  useSessionActivity,
+  type SessionActivity
+} from './state';

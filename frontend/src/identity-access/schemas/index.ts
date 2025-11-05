@@ -10,5 +10,6 @@ export * from './role.crud.schemas';
 export * from './role.operations.schemas';
 export * from './role.permissions.schemas';
 export * from './role.base.schemas';
+export * from './user.auth.sessions.schemas';
 // Namespace export to avoid Permission conflicts
 export * as UserRoleSchemas from './user.role.schemas';

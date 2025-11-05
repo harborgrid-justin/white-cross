@@ -1,334 +1,631 @@
 /**
- * @fileoverview Type Definitions for Access Control Slice
- * @module stores/types/accessControl.types
- *
- * Comprehensive type definitions to replace 'any' types throughout
- * the access control slice. Ensures type safety and better IDE support.
+ * @fileoverview Access Control Type Definitions
+ * @module stores/types/accessControl
+ * 
+ * Comprehensive type definitions for the access control system including
+ * RBAC, permissions, security incidents, and session management.
+ * 
+ * Enterprise-grade type safety for healthcare compliance and security.
  */
 
-/**
- * Base entity interface with common fields
- */
-interface BaseEntity {
-  id: string;
-  createdAt: string;
-  updatedAt: string;
-}
+// ==========================================
+// CORE DOMAIN TYPES
+// ==========================================
 
 /**
- * Role entity representing a system role
+ * User role enumeration matching backend RBAC system
  */
-export interface Role extends BaseEntity {
-  name: string;
-  description: string;
-  isActive: boolean;
-  department?: string;
-  permissions: string[];
-}
-
-/**
- * Permission entity
- */
-export interface Permission extends BaseEntity {
-  name: string;
-  resource: string;
-  action: string;
-  description?: string;
-  category?: string;
-}
-
-/**
- * Security incident entity
- */
-export interface SecurityIncident extends BaseEntity {
-  type: SecurityIncidentType;
-  severity: SecurityIncidentSeverity;
-  description: string;
-  userId: string;
-  resourceAccessed?: string;
-  ipAddress?: string;
-  userAgent?: string;
-  status: SecurityIncidentStatus;
-  resolvedAt?: string;
-  resolvedBy?: string;
-  notes?: string;
-}
-
-/**
- * Security incident types
- */
-export type SecurityIncidentType =
-  | 'UNAUTHORIZED_ACCESS'
-  | 'FAILED_LOGIN'
-  | 'SUSPICIOUS_ACTIVITY'
-  | 'DATA_BREACH'
-  | 'POLICY_VIOLATION'
-  | 'MALWARE_DETECTED'
-  | 'PHISHING_ATTEMPT'
-  | 'OTHER';
+export type UserRole =
+  | 'SUPER_ADMIN'
+  | 'ADMIN'
+  | 'DISTRICT_ADMIN'
+  | 'SCHOOL_ADMIN'
+  | 'SCHOOL_NURSE'
+  | 'NURSE'
+  | 'OFFICE_STAFF'
+  | 'STAFF'
+  | 'COUNSELOR'
+  | 'VIEWER';
 
 /**
  * Security incident severity levels
  */
-export type SecurityIncidentSeverity =
-  | 'CRITICAL'
-  | 'HIGH'
-  | 'MEDIUM'
-  | 'LOW'
-  | 'INFO';
+export type IncidentSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
 /**
- * Security incident status
+ * Security incident types
  */
-export type SecurityIncidentStatus =
-  | 'OPEN'
-  | 'INVESTIGATING'
-  | 'RESOLVED'
-  | 'CLOSED'
-  | 'FALSE_POSITIVE';
+export type IncidentType =
+  | 'UNAUTHORIZED_ACCESS'
+  | 'FAILED_LOGIN'
+  | 'PRIVILEGE_ESCALATION'
+  | 'DATA_BREACH'
+  | 'POLICY_VIOLATION'
+  | 'SUSPICIOUS_ACTIVITY'
+  | 'SYSTEM_COMPROMISE'
+  | 'MALWARE_DETECTION';
 
 /**
- * User session entity
+ * Notification types
  */
-export interface UserSession extends BaseEntity {
-  userId: string;
-  token: string;
-  ipAddress: string;
-  userAgent: string;
-  isActive: boolean;
-  expiresAt: string;
-  lastActivityAt: string;
-}
+export type NotificationType = 'success' | 'error' | 'warning' | 'info';
+
+// ==========================================
+// ENTITY INTERFACES
+// ==========================================
 
 /**
- * IP restriction entity
+ * Role entity representing a collection of permissions
  */
-export interface IpRestriction extends BaseEntity {
-  ipRange: string;
+export interface Role {
+  readonly id: string;
+  name: string;
   description: string;
-  allowedRoles: string[];
+  permissions: string[];
   isActive: boolean;
+  readonly isSystem: boolean;
+  department?: string;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly createdBy: string;
+  readonly updatedBy: string;
 }
 
 /**
- * Role-permission assignment
+ * Permission entity representing a specific access right
+ */
+export interface Permission {
+  readonly id: string;
+  name: string;
+  readonly resource: string;
+  readonly action: string;
+  description: string;
+  isActive: boolean;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+/**
+ * Security incident entity for audit and compliance
+ */
+export interface SecurityIncident {
+  readonly id: string;
+  readonly type: IncidentType;
+  severity: IncidentSeverity;
+  readonly description: string;
+  readonly userId: string;
+  readonly userEmail?: string;
+  readonly resourceAccessed?: string;
+  readonly ipAddress: string;
+  readonly userAgent?: string;
+  readonly location?: string;
+  isResolved: boolean;
+  resolvedBy?: string;
+  resolvedAt?: string;
+  notes?: string;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+/**
+ * User session entity for session management
+ */
+export interface UserSession {
+  readonly id: string;
+  readonly userId: string;
+  readonly userEmail: string;
+  readonly token: string;
+  readonly ipAddress: string;
+  readonly userAgent: string;
+  readonly location?: string;
+  readonly isActive: boolean;
+  readonly lastActivityAt: string;
+  readonly expiresAt: string;
+  readonly createdAt: string;
+}
+
+/**
+ * IP restriction entity for network-based access control
+ */
+export interface IpRestriction {
+  readonly id: string;
+  readonly ipRange: string;
+  description: string;
+  allowedRoles: UserRole[];
+  isActive: boolean;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly createdBy: string;
+}
+
+/**
+ * Role-Permission relationship entity
  */
 export interface RolePermission {
-  roleId: string;
-  permissionId: string;
-  grantedAt: string;
-  grantedBy?: string;
+  readonly id: string;
+  readonly roleId: string;
+  readonly permissionId: string;
+  readonly grantedAt: string;
+  readonly grantedBy: string;
 }
 
 /**
- * User-role assignment
+ * User-Role relationship entity
  */
-export interface UserRole {
-  userId: string;
-  roleId: string;
-  assignedAt: string;
-  assignedBy?: string;
-  startDate?: string;
-  endDate?: string;
+export interface UserRoleAssignment {
+  readonly id: string;
+  readonly userId: string;
+  readonly roleId: string;
+  readonly assignedAt: string; 
+  readonly assignedBy: string;
+  readonly expiresAt?: string;
 }
 
 /**
- * Permission check result
- */
-export interface PermissionCheckResult {
-  userId: string;
-  resource: string;
-  action: string;
-  hasPermission: boolean;
-  reason?: string;
-}
-
-/**
- * Access control statistics
+ * Access control statistics for dashboard
  */
 export interface AccessControlStatistics {
-  totalRoles: number;
-  activeRoles: number;
-  totalPermissions: number;
-  totalUsers: number;
-  activeUsers: number;
-  recentIncidents: number;
-  criticalIncidents: number;
-  activeSessions: number;
-  securityScore: number;
+  readonly totalUsers: number;
+  readonly activeUsers: number;
+  readonly totalRoles: number;
+  readonly activeRoles: number;
+  readonly totalPermissions: number;
+  readonly totalIncidents: number;
+  readonly criticalIncidents: number;
+  readonly recentIncidents: number;
+  readonly activeSessions: number;
+  readonly ipRestrictions: number;
+  readonly lastUpdated: string;
 }
 
 /**
- * Incident filters
+ * Notification entity for user feedback
+ */
+export interface Notification {
+  readonly id: string;
+  readonly type: NotificationType;
+  readonly title: string;
+  readonly message: string;
+  readonly timestamp: string;
+  readonly isRead?: boolean;
+  readonly actionUrl?: string;
+  readonly actionLabel?: string;
+}
+
+// ==========================================
+// PAGINATION & FILTERING
+// ==========================================
+
+/**
+ * Pagination information
+ */
+export interface PaginationInfo {
+  readonly page: number;
+  readonly limit: number;
+  readonly total: number;
+  readonly totalPages?: number;
+}
+
+/**
+ * Security incident filters
  */
 export interface IncidentFilters {
-  severity?: SecurityIncidentSeverity;
-  type?: SecurityIncidentType;
-  userId?: string;
-  startDate?: string;
-  endDate?: string;
-  status?: SecurityIncidentStatus;
+  readonly severity?: IncidentSeverity;
+  readonly type?: IncidentType;
+  readonly userId?: string;
+  readonly startDate?: string;
+  readonly endDate?: string;
+  readonly isResolved?: boolean;
 }
 
 /**
  * Session filters
  */
 export interface SessionFilters {
-  userId?: string;
-  isActive?: boolean;
+  readonly userId?: string;
+  readonly isActive?: boolean;
+  readonly ipAddress?: string;
+  readonly startDate?: string;
+  readonly endDate?: string;
 }
 
-/**
- * Pagination info
- */
-export interface PaginationInfo {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages?: number;
-}
-
-/**
- * Notification
- */
-export interface Notification {
-  id: string;
-  type: 'success' | 'error' | 'warning' | 'info';
-  message: string;
-  timestamp: string;
-  read?: boolean;
-}
-
-/**
- * API response wrapper
- */
-export interface ApiResponse<T> {
-  data?: T;
-  error?: string;
-  message?: string;
-  success: boolean;
-}
-
-/**
- * Paginated response
- */
-export interface PaginatedResponse<T> {
-  items: T[];
-  pagination: PaginationInfo;
-}
+// ==========================================
+// API PAYLOAD TYPES
+// ==========================================
 
 /**
  * Role creation payload
  */
 export interface CreateRolePayload {
-  name: string;
-  description: string;
-  permissions?: string[];
-  isActive?: boolean;
-  department?: string;
+  readonly name: string;
+  readonly description: string;
+  readonly permissions?: string[];
+  readonly isActive?: boolean;
+  readonly department?: string;
 }
 
 /**
  * Role update payload
  */
 export interface UpdateRolePayload {
-  name?: string;
-  description?: string;
-  permissions?: string[];
-  isActive?: boolean;
-  department?: string;
+  readonly name?: string;
+  readonly description?: string;
+  readonly permissions?: string[];
+  readonly isActive?: boolean;
+  readonly department?: string;
 }
 
 /**
  * Permission creation payload
  */
 export interface CreatePermissionPayload {
-  name: string;
-  resource: string;
-  action: string;
-  description?: string;
-  category?: string;
+  readonly name: string;
+  readonly resource: string;
+  readonly action: string;
+  readonly description: string;
+  readonly isActive?: boolean;
 }
 
 /**
  * Security incident creation payload
  */
 export interface CreateSecurityIncidentPayload {
-  type: SecurityIncidentType;
-  severity: SecurityIncidentSeverity;
-  description: string;
-  userId: string;
-  resourceAccessed?: string;
-  ipAddress?: string;
-  userAgent?: string;
+  readonly type: IncidentType;
+  readonly severity: IncidentSeverity;
+  readonly description: string;
+  readonly userId: string;
+  readonly resourceAccessed?: string;
+  readonly ipAddress: string;
+  readonly userAgent?: string;
+  readonly location?: string;
 }
 
 /**
  * Security incident update payload
  */
 export interface UpdateSecurityIncidentPayload {
-  status?: SecurityIncidentStatus;
-  description?: string;
-  notes?: string;
-  resolvedBy?: string;
+  readonly isResolved?: boolean;
+  readonly notes?: string;
+  readonly severity?: IncidentSeverity;
 }
 
 /**
  * IP restriction creation payload
  */
 export interface CreateIpRestrictionPayload {
-  ipRange: string;
-  description: string;
-  allowedRoles: string[];
-  isActive?: boolean;
+  readonly ipRange: string;
+  readonly description: string;
+  readonly allowedRoles: UserRole[];
+  readonly isActive?: boolean;
+}
+
+// ==========================================
+// THUNK ARGUMENT TYPES
+// ==========================================
+
+/**
+ * Update role arguments
+ */
+export interface UpdateRoleArgs {
+  readonly id: string;
+  readonly updates: UpdateRolePayload;
 }
 
 /**
- * Async thunk argument types
+ * Update security incident arguments
  */
-export interface UpdateRoleArgs {
-  id: string;
-  updates: UpdateRolePayload;
-}
-
 export interface UpdateSecurityIncidentArgs {
-  id: string;
-  updates: UpdateSecurityIncidentPayload;
+  readonly id: string;
+  readonly updates: UpdateSecurityIncidentPayload;
 }
 
+/**
+ * Assign permission to role arguments
+ */
 export interface AssignPermissionArgs {
-  roleId: string;
-  permissionId: string;
+  readonly roleId: string;
+  readonly permissionId: string;
 }
 
+/**
+ * Remove permission from role arguments
+ */
 export interface RemovePermissionArgs {
-  roleId: string;
-  permissionId: string;
+  readonly roleId: string;
+  readonly permissionId: string;
 }
 
+/**
+ * Assign role to user arguments
+ */
 export interface AssignRoleArgs {
-  userId: string;
-  roleId: string;
+  readonly userId: string;
+  readonly roleId: string;
+  readonly expiresAt?: string;
 }
 
+/**
+ * Remove role from user arguments
+ */
 export interface RemoveRoleArgs {
-  userId: string;
-  roleId: string;
+  readonly userId: string;
+  readonly roleId: string;
 }
 
+/**
+ * Check permission arguments
+ */
 export interface CheckPermissionArgs {
-  userId: string;
-  resource: string;
-  action: string;
+  readonly userId: string;
+  readonly resource: string;
+  readonly action: string;
 }
 
-export interface SecurityIncidentQueryParams {
-  severity?: SecurityIncidentSeverity;
-  type?: SecurityIncidentType;
-  status?: SecurityIncidentStatus;
-  userId?: string;
-  startDate?: string;
-  endDate?: string;
-  page?: number;
-  limit?: number;
+/**
+ * Permission check result
+ */
+export interface PermissionCheckResult {
+  readonly userId: string;
+  readonly resource: string;
+  readonly action: string;
+  readonly hasPermission: boolean;
 }
+
+/**
+ * Security incident query parameters
+ */
+export interface SecurityIncidentQueryParams {
+  readonly page?: number;
+  readonly limit?: number;
+  readonly severity?: IncidentSeverity;
+  readonly type?: IncidentType;
+  readonly userId?: string;
+  readonly startDate?: string;
+  readonly endDate?: string;
+  readonly isResolved?: boolean;
+}
+
+// ==========================================
+// API RESPONSE TYPES
+// ==========================================
+
+/**
+ * Generic API response wrapper
+ */
+export interface ApiResponse<T> {
+  readonly success: boolean;
+  readonly data: T;
+  readonly message?: string;
+  readonly error?: string;
+}
+
+/**
+ * Paginated API response
+ */
+export interface PaginatedResponse<T> {
+  readonly data: readonly T[];
+  readonly pagination: PaginationInfo;
+  readonly success: boolean;
+  readonly message?: string;
+}
+
+/**
+ * Roles API response
+ */
+export interface RolesResponse {
+  readonly roles: readonly Role[];
+  readonly total?: number;
+}
+
+/**
+ * Single role API response
+ */
+export interface RoleResponse {
+  readonly role: Role;
+}
+
+/**
+ * Permissions API response
+ */
+export interface PermissionsResponse {
+  readonly permissions: readonly Permission[];
+  readonly total?: number;
+}
+
+/**
+ * Single permission API response
+ */
+export interface PermissionResponse {
+  readonly permission: Permission;
+}
+
+/**
+ * Security incidents API response
+ */
+export interface SecurityIncidentsResponse {
+  readonly incidents: readonly SecurityIncident[];
+  readonly pagination?: PaginationInfo;
+  readonly total?: number;
+}
+
+/**
+ * Single security incident API response
+ */
+export interface SecurityIncidentResponse {
+  readonly incident: SecurityIncident;
+}
+
+/**
+ * User sessions API response
+ */
+export interface UserSessionsResponse {
+  readonly sessions: readonly UserSession[];
+  readonly total?: number;
+}
+
+/**
+ * IP restrictions API response
+ */
+export interface IpRestrictionsResponse {
+  readonly restrictions: readonly IpRestriction[];
+  readonly total?: number;
+}
+
+/**
+ * Single IP restriction API response
+ */
+export interface IpRestrictionResponse {
+  readonly restriction: IpRestriction;
+}
+
+/**
+ * User permissions API response
+ */
+export interface UserPermissionsResponse {
+  readonly permissions: readonly string[];
+  readonly roles: readonly string[];
+  readonly userId: string;
+}
+
+/**
+ * Permission check API response
+ */
+export interface PermissionCheckResponse {
+  readonly hasPermission: boolean;
+  readonly reason?: string;
+}
+
+/**
+ * Role permission assignment response
+ */
+export interface RolePermissionResponse {
+  readonly rolePermission: RolePermission;
+}
+
+/**
+ * User role assignment response
+ */
+export interface UserRoleResponse {
+  readonly userRole: UserRoleAssignment;
+}
+
+/**
+ * Statistics API response
+ */
+export interface StatisticsResponse {
+  readonly statistics: AccessControlStatistics;
+  readonly success: boolean;
+  readonly message?: string;
+}
+
+/**
+ * Initialize default roles response
+ */
+export interface InitializeDefaultRolesResponse {
+  readonly roles: readonly Role[];
+  readonly message: string;
+}
+
+// ==========================================
+// TYPE GUARDS
+// ==========================================
+
+/**
+ * Type guard for Role
+ */
+export function isRole(obj: unknown): obj is Role {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    typeof (obj as Role).id === 'string' &&
+    typeof (obj as Role).name === 'string' &&
+    typeof (obj as Role).isActive === 'boolean'
+  );
+}
+
+/**
+ * Type guard for Permission
+ */
+export function isPermission(obj: unknown): obj is Permission {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    typeof (obj as Permission).id === 'string' &&
+    typeof (obj as Permission).name === 'string' &&
+    typeof (obj as Permission).resource === 'string' &&
+    typeof (obj as Permission).action === 'string'
+  );
+}
+
+/**
+ * Type guard for SecurityIncident
+ */
+export function isSecurityIncident(obj: unknown): obj is SecurityIncident {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    typeof (obj as SecurityIncident).id === 'string' &&
+    typeof (obj as SecurityIncident).type === 'string' &&
+    typeof (obj as SecurityIncident).severity === 'string' &&
+    typeof (obj as SecurityIncident).userId === 'string'
+  );
+}
+
+/**
+ * Type guard for UserSession
+ */
+export function isUserSession(obj: unknown): obj is UserSession {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    typeof (obj as UserSession).id === 'string' &&
+    typeof (obj as UserSession).userId === 'string' &&
+    typeof (obj as UserSession).token === 'string' &&
+    typeof (obj as UserSession).isActive === 'boolean'
+  );
+}
+
+// ==========================================
+// UTILITY TYPES
+// ==========================================
+
+/**
+ * Extract keys from Role that can be updated
+ */
+export type UpdatableRoleFields = keyof Pick<Role, 'name' | 'description' | 'isActive' | 'department'>;
+
+/**
+ * Extract keys from SecurityIncident that can be updated
+ */
+export type UpdatableIncidentFields = keyof Pick<SecurityIncident, 'isResolved' | 'notes' | 'severity'>;
+
+/**
+ * Create a partial type for filters
+ */
+export type PartialFilters<T> = {
+  readonly [K in keyof T]?: T[K];
+};
+
+/**
+ * Create a mutable version of readonly types for form handling
+ */
+export type Mutable<T> = {
+  -readonly [K in keyof T]: T[K];
+};
+
+/**
+ * Extract the data type from an API response
+ */
+export type ExtractApiData<T> = T extends ApiResponse<infer U> ? U : never;
+
+/**
+ * Make specific fields optional
+ */
+export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
+/**
+ * Make specific fields required
+ */
+export type Required<T, K extends keyof T> = T & {
+  [P in K]-?: T[P];
+};

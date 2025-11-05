@@ -6,7 +6,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { accessControlApi } from '@/services';
-import { useApiError } from '../../shared/useApiError';
+import { useApiError } from '../shared/useApiError';
 import toast from 'react-hot-toast';
 import { accessControlQueryKeys } from './query-keys';
 
@@ -68,7 +68,7 @@ import { accessControlQueryKeys } from './query-keys';
  */
 export function useUserPermissions(
   userId: string,
-  options?: any
+  options?: Record<string, unknown>
 ) {
   const { handleError } = useApiError();
 
@@ -77,7 +77,7 @@ export function useUserPermissions(
     queryFn: async () => {
       try {
         return await accessControlApi.getUserPermissions(userId);
-      } catch (error: any) {
+      } catch (error: unknown) {
         throw handleError(error, 'fetch_user_permissions');
       }
     },
@@ -181,8 +181,11 @@ export function useUpdateUserPermissions() {
   return useMutation({
     mutationFn: async ({ userId, permissions }: { userId: string; permissions: string[] }) => {
       try {
-        return await accessControlApi.updateUserPermissions(userId, permissions);
-      } catch (error: any) {
+        // TODO: Implement updateUserPermissions method in accessControlApi
+        // return await accessControlApi.updateUserPermissions(userId, permissions);
+        console.log('Update permissions for user:', userId, 'with permissions:', permissions);
+        throw new Error('updateUserPermissions method not implemented in accessControlApi');
+      } catch (error: unknown) {
         throw handleError(error, 'update_permissions');
       }
     },

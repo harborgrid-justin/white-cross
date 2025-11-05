@@ -84,53 +84,19 @@
  */
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { authApi, type LoginCredentials, type RegisterData } from '@/identity-access/services/authApi';
-import { User } from '@/types';
+import { authApi } from '../services/authApi';
+import { 
+  User, 
+  LoginCredentials, 
+  RegisterData, 
+  AuthResponse,
+  AuthState 
+} from './types/auth.types';
 import toast from 'react-hot-toast';
 import debug from 'debug';
-import { clearPersistedState } from '@/stores/store';
 
 const log = debug('whitecross:auth-slice');
 
-/**
- * Authentication state interface representing the current user session.
- *
- * This state is persisted to localStorage for session recovery. Only non-PHI
- * user profile data is stored (name, email, role). PHI data is never persisted.
- *
- * @interface AuthState
- * @property {User | null} user - Currently authenticated user profile or null if not logged in
- * @property {boolean} isAuthenticated - Authentication status flag for quick access control checks
- * @property {boolean} isLoading - Loading state for async authentication operations
- * @property {string | null} error - Error message from failed authentication attempts
- *
- * @example State structure
- * ```typescript
- * {
- *   user: {
- *     id: "123",
- *     email: "nurse@school.edu",
- *     firstName: "Jane",
- *     lastName: "Doe",
- *     role: "nurse",
- *     permissions: ["read:students", "write:medications"]
- *   },
- *   isAuthenticated: true,
- *   isLoading: false,
- *   error: null
- * }
- * ```
- *
- * @security User profile data only, no PHI persisted
- * @compliance HIPAA-compliant localStorage persistence
- */
-interface AuthState {
-  user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  error: string | null;
-  sessionExpiresAt: number | null;
-}
 
 /**
  * Initial authentication state when no user is logged in.
@@ -605,8 +571,7 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
         state.isLoading = false;
         state.error = null;
-        // Clear all persisted state from storage
-        clearPersistedState();
+        state.sessionExpiresAt = null;
         toast.success('You have been logged out successfully');
       })
 
@@ -621,8 +586,7 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
         state.isLoading = false;
         state.error = null;
-        // Clear all persisted state from storage
-        clearPersistedState();
+        state.sessionExpiresAt = null;
         toast.success('You have been logged out successfully');
       })
 

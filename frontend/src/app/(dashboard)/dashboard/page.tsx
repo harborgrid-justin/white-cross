@@ -17,7 +17,6 @@
 
 import { Metadata } from 'next';
 import { Suspense } from 'react';
-import { getDashboardData } from '@/lib/actions/dashboard.actions';
 import DashboardContent from './_components/DashboardContent';
 import DashboardSidebar from './_components/DashboardSidebar';
 
@@ -79,17 +78,12 @@ function DashboardLoading() {
 }
 
 /**
- * Dashboard Page Component - Server Component with Data Fetching
+ * Dashboard Page Component - Server Component with Client-Side Data Fetching
  *
- * Uses server-side data fetching following the established architecture:
- * - Fetches data using getDashboardData server action
- * - Passes data as props to client components
- * - Follows the centralized API pattern with caching
+ * Uses client-side data fetching to avoid server-side rendering issues
+ * with authentication and data serialization.
  */
-export default async function DashboardPage() {
-  // Server-side data fetching using dashboard actions
-  const { stats, alerts, activities, systemStatus } = await getDashboardData();
-
+export default function DashboardPage() {
   return (
     <div className="flex h-full">
       <main
@@ -98,12 +92,7 @@ export default async function DashboardPage() {
         aria-label="Dashboard main content"
       >
         <Suspense fallback={<DashboardLoading />}>
-          <DashboardContent
-            stats={stats}
-            alerts={alerts}
-            activities={activities}
-            systemStatus={systemStatus}
-          />
+          <DashboardContent />
         </Suspense>
       </main>
       <aside
@@ -113,11 +102,7 @@ export default async function DashboardPage() {
       >
         <div className="p-6">
           <Suspense fallback={<div className="animate-pulse h-64 bg-gray-200 rounded" />}>
-            <DashboardSidebar
-              alerts={alerts}
-              stats={stats}
-              systemStatus={systemStatus}
-            />
+            <DashboardSidebar />
           </Suspense>
         </div>
       </aside>

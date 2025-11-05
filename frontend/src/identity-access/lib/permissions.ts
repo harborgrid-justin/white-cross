@@ -17,9 +17,9 @@
  * ```
  */
 
-import { hasMinimumRole } from './auth';
+import { hasMinimumRole } from './config/roles';
 import { getServerSession, type SessionUser } from './session';
-import apiClient from './api-client';
+import { apiClient } from '@/services/core/ApiClient';
 
 /**
  * Permission action types
@@ -196,7 +196,7 @@ export async function checkPermission(
     }
 
     // Check if user's role meets minimum requirement
-    const hasRole = hasMinimumRole({ id: userId, email: '', role: userRole }, minimumRole);
+    const hasRole = hasMinimumRole(userRole, minimumRole);
 
     if (!hasRole) {
       return false;
@@ -267,12 +267,12 @@ export async function checkFormAccess(
     if (action === 'edit' || action === 'delete') {
       try {
         // Check if user created the form or has admin access
-        const form = await apiClient.get<{ createdBy: string; metadata?: { isPublic?: boolean } }>(
+        const response = await apiClient.get<{ createdBy: string; metadata?: { isPublic?: boolean } }>(
           `/forms/${formId}`
         );
 
         // Admins and creators can always edit/delete
-        if (form.createdBy === userId || userRole === 'ADMIN' || userRole === 'SUPER_ADMIN' || userRole === 'SCHOOL_ADMIN') {
+        if (response.data.createdBy === userId || userRole === 'ADMIN' || userRole === 'SUPER_ADMIN' || userRole === 'SCHOOL_ADMIN') {
           return true;
         }
 
@@ -373,7 +373,7 @@ export async function getPermissions(userId: string, userRole: string): Promise<
   const permissions = new Set<string>();
 
   for (const [permission, minRole] of Object.entries(PERMISSION_ROLES)) {
-    if (hasMinimumRole({ id: userId, email: '', role: userRole }, minRole)) {
+    if (hasMinimumRole(userRole, minRole)) {
       permissions.add(permission);
     }
   }
@@ -581,7 +581,7 @@ export async function checkResourceOwnership(
       `/${resourceType}/${resourceId}`
     );
 
-    return response.createdBy === userId || response.ownerId === userId;
+    return response.data.createdBy === userId || response.data.ownerId === userId;
   } catch (error) {
     console.error(`Ownership check failed for ${resourceType}/${resourceId}:`, error);
     return false;

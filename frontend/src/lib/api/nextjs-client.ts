@@ -240,7 +240,7 @@ function getApiBaseUrl(): string {
 async function getAuthToken(): Promise<string | null> {
   try {
     const cookieStore = await cookies();
-    return cookieStore.get('auth_token')?.value || null;
+    return cookieStore.get('__Host-auth.token')?.value || null;
   } catch (error) {
     console.error('[Next API Client] Failed to get auth token:', error);
     return null;

@@ -43,9 +43,9 @@ import { Badge } from '@/components/ui/badge';
 import { type DashboardStats, type HealthAlert, type SystemStatus } from '@/lib/actions/dashboard.actions';
 
 interface DashboardSidebarProps {
-  alerts: HealthAlert[];
-  stats: DashboardStats;
-  systemStatus: SystemStatus;
+  alerts?: HealthAlert[];
+  stats?: DashboardStats;
+  systemStatus?: SystemStatus;
 }
 
 export default function DashboardSidebar({ alerts, stats, systemStatus }: DashboardSidebarProps) {

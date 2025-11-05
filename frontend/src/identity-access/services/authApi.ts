@@ -108,7 +108,7 @@ import type { ApiClient } from '@/services/core/ApiClient';
 import { API_ENDPOINTS, tokenUtils } from '@/services/config/apiConfig';
 import { API_CONFIG } from '@/constants/config';
 import { z } from 'zod';
-import { User } from '@/services/types';
+import { User } from '../stores/types/auth.types';
 import { createApiError, createValidationError } from '@/services/core/errors';
 
 export interface LoginCredentials {
@@ -124,6 +124,8 @@ export interface RegisterData {
   lastName: string;
   role: 'ADMIN' | 'NURSE' | 'SCHOOL_ADMIN' | 'DISTRICT_ADMIN' | 'VIEWER' | 'COUNSELOR';
   schoolId?: string;
+  districtId?: string;
+  phone?: string;
 }
 
 export interface AuthResponse {

@@ -46,13 +46,12 @@ import {
   addUserContextHeaders,
   isPublicRoute,
   type TokenPayload,
-} from './middleware/auth';
-import { rbacMiddleware } from './middleware/rbac';
+} from '@/identity-access/middleware/auth';
+import { rbacMiddleware } from '@/identity-access/middleware/rbac';
 import { securityHeadersMiddleware, handlePreflightRequest } from './middleware/security';
 import { rateLimitMiddleware } from './middleware/rateLimit';
 import { auditMiddleware, requiresPHIAudit, requiresAdminAudit } from './middleware/audit';
 import { sanitizeMiddleware } from './middleware/sanitization';
-import { getCSRFHeaderName } from './lib/security/csrf';
 
 /**
  * Role definitions matching backend RBAC
@@ -63,29 +62,6 @@ export enum UserRole {
   SCHOOL_ADMIN = 'SCHOOL_ADMIN',
   NURSE = 'NURSE',
   STAFF = 'STAFF',
-}
-
-/**
- * CSRF validation for state-changing operations
- */
-function validateCSRF(request: NextRequest): boolean {
-  const method = request.method;
-
-  // Only validate for state-changing methods
-  if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
-    return true;
-  }
-
-  // Skip CSRF for API auth endpoints (they use different protection)
-  if (request.nextUrl.pathname.startsWith('/api/auth')) {
-    return true;
-  }
-
-  const csrfHeader = request.headers.get(getCSRFHeaderName());
-  const csrfCookie = request.cookies.get('csrf_token')?.value;
-
-  // Both must be present and match
-  return !!(csrfHeader && csrfCookie && csrfHeader === csrfCookie);
 }
 
 /**
@@ -154,6 +130,9 @@ export async function proxy(request: NextRequest) {
   // ==========================================
   // 6. CSRF VALIDATION (for protected routes only)
   // ==========================================
+  // TODO: Implement proper CSRF token generation and validation
+  // Currently disabled due to missing token generation infrastructure
+  /*
   if (!validateCSRF(request)) {
     console.warn('[PROXY] CSRF validation failed:', pathname);
 
@@ -172,6 +151,7 @@ export async function proxy(request: NextRequest) {
 
     return securityHeadersMiddleware(request, csrfErrorResponse);
   }
+  */
 
   // ==========================================
   // 7. AUTHENTICATION CHECK (for protected routes only)

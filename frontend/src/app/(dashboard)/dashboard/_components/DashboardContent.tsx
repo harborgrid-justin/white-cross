@@ -21,7 +21,8 @@
 
 'use client';
 
-import React from 'react';
+import { useEffect, useState } from 'react';
+import { getDashboardData } from '@/lib/actions/dashboard.actions';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -123,13 +124,41 @@ function getActivityIcon(type: string) {
 }
 
 interface DashboardContentProps {
-  stats: DashboardStats;
-  alerts: HealthAlert[];
-  activities: RecentActivity[];
-  systemStatus: SystemStatus;
+  stats?: DashboardStats;
+  alerts?: HealthAlert[];
+  activities?: RecentActivity[];
+  systemStatus?: SystemStatus;
 }
 
-export default function DashboardContent({ stats, alerts, activities, systemStatus }: DashboardContentProps) {
+export default function DashboardContent({ stats: initialStats, alerts: initialAlerts, activities: initialActivities, systemStatus: initialSystemStatus }: DashboardContentProps) {
+  // Client-side data fetching
+  const [stats, setStats] = useState<DashboardStats | undefined>(initialStats);
+  const [alerts, setAlerts] = useState<HealthAlert[] | undefined>(initialAlerts);
+  const [activities, setActivities] = useState<RecentActivity[] | undefined>(initialActivities);
+  const [systemStatus, setSystemStatus] = useState<SystemStatus | undefined>(initialSystemStatus);
+  const [isLoading, setIsLoading] = useState(!initialStats);
+
+  useEffect(() => {
+    if (!initialStats) {
+      // Fetch data client-side if not provided server-side
+      const fetchData = async () => {
+        try {
+          setIsLoading(true);
+          const data = await getDashboardData();
+          setStats(data.stats);
+          setAlerts(data.alerts);
+          setActivities(data.activities);
+          setSystemStatus(data.systemStatus);
+        } catch (error) {
+          console.error('Failed to fetch dashboard data:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchData();
+    }
+  }, [initialStats]);
+
   // Custom hooks for filter state management
   const {
     selectedTimeframe,
@@ -146,6 +175,34 @@ export default function DashboardContent({ stats, alerts, activities, systemStat
     handleAcknowledgeAlert,
     handleRefresh,
   } = useAlertActions();
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6 p-6 animate-pulse">
+        <div className="h-8 w-48 bg-gray-200 rounded"></div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-24 bg-gray-200 rounded"></div>
+          ))}
+        </div>
+        <div className="h-64 bg-gray-200 rounded"></div>
+      </div>
+    );
+  }
+
+  // Provide defaults if data is still undefined
+  const safeStats = stats || {
+    totalStudents: 0,
+    activeStudents: 0,
+    healthAlerts: 0,
+    pendingMedications: 0,
+    appointmentsToday: 0,
+    completedScreenings: 0,
+    immunizationCompliance: 0,
+    emergencyContacts: 0
+  };
+  const safeAlerts = alerts || [];
+  const safeActivities = activities || [];
 
   return (
     <div className="space-y-6 p-6">
@@ -188,7 +245,7 @@ export default function DashboardContent({ stats, alerts, activities, systemStat
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Total Students</p>
-                  <p className="text-2xl font-semibold text-gray-900" aria-label={`${stats?.totalStudents ?? 0} total students`}>{stats?.totalStudents ?? 0}</p>
+                  <p className="text-2xl font-semibold text-gray-900" aria-label={`${safeStats?.totalStudents ?? 0} total students`}>{safeStats?.totalStudents ?? 0}</p>
                   <div className="flex items-center mt-1">
                     <TrendingUp className="h-4 w-4 text-green-600 mr-1" aria-hidden="true" />
                     <span className="text-xs text-green-600">+2.3% vs last month</span>
@@ -204,7 +261,7 @@ export default function DashboardContent({ stats, alerts, activities, systemStat
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Health Alerts</p>
-                  <p className="text-2xl font-semibold text-gray-900" aria-label={`${stats?.healthAlerts ?? 0} health alerts, 4 critical`}>{stats?.healthAlerts ?? 0}</p>
+                  <p className="text-2xl font-semibold text-gray-900" aria-label={`${safeStats?.healthAlerts ?? 0} health alerts, 4 critical`}>{safeStats?.healthAlerts ?? 0}</p>
                   <div className="flex items-center mt-1">
                     <AlertTriangle className="h-4 w-4 text-red-600 mr-1" aria-hidden="true" />
                     <span className="text-xs text-red-600">4 critical</span>
@@ -220,7 +277,7 @@ export default function DashboardContent({ stats, alerts, activities, systemStat
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Appointments Today</p>
-                  <p className="text-2xl font-semibold text-gray-900" aria-label={`${stats?.appointmentsToday ?? 0} appointments today, 8 completed`}>{stats?.appointmentsToday ?? 0}</p>
+                  <p className="text-2xl font-semibold text-gray-900" aria-label={`${safeStats?.appointmentsToday ?? 0} appointments today, 8 completed`}>{safeStats?.appointmentsToday ?? 0}</p>
                   <div className="flex items-center mt-1">
                     <Clock className="h-4 w-4 text-blue-600 mr-1" aria-hidden="true" />
                     <span className="text-xs text-blue-600">8 completed</span>
@@ -236,7 +293,7 @@ export default function DashboardContent({ stats, alerts, activities, systemStat
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Immunization Rate</p>
-                  <p className="text-2xl font-semibold text-gray-900" aria-label={`${stats?.immunizationCompliance ?? 0} percent immunization compliance rate, above target`}>{stats?.immunizationCompliance ?? 0}%</p>
+                  <p className="text-2xl font-semibold text-gray-900" aria-label={`${safeStats?.immunizationCompliance ?? 0} percent immunization compliance rate, above target`}>{safeStats?.immunizationCompliance ?? 0}%</p>
                   <div className="flex items-center mt-1">
                     <Shield className="h-4 w-4 text-green-600 mr-1" aria-hidden="true" />
                     <span className="text-xs text-green-600">Above target</span>
@@ -287,7 +344,7 @@ export default function DashboardContent({ stats, alerts, activities, systemStat
             </CardHeader>
             <CardContent>
               <div className="space-y-3" role="list" aria-label="Health alerts">
-                {alerts.map((alert) => {
+                {safeAlerts.map((alert) => {
                   const AlertIcon = getAlertIcon(alert.type);
                   return (
                     <div
@@ -332,8 +389,8 @@ export default function DashboardContent({ stats, alerts, activities, systemStat
                 })}
               </div>
               <div className="mt-4 pt-4 border-t">
-                <Button variant="outline" className="w-full" aria-label={`View all ${alerts.length + 8} health alerts`}>
-                  View All Alerts ({alerts.length + 8} total)
+                <Button variant="outline" className="w-full" aria-label={`View all ${safeAlerts.length + 8} health alerts`}>
+                  View All Alerts ({safeAlerts.length + 8} total)
                 </Button>
               </div>
             </CardContent>
@@ -366,7 +423,7 @@ export default function DashboardContent({ stats, alerts, activities, systemStat
             </CardHeader>
             <CardContent>
               <div className="space-y-3" role="list" aria-label="Recent healthcare activities">
-                {activities.map((activity) => {
+                {safeActivities.map((activity) => {
                   const ActivityIcon = getActivityIcon(activity.type);
                   return (
                     <div

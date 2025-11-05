@@ -6,7 +6,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { accessControlApi } from '@/services';
-import { useApiError } from '../../shared/useApiError';
+import { useApiError } from '../shared/useApiError';
 import { accessControlQueryKeys } from './query-keys';
 
 /**
@@ -87,8 +87,11 @@ export function usePermissionCheck(permission: string, resourceId?: string) {
     queryKey: [...accessControlQueryKeys.domain, 'check', permission, resourceId],
     queryFn: async () => {
       try {
-        return await accessControlApi.checkPermission(permission, resourceId);
-      } catch (error: any) {
+        // TODO: Implement checkPermission method in accessControlApi
+        // return await accessControlApi.checkPermission(permission, resourceId);
+        console.log('Check permission:', permission, 'for resource:', resourceId);
+        return false; // Default to false until implemented
+      } catch (error: unknown) {
         throw handleError(error, 'check_permission');
       }
     },

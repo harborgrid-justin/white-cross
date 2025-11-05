@@ -6,7 +6,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { accessControlApi } from '@/services';
-import { useApiError } from '../../shared/useApiError';
+import { useApiError } from '../shared/useApiError';
 import { accessControlQueryKeys } from './query-keys';
 
 /**
@@ -57,15 +57,17 @@ import { accessControlQueryKeys } from './query-keys';
  * @see {@link useUserPermissions} for user-specific permissions
  * @see {@link UserRole} for role structure
  */
-export function useRolesList(options?: any) {
+export function useRolesList(options?: Record<string, unknown>) {
   const { handleError } = useApiError();
 
   return useQuery({
     queryKey: accessControlQueryKeys.roles.all(),
     queryFn: async () => {
       try {
-        return await accessControlApi.getAllRoles();
-      } catch (error: any) {
+        // TODO: Use correct method name from accessControlApi
+        // return await accessControlApi.getAllRoles();
+        return await accessControlApi.getRoles();
+      } catch (error: unknown) {
         throw handleError(error, 'fetch_roles');
       }
     },
