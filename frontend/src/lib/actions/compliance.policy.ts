@@ -36,8 +36,6 @@ import {
 export async function createPolicyAction(
   policyData: Omit<PolicyDocument, 'id' | 'createdAt' | 'updatedAt'>
 ): Promise<ActionResult<PolicyDocument>> {
-  'use cache';
-
   try {
     // Enhanced fetch with Next.js v16 capabilities
     const response = await fetch(`${BACKEND_URL}/compliance/policies`, {
@@ -99,8 +97,6 @@ export async function acknowledgePolicyAction(
   policyId: string,
   userId: string
 ): Promise<ActionResult<PolicyAcknowledgment>> {
-  'use cache';
-
   try {
     const context = await getCurrentUserContext();
 
@@ -164,8 +160,6 @@ export async function acknowledgePolicyAction(
 export async function getPolicyAcknowledgmentsAction(
   policyId: string
 ): Promise<ActionResult<PolicyAcknowledgment[]>> {
-  'use cache';
-
   try {
     // Enhanced fetch with Next.js v16 capabilities
     const response = await fetch(`${BACKEND_URL}/compliance/policies/${policyId}/acknowledgments`, {

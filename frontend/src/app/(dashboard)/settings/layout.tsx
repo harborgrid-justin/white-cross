@@ -82,7 +82,7 @@ const settingsNavigation = [
   },
   {
     name: 'Data & Storage',
-    href: '/settings/data',
+    href: '/settings/data-storage',
     icon: Database,
     description: 'Data export and account management'
   }

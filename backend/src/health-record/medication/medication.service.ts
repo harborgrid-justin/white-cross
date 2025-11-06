@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ConflictException } from '@nestjs/common
 import { InjectModel } from '@nestjs/sequelize';
 import { Medication } from '../../database/models/medication.model';
 import { HealthRecordCreateMedicationDto } from './dto/create-medication.dto';
-import { UpdateMedicationDto } from './dto/update-medication.dto';
+import { UpdateHealthRecordMedicationDto } from './dto/update-medication.dto';
 import { Op } from 'sequelize';
 
 @Injectable()
@@ -75,7 +75,7 @@ export class MedicationService {
   /**
    * Update medication
    */
-  async update(id: string, updateDto: UpdateMedicationDto): Promise<Medication> {
+  async update(id: string, updateDto: UpdateHealthRecordMedicationDto): Promise<Medication> {
     const medication = await this.findById(id);
 
     // Check NDC uniqueness if being updated

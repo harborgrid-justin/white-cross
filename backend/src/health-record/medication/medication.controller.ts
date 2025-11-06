@@ -20,7 +20,7 @@ import {
 } from '@nestjs/swagger';
 import { MedicationService } from './medication.service';
 import { HealthRecordCreateMedicationDto } from './dto/create-medication.dto';
-import { UpdateMedicationDto } from './dto/update-medication.dto';
+import { UpdateHealthRecordMedicationDto } from './dto/update-medication.dto';
 import { Medication } from '../../database/models/medication.model';
 
 @ApiTags('medications')
@@ -120,7 +120,7 @@ export class MedicationController {
   @ApiResponse({ status: 409, description: 'Medication with this NDC already exists' })
   async update(
     @Param('id') id: string,
-    @Body() updateDto: UpdateMedicationDto,
+    @Body() updateDto: UpdateHealthRecordMedicationDto,
   ): Promise<Medication> {
     return this.medicationService.update(id, updateDto);
   }

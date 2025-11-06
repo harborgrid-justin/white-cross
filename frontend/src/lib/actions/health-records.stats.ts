@@ -9,7 +9,6 @@
 
 'use server';
 
-import { cacheLife, cacheTag } from 'next/cache';
 import type { HealthRecordsStats } from './health-records.types';
 
 /**
@@ -27,10 +26,6 @@ import type { HealthRecordsStats } from './health-records.types';
  * ```
  */
 export async function getHealthRecordsStats(): Promise<HealthRecordsStats> {
-  'use cache';
-  cacheLife('medium');
-  cacheTag('health-records-stats');
-
   try {
     console.log('[Health Records] Loading health records statistics');
 
@@ -92,10 +87,6 @@ export async function getHealthRecordsStats(): Promise<HealthRecordsStats> {
  * ```
  */
 export async function getHealthRecordsDashboardData() {
-  'use cache';
-  cacheLife('medium');
-  cacheTag('health-records-dashboard');
-
   try {
     console.log('[Health Records] Loading dashboard data');
 

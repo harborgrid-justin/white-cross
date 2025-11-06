@@ -43,8 +43,6 @@ export async function createAuditLogAction(
   context: AuditLogContext,
   input: CreateAuditLogInput
 ): Promise<ActionResult<AuditLog>> {
-  'use cache';
-
   try {
     // Log HIPAA compliance audit entry
     await logHIPAAAuditEntry({
@@ -123,8 +121,6 @@ export async function createAuditLogAction(
 export async function getAuditLogsAction(
   filters: Partial<AuditLogFilter>
 ): Promise<ActionResult<PaginatedResult<AuditLog> & { chainStatus: { valid: boolean; firstInvalidIndex?: number } }>> {
-  'use cache';
-
   try {
     // Build query parameters
     const params = new URLSearchParams();
@@ -253,8 +249,6 @@ export async function verifyAuditIntegrityAction(
   startDate?: string,
   endDate?: string
 ): Promise<ActionResult<{ valid: boolean; totalLogs: number; verifiedLogs: number; firstInvalidIndex?: number }>> {
-  'use cache';
-
   try {
     const logsResult = await getAuditLogsAction({
       startDate,

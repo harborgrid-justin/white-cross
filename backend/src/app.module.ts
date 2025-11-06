@@ -111,17 +111,17 @@ import { SentryModule } from './infrastructure/monitoring/sentry.module';
       {
         name: 'short',
         ttl: 1000, // 1 second
-        limit: 10, // 10 requests per second
+        limit: process.env.NODE_ENV === 'development' ? 100 : 10, // More permissive in dev
       },
       {
         name: 'medium',
         ttl: 10000, // 10 seconds
-        limit: 50, // 50 requests per 10 seconds
+        limit: process.env.NODE_ENV === 'development' ? 500 : 50, // More permissive in dev
       },
       {
         name: 'long',
         ttl: 60000, // 1 minute
-        limit: 100, // 100 requests per minute
+        limit: process.env.NODE_ENV === 'development' ? 1000 : 100, // More permissive in dev
       },
     ]),
 
@@ -280,6 +280,7 @@ import { SentryModule } from './infrastructure/monitoring/sentry.module';
      */
 
     // 1. RATE LIMITING - Prevent brute force attacks (RUNS FIRST)
+    // More permissive in development
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

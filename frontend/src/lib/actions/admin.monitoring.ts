@@ -20,10 +20,6 @@
  */
 
 'use server';
-'use cache';
-
-import { unstable_cacheTag as cacheTag, unstable_cacheLife as cacheLife } from 'next/cache';
-import { CACHE_TTL } from '@/lib/cache/constants';
 
 // ==========================================
 // TYPE DEFINITIONS
@@ -137,10 +133,6 @@ export interface UserActivity {
  * Uses 'use cache' with monitoring TTL for system health data
  */
 export async function getSystemHealth(): Promise<SystemHealth> {
-  'use cache';
-  cacheLife({ revalidate: CACHE_TTL.REALTIME }); // 10s for monitoring data
-  cacheTag('system-health');
-  
   try {
       // In production, fetch from actual monitoring service
       // For now, returning enhanced mock data
@@ -252,10 +244,6 @@ export async function getSystemHealth(): Promise<SystemHealth> {
  * Get performance metrics for specified time range
  */
 export async function getPerformanceMetrics(timeRange: '1h' | '24h' | '7d' | '30d' = '24h'): Promise<PerformanceMetrics[]> {
-  'use cache';
-  cacheLife({ revalidate: CACHE_TTL.REALTIME }); // 10s for performance data
-  cacheTag('performance-metrics');
-  
   try {
       // Mock performance data - replace with actual implementation
       const now = new Date();
@@ -294,10 +282,6 @@ export async function getPerformanceMetrics(timeRange: '1h' | '24h' | '7d' | '30
  * Get API endpoint metrics and statistics
  */
 export async function getApiMetrics(): Promise<ApiMetrics[]> {
-  'use cache';
-  cacheLife({ revalidate: CACHE_TTL.STATS }); // 120s for API metrics
-  cacheTag('api-metrics');
-  
   try {
       // Mock API metrics - replace with actual implementation
       const endpoints = [
@@ -349,10 +333,6 @@ export async function getErrorLogs(filters?: {
   resolved?: boolean;
   limit?: number;
 }): Promise<ErrorLog[]> {
-  'use cache';
-  cacheLife({ revalidate: CACHE_TTL.REALTIME }); // 10s for error logs
-  cacheTag('error-logs');
-  
   try {
       // Mock error logs - replace with actual implementation
       const services = ['API Gateway', 'Database', 'Email Service', 'File Storage', 'Redis Cache'];
@@ -411,10 +391,6 @@ export async function getUserActivity(filters?: {
   timeRange?: '1h' | '24h' | '7d';
   limit?: number;
 }): Promise<UserActivity[]> {
-  'use cache';
-  cacheLife({ revalidate: CACHE_TTL.REALTIME }); // 10s for user activity
-  cacheTag('user-activity');
-  
   try {
       // Mock user activity - replace with actual implementation
       const actions = ['login', 'logout', 'view_page', 'update_profile', 'create_record', 'delete_record'];
@@ -469,10 +445,6 @@ export async function getUserActivity(filters?: {
  * Get real-time system metrics (lower cache TTL)
  */
 export async function getRealTimeMetrics() {
-  'use cache';
-  cacheLife({ revalidate: 5 }); // 5 seconds for real-time data
-  cacheTag('realtime-metrics');
-  
   try {
       return {
         timestamp: new Date(),

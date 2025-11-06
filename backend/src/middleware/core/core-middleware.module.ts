@@ -112,10 +112,10 @@ export class CoreMiddlewareModule implements NestModule {
         { path: 'api/docs-json', method: RequestMethod.GET },
 
         // Webhook endpoints (use API key auth instead)
-        { path: 'webhook/(.*)', method: RequestMethod.ALL },
+        { path: 'webhook/*path', method: RequestMethod.ALL },
 
         // Public endpoints (if any)
-        { path: 'public/(.*)', method: RequestMethod.ALL },
+        { path: 'public/*path', method: RequestMethod.ALL },
       )
       .forRoutes({ path: '*', method: RequestMethod.ALL });
   }

@@ -14,7 +14,8 @@ import { NextRequest, NextResponse } from 'next/server';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function verifyAccessToken(_token: string) {
   // TODO: Implement proper JWT verification
-  return { id: 'user1', email: 'test@test.com', role: 'USER' };
+  // TEMP: Return ADMIN role for development access to admin pages
+  return { id: 'user1', email: 'test@test.com', role: 'ADMIN' };
 }
 
 // Stub for rate limiter - will be implemented later

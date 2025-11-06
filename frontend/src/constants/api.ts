@@ -608,35 +608,35 @@ export const API_ENDPOINTS = {
   // ==========================================
   ADMIN: {
     // System Settings
-    SETTINGS: `/admin/settings`,
+    SETTINGS: `/administration/settings`,
 
     // Users
-    USERS: `/admin/users`,
-    USER_BY_ID: (id: string) => `/admin/users/${id}`,
+    USERS: `/users`,
+    USER_BY_ID: (id: string) => `/users/${id}`,
 
     // Districts
-    DISTRICTS: `/admin/districts`,
-    DISTRICT_BY_ID: (id: string) => `/admin/districts/${id}`,
+    DISTRICTS: `/administration/districts`,
+    DISTRICT_BY_ID: (id: string) => `/administration/districts/${id}`,
 
     // Schools
-    SCHOOLS: `/admin/schools`,
-    SCHOOL_BY_ID: (id: string) => `/admin/schools/${id}`,
+    SCHOOLS: `/administration/schools`,
+    SCHOOL_BY_ID: (id: string) => `/administration/schools/${id}`,
 
     // System Health
     SYSTEM_HEALTH: `/admin/system/health`,
 
     // Backups
-    BACKUPS: `/admin/backups`,
-    BACKUP_BY_ID: (id: string) => `/admin/backups/${id}`,
+    BACKUPS: `/administration/backups`,
+    BACKUP_BY_ID: (id: string) => `/administration/backups/${id}`,
 
     // Licenses
-    LICENSES: `/admin/licenses`,
-    LICENSE_BY_ID: (id: string) => `/admin/licenses/${id}`,
-    LICENSE_DEACTIVATE: (id: string) => `/admin/licenses/${id}/deactivate`,
+    LICENSES: `/administration/licenses`,
+    LICENSE_BY_ID: (id: string) => `/administration/licenses/${id}`,
+    LICENSE_DEACTIVATE: (id: string) => `/administration/licenses/${id}/deactivate`,
 
     // Configurations
-    CONFIGURATIONS: `/admin/configurations`,
-    CONFIGURATION_BY_KEY: (key: string) => `/admin/configurations/${key}`,
+    CONFIGURATIONS: `/administration/config`,
+    CONFIGURATION_BY_KEY: (key: string) => `/administration/config/${key}`,
 
     // Performance Metrics
     METRICS: `/admin/metrics`,
@@ -649,8 +649,8 @@ export const API_ENDPOINTS = {
     TRAINING_PROGRESS: (userId: string) => `/admin/training/progress/${userId}`,
 
     // Audit Logs
-    AUDIT_LOGS: `/admin/audit-logs`,
-    AUDIT_LOG_BY_ID: (id: string) => `/admin/audit-logs/${id}`,
+    AUDIT_LOGS: `/administration/audit-logs`,
+    AUDIT_LOG_BY_ID: (id: string) => `/administration/audit-logs/${id}`,
   },
 
   INTEGRATIONS: {

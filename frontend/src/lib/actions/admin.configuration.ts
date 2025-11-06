@@ -6,10 +6,6 @@
  */
 
 'use server'
-'use cache'
-
-import { unstable_cacheTag as cacheTag, unstable_cacheLife as cacheLife } from 'next/cache'
-import { CACHE_TTL } from '@/lib/cache/constants'
 
 export interface SystemConfiguration {
   id: string
@@ -42,16 +38,11 @@ export interface ConfigurationUpdateData {
  * Get current system configuration
  */
 export async function getSystemConfiguration(): Promise<SystemConfiguration> {
-  'use cache'
-  cacheLife({ revalidate: CACHE_TTL.STATIC }) // 300s for non-PHI admin data
-  cacheTag('admin-configuration')
-
   try {
-    const response = await fetch(`${process.env.API_BASE_URL}/api/configuration`, {
+    const response = await fetch(`/api/proxy/configurations`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.API_TOKEN}`,
       },
     })
 
@@ -60,24 +51,39 @@ export async function getSystemConfiguration(): Promise<SystemConfiguration> {
     }
 
     const data = await response.json()
-    return data.configuration
+    
+    // Handle different response formats from backend
+    if (data.configuration) {
+      return data.configuration
+    } else if (Array.isArray(data) && data.length > 0) {
+      // If backend returns array of configs, create a merged config object
+      const config = data.reduce((acc, item) => {
+        acc[item.key] = item.value
+        return acc
+      }, {})
+      return {
+        id: config.id || 'system',
+        sessionTimeout: config.sessionTimeout,
+        passwordMinLength: config.passwordMinLength,
+        passwordRequireSpecialChars: config.passwordRequireSpecialChars,
+        maxLoginAttempts: config.maxLoginAttempts,
+        backupFrequency: config.backupFrequency,
+        enableAuditLogging: config.enableAuditLogging,
+        enableEmailNotifications: config.enableEmailNotifications,
+        enableSMSNotifications: config.enableSMSNotifications,
+        maintenanceMode: config.maintenanceMode,
+        createdAt: config.createdAt ? new Date(config.createdAt) : new Date(),
+        updatedAt: config.updatedAt ? new Date(config.updatedAt) : new Date(),
+      }
+    } else if (data.data) {
+      // Handle wrapped response
+      return data.data
+    } else {
+      throw new Error('Invalid response format from configuration API')
+    }
   } catch (error) {
     console.error('Error fetching system configuration:', error)
-    // Return default configuration if API fails
-    return {
-      id: 'default',
-      sessionTimeout: 30,
-      passwordMinLength: 8,
-      passwordRequireSpecialChars: true,
-      maxLoginAttempts: 5,
-      backupFrequency: 'daily',
-      enableAuditLogging: true,
-      enableEmailNotifications: true,
-      enableSMSNotifications: true,
-      maintenanceMode: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }
+    throw error // Re-throw instead of returning mock data
   }
 }
 
@@ -135,16 +141,11 @@ export async function getConfigurationAuditTrail(): Promise<Array<{
   changedAt: Date
   reason?: string
 }>> {
-  'use cache'
-  cacheLife({ revalidate: CACHE_TTL.PHI_STANDARD }) // 60s for more frequently changing data
-  cacheTag('admin-configuration-audit')
-
   try {
-    const response = await fetch(`${process.env.API_BASE_URL}/api/configuration/audit`, {
+    const response = await fetch(`/api/proxy/configurations/changes/recent`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.API_TOKEN}`,
       },
     })
 
@@ -153,10 +154,20 @@ export async function getConfigurationAuditTrail(): Promise<Array<{
     }
 
     const data = await response.json()
-    return data.auditTrail || []
+    
+    // Handle different response formats
+    if (data.auditTrail) {
+      return data.auditTrail
+    } else if (Array.isArray(data)) {
+      return data
+    } else if (data.data) {
+      return data.data
+    } else {
+      throw new Error('Invalid response format from audit trail API')
+    }
   } catch (error) {
     console.error('Error fetching configuration audit trail:', error)
-    return []
+    throw error // Re-throw instead of returning empty array
   }
 }
 
@@ -165,11 +176,10 @@ export async function getConfigurationAuditTrail(): Promise<Array<{
  */
 export async function resetConfigurationToDefaults(): Promise<{ success: boolean; message: string }> {
   try {
-    const response = await fetch(`${process.env.API_BASE_URL}/api/configuration/reset`, {
+    const response = await fetch(`/api/proxy/configurations/reset`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.API_TOKEN}`,
       },
     })
 
@@ -177,21 +187,13 @@ export async function resetConfigurationToDefaults(): Promise<{ success: boolean
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    // Revalidate cache
-    await fetch(`${process.env.API_BASE_URL}/api/revalidate?tag=admin-configuration`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${process.env.API_TOKEN}` },
-    })
-
+    const data = await response.json()
     return {
       success: true,
-      message: 'Configuration reset to defaults successfully',
+      message: data.message || 'Configuration reset successfully'
     }
   } catch (error) {
     console.error('Error resetting configuration:', error)
-    return {
-      success: false,
-      message: 'Failed to reset configuration',
-    }
+    throw error
   }
 }

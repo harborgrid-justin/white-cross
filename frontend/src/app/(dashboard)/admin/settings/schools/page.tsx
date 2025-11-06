@@ -9,7 +9,7 @@ import { Metadata } from 'next';
 import { getAdminSchools, getDistrictsForSchoolFilter, type SchoolSearchParams } from '@/lib/actions/admin.schools';
 import { AdminPageHeader } from '../../_components/AdminPageHeader';
 import { SchoolsManagementContent } from './_components/SchoolsManagementContent';
-import { SchoolsManagementSkeleton } from './_components/SchoolsManagementSkeleton';
+import SchoolsManagementSkeleton from './_components/SchoolsManagementSkeleton';
 
 export const metadata: Metadata = {
   title: 'Schools Management',

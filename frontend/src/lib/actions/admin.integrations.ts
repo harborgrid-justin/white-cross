@@ -6,8 +6,6 @@
  */
 
 'use server'
-'use cache'
-
 import { unstable_cacheTag as cacheTag, unstable_cacheLife as cacheLife } from 'next/cache'
 import { CACHE_TTL } from '@/lib/cache/constants'
 
@@ -40,7 +38,6 @@ export interface IntegrationConfig {
  * Get all available integrations with their current status
  */
 export async function getIntegrations(): Promise<Integration[]> {
-  'use cache'
   cacheLife({ revalidate: CACHE_TTL.STATS }) // 120s for integration status
   cacheTag('admin-integrations')
 
@@ -196,7 +193,6 @@ export async function getIntegrationLogs(
   message: string
   details?: Record<string, unknown>
 }>> {
-  'use cache'
   cacheLife({ revalidate: CACHE_TTL.REALTIME }) // 10s for logs
   cacheTag(`admin-integration-logs-${id}`)
 
@@ -265,7 +261,6 @@ export async function getIntegrationCategories(): Promise<Array<{
   label: string
   count: number
 }>> {
-  'use cache'
   cacheLife({ revalidate: CACHE_TTL.STATIC }) // 300s for categories
   cacheTag('admin-integration-categories')
 

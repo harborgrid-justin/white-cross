@@ -63,11 +63,9 @@ interface UsersPageProps {
 }
 
 /**
- * Cached user data fetcher using Next.js v16 'use cache'
+ * User data fetcher
  */
 async function fetchUsersData(searchParams: UserSearchParams) {
-  'use cache';
-  
   const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
   const urlParams = new URLSearchParams();
   
