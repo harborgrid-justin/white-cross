@@ -1,0 +1,34 @@
+{
+  "agentId": "typescript-architect",
+  "taskId": "DA8K3M",
+  "description": "Refactor documentsApi.ts (1024 LOC) into modular components by document operation categories",
+  "startedAt": "2025-11-04T00:00:00Z",
+  "relatedAgentFiles": [],
+  "workstreams": [
+    {
+      "id": "schema-completion",
+      "status": "pending",
+      "description": "Add missing Zod schemas to documentSchemas.ts",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "module-breakdown",
+      "status": "pending",
+      "description": "Break down documentsApi.ts into focused modules",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "import-export-fix",
+      "status": "pending",
+      "description": "Update all imports/exports and verify no circular dependencies",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "validation",
+      "status": "pending",
+      "description": "Verify refactoring and test all modules",
+      "crossAgentReferences": []
+    }
+  ],
+  "decisions": []
+}

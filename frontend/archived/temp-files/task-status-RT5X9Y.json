@@ -1,0 +1,102 @@
+{
+  "agentId": "react-component-architect",
+  "taskId": "report-templates-refactoring",
+  "relatedAgentFiles": [
+    ".temp/architecture-notes-BDM701.md",
+    ".temp/plan-BDM701.md",
+    ".temp/plan-CM734R.md"
+  ],
+  "description": "Break down ReportTemplates.tsx (1,018 LOC) into modular components under 300 LOC per file",
+  "startedAt": "2025-11-04T15:19:00Z",
+  "workstreams": [
+    {
+      "id": "analysis",
+      "status": "completed",
+      "description": "Analyze current ReportTemplates.tsx structure",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "directory-setup",
+      "status": "in-progress",
+      "description": "Create ReportTemplates/ subdirectory structure",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "types-extraction",
+      "status": "pending",
+      "description": "Extract types.ts with all TypeScript interfaces",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "utils-extraction",
+      "status": "pending",
+      "description": "Extract utils.ts with helper functions",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "hooks-extraction",
+      "status": "pending",
+      "description": "Extract hooks.ts with template CRUD hooks",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "template-library",
+      "status": "pending",
+      "description": "Create TemplateLibrary.tsx component",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "template-categories",
+      "status": "pending",
+      "description": "Create TemplateCategories.tsx component",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "template-editor",
+      "status": "pending",
+      "description": "Create TemplateEditor.tsx component",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "template-preview",
+      "status": "pending",
+      "description": "Create TemplatePreview.tsx component",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "template-metadata",
+      "status": "pending",
+      "description": "Create TemplateMetadata.tsx component",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "index-update",
+      "status": "pending",
+      "description": "Update original file to re-export components",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "validation",
+      "status": "pending",
+      "description": "Verify all components are under 300 LOC and functional",
+      "crossAgentReferences": []
+    }
+  ],
+  "decisions": [
+    {
+      "timestamp": "2025-11-04T15:19:00Z",
+      "decision": "Use unique ID RT5X9Y for tracking files due to existing agent work",
+      "referencedAgentWork": null
+    },
+    {
+      "timestamp": "2025-11-04T15:19:00Z",
+      "decision": "Break down into 5 main components: Library, Categories, Editor, Preview, Metadata",
+      "referencedAgentWork": null
+    },
+    {
+      "timestamp": "2025-11-04T15:19:00Z",
+      "decision": "Extract types, utils, and hooks into separate files for reusability",
+      "referencedAgentWork": null
+    }
+  ]
+}

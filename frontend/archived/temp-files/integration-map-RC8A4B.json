@@ -1,0 +1,234 @@
+{
+  "agentId": "react-component-architect",
+  "taskId": "identity-access-component-extraction",
+  "referencedWork": [],
+  "components": [
+    {
+      "name": "SessionWarningModal",
+      "path": "src/identity-access/components/session/SessionWarningModal.tsx",
+      "type": "container",
+      "hooks": ["useState", "useEffect", "useCallback", "useRef", "useMemo"],
+      "dependencies": [],
+      "props": {
+        "required": ["isOpen", "timeRemainingSeconds", "onExtendSession", "onLogout"],
+        "optional": []
+      },
+      "stateManagement": "local",
+      "performance": {
+        "memoized": true,
+        "lazy": false,
+        "codesplit": false
+      },
+      "accessibility": {
+        "wcag": "AA",
+        "features": ["focus-trap", "keyboard-navigation", "aria-live", "screen-reader-announcements"]
+      },
+      "testing": {
+        "unit": "ready",
+        "integration": "ready"
+      },
+      "status": "stable",
+      "description": "Modal warning for session expiration with countdown, extracted from AuthContext",
+      "usedBy": ["AuthContext"]
+    },
+    {
+      "name": "PermissionGate",
+      "path": "src/identity-access/components/guards/PermissionGate.tsx",
+      "type": "presentational",
+      "hooks": ["useHasPermission"],
+      "dependencies": ["@/identity-access/hooks/auth-permission-hooks", "@/identity-access/hooks/auth-permissions"],
+      "props": {
+        "required": ["permission", "children"],
+        "optional": ["fallback"]
+      },
+      "stateManagement": "none",
+      "performance": {
+        "memoized": false,
+        "lazy": false,
+        "codesplit": false
+      },
+      "accessibility": {
+        "wcag": "AA",
+        "features": ["semantic-html"]
+      },
+      "testing": {
+        "unit": "ready",
+        "integration": "ready"
+      },
+      "status": "stable",
+      "description": "Declarative permission-based conditional rendering",
+      "usedBy": []
+    },
+    {
+      "name": "RoleGuard",
+      "path": "src/identity-access/components/guards/RoleGuard.tsx",
+      "type": "presentational",
+      "hooks": ["useHasRole"],
+      "dependencies": ["@/identity-access/hooks/auth-permission-hooks"],
+      "props": {
+        "required": ["role", "children"],
+        "optional": ["fallback"]
+      },
+      "stateManagement": "none",
+      "performance": {
+        "memoized": false,
+        "lazy": false,
+        "codesplit": false
+      },
+      "accessibility": {
+        "wcag": "AA",
+        "features": ["semantic-html"]
+      },
+      "testing": {
+        "unit": "ready",
+        "integration": "ready"
+      },
+      "status": "stable",
+      "description": "Declarative role-based conditional rendering",
+      "usedBy": []
+    },
+    {
+      "name": "AuthGuard",
+      "path": "src/identity-access/components/guards/AuthGuard.tsx",
+      "type": "container",
+      "hooks": ["useEffect", "useState", "useRouter", "useAuth"],
+      "dependencies": ["next/navigation", "@/identity-access/contexts/AuthContext"],
+      "props": {
+        "required": ["children"],
+        "optional": ["fallback", "redirectTo"]
+      },
+      "stateManagement": "local",
+      "performance": {
+        "memoized": false,
+        "lazy": false,
+        "codesplit": false
+      },
+      "accessibility": {
+        "wcag": "AA",
+        "features": ["semantic-html", "loading-states"]
+      },
+      "testing": {
+        "unit": "ready",
+        "integration": "ready"
+      },
+      "status": "stable",
+      "description": "Route protection requiring authentication with redirect",
+      "usedBy": []
+    },
+    {
+      "name": "AuthErrorAlert",
+      "path": "src/identity-access/components/feedback/AuthErrorAlert.tsx",
+      "type": "presentational",
+      "hooks": ["useCallback"],
+      "dependencies": [],
+      "props": {
+        "required": ["error"],
+        "optional": ["onDismiss"]
+      },
+      "stateManagement": "none",
+      "performance": {
+        "memoized": true,
+        "lazy": false,
+        "codesplit": false
+      },
+      "accessibility": {
+        "wcag": "AA",
+        "features": ["role-alert", "aria-live", "keyboard-accessible-dismiss"]
+      },
+      "testing": {
+        "unit": "ready",
+        "integration": "ready"
+      },
+      "status": "stable",
+      "description": "Accessible authentication error display with optional dismiss",
+      "usedBy": []
+    },
+    {
+      "name": "AuthLoadingSpinner",
+      "path": "src/identity-access/components/feedback/AuthLoadingSpinner.tsx",
+      "type": "presentational",
+      "hooks": [],
+      "dependencies": [],
+      "props": {
+        "required": [],
+        "optional": ["message"]
+      },
+      "stateManagement": "none",
+      "performance": {
+        "memoized": false,
+        "lazy": false,
+        "codesplit": false
+      },
+      "accessibility": {
+        "wcag": "AA",
+        "features": ["role-status", "aria-live", "screen-reader-text"]
+      },
+      "testing": {
+        "unit": "ready",
+        "integration": "ready"
+      },
+      "status": "stable",
+      "description": "Loading spinner for authentication operations",
+      "usedBy": []
+    },
+    {
+      "name": "UnauthorizedMessage",
+      "path": "src/identity-access/components/feedback/UnauthorizedMessage.tsx",
+      "type": "presentational",
+      "hooks": [],
+      "dependencies": [],
+      "props": {
+        "required": [],
+        "optional": ["requiredPermission", "message"]
+      },
+      "stateManagement": "none",
+      "performance": {
+        "memoized": false,
+        "lazy": false,
+        "codesplit": false
+      },
+      "accessibility": {
+        "wcag": "AA",
+        "features": ["role-alert", "aria-live", "semantic-html"]
+      },
+      "testing": {
+        "unit": "ready",
+        "integration": "ready"
+      },
+      "status": "stable",
+      "description": "User-friendly message for permission denied scenarios",
+      "usedBy": []
+    }
+  ],
+  "barrelExports": [
+    {
+      "path": "src/identity-access/components/session/index.ts",
+      "exports": ["SessionWarningModal", "SessionWarningModalProps"]
+    },
+    {
+      "path": "src/identity-access/components/guards/index.ts",
+      "exports": ["PermissionGate", "PermissionGateProps", "RoleGuard", "RoleGuardProps", "AuthGuard", "AuthGuardProps"]
+    },
+    {
+      "path": "src/identity-access/components/feedback/index.ts",
+      "exports": ["AuthErrorAlert", "AuthErrorAlertProps", "AuthLoadingSpinner", "AuthLoadingSpinnerProps", "UnauthorizedMessage", "UnauthorizedMessageProps"]
+    },
+    {
+      "path": "src/identity-access/components/index.ts",
+      "exports": ["*"]
+    }
+  ],
+  "integrationPoints": {
+    "AuthContext": {
+      "imports": ["SessionWarningModal"],
+      "changes": "Added import and replaced embedded component with extracted version"
+    }
+  },
+  "testCoverage": {
+    "totalComponents": 7,
+    "componentsWithTestIds": 7,
+    "componentsWithAccessibility": 7,
+    "componentsWithTypeScript": 7,
+    "componentsWithJSDoc": 7
+  }
+}

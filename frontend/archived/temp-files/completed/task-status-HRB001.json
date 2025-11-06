@@ -1,0 +1,88 @@
+{
+  "agentId": "react-component-architect",
+  "taskId": "health-records-breakdown-HRB001",
+  "relatedAgentFiles": [],
+  "description": "Break down useHealthRecords.ts (2106 lines) into smaller, cohesive modules (max 300 LOC each)",
+  "startedAt": "2025-11-04T00:00:00.000Z",
+  "workstreams": [
+    {
+      "id": "ws-1-analysis",
+      "description": "Analyze file structure and identify logical groupings",
+      "status": "completed",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "ws-2-types",
+      "description": "Extract shared types and interfaces",
+      "status": "in-progress",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "ws-3-config",
+      "description": "Extract configuration constants",
+      "status": "pending",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "ws-4-utils",
+      "description": "Extract utility functions",
+      "status": "pending",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "ws-5-core",
+      "description": "Create core health records hooks module",
+      "status": "pending",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "ws-6-allergies",
+      "description": "Create allergies hooks module",
+      "status": "pending",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "ws-7-conditions",
+      "description": "Create chronic conditions hooks module",
+      "status": "pending",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "ws-8-vaccinations",
+      "description": "Create vaccinations hooks module",
+      "status": "pending",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "ws-9-screenings",
+      "description": "Create screenings hooks module",
+      "status": "pending",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "ws-10-growth",
+      "description": "Create growth measurements hooks module",
+      "status": "pending",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "ws-11-vitals",
+      "description": "Create vital signs hooks module",
+      "status": "pending",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "ws-12-index",
+      "description": "Create index.ts for re-exports",
+      "status": "pending",
+      "crossAgentReferences": []
+    }
+  ],
+  "decisions": [
+    {
+      "timestamp": "2025-11-04T00:00:00.000Z",
+      "decision": "Split file into 11 modules based on functional domain",
+      "referencedAgentWork": null
+    }
+  ]
+}

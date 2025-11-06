@@ -1,0 +1,89 @@
+{
+  "agentId": "state-management-architect",
+  "taskId": "budget-mutations-breakdown-BDM701",
+  "relatedAgentFiles": [".temp/task-status-HRB001.json"],
+  "description": "Break down useBudgetMutations.ts (989 lines) into smaller, cohesive modules (max 300 LOC each)",
+  "startedAt": "2025-11-04T00:00:00.000Z",
+  "completedAt": "2025-11-04T00:30:00.000Z",
+  "workstreams": [
+    {
+      "id": "ws-1-analysis",
+      "description": "Analyze mutation file structure and identify logical groupings",
+      "status": "completed",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "ws-2-crud",
+      "description": "Create useBudgetCRUDMutations.ts (create, update, delete budgets)",
+      "status": "completed",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "ws-2b-workflow",
+      "description": "Create useBudgetWorkflowMutations.ts (budget approval)",
+      "status": "completed",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "ws-3-category",
+      "description": "Create useBudgetCategoryMutations.ts (category CRUD operations)",
+      "status": "completed",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "ws-4-transaction",
+      "description": "Create useBudgetTransactionMutations.ts (transaction CRUD operations)",
+      "status": "completed",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "ws-5-approval",
+      "description": "Create useBudgetApprovalMutations.ts (transaction approval/rejection)",
+      "status": "completed",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "ws-6-report",
+      "description": "Create useBudgetReportMutations.ts (report generation and deletion)",
+      "status": "completed",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "ws-7-bulk",
+      "description": "Create useBudgetBulkMutations.ts (bulk operations)",
+      "status": "completed",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "ws-8-index",
+      "description": "Create index.ts for backward compatibility re-exports",
+      "status": "completed",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "ws-9-cleanup",
+      "description": "Remove original large file",
+      "status": "completed",
+      "crossAgentReferences": []
+    }
+  ],
+  "decisions": [
+    {
+      "timestamp": "2025-11-04T00:00:00.000Z",
+      "decision": "Split into 7 functional modules + index based on mutation operation types",
+      "referencedAgentWork": null
+    },
+    {
+      "timestamp": "2025-11-04T00:15:00.000Z",
+      "decision": "Split budget approval into separate workflow file to keep all files under 300 LOC",
+      "referencedAgentWork": null
+    }
+  ],
+  "finalMetrics": {
+    "originalLineCount": 989,
+    "newFileCount": 8,
+    "totalNewLines": 1108,
+    "largestFile": "useBudgetTransactionMutations.ts (178 LOC)",
+    "allFilesUnder300": true
+  }
+}

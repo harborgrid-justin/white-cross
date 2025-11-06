@@ -1,0 +1,64 @@
+{
+  "agentId": "nextjs-data-fetching-architect",
+  "taskId": "document-queries-breakdown-DQ7M8N",
+  "relatedAgentFiles": [".temp/task-status-BDM701.json"],
+  "description": "Break down useDocumentQueries.ts (729 LOC) into smaller modules (max 300 LOC each)",
+  "startedAt": "2025-11-04T14:10:00Z",
+  "workstreams": [
+    {
+      "id": "analysis",
+      "status": "completed",
+      "description": "Analyze file structure and identify logical groupings",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "core-queries",
+      "status": "pending",
+      "description": "Create useDocumentCoreQueries.ts with basic document queries",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "category-template-queries",
+      "status": "pending",
+      "description": "Create useDocumentCategoryQueries.ts for categories and templates",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "share-activity-queries",
+      "status": "pending",
+      "description": "Create useDocumentShareQueries.ts for shares, activity, comments",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "analytics-dashboard-queries",
+      "status": "pending",
+      "description": "Create useDocumentAnalyticsQueries.ts for analytics and dashboard",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "api-utilities",
+      "status": "pending",
+      "description": "Create documentQueryAPI.ts for mock API functions",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "index-exports",
+      "status": "pending",
+      "description": "Create index.ts for backward compatibility re-exports",
+      "crossAgentReferences": []
+    },
+    {
+      "id": "verification",
+      "status": "pending",
+      "description": "Verify all files are under 300 LOC and maintain functionality",
+      "crossAgentReferences": []
+    }
+  ],
+  "decisions": [
+    {
+      "timestamp": "2025-11-04T14:10:00Z",
+      "decision": "Break down into 6 files: API utilities, core queries, category/template queries, share/activity queries, analytics queries, and index",
+      "referencedAgentWork": null
+    }
+  ]
+}
