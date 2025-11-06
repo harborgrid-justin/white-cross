@@ -308,7 +308,7 @@ export class EmergencyContact extends Model<EmergencyContactAttributes, Emergenc
       const phiFields = ['firstName', 'lastName', 'phoneNumber', 'email', 'address'];
 
       // Import the helper function dynamically to avoid circular dependencies
-      const { logModelPHIFieldChanges } = await import('@/database/services/model-audit-helper.service');
+      const { logModelPHIFieldChanges } = await import('../services/model-audit-helper.service.js');
 
       // Get the transaction if available
       const transaction = (instance as any).sequelize?.transaction || undefined;

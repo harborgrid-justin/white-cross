@@ -122,10 +122,6 @@ export interface AuditLogAttributes {
     {
       fields: ['createdAt'],
       name: 'idx_audit_log_created_at'
-    },
-    {
-      fields: ['updatedAt'],
-      name: 'idx_audit_log_updated_at'
     }
   ]
   })

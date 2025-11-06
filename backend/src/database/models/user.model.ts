@@ -502,7 +502,7 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
       const phiFields = ['email', 'firstName', 'lastName', 'phone'];
 
       // Import the helper function dynamically to avoid circular dependencies
-      const { logModelPHIFieldChanges } = await import('@/database/services/model-audit-helper.service');
+      const { logModelPHIFieldChanges } = await import('../services/model-audit-helper.service.js');
 
       // Get the transaction if available
       const transaction = (user as any).sequelize?.transaction || undefined;

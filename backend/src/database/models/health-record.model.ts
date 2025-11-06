@@ -370,7 +370,7 @@ export class HealthRecord extends Model<HealthRecordAttributes, HealthRecordCrea
       const changedFields = instance.changed() as string[];
 
       // Import the helper function dynamically to avoid circular dependencies
-      const { logModelPHIAccess } = await import('@/database/services/model-audit-helper.service');
+      const { logModelPHIAccess } = await import('../services/model-audit-helper.service.js');
 
       // Get the transaction if available
       const transaction = (instance as any).sequelize?.transaction || undefined;

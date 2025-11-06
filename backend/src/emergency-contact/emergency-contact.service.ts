@@ -10,7 +10,7 @@
  */
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, Transaction } from 'sequelize';
+import { Op, Transaction, QueryTypes } from 'sequelize';
 import { EmergencyContact } from '../database/models/emergency-contact.model';
 import { Student } from '../database/models/student.model';
 import { ContactPriority, VerificationStatus } from '../contact/enums';
@@ -646,7 +646,7 @@ export class EmergencyContactService {
           GROUP BY priority
           `,
           {
-            type: 'SELECT',
+            type: QueryTypes.SELECT,
             raw: true,
           }
         ),
@@ -660,7 +660,7 @@ export class EmergencyContactService {
         this.emergencyContactModel.sequelize.query<{ count: string }>(
           'SELECT COUNT(DISTINCT "studentId") as count FROM "EmergencyContacts" WHERE "isActive" = true',
           {
-            type: 'SELECT',
+            type: QueryTypes.SELECT,
             raw: true,
           }
         ),
@@ -675,10 +675,12 @@ export class EmergencyContactService {
 
       // Fill in actual counts from query results
       priorityResults.forEach(row => {
-        byPriority[row.priority] = parseInt(row.count, 10);
+        if (row && row.priority && row.count) {
+          byPriority[row.priority] = parseInt(row.count, 10);
+        }
       });
 
-      const studentsWithoutContacts = allStudents - (parseInt(studentsWithContactsResult[0].count, 10) || 0);
+      const studentsWithoutContacts = allStudents - (parseInt(studentsWithContactsResult[0]?.count || '0', 10) || 0);
 
       this.logger.log(
         `Contact statistics: ${totalContacts} total, ${studentsWithoutContacts} students without contacts`,
