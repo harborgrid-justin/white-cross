@@ -189,8 +189,8 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
             dialect: 'postgres',
             uri: databaseUrl,
             autoLoadModels: true,
-            synchronize: false,
-            alter: false,
+            synchronize: configService.get('database.synchronize', false),
+            alter: configService.get('database.synchronize', false),
             // OPTIMIZATION: Enhanced logging with slow query detection
             // HIPAA COMPLIANCE: Always log in production for audit trail
             logging: isProduction
@@ -266,8 +266,8 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
             password: configService.get('database.password'),
             database: configService.get('database.database', 'whitecross'),
             autoLoadModels: true,
-            synchronize: isDevelopment,
-            alter: isDevelopment,
+            synchronize: configService.get('database.synchronize', false),
+            alter: configService.get('database.synchronize', false),
             // OPTIMIZATION: Enhanced logging with slow query detection
             // HIPAA COMPLIANCE: Always log in production for audit trail
             logging: isProduction

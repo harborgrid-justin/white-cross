@@ -47,7 +47,7 @@ export class TokenBlacklistService implements OnModuleInit, OnModuleDestroy {
         host: redisHost,
         port: redisPort,
         password: redisPassword || undefined,
-        db: 2, // Use separate database for token blacklist
+        db: 0, // Use database 0 (same as cache service)
         retryStrategy: (times) => {
           if (times > 3) {
             this.logger.error('Failed to connect to Redis after 3 attempts');

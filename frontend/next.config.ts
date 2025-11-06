@@ -12,6 +12,9 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   // ... keep your existing configuration ...
 
+  // React Compiler (Next.js 16)
+  reactCompiler: true,
+
   webpack: (config, { isServer }) => {
     // Aggressive bundle splitting for heavy libraries
     if (!isServer) {
@@ -94,9 +97,8 @@ const nextConfig: NextConfig = {
       '@radix-ui/react-label',
       '@radix-ui/react-switch',
     ],
-
-    // Enable React Compiler (React 19 feature)
-    reactCompiler: true,
+    // Allow forwarded headers in development for Server Actions
+    serverComponentsExternalPackages: [],
   },
 
   // Remove console.log in production (except errors/warnings)
@@ -118,6 +120,25 @@ const nextConfig: NextConfig = {
 
   // Output standalone for Docker deployment
   output: process.env.DOCKER_BUILD === 'true' ? 'standalone' : undefined,
+
+  // Handle forwarded headers for development (Server Actions)
+  async headers() {
+    const headers = [];
+
+    if (process.env.NODE_ENV === 'development') {
+      headers.push({
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Forwarded-Host',
+            value: 'localhost:3000',
+          },
+        ],
+      });
+    }
+
+    return headers;
+  },
 };
 
 export default nextConfig;
