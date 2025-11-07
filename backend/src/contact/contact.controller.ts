@@ -25,8 +25,8 @@ import {
   ApiQuery,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { ContactService } from './services/contact.service';
-import { EmergencyContactService } from './services/emergency-contact.service';
+import { ContactService } from '@/contact/services';
+import { EmergencyContactService } from '@/contact/services';
 import {
   CreateContactDto,
   UpdateContactDto,

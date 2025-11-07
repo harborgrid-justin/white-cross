@@ -4,7 +4,7 @@
  */
 
 import { PartialType } from '@nestjs/mapped-types';
-import { CreateEmergencyBroadcastDto } from './create-emergency-broadcast.dto';
+import { CreateEmergencyBroadcastDto } from '@/emergency-broadcast';
 
 export class UpdateEmergencyBroadcastDto extends PartialType(
   CreateEmergencyBroadcastDto,

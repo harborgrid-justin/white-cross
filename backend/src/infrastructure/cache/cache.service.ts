@@ -46,7 +46,7 @@ import {
   Cleanup,
   MemorySensitive,
   ImmediateCleanup,
-} from '../../discovery/modules/decorators/memory-optimization.decorators';
+} from '@/discovery/modules';
 
 const gzip = promisify(zlib.gzip);
 const gunzip = promisify(zlib.gunzip);

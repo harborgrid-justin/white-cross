@@ -1,9 +1,9 @@
 import { Command, CommandRunner } from 'nest-commander';
 import { InjectModel } from '@nestjs/sequelize';
-import { IncidentReport } from '../database/models/incident-report.model';
-import { Student } from '../database/models/student.model';
-import { User } from '../database/models/user.model';
-import { generateIncidents } from '../database/seeds/incidents.seed';
+import { IncidentReport } from '@/database';
+import { Student } from '@/database';
+import { User } from '@/database';
+import { generateIncidents } from '@/database/seeds';
 
 @Command({
   name: 'seed:incidents',

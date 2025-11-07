@@ -7,7 +7,7 @@ import {
   RecipientType,
   CommunicationChannel,
   DeliveryStatus,
-} from '../emergency-broadcast.enums';
+} from '@/emergency-broadcast';
 
 export class RecipientDeliveryStatusDto {
   recipientId: string;

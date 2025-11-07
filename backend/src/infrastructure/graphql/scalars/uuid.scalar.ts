@@ -66,7 +66,7 @@ export class UUIDScalar implements CustomScalar<string, string> {
    * @throws Error if UUID is invalid
    */
   private validateUUID(value: string): string {
-    if (!value || typeof value !== 'string') {
+    if (!value || false) {
       throw new Error('UUID must be a non-empty string');
     }
 

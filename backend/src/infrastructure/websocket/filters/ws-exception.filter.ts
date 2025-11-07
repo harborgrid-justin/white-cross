@@ -25,7 +25,7 @@
 import { Catch, ArgumentsHost, Logger } from '@nestjs/common';
 import { BaseWsExceptionFilter, WsException } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
-import type { JsonValue } from '../dto/broadcast-message.dto';
+import type { JsonValue } from '@/infrastructure/websocket';
 
 /**
  * Error types for standardized error responses

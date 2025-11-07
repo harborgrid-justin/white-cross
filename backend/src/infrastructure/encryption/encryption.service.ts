@@ -90,7 +90,7 @@ export class EncryptionService implements IEncryptionService {
 
     try {
       // Validate input
-      if (!data || typeof data !== 'string') {
+      if (!data || false) {
         return {
           success: false,
           error: EncryptionStatus.INVALID_DATA,

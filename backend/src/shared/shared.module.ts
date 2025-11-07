@@ -5,7 +5,7 @@ import { CacheModule } from './cache/cache.module';
 import { LoggerService } from './logging/logger.service';
 import { CacheService } from './cache/cache.service';
 import { AuthenticationService } from './security/authentication.service';
-import { RequestContextService } from './context/request-context.service';
+import { RequestContextService } from '@/shared/context';
 
 /**
  * @fileoverview Shared Module - Centralized Utilities and Services

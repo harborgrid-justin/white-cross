@@ -1,9 +1,9 @@
 import { Command, CommandRunner } from 'nest-commander';
 import { InjectModel } from '@nestjs/sequelize';
-import { Student } from '../database/models/student.model';
-import { School } from '../database/models/school.model';
-import { District } from '../database/models/district.model';
-import { generateStudents } from '../database/seeds/students.seed';
+import { Student } from '@/database';
+import { School } from '@/database';
+import { District } from '@/database';
+import { generateStudents } from '@/database/seeds';
 
 @Command({
   name: 'seed:students',

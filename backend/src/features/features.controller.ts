@@ -21,7 +21,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { FeaturesService } from './features.service';
-import { ToggleFeatureDto } from './dto/toggle-feature.dto';
+import { ToggleFeatureDto } from '@/features/dto';
 
 @ApiTags('features')
 @Controller('features')

@@ -26,12 +26,12 @@ import {
   ApiQuery,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { JwtAuthGuard } from '@/auth';
+import { CurrentUser } from '@/auth/decorators';
 import { AlertsService } from './alerts.service';
-import { CreateAlertDto } from './dto/create-alert.dto';
-import { AlertFilterDto } from './dto/alert-filter.dto';
-import { AlertsUpdatePreferencesDto } from './dto/update-preferences.dto';
+import { CreateAlertDto } from '@/alerts/dto';
+import { AlertFilterDto } from '@/alerts/dto';
+import { AlertsUpdatePreferencesDto } from '@/alerts/dto';
 
 @ApiTags('alerts')
 @Controller('alerts')

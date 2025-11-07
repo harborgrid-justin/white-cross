@@ -6,45 +6,40 @@
  */
 
 import {
-  Injectable,
-  NotFoundException,
-  ConflictException,
   BadRequestException,
+  ConflictException,
+  Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
-import { InjectModel, InjectConnection } from '@nestjs/sequelize';
-import { Op, Transaction, Sequelize } from 'sequelize';
-import { Student } from '../database/models/student.model';
-import { User, UserRole } from '../database/models/user.model';
-import { HealthRecord } from '../database/models/health-record.model';
-import { MentalHealthRecord } from '../database/models/mental-health-record.model';
-import { AcademicTranscriptService } from '../academic-transcript/academic-transcript.service';
-import { QueryCacheService } from '../database/services/query-cache.service';
-import { AppConfigService } from '../config/app-config.service';
-import { DatabasePoolMonitorService } from '../config/database-pool-monitor.service';
+import { InjectConnection, InjectModel } from '@nestjs/sequelize';
+import { Op, Sequelize, Transaction } from 'sequelize';
+import { HealthRecord, MentalHealthRecord, Student, User, UserRole } from '@/database';
+import { AcademicTranscriptService } from '@/academic-transcript';
+import { QueryCacheService } from '@/database/services';
+import { AppConfigService } from '@/config';
+import { DatabasePoolMonitorService } from '@/config/database-pool-monitor.service';
 import {
-  CreateStudentDto,
-  UpdateStudentDto,
-  StudentFilterDto,
-  TransferStudentDto,
-  StudentBulkUpdateDto,
-  StudentHealthRecordsDto,
-  MentalHealthRecordsDto,
-  UploadPhotoDto,
-  SearchPhotoDto,
-  ImportTranscriptDto,
   AcademicHistoryDto,
-  PerformanceTrendsDto,
-  BulkGradeTransitionDto,
-  GraduatingStudentsDto,
-  StudentScanBarcodeDto,
-  VerifyMedicationDto,
   AddWaitlistDto,
-  WaitlistStatusDto,
+  BulkGradeTransitionDto,
+  CreateStudentDto,
+  GraduatingStudentsDto,
+  ImportTranscriptDto,
   PaginatedResponse,
-  StudentStatistics,
+  PerformanceTrendsDto,
+  SearchPhotoDto,
+  StudentBulkUpdateDto,
   StudentDataExport,
+  StudentFilterDto,
+  StudentScanBarcodeDto,
+  StudentStatistics,
+  TransferStudentDto,
+  UpdateStudentDto,
+  UploadPhotoDto,
+  VerifyMedicationDto,
+  WaitlistStatusDto,
 } from './dto';
 
 /**
@@ -499,7 +494,7 @@ export class StudentService {
    */
   async search(query: string, limit: number = 20): Promise<Student[]> {
     try {
-      const students = await this.studentModel.findAll({
+      return await this.studentModel.findAll({
         where: {
           isActive: true,
           [Op.or]: [
@@ -514,8 +509,6 @@ export class StudentService {
         ],
         limit,
       });
-
-      return students;
     } catch (error) {
       this.handleError('Failed to search students', error);
     }
@@ -531,7 +524,7 @@ export class StudentService {
    */
   async findByGrade(grade: string): Promise<Student[]> {
     try {
-      const students = await this.queryCacheService.findWithCache(
+      return await this.queryCacheService.findWithCache(
         this.studentModel,
         {
           where: { grade, isActive: true },
@@ -546,8 +539,6 @@ export class StudentService {
           invalidateOn: ['create', 'update', 'destroy'],
         },
       );
-
-      return students;
     } catch (error) {
       this.handleError('Failed to fetch students by grade', error);
     }
@@ -588,7 +579,7 @@ export class StudentService {
     try {
       this.validateUUID(nurseId);
 
-      const students = await this.studentModel.findAll({
+      return await this.studentModel.findAll({
         where: { nurseId, isActive: true },
         attributes: [
           'id',
@@ -605,8 +596,6 @@ export class StudentService {
           ['firstName', 'ASC'],
         ],
       });
-
-      return students;
     } catch (error) {
       this.handleError('Failed to fetch assigned students', error);
     }

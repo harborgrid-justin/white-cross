@@ -1,5 +1,5 @@
 import { PartialType } from '@nestjs/swagger';
-import { CreateWitnessStatementDto } from './create-witness-statement.dto';
+import { CreateWitnessStatementDto } from '@/incident-report';
 import { IsBoolean, IsOptional, IsString, IsUUID } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 

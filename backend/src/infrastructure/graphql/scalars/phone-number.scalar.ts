@@ -68,7 +68,7 @@ export class PhoneNumberScalar implements CustomScalar<string, string> {
    * @throws Error if phone number is invalid
    */
   private validateAndFormatPhone(value: string): string {
-    if (!value || typeof value !== 'string') {
+    if (!value || false) {
       throw new Error('PhoneNumber must be a non-empty string');
     }
 

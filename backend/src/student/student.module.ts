@@ -8,11 +8,11 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { StudentService } from './student.service';
 import { StudentController } from './student.controller';
-import { Student } from '../database/models/student.model';
-import { User } from '../database/models/user.model';
-import { HealthRecord } from '../database/models/health-record.model';
-import { MentalHealthRecord } from '../database/models/mental-health-record.model';
-import { AcademicTranscriptModule } from '../academic-transcript/academic-transcript.module';
+import { Student } from '@/database';
+import { User } from '@/database';
+import { HealthRecord } from '@/database';
+import { MentalHealthRecord } from '@/database';
+import { AcademicTranscriptModule } from '@/academic-transcript';
 
 /**
  * Student Module

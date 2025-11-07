@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { SecurityController } from './security.controller';
-import { IpRestrictionService } from './services/ip-restriction.service';
-import { SecurityIncidentService } from './services/security-incident.service';
-import { ThreatDetectionService } from './services/threat-detection.service';
-import { SessionManagementService } from './services/session-management.service';
-import { IpRestrictionGuard } from './guards/ip-restriction.guard';
-import { SecurityPolicyGuard } from './guards/security-policy.guard';
-import { SecurityLoggingInterceptor } from './interceptors/security-logging.interceptor';
+import { IpRestrictionService } from '@/security/services';
+import { SecurityIncidentService } from '@/security/services';
+import { ThreatDetectionService } from '@/security/services';
+import { SessionManagementService } from '@/security/services';
+import { IpRestrictionGuard } from '@/security/guards';
+import { SecurityPolicyGuard } from '@/security/guards';
+import { SecurityLoggingInterceptor } from '@/security/interceptors';
 import {
   IpRestrictionEntity,
   SecurityIncidentEntity,

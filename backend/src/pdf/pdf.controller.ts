@@ -14,14 +14,14 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { PdfService } from './pdf.service';
-import { GenerateStudentHealthSummaryDto } from './dto/generate-student-health-summary.dto';
-import { GenerateMedicationLogDto } from './dto/generate-medication-log.dto';
-import { GenerateImmunizationReportDto } from './dto/generate-immunization-report.dto';
-import { GenerateIncidentReportDto } from './dto/generate-incident-report.dto';
-import { PdfGenerateCustomReportDto } from './dto/generate-custom-report.dto';
-import { MergePdfsDto } from './dto/merge-pdfs.dto';
-import { WatermarkPdfDto } from './dto/watermark-pdf.dto';
-import { SignPdfDto } from './dto/sign-pdf.dto';
+import { GenerateStudentHealthSummaryDto } from '@/pdf/dto';
+import { GenerateMedicationLogDto } from '@/pdf/dto';
+import { GenerateImmunizationReportDto } from '@/pdf/dto';
+import { GenerateIncidentReportDto } from '@/pdf/dto';
+import { PdfGenerateCustomReportDto } from '@/pdf/dto';
+import { MergePdfsDto } from '@/pdf/dto';
+import { WatermarkPdfDto } from '@/pdf/dto';
+import { SignPdfDto } from '@/pdf/dto';
 
 /**
  * PDF Controller

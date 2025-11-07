@@ -1,17 +1,14 @@
-import {
-  Injectable,
-  NotFoundException,
-  Logger,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { IncidentReport } from '../../database/models/incident-report.model';
-import { CreateIncidentReportDto } from '../dto/create-incident-report.dto';
-import { UpdateIncidentReportDto } from '../dto/update-incident-report.dto';
-import { IncidentFiltersDto } from '../dto/incident-filters.dto';
-import { IncidentValidationService } from './incident-validation.service';
-import { IncidentNotificationService } from './incident-notification.service';
+import { IncidentReport } from '@/database';
+import {
+  CreateIncidentReportDto,
+  IncidentFiltersDto,
+  IncidentNotificationService,
+  IncidentValidationService,
+  UpdateIncidentReportDto,
+} from '@/incident-report';
 import { IncidentSeverity } from '../enums';
 
 @Injectable()
@@ -219,12 +216,10 @@ export class IncidentCoreService {
    */
   async getIncidentsRequiringFollowUp(): Promise<IncidentReport[]> {
     try {
-      const reports = await this.incidentReportModel.findAll({
+      return await this.incidentReportModel.findAll({
         where: { followUpRequired: true },
         order: [['occurredAt', 'DESC']],
       });
-
-      return reports;
     } catch (error) {
       this.logger.error('Error fetching incidents requiring follow-up:', error);
       throw error;
@@ -239,13 +234,11 @@ export class IncidentCoreService {
     limit: number = 5,
   ): Promise<IncidentReport[]> {
     try {
-      const reports = await this.incidentReportModel.findAll({
+      return await this.incidentReportModel.findAll({
         where: { studentId },
         order: [['occurredAt', 'DESC']],
         limit,
       });
-
-      return reports;
     } catch (error) {
       this.logger.error('Error fetching student recent incidents:', error);
       throw error;

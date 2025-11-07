@@ -12,25 +12,29 @@
 ### 1. Model Hook (Most Common)
 
 ```typescript
-import { logModelPHIFieldChanges } from '@/database/services/model-audit-helper.service';
+import {logModelPHIFieldChanges} from '@/database/services/model-audit-helper.service';
 
 @BeforeCreate
 @BeforeUpdate
-static async auditPHIAccess(instance: YourModel) {
-  if (instance.changed()) {
-    const changedFields = instance.changed() as string[];
-    const phiFields = ['firstName', 'lastName', 'email']; // Your PHI fields
+auditPHIAccess(instance
+:
+YourModel
+)
+{
+    if (instance.changed()) {
+        const changedFields = instance.changed() as string[];
+        const phiFields = ['firstName', 'lastName', 'email']; // Your PHI fields
 
-    const transaction = (instance as any).sequelize?.transaction || undefined;
+        const transaction = (instance as any).sequelize?.transaction || undefined;
 
-    await logModelPHIFieldChanges(
-      'YourModel',  // Entity type
-      instance.id,
-      changedFields,
-      phiFields,
-      transaction   // Critical: pass transaction
-    );
-  }
+        await logModelPHIFieldChanges(
+            'YourModel',  // Entity type
+            instance.id,
+            changedFields,
+            phiFields,
+            transaction   // Critical: pass transaction
+        );
+    }
 }
 ```
 
@@ -212,16 +216,20 @@ await auditService.log(..., transaction);  // Transaction already committed!
 ```typescript
 @BeforeCreate
 @BeforeUpdate
-static async auditPHIAccess(instance: Student) {
-  if (instance.changed()) {
-    const changedFields = instance.changed() as string[];
-    const phiFields = ['firstName', 'lastName', 'dateOfBirth'];
+auditPHIAccess(instance
+:
+Student
+)
+{
+    if (instance.changed()) {
+        const changedFields = instance.changed() as string[];
+        const phiFields = ['firstName', 'lastName', 'dateOfBirth'];
 
-    const { logModelPHIFieldChanges } = await import('@/database/services/model-audit-helper.service');
-    const transaction = (instance as any).sequelize?.transaction || undefined;
+        const {logModelPHIFieldChanges} = await import('@/database/services/model-audit-helper.service');
+        const transaction = (instance as any).sequelize?.transaction || undefined;
 
-    await logModelPHIFieldChanges('Student', instance.id, changedFields, phiFields, transaction);
-  }
+        await logModelPHIFieldChanges('Student', instance.id, changedFields, phiFields, transaction);
+    }
 }
 ```
 
@@ -230,15 +238,19 @@ static async auditPHIAccess(instance: Student) {
 ```typescript
 @BeforeCreate
 @BeforeUpdate
-static async auditPHIAccess(instance: HealthRecord) {
-  if (instance.changed()) {
-    const changedFields = instance.changed() as string[];
+auditPHIAccess(instance
+:
+HealthRecord
+)
+{
+    if (instance.changed()) {
+        const changedFields = instance.changed() as string[];
 
-    const { logModelPHIAccess } = await import('@/database/services/model-audit-helper.service');
-    const transaction = (instance as any).sequelize?.transaction || undefined;
+        const {logModelPHIAccess} = await import('@/database/services/model-audit-helper.service');
+        const transaction = (instance as any).sequelize?.transaction || undefined;
 
-    await logModelPHIAccess('HealthRecord', instance.id, 'UPDATE', changedFields, transaction);
-  }
+        await logModelPHIAccess('HealthRecord', instance.id, 'UPDATE', changedFields, transaction);
+    }
 }
 ```
 

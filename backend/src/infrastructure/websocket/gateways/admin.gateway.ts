@@ -23,16 +23,16 @@ import {
 } from '@nestjs/websockets';
 import { Logger, UseGuards, UseFilters, UseInterceptors } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
-import { WsJwtAuthGuard } from '../guards/ws-jwt-auth.guard';
-import { WsExceptionFilter } from '../filters/ws-exception.filter';
-import { WsLoggingInterceptor } from '../interceptors/ws-logging.interceptor';
+import { WsJwtAuthGuard } from '@/infrastructure/websocket';
+import { WsExceptionFilter } from '@/infrastructure/websocket';
+import { WsLoggingInterceptor } from '@/infrastructure/websocket';
 import {
   AdminMetricsService,
   SystemMetrics,
   AdminActivity,
   SystemAlert,
-} from '../services/admin-metrics.service';
-import type { AuthenticatedSocket } from '../interfaces/authenticated-socket.interface';
+} from '@/infrastructure/websocket';
+import type { AuthenticatedSocket } from '@/infrastructure/websocket';
 
 
 /**

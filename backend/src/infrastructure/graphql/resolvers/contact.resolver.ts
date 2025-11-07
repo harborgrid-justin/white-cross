@@ -9,34 +9,24 @@
  * - Role-based access control with GqlRolesGuard
  * - PHI access protected by role restrictions
  */
-import {
-  Resolver,
-  Query,
-  Mutation,
-  Args,
-  ID,
-  Context,
-  ResolveField,
-  Parent,
-} from '@nestjs/graphql';
+import { Args, Context, ID, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { GqlAuthGuard, GqlRolesGuard } from '../guards';
-import { Roles } from '../../../auth/decorators/roles.decorator';
-import { UserRole } from '../../../database/models/user.model';
+import { Roles } from '@/auth';
+import { Contact, UserRole } from '@/database';
 import {
   ContactDto,
-  ContactListResponseDto,
-  ContactInputDto,
-  ContactUpdateInputDto,
   ContactFilterInputDto,
+  ContactInputDto,
+  ContactListResponseDto,
   ContactStatsDto,
-  DeleteResponseDto,
   ContactType,
+  ContactUpdateInputDto,
+  DeleteResponseDto,
   StudentDto,
 } from '../dto';
-import { ContactService } from '../../../contact/services/contact.service';
+import { ContactService } from '@/contact';
 import { ContactType as DomainContactType } from '../../../contact/enums/contact-type.enum';
-import { Contact } from '../../../database/models/contact.model';
 import type { GraphQLContext } from '../types/context.interface';
 
 
@@ -440,10 +430,9 @@ export class ContactResolver {
     try {
       // If contact has relationTo (student ID), use DataLoader to fetch student
       if (contact.relationTo) {
-        const student = await context.loaders.studentLoader.load(
+        return await context.loaders.studentLoader.load(
           contact.relationTo,
         );
-        return student;
       }
       return null;
     } catch (error) {

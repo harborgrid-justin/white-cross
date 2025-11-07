@@ -10,31 +10,23 @@
  * - DataLoader integration for efficient relationship loading
  * - Field-level resolvers for nested data
  */
-import {
-  Resolver,
-  Query,
-  Args,
-  ID,
-  Context,
-  ResolveField,
-  Parent,
-} from '@nestjs/graphql';
+import { Args, Context, ID, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { GqlAuthGuard, GqlRolesGuard } from '../guards';
-import { Roles } from '../../../auth/decorators/roles.decorator';
-import { UserRole } from '../../../database/models/user.model';
+import { Roles } from '@/auth';
+import { UserRole } from '@/database';
 import {
-  StudentDto,
-  StudentListResponseDto,
-  StudentFilterInputDto,
   ContactDto,
-  MedicationDto,
-  HealthRecordDto,
   Gender,
+  HealthRecordDto,
+  MedicationDto,
+  StudentDto,
+  StudentFilterInputDto,
+  StudentListResponseDto,
 } from '../dto';
-import { StudentService } from '../../../student/student.service';
+import { StudentService } from '@/student';
 import type { GraphQLContext } from '../types/context.interface';
-import { PHIField } from '../guards/field-authorization.guard';
+import { PHIField } from '@/infrastructure/graphql';
 
 
 /**
@@ -312,9 +304,7 @@ export class StudentResolver {
   ): Promise<HealthRecordDto | null> {
     try {
       // Use the shared DataLoader from context for optimal batching
-      const healthRecord =
-        await context.loaders.healthRecordsByStudentLoader.load(student.id);
-      return healthRecord;
+      return await context.loaders.healthRecordsByStudentLoader.load(student.id);
     } catch (error) {
       console.error(
         `Error loading health record for student ${student.id}:`,

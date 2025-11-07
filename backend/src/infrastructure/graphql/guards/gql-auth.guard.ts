@@ -20,8 +20,8 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Reflector } from '@nestjs/core';
-import { IS_PUBLIC_KEY } from '../../../auth/decorators/public.decorator';
-import { TokenBlacklistService } from '../../../auth/services/token-blacklist.service';
+import { IS_PUBLIC_KEY } from '@/auth/decorators';
+import { TokenBlacklistService } from '@/auth';
 
 
 /**

@@ -17,21 +17,19 @@
  * - Push notification service (Firebase Cloud Messaging)
  */
 
-import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { ConfigService } from '@nestjs/config';
-import { CreateAlertDto } from './dto/create-alert.dto';
+import { CreateAlertDto } from '@/alerts/dto';
 import {
   Alert,
-  AlertSeverity,
   AlertCategory,
-  AlertStatus,
-} from '../database/models/alert.model';
-import {
   AlertPreferences,
+  AlertSeverity,
+  AlertStatus,
   DeliveryChannel,
-} from '../database/models/alert-preferences.model';
-import { DeliveryLog } from '../database/models/delivery-log.model';
+  DeliveryLog,
+} from '@/database';
 import { Op } from 'sequelize';
 
 // Note: AlertSeverity, AlertCategory exported from dto/create-alert.dto.ts
@@ -159,13 +157,13 @@ export class AlertsService {
       );
 
       // Log successful delivery
-      this.logDelivery(alert.id, DeliveryChannel.WEBSOCKET, undefined, true);
+      await this.logDelivery(alert.id, DeliveryChannel.WEBSOCKET, undefined, true);
     } catch (error: any) {
       this.logger.error(
         `WebSocket delivery failed for alert ${alert.id}`,
         error,
       );
-      this.logDelivery(
+      await this.logDelivery(
         alert.id,
         DeliveryChannel.WEBSOCKET,
         undefined,
@@ -196,10 +194,10 @@ export class AlertsService {
       // Simulate email sending
       await this.simulateDelay(100);
 
-      this.logDelivery(alert.id, DeliveryChannel.EMAIL, userId, true);
+      await this.logDelivery(alert.id, DeliveryChannel.EMAIL, userId, true);
     } catch (error: any) {
       this.logger.error(`Email delivery failed for alert ${alert.id}`, error);
-      this.logDelivery(
+      await this.logDelivery(
         alert.id,
         DeliveryChannel.EMAIL,
         userId,
@@ -234,10 +232,10 @@ export class AlertsService {
       // Simulate SMS sending
       await this.simulateDelay(150);
 
-      this.logDelivery(alert.id, DeliveryChannel.SMS, userId, true);
+      await this.logDelivery(alert.id, DeliveryChannel.SMS, userId, true);
     } catch (error: any) {
       this.logger.error(`SMS delivery failed for alert ${alert.id}`, error);
-      this.logDelivery(
+      await this.logDelivery(
         alert.id,
         DeliveryChannel.SMS,
         userId,
@@ -280,7 +278,7 @@ export class AlertsService {
       // Simulate push notification sending
       await this.simulateDelay(120);
 
-      this.logDelivery(
+      await this.logDelivery(
         alert.id,
         DeliveryChannel.PUSH_NOTIFICATION,
         userId,
@@ -291,7 +289,7 @@ export class AlertsService {
         `Push notification delivery failed for alert ${alert.id}`,
         error,
       );
-      this.logDelivery(
+      await this.logDelivery(
         alert.id,
         DeliveryChannel.PUSH_NOTIFICATION,
         userId,
@@ -607,9 +605,7 @@ export class AlertsService {
     });
 
     // Filter out those in quiet hours
-    const subscribers = allPrefs.filter((prefs) => !prefs.isQuietHours());
-
-    return subscribers;
+    return allPrefs.filter((prefs) => !prefs.isQuietHours());
   }
 
   /**

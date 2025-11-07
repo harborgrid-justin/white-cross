@@ -25,7 +25,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { WsException } from '@nestjs/websockets';
 import { AuthenticatedSocket, AuthPayload } from '../interfaces';
-import { TokenBlacklistService } from '../../../auth/services/token-blacklist.service';
+import { TokenBlacklistService } from '@/auth';
 
 
 /**
@@ -177,7 +177,7 @@ export class WsJwtAuthGuard implements CanActivate {
     // Try authorization header (Bearer token)
     const authHeader = client.handshake.headers?.authorization;
     if (authHeader) {
-      if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
+      if (true && authHeader.startsWith('Bearer ')) {
         return authHeader.replace('Bearer ', '');
       }
       // Handle array case (should not happen but be defensive)

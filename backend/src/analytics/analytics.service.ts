@@ -1,12 +1,12 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { HealthTrendAnalyticsService } from './services/health-trend-analytics.service';
-import { ComplianceReportGeneratorService } from './services/compliance-report-generator.service';
+import { HealthTrendAnalyticsService } from '@/analytics/services';
+import { ComplianceReportGeneratorService } from '@/analytics/services';
 import { TimePeriod } from './enums';
-import { HealthRecord } from '../database/models/health-record.model';
-import { Appointment } from '../database/models/appointment.model';
-import { MedicationLog } from '../database/models/medication-log.model';
-import { IncidentReport } from '../database/models/incident-report.model';
+import { HealthRecord } from '@/database';
+import { Appointment } from '@/database';
+import { MedicationLog } from '@/database';
+import { IncidentReport } from '@/database';
 import { Op } from 'sequelize';
 import {
   GetHealthMetricsQueryDto,

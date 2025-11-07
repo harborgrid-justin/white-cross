@@ -28,8 +28,8 @@ import {
   AuthChangePasswordDto,
   AuthResponseDto,
 } from './dto';
-import { JwtPayload } from './strategies/jwt.strategy';
-import { TokenBlacklistService } from './services/token-blacklist.service';
+import { JwtPayload } from '@/auth/strategies';
+import { TokenBlacklistService } from '@/auth/services';
 import { SafeUser } from './types';
 
 @Injectable()

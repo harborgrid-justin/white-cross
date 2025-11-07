@@ -13,7 +13,7 @@ import {
   ArrayMinSize,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { NotificationChannel } from '../../contact/enums';
+import { NotificationChannel } from '@/contact';
 
 export enum NotificationType {
   EMERGENCY = 'emergency',

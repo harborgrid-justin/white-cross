@@ -21,17 +21,17 @@ import { Logger } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize, QueryTypes, Op } from 'sequelize';
 import { Job } from 'bullmq';
-import { JobType } from '../enums/job-type.enum';
-import { MedicationReminderData } from '../interfaces/job-data.interface';
+import { JobType } from '@/infrastructure/jobs';
+import { MedicationReminderData } from '@/infrastructure/jobs';
 import { CacheService } from '../../../shared/cache/cache.service';
-import { EmailService } from '../../email/email.service';
+import { EmailService } from '@/infrastructure/email';
 import {
   MessageDelivery,
   RecipientType,
   DeliveryStatus,
   DeliveryChannelType,
 } from '../../../database/models/message-delivery.model';
-import { MessageType } from '../../../database/models/message-template.model';
+import { MessageType } from '@/database';
 
 interface MedicationReminder {
   id: string;

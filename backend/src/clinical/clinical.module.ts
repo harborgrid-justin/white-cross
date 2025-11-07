@@ -2,38 +2,38 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 
 // Models
-import { DrugCatalog } from '../database/models/drug-catalog.model';
-import { DrugInteraction } from '../database/models/drug-interaction.model';
-import { StudentDrugAllergy } from '../database/models/student-drug-allergy.model';
-import { TreatmentPlan } from '../database/models/treatment-plan.model';
-import { VitalSigns } from '../database/models/vital-signs.model';
-import { ClinicVisit } from '../database/models/clinic-visit.model';
-import { Prescription } from '../database/models/prescription.model';
-import { ClinicalProtocol } from '../database/models/clinical-protocol.model';
-import { ClinicalNote } from '../database/models/clinical-note.model';
-import { FollowUpAppointment } from '../database/models/follow-up-appointment.model';
+import { DrugCatalog } from '@/database';
+import { DrugInteraction } from '@/database';
+import { StudentDrugAllergy } from '@/database';
+import { TreatmentPlan } from '@/database';
+import { VitalSigns } from '@/database';
+import { ClinicVisit } from '@/database';
+import { Prescription } from '@/database';
+import { ClinicalProtocol } from '@/database';
+import { ClinicalNote } from '@/database';
+import { FollowUpAppointment } from '@/database';
 
 // Services
-import { DrugInteractionService } from './services/drug-interaction.service';
-import { ClinicVisitService } from './services/clinic-visit.service';
-import { TreatmentPlanService } from './services/treatment-plan.service';
-import { PrescriptionService } from './services/prescription.service';
-import { ClinicalProtocolService } from './services/clinical-protocol.service';
-import { ClinicalNoteService } from './services/clinical-note.service';
-import { VitalSignsService } from './services/vital-signs.service';
-import { FollowUpService } from './services/follow-up.service';
+import { DrugInteractionService } from '@/clinical/services';
+import { ClinicVisitService } from '@/clinical/services';
+import { TreatmentPlanService } from '@/clinical/services';
+import { PrescriptionService } from '@/clinical/services';
+import { ClinicalProtocolService } from '@/clinical/services';
+import { ClinicalNoteService } from '@/clinical/services';
+import { VitalSignsService } from '@/clinical/services';
+import { FollowUpService } from '@/clinical/services';
 
 // Controllers
-import { DrugInteractionController } from './controllers/drug-interaction.controller';
-import { ClinicVisitController } from './controllers/clinic-visit.controller';
-import { TreatmentPlanController } from './controllers/treatment-plan.controller';
-import { PrescriptionController } from './controllers/prescription.controller';
-import { ClinicalProtocolController } from './controllers/clinical-protocol.controller';
-import { ClinicalNoteController } from './controllers/clinical-note.controller';
-import { VitalSignsController } from './controllers/vital-signs.controller';
-import { FollowUpController } from './controllers/follow-up.controller';
-import { MedicationAdministrationController } from './controllers/medication-administration.controller';
-import { PrescriptionAliasController } from './controllers/prescription-alias.controller';
+import { DrugInteractionController } from '@/clinical/controllers';
+import { ClinicVisitController } from '@/clinical/controllers';
+import { TreatmentPlanController } from '@/clinical/controllers';
+import { PrescriptionController } from '@/clinical/controllers';
+import { ClinicalProtocolController } from '@/clinical/controllers';
+import { ClinicalNoteController } from '@/clinical/controllers';
+import { VitalSignsController } from '@/clinical/controllers';
+import { FollowUpController } from '@/clinical/controllers';
+import { MedicationAdministrationController } from '@/clinical/controllers';
+import { PrescriptionAliasController } from '@/clinical/controllers';
 
 /**
  * Clinical Module

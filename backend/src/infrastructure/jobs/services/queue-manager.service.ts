@@ -20,7 +20,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue, Job } from 'bullmq';
-import { JobType } from '../enums/job-type.enum';
+import { JobType } from '@/infrastructure/jobs';
 
 export interface JobOptions {
   delay?: number;

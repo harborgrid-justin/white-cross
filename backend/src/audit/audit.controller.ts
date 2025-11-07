@@ -1,27 +1,7 @@
-import {
-  Controller,
-  Get,
-  Query,
-  Param,
-  UseGuards,
-  HttpStatus,
-  HttpException,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiQuery,
-} from '@nestjs/swagger';
+import { Controller, Get, HttpException, HttpStatus, Param, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuditService } from './audit.service';
-import {
-  AuditLogFilterDto,
-  PHIAccessFilterDto,
-  AuditLogSearchDto,
-  DateRangeDto,
-  PaginatedAuditLogsDto,
-} from './dto';
+import { AuditLogFilterDto, AuditLogSearchDto, DateRangeDto, PaginatedAuditLogsDto, PHIAccessFilterDto } from './dto';
 
 /**
  * Audit Controller
@@ -49,12 +29,11 @@ export class AuditController {
   })
   async getAuditLogs(@Query() filters: AuditLogFilterDto) {
     try {
-      const result = await this.auditService.getAuditLogs({
+      return await this.auditService.getAuditLogs({
         ...filters,
         startDate: filters.startDate ? new Date(filters.startDate) : undefined,
         endDate: filters.endDate ? new Date(filters.endDate) : undefined,
       });
-      return result;
     } catch (error) {
       throw new HttpException(
         'Failed to fetch audit logs',
@@ -148,12 +127,11 @@ export class AuditController {
   })
   async getPHIAccessLogs(@Query() filters: PHIAccessFilterDto) {
     try {
-      const result = await this.auditService.getPHIAccessLogs({
+      return await this.auditService.getPHIAccessLogs({
         ...filters,
         startDate: filters.startDate ? new Date(filters.startDate) : undefined,
         endDate: filters.endDate ? new Date(filters.endDate) : undefined,
       });
-      return result;
     } catch (error) {
       throw new HttpException(
         'Failed to fetch PHI access logs',

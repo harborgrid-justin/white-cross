@@ -16,7 +16,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { AuditLog, AuditSeverity, ComplianceType } from '../database/models/audit-log.model';
+import { AuditLog, AuditSeverity, ComplianceType } from '@/database';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
 export interface BreachAlert {

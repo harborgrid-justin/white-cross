@@ -5,80 +5,78 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import { Redis } from 'ioredis';
-import { DatabaseModule } from './database/database.module';
-import { AuthModule } from './auth/auth.module';
-import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
-import { IpRestrictionGuard } from './access-control/guards/ip-restriction.guard';
-import { CsrfGuard } from './middleware/security/csrf.guard';
-import { HealthRecordModule } from './health-record/health-record.module';
-import { UserModule } from './user/user.module';
+import { DatabaseModule } from '@/database';
+import { AuthModule, JwtAuthGuard } from '@/auth';
+import { AccessControlModule, IpRestrictionGuard } from '@/access-control';
+import { CsrfGuard } from '@/middleware/security';
+import { HealthRecordModule } from '@/health-record';
+import { UserModule } from '@/user';
 import { ResponseTransformInterceptor } from './common/interceptors/response-transform.interceptor';
 import {
   appConfig,
-  databaseConfig,
+  AppConfigService,
   authConfig,
-  securityConfig,
-  redisConfig,
   awsConfig,
   cacheConfig,
-  queueConfig,
-  validationSchema,
-  AppConfigService,
-  loadConditionalModules,
+  databaseConfig,
   FeatureFlags,
+  loadConditionalModules,
+  queueConfig,
+  redisConfig,
+  securityConfig,
+  validationSchema,
 } from './config';
 
-import { AnalyticsModule } from './analytics/analytics.module';
-import { ChronicConditionModule } from './chronic-condition/chronic-condition.module';
+import { AnalyticsModule } from '@/analytics';
+import { ChronicConditionModule } from '@/chronic-condition';
 // import { AllergyModule } from './allergy/allergy.module'; // Already converted to Sequelize
-import { BudgetModule } from './budget/budget.module';
-import { AdministrationModule } from './administration/administration.module';
-import { AuditModule } from './audit/audit.module';
-import { AccessControlModule } from './access-control/access-control.module';
-import { ContactModule } from './contact/contact.module';
-import { ComplianceModule } from './compliance/compliance.module';
-import { ClinicalModule } from './clinical/clinical.module';
-import { IncidentReportModule } from './incident-report/incident-report.module';
-import { IntegrationModule } from './integration/integration.module';
-import { IntegrationsModule } from './integrations/integrations.module';
-import { SecurityModule } from './security/security.module';
-import { ReportModule } from './report/report.module';
-import { MobileModule } from './mobile/mobile.module';
-import { PdfModule } from './pdf/pdf.module';
-import { AcademicTranscriptModule } from './academic-transcript/academic-transcript.module';
-import { AiSearchModule } from './ai-search/ai-search.module';
-import { AlertsModule } from './alerts/alerts.module';
-import { FeaturesModule } from './features/features.module';
-import { HealthDomainModule } from './health-domain/health-domain.module';
+import { BudgetModule } from '@/budget';
+import { AdministrationModule } from '@/administration';
+import { AuditModule } from '@/audit';
+import { ContactModule } from '@/contact';
+import { ComplianceModule } from '@/compliance';
+import { ClinicalModule } from '@/clinical';
+import { IncidentReportModule } from '@/incident-report';
+import { IntegrationModule } from '@/integration';
+import { IntegrationsModule } from '@/integrations';
+import { SecurityModule } from '@/security';
+import { ReportModule } from '@/report';
+import { MobileModule } from '@/mobile';
+import { PdfModule } from '@/pdf';
+import { AcademicTranscriptModule } from '@/academic-transcript';
+import { AiSearchModule } from '@/ai-search';
+import { AlertsModule } from '@/alerts';
+import { FeaturesModule } from '@/features';
+import { HealthDomainModule } from '@/health-domain';
 import { InterfacesModule } from './interfaces/interfaces.module';
 import { SharedModule } from './shared/shared.module';
-import { DashboardModule } from './dashboard/dashboard.module';
-import { AdvancedFeaturesModule } from './advanced-features/advanced-features.module';
-import { ConfigurationModule } from './configuration/configuration.module';
-import { EmergencyBroadcastModule } from './emergency-broadcast/emergency-broadcast.module';
-import { GradeTransitionModule } from './grade-transition/grade-transition.module';
-import { EnterpriseFeaturesModule } from './enterprise-features/enterprise-features.module';
-import { HealthMetricsModule } from './health-metrics/health-metrics.module';
-import { MedicationInteractionModule } from './medication-interaction/medication-interaction.module';
-import { HealthRiskAssessmentModule } from './health-risk-assessment/health-risk-assessment.module';
-import { EmergencyContactModule } from './emergency-contact/emergency-contact.module';
-import { EmailModule } from './infrastructure/email/email.module';
-import { SmsModule } from './infrastructure/sms/sms.module';
-import { MonitoringModule } from './infrastructure/monitoring/monitoring.module';
-import { JobsModule } from './infrastructure/jobs/jobs.module';
-import { WebSocketModule } from './infrastructure/websocket/websocket.module';
-import { GraphQLModule } from './infrastructure/graphql/graphql.module';
-import { CoreMiddlewareModule } from './middleware/core/core-middleware.module';
-import { WorkersModule } from './workers/workers.module';
-import { MedicationModule } from './medication/medication.module';
-import { StudentModule } from './student/student.module';
-import { AppointmentModule } from './appointment/appointment.module';
-import { DiscoveryExampleModule } from './discovery/discovery.module';
-import { CommandsModule } from './commands/commands.module';
-import { CoreModule } from './core/core.module';
+import { DashboardModule } from '@/dashboard';
+import { AdvancedFeaturesModule } from '@/advanced-features';
+import { ConfigurationModule } from '@/configuration';
+import { EmergencyBroadcastModule } from '@/emergency-broadcast';
+import { GradeTransitionModule } from '@/grade-transition';
+import { EnterpriseFeaturesModule } from '@/enterprise-features';
+import { HealthMetricsModule } from '@/health-metrics';
+import { MedicationInteractionModule } from '@/medication-interaction';
+import { HealthRiskAssessmentModule } from '@/health-risk-assessment';
+import { EmergencyContactModule } from '@/emergency-contact';
+import { EmailModule } from '@/infrastructure/email';
+import { SmsModule } from '@/infrastructure/sms';
+import { MonitoringModule } from '@/infrastructure/monitoring';
+import { JobsModule } from '@/infrastructure/jobs';
+import { WebSocketModule } from '@/infrastructure/websocket';
+import { GraphQLModule } from '@/infrastructure/graphql';
+import { CoreMiddlewareModule } from '@/middleware/core';
+import { WorkersModule } from '@/workers';
+import { MedicationModule } from '@/medication';
+import { StudentModule } from '@/student';
+import { AppointmentModule } from '@/appointment';
+import { DiscoveryExampleModule } from '@/discovery';
+import { CommandsModule } from '@/commands';
+import { CoreModule } from '@/core';
 import { SentryModule } from './infrastructure/monitoring/sentry.module';
 
 @Module({
@@ -136,8 +134,7 @@ import { SentryModule } from './infrastructure/monitoring/sentry.module';
           db: 0, // Use default database for throttler
           keyPrefix: 'throttler:',
           retryStrategy: (times: number) => {
-            const delay = Math.min(times * 50, 2000);
-            return delay;
+            return Math.min(times * 50, 2000);
           },
           maxRetriesPerRequest: 3,
         });

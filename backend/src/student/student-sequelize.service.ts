@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel, InjectConnection } from '@nestjs/sequelize';
 import { Op, Sequelize } from 'sequelize';
-import { Student, Gender } from '../database/models/student.model';
+import { Student, Gender } from '@/database';
 
 /**
  * Simplified DTOs for basic CRUD operations

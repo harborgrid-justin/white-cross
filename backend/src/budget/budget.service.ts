@@ -1,25 +1,18 @@
-import {
-  Injectable,
-  NotFoundException,
-  ConflictException,
-  BadRequestException,
-  Logger,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Model, Op, Transaction } from 'sequelize';
-import { BudgetCategory } from '../database/models/budget-category.model';
-import { BudgetTransaction } from '../database/models/budget-transaction.model';
-import { CreateBudgetCategoryDto } from './dto/create-budget-category.dto';
-import { UpdateBudgetCategoryDto } from './dto/update-budget-category.dto';
-import { CreateBudgetTransactionDto } from './dto/create-budget-transaction.dto';
-import { UpdateBudgetTransactionDto } from './dto/update-budget-transaction.dto';
-import { BudgetTransactionFiltersDto } from './dto/budget-transaction-filters.dto';
-import { BudgetSummaryDto } from './dto/budget-summary.dto';
-import { SpendingTrendDto } from './dto/spending-trend.dto';
+import { Op } from 'sequelize';
+import { BudgetCategory, BudgetTransaction } from '@/database';
 import {
   BudgetRecommendationDto,
   BudgetRecommendationType,
-} from './dto/budget-recommendation.dto';
+  BudgetSummaryDto,
+  BudgetTransactionFiltersDto,
+  CreateBudgetCategoryDto,
+  CreateBudgetTransactionDto,
+  SpendingTrendDto,
+  UpdateBudgetCategoryDto,
+  UpdateBudgetTransactionDto,
+} from '@/budget/dto';
 
 /**
  * Budget Service
@@ -652,7 +645,7 @@ export class BudgetService {
       }),
     ]);
 
-    const recommendations: BudgetRecommendationDto[] = currentCategories.map(
+    return currentCategories.map(
       (current) => {
         const previous = previousCategories.find(
           (p) => p.name === current.name,
@@ -709,8 +702,6 @@ export class BudgetService {
         };
       },
     );
-
-    return recommendations;
   }
 
   /**

@@ -5,7 +5,7 @@
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { User, UserRole } from './database/models/user.model';
+import { User, UserRole } from '@/database';
 import * as bcrypt from 'bcrypt';
 
 async function createAdminUser() {

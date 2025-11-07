@@ -38,13 +38,13 @@ import {
   EmailVerificationResponseDto,
   ResetPasswordResponseDto,
 } from './dto';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { JwtAuthGuard } from '@/auth/guards';
 import { Public, CurrentUser, AuthToken } from './decorators';
-import { TokenBlacklistService } from './services/token-blacklist.service';
-import { MfaService } from './services/mfa.service';
-import { OAuthService } from './services/oauth.service';
-import { PasswordResetService } from './services/password-reset.service';
-import { EmailVerificationService } from './services/email-verification.service';
+import { TokenBlacklistService } from '@/auth/services';
+import { MfaService } from '@/auth/services';
+import { OAuthService } from '@/auth/services';
+import { PasswordResetService } from '@/auth/services';
+import { EmailVerificationService } from '@/auth/services';
 
 @ApiTags('Authentication')
 @Controller('auth')

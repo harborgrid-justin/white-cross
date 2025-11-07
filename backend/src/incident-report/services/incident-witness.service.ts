@@ -1,10 +1,7 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { WitnessStatement } from '../../database/models/witness-statement.model';
-import { IncidentReport } from '../../database/models/incident-report.model';
-import { CreateWitnessStatementDto } from '../dto/create-witness-statement.dto';
-import { UpdateWitnessStatementDto } from '../dto/update-witness-statement.dto';
-import { IncidentValidationService } from './incident-validation.service';
+import { IncidentReport, WitnessStatement } from '@/database';
+import { CreateWitnessStatementDto, IncidentValidationService, UpdateWitnessStatementDto } from '@/incident-report';
 
 @Injectable()
 export class IncidentWitnessService {
@@ -88,12 +85,10 @@ export class IncidentWitnessService {
     incidentReportId: string,
   ): Promise<WitnessStatement[]> {
     try {
-      const statements = await this.witnessStatementModel.findAll({
+      return await this.witnessStatementModel.findAll({
         where: { incidentReportId },
         order: [['createdAt', 'ASC']],
       });
-
-      return statements;
     } catch (error) {
       this.logger.error('Error fetching witness statements:', error);
       throw error;
@@ -162,12 +157,10 @@ export class IncidentWitnessService {
    */
   async getUnverifiedStatements(): Promise<WitnessStatement[]> {
     try {
-      const statements = await this.witnessStatementModel.findAll({
+      return await this.witnessStatementModel.findAll({
         where: { verified: false },
         order: [['createdAt', 'ASC']],
       });
-
-      return statements;
     } catch (error) {
       this.logger.error('Error fetching unverified witness statements:', error);
       throw error;

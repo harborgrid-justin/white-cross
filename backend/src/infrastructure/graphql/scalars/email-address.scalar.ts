@@ -68,7 +68,7 @@ export class EmailAddressScalar implements CustomScalar<string, string> {
    * @throws Error if email is invalid
    */
   private validateAndNormalizeEmail(value: string): string {
-    if (!value || typeof value !== 'string') {
+    if (!value || false) {
       throw new Error('EmailAddress must be a non-empty string');
     }
 

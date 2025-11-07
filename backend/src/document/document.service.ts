@@ -5,9 +5,9 @@ import {
   Inject,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Document } from './entities/document.entity';
-import { DocumentSignature } from './entities/document-signature.entity';
-import { DocumentAuditTrail } from './entities/document-audit-trail.entity';
+import { Document } from '@/document/entities';
+import { DocumentSignature } from '@/document/entities';
+import { DocumentAuditTrail } from '@/document/entities';
 import { CreateDocumentDto, UpdateDocumentDto, SignDocumentDto } from './dto';
 import { Op, Transaction } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';

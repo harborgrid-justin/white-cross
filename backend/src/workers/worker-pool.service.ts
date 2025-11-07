@@ -40,7 +40,7 @@ import {
   MemorySensitive,
   ImmediateCleanup,
   LeakProne,
-} from '../discovery/modules/decorators/memory-optimization.decorators';
+} from '@/discovery/modules';
 
 @CPUIntensive()
 @ResourcePool({

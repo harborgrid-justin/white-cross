@@ -561,7 +561,7 @@ export class AiSearchService {
 
     return {
       contraindications: [],
-      patientSpecific: patientId ? true : false,
+      patientSpecific: !!patientId,
       message: 'Medication contraindications require database integration',
     };
   }

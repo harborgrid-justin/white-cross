@@ -17,7 +17,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { User } from './entities/user.entity';
+import { User } from '@/user/entities';
 import {
   CreateUserDto,
   UpdateUserDto,
@@ -25,8 +25,8 @@ import {
   UserFiltersDto,
   UserStatisticsDto,
 } from './dto';
-import { UserRole } from './enums/user-role.enum';
-import { QueryCacheService } from '../database/services/query-cache.service';
+import { UserRole } from '@/user/enums';
+import { QueryCacheService } from '@/database/services';
 
 @Injectable()
 export class UserService {

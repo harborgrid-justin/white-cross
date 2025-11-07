@@ -23,7 +23,7 @@ import {
   ContactPriority,
   PreferredContactMethod,
   NotificationChannel,
-} from '../../contact/enums';
+} from '@/contact';
 
 export class EmergencyContactCreateDto {
   @ApiProperty({

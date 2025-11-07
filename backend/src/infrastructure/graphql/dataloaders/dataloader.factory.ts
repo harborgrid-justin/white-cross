@@ -14,23 +14,25 @@
  * @module DataLoaderFactory
  */
 import DataLoader from 'dataloader';
-import { Injectable, Scope, Logger } from '@nestjs/common';
-import { StudentService } from '../../../student/student.service';
-import { ContactService } from '../../../contact/services/contact.service';
-import { MedicationService } from '../../../medication/services/medication.service';
-import { HealthRecordService } from '../../../health-record/health-record.service';
-import { EmergencyContactService } from '../../../emergency-contact/emergency-contact.service';
-import { ChronicConditionService } from '../../../chronic-condition/chronic-condition.service';
-import { IncidentCoreService } from '../../../incident-report/services/incident-core.service';
-import { AllergyService } from '../../../health-record/allergy/allergy.service';
-import type { Student } from '../../../database/models/student.model';
-import type { Contact } from '../../../database/models/contact.model';
-import type { StudentMedication } from '../../../database/models/student-medication.model';
-import type { HealthRecord } from '../../../database/models/health-record.model';
-import type { EmergencyContact } from '../../../database/models/emergency-contact.model';
-import type { ChronicCondition } from '../../../database/models/chronic-condition.model';
-import type { IncidentReport } from '../../../database/models/incident-report.model';
-import type { Allergy } from '../../../database/models/allergy.model';
+import { Injectable, Logger, Scope } from '@nestjs/common';
+import { StudentService } from '@/student';
+import { ContactService } from '@/contact';
+import { MedicationService } from '@/medication';
+import { HealthRecordService } from '@/health-record';
+import { EmergencyContactService } from '@/emergency-contact';
+import { ChronicConditionService } from '@/chronic-condition';
+import { IncidentCoreService } from '@/incident-report';
+import { AllergyService } from '@/health-record/allergy';
+import type {
+  Allergy,
+  ChronicCondition,
+  Contact,
+  EmergencyContact,
+  HealthRecord,
+  IncidentReport,
+  Student,
+  StudentMedication,
+} from '@/database';
 
 /**
  * DataLoader Factory
@@ -111,11 +113,8 @@ export class DataLoaderFactory {
 
           // Fetch all contacts for these students in a single query
           // findByStudentIds already returns contacts grouped by student ID
-          const contactsByStudent =
-            await this.contactService.findByStudentIds(ids);
-
           // Return contacts arrays in same order as requested IDs
-          return contactsByStudent;
+          return await this.contactService.findByStudentIds(ids);
         } catch (error) {
           this.logger.error('Error in contacts-by-student DataLoader:', error);
           // Return array of empty arrays to prevent breaking entire query
@@ -185,11 +184,8 @@ export class DataLoaderFactory {
 
           // Fetch all medications for these students in a single query
           // findByStudentIds already returns medications grouped by student ID
-          const medicationsByStudent =
-            await this.medicationService.findByStudentIds(ids);
-
           // Return medications arrays in same order as requested IDs
-          return medicationsByStudent;
+          return await this.medicationService.findByStudentIds(ids);
         } catch (error) {
           this.logger.error('Error in medications-by-student DataLoader:', error);
           // Return array of empty arrays to prevent breaking entire query
@@ -261,11 +257,8 @@ export class DataLoaderFactory {
           const ids = [...studentIds];
 
           // Use HealthRecordService batch loading method
-          const healthRecordsByStudent =
-            await this.healthRecordService.findByStudentIds(ids);
-
           // Return health records arrays in same order as requested IDs
-          return healthRecordsByStudent;
+          return await this.healthRecordService.findByStudentIds(ids);
         } catch (error) {
           this.logger.error(
             'Error in health-records-by-student DataLoader:',
@@ -291,8 +284,7 @@ export class DataLoaderFactory {
       async (healthRecordIds: readonly string[]) => {
         try {
           const ids = [...healthRecordIds];
-          const healthRecords = await this.healthRecordService.findByIds(ids);
-          return healthRecords;
+          return await this.healthRecordService.findByIds(ids);
         } catch (error) {
           this.logger.error('Error in health-record DataLoader:', error);
           return healthRecordIds.map(() => null);
@@ -314,9 +306,7 @@ export class DataLoaderFactory {
       async (studentIds: readonly string[]) => {
         try {
           const ids = [...studentIds];
-          const contactsByStudent =
-            await this.emergencyContactService.findByStudentIds(ids);
-          return contactsByStudent;
+          return await this.emergencyContactService.findByStudentIds(ids);
         } catch (error) {
           this.logger.error(
             'Error in emergency-contacts-by-student DataLoader:',
@@ -341,8 +331,7 @@ export class DataLoaderFactory {
       async (contactIds: readonly string[]) => {
         try {
           const ids = [...contactIds];
-          const contacts = await this.emergencyContactService.findByIds(ids);
-          return contacts;
+          return await this.emergencyContactService.findByIds(ids);
         } catch (error) {
           this.logger.error('Error in emergency-contact DataLoader:', error);
           return contactIds.map(() => null);
@@ -364,9 +353,7 @@ export class DataLoaderFactory {
       async (studentIds: readonly string[]) => {
         try {
           const ids = [...studentIds];
-          const conditionsByStudent =
-            await this.chronicConditionService.findByStudentIds(ids);
-          return conditionsByStudent;
+          return await this.chronicConditionService.findByStudentIds(ids);
         } catch (error) {
           this.logger.error(
             'Error in chronic-conditions-by-student DataLoader:',
@@ -391,9 +378,7 @@ export class DataLoaderFactory {
       async (conditionIds: readonly string[]) => {
         try {
           const ids = [...conditionIds];
-          const conditions =
-            await this.chronicConditionService.findByIds(ids);
-          return conditions;
+          return await this.chronicConditionService.findByIds(ids);
         } catch (error) {
           this.logger.error('Error in chronic-condition DataLoader:', error);
           return conditionIds.map(() => null);
@@ -415,9 +400,7 @@ export class DataLoaderFactory {
       async (studentIds: readonly string[]) => {
         try {
           const ids = [...studentIds];
-          const incidentsByStudent =
-            await this.incidentCoreService.findByStudentIds(ids);
-          return incidentsByStudent;
+          return await this.incidentCoreService.findByStudentIds(ids);
         } catch (error) {
           this.logger.error(
             'Error in incidents-by-student DataLoader:',
@@ -442,8 +425,7 @@ export class DataLoaderFactory {
       async (incidentIds: readonly string[]) => {
         try {
           const ids = [...incidentIds];
-          const incidents = await this.incidentCoreService.findByIds(ids);
-          return incidents;
+          return await this.incidentCoreService.findByIds(ids);
         } catch (error) {
           this.logger.error('Error in incident DataLoader:', error);
           return incidentIds.map(() => null);
@@ -465,9 +447,7 @@ export class DataLoaderFactory {
       async (studentIds: readonly string[]) => {
         try {
           const ids = [...studentIds];
-          const allergiesByStudent =
-            await this.allergyService.findByStudentIds(ids);
-          return allergiesByStudent;
+          return await this.allergyService.findByStudentIds(ids);
         } catch (error) {
           this.logger.error(
             'Error in allergies-by-student DataLoader:',
@@ -492,8 +472,7 @@ export class DataLoaderFactory {
       async (allergyIds: readonly string[]) => {
         try {
           const ids = [...allergyIds];
-          const allergies = await this.allergyService.findByIds(ids);
-          return allergies;
+          return await this.allergyService.findByIds(ids);
         } catch (error) {
           this.logger.error('Error in allergy DataLoader:', error);
           return allergyIds.map(() => null);

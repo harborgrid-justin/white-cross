@@ -11,11 +11,11 @@
  */
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { ContactService } from './services/contact.service';
-import { EmergencyContactService } from './services/emergency-contact.service';
+import { ContactService } from '@/contact/services';
+import { EmergencyContactService } from '@/contact/services';
 import { ContactController } from './contact.controller';
-import { Contact } from '../database/models/contact.model';
-import { EmergencyContact } from '../database/models/emergency-contact.model';
+import { Contact } from '@/database';
+import { EmergencyContact } from '@/database';
 
 @Module({
   imports: [SequelizeModule.forFeature([Contact, EmergencyContact])],

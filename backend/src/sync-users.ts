@@ -6,7 +6,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Sequelize } from 'sequelize-typescript';
-import { User } from './database/models/user.model';
+import { User } from '@/database';
 
 async function syncUsersOnly() {
   console.log('🔄 Starting minimal database sync (users only)...');

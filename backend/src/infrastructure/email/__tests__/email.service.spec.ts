@@ -15,7 +15,7 @@ import {
   EmailTemplate,
   EmailPriority,
   SendEmailDto,
-} from '../dto/email.dto';
+} from '../dto';
 import { AlertSeverity, AlertCategory } from '../../../alerts/alerts.service';
 
 describe('EmailService', () => {

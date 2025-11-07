@@ -34,8 +34,8 @@ import { Inject, UseGuards } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../pubsub/pubsub.module';
 import { GqlAuthGuard, GqlRolesGuard } from '../guards';
-import { Roles } from '../../../auth/decorators/roles.decorator';
-import { UserRole } from '../../../database/models/user.model';
+import { Roles } from '@/auth';
+import { UserRole } from '@/database';
 import { HealthRecordDto, StudentDto, AlertDto, VitalsDto } from '../dto';
 
 
@@ -222,11 +222,9 @@ export class SubscriptionResolver {
       }
 
       // Broadcast alerts (no specific recipient)
-      if (!alert.recipientId && !alert.recipientRole) {
-        return true;
-      }
+      return !alert.recipientId && !alert.recipientRole;
 
-      return false;
+
     },
   })
   @UseGuards(GqlAuthGuard)

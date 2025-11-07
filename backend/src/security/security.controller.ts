@@ -18,10 +18,10 @@ import {
   ApiQuery,
   ApiBody,
 } from '@nestjs/swagger';
-import { IpRestrictionService } from './services/ip-restriction.service';
-import { SecurityIncidentService } from './services/security-incident.service';
-import { SessionManagementService } from './services/session-management.service';
-import { ThreatDetectionService } from './services/threat-detection.service';
+import { IpRestrictionService } from '@/security/services';
+import { SecurityIncidentService } from '@/security/services';
+import { SessionManagementService } from '@/security/services';
+import { ThreatDetectionService } from '@/security/services';
 import {
   SecurityCreateIpRestrictionDto,
   UpdateIpRestrictionDto,

@@ -20,7 +20,7 @@
  * ```
  */
 import { SetMetadata } from '@nestjs/common';
-import { UserRole } from '../../../database/models/user.model';
+import { UserRole } from '@/database';
 
 /**
  * Metadata key for field authorization

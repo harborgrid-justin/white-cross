@@ -17,14 +17,14 @@ import {
   ErrorResponse,
   ErrorSeverity,
   ErrorCategory,
-} from '../types/error-response.types';
-import { SystemErrorCodes } from '../constants/error-codes';
+} from '@/common';
+import { SystemErrorCodes } from '@/common';
 import { LoggerService } from '../../../shared/logging/logger.service';
-import { SentryService } from '../../../infrastructure/monitoring/sentry.service';
+import { SentryService } from '@/infrastructure/monitoring/sentry.service';
 import {
   getRequestId,
   getRequestContext,
-} from '../../middleware/request-context.middleware';
+} from '@/common';
 
 /**
  * All Exceptions Filter

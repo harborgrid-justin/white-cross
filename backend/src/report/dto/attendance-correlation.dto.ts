@@ -1,7 +1,7 @@
 import { IsOptional, IsInt, Min, Max } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { BaseReportDto } from './base-report.dto';
+import { BaseReportDto } from '@/report';
 
 /**
  * DTO for Attendance Correlation Report requests

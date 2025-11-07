@@ -28,7 +28,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { WsException } from '@nestjs/websockets';
-import { RateLimiterService } from '../services/rate-limiter.service';
+import { RateLimiterService } from '@/infrastructure/websocket';
 
 /**
  * Throttle configuration metadata key

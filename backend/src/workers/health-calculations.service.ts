@@ -27,7 +27,7 @@ import {
   MemorySensitive,
   ImmediateCleanup,
   LeakProne,
-} from '../discovery/modules/decorators/memory-optimization.decorators';
+} from '@/discovery/modules';
 
 /**
  * Input for single BMI calculation

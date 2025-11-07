@@ -40,7 +40,7 @@ import {
   UserListResponseDto,
   UserStatisticsDto,
 } from './dto';
-import { UserRole } from './enums/user-role.enum';
+import { UserRole } from '@/user/enums';
 
 @ApiTags('users')
 @ApiBearerAuth()

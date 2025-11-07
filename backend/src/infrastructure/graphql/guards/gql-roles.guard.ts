@@ -17,8 +17,8 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { ROLES_KEY } from '../../../auth/decorators/roles.decorator';
-import { UserRole } from '../../../database/models/user.model';
+import { ROLES_KEY } from '@/auth/decorators';
+import { UserRole } from '@/database';
 
 /**
  * GraphQL Roles Guard

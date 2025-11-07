@@ -28,15 +28,15 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { HealthRecordAuditInterceptor } from '../health-record/interceptors/health-record-audit.interceptor';
+import { JwtAuthGuard } from '@/auth';
+import { HealthRecordAuditInterceptor } from '@/health-record/interceptors';
 import { StudentService } from './student.service';
 import type {
   PaginatedResponse,
   StudentStatistics,
   StudentDataExport,
 } from './dto';
-import { Student } from '../database/models/student.model';
+import { Student } from '@/database';
 import {
   CreateStudentDto,
   UpdateStudentDto,

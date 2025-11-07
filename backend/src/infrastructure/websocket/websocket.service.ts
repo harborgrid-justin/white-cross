@@ -38,7 +38,7 @@
  */
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { WebSocketGateway } from './websocket.gateway';
-import { AppConfigService } from '../../config/app-config.service';
+import { AppConfigService } from '@/config';
 import {
   BroadcastMessageDto,
   MessageEventDto,

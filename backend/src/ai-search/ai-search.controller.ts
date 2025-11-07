@@ -24,17 +24,17 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { AiSearchService } from './ai-search.service';
-import { SearchQueryDto } from './dto/search-query.dto';
-import { IndexContentDto } from './dto/index-content.dto';
-import { SemanticSearchDto } from './dto/semantic-search.dto';
-import { AdvancedSearchCriteriaDto } from './dto/advanced-search.dto';
-import { SimilarCasesDto } from './dto/similar-cases.dto';
-import { MedicationSearchDto } from './dto/medication-search.dto';
-import { SearchSuggestionsDto } from './dto/search-suggestions.dto';
+import { SearchQueryDto } from '@/ai-search/dto';
+import { IndexContentDto } from '@/ai-search/dto';
+import { SemanticSearchDto } from '@/ai-search/dto';
+import { AdvancedSearchCriteriaDto } from '@/ai-search/dto';
+import { SimilarCasesDto } from '@/ai-search/dto';
+import { MedicationSearchDto } from '@/ai-search/dto';
+import { SearchSuggestionsDto } from '@/ai-search/dto';
 import {
   SearchAnalyticsDto,
   AnalyticsPeriod,
-} from './dto/search-analytics.dto';
+} from '@/ai-search/dto';
 
 @ApiTags('AI Search')
 @Controller('ai-search')

@@ -1,15 +1,15 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { NotificationService } from './services/notification.service';
-import { OfflineSyncService } from './services/offline-sync.service';
-import { NotificationController } from './controllers/notification.controller';
-import { DeviceController } from './controllers/device.controller';
-import { SyncController } from './controllers/sync.controller';
-import { DeviceToken } from '../database/models/device-token.model';
-import { PushNotification } from '../database/models/push-notification.model';
-import { SyncQueueItem } from '../database/models/sync-queue-item.model';
-import { SyncConflict } from '../database/models/sync-conflict.model';
-import { AuthModule } from '../auth/auth.module';
+import { NotificationService } from '@/mobile/services';
+import { OfflineSyncService } from '@/mobile/services';
+import { NotificationController } from '@/mobile/controllers';
+import { DeviceController } from '@/mobile/controllers';
+import { SyncController } from '@/mobile/controllers';
+import { DeviceToken } from '@/database';
+import { PushNotification } from '@/database';
+import { SyncQueueItem } from '@/database';
+import { SyncConflict } from '@/database';
+import { AuthModule } from '@/auth';
 
 /**
  * Mobile Module

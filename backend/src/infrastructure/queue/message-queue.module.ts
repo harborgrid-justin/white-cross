@@ -55,10 +55,10 @@ import {
   BatchMessageProcessor,
   MessageCleanupProcessor,
 } from './message-queue.processor.complete';
-import { EncryptionModule } from '../encryption/encryption.module';
-import { WebSocketModule } from '../websocket/websocket.module';
-import { Message } from '../../database/models/message.model';
-import { MessageDelivery } from '../../database/models/message-delivery.model';
+import { EncryptionModule } from '@/infrastructure/encryption';
+import { WebSocketModule } from '@/infrastructure/websocket';
+import { Message } from '@/database';
+import { MessageDelivery } from '@/database';
 
 @Module({
   imports: [

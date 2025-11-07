@@ -324,25 +324,29 @@ const report = await auditService.generateComplianceReport(
 This is the recommended approach for most models:
 
 ```typescript
-import { logModelPHIFieldChanges } from '../services/model-audit-helper.service';
+import {logModelPHIFieldChanges} from '../services/model-audit-helper.service';
 
 @BeforeCreate
 @BeforeUpdate
-static async auditPHIAccess(instance: YourModel) {
-  if (instance.changed()) {
-    const changedFields = instance.changed() as string[];
-    const phiFields = ['field1', 'field2', 'field3'];
+auditPHIAccess(instance
+:
+YourModel
+)
+{
+    if (instance.changed()) {
+        const changedFields = instance.changed() as string[];
+        const phiFields = ['field1', 'field2', 'field3'];
 
-    const transaction = (instance as any).sequelize?.transaction || undefined;
+        const transaction = (instance as any).sequelize?.transaction || undefined;
 
-    await logModelPHIFieldChanges(
-      'YourModel',
-      instance.id,
-      changedFields,
-      phiFields,
-      transaction
-    );
-  }
+        await logModelPHIFieldChanges(
+            'YourModel',
+            instance.id,
+            changedFields,
+            phiFields,
+            transaction
+        );
+    }
 }
 ```
 
@@ -351,23 +355,27 @@ static async auditPHIAccess(instance: YourModel) {
 For models where all fields are PHI (like HealthRecord):
 
 ```typescript
-import { logModelPHIAccess } from '../services/model-audit-helper.service';
+import {logModelPHIAccess} from '../services/model-audit-helper.service';
 
 @BeforeCreate
 @BeforeUpdate
-static async auditPHIAccess(instance: YourModel) {
-  if (instance.changed()) {
-    const changedFields = instance.changed() as string[];
-    const transaction = (instance as any).sequelize?.transaction || undefined;
+auditPHIAccess(instance
+:
+YourModel
+)
+{
+    if (instance.changed()) {
+        const changedFields = instance.changed() as string[];
+        const transaction = (instance as any).sequelize?.transaction || undefined;
 
-    await logModelPHIAccess(
-      'YourModel',
-      instance.id,
-      'UPDATE',
-      changedFields,
-      transaction
-    );
-  }
+        await logModelPHIAccess(
+            'YourModel',
+            instance.id,
+            'UPDATE',
+            changedFields,
+            transaction
+        );
+    }
 }
 ```
 
@@ -606,35 +614,45 @@ describe('AuditService', () => {
 Models that previously used console.log have been updated:
 
 ### Before (Console Logging)
+
 ```typescript
 @BeforeUpdate
-static async auditPHIAccess(instance: Student) {
-  if (instance.changed()) {
-    console.log(`[AUDIT] PHI modified for student ${instance.id}`);
-    // TODO: Integrate with AuditLog service
-  }
+auditPHIAccess(instance
+:
+Student
+)
+{
+    if (instance.changed()) {
+        console.log(`[AUDIT] PHI modified for student ${instance.id}`);
+        // TODO: Integrate with AuditLog service
+    }
 }
 ```
 
 ### After (Database Persistence)
+
 ```typescript
 @BeforeUpdate
-static async auditPHIAccess(instance: Student) {
-  if (instance.changed()) {
-    const changedFields = instance.changed() as string[];
-    const phiFields = ['firstName', 'lastName', 'dateOfBirth'];
+auditPHIAccess(instance
+:
+Student
+)
+{
+    if (instance.changed()) {
+        const changedFields = instance.changed() as string[];
+        const phiFields = ['firstName', 'lastName', 'dateOfBirth'];
 
-    const { logModelPHIFieldChanges } = await import('../services/model-audit-helper.service');
-    const transaction = (instance as any).sequelize?.transaction || undefined;
+        const {logModelPHIFieldChanges} = await import('../services/model-audit-helper.service');
+        const transaction = (instance as any).sequelize?.transaction || undefined;
 
-    await logModelPHIFieldChanges(
-      'Student',
-      instance.id,
-      changedFields,
-      phiFields,
-      transaction
-    );
-  }
+        await logModelPHIFieldChanges(
+            'Student',
+            instance.id,
+            changedFields,
+            phiFields,
+            transaction
+        );
+    }
 }
 ```
 

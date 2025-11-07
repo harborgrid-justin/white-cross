@@ -25,11 +25,11 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { BudgetService } from './budget.service';
-import { CreateBudgetCategoryDto } from './dto/create-budget-category.dto';
-import { UpdateBudgetCategoryDto } from './dto/update-budget-category.dto';
-import { CreateBudgetTransactionDto } from './dto/create-budget-transaction.dto';
-import { UpdateBudgetTransactionDto } from './dto/update-budget-transaction.dto';
-import { BudgetTransactionFiltersDto } from './dto/budget-transaction-filters.dto';
+import { CreateBudgetCategoryDto } from '@/budget/dto';
+import { UpdateBudgetCategoryDto } from '@/budget/dto';
+import { CreateBudgetTransactionDto } from '@/budget/dto';
+import { UpdateBudgetTransactionDto } from '@/budget/dto';
+import { BudgetTransactionFiltersDto } from '@/budget/dto';
 
 /**
  * Budget Controller

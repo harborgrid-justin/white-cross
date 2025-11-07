@@ -25,7 +25,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
 import { AuthenticatedSocket } from '../interfaces';
-import { AuthPayload } from '../interfaces/auth-payload.interface';
+import { AuthPayload } from '@/infrastructure/websocket';
 
 
 /**

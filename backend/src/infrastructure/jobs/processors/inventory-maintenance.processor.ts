@@ -29,17 +29,17 @@ import { ConfigService } from '@nestjs/config';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize, QueryTypes } from 'sequelize';
 import { Job } from 'bullmq';
-import { JobType } from '../enums/job-type.enum';
-import { InventoryMaintenanceData } from '../interfaces/job-data.interface';
+import { JobType } from '@/infrastructure/jobs';
+import { InventoryMaintenanceData } from '@/infrastructure/jobs';
 import { CacheService } from '../../../shared/cache/cache.service';
-import { EmailService } from '../../email/email.service';
+import { EmailService } from '@/infrastructure/email';
 import {
   MessageDelivery,
   RecipientType,
   DeliveryStatus,
   DeliveryChannelType,
 } from '../../../database/models/message-delivery.model';
-import { MessageType } from '../../../database/models/message-template.model';
+import { MessageType } from '@/database';
 
 interface InventoryAlert {
   type: 'EXPIRED' | 'NEAR_EXPIRY' | 'LOW_STOCK' | 'OUT_OF_STOCK';

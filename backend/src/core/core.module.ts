@@ -17,24 +17,24 @@ import { Module, Global, Optional } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE, APP_FILTER } from '@nestjs/core';
 
 // Import audit module for exception filter
-import { AuditModule } from '../audit/audit.module';
+import { AuditModule } from '@/audit';
 
 // Guards
-import { RolesGuard } from '../auth/guards/roles.guard';
+import { RolesGuard } from '@/auth';
 
 // Interceptors
-import { LoggingInterceptor } from '../common/interceptors/logging.interceptor';
-import { SanitizationInterceptor } from '../common/interceptors/sanitization.interceptor';
-import { TimeoutInterceptor } from '../common/interceptors/timeout.interceptor';
-import { TransformInterceptor } from '../common/interceptors/transform.interceptor';
-import { ErrorMappingInterceptor } from '../common/interceptors/error-mapping.interceptor';
+import { LoggingInterceptor } from '@/common';
+import { SanitizationInterceptor } from '@/common';
+import { TimeoutInterceptor } from '@/common';
+import { TransformInterceptor } from '@/common/interceptors/transform.interceptor';
+import { ErrorMappingInterceptor } from '@/common/interceptors/error-mapping.interceptor';
 
 // Pipes
 import { ValidationPipe } from '@nestjs/common';
 
 // Filters
-import { HttpExceptionFilter } from '../common/exceptions/filters/http-exception.filter';
-import { AllExceptionsFilter } from '../common/exceptions/filters/all-exceptions.filter';
+import { HttpExceptionFilter } from '@/common';
+import { AllExceptionsFilter } from '@/common';
 
 /**
  * Core Module

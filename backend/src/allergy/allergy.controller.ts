@@ -31,14 +31,14 @@ import {
   ApiBody,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { AllergyCrudService } from './services/allergy-crud.service';
-import { AllergyQueryService } from './services/allergy-query.service';
-import { AllergySafetyService } from './services/allergy-safety.service';
-import { CreateAllergyDto } from './dto/create-allergy.dto';
-import { AllergyUpdateDto } from './dto/update-allergy.dto';
-import { AllergyFiltersDto } from './dto/allergy-filters.dto';
-import { PaginationDto } from './dto/pagination.dto';
-import { VerifyAllergyDto } from './dto/verify-allergy.dto';
+import { AllergyCrudService } from '@/allergy/services';
+import { AllergyQueryService } from '@/allergy/services';
+import { AllergySafetyService } from '@/allergy/services';
+import { CreateAllergyDto } from '@/allergy/dto';
+import { AllergyUpdateDto } from '@/allergy/dto';
+import { AllergyFiltersDto } from '@/allergy/dto';
+import { PaginationDto } from '@/allergy/dto';
+import { VerifyAllergyDto } from '@/allergy/dto';
 
 @ApiTags('Allergies')
 @ApiBearerAuth()

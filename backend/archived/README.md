@@ -1,98 +1,84 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Backend Type Definitions
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This directory contains centralized TypeScript type definitions for the White Cross backend application.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Structure
 
-## Description
+### Core Types
+- **`common.ts`** - Common utility types used throughout the application (UUID, Email, etc.)
+- **`database.ts`** - Database configuration and model types
+- **`migrations.d.ts`** - Sequelize migration type definitions
+- **`api.ts`** - API response and error types
+- **`pagination.ts`** - Pagination types for offset and cursor-based pagination
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### Advanced Types
+- **`utility.ts`** - Advanced TypeScript utility types for type transformations
+- **`guards.ts`** - Type guard functions for runtime type checking
+- **`environment.ts`** - Environment variable type definitions
+- **`config.ts`** - Application configuration types
 
-## Project setup
+### Usage
 
-```bash
-$ npm install
+```typescript
+// Import specific types
+import { UUID, PaginatedResult, ApiResponse } from '@/types';
+
+// Import from specific modules
+import { DatabaseConfig } from '@/types/database';
+import { Migration } from '@/types/migrations';
+import { isEmail, isDefined } from '@/types/guards';
 ```
 
-## Compile and run the project
+## Type Categories
 
-```bash
-# development
-$ npm run start
+### 1. Database Types
+Type definitions for database operations, Sequelize models, and migrations.
 
-# watch mode
-$ npm run start:dev
+### 2. API Types
+Standardized API response formats, error structures, and pagination.
 
-# production mode
-$ npm run start:prod
+### 3. Utility Types
+Advanced TypeScript type helpers for type transformations and constraints.
+
+### 4. Type Guards
+Runtime type checking functions with TypeScript type narrowing.
+
+### 5. Configuration Types
+Type-safe configuration objects for all application settings.
+
+### 6. Environment Types
+Type definitions for environment variables with validation helpers.
+
+## Best Practices
+
+1. **Import from Index**: Always import types from `@/types` for consistency
+2. **Type-Only Imports**: Use `import type` when importing only types
+3. **Avoid `any`**: Use `unknown` with type guards instead of `any`
+4. **Document Types**: Add JSDoc comments for all exported types
+5. **Type Narrowing**: Use type guards for runtime validation
+
+## Adding New Types
+
+1. Create types in the appropriate module file
+2. Export from the module file
+3. Re-export from `index.ts`
+4. Document in this README
+5. Add examples in JSDoc comments
+
+## Migration Type Definitions
+
+For JavaScript migration files, TypeScript definitions are automatically provided through `migrations.d.ts`. Use them as follows:
+
+```javascript
+/**
+ * @type {import('../../types/migrations').Migration}
+ */
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    // Migration code
+  },
+  async down(queryInterface, Sequelize) {
+    // Rollback code
+  }
+};
 ```
-
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).

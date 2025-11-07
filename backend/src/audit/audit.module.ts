@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { AuditService } from './audit.service';
 import { AuditController } from './audit.controller';
-import { AuditLog } from '../database/models/audit-log.model';
+import { AuditLog } from '@/database';
 import {
   AuditLogService,
   PHIAccessService,

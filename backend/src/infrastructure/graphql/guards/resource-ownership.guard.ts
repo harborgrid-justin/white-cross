@@ -32,9 +32,9 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { UserRole } from '../../../database/models/user.model';
-import { StudentService } from '../../../student/student.service';
-import { HealthRecordService } from '../../../health-record/health-record.service';
+import { UserRole } from '@/database';
+import { StudentService } from '@/student';
+import { HealthRecordService } from '@/health-record';
 
 /**
  * Metadata key for resource type

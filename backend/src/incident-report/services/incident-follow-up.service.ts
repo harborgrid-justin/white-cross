@@ -6,11 +6,11 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { FollowUpAction } from '../../database/models/follow-up-action.model';
-import { IncidentReport } from '../../database/models/incident-report.model';
-import { CreateFollowUpActionDto } from '../dto/create-follow-up-action.dto';
-import { UpdateFollowUpActionDto } from '../dto/update-follow-up-action.dto';
-import { IncidentValidationService } from './incident-validation.service';
+import { FollowUpAction } from '@/database';
+import { IncidentReport } from '@/database';
+import { CreateFollowUpActionDto } from '@/incident-report';
+import { UpdateFollowUpActionDto } from '@/incident-report';
+import { IncidentValidationService } from '@/incident-report';
 import { ActionStatus, ActionPriority } from '../enums';
 
 @Injectable()

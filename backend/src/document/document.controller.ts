@@ -28,7 +28,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { DocumentService } from './document.service';
 import { CreateDocumentDto, UpdateDocumentDto, SignDocumentDto } from './dto';
-import { CurrentUser, IpAddress } from '../auth/decorators';
+import { CurrentUser, IpAddress } from '@/auth/decorators';
 
 /**
  * Document Controller

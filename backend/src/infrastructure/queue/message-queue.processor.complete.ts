@@ -34,10 +34,10 @@ import {
 } from './dtos';
 import { CleanupType } from './dtos/message-job.dto';
 
-import { EncryptionService } from '../encryption/encryption.service';
-import { WebSocketService } from '../websocket/websocket.service';
-import { Message } from '../../database/models/message.model';
-import { MessageDelivery } from '../../database/models/message-delivery.model';
+import { EncryptionService } from '@/infrastructure/encryption';
+import { WebSocketService } from '@/infrastructure/websocket';
+import { Message } from '@/database';
+import { MessageDelivery } from '@/database';
 import { Op } from 'sequelize';
 
 /**

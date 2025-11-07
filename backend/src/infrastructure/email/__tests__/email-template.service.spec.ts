@@ -6,7 +6,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { EmailTemplateService } from '../email-template.service';
-import { EmailTemplate } from '../dto/email.dto';
+import { EmailTemplate } from '../dto';
 
 describe('EmailTemplateService', () => {
   let service: EmailTemplateService;

@@ -27,8 +27,8 @@ import {
 } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { GqlAuthGuard, GqlRolesGuard } from '../guards';
-import { Roles } from '../../../auth/decorators/roles.decorator';
-import { UserRole } from '../../../database/models/user.model';
+import { Roles } from '@/auth';
+import { UserRole } from '@/database';
 import {
   HealthRecordDto,
   HealthRecordListResponseDto,
@@ -38,9 +38,9 @@ import {
   DeleteResponseDto,
   StudentDto,
 } from '../dto';
-import { HealthRecordService } from '../../../health-record/health-record.service';
+import { HealthRecordService } from '@/health-record';
 import type { GraphQLContext } from '../types/context.interface';
-import { PHIField } from '../guards/field-authorization.guard';
+import { PHIField } from '@/infrastructure/graphql';
 
 
 /**
