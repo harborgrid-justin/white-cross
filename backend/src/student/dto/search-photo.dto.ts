@@ -4,16 +4,8 @@
  * @description DTO for facial recognition search
  */
 
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsNotEmpty,
-  IsString,
-  IsOptional,
-  IsNumber,
-  Min,
-  Max,
-  IsObject,
-} from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsString, IsOptional, IsNumber, Min, Max, IsObject } from 'class-validator';
 import { Type } from 'class-transformer';
 
 /**

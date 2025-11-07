@@ -41,7 +41,7 @@ export class StudentScanBarcodeDto {
   })
   @IsNotEmpty()
   @IsString()
-  barcodeString: string;
+  barcodeString!: string;
 
   @ApiPropertyOptional({
     description: 'Type of barcode scan for context-specific processing',

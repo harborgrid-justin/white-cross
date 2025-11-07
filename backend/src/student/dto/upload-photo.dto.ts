@@ -4,8 +4,8 @@
  * @description DTO for uploading student photo with metadata
  */
 
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsOptional, IsObject } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsString, IsOptional, IsObject } from 'class-validator';
 
 /**
  * Upload Student Photo DTO

@@ -212,7 +212,7 @@ export class ThreatDetectionService {
         default: 1000,
       };
 
-      const threshold = thresholds[dataType] || thresholds.default;
+      const threshold = thresholds[dataType] ?? thresholds.default;
 
       if (volume > threshold) {
         this.logger.warn('Potential data breach attempt detected', {

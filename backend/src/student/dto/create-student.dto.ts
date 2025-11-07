@@ -29,8 +29,7 @@ import { Gender } from '../entities/student.entity';
  */
 export class CreateStudentDto {
   @ApiProperty({
-    description:
-      'Unique student identifier (4-20 alphanumeric characters with optional hyphens)',
+    description: 'Unique student identifier (4-20 alphanumeric characters with optional hyphens)',
     example: 'STU-2024-001',
     minLength: 4,
     maxLength: 20,
@@ -43,11 +42,10 @@ export class CreateStudentDto {
   @Matches(/^[A-Z0-9-]+$/i, {
     message: 'Student number must be alphanumeric with optional hyphens',
   })
-  studentNumber: string;
+  studentNumber!: string;
 
   @ApiProperty({
-    description:
-      'Student first name (1-100 characters, letters/spaces/hyphens/apostrophes only)',
+    description: 'Student first name (1-100 characters, letters/spaces/hyphens/apostrophes only)',
     example: 'Emma',
     minLength: 1,
     maxLength: 100,
@@ -58,14 +56,12 @@ export class CreateStudentDto {
     message: 'First name must be between 1 and 100 characters',
   })
   @Matches(/^[a-zA-Z\s'-]+$/, {
-    message:
-      'First name can only contain letters, spaces, hyphens, and apostrophes',
+    message: 'First name can only contain letters, spaces, hyphens, and apostrophes',
   })
-  firstName: string;
+  firstName!: string;
 
   @ApiProperty({
-    description:
-      'Student last name (1-100 characters, letters/spaces/hyphens/apostrophes only)',
+    description: 'Student last name (1-100 characters, letters/spaces/hyphens/apostrophes only)',
     example: 'Wilson',
     minLength: 1,
     maxLength: 100,
@@ -74,10 +70,9 @@ export class CreateStudentDto {
   @IsString()
   @Length(1, 100, { message: 'Last name must be between 1 and 100 characters' })
   @Matches(/^[a-zA-Z\s'-]+$/, {
-    message:
-      'Last name can only contain letters, spaces, hyphens, and apostrophes',
+    message: 'Last name can only contain letters, spaces, hyphens, and apostrophes',
   })
-  lastName: string;
+  lastName!: string;
 
   @ApiProperty({
     description: 'Date of birth (must be in past, age 3-100 years)',
@@ -88,7 +83,7 @@ export class CreateStudentDto {
   @IsNotEmpty({ message: 'Date of birth is required' })
   @IsDate({ message: 'Date of birth must be a valid date' })
   @Type(() => Date)
-  dateOfBirth: Date;
+  dateOfBirth!: Date;
 
   @ApiProperty({
     description: 'Current grade level (1-10 characters)',
@@ -99,7 +94,7 @@ export class CreateStudentDto {
   @IsNotEmpty({ message: 'Grade is required' })
   @IsString()
   @Length(1, 10, { message: 'Grade must be between 1 and 10 characters' })
-  grade: string;
+  grade!: string;
 
   @ApiProperty({
     description: 'Student gender',
@@ -110,7 +105,7 @@ export class CreateStudentDto {
   @IsEnum(Gender, {
     message: 'Gender must be MALE, FEMALE, OTHER, or PREFER_NOT_TO_SAY',
   })
-  gender: Gender;
+  gender!: Gender;
 
   @ApiProperty({
     description: 'Photo URL (max 500 characters)',
@@ -125,8 +120,7 @@ export class CreateStudentDto {
   photo?: string;
 
   @ApiProperty({
-    description:
-      'Medical record number (5-20 alphanumeric characters with optional hyphens)',
+    description: 'Medical record number (5-20 alphanumeric characters with optional hyphens)',
     example: 'MRN-12345',
     required: false,
     minLength: 5,

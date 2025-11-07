@@ -14,7 +14,6 @@ import {
   IsBoolean,
   Length,
 } from 'class-validator';
-import { Type } from 'class-transformer';
 
 /**
  * Bulk Update DTO
@@ -25,16 +24,13 @@ import { Type } from 'class-transformer';
 export class StudentBulkUpdateDto {
   @ApiProperty({
     description: 'Array of student UUIDs to update',
-    example: [
-      '123e4567-e89b-12d3-a456-426614174000',
-      '223e4567-e89b-12d3-a456-426614174001',
-    ],
+    example: ['123e4567-e89b-12d3-a456-426614174000', '223e4567-e89b-12d3-a456-426614174001'],
     type: [String],
   })
   @IsNotEmpty({ message: 'Student IDs are required' })
   @IsArray({ message: 'Student IDs must be an array' })
   @IsUUID(4, { each: true, message: 'Each student ID must be a valid UUID' })
-  studentIds: string[];
+  studentIds!: string[];
 
   @ApiProperty({
     description: 'New nurse assignment (optional)',

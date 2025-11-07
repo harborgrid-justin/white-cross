@@ -110,10 +110,7 @@ const PEDIATRIC_VITAL_RANGES: Record<string, ClinicalRanges> = {
  * @param type - Type of medical code
  * @returns boolean indicating if code format is valid
  */
-export function validateMedicalCode(
-  code: string,
-  type: 'ICD10' | 'CPT' | 'NDC',
-): boolean {
+export function validateMedicalCode(code: string, type: 'ICD10' | 'CPT' | 'NDC'): boolean {
   if (!code || typeof code !== 'string') {
     return false;
   }
@@ -176,8 +173,13 @@ export function validateVitalSigns(
     return result;
   }
 
-  const ranges =
-    PEDIATRIC_VITAL_RANGES[ageGroup] || PEDIATRIC_VITAL_RANGES['school'];
+  const ranges = PEDIATRIC_VITAL_RANGES[ageGroup] || PEDIATRIC_VITAL_RANGES['school'];
+
+  if (!ranges) {
+    result.isValid = false;
+    result.errors.push('Invalid age group for vital signs validation');
+    return result;
+  }
 
   // Validate temperature
   if (vitals.temperature !== undefined) {
@@ -228,10 +230,7 @@ export function validateVitalSigns(
     if (typeof vitals.heartRate !== 'number' || vitals.heartRate <= 0) {
       result.errors.push('Heart rate must be a positive number');
       result.isValid = false;
-    } else if (
-      vitals.heartRate < ranges.heartRate.min ||
-      vitals.heartRate > ranges.heartRate.max
-    ) {
+    } else if (vitals.heartRate < ranges.heartRate.min || vitals.heartRate > ranges.heartRate.max) {
       result.warnings?.push(
         `Heart rate ${vitals.heartRate} bpm is outside normal range (${ranges.heartRate.min}-${ranges.heartRate.max} bpm)`,
       );
@@ -240,10 +239,7 @@ export function validateVitalSigns(
 
   // Validate respiratory rate
   if (vitals.respiratoryRate !== undefined) {
-    if (
-      typeof vitals.respiratoryRate !== 'number' ||
-      vitals.respiratoryRate <= 0
-    ) {
+    if (typeof vitals.respiratoryRate !== 'number' || vitals.respiratoryRate <= 0) {
       result.errors.push('Respiratory rate must be a positive number');
       result.isValid = false;
     } else if (
@@ -258,10 +254,7 @@ export function validateVitalSigns(
 
   // Validate oxygen saturation
   if (vitals.oxygenSaturation !== undefined) {
-    if (
-      typeof vitals.oxygenSaturation !== 'number' ||
-      vitals.oxygenSaturation <= 0
-    ) {
+    if (typeof vitals.oxygenSaturation !== 'number' || vitals.oxygenSaturation <= 0) {
       result.errors.push('Oxygen saturation must be a positive number');
       result.isValid = false;
     } else if (
@@ -276,22 +269,14 @@ export function validateVitalSigns(
 
   // Validate height and weight
   if (vitals.height !== undefined) {
-    if (
-      typeof vitals.height !== 'number' ||
-      vitals.height <= 0 ||
-      vitals.height > 250
-    ) {
+    if (typeof vitals.height !== 'number' || vitals.height <= 0 || vitals.height > 250) {
       result.errors.push('Height must be a reasonable positive number (in cm)');
       result.isValid = false;
     }
   }
 
   if (vitals.weight !== undefined) {
-    if (
-      typeof vitals.weight !== 'number' ||
-      vitals.weight <= 0 ||
-      vitals.weight > 200
-    ) {
+    if (typeof vitals.weight !== 'number' || vitals.weight <= 0 || vitals.weight > 200) {
       result.errors.push('Weight must be a reasonable positive number (in kg)');
       result.isValid = false;
     }

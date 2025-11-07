@@ -16,7 +16,6 @@
  * @since 2025-10-23
  */
 
-import { logger } from '../../logging/logger.service';
 import { isServiceError } from '../../errors';
 
 /**
@@ -224,10 +223,7 @@ export async function retry<T>(
 
       // Success! Log if we had to retry
       if (attempt > 1) {
-        logger.log(
-          `${operationName} succeeded after ${attempt} attempts`,
-          'RetryUtility',
-        );
+        // Operation succeeded after retries - logging handled by caller
       }
 
       return result;
@@ -238,19 +234,11 @@ export async function retry<T>(
       const willRetry = attempt < maxAttempts && shouldRetry(error, attempt);
 
       if (!willRetry) {
-        // No more retries - log and throw
+        // No more retries - throw the error
         if (attempt >= maxAttempts) {
-          logger.error(
-            `${operationName} failed after ${maxAttempts} attempts`,
-            error,
-            'RetryUtility',
-          );
+          // Operation failed after max attempts - error handled by caller
         } else {
-          logger.error(
-            `${operationName} failed (non-retryable error)`,
-            error,
-            'RetryUtility',
-          );
+          // Non-retryable error - error handled by caller
         }
         throw error;
       }
@@ -265,22 +253,12 @@ export async function retry<T>(
         jitterFactor,
       );
 
-      // Log retry attempt
-      logger.warn(
-        `${operationName} failed (attempt ${attempt}/${maxAttempts}), retrying in ${delay}ms`,
-        'RetryUtility',
-      );
-
       // Call onRetry callback if provided
       if (onRetry) {
         try {
           onRetry(error, attempt, delay);
         } catch (callbackError) {
-          logger.error(
-            'Error in onRetry callback',
-            callbackError,
-            'RetryUtility',
-          );
+          // Error in onRetry callback - silently ignore
         }
       }
 

@@ -17,12 +17,7 @@
  * DOWNSTREAM: All NestJS modules, services, controllers
  */
 
-import {
-  Injectable,
-  LoggerService as NestLoggerService,
-  Scope,
-  Inject,
-} from '@nestjs/common';
+import { Injectable, LoggerService as NestLoggerService, Scope, Inject } from '@nestjs/common';
 import * as winston from 'winston';
 import { AppConfigService } from '../../config/app-config.service';
 
@@ -48,9 +43,7 @@ export class LoggerService implements NestLoggerService {
   private readonly winston: winston.Logger;
   private context?: string;
 
-  constructor(
-    @Inject(AppConfigService) private readonly config: AppConfigService,
-  ) {
+  constructor(@Inject(AppConfigService) private readonly config: AppConfigService) {
     const logFormat = winston.format.combine(
       winston.format.timestamp(),
       winston.format.errors({ stack: true }),
@@ -61,23 +54,21 @@ export class LoggerService implements NestLoggerService {
       winston.format.timestamp(),
       winston.format.errors({ stack: true }),
       winston.format.colorize(),
-      winston.format.printf(
-        ({ timestamp, level, message, context, stack, ...meta }) => {
-          let log = `${timestamp} [${context || 'Application'}] [${level}]: ${message}`;
+      winston.format.printf(({ timestamp, level, message, context, stack, ...meta }) => {
+        let log = `${timestamp} [${context || 'Application'}] [${level}]: ${message}`;
 
-          // If there's a stack trace, include it
-          if (stack) {
-            log += `\n${stack}`;
-          }
+        // If there's a stack trace, include it
+        if (stack) {
+          log += `\n${stack}`;
+        }
 
-          // If there's additional metadata, include it
-          if (Object.keys(meta).length > 0) {
-            log += `\n${JSON.stringify(meta, null, 2)}`;
-          }
+        // If there's additional metadata, include it
+        if (Object.keys(meta).length > 0) {
+          log += `\n${JSON.stringify(meta, null, 2)}`;
+        }
 
-          return log;
-        },
-      ),
+        return log;
+      }),
     );
 
     const logLevel = this.config.get<string>('app.logging.level', 'info');
@@ -208,22 +199,6 @@ export class LoggerService implements NestLoggerService {
     this.winston.log(level, message, { ...metadata, context: logContext });
   }
 }
-
-/**
- * Create a logger instance with a specific context
- * @param context - Logger context (typically class name)
- * @returns LoggerService instance with context set
- */
-export function createLogger(context: string): LoggerService {
-  const logger = new LoggerService();
-  logger.setContext(context);
-  return logger;
-}
-
-/**
- * Singleton logger instance for convenience
- */
-export const logger = new LoggerService();
 
 /**
  * Default export for convenience

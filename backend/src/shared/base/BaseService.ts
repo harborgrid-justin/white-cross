@@ -2,22 +2,14 @@
  * Base service class providing common functionality for all services
  */
 
-import { logger } from '../logging/logger.service';
-import {
-  PaginationParams,
-  PaginatedResponse,
-  PaginationConstraints,
-} from '../types/pagination';
+import { LoggerService } from '../logging/logger.service';
+import { PaginationParams, PaginatedResponse, PaginationConstraints } from '../types/pagination';
 import {
   buildPaginationQuery,
   processPaginatedResult,
   validatePaginationParams,
 } from '../database/pagination';
-import {
-  ValidationResult,
-  BulkOperationResult,
-  ServiceResponse,
-} from '../types/common';
+import { ValidationResult, BulkOperationResult, ServiceResponse } from '../types/common';
 import { validateUUID } from '../validation/commonValidators';
 
 // Placeholder types for missing validation types
@@ -62,6 +54,7 @@ export interface BaseServiceConfig {
   tableName?: string;
   paginationConstraints?: PaginationConstraints;
   enableAuditLogging?: boolean;
+  logger: LoggerService;
 }
 
 /**
@@ -72,19 +65,21 @@ export abstract class BaseService {
   protected readonly tableName?: string;
   protected readonly paginationConstraints: PaginationConstraints;
   protected readonly enableAuditLogging: boolean;
+  protected readonly logger: LoggerService;
 
   constructor(config: BaseServiceConfig) {
     this.serviceName = config.serviceName;
     this.tableName = config.tableName;
     this.paginationConstraints = config.paginationConstraints || {};
     this.enableAuditLogging = config.enableAuditLogging ?? true;
+    this.logger = config.logger;
   }
 
   /**
    * Log service operation
    */
-  protected logInfo(message: string, metadata?: ErrorMetadata): void {
-    logger.log(`[${this.serviceName}] ${message}`, 'BaseService');
+  protected logInfo(message: string): void {
+    this.logger.log(`[${this.serviceName}] ${message}`, 'BaseService');
   }
 
   /**
@@ -92,21 +87,16 @@ export abstract class BaseService {
    */
   protected logError(
     message: string,
-    error?: ApplicationError | Error | unknown,
-    metadata?: ErrorMetadata,
+    error?: ApplicationError | Error,
   ): void {
-    logger.error(
-      `[${this.serviceName}] ${message}`,
-      error as Error,
-      'BaseService',
-    );
+    this.logger.error(`[${this.serviceName}] ${message}`, error as Error, 'BaseService');
   }
 
   /**
    * Log service warning
    */
-  protected logWarning(message: string, metadata?: ErrorMetadata): void {
-    logger.warn(`[${this.serviceName}] ${message}`, 'BaseService');
+  protected logWarning(message: string): void {
+    this.logger.warn(`[${this.serviceName}] ${message}`, 'BaseService');
   }
 
   /**
@@ -115,19 +105,13 @@ export abstract class BaseService {
   protected validatePagination(params: PaginationParams): ValidationResult & {
     normalizedParams?: { page: number; limit: number; offset: number };
   } {
-    const validation = validatePaginationParams(
-      params,
-      this.paginationConstraints,
-    );
+    const validation = validatePaginationParams(params, this.paginationConstraints);
 
     if (!validation.isValid) {
       return validation;
     }
 
-    const normalizedParams = buildPaginationQuery(
-      params,
-      this.paginationConstraints,
-    );
+    const normalizedParams = buildPaginationQuery(params, this.paginationConstraints);
 
     return {
       ...validation,
@@ -161,8 +145,7 @@ export abstract class BaseService {
     error: ApplicationError | Error | unknown,
     metadata?: ErrorMetadata,
   ): ServiceResponse<T> {
-    const errorMessage =
-      error instanceof Error ? error.message : 'An unexpected error occurred';
+    const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
 
     this.logError(`Error in ${operation}`, error, metadata);
 
@@ -175,8 +158,7 @@ export abstract class BaseService {
       if (errorName === 'SequelizeConnectionError') {
         clientMessage = 'Database connection error. Please try again later.';
       } else if (errorName === 'SequelizeValidationError') {
-        const errors = (error as { errors?: SequelizeValidationErrorItem[] })
-          .errors;
+        const errors = (error as { errors?: SequelizeValidationErrorItem[] }).errors;
         clientMessage = `Validation failed: ${errors?.map((e) => e.message).join(', ') || 'Unknown validation error'}`;
       } else if (errorName === 'SequelizeUniqueConstraintError') {
         clientMessage = 'A record with this information already exists.';
@@ -240,10 +222,7 @@ export abstract class BaseService {
   /**
    * Validate date is in the future
    */
-  protected validateFutureDate(
-    date: Date,
-    fieldName: string,
-  ): ValidationResult {
+  protected validateFutureDate(date: Date, fieldName: string): ValidationResult {
     const errors: Array<{
       field: string;
       message: string;
@@ -341,13 +320,9 @@ export abstract class BaseService {
           `Item ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         );
 
-        this.logError(
-          `Bulk operation ${operation} failed for item ${i + 1}`,
-          error,
-          {
-            additionalContext: { item },
-          },
-        );
+        this.logError(`Bulk operation ${operation} failed for item ${i + 1}`, error, {
+          additionalContext: { item },
+        });
       }
     }
 
@@ -398,10 +373,7 @@ export abstract class BaseService {
   /**
    * Build common WHERE clause for text search
    */
-  protected buildSearchClause(
-    searchTerm: string,
-    searchFields: string[],
-  ): Record<string, unknown> {
+  protected buildSearchClause(searchTerm: string, searchFields: string[]): Record<string, unknown> {
     if (!searchTerm || searchFields.length === 0) {
       return {};
     }
@@ -580,21 +552,12 @@ export abstract class BaseService {
       attributes?: string[];
     },
   ): Promise<PaginatedResponse<T>> {
-    const {
-      page = 1,
-      limit = 20,
-      where = {},
-      include = [],
-      order = [],
-      attributes,
-    } = options;
+    const { page = 1, limit = 20, where = {}, include = [], order = [], attributes } = options;
 
     // Validate pagination
     const validation = this.validatePagination({ page, limit });
     if (!validation.isValid || !validation.normalizedParams) {
-      throw new Error(
-        validation.errors?.[0]?.message || 'Invalid pagination parameters',
-      );
+      throw new Error(validation.errors?.[0]?.message || 'Invalid pagination parameters');
     }
 
     const { offset } = validation.normalizedParams;
@@ -710,11 +673,7 @@ export abstract class BaseService {
       removeEmptyStrings?: boolean;
     } = {},
   ): Partial<T> {
-    const {
-      removeNull = true,
-      removeUndefined = true,
-      removeEmptyStrings = false,
-    } = options;
+    const { removeNull = true, removeUndefined = true, removeEmptyStrings = false } = options;
 
     const sanitized: Record<string, unknown> = {};
 
