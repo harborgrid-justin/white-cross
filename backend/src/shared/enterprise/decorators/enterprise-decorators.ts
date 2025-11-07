@@ -131,7 +131,8 @@ export const BasicMetrics = () =>
     sampleRate: 1.0,
   });
 
-export const SecurityMetrics = () =>
+// Renamed to avoid conflict with SecurityMetrics interface in ../interfaces
+export const SecurityMetricsDecorator = () =>
   EnterpriseMetrics({
     enabled: true,
     trackPerformance: true,
@@ -140,7 +141,8 @@ export const SecurityMetrics = () =>
     sampleRate: 1.0,
   });
 
-export const ComplianceMetrics = () =>
+// Renamed to avoid conflict with ComplianceMetrics interface in ../interfaces
+export const ComplianceMetricsDecorator = () =>
   EnterpriseMetrics({
     enabled: true,
     trackPerformance: true,
@@ -229,7 +231,7 @@ export const DetailedPerformance = () =>
 // Convenience Decorators for Common Patterns
 export const HealthRecordEndpoint = () => [
   PHIData(true),
-  ComplianceMetrics(),
+  ComplianceMetricsDecorator(),
   ComplianceAudit(),
   CacheConfidential(60),
   EnterpriseRateLimit({ limit: 100, windowMs: 60000 }),
@@ -237,7 +239,7 @@ export const HealthRecordEndpoint = () => [
 
 export const AuthEndpoint = () => [
   SecurityLevel('restricted'),
-  SecurityMetrics(),
+  SecurityMetricsDecorator(),
   SecurityAudit(),
   EnterpriseRateLimit({ limit: 10, windowMs: 60000, blockDuration: 300000 }),
   DetailedPerformance(),

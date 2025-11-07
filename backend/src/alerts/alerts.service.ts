@@ -34,7 +34,9 @@ import {
 import { DeliveryLog } from '../database/models/delivery-log.model';
 import { Op } from 'sequelize';
 
-export { AlertSeverity, AlertCategory, AlertStatus, DeliveryChannel };
+// Note: AlertSeverity, AlertCategory exported from dto/create-alert.dto.ts
+// AlertStatus, DeliveryChannel exported from database models
+export { AlertStatus, DeliveryChannel };
 
 export interface AlertStatistics {
   totalAlerts: number;

@@ -148,3 +148,6 @@ export const AllergyModal = React.memo<AllergyModalProps>(({
 })
 
 AllergyModal.displayName = 'AllergyModal'
+
+// Default export for dynamic imports
+export default AllergyModal

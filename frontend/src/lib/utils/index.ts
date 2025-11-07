@@ -165,6 +165,16 @@ export {
 } from './type-guards';
 
 // ============================================================================
+// CLASS NAME UTILITIES
+// ============================================================================
+
+/**
+ * Re-export the cn (className) utility from parent utils.ts
+ * This utility combines and merges CSS class names using clsx and tailwind-merge
+ */
+export { cn } from '../utils';
+
+// ============================================================================
 // RE-EXPORT TYPE DEFINITIONS
 // ============================================================================
 

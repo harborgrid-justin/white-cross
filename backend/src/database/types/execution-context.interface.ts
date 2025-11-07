@@ -6,7 +6,7 @@
  * HIPAA Compliance: Captures user, IP, and timestamp for audit trail
  */
 
-import { UserRole } from '../models/user.model';
+import { UserRole } from './user-role.enum';
 
 export type ExecutionUserRole = UserRole | 'SYSTEM';
 

@@ -4,40 +4,9 @@
  *
  * Centralized type definitions for document management operations.
  * Shared across all document action modules.
+ *
+ * Note: Runtime values (constants) are in documents.constants.ts
  */
-
-// ==========================================
-// CONFIGURATION CONSTANTS
-// ==========================================
-
-/**
- * Allowed file types for document uploads
- */
-export const ALLOWED_FILE_TYPES = [
-  'application/pdf',
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'application/vnd.ms-excel',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-] as const;
-
-/**
- * Maximum file size for uploads (10MB)
- */
-export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-
-/**
- * Custom cache tags for documents
- */
-export const DOCUMENT_CACHE_TAGS = {
-  DOCUMENTS: 'documents',
-  DOCUMENT_SHARES: 'document-shares',
-  DOCUMENT_SIGNATURES: 'document-signatures',
-  DOCUMENT_TEMPLATES: 'document-templates',
-} as const;
 
 // ==========================================
 // CORE TYPE DEFINITIONS

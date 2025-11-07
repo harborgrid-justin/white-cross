@@ -28,7 +28,7 @@ export interface InventoryCategory {
  *
  * @returns Rendered categories management view
  */
-export default function InventoryCategoriesContent() {
+function InventoryCategoriesContent() {
   const [categories, setCategories] = useState<InventoryCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddingNew, setIsAddingNew] = useState(false);
@@ -258,3 +258,7 @@ export default function InventoryCategoriesContent() {
     </div>
   );
 }
+
+// Export both named and default for flexibility
+export { InventoryCategoriesContent }
+export default InventoryCategoriesContent

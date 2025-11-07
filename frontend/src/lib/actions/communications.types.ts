@@ -2,6 +2,8 @@
  * @fileoverview Communications Types - Next.js v14+ Compatible
  *
  * Type definitions and interfaces for communications module.
+ *
+ * Note: Runtime values (constants) are in communications.constants.ts
  */
 
 import {
@@ -53,15 +55,6 @@ import {
   type TemplateFilter,
   type RenderedTemplate
 } from '@/lib/validations/template.schemas';
-
-// Custom cache tags for communications
-export const COMMUNICATIONS_CACHE_TAGS = {
-  MESSAGES: 'communications-messages',
-  THREADS: 'communications-threads',
-  TEMPLATES: 'communications-templates',
-  CONTACTS: 'communications-contacts',
-  ATTACHMENTS: 'communications-attachments',
-} as const;
 
 export interface ActionResult<T = unknown> {
   success: boolean;

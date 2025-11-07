@@ -16,7 +16,7 @@
  * @since 2025-10-23
  */
 
-import { logger } from '../..';
+import { logger } from '../../logging/logger.service';
 import { isServiceError } from '../../errors';
 
 /**

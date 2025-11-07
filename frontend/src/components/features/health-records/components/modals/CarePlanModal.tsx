@@ -240,3 +240,5 @@ export const CarePlanModal: React.FC<CarePlanModalProps> = ({
     </div>
   )
 }
+// Default export for dynamic imports
+export default CarePlanModal

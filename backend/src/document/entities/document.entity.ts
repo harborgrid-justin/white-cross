@@ -31,8 +31,8 @@ import {
   BeforeCreate,
   BeforeUpdate,
 } from 'sequelize-typescript';
-import { DocumentSignature } from './document-signature.entity';
-import { DocumentAuditTrail } from './document-audit-trail.entity';
+import type { DocumentSignature } from './document-signature.entity';
+import type { DocumentAuditTrail } from './document-audit-trail.entity';
 import {
   DocumentCategory,
   DocumentStatus,

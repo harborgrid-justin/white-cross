@@ -236,14 +236,11 @@ export interface DeleteResponse {
 }
 
 /**
- * GraphQL error response structure.
+ * GraphQLErrorResponse is exported from '@/graphql/utils/errorHandler'
  *
- * @property {string} message - Error message
- * @property {string} [code] - Error code (e.g., 'UNAUTHENTICATED', 'FORBIDDEN')
- * @property {string} [field] - Field name if validation error
+ * This type is defined in the errorHandler utility module and includes
+ * additional properties like statusCode. Import it from there or from
+ * the main graphql module to avoid duplication.
+ *
+ * @see {@link module:graphql/utils/errorHandler}
  */
-export interface GraphQLErrorResponse {
-  message: string;
-  code?: string;
-  field?: string;
-}

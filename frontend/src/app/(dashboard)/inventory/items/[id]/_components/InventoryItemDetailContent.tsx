@@ -60,7 +60,7 @@ export interface InventoryItemDetail {
  * @param props - Component props
  * @returns Rendered detail view
  */
-export default function InventoryItemDetailContent({ itemId }: InventoryItemDetailContentProps) {
+function InventoryItemDetailContent({ itemId }: InventoryItemDetailContentProps) {
   const [item, setItem] = useState<InventoryItemDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -451,3 +451,7 @@ export default function InventoryItemDetailContent({ itemId }: InventoryItemDeta
     </div>
   );
 }
+
+// Export both named and default for flexibility
+export { InventoryItemDetailContent }
+export default InventoryItemDetailContent

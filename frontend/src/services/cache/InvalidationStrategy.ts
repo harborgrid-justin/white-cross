@@ -93,7 +93,7 @@ export class InvalidationStrategy {
       {
         operationPattern: /^create$/i,
         entityType: 'students',
-        getInvalidationTargets: (op) => {
+        getInvalidationTargets: (_op) => {
           const targets: InvalidationTarget[] = [];
 
           // Invalidate all student lists (new student affects all lists)
@@ -116,7 +116,7 @@ export class InvalidationStrategy {
       {
         operationPattern: /^update.*personal.*info$/i,
         entityType: 'students',
-        getInvalidationTargets: (op) => {
+        getInvalidationTargets: (_op) => {
           const targets: InvalidationTarget[] = [];
 
           // Always invalidate the specific student detail
@@ -152,7 +152,7 @@ export class InvalidationStrategy {
       {
         operationPattern: /^update.*grade$/i,
         entityType: 'students',
-        getInvalidationTargets: (op) => {
+        getInvalidationTargets: (_op) => {
           const targets: InvalidationTarget[] = [];
 
           // Invalidate the specific student
@@ -209,7 +209,7 @@ export class InvalidationStrategy {
       {
         operationPattern: /^update.*school$/i,
         entityType: 'students',
-        getInvalidationTargets: (op) => {
+        getInvalidationTargets: (_op) => {
           const targets: InvalidationTarget[] = [];
 
           // Invalidate the specific student
@@ -260,7 +260,7 @@ export class InvalidationStrategy {
       {
         operationPattern: /^update.*status$/i,
         entityType: 'students',
-        getInvalidationTargets: (op) => {
+        getInvalidationTargets: (_op) => {
           const targets: InvalidationTarget[] = [];
 
           // Invalidate the specific student
@@ -313,7 +313,7 @@ export class InvalidationStrategy {
       {
         operationPattern: /^delete$/i,
         entityType: 'students',
-        getInvalidationTargets: (op) => {
+        getInvalidationTargets: (_op) => {
           const targets: InvalidationTarget[] = [];
 
           // Invalidate all student lists (student removed from all lists)
@@ -357,7 +357,7 @@ export class InvalidationStrategy {
       {
         operationPattern: /^create$/i,
         entityType: 'health-records',
-        getInvalidationTargets: (op) => {
+        getInvalidationTargets: (_op) => {
           const targets: InvalidationTarget[] = [];
 
           // Invalidate lists for this student
@@ -393,7 +393,7 @@ export class InvalidationStrategy {
       {
         operationPattern: /^update$/i,
         entityType: 'health-records',
-        getInvalidationTargets: (op) => {
+        getInvalidationTargets: (_op) => {
           const targets: InvalidationTarget[] = [];
 
           // Invalidate the specific record
@@ -440,7 +440,7 @@ export class InvalidationStrategy {
       {
         operationPattern: /^create$/i,
         entityType: 'medications',
-        getInvalidationTargets: (op) => {
+        getInvalidationTargets: (_op) => {
           const targets: InvalidationTarget[] = [];
 
           // Invalidate all medication lists
@@ -469,7 +469,7 @@ export class InvalidationStrategy {
       {
         operationPattern: /^update.*status$/i,
         entityType: 'medications',
-        getInvalidationTargets: (op) => {
+        getInvalidationTargets: (_op) => {
           const targets: InvalidationTarget[] = [];
 
           // Invalidate the specific medication
@@ -516,7 +516,7 @@ export class InvalidationStrategy {
       {
         operationPattern: /^create$/i,
         entityType: 'appointments',
-        getInvalidationTargets: (op) => {
+        getInvalidationTargets: (_op) => {
           const targets: InvalidationTarget[] = [];
 
           // Invalidate upcoming appointments
@@ -548,7 +548,7 @@ export class InvalidationStrategy {
       {
         operationPattern: /^create$/i,
         entityType: 'incidents',
-        getInvalidationTargets: (op) => {
+        getInvalidationTargets: (_op) => {
           const targets: InvalidationTarget[] = [];
 
           // Invalidate incident lists

@@ -35,7 +35,7 @@ import type {
   CacheEventListener
 } from './types';
 import { CacheEventType } from './types';
-import { CACHE_CONFIG, PERFORMANCE_CONFIG } from './cacheConfig';
+import { CACHE_CONFIG } from './cacheConfig';
 import {
   MemoryEstimator,
   LRUEvictionPolicy,

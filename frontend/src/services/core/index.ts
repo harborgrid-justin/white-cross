@@ -110,6 +110,89 @@ export {
 } from './errors';
 
 // ==========================================
+// CONFIGURATION MANAGEMENT
+// ==========================================
+
+export {
+  ConfigurationService,
+  getConfiguration,
+  configurationService,
+} from './ConfigurationService';
+
+export type {
+  ApiConfig,
+  SecurityConfig,
+  CacheConfig,
+  AuditConfig,
+  ResilienceConfig,
+  PerformanceConfig,
+  AppConfiguration,
+} from './ConfigurationService';
+
+// ==========================================
+// SERVICE REGISTRY & MANAGEMENT
+// ==========================================
+
+export {
+  ServiceRegistry,
+  serviceRegistry,
+  RegisterService,
+} from './ServiceRegistry';
+
+export type {
+  ServiceMetadata,
+  ServiceCategory,
+  ServiceHealth,
+  ServiceStatus,
+  ServiceMetrics,
+  ServiceDependency,
+} from './ServiceRegistry';
+
+export {
+  ServiceManager,
+  getServiceManager,
+  serviceManager,
+} from './ServiceManager';
+
+export type {
+  ServiceInitializationOptions,
+  ServiceHealth as ServiceManagerHealth,
+  ServiceManagerStatus,
+  ServiceLifecycleHooks,
+} from './ServiceManager';
+
+// Import additional service management exports
+export type {
+  ServiceInventoryEntry,
+  RegistryState,
+  DependencyCheckResult,
+} from './ServiceRegistry.types';
+
+// ==========================================
+// CONFIGURATION MODULE
+// ==========================================
+
+export * from './config';
+
+// ==========================================
+// SERVICE INTERFACES
+// ==========================================
+
+export * from './interfaces';
+
+// ==========================================
+// SERVICE INITIALIZATION
+// ==========================================
+
+export {
+  initializeServices,
+  cleanupServices,
+  isServicesInitialized,
+  getInitializationStatus,
+  reinitializeServices,
+} from './initialize';
+
+// ==========================================
 // CONFIGURED INSTANCE
 // ==========================================
 

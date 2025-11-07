@@ -13,7 +13,7 @@ import {
   BeforeUpdate,
 } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
-import { ConversationParticipant } from './conversation-participant.model';
+import type { ConversationParticipant } from './conversation-participant.model';
 
 /**
  * Conversation type enumeration

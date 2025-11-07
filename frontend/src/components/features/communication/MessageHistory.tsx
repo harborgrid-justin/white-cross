@@ -9,7 +9,7 @@
 import React from 'react'
 import CommunicationHistoryTab from './tabs/CommunicationHistoryTab'
 
-export default function MessageHistory() {
+function MessageHistory() {
   return (
     <div className="space-y-6">
       <div>
@@ -23,3 +23,7 @@ export default function MessageHistory() {
     </div>
   )
 }
+
+// Export both named and default for flexibility
+export { MessageHistory }
+export default MessageHistory

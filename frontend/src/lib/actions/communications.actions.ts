@@ -25,7 +25,7 @@ export type {
   CommunicationAnalytics
 } from './communications.types';
 
-export { COMMUNICATIONS_CACHE_TAGS } from './communications.types';
+export { COMMUNICATIONS_CACHE_TAGS } from './communications.constants';
 export { fetchApi } from './communications.utils';
 
 // ============================================================================
