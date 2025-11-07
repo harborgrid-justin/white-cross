@@ -1,19 +1,40 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, OnModuleDestroy } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { IncidentReport } from '../../database/models/incident-report.model';
 import { EmergencyContact } from '../../database/models/emergency-contact.model';
 import { ContactPriority } from '../../contact/enums';
+import { AppConfigService } from '../../config/app-config.service';
 
 @Injectable()
-export class IncidentNotificationService {
+export class IncidentNotificationService implements OnModuleDestroy {
   private readonly logger = new Logger(IncidentNotificationService.name);
+  private notificationListeners: Set<string> = new Set();
 
   constructor(
     @InjectModel(IncidentReport)
     private incidentReportModel: typeof IncidentReport,
     @InjectModel(EmergencyContact)
     private emergencyContactModel: typeof EmergencyContact,
-  ) {}
+    private readonly config: AppConfigService,
+  ) {
+    this.logger.log('IncidentNotificationService initialized');
+  }
+
+  /**
+   * Cleanup resources on module destroy
+   * Implements graceful shutdown for notification listeners
+   */
+  async onModuleDestroy() {
+    this.logger.log('IncidentNotificationService shutting down - cleaning up resources');
+
+    // Clear notification listeners
+    if (this.notificationListeners.size > 0) {
+      this.logger.log(`Clearing ${this.notificationListeners.size} notification listeners`);
+      this.notificationListeners.clear();
+    }
+
+    this.logger.log('IncidentNotificationService destroyed, resources cleaned up');
+  }
 
   /**
    * Notify emergency contacts about incident

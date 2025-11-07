@@ -178,7 +178,7 @@ export class VitalSigns
   @Column(DataType.BOOLEAN)
   isAbnormal: boolean;
 
-  @Column(DataType.JSON)
+  @Column(DataType.JSONB)
   abnormalFlags?: string[];
 
   @Column(DataType.STRING(255))

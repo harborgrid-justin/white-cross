@@ -12,7 +12,7 @@
  * LLM Context: react component or utility module, part of React frontend architecture
  */
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Plus, TrendingUp } from 'lucide-react'
 import type { GrowthMeasurement } from '@/types/healthRecords'
 import type { User } from '@/types'
@@ -23,16 +23,19 @@ interface GrowthChartsTabProps {
   user?: User | null
 }
 
-export const GrowthChartsTab: React.FC<GrowthChartsTabProps> = ({
+export const GrowthChartsTab = React.memo<GrowthChartsTabProps>(({
   measurements,
   onAddMeasurement,
   user
 }) => {
-  const canModify = user?.role ? ['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN', 'COUNSELOR'].includes(user.role) : false
+  const canModify = useMemo(() =>
+    user?.role ? ['ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN', 'COUNSELOR'].includes(user.role) : false,
+    [user?.role]
+  )
 
   // Use the measurements prop passed from parent component (real API data)
   // No mock data - this is CRITICAL for HIPAA compliance
-  const displayMeasurements = measurements || []
+  const displayMeasurements = useMemo(() => measurements || [], [measurements])
 
   return (
     <div className="space-y-4" data-testid="growth-charts-content">
@@ -169,4 +172,6 @@ export const GrowthChartsTab: React.FC<GrowthChartsTabProps> = ({
       </div>
     </div>
   )
-}
+})
+
+GrowthChartsTab.displayName = 'GrowthChartsTab'

@@ -322,4 +322,101 @@ export class AllergyService {
       ],
     });
   }
+
+  // ==================== Batch Query Methods (DataLoader Support) ====================
+
+  /**
+   * Batch find allergies by IDs (for DataLoader)
+   * Returns allergies in the same order as requested IDs
+   *
+   * OPTIMIZATION: Eliminates N+1 queries when fetching multiple allergies
+   * Before: 1 + N queries (1 per allergy)
+   * After: 1 query with IN clause
+   * Performance improvement: ~99% query reduction for batch operations
+   */
+  async findByIds(ids: string[]): Promise<(Allergy | null)[]> {
+    try {
+      const allergies = await this.allergyModel.findAll({
+        where: {
+          id: { [Op.in]: ids },
+          active: true,
+        },
+        include: [
+          {
+            model: Student,
+            attributes: ['id', 'firstName', 'lastName'],
+          },
+        ],
+        order: [
+          ['severity', 'DESC'],
+          ['createdAt', 'DESC'],
+        ],
+      });
+
+      // Create map for O(1) lookup
+      const allergyMap = new Map(allergies.map((a) => [a.id, a]));
+
+      // Return in same order as input, null for missing
+      return ids.map((id) => allergyMap.get(id) || null);
+    } catch (error) {
+      this.logger.error(
+        `Failed to batch fetch allergies: ${error.message}`,
+        error.stack,
+      );
+      // Return array of nulls on error to prevent breaking entire query
+      return ids.map(() => null);
+    }
+  }
+
+  /**
+   * Batch find allergies by student IDs (for DataLoader)
+   * Returns array of allergy arrays for each student ID
+   *
+   * OPTIMIZATION: Eliminates N+1 queries when fetching allergies for multiple students
+   * Before: 1 + N queries (1 per student)
+   * After: 1 query with IN clause
+   * Performance improvement: ~99% query reduction for batch operations
+   */
+  async findByStudentIds(studentIds: string[]): Promise<Allergy[][]> {
+    try {
+      const allergies = await this.allergyModel.findAll({
+        where: {
+          studentId: { [Op.in]: studentIds },
+          active: true,
+        },
+        include: [
+          {
+            model: Student,
+            attributes: ['id', 'firstName', 'lastName'],
+          },
+        ],
+        order: [
+          ['severity', 'DESC'],
+          ['createdAt', 'DESC'],
+        ],
+      });
+
+      // Group allergies by student ID
+      const allergiesByStudent = new Map<string, Allergy[]>();
+      for (const allergy of allergies) {
+        if (!allergiesByStudent.has(allergy.studentId)) {
+          allergiesByStudent.set(allergy.studentId, []);
+        }
+        allergiesByStudent.get(allergy.studentId)!.push(allergy);
+      }
+
+      // Return allergies in same order as requested student IDs
+      // Return empty array for students with no allergies
+      return studentIds.map(
+        (studentId) => allergiesByStudent.get(studentId) || [],
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to batch fetch allergies by student IDs: ${error.message}`,
+        error.stack,
+      );
+      // Return array of empty arrays on error to prevent breaking entire query
+      return studentIds.map(() => []);
+    }
+  }
 }

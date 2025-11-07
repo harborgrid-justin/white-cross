@@ -13,6 +13,7 @@ import { RedisIoAdapter } from './infrastructure/websocket/adapters/redis-io.ada
 import { AppConfigService } from './config';
 import { LoggerService } from './shared/logging/logger.service';
 import { SentryService } from './infrastructure/monitoring/sentry.service';
+import { HipaaExceptionFilter } from './common/exceptions/filters/hipaa-exception.filter';
 
 // Global logger for bootstrap errors
 const bootstrapLogger = new LoggerService();
@@ -229,6 +230,13 @@ async function bootstrap() {
       },
     }),
   );
+
+  // SECURITY: HIPAA-Compliant Global Exception Filter
+  // Sanitizes PHI from all error messages before sending to client
+  // Logs full error details server-side for debugging
+  const sentryService = app.get(SentryService);
+  app.useGlobalFilters(new HipaaExceptionFilter(sentryService));
+  bootstrapLogger.log('HIPAA Exception Filter enabled - PHI sanitization active');
 
   // API Versioning Strategy
   // URI-based versioning: /api/v1/students, /api/v2/students

@@ -12,7 +12,7 @@
  * LLM Context: react component or utility module, part of React frontend architecture
  */
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Plus, Heart } from 'lucide-react'
 import { getConditionSeverityColor, getStatusColor } from '@/utils/healthRecords'
 import type { ChronicCondition } from '@/types/healthRecords'
@@ -25,7 +25,7 @@ interface ChronicConditionsTabProps {
   user?: User | null
 }
 
-export const ChronicConditionsTab: React.FC<ChronicConditionsTabProps> = ({
+export const ChronicConditionsTab = React.memo<ChronicConditionsTabProps>(({
   conditions,
   onAddCondition,
   onViewCarePlan,
@@ -35,7 +35,7 @@ export const ChronicConditionsTab: React.FC<ChronicConditionsTabProps> = ({
 
   // Use the conditions prop passed from parent component (real API data)
   // No mock data - this is CRITICAL for HIPAA compliance
-  const displayConditions = conditions || []
+  const displayConditions = useMemo(() => conditions || [], [conditions])
 
   return (
     <div className="space-y-4" data-testid="chronic-conditions-content">
@@ -100,4 +100,6 @@ export const ChronicConditionsTab: React.FC<ChronicConditionsTabProps> = ({
       </div>
     </div>
   )
-}
+})
+
+ChronicConditionsTab.displayName = 'ChronicConditionsTab'

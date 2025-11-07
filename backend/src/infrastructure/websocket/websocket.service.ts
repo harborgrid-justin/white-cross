@@ -36,8 +36,9 @@
  *
  * @class WebSocketService
  */
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { WebSocketGateway } from './websocket.gateway';
+import { AppConfigService } from '../../config/app-config.service';
 import {
   BroadcastMessageDto,
   MessageEventDto,
@@ -47,10 +48,42 @@ import {
 } from './dto';
 
 @Injectable()
-export class WebSocketService {
+export class WebSocketService implements OnModuleDestroy {
   private readonly logger = new Logger(WebSocketService.name);
 
-  constructor(private readonly websocketGateway: WebSocketGateway) {}
+  constructor(
+    private readonly websocketGateway: WebSocketGateway,
+    private readonly config: AppConfigService,
+  ) {
+    this.logger.log('WebSocketService initialized');
+  }
+
+  /**
+   * Cleanup resources on module destroy
+   * Implements graceful shutdown for WebSocket connections
+   */
+  async onModuleDestroy() {
+    this.logger.log('WebSocketService shutting down - cleaning up resources');
+
+    // Get current connection count for logging
+    const connectedSockets = this.getConnectedSocketsCount();
+    if (connectedSockets > 0) {
+      this.logger.log(`Disconnecting ${connectedSockets} active WebSocket connections`);
+
+      // Notify all connected clients about server shutdown if enabled
+      if (this.config.get<boolean>('websocket.notifyOnShutdown', true)) {
+        const server = this.getServer();
+        if (server) {
+          server.emit('server:shutdown', {
+            message: 'Server is shutting down',
+            timestamp: new Date().toISOString(),
+          });
+        }
+      }
+    }
+
+    this.logger.log('WebSocketService destroyed, resources cleaned up');
+  }
 
   /**
    * Broadcasts a message to a specific room

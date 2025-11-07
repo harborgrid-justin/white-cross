@@ -26,7 +26,7 @@
  * - Accessibility features
  */
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import { Plus, Activity, Heart, Thermometer, TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react'
 import { useRecentVitals, useRecordVitals } from '@/hooks/domains/health'
 import type { User } from '@/types'
@@ -59,7 +59,7 @@ const NORMAL_RANGES = {
   oxygenSaturation: { min: 95, max: 100, unit: '%' },
 }
 
-export const VitalsTab: React.FC<VitalsTabProps> = ({ studentId, user }) => {
+export const VitalsTab = React.memo<VitalsTabProps>(({ studentId, user }) => {
   const canModify = user?.role !== 'READ_ONLY'
 
   // API hooks
@@ -79,20 +79,20 @@ export const VitalsTab: React.FC<VitalsTabProps> = ({ studentId, user }) => {
   }, [vitalsData])
 
   // Check if vital is within normal range
-  const isNormal = (value: number | undefined, type: keyof typeof NORMAL_RANGES): boolean => {
+  const isNormal = useCallback((value: number | undefined, type: keyof typeof NORMAL_RANGES): boolean => {
     if (!value) return true
     const range = NORMAL_RANGES[type]
     return value >= range.min && value <= range.max
-  }
+  }, [])
 
   // Get status indicator
-  const getStatusColor = (value: number | undefined, type: keyof typeof NORMAL_RANGES): string => {
+  const getStatusColor = useCallback((value: number | undefined, type: keyof typeof NORMAL_RANGES): string => {
     if (!value) return 'text-gray-400'
     return isNormal(value, type) ? 'text-green-600' : 'text-red-600'
-  }
+  }, [isNormal])
 
   // Handle form submission
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
 
     try {
@@ -117,7 +117,7 @@ export const VitalsTab: React.FC<VitalsTabProps> = ({ studentId, user }) => {
     } catch (error) {
       console.error('Failed to record vitals:', error)
     }
-  }
+  }, [recordVitalsMutation, studentId, formData, refetch])
 
   return (
     <div className="space-y-6" data-testid="vitals-content">
@@ -471,4 +471,6 @@ export const VitalsTab: React.FC<VitalsTabProps> = ({ studentId, user }) => {
       )}
     </div>
   )
-}
+})
+
+VitalsTab.displayName = 'VitalsTab'

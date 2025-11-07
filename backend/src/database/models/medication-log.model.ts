@@ -36,7 +36,6 @@ export interface MedicationLogAttributes {
   administeredBy: string;
   status?: MedicationLogStatus;
   notes?: string;
-  wasGiven: boolean;
   reasonNotGiven?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -165,16 +164,10 @@ export class MedicationLog
   })
   notes?: string;
 
-  @Default(false)
-  @Column({
-    type: DataType.BOOLEAN,
-    allowNull: false,
-  })
-  wasGiven: boolean;
-
   @Column({
     type: DataType.TEXT,
     allowNull: true,
+    comment: 'Reason when status is MISSED, CANCELLED, or REFUSED',
   })
   reasonNotGiven?: string;
 

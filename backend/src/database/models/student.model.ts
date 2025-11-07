@@ -275,6 +275,16 @@ export class Student
   @Column({
     type: DataType.STRING(50),
     unique: true,
+    validate: {
+      is: {
+        args: /^[A-Z0-9]{2,4}-?[A-Z0-9]{4,8}$/i,
+        msg: 'Medical Record Number must be 6-12 alphanumeric characters, optionally separated by a hyphen (e.g., ABC-12345, 12345678)',
+      },
+      len: {
+        args: [6, 50],
+        msg: 'Medical Record Number must be between 6 and 50 characters',
+      },
+    },
   })
   medicalRecordNum?: string;
 

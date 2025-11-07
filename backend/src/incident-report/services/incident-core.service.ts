@@ -403,4 +403,117 @@ export class IncidentCoreService {
       throw error;
     }
   }
+
+  // ==================== Batch Query Methods (DataLoader Support) ====================
+
+  /**
+   * Batch find incident reports by IDs (for DataLoader)
+   * Returns incident reports in the same order as requested IDs
+   *
+   * OPTIMIZATION: Eliminates N+1 queries when fetching multiple incident reports
+   * Before: 1 + N queries (1 per incident)
+   * After: 1 query with IN clause
+   * Performance improvement: ~99% query reduction for batch operations
+   */
+  async findByIds(ids: string[]): Promise<(IncidentReport | null)[]> {
+    try {
+      const incidents = await this.incidentReportModel.findAll({
+        where: {
+          id: { [Op.in]: ids },
+        },
+        include: [
+          {
+            association: 'student',
+            attributes: [
+              'id',
+              'studentNumber',
+              'firstName',
+              'lastName',
+              'grade',
+            ],
+            required: false,
+          },
+          {
+            association: 'reporter',
+            attributes: ['id', 'firstName', 'lastName', 'email', 'role'],
+            required: false,
+          },
+        ],
+        order: [['occurredAt', 'DESC']],
+      });
+
+      // Create map for O(1) lookup
+      const incidentMap = new Map(incidents.map((i) => [i.id, i]));
+
+      // Return in same order as input, null for missing
+      return ids.map((id) => incidentMap.get(id) || null);
+    } catch (error) {
+      this.logger.error(
+        `Failed to batch fetch incident reports: ${error.message}`,
+        error.stack,
+      );
+      // Return array of nulls on error to prevent breaking entire query
+      return ids.map(() => null);
+    }
+  }
+
+  /**
+   * Batch find incident reports by student IDs (for DataLoader)
+   * Returns array of incident report arrays for each student ID
+   *
+   * OPTIMIZATION: Eliminates N+1 queries when fetching incident reports for multiple students
+   * Before: 1 + N queries (1 per student)
+   * After: 1 query with IN clause
+   * Performance improvement: ~99% query reduction for batch operations
+   */
+  async findByStudentIds(studentIds: string[]): Promise<IncidentReport[][]> {
+    try {
+      const incidents = await this.incidentReportModel.findAll({
+        where: {
+          studentId: { [Op.in]: studentIds },
+        },
+        include: [
+          {
+            association: 'student',
+            attributes: [
+              'id',
+              'studentNumber',
+              'firstName',
+              'lastName',
+              'grade',
+            ],
+            required: false,
+          },
+          {
+            association: 'reporter',
+            attributes: ['id', 'firstName', 'lastName', 'email', 'role'],
+            required: false,
+          },
+        ],
+        order: [['occurredAt', 'DESC']],
+      });
+
+      // Group incidents by student ID
+      const incidentsByStudent = new Map<string, IncidentReport[]>();
+      for (const incident of incidents) {
+        if (!incidentsByStudent.has(incident.studentId)) {
+          incidentsByStudent.set(incident.studentId, []);
+        }
+        incidentsByStudent.get(incident.studentId)!.push(incident);
+      }
+
+      // Return incidents in same order as requested student IDs
+      // Return empty array for students with no incident reports
+      return studentIds.map(
+        (studentId) => incidentsByStudent.get(studentId) || [],
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to batch fetch incident reports by student IDs: ${error.message}`,
+        error.stack,
+      );
+      // Return array of empty arrays on error to prevent breaking entire query
+      return studentIds.map(() => []);
+    }
+  }
 }

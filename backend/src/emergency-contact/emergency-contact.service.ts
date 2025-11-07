@@ -953,4 +953,91 @@ export class EmergencyContactService implements OnModuleDestroy {
       success: true,
     };
   }
+
+  // ==================== Batch Query Methods (DataLoader Support) ====================
+
+  /**
+   * Batch find emergency contacts by IDs (for DataLoader)
+   * Returns emergency contacts in the same order as requested IDs
+   *
+   * OPTIMIZATION: Eliminates N+1 queries when fetching multiple emergency contacts
+   * Before: 1 + N queries (1 per contact)
+   * After: 1 query with IN clause
+   * Performance improvement: ~99% query reduction for batch operations
+   */
+  async findByIds(ids: string[]): Promise<(EmergencyContact | null)[]> {
+    try {
+      const contacts = await this.emergencyContactModel.findAll({
+        where: {
+          id: { [Op.in]: ids },
+          isActive: true,
+        },
+        order: [
+          ['priority', 'ASC'],
+          ['firstName', 'ASC'],
+        ],
+      });
+
+      // Create map for O(1) lookup
+      const contactMap = new Map(contacts.map((c) => [c.id, c]));
+
+      // Return in same order as input, null for missing
+      return ids.map((id) => contactMap.get(id) || null);
+    } catch (error) {
+      this.logger.error(
+        `Failed to batch fetch emergency contacts: ${error.message}`,
+        error.stack,
+      );
+      // Return array of nulls on error to prevent breaking entire query
+      return ids.map(() => null);
+    }
+  }
+
+  /**
+   * Batch find emergency contacts by student IDs (for DataLoader)
+   * Returns array of emergency contact arrays for each student ID
+   *
+   * OPTIMIZATION: Eliminates N+1 queries when fetching emergency contacts for multiple students
+   * Before: 1 + N queries (1 per student)
+   * After: 1 query with IN clause
+   * Performance improvement: ~99% query reduction for batch operations
+   */
+  async findByStudentIds(
+    studentIds: string[],
+  ): Promise<EmergencyContact[][]> {
+    try {
+      const contacts = await this.emergencyContactModel.findAll({
+        where: {
+          studentId: { [Op.in]: studentIds },
+          isActive: true,
+        },
+        order: [
+          ['priority', 'ASC'],
+          ['firstName', 'ASC'],
+        ],
+      });
+
+      // Group contacts by student ID
+      const contactsByStudent = new Map<string, EmergencyContact[]>();
+      for (const contact of contacts) {
+        if (!contactsByStudent.has(contact.studentId)) {
+          contactsByStudent.set(contact.studentId, []);
+        }
+        contactsByStudent.get(contact.studentId)!.push(contact);
+      }
+
+      // Return contacts in same order as requested student IDs
+      // Return empty array for students with no emergency contacts
+      return studentIds.map(
+        (studentId) => contactsByStudent.get(studentId) || [],
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to batch fetch emergency contacts by student IDs: ${error.message}`,
+        error.stack,
+      );
+      // Return array of empty arrays on error to prevent breaking entire query
+      return studentIds.map(() => []);
+    }
+  }
 }

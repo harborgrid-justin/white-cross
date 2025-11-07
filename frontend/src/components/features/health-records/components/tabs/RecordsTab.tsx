@@ -18,7 +18,7 @@
  * @since 2025-10-17
  */
 
-import React from 'react'
+import React, { useCallback } from 'react'
 import { FileText, Stethoscope, Shield } from 'lucide-react'
 import { SearchAndFilter } from '../shared/SearchAndFilter'
 import { useAuthContext } from '@/hooks/utilities/AuthContext'
@@ -50,15 +50,15 @@ interface RecordsTabProps {
   onViewDetails: () => void
 }
 
-export const RecordsTab: React.FC<RecordsTabProps> = ({
+export const RecordsTab = React.memo<RecordsTabProps>(({
   searchQuery,
   onSearchChange,
   healthRecords,
   onViewDetails
 }) => {
   const { user } = useAuthContext()
-  
-  const maskSensitiveData = (data: string, userRole: string, dataType?: string) => {
+
+  const maskSensitiveData = useCallback((data: string, userRole: string, dataType?: string) => {
     if (userRole === 'ADMIN') return data
     if (userRole === 'READ_ONLY') {
       // Specific masking based on data type
@@ -68,7 +68,7 @@ export const RecordsTab: React.FC<RecordsTabProps> = ({
       return '***'
     }
     return data
-  }
+  }, [])
 
   // Filter records based on search query
   const displayRecords = React.useMemo(() => {
@@ -185,4 +185,6 @@ export const RecordsTab: React.FC<RecordsTabProps> = ({
       </div>
     </div>
   )
-}
+})
+
+RecordsTab.displayName = 'RecordsTab'

@@ -12,7 +12,7 @@
  * LLM Context: react component or utility module, part of React frontend architecture
  */
 
-import React from 'react'
+import React, { useCallback } from 'react'
 import type { Allergy, AllergyFormErrors } from '@/types/healthRecords'
 import { SEVERITY_LEVELS, ALLERGY_TYPE_OPTIONS } from '@/constants/healthRecords'
 
@@ -25,7 +25,7 @@ interface AllergyModalProps {
   title?: string
 }
 
-export const AllergyModal: React.FC<AllergyModalProps> = ({
+export const AllergyModal = React.memo<AllergyModalProps>(({
   isOpen,
   onClose,
   onSave,
@@ -35,12 +35,12 @@ export const AllergyModal: React.FC<AllergyModalProps> = ({
 }) => {
   if (!isOpen) return null
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault()
     const form = e.target as HTMLFormElement
     const formData = new FormData(form)
     onSave(formData)
-  }
+  }, [onSave])
 
   const modalTitle = title || (allergy ? 'Edit Allergy' : 'Add New Allergy')
 
@@ -145,4 +145,6 @@ export const AllergyModal: React.FC<AllergyModalProps> = ({
       </div>
     </div>
   )
-}
+})
+
+AllergyModal.displayName = 'AllergyModal'

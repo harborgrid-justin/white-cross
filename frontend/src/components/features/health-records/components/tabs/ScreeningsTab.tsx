@@ -12,7 +12,7 @@
  * LLM Context: react component or utility module, part of React frontend architecture
  */
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Plus, Eye, Ear } from 'lucide-react'
 import type { Screening } from '@/types/healthRecords'
 import type { User } from '@/types'
@@ -23,7 +23,7 @@ interface ScreeningsTabProps {
   user?: User | null
 }
 
-export const ScreeningsTab: React.FC<ScreeningsTabProps> = ({
+export const ScreeningsTab = React.memo<ScreeningsTabProps>(({
   screenings,
   onRecordScreening,
   user
@@ -32,10 +32,10 @@ export const ScreeningsTab: React.FC<ScreeningsTabProps> = ({
 
   // Use the screenings prop passed from parent component (real API data)
   // No mock data - this is CRITICAL for HIPAA compliance
-  const displayScreenings = (screenings || []).map(screening => ({
+  const displayScreenings = useMemo(() => (screenings || []).map(screening => ({
     ...screening,
     icon: screening.screeningType === 'VISION' ? Eye : Ear
-  }))
+  })), [screenings])
 
   return (
     <div className="space-y-4" data-testid="screenings-content">
@@ -93,4 +93,6 @@ export const ScreeningsTab: React.FC<ScreeningsTabProps> = ({
       </div>
     </div>
   )
-}
+})
+
+ScreeningsTab.displayName = 'ScreeningsTab'

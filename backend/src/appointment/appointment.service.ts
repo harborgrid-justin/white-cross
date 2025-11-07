@@ -361,7 +361,14 @@ export class AppointmentService implements OnModuleDestroy {
 
     try {
       // Create appointment within transaction
+      // TRANSACTION ISOLATION: READ_COMMITTED
+      // - Prevents dirty reads while allowing concurrent writes
+      // - Appropriate for appointment creation (no "exactly N" constraints)
+      // - Good balance between consistency and performance
       const result = await this.sequelize.transaction(
+        {
+          isolationLevel: Transaction.ISOLATION_LEVELS.READ_COMMITTED,
+        },
         async (transaction: Transaction) => {
           // Create appointment
           const appointment = await this.appointmentModel.create(
@@ -511,7 +518,14 @@ export class AppointmentService implements OnModuleDestroy {
 
       // If rescheduled, update reminders
       if (updateDto.scheduledDate) {
-        await this.sequelize.transaction(async (transaction: Transaction) => {
+        // TRANSACTION ISOLATION: READ_COMMITTED
+        // - Reminder updates don't require stricter isolation
+        // - Prevents dirty reads while maintaining good performance
+        await this.sequelize.transaction(
+          {
+            isolationLevel: Transaction.ISOLATION_LEVELS.READ_COMMITTED,
+          },
+          async (transaction: Transaction) => {
           // Cancel old reminders
           await this.reminderModel.update(
             { status: ReminderStatus.CANCELLED },
@@ -594,8 +608,15 @@ export class AppointmentService implements OnModuleDestroy {
     AppointmentValidation.validateCancellationNotice(appointment.scheduledAt);
 
     try {
-      await this.sequelize.transaction(async (transaction: Transaction) => {
-        // Update status to CANCELLED
+      // TRANSACTION ISOLATION: READ_COMMITTED
+      // - Cancellation is a status update, not a resource allocation
+      // - READ_COMMITTED is sufficient for consistency
+      await this.sequelize.transaction(
+        {
+          isolationLevel: Transaction.ISOLATION_LEVELS.READ_COMMITTED,
+        },
+        async (transaction: Transaction) => {
+          // Update status to CANCELLED
         await appointment.update(
           {
             status: ModelAppointmentStatus.CANCELLED,
@@ -825,7 +846,16 @@ export class AppointmentService implements OnModuleDestroy {
     );
 
     // Try to fill slot from waitlist
-    await this.sequelize.transaction(async (transaction: Transaction) => {
+    // TRANSACTION ISOLATION: SERIALIZABLE
+    // - Waitlist processing requires strict consistency
+    // - Prevents race conditions when multiple appointments complete simultaneously
+    // - Ensures "first in queue" constraint is honored
+    // - Critical for fair resource allocation
+    await this.sequelize.transaction(
+      {
+        isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE,
+      },
+      async (transaction: Transaction) => {
       await this.processWaitlistForSlot(
         appointment.nurseId,
         appointment.scheduledAt,

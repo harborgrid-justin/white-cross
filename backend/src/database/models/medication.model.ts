@@ -171,8 +171,12 @@ export class Medication
     unique: true,
     validate: {
       is: {
-        args: /^(\d{4}-\d{4}-\d{2}|\d{5}-\d{3}-\d{2}|\d{5}-\d{4}-\d{1}|\d{10,11})$/,
-        msg: 'NDC must be in valid format: 4-4-2, 5-3-2, 5-4-1, or 10-11 digits',
+        args: /^(\d{4}-\d{4}-\d{2}|\d{5}-\d{3}-\d{2}|\d{5}-\d{4}-\d{1}|\d{10}|\d{11})$/,
+        msg: 'NDC must be in valid format: 4-4-2 (1234-5678-90), 5-3-2 (12345-678-90), 5-4-1 (12345-6789-0), 10 digits (1234567890), or 11 digits (12345678901)',
+      },
+      len: {
+        args: [10, 14],
+        msg: 'NDC must be 10-14 characters (including hyphens)',
       },
     },
   })
