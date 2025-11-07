@@ -21,7 +21,7 @@ import {
   EmergencyPriority,
   BroadcastAudience,
   CommunicationChannel,
-} from '@/emergency-broadcast';
+} from '../emergency-broadcast.enums';
 
 export class CreateEmergencyBroadcastDto {
   @ApiProperty({

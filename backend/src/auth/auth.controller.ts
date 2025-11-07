@@ -1,50 +1,36 @@
-import {
-  Controller,
-  Post,
-  Get,
-  Body,
-  UseGuards,
-  HttpCode,
-  HttpStatus,
-  ValidationPipe,
-  Query,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiBody,
-} from '@nestjs/swagger';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query, UseGuards, ValidationPipe } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import {
-  RegisterDto,
-  LoginDto,
   AuthChangePasswordDto,
-  RefreshTokenDto,
   AuthResponseDto,
-  MfaSetupResponseDto,
-  MfaVerifyDto,
-  MfaEnableDto,
-  MfaDisableDto,
-  MfaStatusDto,
-  MfaRegenerateBackupCodesDto,
-  OAuthLoginDto,
-  ForgotPasswordDto,
-  ResetPasswordDto,
-  VerifyEmailDto,
-  ResendVerificationDto,
   EmailVerificationResponseDto,
+  ForgotPasswordDto,
+  LoginDto,
+  MfaDisableDto,
+  MfaEnableDto,
+  MfaRegenerateBackupCodesDto,
+  MfaSetupResponseDto,
+  MfaStatusDto,
+  MfaVerifyDto,
+  OAuthLoginDto,
+  RefreshTokenDto,
+  RegisterDto,
+  ResendVerificationDto,
+  ResetPasswordDto,
   ResetPasswordResponseDto,
+  VerifyEmailDto,
 } from './dto';
 import { JwtAuthGuard } from '@/auth/guards';
-import { Public, CurrentUser, AuthToken } from './decorators';
-import { TokenBlacklistService } from '@/auth/services';
-import { MfaService } from '@/auth/services';
-import { OAuthService } from '@/auth/services';
-import { PasswordResetService } from '@/auth/services';
-import { EmailVerificationService } from '@/auth/services';
+import { AuthToken, CurrentUser, Public } from './decorators';
+import {
+  EmailVerificationService,
+  MfaService,
+  OAuthService,
+  PasswordResetService,
+  TokenBlacklistService,
+} from '@/auth/services';
 
 @ApiTags('Authentication')
 @Controller('auth')

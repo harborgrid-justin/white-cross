@@ -1,12 +1,10 @@
 import { PartialType } from '@nestjs/swagger';
-import { CreateIncidentReportDto } from '@/incident-report';
+import { CreateIncidentReportDto } from './create-incident-report.dto';
 import { IsOptional, IsEnum, IsString } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { InsuranceClaimStatus } from '../enums';
 
-export class UpdateIncidentReportDto extends PartialType(
-  CreateIncidentReportDto,
-) {
+export class UpdateIncidentReportDto extends PartialType(CreateIncidentReportDto) {
   @ApiPropertyOptional({
     description: 'Insurance claim status',
     enum: InsuranceClaimStatus,

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, literal } from 'sequelize';
+import { literal, Op } from 'sequelize';
 import { AuditLog } from '@/database';
 import { ComplianceReport, PHIAccessSummary } from '../types';
 

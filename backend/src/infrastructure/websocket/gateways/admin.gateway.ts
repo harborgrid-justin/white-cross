@@ -23,9 +23,9 @@ import {
 } from '@nestjs/websockets';
 import { Logger, UseGuards, UseFilters, UseInterceptors } from '@nestjs/common';
 import { Server } from 'socket.io';
-import { WsJwtAuthGuard } from '@/infrastructure/websocket';
-import { WsExceptionFilter } from '@/infrastructure/websocket';
-import { WsLoggingInterceptor } from '@/infrastructure/websocket';
+import { WsJwtAuthGuard } from '../guards/ws-jwt-auth.guard';
+import { WsExceptionFilter } from '../filters/ws-exception.filter';
+import { WsLoggingInterceptor } from '../interceptors/ws-logging.interceptor';
 import {
   AdminMetricsService,
   SystemMetrics,

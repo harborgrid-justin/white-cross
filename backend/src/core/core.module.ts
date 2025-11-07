@@ -13,8 +13,9 @@
  * - Ensures single instance of critical services
  */
 
-import { Module, Global, Optional } from '@nestjs/common';
-import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE, APP_FILTER } from '@nestjs/core';
+// Pipes
+import { Global, Module, Optional, ValidationPipe } from '@nestjs/common';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 
 // Import audit module for exception filter
 import { AuditModule } from '@/audit';
@@ -23,18 +24,16 @@ import { AuditModule } from '@/audit';
 import { RolesGuard } from '@/auth';
 
 // Interceptors
-import { LoggingInterceptor } from '@/common';
-import { SanitizationInterceptor } from '@/common';
-import { TimeoutInterceptor } from '@/common';
+// Filters
+import {
+  AllExceptionsFilter,
+  HttpExceptionFilter,
+  LoggingInterceptor,
+  SanitizationInterceptor,
+  TimeoutInterceptor,
+} from '@/common';
 import { TransformInterceptor } from '@/common/interceptors/transform.interceptor';
 import { ErrorMappingInterceptor } from '@/common/interceptors/error-mapping.interceptor';
-
-// Pipes
-import { ValidationPipe } from '@nestjs/common';
-
-// Filters
-import { HttpExceptionFilter } from '@/common';
-import { AllExceptionsFilter } from '@/common';
 
 /**
  * Core Module

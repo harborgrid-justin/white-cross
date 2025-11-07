@@ -46,3 +46,5 @@ export type { RateLimitConfig, RateLimitInfo } from './rate-limit.guard';
 
 export { CsrfGuard, SkipCsrf } from './csrf.guard';
 export type { CSRFConfig } from './csrf.guard';
+
+export * from './csp.middleware';

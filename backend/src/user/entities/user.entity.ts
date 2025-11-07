@@ -8,15 +8,15 @@
  */
 
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
   BeforeCreate,
   BeforeUpdate,
+  Column,
+  DataType,
   Default,
-  PrimaryKey,
   Index,
+  Model,
+  PrimaryKey,
+  Table,
 } from 'sequelize-typescript';
 import * as bcrypt from 'bcrypt';
 import { UserRole } from '../enums/user-role.enum';

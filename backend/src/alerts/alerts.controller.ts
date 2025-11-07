@@ -5,33 +5,24 @@
  */
 
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
   Body,
-  Param,
-  Query,
+  Controller,
+  Delete,
+  Get,
   HttpCode,
   HttpStatus,
+  Param,
   ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@/auth';
 import { CurrentUser } from '@/auth/decorators';
 import { AlertsService } from './alerts.service';
-import { CreateAlertDto } from '@/alerts/dto';
-import { AlertFilterDto } from '@/alerts/dto';
-import { AlertsUpdatePreferencesDto } from '@/alerts/dto';
+import { AlertFilterDto, AlertsUpdatePreferencesDto, CreateAlertDto } from '@/alerts/dto';
 
 @ApiTags('alerts')
 @Controller('alerts')

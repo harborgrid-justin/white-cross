@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { AuditLog, ComplianceType, AuditSeverity, AuditAction } from '@/database';
+import { AuditAction, AuditLog, AuditSeverity, ComplianceType } from '@/database';
 import { IAuditLogEntry } from '@/audit';
 
 /**

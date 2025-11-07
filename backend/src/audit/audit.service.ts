@@ -1,22 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import {
   AuditLogService,
-  PHIAccessService,
   AuditQueryService,
-  ComplianceReportingService,
   AuditStatisticsService,
-  SecurityAnalysisService,
   AuditUtilsService,
+  ComplianceReportingService,
+  PHIAccessService,
+  SecurityAnalysisService,
 } from './services';
 import { IAuditLogEntry, IPHIAccessLog } from './interfaces';
-import { AuditAction } from './enums';
-import {
-  AuditLogFilters,
-  AuditLogSearchCriteria,
-  PHIAccessLogFilters,
-  AuditRequest,
-  ValidationResult,
-} from './types';
+import { AuditLogFilters, AuditLogSearchCriteria, AuditRequest, PHIAccessLogFilters, ValidationResult } from './types';
 
 /**
  * Unified Audit Service Facade

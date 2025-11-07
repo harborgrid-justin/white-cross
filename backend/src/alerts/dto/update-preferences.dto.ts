@@ -5,7 +5,7 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsBoolean, IsObject } from 'class-validator';
+import { IsBoolean, IsObject, IsOptional } from 'class-validator';
 
 export class AlertsUpdatePreferencesDto {
   @ApiProperty({

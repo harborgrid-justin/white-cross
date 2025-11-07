@@ -26,9 +26,11 @@ import type { IncidentReport } from './incident-report.model';
 import type { Prescription } from './prescription.model';
 import type { ClinicVisit } from './clinic-visit.model';
 
+import { UserRole, isUserRole, getUserRoleDisplayName } from '../types/user-role.enum';
+
 // Re-export UserRole from types to maintain backward compatibility
 // and prevent circular dependencies
-export { UserRole, isUserRole, getUserRoleDisplayName } from '../types/user-role.enum';
+export { UserRole, isUserRole, getUserRoleDisplayName };
 
 export interface UserAttributes {
   id: string;

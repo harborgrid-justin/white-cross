@@ -16,3 +16,6 @@ export type {
   QueueHealth,
   FailedJobInfo,
 } from './queue-metrics.interface';
+
+export * from './queue-job.interface';
+export * from './queue-metrics.interface';

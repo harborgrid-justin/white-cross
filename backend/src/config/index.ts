@@ -29,3 +29,6 @@ export { AppConfigService } from './app-config.service';
 // Export module loader helpers for conditional module loading
 export { loadConditionalModules, FeatureFlags } from './module-loader.helper';
 export type { ConditionalModuleConfig } from './module-loader.helper';
+
+export * from './database-pool-monitor.service';
+export * from './query-performance-logger.service';

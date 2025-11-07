@@ -29,8 +29,8 @@ import { ConfigService } from '@nestjs/config';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize, QueryTypes } from 'sequelize';
 import { Job } from 'bullmq';
-import { JobType } from '@/infrastructure/jobs';
-import { InventoryMaintenanceData } from '@/infrastructure/jobs';
+import { JobType } from '../enums/job-type.enum';
+import { InventoryMaintenanceData } from '../interfaces/job-data.interface';
 import { CacheService } from '../../../shared/cache/cache.service';
 import { EmailService } from '@/infrastructure/email';
 import {

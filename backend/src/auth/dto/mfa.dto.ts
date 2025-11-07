@@ -1,11 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsString,
-  IsNotEmpty,
-  Length,
-  IsBoolean,
-  IsOptional,
-} from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString, Length } from 'class-validator';
 
 /**
  * MFA setup response DTO

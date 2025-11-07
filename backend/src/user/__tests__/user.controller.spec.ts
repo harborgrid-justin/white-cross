@@ -13,21 +13,10 @@
  */
 
 import { Test, TestingModule } from '@nestjs/testing';
-import {
-  NotFoundException,
-  ConflictException,
-  BadRequestException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UserController } from '../user.controller';
 import { UserService } from '../user.service';
-import {
-  CreateUserDto,
-  UpdateUserDto,
-  UserChangePasswordDto,
-  AdminResetPasswordDto,
-  UserFiltersDto,
-} from '../dto';
+import { AdminResetPasswordDto, CreateUserDto, UpdateUserDto, UserChangePasswordDto, UserFiltersDto } from '../dto';
 import { UserRole } from '../enums/user-role.enum';
 
 describe('UserController', () => {

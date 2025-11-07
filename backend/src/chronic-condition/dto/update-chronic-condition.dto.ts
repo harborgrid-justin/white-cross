@@ -1,6 +1,6 @@
 import { ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { IsBoolean, IsOptional } from 'class-validator';
-import { ChronicConditionCreateDto } from '@/chronic-condition';
+import { ChronicConditionCreateDto } from './create-chronic-condition.dto';
 
 /**
  * DTO for updating an existing chronic condition record.
@@ -8,9 +8,7 @@ import { ChronicConditionCreateDto } from '@/chronic-condition';
  * Extends CreateChronicConditionDto with partial semantics, allowing selective
  * field updates. Includes isActive flag for deactivation control.
  */
-export class ChronicConditionUpdateDto extends PartialType(
-  ChronicConditionCreateDto,
-) {
+export class ChronicConditionUpdateDto extends PartialType(ChronicConditionCreateDto) {
   @ApiPropertyOptional({
     description: 'Flag to activate/deactivate condition record',
     example: true,

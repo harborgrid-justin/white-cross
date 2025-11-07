@@ -5,12 +5,12 @@ import { AuditController } from './audit.controller';
 import { AuditLog } from '@/database';
 import {
   AuditLogService,
-  PHIAccessService,
   AuditQueryService,
-  ComplianceReportingService,
   AuditStatisticsService,
-  SecurityAnalysisService,
   AuditUtilsService,
+  ComplianceReportingService,
+  PHIAccessService,
+  SecurityAnalysisService,
 } from './services';
 import { AuditInterceptor } from './interceptors';
 

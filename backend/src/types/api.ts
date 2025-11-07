@@ -7,7 +7,7 @@
  * @module types/api
  */
 
-import { PaginatedResult, CursorPaginatedResult } from './pagination';
+import { CursorPaginatedResult, PaginatedResult } from './pagination';
 
 /**
  * HTTP status codes

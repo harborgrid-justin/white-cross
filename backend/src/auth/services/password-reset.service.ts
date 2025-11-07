@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  BadRequestException,
-  UnauthorizedException,
-  Logger,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';

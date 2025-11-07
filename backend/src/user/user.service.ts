@@ -7,23 +7,11 @@
  * @security Account lockout after 5 failed attempts
  */
 
-import {
-  Injectable,
-  NotFoundException,
-  ConflictException,
-  UnauthorizedException,
-  Logger,
-} from '@nestjs/common';
+import { ConflictException, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { User } from '@/user/entities';
-import {
-  CreateUserDto,
-  UpdateUserDto,
-  UserChangePasswordDto,
-  UserFiltersDto,
-  UserStatisticsDto,
-} from './dto';
+import { CreateUserDto, UpdateUserDto, UserChangePasswordDto, UserFiltersDto, UserStatisticsDto } from './dto';
 import { UserRole } from '@/user/enums';
 import { QueryCacheService } from '@/database/services';
 

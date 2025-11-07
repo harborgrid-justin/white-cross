@@ -1,10 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, literal, WhereOptions } from 'sequelize';
+import { literal, Op, WhereOptions } from 'sequelize';
 import { AuditLog } from '@/database';
 import { IPaginatedResult } from '@/audit';
-import { AuditAction } from '@/audit';
-import { AuditLogFilters, AuditLogSearchCriteria, AuditWhereClause } from '../types';
+import { AuditLogFilters, AuditLogSearchCriteria } from '../types';
 
 /**
  * AuditQueryService - Advanced querying and filtering for audit logs

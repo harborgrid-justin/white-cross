@@ -7,7 +7,7 @@
  * @module types/migrations
  */
 
-import { QueryInterface, Sequelize, DataTypes, Transaction } from 'sequelize';
+import { DataTypes, QueryInterface, Sequelize, Transaction } from 'sequelize';
 
 /**
  * Sequelize QueryInterface for migrations

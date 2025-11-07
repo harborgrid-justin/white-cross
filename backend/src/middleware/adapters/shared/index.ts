@@ -9,3 +9,5 @@ export {
   ResponseUtils,
   RequestValidationUtils,
 } from './base.adapter';
+
+export * from './base.adapter';

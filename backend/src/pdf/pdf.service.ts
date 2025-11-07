@@ -1,13 +1,15 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { PDFDocument, rgb } from 'pdf-lib';
-import { GenerateStudentHealthSummaryDto } from '@/pdf/dto';
-import { GenerateMedicationLogDto } from '@/pdf/dto';
-import { GenerateImmunizationReportDto } from '@/pdf/dto';
-import { GenerateIncidentReportDto } from '@/pdf/dto';
-import { PdfGenerateCustomReportDto } from '@/pdf/dto';
-import { WatermarkPdfDto } from '@/pdf/dto';
+import {
+  GenerateImmunizationReportDto,
+  GenerateIncidentReportDto,
+  GenerateMedicationLogDto,
+  GenerateStudentHealthSummaryDto,
+  PdfGenerateCustomReportDto,
+  WatermarkPdfDto,
+} from '@/pdf/dto';
 
 // Extend jsPDF with autoTable
 declare module 'jspdf' {

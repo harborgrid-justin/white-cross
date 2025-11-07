@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsEmail, IsOptional } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 /**
  * OAuth login DTO for Google and Microsoft OAuth providers

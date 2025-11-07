@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, fn, col, literal } from 'sequelize';
+import { col, fn, Op } from 'sequelize';
 import { AuditLog } from '@/database';
 import {
-  AuditStatistics,
-  AuditDashboard,
   ActionDistributionQueryResult,
+  AuditDashboard,
+  AuditStatistics,
   EntityTypeDistributionQueryResult,
   UniqueUsersQueryResult,
 } from '../types';

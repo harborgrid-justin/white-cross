@@ -2,8 +2,7 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { BudgetService } from './budget.service';
 import { BudgetController } from './budget.controller';
-import { BudgetCategory } from '@/database';
-import { BudgetTransaction } from '@/database';
+import { BudgetCategory, BudgetTransaction } from '@/database';
 
 /**
  * Budget Module

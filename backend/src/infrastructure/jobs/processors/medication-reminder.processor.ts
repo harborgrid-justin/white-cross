@@ -21,8 +21,8 @@ import { Logger } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize, QueryTypes, Op } from 'sequelize';
 import { Job } from 'bullmq';
-import { JobType } from '@/infrastructure/jobs';
-import { MedicationReminderData } from '@/infrastructure/jobs';
+import { JobType } from '../enums/job-type.enum';
+import { MedicationReminderData } from '../interfaces/job-data.interface';
 import { CacheService } from '../../../shared/cache/cache.service';
 import { EmailService } from '@/infrastructure/email';
 import {

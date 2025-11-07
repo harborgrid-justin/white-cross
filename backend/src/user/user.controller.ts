@@ -6,38 +6,31 @@
  */
 
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
   Body,
-  Param,
-  Query,
+  ClassSerializerInterceptor,
+  Controller,
+  Delete,
+  Get,
   HttpCode,
   HttpStatus,
-  ValidationPipe,
-  UsePipes,
+  Param,
+  Patch,
+  Post,
+  Query,
   UseInterceptors,
-  ClassSerializerInterceptor,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import {
+  AdminResetPasswordDto,
   CreateUserDto,
   UpdateUserDto,
   UserChangePasswordDto,
-  AdminResetPasswordDto,
   UserFiltersDto,
-  UserResponseDto,
   UserListResponseDto,
+  UserResponseDto,
   UserStatisticsDto,
 } from './dto';
 import { UserRole } from '@/user/enums';

@@ -5,17 +5,16 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { JwtStrategy } from '@/auth/strategies';
-import { GoogleStrategy } from '@/auth/strategies';
-import { MicrosoftStrategy } from '@/auth/strategies';
+import { GoogleStrategy, JwtStrategy, MicrosoftStrategy } from '@/auth/strategies';
 import { User } from '@/database';
-import { JwtAuthGuard } from '@/auth/guards';
-import { RolesGuard } from '@/auth/guards';
-import { TokenBlacklistService } from '@/auth/services';
-import { MfaService } from '@/auth/services';
-import { OAuthService } from '@/auth/services';
-import { PasswordResetService } from '@/auth/services';
-import { EmailVerificationService } from '@/auth/services';
+import { JwtAuthGuard, RolesGuard } from '@/auth/guards';
+import {
+  EmailVerificationService,
+  MfaService,
+  OAuthService,
+  PasswordResetService,
+  TokenBlacklistService,
+} from '@/auth/services';
 
 @Module({
   imports: [

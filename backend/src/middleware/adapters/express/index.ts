@@ -10,3 +10,5 @@ export {
   ExpressResponseWrapper,
   ExpressNextWrapper,
 } from './express.adapter';
+
+export * from './express.adapter';

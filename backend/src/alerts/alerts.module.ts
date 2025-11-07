@@ -3,9 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { AlertsService } from './alerts.service';
 import { AlertsController } from './alerts.controller';
-import { Alert } from '@/database';
-import { AlertPreferences } from '@/database';
-import { DeliveryLog } from '@/database';
+import { Alert, AlertPreferences, DeliveryLog } from '@/database';
 import { AuthModule } from '@/auth';
 
 @Module({

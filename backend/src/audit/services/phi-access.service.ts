@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, literal, WhereOptions } from 'sequelize';
-import { AuditLog, AuditAction } from '@/database';
-import { IPHIAccessLog, IPaginatedResult } from '@/audit';
+import { literal, Op, WhereOptions } from 'sequelize';
+import { AuditAction, AuditLog } from '@/database';
+import { IPaginatedResult, IPHIAccessLog } from '@/audit';
 import { PHIAccessLogFilters } from '../types';
 
 /**

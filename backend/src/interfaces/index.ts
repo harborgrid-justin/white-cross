@@ -6,3 +6,5 @@
 export * from './IMedicationService';
 export * from './IHealthRecordService';
 export * from './IStudentService';
+
+export * from './interfaces.module';

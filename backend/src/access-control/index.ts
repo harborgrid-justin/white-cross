@@ -17,3 +17,6 @@ export * from './decorators';
 
 // Interfaces
 export * from './interfaces';
+
+export * from './access-control.controller';
+export * from './access-control.service';

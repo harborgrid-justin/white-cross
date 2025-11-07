@@ -1,10 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { PHIAccessType, PHIDataCategory, AuditAction } from '@/audit';
-import {
-  ValidationResult,
-  AuditRequest,
-  SanitizableData,
-} from '../types';
+import { AuditAction } from '@/audit';
+import { PHIAccessType } from '../enums/phi-access-type.enum';
+import { PHIDataCategory } from '../enums/phi-data-category.enum';
+import { ValidationResult, AuditRequest, SanitizableData } from '../types';
 import { IAuditLogEntry, IPHIAccessLog } from '../interfaces';
 
 /**
@@ -60,13 +58,13 @@ export class AuditUtilsService {
 
     if (!entry.accessType) {
       errors.push('Access type is required for PHI access');
-    } else if (!Object.values(PHIAccessType).includes(entry.accessType as PHIAccessType)) {
+    } else if (!Object.values(PHIAccessType).includes(entry.accessType)) {
       errors.push('Invalid PHI access type');
     }
 
     if (!entry.dataCategory) {
       errors.push('Data category is required for PHI access');
-    } else if (!Object.values(PHIDataCategory).includes(entry.dataCategory as PHIDataCategory)) {
+    } else if (!Object.values(PHIDataCategory).includes(entry.dataCategory)) {
       errors.push('Invalid PHI data category');
     }
 
@@ -151,8 +149,8 @@ export class AuditUtilsService {
 
     // Truncate very long strings
     Object.keys(sanitized).forEach((key) => {
-      if (typeof sanitized[key] === 'string' && (sanitized[key] as string).length > 1000) {
-        sanitized[key] = (sanitized[key] as string).substring(0, 1000) + '... [TRUNCATED]';
+      if (typeof sanitized[key] === 'string' && sanitized[key].length > 1000) {
+        sanitized[key] = sanitized[key].substring(0, 1000) + '... [TRUNCATED]';
       }
     });
 

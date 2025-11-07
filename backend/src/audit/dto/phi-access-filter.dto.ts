@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsEnum } from 'class-validator';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { AuditLogFilterDto } from './audit-log-filter.dto';
 import { PHIAccessType, PHIDataCategory } from '../enums';

@@ -1,15 +1,17 @@
-import { Controller, Post, Body, Res, HttpStatus } from '@nestjs/common';
+import { Body, Controller, HttpStatus, Post, Res } from '@nestjs/common';
 import type { Response } from 'express';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PdfService } from './pdf.service';
-import { GenerateStudentHealthSummaryDto } from '@/pdf/dto';
-import { GenerateMedicationLogDto } from '@/pdf/dto';
-import { GenerateImmunizationReportDto } from '@/pdf/dto';
-import { GenerateIncidentReportDto } from '@/pdf/dto';
-import { PdfGenerateCustomReportDto } from '@/pdf/dto';
-import { MergePdfsDto } from '@/pdf/dto';
-import { WatermarkPdfDto } from '@/pdf/dto';
-import { SignPdfDto } from '@/pdf/dto';
+import {
+  GenerateImmunizationReportDto,
+  GenerateIncidentReportDto,
+  GenerateMedicationLogDto,
+  GenerateStudentHealthSummaryDto,
+  MergePdfsDto,
+  PdfGenerateCustomReportDto,
+  SignPdfDto,
+  WatermarkPdfDto,
+} from '@/pdf/dto';
 
 /**
  * PDF Controller

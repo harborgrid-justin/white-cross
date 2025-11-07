@@ -7,7 +7,7 @@
  * @module types/database
  */
 
-import { Dialect, Options as SequelizeOptions } from 'sequelize';
+import { Dialect } from 'sequelize';
 
 /**
  * Database environment configuration

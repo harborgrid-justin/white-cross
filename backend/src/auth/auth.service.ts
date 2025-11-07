@@ -9,25 +9,13 @@
  * Environment Configuration:
  * BCRYPT_SALT_ROUNDS=12 (recommended for healthcare applications)
  */
-import {
-  Injectable,
-  UnauthorizedException,
-  BadRequestException,
-  ConflictException,
-  Logger,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/sequelize';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
-import { v4 as uuidv4 } from 'uuid';
-import { User, UserRole, UserCreationAttributes } from '@/database';
-import {
-  RegisterDto,
-  LoginDto,
-  AuthChangePasswordDto,
-  AuthResponseDto,
-} from './dto';
+import { User, UserCreationAttributes, UserRole } from '@/database';
+import { AuthChangePasswordDto, AuthResponseDto, LoginDto, RegisterDto } from './dto';
 import { JwtPayload } from '@/auth/strategies';
 import { TokenBlacklistService } from '@/auth/services';
 import { SafeUser } from './types';

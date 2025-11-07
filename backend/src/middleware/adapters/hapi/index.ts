@@ -10,3 +10,5 @@ export {
   HapiResponseWrapper,
   HapiNextWrapper,
 } from './hapi.adapter';
+
+export * from './hapi.adapter';

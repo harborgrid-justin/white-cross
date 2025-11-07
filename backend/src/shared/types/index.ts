@@ -10,3 +10,6 @@ export * from './common';
 export type { PaginationParams, PaginationMeta, CursorPagination, CursorPaginatedResponse, SortOptions, PaginationWithSort, PaginatedResult, PaginationConstraints } from './pagination';
 export { PAGINATION_DEFAULTS } from './pagination';
 export * from './auth';
+
+export * from './health-metadata.types';
+export * from './route.types';
