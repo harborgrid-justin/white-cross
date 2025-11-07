@@ -253,9 +253,9 @@ export class LabResultsRepository
       const entities = results.map((r: any) => this.mapToEntity(r));
 
       // Calculate trend
-      const values = entities.map((e) => e.resultValue as number);
+      const values = entities.map((e: any) => e.resultValue as number);
       const averageValue =
-        values.reduce((sum, val) => sum + val, 0) / values.length;
+        values.reduce((sum: number, val: number) => sum + val, 0) / values.length;
 
       let trend: 'increasing' | 'decreasing' | 'stable' = 'stable';
 
@@ -264,9 +264,9 @@ export class LabResultsRepository
         const secondHalf = values.slice(Math.floor(values.length / 2));
 
         const firstAvg =
-          firstHalf.reduce((sum, val) => sum + val, 0) / firstHalf.length;
+          firstHalf.reduce((sum: number, val: number) => sum + val, 0) / firstHalf.length;
         const secondAvg =
-          secondHalf.reduce((sum, val) => sum + val, 0) / secondHalf.length;
+          secondHalf.reduce((sum: number, val: number) => sum + val, 0) / secondHalf.length;
 
         const percentChange = ((secondAvg - firstAvg) / firstAvg) * 100;
 
@@ -280,7 +280,7 @@ export class LabResultsRepository
       const trendData: LabResultTrend = {
         testName: entities[0].testName,
         testType,
-        results: entities.map((e) => ({
+        results: entities.map((e: any) => ({
           date: e.resultDate as Date,
           value: e.resultValue as number,
           unit: e.resultUnit || '',

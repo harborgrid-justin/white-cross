@@ -10,7 +10,7 @@ import {
   ExecutionContext,
   CallHandler,
   Logger,
-} from '@nestjs/core';
+} from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { HealthDataCacheService } from '../services/health-data-cache.service';

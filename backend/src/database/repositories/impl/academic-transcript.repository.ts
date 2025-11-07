@@ -5,9 +5,9 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
-import { IAuditLogger } from '../../interfaces/audit/audit-logger.interface';
+import type { IAuditLogger } from '../../interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../interfaces/audit/audit-logger.interface';
-import { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
+import type { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
 import { ExecutionContext } from '../../types';
 import {
   AcademicTranscript,
@@ -69,8 +69,8 @@ export class AcademicTranscriptRepository extends BaseRepository<
   constructor(
     @InjectModel(AcademicTranscript)
     private readonly academicTranscriptModel: typeof AcademicTranscript,
-    @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager,
+    @Inject('IAuditLogger') auditLogger: IAuditLogger,
+    @Inject('ICacheManager') cacheManager: ICacheManager,
   ) {
     super(
       academicTranscriptModel,

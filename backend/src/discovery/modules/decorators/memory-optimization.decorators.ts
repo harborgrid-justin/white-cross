@@ -429,7 +429,7 @@ export function getCleanupMethods(
   }
 
   return methods.sort((a, b) => {
-    const priorityOrder = { high: 3, normal: 2, low: 1 };
+    const priorityOrder: Record<string, number> = { high: 3, normal: 2, low: 1 };
     return priorityOrder[b.priority] - priorityOrder[a.priority];
   });
 }

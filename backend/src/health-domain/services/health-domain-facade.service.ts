@@ -86,7 +86,7 @@ export class HealthDomainFacadeService extends BaseService {
   private async getVaccinationService() {
     if (!this.vaccinationService) {
       const { VaccinationService } = await import(
-        '../../health-record/vaccination/vaccination.service'
+        '../../health-record/vaccination/vaccination.service.js'
       );
       this.vaccinationService = this.moduleRef.get(VaccinationService, {
         strict: false,
@@ -98,7 +98,7 @@ export class HealthDomainFacadeService extends BaseService {
   private async getAllergyService() {
     if (!this.allergyService) {
       const { AllergyService } = await import(
-        '../../health-record/allergy/allergy.service'
+        '../../health-record/allergy/allergy.service.js'
       );
       this.allergyService = this.moduleRef.get(AllergyService, {
         strict: false,
@@ -110,7 +110,7 @@ export class HealthDomainFacadeService extends BaseService {
   private async getChronicConditionService() {
     if (!this.chronicConditionService) {
       const { ChronicConditionService } = await import(
-        '../../health-record/chronic-condition/chronic-condition.service'
+        '../../health-record/chronic-condition/chronic-condition.service.js'
       );
       this.chronicConditionService = this.moduleRef.get(
         ChronicConditionService,
@@ -123,7 +123,7 @@ export class HealthDomainFacadeService extends BaseService {
   private async getVitalsService() {
     if (!this.vitalsService) {
       const { VitalsService } = await import(
-        '../../health-record/vitals/vitals.service'
+        '../../health-record/vitals/vitals.service.js'
       );
       this.vitalsService = this.moduleRef.get(VitalsService, { strict: false });
     }
@@ -133,7 +133,7 @@ export class HealthDomainFacadeService extends BaseService {
   private async getStatisticsService() {
     if (!this.statisticsService) {
       const { StatisticsService } = await import(
-        '../../health-record/statistics/statistics.service'
+        '../../health-record/statistics/statistics.service.js'
       );
       this.statisticsService = this.moduleRef.get(StatisticsService, {
         strict: false,
@@ -145,7 +145,7 @@ export class HealthDomainFacadeService extends BaseService {
   private async getImportExportService() {
     if (!this.importExportService) {
       const { ImportExportService } = await import(
-        '../../health-record/import-export/import-export.service'
+        '../../health-record/import-export/import-export.service.js'
       );
       this.importExportService = this.moduleRef.get(ImportExportService, {
         strict: false,
@@ -201,7 +201,7 @@ export class HealthDomainFacadeService extends BaseService {
         'health-record.updated',
         new Events.HealthRecordUpdatedEvent(
           id,
-          data.studentId,
+          data.studentId || '',
           data,
           this.requestContext?.userId,
         ),
@@ -280,7 +280,7 @@ export class HealthDomainFacadeService extends BaseService {
         'allergy.updated',
         new Events.AllergyUpdatedEvent(
           id,
-          data.studentId,
+          data.studentId || '',
           data,
           this.requestContext?.userId,
         ),

@@ -58,13 +58,13 @@ export class HealthDataCacheService implements OnModuleInit {
 
       this.redisClient = createClient({
         socket: {
-          host: redisConfig.cache.host,
-          port: redisConfig.cache.port,
-          connectTimeout: redisConfig.cache.connectionTimeout,
+          host: redisConfig?.cache.host,
+          port: redisConfig?.cache.port,
+          connectTimeout: redisConfig?.cache.connectionTimeout,
         },
-        password: redisConfig.cache.password,
-        username: redisConfig.cache.username,
-        database: redisConfig.cache.db,
+        password: redisConfig?.cache.password,
+        username: redisConfig?.cache.username,
+        database: redisConfig?.cache.db,
       });
 
       this.redisClient.on('error', (err) => {
@@ -113,7 +113,7 @@ export class HealthDataCacheService implements OnModuleInit {
 
       if (data) {
         this.stats.hits++;
-        const parsed = JSON.parse(data);
+        const parsed = typeof data === 'string' ? JSON.parse(data) : data;
 
         // Store in L1 cache for faster subsequent access
         this.setInL1(fullKey, parsed);

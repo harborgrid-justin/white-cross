@@ -623,7 +623,6 @@ export class StudentCrudService extends BaseService {
       firstName: data.firstName?.trim(),
       lastName: data.lastName?.trim(),
       studentNumber: data.studentNumber?.trim()?.toUpperCase(),
-      email: data.email?.trim()?.toLowerCase(),
     };
   }
 

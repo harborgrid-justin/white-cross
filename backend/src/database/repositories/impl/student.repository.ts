@@ -13,9 +13,9 @@ import {
   CreateStudentDTO,
   UpdateStudentDTO,
 } from '../interfaces/student.repository.interface';
-import { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
+import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
-import { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
+import type { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
 import { ExecutionContext, QueryOptions } from '../../types';
 import { Student } from '../../models/student.model';
 
@@ -28,8 +28,8 @@ export class StudentRepository
 {
   constructor(
     @InjectModel(Student) model: typeof Student,
-    @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager,
+    @Inject('IAuditLogger') auditLogger: IAuditLogger,
+    @Inject('ICacheManager') cacheManager: ICacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'Student');
   }

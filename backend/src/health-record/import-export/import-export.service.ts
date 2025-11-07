@@ -617,7 +617,7 @@ export class ImportExportService {
       if (!allergyMap.has(key)) {
         allergyMap.set(key, new Set());
       }
-      allergyMap.get(key).add(allergy.allergen?.toLowerCase());
+      allergyMap.get(key)?.add(allergy.allergen?.toLowerCase());
     });
 
     // Filter out duplicates

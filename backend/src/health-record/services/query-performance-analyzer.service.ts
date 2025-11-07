@@ -250,8 +250,8 @@ export class QueryPerformanceAnalyzer implements OnModuleDestroy {
         VERY_COMPLEX: 0,
       };
 
-      metrics.forEach((metric) => {
-        const complexity = (metric.tags as any)?.complexity;
+      metrics.forEach((metric: any) => {
+        const complexity = metric.tags?.complexity as keyof typeof queriesByComplexity;
         if (complexity && queriesByComplexity[complexity] !== undefined) {
           queriesByComplexity[complexity]++;
         }

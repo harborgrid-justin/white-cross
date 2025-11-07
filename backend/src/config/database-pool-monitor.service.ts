@@ -27,7 +27,7 @@ export interface PoolAlert {
     | 'connection_error';
   severity: 'warning' | 'critical';
   message: string;
-  metrics: PoolMetrics;
+  metrics: PoolMetrics | null;
   timestamp: Date;
 }
 
@@ -55,7 +55,7 @@ export class DatabasePoolMonitorService implements OnModuleInit {
    * Collect connection pool metrics every 30 seconds
    */
   @Cron(CronExpression.EVERY_30_SECONDS)
-  async collectMetrics(): Promise<PoolMetrics> {
+  async collectMetrics(): Promise<PoolMetrics | null> {
     try {
       const pool = this.getConnectionPool();
 

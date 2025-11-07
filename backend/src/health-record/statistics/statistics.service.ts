@@ -433,7 +433,7 @@ export class StatisticsService {
     if (!match) return 30; // Default 30 days
 
     const [, value, unit] = match;
-    const multipliers = { day: 1, week: 7, month: 30, year: 365 };
+    const multipliers: Record<string, number> = { day: 1, week: 7, month: 30, year: 365 };
     return parseInt(value) * (multipliers[unit] || 1);
   }
 

@@ -249,7 +249,7 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
 
     cpus.forEach((cpu) => {
       for (const type in cpu.times) {
-        totalTick += cpu.times[type];
+        totalTick += (cpu.times as Record<string, number>)[type];
       }
       totalIdle += cpu.times.idle;
     });
@@ -285,7 +285,7 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
         const parseSize = (size: string): number => {
           const unit = size.slice(-1).toLowerCase();
           const value = parseFloat(size);
-          const multipliers = {
+          const multipliers: Record<string, number> = {
             k: 1024,
             m: 1024 ** 2,
             g: 1024 ** 3,

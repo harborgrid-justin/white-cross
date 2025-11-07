@@ -6,9 +6,9 @@ import { Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
-import { IAuditLogger } from '../../interfaces/audit/audit-logger.interface';
+import type { IAuditLogger } from '../../interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../interfaces/audit/audit-logger.interface';
-import { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
+import type { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
 import { ExecutionContext } from '../../types';
 import { PolicyDocument } from '../../models/policy-document.model';
 
@@ -67,8 +67,8 @@ export class PolicyDocumentRepository extends BaseRepository<
 > {
   constructor(
     @InjectModel(PolicyDocument) model: typeof PolicyDocument,
-    @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager,
+    @Inject('IAuditLogger') auditLogger: IAuditLogger,
+    @Inject('ICacheManager') cacheManager: ICacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'PolicyDocument');
   }

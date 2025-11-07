@@ -890,7 +890,7 @@ export class CacheStrategyService implements OnModuleDestroy {
    */
   private calculateL1MemoryUsage(): number {
     let total = 0;
-    for (const entry of this.l1Cache.values()) {
+    for (const entry of Array.from(this.l1Cache.values())) {
       total += entry.size;
     }
     return total;

@@ -554,7 +554,7 @@ export class EmergencyBroadcastService {
     message: string,
   ): Promise<any> {
     // Prepare message DTO for communication service
-    const messageDto = {
+    const messageDto: Record<string, any> = {
       recipientId: recipient.id,
       recipientType: recipient.type,
       subject: 'Emergency Alert',

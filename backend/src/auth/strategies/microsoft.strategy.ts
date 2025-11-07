@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy, VerifyCallback } from 'passport-microsoft';
+import { Strategy } from 'passport-microsoft';
 import { ConfigService } from '@nestjs/config';
 import { OAuthProfile } from '../dto/oauth.dto';
 
@@ -48,7 +48,7 @@ export class MicrosoftStrategy extends PassportStrategy(Strategy, 'microsoft') {
     accessToken: string,
     refreshToken: string,
     profile: any,
-    done: VerifyCallback,
+    done: (error?: any, user?: any) => void,
   ): Promise<any> {
     try {
       const { id, emails, name, photos } = profile;

@@ -216,7 +216,7 @@ export class SeedHealthRecordsCommand extends CommandRunner {
       const recordType = this.randomItem(recordTypes);
       const recordDate = this.randomDate(730, 30);
 
-      const titleOptions = titles[recordType] || ['Health Record'];
+      const titleOptions = (titles as Record<string, string[]>)[recordType] || ['Health Record'];
       const title = this.randomItem(titleOptions);
 
       const provider = this.randomItem(providers);
@@ -287,7 +287,7 @@ export class SeedHealthRecordsCommand extends CommandRunner {
 
   private printStatistics(healthRecords: any[]): void {
     const recordTypeCount: Record<string, number> = {};
-    healthRecords.forEach((record) => {
+    healthRecords.forEach((record: any) => {
       recordTypeCount[record.recordType] =
         (recordTypeCount[record.recordType] || 0) + 1;
     });

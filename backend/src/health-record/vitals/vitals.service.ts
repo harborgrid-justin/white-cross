@@ -298,7 +298,7 @@ export class VitalsService {
       order: [['measurementDate', 'ASC']],
     });
 
-    const values = vitals.map((v) => v[metric]).filter((v) => v !== null);
+    const values = vitals.map((v: any) => v[metric]).filter((v: any) => v !== null);
     const average =
       values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : 0;
     const min = values.length > 0 ? Math.min(...values) : 0;
@@ -307,7 +307,7 @@ export class VitalsService {
     return {
       metric,
       period: `${days} days`,
-      dataPoints: vitals.map((v) => ({
+      dataPoints: vitals.map((v: any) => ({
         date: v.measurementDate,
         value: v[metric],
       })),

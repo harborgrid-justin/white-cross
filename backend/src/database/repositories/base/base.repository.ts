@@ -151,7 +151,7 @@ export abstract class BaseRepository<
 
       const { rows, count } = await this.model.findAndCountAll(findOptions);
 
-      const entities = rows.map((row) => this.mapToEntity(row));
+      const entities = rows.map((row: any) => this.mapToEntity(row));
 
       return {
         data: entities,
@@ -433,7 +433,7 @@ export abstract class BaseRepository<
         `Bulk created ${results.length} ${this.entityName} records`,
       );
 
-      return results.map((r) => this.mapToEntity(r));
+      return results.map((r: any) => this.mapToEntity(r));
     } catch (error) {
       if (transaction) {
         await transaction.rollback();

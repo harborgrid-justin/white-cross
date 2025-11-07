@@ -7,9 +7,9 @@ import { Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Transaction } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
-import { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
+import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
-import { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
+import type { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
 import { ExecutionContext, QueryOptions } from '../../types';
 import { Allergy } from '../../models/allergy.model';
 
@@ -55,8 +55,8 @@ export class AllergyRepository extends BaseRepository<
 > {
   constructor(
     @InjectModel(Allergy) model: typeof Allergy,
-    @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager,
+    @Inject('IAuditLogger') auditLogger: IAuditLogger,
+    @Inject('ICacheManager') cacheManager: ICacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'Allergy');
   }

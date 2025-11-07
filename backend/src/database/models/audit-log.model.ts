@@ -12,13 +12,10 @@ import {
   DataType,
   PrimaryKey,
   Default,
-  Index,
-  BeforeCreate,
   Scopes,
-  BeforeUpdate,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import { AuditAction } from '../types/database.enums';
+import { LoggerService } from '../../shared/logging/logger.service';
 
 /**
  * Compliance regulation types for audit tracking
@@ -124,6 +121,28 @@ export interface AuditLogAttributes {
       name: 'idx_audit_log_created_at',
     },
   ],
+  hooks: {
+    beforeCreate: (instance: AuditLog) => {
+      // Ensure audit logs have a timestamp
+      if (!instance.createdAt) {
+        instance.createdAt = new Date();
+      }
+    },
+    beforeUpdate: (instance: AuditLog) => {
+      if (instance.changed()) {
+        const changedFields = instance.changed() as string[];
+        // AuditLog modifications should be logged but we avoid infinite recursion
+        // by just logging to console for audit log changes
+        const logger = new LoggerService();
+        logger.setContext('AuditLog');
+        logger.warn(
+          `AuditLog ${instance.id} modified at ${new Date().toISOString()}`,
+        );
+        logger.warn(`Changed fields: ${changedFields.join(', ')}`);
+        // NOTE: We do NOT call audit service here to avoid infinite recursion
+      }
+    },
+  },
 })
 export class AuditLog extends Model<AuditLogAttributes> {
   @PrimaryKey
@@ -138,32 +157,28 @@ export class AuditLog extends Model<AuditLogAttributes> {
     },
     allowNull: false,
   })
-  @Index
-  action: AuditAction;
+  action!: AuditAction;
 
   @Column({
     type: DataType.STRING(100),
     allowNull: false,
     comment: 'Type of entity affected (Student, HealthRecord, User, etc.)',
   })
-  @Index
-  entityType: string;
+  entityType!: string;
 
   @Column({
     type: DataType.UUID,
     allowNull: true,
     comment: 'ID of the entity affected (null for bulk operations)',
   })
-  @Index
-  entityId: string | null;
+  entityId!: string | null;
 
   @Column({
     type: DataType.UUID,
     allowNull: true,
     comment: 'ID of user who performed the action (null for system operations)',
   })
-  @Index
-  userId: string | null;
+  userId!: string | null;
 
   @Column({
     type: DataType.STRING(200),
@@ -171,58 +186,56 @@ export class AuditLog extends Model<AuditLogAttributes> {
     comment:
       'Name of user who performed the action (denormalized for reporting)',
   })
-  userName: string | null;
+  userName!: string | null;
 
   @Column({
     type: DataType.JSONB,
     allowNull: true,
     comment: 'Complete change data (for backward compatibility)',
   })
-  changes: any;
+  changes!: any;
 
   @Column({
     type: DataType.JSONB,
     allowNull: true,
     comment: 'Previous values before the change (for UPDATE operations)',
   })
-  previousValues: any;
+  previousValues!: any;
 
   @Column({
     type: DataType.JSONB,
     allowNull: true,
     comment: 'New values after the change (for CREATE/UPDATE operations)',
   })
-  newValues: any;
+  newValues!: any;
 
   @Column({
     type: DataType.STRING(45),
     allowNull: true,
     comment: 'IP address of the client making the request',
   })
-  ipAddress: string | null;
+  ipAddress!: string | null;
 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
     comment: 'User agent string of the client',
   })
-  userAgent: string | null;
+  userAgent!: string | null;
 
   @Column({
     type: DataType.STRING(100),
     allowNull: true,
     comment: 'Request correlation ID for tracing related operations',
   })
-  @Index
-  requestId: string | null;
+  requestId!: string | null;
 
   @Column({
     type: DataType.STRING(100),
     allowNull: true,
     comment: 'Session ID for grouping operations by user session',
   })
-  @Index
-  sessionId: string | null;
+  sessionId!: string | null;
 
   @Column({
     type: DataType.BOOLEAN,
@@ -231,8 +244,7 @@ export class AuditLog extends Model<AuditLogAttributes> {
     comment:
       'Flag indicating if this audit log involves Protected Health Information',
   })
-  @Index
-  isPHI: boolean;
+  isPHI!: boolean;
 
   @Column({
     type: DataType.STRING(50),
@@ -242,8 +254,7 @@ export class AuditLog extends Model<AuditLogAttributes> {
     allowNull: false,
     defaultValue: ComplianceType.GENERAL,
   })
-  @Index
-  complianceType: ComplianceType;
+  complianceType!: ComplianceType;
 
   @Column({
     type: DataType.STRING(50),
@@ -253,8 +264,7 @@ export class AuditLog extends Model<AuditLogAttributes> {
     allowNull: false,
     defaultValue: AuditSeverity.LOW,
   })
-  @Index
-  severity: AuditSeverity;
+  severity!: AuditSeverity;
 
   @Column({
     type: DataType.BOOLEAN,
@@ -262,15 +272,14 @@ export class AuditLog extends Model<AuditLogAttributes> {
     defaultValue: true,
     comment: 'Whether the operation completed successfully',
   })
-  @Index
-  success: boolean;
+  success!: boolean;
 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
     comment: 'Error message if operation failed',
   })
-  errorMessage: string | null;
+  errorMessage!: string | null;
 
   @Column({
     type: DataType.JSONB,
@@ -278,7 +287,7 @@ export class AuditLog extends Model<AuditLogAttributes> {
     comment:
       'Additional metadata for context (query params, filter criteria, etc.)',
   })
-  metadata: any;
+  metadata!: any;
 
   @Column({
     type: DataType.ARRAY(DataType.STRING(255)),
@@ -286,7 +295,7 @@ export class AuditLog extends Model<AuditLogAttributes> {
     defaultValue: [],
     comment: 'Tags for categorization and filtering',
   })
-  tags: string[];
+  tags!: string[];
 
   @Column({
     type: DataType.DATE,
@@ -294,36 +303,7 @@ export class AuditLog extends Model<AuditLogAttributes> {
     defaultValue: DataType.NOW,
     comment: 'Timestamp when the action was performed',
   })
-  @Index
   declare createdAt?: Date;
-
-  /**
-   * Hook to prevent updates to audit logs (immutability)
-   */
-
-  // Hooks for HIPAA compliance
-  @BeforeCreate
-  @BeforeUpdate
-  static async auditPHIAccess(instance: AuditLog) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      // AuditLog modifications should be logged but we avoid infinite recursion
-      // by just logging to console for audit log changes
-      console.log(
-        `[AUDIT] AuditLog ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // NOTE: We do NOT call audit service here to avoid infinite recursion
-    }
-  }
-
-  @BeforeCreate
-  static preventModification(instance: AuditLog) {
-    // Ensure audit logs have a timestamp
-    if (!instance.createdAt) {
-      instance.createdAt = new Date();
-    }
-  }
 
   /**
    * Get a sanitized version of the audit log for export

@@ -1600,11 +1600,11 @@ export class AppointmentService {
         byStatus: byStatus.reduce((acc, item: any) => {
           acc[item.status] = parseInt(item.count);
           return acc;
-        }, {}),
+        }, {} as Record<string, number>),
         byType: byType.reduce((acc, item: any) => {
           acc[item.type] = parseInt(item.count);
           return acc;
-        }, {}),
+        }, {} as Record<string, number>),
         noShowRate: total > 0 ? (noShowCount / total) * 100 : 0,
         completionRate: total > 0 ? (completedCount / total) * 100 : 0,
       };

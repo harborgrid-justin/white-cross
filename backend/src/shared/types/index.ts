@@ -7,5 +7,6 @@
 export * from './guards';
 export { default as TypeGuards } from './guards';
 export * from './common';
-export * from './pagination';
+export type { PaginationParams, PaginationMeta, CursorPagination, CursorPaginatedResponse, SortOptions, PaginationWithSort, PaginatedResult, PaginationConstraints } from './pagination';
+export { PAGINATION_DEFAULTS } from './pagination';
 export * from './auth';

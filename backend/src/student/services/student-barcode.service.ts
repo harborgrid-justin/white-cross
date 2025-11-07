@@ -57,19 +57,19 @@ export class StudentBarcodeService extends BaseService {
    */
   async scanBarcode(scanDto: StudentScanBarcodeDto): Promise<any> {
     try {
-      this.validateRequired(scanDto.barcode, 'Barcode');
+      this.validateRequired(scanDto.barcodeString, 'Barcode');
 
       // Find student by student number (barcode typically contains student number)
       const student = await this.studentModel.findOne({
         where: {
-          studentNumber: scanDto.barcode,
+          studentNumber: scanDto.barcodeString,
           isActive: true,
         },
       });
 
       if (!student) {
         throw new NotFoundException(
-          `No active student found with barcode: ${scanDto.barcode}`,
+          `No active student found with barcode: ${scanDto.barcodeString}`,
         );
       }
 
@@ -77,8 +77,8 @@ export class StudentBarcodeService extends BaseService {
       if (this.eventEmitter) {
         this.eventEmitter.emit('student.barcode.scanned', {
           studentId: student.id,
-          barcode: scanDto.barcode,
-          purpose: scanDto.purpose || 'IDENTIFICATION',
+          barcode: scanDto.barcodeString,
+          purpose: scanDto.scanType || 'STUDENT',
           userId: this.requestContext?.userId,
           timestamp: new Date(),
         });
@@ -86,7 +86,7 @@ export class StudentBarcodeService extends BaseService {
 
       this.logInfo('Barcode scanned', {
         studentId: student.id,
-        barcode: scanDto.barcode,
+        barcode: scanDto.barcodeString,
       });
 
       return {
@@ -99,7 +99,7 @@ export class StudentBarcodeService extends BaseService {
           dateOfBirth: student.dateOfBirth,
         },
         scanTime: new Date(),
-        purpose: scanDto.purpose || 'IDENTIFICATION',
+        purpose: scanDto.scanType || 'STUDENT',
       };
     } catch (error) {
       if (error instanceof NotFoundException) {

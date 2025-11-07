@@ -128,7 +128,7 @@ export class HealthDomainService {
    */
   async createAllergy(data: HealthDomainCreateAllergyDto): Promise<any> {
     // Delegate to existing AllergyService (user context would come from request)
-    const mockUser = { id: 'system', role: 'admin' };
+    const mockUser = { id: 'system', role: 'admin' as any, email: 'system@whitecross.com', isActive: true };
     return this.allergyService.create(data, mockUser);
   }
 
@@ -137,13 +137,13 @@ export class HealthDomainService {
     data: HealthDomainUpdateAllergyDto,
   ): Promise<any> {
     // Delegate to existing AllergyService
-    const mockUser = { id: 'system', role: 'admin' };
+    const mockUser = { id: 'system', role: 'admin' as any, email: 'system@whitecross.com', isActive: true };
     return this.allergyService.update(id, data, mockUser);
   }
 
   async deleteAllergy(id: string): Promise<boolean> {
     // Delegate to existing AllergyService
-    const mockUser = { id: 'system', role: 'admin' };
+    const mockUser = { id: 'system', role: 'admin' as any, email: 'system@whitecross.com', isActive: true };
     await this.allergyService.remove(id, mockUser);
     return true;
   }
@@ -155,7 +155,7 @@ export class HealthDomainService {
     limit: number = 20,
   ): Promise<PaginatedResponse<any>> {
     // Delegate to existing AllergyService
-    const mockUser = { id: 'system', role: 'admin' };
+    const mockUser = { id: 'system', role: 'admin' as any, email: 'system@whitecross.com', isActive: true };
     const allergies = await this.allergyService.findByStudent(
       studentId,
       mockUser,
@@ -396,7 +396,7 @@ export class HealthDomainService {
   async importStudentData(importData: any, options: any = {}): Promise<any> {
     // Delegate to existing ImportExportService
     const format = options.format || 'JSON';
-    const mockUser = { id: 'system', role: 'admin' };
+    const mockUser = { id: 'system', role: 'admin' as any, email: 'system@whitecross.com', isActive: true };
     return this.importExportService.importRecords(importData, format, mockUser);
   }
 

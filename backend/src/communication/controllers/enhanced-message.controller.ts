@@ -297,7 +297,7 @@ export class EnhancedMessageController {
     },
   })
   async uploadAttachments(
-    @UploadedFiles() files: multer.File[],
+    @UploadedFiles() files: Express.Multer.File[],
     @Req() req: any,
   ) {
     // TODO: Implement file upload to storage service (S3, etc.)

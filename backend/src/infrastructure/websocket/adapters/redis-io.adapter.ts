@@ -59,7 +59,7 @@ export class RedisIoAdapter extends IoAdapter {
         socket: {
           host: redisHost,
           port: redisPort,
-          reconnectStrategy: (retries) => {
+          reconnectStrategy: (retries: number) => {
             if (retries > maxRetries) {
               this.logger.error(
                 `Redis connection failed after ${maxRetries} retries. Stopping reconnection.`,

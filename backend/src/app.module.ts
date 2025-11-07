@@ -121,14 +121,18 @@ import { SentryModule } from './infrastructure/monitoring/sentry.module';
     // Uses ConfigService for environment-aware throttle limits
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
-      inject: [AppConfigService],
-      useFactory: (config: AppConfigService) => {
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        // Get configuration values directly from ConfigService
+        const redisConfig = configService.get('redis.cache');
+        const throttleConfig = configService.get('app.throttle');
+
         // Create Redis client for throttler storage
         const redisClient = new Redis({
-          host: config.redisHost,
-          port: config.redisPort,
-          password: config.redisPassword,
-          username: config.redisUsername,
+          host: redisConfig.host,
+          port: redisConfig.port,
+          password: redisConfig.password,
+          username: redisConfig.username,
           db: 0, // Use default database for throttler
           keyPrefix: 'throttler:',
           retryStrategy: (times: number) => {
@@ -142,18 +146,18 @@ import { SentryModule } from './infrastructure/monitoring/sentry.module';
           throttlers: [
             {
               name: 'short',
-              ttl: config.throttleShort.ttl,
-              limit: config.throttleShort.limit,
+              ttl: throttleConfig.short.ttl,
+              limit: throttleConfig.short.limit,
             },
             {
               name: 'medium',
-              ttl: config.throttleMedium.ttl,
-              limit: config.throttleMedium.limit,
+              ttl: throttleConfig.medium.ttl,
+              limit: throttleConfig.medium.limit,
             },
             {
               name: 'long',
-              ttl: config.throttleLong.ttl,
-              limit: config.throttleLong.limit,
+              ttl: throttleConfig.long.ttl,
+              limit: throttleConfig.long.limit,
             },
           ],
           storage: new ThrottlerStorageRedisService(redisClient),

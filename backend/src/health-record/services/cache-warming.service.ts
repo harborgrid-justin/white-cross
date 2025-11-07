@@ -231,7 +231,7 @@ export class CacheWarmingService implements OnModuleInit {
         if (!allergyMap.has(studentId)) {
           allergyMap.set(studentId, []);
         }
-        allergyMap.get(studentId).push(allergy);
+        allergyMap.get(studentId)?.push(allergy);
       });
 
       // Cache critical allergies for each student
@@ -277,7 +277,7 @@ export class CacheWarmingService implements OnModuleInit {
         if (!conditionMap.has(studentId)) {
           conditionMap.set(studentId, []);
         }
-        conditionMap.get(studentId).push(condition);
+        conditionMap.get(studentId)?.push(condition);
       });
 
       // Cache conditions for each student
@@ -327,7 +327,7 @@ export class CacheWarmingService implements OnModuleInit {
         if (!vaccinationMap.has(studentId)) {
           vaccinationMap.set(studentId, []);
         }
-        vaccinationMap.get(studentId).push(vaccination);
+        vaccinationMap.get(studentId)?.push(vaccination);
       });
 
       // Cache vaccinations for each student

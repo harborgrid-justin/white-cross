@@ -8,7 +8,7 @@ import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import helmet from 'helmet';
-import * as compression from 'compression';
+import compression from 'compression';
 import { RedisIoAdapter } from './infrastructure/websocket/adapters/redis-io.adapter';
 import { AppConfigService } from './config';
 import { LoggerService } from './shared/logging/logger.service';
@@ -129,7 +129,7 @@ async function gracefulShutdown(app: any, exitCode: number) {
 
     process.exit(exitCode);
   } catch (error) {
-    logger.error('Error during graceful shutdown', { error });
+    logger.error('Error during graceful shutdown', error);
     process.exit(1);
   }
 }
@@ -306,7 +306,7 @@ async function bootstrap() {
         'Redis adapter enabled for WebSocket horizontal scaling',
       );
     } catch (error) {
-      bootstrapLogger.error('Failed to initialize Redis adapter', { error });
+      bootstrapLogger.error('Failed to initialize Redis adapter', error);
 
       if (configService.isProduction) {
         throw new Error(
@@ -572,7 +572,7 @@ async function bootstrap() {
   bootstrapLogger.log('='.repeat(80));
   bootstrapLogger.log('White Cross NestJS Backend Started');
   bootstrapLogger.log('='.repeat(80));
-  bootstrapLogger.logWithMetadata('log', 'Server Configuration', {
+  bootstrapLogger.logWithMetadata('info', 'Server Configuration', {
     environment: configService.environment,
     port,
     serverUrl: `http://localhost:${port}`,

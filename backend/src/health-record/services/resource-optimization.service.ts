@@ -420,7 +420,7 @@ export class ResourceOptimizationService implements OnModuleDestroy {
   }> {
     const recommendations: any[] = [];
 
-    for (const model of this.predictiveModels.values()) {
+    for (const model of Array.from(this.predictiveModels.values())) {
       const latestPrediction = model.predictions[model.predictions.length - 1];
       if (latestPrediction && latestPrediction.confidence > 0.7) {
         const currentMetrics = this.collectResourceMetrics();

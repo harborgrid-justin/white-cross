@@ -487,7 +487,7 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
   private findApplicableRules(event: InvalidationEvent): InvalidationRule[] {
     const applicableRules: InvalidationRule[] = [];
 
-    for (const rule of this.invalidationRules.values()) {
+    for (const rule of Array.from(this.invalidationRules.values())) {
       if (!rule.enabled) continue;
 
       // Check if event pattern matches
@@ -698,7 +698,7 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
    */
   onModuleDestroy(): void {
     // Clear all pending invalidations
-    for (const timeout of this.pendingInvalidations.values()) {
+    for (const timeout of Array.from(this.pendingInvalidations.values())) {
       clearTimeout(timeout);
     }
 
