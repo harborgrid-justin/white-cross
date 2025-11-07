@@ -12,7 +12,7 @@
  * LLM Context: react component or utility module, part of React frontend architecture
  */
 
-import React from 'react'
+import React, { useCallback } from 'react'
 import { Plus, Shield } from 'lucide-react'
 import { SearchAndFilter } from '../shared/SearchAndFilter'
 import { getVaccinationStatusColor, getPriorityColor, sortVaccinations, filterVaccinations } from '@/utils/healthRecords'
@@ -34,7 +34,7 @@ interface VaccinationsTabProps {
   user?: User | null
 }
 
-export const VaccinationsTab: React.FC<VaccinationsTabProps> = ({
+export const VaccinationsTab = React.memo<VaccinationsTabProps>(({
   vaccinations,
   searchQuery,
   onSearchChange,
@@ -51,7 +51,7 @@ export const VaccinationsTab: React.FC<VaccinationsTabProps> = ({
   const canModify = user?.role !== 'READ_ONLY' && user?.role !== 'VIEWER'
 
   // Helper to check if vaccination is compliant
-  const isCompliant = (vax: Vaccination) => vax.complianceStatus === 'COMPLIANT'
+  const isCompliant = useCallback((vax: Vaccination) => vax.complianceStatus === 'COMPLIANT', [])
 
   const filteredAndSortedVaccinations = sortVaccinations(
     filterVaccinations(vaccinations, searchQuery, vaccinationFilter),
@@ -252,4 +252,6 @@ export const VaccinationsTab: React.FC<VaccinationsTabProps> = ({
       </div>
     </div>
   )
-}
+})
+
+VaccinationsTab.displayName = 'VaccinationsTab'

@@ -531,4 +531,84 @@ export class ChronicConditionService {
       throw error;
     }
   }
+
+  // ==================== Batch Query Methods (DataLoader Support) ====================
+
+  /**
+   * Batch find chronic conditions by IDs (for DataLoader)
+   * Returns chronic conditions in the same order as requested IDs
+   *
+   * OPTIMIZATION: Eliminates N+1 queries when fetching multiple chronic conditions
+   * Before: 1 + N queries (1 per condition)
+   * After: 1 query with IN clause
+   * Performance improvement: ~99% query reduction for batch operations
+   */
+  async findByIds(ids: string[]): Promise<(ChronicCondition | null)[]> {
+    try {
+      const conditions = await this.chronicConditionModel.findAll({
+        where: {
+          id: { [Op.in]: ids },
+        },
+      });
+
+      // Create map for O(1) lookup
+      const conditionMap = new Map(conditions.map((c) => [c.id, c]));
+
+      // Return in same order as input, null for missing
+      return ids.map((id) => conditionMap.get(id) || null);
+    } catch (error) {
+      this.logger.error(
+        `Failed to batch fetch chronic conditions: ${error.message}`,
+      );
+      throw new Error('Failed to batch fetch chronic conditions');
+    }
+  }
+
+  /**
+   * Batch find chronic conditions by student IDs (for DataLoader)
+   * Returns array of chronic condition arrays for each student ID
+   *
+   * OPTIMIZATION: Eliminates N+1 queries when fetching conditions for multiple students
+   * Before: 1 + N queries (1 per student)
+   * After: 1 query with IN clause
+   * Performance improvement: ~99% query reduction for batch operations
+   *
+   * Example use case: Fetching chronic conditions for all students in a class or school
+   * Conditions are ordered by status (ACTIVE first) for quick identification
+   */
+  async findByStudentIds(
+    studentIds: string[],
+  ): Promise<ChronicCondition[][]> {
+    try {
+      const conditions = await this.chronicConditionModel.findAll({
+        where: {
+          studentId: { [Op.in]: studentIds },
+          isActive: true,
+        },
+        order: [
+          ['status', 'ASC'],
+          ['diagnosedDate', 'DESC'],
+        ],
+      });
+
+      // Group by studentId
+      const grouped = new Map<string, ChronicCondition[]>();
+      for (const condition of conditions) {
+        if (!grouped.has(condition.studentId)) {
+          grouped.set(condition.studentId, []);
+        }
+        grouped.get(condition.studentId)!.push(condition);
+      }
+
+      // Return in same order as input, empty array for missing
+      return studentIds.map((id) => grouped.get(id) || []);
+    } catch (error) {
+      this.logger.error(
+        `Failed to batch fetch chronic conditions by student IDs: ${error.message}`,
+      );
+      throw new Error(
+        'Failed to batch fetch chronic conditions by student IDs',
+      );
+    }
+  }
 }

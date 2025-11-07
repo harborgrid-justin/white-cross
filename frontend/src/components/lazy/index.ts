@@ -39,3 +39,6 @@ export * from './LazyPages';
 
 // Modal/Dialog Components
 export * from './LazyModals';
+
+// Settings Components
+export * from './LazySettings';

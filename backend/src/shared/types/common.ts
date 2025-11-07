@@ -23,14 +23,14 @@ export interface ValidationError {
   field: string;
   message: string;
   code: ValidationErrorCode;
-  value?: any;
+  value?: unknown;
 }
 
 // Field change for audit
 export interface FieldChange {
   field: string;
-  oldValue?: any;
-  newValue?: any;
+  oldValue?: unknown;
+  newValue?: unknown;
 }
 
 // Common ID type

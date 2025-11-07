@@ -22,6 +22,7 @@ import { MentalHealthRecord } from '../database/models/mental-health-record.mode
 import { AcademicTranscriptService } from '../academic-transcript/academic-transcript.service';
 import { QueryCacheService } from '../database/services/query-cache.service';
 import { AppConfigService } from '../config/app-config.service';
+import { DatabasePoolMonitorService } from '../config/database-pool-monitor.service';
 import {
   CreateStudentDto,
   UpdateStudentDto,
@@ -74,6 +75,7 @@ export class StudentService {
     private readonly sequelize: Sequelize,
     private readonly queryCacheService: QueryCacheService,
     private readonly config: AppConfigService,
+    private readonly poolMonitor: DatabasePoolMonitorService,
   ) {}
 
   // ==================== CRUD Operations ====================
@@ -430,6 +432,15 @@ export class StudentService {
   ): Promise<{ updated: number }> {
     try {
       const { studentIds, nurseId, grade, isActive } = bulkUpdateDto;
+
+      // POOL MONITORING: Check pool health before expensive bulk operation
+      const poolStatus = await this.poolMonitor.collectMetrics();
+      if (poolStatus && poolStatus.utilizationPercent > 80) {
+        this.logger.warn(
+          `High pool utilization (${poolStatus.utilizationPercent.toFixed(1)}%) before bulk update. ` +
+          `Active: ${poolStatus.activeConnections}, Waiting: ${poolStatus.waitingRequests}`,
+        );
+      }
 
       // OPTIMIZATION: Wrap in transaction for atomic updates with READ_COMMITTED isolation
       return await this.sequelize.transaction(
@@ -2186,6 +2197,60 @@ export class StudentService {
     } catch (error) {
       this.logger.error(`Failed to batch fetch students: ${error.message}`);
       throw new BadRequestException('Failed to batch fetch students');
+    }
+  }
+
+  /**
+   * Batch find students by school IDs (for DataLoader)
+   * Returns array of student arrays for each school ID
+   *
+   * OPTIMIZATION: Eliminates N+1 queries when fetching students for multiple schools
+   * Before: 1 + N queries (1 per school)
+   * After: 1 query with IN clause
+   * Performance improvement: ~99% query reduction for multi-school operations
+   */
+  async findBySchoolIds(schoolIds: string[]): Promise<Student[][]> {
+    try {
+      const students = await this.studentModel.findAll({
+        where: {
+          schoolId: { [Op.in]: schoolIds },
+          isActive: true,
+        },
+        order: [
+          ['lastName', 'ASC'],
+          ['firstName', 'ASC'],
+        ],
+        include: [
+          {
+            model: User,
+            as: 'nurse',
+            attributes: ['id', 'firstName', 'lastName', 'email', 'role'],
+            required: false,
+          },
+        ],
+      });
+
+      // Group students by school ID
+      const studentsBySchool = new Map<string, Student[]>();
+      students.forEach((student) => {
+        const schoolId = student.schoolId;
+        if (schoolId) {
+          if (!studentsBySchool.has(schoolId)) {
+            studentsBySchool.set(schoolId, []);
+          }
+          studentsBySchool.get(schoolId)!.push(student);
+        }
+      });
+
+      // Return in same order as input, empty array for missing
+      return schoolIds.map((id) => studentsBySchool.get(id) || []);
+    } catch (error) {
+      this.logger.error(
+        `Failed to batch fetch students by school IDs: ${error.message}`,
+      );
+      throw new BadRequestException(
+        'Failed to batch fetch students by school IDs',
+      );
     }
   }
 }

@@ -12,7 +12,7 @@
  * LLM Context: react component or utility module, part of React frontend architecture
  */
 
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import { Plus, AlertCircle, CheckCircle, Shield, AlertTriangle, MapPin } from 'lucide-react'
 import { getSeverityColor } from '@/utils/healthRecords'
 import { useVerifyAllergy, useDeleteAllergy } from '@/hooks/domains/health'
@@ -26,7 +26,7 @@ interface AllergiesTabProps {
   user?: User | null
 }
 
-export const AllergiesTab: React.FC<AllergiesTabProps> = ({
+export const AllergiesTab = React.memo<AllergiesTabProps>(({
   allergies,
   onAddAllergy,
   onEditAllergy,
@@ -47,7 +47,7 @@ export const AllergiesTab: React.FC<AllergiesTabProps> = ({
   const [verifyingAllergy, setVerifyingAllergy] = useState<Allergy | null>(null)
   const [deletingAllergy, setDeletingAllergy] = useState<Allergy | null>(null)
 
-  const handleAddAllergy = () => {
+  const handleAddAllergy = useCallback(() => {
     if (!canModify) {
       // Show toast message for permission error that tests expect
       const event = new CustomEvent('toast', {
@@ -57,9 +57,9 @@ export const AllergiesTab: React.FC<AllergiesTabProps> = ({
       return
     }
     onAddAllergy()
-  }
+  }, [canModify, onAddAllergy])
 
-  const handleVerifyAllergy = async (allergy: Allergy) => {
+  const handleVerifyAllergy = useCallback(async (allergy: Allergy) => {
     if (!user?.id) return
 
     try {
@@ -71,9 +71,9 @@ export const AllergiesTab: React.FC<AllergiesTabProps> = ({
     } catch (error) {
       console.error('Failed to verify allergy:', error)
     }
-  }
+  }, [user?.id, verifyAllergyMutation])
 
-  const handleDeleteAllergy = async () => {
+  const handleDeleteAllergy = useCallback(async () => {
     if (!deletingAllergy || !deletingAllergy.studentId) return
 
     try {
@@ -85,7 +85,7 @@ export const AllergiesTab: React.FC<AllergiesTabProps> = ({
     } catch (error) {
       console.error('Failed to delete allergy:', error)
     }
-  }
+  }, [deletingAllergy, deleteAllergyMutation])
 
   // Separate life-threatening allergies
   const lifeThreatening = displayAllergies.filter(a => a.severity === 'LIFE_THREATENING')
@@ -351,4 +351,6 @@ export const AllergiesTab: React.FC<AllergiesTabProps> = ({
       </div>
     </div>
   )
-}
+})
+
+AllergiesTab.displayName = 'AllergiesTab'

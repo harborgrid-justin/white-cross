@@ -331,7 +331,26 @@ export class Allergy
       throw new Error('epiPenLocation is required when EpiPen is required');
     }
     if (instance.epiPenExpiration && instance.epiPenExpiration < new Date()) {
-      console.warn(`[WARNING] EpiPen for allergy ${instance.id} has expired`);
+      // Log expired EpiPen validation for HIPAA audit trail
+      const { logModelPHIAccess } = await import(
+        '../services/model-audit-helper.service.js'
+      );
+      await logModelPHIAccess(
+        'Allergy',
+        instance.id,
+        'UPDATE',
+        ['epiPenExpiration - EXPIRED'],
+        undefined,
+      );
+    }
+  }
+
+  @BeforeCreate
+  static async setInitialVerification(instance: Allergy) {
+    // Auto-set verification for new allergies if verifiedBy is provided
+    if (!instance.verified && instance.verifiedBy) {
+      instance.verified = true;
+      instance.verificationDate = new Date();
     }
   }
 

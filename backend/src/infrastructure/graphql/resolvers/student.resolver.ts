@@ -287,4 +287,145 @@ export class StudentResolver {
     const contacts = await this.contacts(student, context);
     return contacts.length;
   }
+
+  /**
+   * Field Resolver: Load emergency contacts for a student
+   *
+   * Uses DataLoader from context to batch and cache emergency contact queries.
+   * The DataLoader is shared across all field resolvers in this request for optimal batching.
+   *
+   * PHI PROTECTED: Only ADMIN, SCHOOL_ADMIN, DISTRICT_ADMIN, and NURSE can access emergency contact data
+   *
+   * @param student - Parent student object
+   * @param context - GraphQL context containing DataLoaders
+   * @returns Array of emergency contacts for the student
+   */
+  @ResolveField(() => [Object], {
+    name: 'emergencyContacts',
+    nullable: 'items',
+  })
+  @PHIField() // Field-level authorization for PHI
+  async emergencyContacts(
+    @Parent() student: StudentDto,
+    @Context() context: GraphQLContext,
+  ): Promise<any[]> {
+    try {
+      // Use the shared DataLoader from context for optimal batching
+      const emergencyContacts =
+        await context.loaders.emergencyContactsByStudentLoader.load(student.id);
+
+      return emergencyContacts || [];
+    } catch (error) {
+      console.error(
+        `Error loading emergency contacts for student ${student.id}:`,
+        error,
+      );
+      return [];
+    }
+  }
+
+  /**
+   * Field Resolver: Load chronic conditions for a student
+   *
+   * Uses DataLoader from context to batch and cache chronic condition queries.
+   * The DataLoader is shared across all field resolvers in this request for optimal batching.
+   *
+   * PHI PROTECTED: Only ADMIN, SCHOOL_ADMIN, DISTRICT_ADMIN, and NURSE can access chronic condition data
+   *
+   * @param student - Parent student object
+   * @param context - GraphQL context containing DataLoaders
+   * @returns Array of chronic conditions for the student
+   */
+  @ResolveField(() => [Object], {
+    name: 'chronicConditions',
+    nullable: 'items',
+  })
+  @PHIField() // Field-level authorization for PHI
+  async chronicConditions(
+    @Parent() student: StudentDto,
+    @Context() context: GraphQLContext,
+  ): Promise<any[]> {
+    try {
+      // Use the shared DataLoader from context for optimal batching
+      const chronicConditions =
+        await context.loaders.chronicConditionsByStudentLoader.load(student.id);
+
+      return chronicConditions || [];
+    } catch (error) {
+      console.error(
+        `Error loading chronic conditions for student ${student.id}:`,
+        error,
+      );
+      return [];
+    }
+  }
+
+  /**
+   * Field Resolver: Load recent incident reports for a student
+   *
+   * Uses DataLoader from context to batch and cache incident report queries.
+   * The DataLoader is shared across all field resolvers in this request for optimal batching.
+   *
+   * PHI PROTECTED: Only ADMIN, SCHOOL_ADMIN, DISTRICT_ADMIN, and NURSE can access incident report data
+   *
+   * @param student - Parent student object
+   * @param context - GraphQL context containing DataLoaders
+   * @returns Array of recent incident reports for the student
+   */
+  @ResolveField(() => [Object], {
+    name: 'recentIncidents',
+    nullable: 'items',
+  })
+  @PHIField() // Field-level authorization for PHI
+  async recentIncidents(
+    @Parent() student: StudentDto,
+    @Context() context: GraphQLContext,
+  ): Promise<any[]> {
+    try {
+      // Use the shared DataLoader from context for optimal batching
+      const incidents = await context.loaders.incidentsByStudentLoader.load(
+        student.id,
+      );
+
+      // Return the 5 most recent incidents (already sorted by date DESC from service)
+      return (incidents || []).slice(0, 5);
+    } catch (error) {
+      console.error(
+        `Error loading recent incidents for student ${student.id}:`,
+        error,
+      );
+      return [];
+    }
+  }
+
+  /**
+   * Field Resolver: Load allergies for a student
+   *
+   * Uses DataLoader from context to batch and cache allergy queries.
+   * The DataLoader is shared across all field resolvers in this request for optimal batching.
+   *
+   * PHI PROTECTED: Only ADMIN, SCHOOL_ADMIN, DISTRICT_ADMIN, and NURSE can access allergy data
+   *
+   * @param student - Parent student object
+   * @param context - GraphQL context containing DataLoaders
+   * @returns Array of allergies for the student
+   */
+  @ResolveField(() => [Object], { name: 'allergies', nullable: 'items' })
+  @PHIField() // Field-level authorization for PHI
+  async allergies(
+    @Parent() student: StudentDto,
+    @Context() context: GraphQLContext,
+  ): Promise<any[]> {
+    try {
+      // Use the shared DataLoader from context for optimal batching
+      const allergies = await context.loaders.allergiesByStudentLoader.load(
+        student.id,
+      );
+
+      return allergies || [];
+    } catch (error) {
+      console.error(`Error loading allergies for student ${student.id}:`, error);
+      return [];
+    }
+  }
 }

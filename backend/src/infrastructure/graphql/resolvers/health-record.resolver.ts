@@ -15,7 +15,16 @@
  * - PHI access auditing
  * - Input validation
  */
-import { Resolver, Query, Mutation, Args, ID, Context } from '@nestjs/graphql';
+import {
+  Resolver,
+  Query,
+  Mutation,
+  Args,
+  ID,
+  Context,
+  ResolveField,
+  Parent,
+} from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { GqlAuthGuard, GqlRolesGuard } from '../guards';
 import { Roles } from '../../../auth/decorators/roles.decorator';
@@ -27,8 +36,11 @@ import {
   HealthRecordUpdateInputDto,
   HealthRecordFilterInputDto,
   DeleteResponseDto,
+  StudentDto,
 } from '../dto';
 import { HealthRecordService } from '../../../health-record/health-record.service';
+import type { GraphQLContext } from '../types/context.interface';
+import { PHIField } from '../guards/field-authorization.guard';
 
 /**
  * HealthRecord Resolver
@@ -314,5 +326,107 @@ export class HealthRecordResolver {
       success: true,
       message: 'Health record deleted successfully',
     };
+  }
+
+  /**
+   * Field Resolver: Load student for a health record
+   *
+   * Uses DataLoader from context to batch and cache student queries.
+   * The DataLoader is shared across all field resolvers in this request for optimal batching.
+   *
+   * @param healthRecord - Parent health record object
+   * @param context - GraphQL context containing DataLoaders
+   * @returns Student associated with the health record
+   */
+  @ResolveField(() => StudentDto, { name: 'student', nullable: true })
+  async student(
+    @Parent() healthRecord: HealthRecordDto,
+    @Context() context: GraphQLContext,
+  ): Promise<StudentDto | null> {
+    try {
+      // Use the shared DataLoader from context for optimal batching
+      const student = await context.loaders.studentLoader.load(
+        healthRecord.studentId,
+      );
+      return student;
+    } catch (error) {
+      console.error(
+        `Error loading student for health record ${healthRecord.id}:`,
+        error,
+      );
+      return null;
+    }
+  }
+
+  /**
+   * Field Resolver: Load allergies for a health record's student
+   *
+   * Uses DataLoader from context to batch and cache allergy queries.
+   * The DataLoader is shared across all field resolvers in this request for optimal batching.
+   *
+   * PHI PROTECTED: Only ADMIN, SCHOOL_ADMIN, DISTRICT_ADMIN, and NURSE can access allergy data
+   *
+   * @param healthRecord - Parent health record object
+   * @param context - GraphQL context containing DataLoaders
+   * @returns Array of allergies for the student
+   */
+  @ResolveField(() => [Object], { name: 'allergies', nullable: 'items' })
+  @PHIField() // Field-level authorization for PHI
+  async allergies(
+    @Parent() healthRecord: HealthRecordDto,
+    @Context() context: GraphQLContext,
+  ): Promise<any[]> {
+    try {
+      // Use the shared DataLoader from context for optimal batching
+      const allergies = await context.loaders.allergiesByStudentLoader.load(
+        healthRecord.studentId,
+      );
+
+      return allergies || [];
+    } catch (error) {
+      console.error(
+        `Error loading allergies for health record ${healthRecord.id}:`,
+        error,
+      );
+      return [];
+    }
+  }
+
+  /**
+   * Field Resolver: Load chronic conditions for a health record's student
+   *
+   * Uses DataLoader from context to batch and cache chronic condition queries.
+   * The DataLoader is shared across all field resolvers in this request for optimal batching.
+   *
+   * PHI PROTECTED: Only ADMIN, SCHOOL_ADMIN, DISTRICT_ADMIN, and NURSE can access chronic condition data
+   *
+   * @param healthRecord - Parent health record object
+   * @param context - GraphQL context containing DataLoaders
+   * @returns Array of chronic conditions for the student
+   */
+  @ResolveField(() => [Object], {
+    name: 'chronicConditions',
+    nullable: 'items',
+  })
+  @PHIField() // Field-level authorization for PHI
+  async chronicConditions(
+    @Parent() healthRecord: HealthRecordDto,
+    @Context() context: GraphQLContext,
+  ): Promise<any[]> {
+    try {
+      // Use the shared DataLoader from context for optimal batching
+      const chronicConditions =
+        await context.loaders.chronicConditionsByStudentLoader.load(
+          healthRecord.studentId,
+        );
+
+      return chronicConditions || [];
+    } catch (error) {
+      console.error(
+        `Error loading chronic conditions for health record ${healthRecord.id}:`,
+        error,
+      );
+      return [];
+    }
   }
 }

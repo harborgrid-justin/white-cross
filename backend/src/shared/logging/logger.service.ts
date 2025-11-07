@@ -21,8 +21,10 @@ import {
   Injectable,
   LoggerService as NestLoggerService,
   Scope,
+  Inject,
 } from '@nestjs/common';
 import * as winston from 'winston';
+import { AppConfigService } from '../../config/app-config.service';
 
 /**
  * @class LoggerService
@@ -46,7 +48,9 @@ export class LoggerService implements NestLoggerService {
   private readonly winston: winston.Logger;
   private context?: string;
 
-  constructor() {
+  constructor(
+    @Inject(AppConfigService) private readonly config: AppConfigService,
+  ) {
     const logFormat = winston.format.combine(
       winston.format.timestamp(),
       winston.format.errors({ stack: true }),
@@ -76,8 +80,11 @@ export class LoggerService implements NestLoggerService {
       ),
     );
 
+    const logLevel = this.config.get<string>('app.logging.level', 'info');
+    const isProduction = this.config.isProduction;
+
     this.winston = winston.createLogger({
-      level: process.env.LOG_LEVEL || 'info',
+      level: logLevel,
       format: logFormat,
       defaultMeta: { service: 'white-cross-api' },
       transports: [
@@ -91,7 +98,7 @@ export class LoggerService implements NestLoggerService {
       ],
     });
 
-    if (process.env.NODE_ENV !== 'production') {
+    if (!isProduction) {
       this.winston.add(
         new winston.transports.Console({
           format: consoleFormat,

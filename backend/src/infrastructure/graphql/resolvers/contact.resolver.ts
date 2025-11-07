@@ -9,7 +9,16 @@
  * - Role-based access control with GqlRolesGuard
  * - PHI access protected by role restrictions
  */
-import { Resolver, Query, Mutation, Args, ID, Context } from '@nestjs/graphql';
+import {
+  Resolver,
+  Query,
+  Mutation,
+  Args,
+  ID,
+  Context,
+  ResolveField,
+  Parent,
+} from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { GqlAuthGuard, GqlRolesGuard } from '../guards';
 import { Roles } from '../../../auth/decorators/roles.decorator';
@@ -23,10 +32,12 @@ import {
   ContactStatsDto,
   DeleteResponseDto,
   ContactType,
+  StudentDto,
 } from '../dto';
 import { ContactService } from '../../../contact/services/contact.service';
 import { ContactType as DomainContactType } from '../../../contact/enums/contact-type.enum';
 import { Contact } from '../../../database/models/contact.model';
+import type { GraphQLContext } from '../types/context.interface';
 
 /**
  * Contact Resolver
@@ -375,5 +386,38 @@ export class ContactResolver {
     const contact = await this.contactService.reactivateContact(id, userId);
 
     return this.mapContactToDto(contact);
+  }
+
+  /**
+   * Field Resolver: Load student for a contact
+   *
+   * Uses DataLoader from context to batch and cache student queries.
+   * The DataLoader is shared across all field resolvers in this request for optimal batching.
+   *
+   * @param contact - Parent contact object
+   * @param context - GraphQL context containing DataLoaders
+   * @returns Student associated with the contact, or null if not found
+   */
+  @ResolveField(() => StudentDto, { name: 'student', nullable: true })
+  async student(
+    @Parent() contact: ContactDto,
+    @Context() context: GraphQLContext,
+  ): Promise<StudentDto | null> {
+    try {
+      // If contact has relationTo (student ID), use DataLoader to fetch student
+      if (contact.relationTo) {
+        const student = await context.loaders.studentLoader.load(
+          contact.relationTo,
+        );
+        return student;
+      }
+      return null;
+    } catch (error) {
+      console.error(
+        `Error loading student for contact ${contact.id}:`,
+        error,
+      );
+      return null;
+    }
   }
 }
