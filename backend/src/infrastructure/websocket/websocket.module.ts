@@ -61,6 +61,7 @@ import { AdminMetricsService, RateLimiterService } from './services';
 import { AdminWebSocketGateway } from './gateways';
 import { AuthModule } from '@/auth';
 import { AppointmentWebSocketListener } from './listeners/appointment.listener';
+import { AppConfigService } from '../../config/app-config.service';
 
 /**
  * WebSocket Module
@@ -102,6 +103,7 @@ import { AppointmentWebSocketListener } from './listeners/appointment.listener';
     RateLimiterService,
     AdminMetricsService,
     AdminWebSocketGateway,
+    AppConfigService,
     // Event-driven architecture listeners
     AppointmentWebSocketListener,
   ],

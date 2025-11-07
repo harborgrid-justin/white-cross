@@ -12,6 +12,7 @@
 
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { ConfigModule } from '@nestjs/config';
 import { AppointmentCoreController } from './controllers/appointment-core.controller';
 import { AppointmentStatusController } from './controllers/appointment-status.controller';
 import { AppointmentQueryController } from './controllers/appointment-query.controller';
@@ -29,6 +30,7 @@ import { AppointmentWaitlist } from '../database/models/appointment-waitlist.mod
 import { User } from '../database/models/user.model';
 import { WebSocketModule } from '../infrastructure/websocket/websocket.module';
 import { EmailModule } from '../infrastructure/email/email.module';
+import { AppConfigService } from '../config/app-config.service';
 
 /**
  * Appointment Module
@@ -64,6 +66,8 @@ import { EmailModule } from '../infrastructure/email/email.module';
   imports: [
     // Register models with Sequelize
     SequelizeModule.forFeature([Appointment, AppointmentReminder, AppointmentWaitlist, User]),
+    // Configuration module for AppConfigService
+    ConfigModule,
     // Event-driven architecture modules
     // EventEmitterModule is global (registered in AppModule)
     WebSocketModule, // Provides AppointmentWebSocketListener
@@ -83,6 +87,7 @@ import { EmailModule } from '../infrastructure/email/email.module';
     AppointmentQueryService,
     WaitlistService,
     ReminderService,
+    AppConfigService,
   ],
   exports: [
     AppointmentReadService,

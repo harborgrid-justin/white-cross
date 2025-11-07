@@ -140,6 +140,7 @@ import { CacheEntry } from '../database/models/cache-entry.model';
     HealthRecordAuditInterceptor,
     HealthRecordCacheInterceptor,
     HealthRecordRateLimitGuard,
+    AllergyModule, // Export AllergyModule to make AllergyService available
 
     // Analytics Optimization Services (Phase 4)
     CacheStrategyService,

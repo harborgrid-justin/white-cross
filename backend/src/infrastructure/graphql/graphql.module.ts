@@ -32,6 +32,9 @@ import { ContactModule } from '@/contact';
 import { StudentModule } from '@/student';
 import { MedicationModule } from '@/medication';
 import { HealthRecordModule } from '@/health-record';
+import { EmergencyContactModule } from '@/emergency-contact';
+import { ChronicConditionModule } from '@/chronic-condition';
+import { IncidentReportModule } from '@/incident-report';
 import { AuthModule } from '@/auth';
 import { GraphQLJSON } from 'graphql-scalars';
 import { containsPHI, sanitizeGraphQLError } from './errors/phi-sanitizer';
@@ -50,20 +53,14 @@ import { DateTimeScalar, EmailAddressScalar, PhoneNumberScalar, UUIDScalar } fro
     NestGraphQLModule.forRootAsync<ApolloDriverConfig>({
       driver: ApolloDriver,
       imports: [ConfigModule],
-      useFactory: async (
-        configService: ConfigService,
-        moduleRef: ModuleRef,
-      ) => {
+      useFactory: async (configService: ConfigService, moduleRef: ModuleRef) => {
         const isProduction = configService.get('NODE_ENV') === 'production';
         const isDocker = configService.get('DOCKER') === 'true';
 
         return {
           // Auto-generate schema from TypeScript classes
           // In production or Docker, generate in memory only
-          autoSchemaFile:
-            isProduction || isDocker
-              ? true
-              : join(process.cwd(), 'src/schema.gql'),
+          autoSchemaFile: isProduction || isDocker ? true : join(process.cwd(), 'src/schema.gql'),
 
           // Sort schema alphabetically for consistency
           sortSchema: true,
@@ -76,9 +73,7 @@ import { DateTimeScalar, EmailAddressScalar, PhoneNumberScalar, UUIDScalar } fro
 
           // CORS configuration
           cors: {
-            origin:
-              configService.get('security.cors.origin') ||
-              'http://localhost:5173',
+            origin: configService.get('security.cors.origin') || 'http://localhost:5173',
             credentials: true,
           },
 
@@ -115,10 +110,7 @@ import { DateTimeScalar, EmailAddressScalar, PhoneNumberScalar, UUIDScalar } fro
                 const { connectionParams, extra } = context;
 
                 // Authenticate WebSocket connection
-                const token = connectionParams?.authorization?.replace(
-                  'Bearer ',
-                  '',
-                );
+                const token = connectionParams?.authorization?.replace('Bearer ', '');
                 if (!token) {
                   console.warn('WebSocket connection attempted without token');
                   throw new Error('Missing authentication token');
@@ -139,14 +131,11 @@ import { DateTimeScalar, EmailAddressScalar, PhoneNumberScalar, UUIDScalar } fro
             // Check if error contains PHI for audit logging
             const hasPHI = containsPHI(error.message);
             if (hasPHI) {
-              console.warn(
-                'SECURITY ALERT: GraphQL error contained PHI and was sanitized',
-                {
-                  timestamp: new Date().toISOString(),
-                  errorCode: error.extensions?.code,
-                  path: error.path,
-                },
-              );
+              console.warn('SECURITY ALERT: GraphQL error contained PHI and was sanitized', {
+                timestamp: new Date().toISOString(),
+                errorCode: error.extensions?.code,
+                path: error.path,
+              });
             }
 
             // Log errors server-side (before sanitization for debugging)
@@ -163,8 +152,7 @@ import { DateTimeScalar, EmailAddressScalar, PhoneNumberScalar, UUIDScalar } fro
             return {
               message: sanitizedError.message,
               extensions: {
-                code:
-                  sanitizedError.extensions?.code || 'INTERNAL_SERVER_ERROR',
+                code: sanitizedError.extensions?.code || 'INTERNAL_SERVER_ERROR',
                 ...(!isProduction && {
                   stacktrace: sanitizedError.extensions?.stacktrace,
                 }),
@@ -191,6 +179,9 @@ import { DateTimeScalar, EmailAddressScalar, PhoneNumberScalar, UUIDScalar } fro
     StudentModule,
     MedicationModule,
     HealthRecordModule,
+    EmergencyContactModule,
+    ChronicConditionModule,
+    IncidentReportModule,
     AuthModule, // Required for TokenBlacklistService in GqlAuthGuard
     PubSubModule, // Required for subscriptions
   ],
