@@ -64,7 +64,7 @@ export class GrowthTrackingRepository extends BaseRepository<
   CreateGrowthTrackingDTO
 > {
   constructor(
-    @InjectModel(GrowthTracking) model: any,
+    @InjectModel(GrowthTracking) model: typeof GrowthTracking,
     @Inject('IAuditLogger') auditLogger: IAuditLogger,
     @Inject('ICacheManager') cacheManager: ICacheManager,
   ) {
@@ -77,7 +77,7 @@ export class GrowthTrackingRepository extends BaseRepository<
         where: { studentId },
         order: [['measurementDate', 'ASC']],
       });
-      return measurements.map((m: any) => this.mapToEntity(m));
+      return measurements.map((m: Medication) => this.mapToEntity(m));
     } catch (error) {
       this.logger.error('Error finding growth tracking by student:', error);
       throw new RepositoryError(
@@ -120,7 +120,7 @@ export class GrowthTrackingRepository extends BaseRepository<
     // Validation logic
   }
 
-  protected async invalidateCaches(growth: any): Promise<void> {
+  protected async invalidateCaches(growth: GrowthTracking): Promise<void> {
     try {
       const growthData = growth.get();
       await this.cacheManager.delete(
@@ -134,7 +134,7 @@ export class GrowthTrackingRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<GrowthTrackingAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

@@ -29,7 +29,7 @@ export interface AcademicTranscriptAttributes {
   importedBy?: string;
   importedAt?: Date;
   importSource?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -46,7 +46,7 @@ export interface CreateAcademicTranscriptDTO {
   importedBy?: string;
   importedAt?: Date;
   importSource?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface UpdateAcademicTranscriptDTO {
@@ -57,7 +57,7 @@ export interface UpdateAcademicTranscriptDTO {
   subjects?: SubjectGrade[];
   attendance?: AttendanceRecord;
   behavior?: BehaviorRecord;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 @Injectable()
@@ -177,7 +177,7 @@ export class AcademicTranscriptRepository extends BaseRepository<
   /**
    * Invalidate caches for academic transcript
    */
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: AcademicTranscript): Promise<void> {
     try {
       const entityData = entity.get ? entity.get() : entity;
 
@@ -208,7 +208,7 @@ export class AcademicTranscriptRepository extends BaseRepository<
   /**
    * Sanitize academic transcript data for audit logs
    */
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<AcademicTranscriptAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 

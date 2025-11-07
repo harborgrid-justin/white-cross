@@ -55,7 +55,7 @@ export interface UpdateUserDTO {
 
 @Injectable()
 export class UserRepository extends BaseRepository<
-  any,
+  User,
   UserAttributes,
   CreateUserDTO
 > {
@@ -122,7 +122,7 @@ export class UserRepository extends BaseRepository<
           ['firstName', 'ASC'],
         ],
       });
-      return users.map((u: any) => this.mapToEntity(u));
+      return users.map((u: User) => this.mapToEntity(u));
     } catch (error) {
       this.logger.error('Error finding users by role:', error);
       throw new RepositoryError(
@@ -152,7 +152,7 @@ export class UserRepository extends BaseRepository<
       if (!user) throw new RepositoryError('User not found', 'NOT_FOUND', 404);
 
       const failedAttempts = (user.failedLoginAttempts || 0) + 1;
-      const updates: any = { failedLoginAttempts: failedAttempts };
+      const updates: Partial<UserAttributes> = { failedLoginAttempts: failedAttempts };
 
       if (failedAttempts >= 5) {
         updates.lockedUntil = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
@@ -250,7 +250,7 @@ export class UserRepository extends BaseRepository<
     }
   }
 
-  protected async invalidateCaches(user: any): Promise<void> {
+  protected async invalidateCaches(user: User): Promise<void> {
     try {
       const userData = user.get();
       await this.cacheManager.delete(
@@ -281,7 +281,7 @@ export class UserRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<UserAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({
       ...data,
       passwordHash: '[REDACTED]',

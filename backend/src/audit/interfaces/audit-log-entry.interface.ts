@@ -1,4 +1,4 @@
-import { AuditAction } from '../enums';
+import { AuditAction } from '@/audit';
 
 /**
  * Interface for creating audit log entries
@@ -8,7 +8,7 @@ export interface IAuditLogEntry {
   action: AuditAction | string;
   entityType: string;
   entityId?: string;
-  changes?: Record<string, any>;
+  changes?: Record<string, unknown>;
   ipAddress?: string;
   userAgent?: string;
   success?: boolean;

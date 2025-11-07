@@ -21,7 +21,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
-import { User, UserRole } from '../database/models/user.model';
+import { User, UserRole, UserCreationAttributes } from '@/database';
 import {
   RegisterDto,
   LoginDto,
@@ -30,6 +30,7 @@ import {
 } from './dto';
 import { JwtPayload } from './strategies/jwt.strategy';
 import { TokenBlacklistService } from './services/token-blacklist.service';
+import { SafeUser } from './types';
 
 @Injectable()
 export class AuthService {
@@ -92,7 +93,7 @@ export class AuthService {
         firstName,
         lastName,
         role: role || UserRole.NURSE,
-      } as any);
+      } as UserCreationAttributes);
 
       this.logger.log(`User registered successfully: ${email}`);
 
@@ -180,7 +181,7 @@ export class AuthService {
   /**
    * Verify JWT access token and return user
    */
-  async verifyToken(token: string): Promise<any> {
+  async verifyToken(token: string): Promise<SafeUser> {
     try {
       const jwtSecret = this.configService.get<string>('JWT_SECRET');
 
@@ -343,7 +344,7 @@ export class AuthService {
         firstName: 'Test',
         lastName: role.charAt(0) + role.slice(1).toLowerCase(),
         role,
-      } as any);
+      } as UserCreationAttributes);
 
       this.logger.log(`Test user created: ${testEmail}`);
     }

@@ -30,6 +30,31 @@ import {
   SecurityStatistics,
   IpRestrictionCheckResult,
 } from './interfaces';
+import {
+  RoleModel,
+  PermissionModel,
+  RolePermissionModel,
+  UserRoleAssignmentModel,
+  SessionModel,
+  LoginAttemptModel,
+  IpRestrictionModel,
+  SecurityIncidentModel,
+  UserModel,
+  SequelizeModelClass,
+  RoleWithPermissions,
+  PermissionInstance,
+  SessionInstance,
+  LoginAttemptInstance,
+  IpRestrictionInstance,
+  SecurityIncidentInstance,
+  UserRoleInstance,
+  RolePermissionInstance,
+  RoleUpdateData,
+  SecurityIncidentUpdateData,
+  SecurityIncidentFilters,
+  SecurityIncidentWhereClause,
+  PaginationResult,
+} from './types';
 
 /**
  * NOTE: This service requires the following Sequelize models to be available:
@@ -80,7 +105,7 @@ export class AccessControlService {
   /**
    * Get Sequelize models dynamically
    */
-  private getModel(modelName: string): any {
+  private getModel<T>(modelName: string): SequelizeModelClass<T> {
     return this.sequelize.models[modelName];
   }
 
@@ -91,7 +116,7 @@ export class AccessControlService {
   /**
    * Get all roles with their permissions and user assignments
    */
-  async getRoles(): Promise<any[]> {
+  async getRoles(): Promise<RoleWithPermissions[]> {
     try {
       const Role = this.getModel('Role');
       const roles = await Role.findAll({
@@ -125,7 +150,7 @@ export class AccessControlService {
   /**
    * Get role by ID with permissions and user assignments
    */
-  async getRoleById(id: string): Promise<any> {
+  async getRoleById(id: string): Promise<RoleWithPermissions> {
     try {
       const Role = this.getModel('Role');
       const role = await Role.findByPk(id, {
@@ -162,7 +187,7 @@ export class AccessControlService {
   /**
    * Create a new role with validation and audit logging
    */
-  async createRole(data: CreateRoleDto, auditUserId?: string): Promise<any> {
+  async createRole(data: CreateRoleDto, auditUserId?: string): Promise<RoleWithPermissions> {
     const transaction = await this.sequelize.transaction();
 
     try {
@@ -221,7 +246,7 @@ export class AccessControlService {
         {
           userId: auditUserId || null,
           userName: auditUserId ? 'User' : 'SYSTEM',
-          userRole: 'SYSTEM' as any,
+          userRole: 'SYSTEM' as 'SYSTEM',
           ipAddress: null,
           userAgent: null,
           timestamp: new Date(),
@@ -292,7 +317,7 @@ export class AccessControlService {
       }
 
       // Prepare update data
-      const updateData: any = {};
+      const updateData: RoleUpdateData = {};
       if (data.name) updateData.name = data.name.trim();
       if (data.description !== undefined)
         updateData.description = data.description?.trim();
@@ -342,11 +367,11 @@ export class AccessControlService {
         {
           userId: auditUserId || null,
           userName: auditUserId ? 'User' : 'SYSTEM',
-          userRole: 'SYSTEM' as any,
+          userRole: 'SYSTEM' as 'SYSTEM',
           ipAddress: null,
           userAgent: null,
           timestamp: new Date(),
-        } as any,
+        } as ExecutionContext,
         changes,
       );
 
@@ -423,11 +448,11 @@ export class AccessControlService {
         {
           userId: auditUserId || null,
           userName: auditUserId ? 'User' : 'SYSTEM',
-          userRole: 'SYSTEM' as any,
+          userRole: 'SYSTEM' as 'SYSTEM',
           ipAddress: null,
           userAgent: null,
           timestamp: new Date(),
-        } as any,
+        } as ExecutionContext,
         roleData,
       );
 
@@ -449,7 +474,7 @@ export class AccessControlService {
   /**
    * Get all permissions ordered by resource and action
    */
-  async getPermissions(): Promise<any[]> {
+  async getPermissions(): Promise<PermissionInstance[]> {
     try {
       const Permission = this.getModel('Permission');
       const permissions = await Permission.findAll({
@@ -470,7 +495,7 @@ export class AccessControlService {
   /**
    * Create a new permission
    */
-  async createPermission(data: CreatePermissionDto): Promise<any> {
+  async createPermission(data: CreatePermissionDto): Promise<PermissionInstance> {
     try {
       const Permission = this.getModel('Permission');
       const permission = await Permission.create({
@@ -494,7 +519,7 @@ export class AccessControlService {
     roleId: string,
     permissionId: string,
     auditUserId?: string,
-  ): Promise<any> {
+  ): Promise<RolePermissionInstance> {
     const transaction = await this.sequelize.transaction();
 
     try {
@@ -570,7 +595,7 @@ export class AccessControlService {
         {
           userId: auditUserId || null,
           userName: auditUserId ? 'User' : 'SYSTEM',
-          userRole: 'SYSTEM' as any,
+          userRole: 'SYSTEM' as 'SYSTEM',
           ipAddress: null,
           userAgent: null,
           timestamp: new Date(),
@@ -635,7 +660,7 @@ export class AccessControlService {
           {
             userId: auditUserId || null,
             userName: auditUserId ? 'User' : 'SYSTEM',
-            userRole: 'SYSTEM' as any,
+            userRole: 'SYSTEM' as 'SYSTEM',
             ipAddress: null,
             userAgent: null,
             timestamp: new Date(),
@@ -710,7 +735,7 @@ export class AccessControlService {
 
         // Check if assigning user has permission to manage users
         const canManageUsers = assigningUserPermissions.permissions.some(
-          (p: any) => p.resource === 'users' && p.action === 'manage',
+          (p: PermissionModel) => p.resource === 'users' && p.action === 'manage',
         );
 
         if (!canManageUsers) {
@@ -721,7 +746,7 @@ export class AccessControlService {
 
         // Prevent assigning higher-privilege roles
         const rolePermissions = role.permissions || [];
-        const hasCriticalPermissions = rolePermissions.some((rp: any) => {
+        const hasCriticalPermissions = rolePermissions.some((rp: RolePermissionModel) => {
           const perm = rp.permission;
           return (
             (perm.resource === 'security' && perm.action === 'manage') ||
@@ -731,7 +756,7 @@ export class AccessControlService {
 
         if (hasCriticalPermissions) {
           const canManageSecurity = assigningUserPermissions.permissions.some(
-            (p: any) => p.resource === 'security' && p.action === 'manage',
+            (p: PermissionModel) => p.resource === 'security' && p.action === 'manage',
           );
 
           if (!canManageSecurity) {
@@ -793,18 +818,19 @@ export class AccessControlService {
 
       // Check if this is a high-privilege role
       const rolePermissions = role.permissions || [];
-      const hasHighPrivilege = rolePermissions.some((rp: any) => {
+      const hasHighPrivilege = rolePermissions.some((rp: RolePermissionModel) => {
         const perm = rp.permission;
         return perm.resource === 'security' || perm.resource === 'system';
       });
 
-      (this.auditService as any).logCreate(
+      // @ts-expect-error - AuditService types need refinement
+      this.auditService.logCreate(
         'UserRoleAssignment',
         userRole.id,
         {
           userId: auditUserId || null,
           userName: auditUserId ? 'User' : 'SYSTEM',
-          userRole: 'SYSTEM' as any,
+          userRole: 'SYSTEM' as 'SYSTEM',
           ipAddress: null,
           userAgent: null,
           timestamp: new Date(),
@@ -916,10 +942,10 @@ export class AccessControlService {
       });
 
       // Extract roles
-      const roles = userRoles.map((ur: any) => ur.role).filter((r: any) => r);
+      const roles = userRoles.map((ur: UserRoleAssignmentModel) => ur.role).filter((r: RoleModel | undefined): r is RoleModel => !!r);
 
       // Flatten permissions from all roles
-      const permissionsMap = new Map<string, any>();
+      const permissionsMap = new Map<string, PermissionModel>();
 
       for (const userRole of userRoles) {
         if (userRole.role && userRole.role.permissions) {
@@ -946,11 +972,11 @@ export class AccessControlService {
       await this.auditService.logRead('UserPermissions', userId, {
         userId: userId,
         userName: 'User',
-        userRole: 'USER' as any,
+        userRole: 'USER' as 'USER',
         ipAddress: null,
         userAgent: null,
         timestamp: new Date(),
-      } as any);
+      } as ExecutionContext);
 
       this.logger.log(
         `Retrieved ${permissions.length} permissions for user ${userId}`,
@@ -974,18 +1000,18 @@ export class AccessControlService {
       const userPermissions = await this.getUserPermissions(userId);
 
       const hasPermission = userPermissions.permissions.some(
-        (p: any) => p.resource === resource && p.action === action,
+        (p: PermissionModel) => p.resource === resource && p.action === action,
       );
 
       // Audit logging for permission checks
       await this.auditService.logRead('Permission', `${resource}:${action}`, {
         userId: userId,
         userName: 'User',
-        userRole: 'USER' as any,
+        userRole: 'USER' as 'USER',
         ipAddress: null,
         userAgent: null,
         timestamp: new Date(),
-      } as any);
+      } as ExecutionContext);
 
       this.logger.log(
         `Permission check for user ${userId} on ${resource}.${action}: ${hasPermission}`,
@@ -1004,7 +1030,7 @@ export class AccessControlService {
   /**
    * Create a new session
    */
-  async createSession(data: CreateSessionDto): Promise<any> {
+  async createSession(data: CreateSessionDto): Promise<SessionInstance> {
     try {
       const Session = this.getModel('Session');
       const session = await Session.create({
@@ -1027,7 +1053,7 @@ export class AccessControlService {
   /**
    * Get user sessions (only active ones)
    */
-  async getUserSessions(userId: string): Promise<any[]> {
+  async getUserSessions(userId: string): Promise<SessionInstance[]> {
     try {
       const Session = this.getModel('Session');
       const sessions = await Session.findAll({
@@ -1075,7 +1101,7 @@ export class AccessControlService {
           {
             userId: session.userId,
             userName: 'User',
-            userRole: 'USER' as any,
+            userRole: 'USER' as 'USER',
             ipAddress: ipAddress || session.ipAddress,
             userAgent: session.userAgent,
             timestamp: new Date(),
@@ -1158,7 +1184,7 @@ export class AccessControlService {
   /**
    * Log a login attempt
    */
-  async logLoginAttempt(data: LogLoginAttemptDto): Promise<any | undefined> {
+  async logLoginAttempt(data: LogLoginAttemptDto): Promise<LoginAttemptInstance | undefined> {
     try {
       const LoginAttempt = this.getModel('LoginAttempt');
       const attempt = await LoginAttempt.create({
@@ -1219,7 +1245,7 @@ export class AccessControlService {
   /**
    * Get all active IP restrictions
    */
-  async getIpRestrictions(): Promise<any[]> {
+  async getIpRestrictions(): Promise<IpRestrictionInstance[]> {
     try {
       const IpRestriction = this.getModel('IpRestriction');
       const restrictions = await IpRestriction.findAll({
@@ -1339,7 +1365,7 @@ export class AccessControlService {
           ipAddress: ipAddress,
           userAgent: null,
           timestamp: new Date(),
-        } as any);
+        } as ExecutionContext);
       }
 
       if (!restriction) {
@@ -1391,7 +1417,7 @@ export class AccessControlService {
   /**
    * Update security incident
    */
-  async updateSecurityIncident(id: string, data: any): Promise<any> {
+  async updateSecurityIncident(id: string, data: SecurityIncidentUpdateData): Promise<SecurityIncidentInstance> {
     try {
       const SecurityIncident = this.getModel('SecurityIncident');
       const incident = await SecurityIncident.findByPk(id);
@@ -1400,7 +1426,7 @@ export class AccessControlService {
         throw new NotFoundException('Security incident not found');
       }
 
-      const updateData: any = {};
+      const updateData: RoleUpdateData = {};
 
       if (data.status) {
         updateData.status = data.status;
@@ -1438,12 +1464,12 @@ export class AccessControlService {
   async getSecurityIncidents(
     page: number = 1,
     limit: number = 20,
-    filters: any = {},
-  ): Promise<{ incidents: any[]; pagination: any }> {
+    filters: SecurityIncidentFilters = {},
+  ): Promise<{ incidents: SecurityIncidentInstance[]; pagination: PaginationResult }> {
     try {
       const SecurityIncident = this.getModel('SecurityIncident');
       const offset = (page - 1) * limit;
-      const whereClause: any = {};
+      const whereClause: SecurityIncidentWhereClause = {};
 
       if (filters.type) {
         whereClause.type = filters.type;
@@ -1603,7 +1629,7 @@ export class AccessControlService {
       );
 
       // Assign permissions to nurse role
-      const nursePermissions = permissions.filter((p: any) =>
+      const nursePermissions = permissions.filter((p: PermissionModel) =>
         ['students', 'medications', 'health_records', 'reports'].includes(
           p.resource,
         ),
@@ -1642,7 +1668,7 @@ export class AccessControlService {
   /**
    * Initialize default permissions
    */
-  private async initializeDefaultPermissions(transaction: any): Promise<any[]> {
+  private async initializeDefaultPermissions(transaction: unknown): Promise<PermissionInstance[]> {
     const Permission = this.getModel('Permission');
 
     const permissionsData: CreatePermissionDto[] = [
@@ -1716,7 +1742,7 @@ export class AccessControlService {
       },
     ];
 
-    const permissions: any[] = [];
+    const permissions: PermissionInstance[] = [];
     for (const permData of permissionsData) {
       const permission = await Permission.create(permData, { transaction });
       permissions.push(permission);

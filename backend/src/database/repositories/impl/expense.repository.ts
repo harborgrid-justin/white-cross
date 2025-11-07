@@ -45,7 +45,7 @@ export class ExpenseRepository extends BaseRepository<
     data: UpdateExpenseDTO,
   ): Promise<void> {}
 
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: Expense): Promise<void> {
     try {
       const entityData = entity.get();
       await this.cacheManager.delete(
@@ -59,7 +59,7 @@ export class ExpenseRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<ExpenseAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

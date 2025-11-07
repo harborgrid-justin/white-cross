@@ -1,13 +1,6 @@
-import {
-  IsString,
-  IsOptional,
-  IsEnum,
-  IsObject,
-  IsBoolean,
-  IsIP,
-} from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsObject, IsBoolean, IsIP } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { AuditAction } from '../enums';
+import { AuditAction } from '@/audit';
 
 /**
  * DTO for creating audit log entries
@@ -34,7 +27,7 @@ export class CreateAuditLogDto {
   @ApiPropertyOptional({ description: 'Changes made or additional data' })
   @IsOptional()
   @IsObject()
-  changes?: Record<string, any>;
+  changes?: Record<string, unknown>;
 
   @ApiPropertyOptional({ description: 'IP address of the request' })
   @IsOptional()

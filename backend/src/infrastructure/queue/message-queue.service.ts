@@ -273,7 +273,7 @@ export class MessageQueueService implements OnModuleInit, OnModuleDestroy {
   private buildJobOptions(
     queueName: QueueName,
     options?: QueueJobOptions,
-  ): any {
+  ): JobOptions {
     const config = QUEUE_CONFIGS[queueName];
     const priorityOptions = options?.priority
       ? this.queueConfig.getJobOptionsForPriority(options.priority)

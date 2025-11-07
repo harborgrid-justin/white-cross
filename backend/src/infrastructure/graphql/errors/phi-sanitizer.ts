@@ -179,7 +179,7 @@ function sanitizeSQL(text: string): string {
  * @param error - GraphQL error object
  * @returns Sanitized error object
  */
-export function sanitizeGraphQLError(error: any): any {
+export function sanitizeGraphQLError(error: GraphQLError): SanitizedGraphQLError {
   const sanitizedError = { ...error };
 
   // Sanitize main error message
@@ -215,7 +215,7 @@ export function sanitizeGraphQLError(error: any): any {
     if (sanitizedError.extensions.validationErrors) {
       sanitizedError.extensions.validationErrors =
         sanitizedError.extensions.validationErrors.map(
-          (validationError: any) => ({
+          (validationError: ValidationError) => ({
             ...validationError,
             message: sanitizePHI(validationError.message || ''),
             value: '[REDACTED]',

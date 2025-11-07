@@ -9,22 +9,17 @@ import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
 import { Module } from '@nestjs/core/injector/module';
 import { SmartGarbageCollectionService } from './smart-garbage-collection.service';
 import { MemoryLeakDetectionService } from './memory-leak-detection.service';
-
-interface GCOptimizationOptions {
-  memoryThreshold: number; // MB
-  gcInterval: number; // milliseconds
-  aggressiveThreshold: number; // MB
-  enableHeapProfiling: boolean;
-  customStrategies: Map<string, GCStrategy>;
-}
+import {
+  CleanableProvider,
+  GCConditionFunction,
+  GCExecuteFunction,
+  GCOptimizationOptions,
+} from '../types/resource.types';
 
 interface GCStrategy {
   name: string;
-  condition: (
-    memoryUsage: NodeJS.MemoryUsage,
-    options: any,
-  ) => boolean | Promise<boolean>;
-  execute: (options: any) => Promise<void>;
+  condition: GCConditionFunction;
+  execute: GCExecuteFunction;
   priority: number;
 }
 
@@ -63,7 +58,7 @@ export class GCOptimizationService
     heapUtilization: 0,
   };
   private optimizationHistory: OptimizationResult[] = [];
-  private gcProviders = new Set<any>();
+  private gcProviders = new Set<CleanableProvider>();
   private isOptimizing = false;
 
   constructor(
@@ -141,9 +136,15 @@ export class GCOptimizationService
   /**
    * Check if instance has GC-related methods
    */
-  private hasGCMethods(instance: any): boolean {
+  private hasGCMethods(instance: unknown): boolean {
+    if (typeof instance !== 'object' || instance === null) {
+      return false;
+    }
     const gcMethods = ['cleanup', 'clearCache', 'dispose', 'destroy', 'reset'];
-    return gcMethods.some((method) => typeof instance[method] === 'function');
+    return gcMethods.some(
+      (method) =>
+        typeof (instance as Record<string, unknown>)[method] === 'function',
+    );
   }
 
   /**
@@ -359,19 +360,24 @@ export class GCOptimizationService
   /**
    * Find provider instance by name
    */
-  private findProviderByName(providerName: string): any | null {
+  private findProviderByName(providerName: string): CleanableProvider | null {
     const providers = this.discoveryService.getProviders();
     const controllers = this.discoveryService.getControllers();
     const allWrappers = [...providers, ...controllers];
 
     const wrapper = allWrappers.find((w) => w.name === providerName);
-    return wrapper?.instance || null;
+    const instance = wrapper?.instance;
+
+    if (instance && this.hasGCMethods(instance)) {
+      return instance as CleanableProvider;
+    }
+    return null;
   }
 
   /**
    * Optimize a specific provider
    */
-  private async optimizeProvider(provider: any): Promise<void> {
+  private async optimizeProvider(provider: CleanableProvider): Promise<void> {
     try {
       if (typeof provider.optimize === 'function') {
         await provider.optimize();

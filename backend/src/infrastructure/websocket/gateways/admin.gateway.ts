@@ -34,6 +34,16 @@ import {
 } from '../services/admin-metrics.service';
 import type { AuthenticatedSocket } from '../interfaces/authenticated-socket.interface';
 
+
+/**
+ * Trend data for metrics
+ */
+interface TrendData {
+  value: number;
+  change: number;
+  direction: 'up' | 'down' | 'stable';
+}
+
 /**
  * Admin client connection tracking
  */
@@ -52,7 +62,7 @@ interface AdminClient {
 interface AdminServerToClientEvents {
   'admin:metrics:update': (data: {
     metrics: SystemMetrics;
-    trend: any;
+    trend: TrendData;
     alerts: SystemAlert[];
   }) => void;
   'admin:alert:new': (alert: SystemAlert) => void;
@@ -78,7 +88,7 @@ interface AdminServerToClientEvents {
   }) => void;
   'admin:tools:result': (data: {
     toolId: string;
-    result: any;
+    result: unknown;
     timestamp: string;
   }) => void;
 }
@@ -88,7 +98,7 @@ interface AdminClientToServerEvents {
   'admin:unsubscribe': (channel: string) => void;
   'admin:metrics:request': () => void;
   'admin:alerts:acknowledge': (alertId: string) => void;
-  'admin:tools:execute': (data: { toolId: string; params?: any }) => void;
+  'admin:tools:execute': (data: { toolId: string; params?: Record<string, unknown> }) => void;
   'admin:activity:request': (limit?: number) => void;
   'admin:ping': () => void;
 }
@@ -390,7 +400,7 @@ export class AdminWebSocketGateway
   @SubscribeMessage('admin:tools:execute')
   async handleToolExecution(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() data: { toolId: string; params?: any },
+    @MessageBody() data: { toolId: string; params?: Record<string, unknown> },
   ): Promise<void> {
     const adminClient = this.connectedClients.get(client.id);
     if (!adminClient) return;
@@ -497,7 +507,7 @@ export class AdminWebSocketGateway
   /**
    * Calculate trend data (placeholder)
    */
-  private calculateTrend(): any {
+  private calculateTrend(): TrendData {
     return {
       cpu: 'stable',
       memory: 'stable',
@@ -508,7 +518,7 @@ export class AdminWebSocketGateway
   /**
    * Execute admin tool (placeholder)
    */
-  private async executeAdminTool(toolId: string, params?: any): Promise<any> {
+  private async executeAdminTool(toolId: string, params?: Record<string, unknown>): Promise<unknown> {
     // Placeholder implementation - add actual admin tools
     const tools: Record<string, () => Promise<any>> = {
       'cache-clear': async () => ({

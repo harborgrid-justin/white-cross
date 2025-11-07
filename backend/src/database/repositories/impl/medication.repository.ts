@@ -70,7 +70,7 @@ export class MedicationRepository extends BaseRepository<
         where: { studentId },
         order: [['startDate', 'DESC']],
       });
-      return medications.map((m: any) => this.mapToEntity(m));
+      return medications.map((m: Medication) => this.mapToEntity(m));
     } catch (error) {
       this.logger.error('Error finding medications by student:', error);
       throw new RepositoryError(
@@ -94,7 +94,7 @@ export class MedicationRepository extends BaseRepository<
         },
         order: [['medicationName', 'ASC']],
       });
-      return medications.map((m: any) => this.mapToEntity(m));
+      return medications.map((m: Medication) => this.mapToEntity(m));
     } catch (error) {
       this.logger.error('Error finding active medications:', error);
       throw new RepositoryError(
@@ -117,7 +117,7 @@ export class MedicationRepository extends BaseRepository<
         },
         order: [['studentId', 'ASC']],
       });
-      return medications.map((m: any) => this.mapToEntity(m));
+      return medications.map((m: Medication) => this.mapToEntity(m));
     } catch (error) {
       this.logger.error('Error finding medications by name:', error);
       throw new RepositoryError(
@@ -140,7 +140,7 @@ export class MedicationRepository extends BaseRepository<
     // Validation logic
   }
 
-  protected async invalidateCaches(medication: any): Promise<void> {
+  protected async invalidateCaches(medication: Medication): Promise<void> {
     try {
       const medicationData = medication.get();
       await this.cacheManager.delete(
@@ -154,7 +154,7 @@ export class MedicationRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<MedicationAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

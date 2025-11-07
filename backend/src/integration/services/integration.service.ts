@@ -6,6 +6,7 @@ import { IntegrationLogService } from './integration-log.service';
 import { IntegrationStatisticsService } from './integration-statistics.service';
 import { IntegrationValidationService } from './integration-validation.service';
 import { IntegrationEncryptionService } from './integration-encryption.service';
+import { CreateIntegrationDto, UpdateIntegrationDto } from '../dto';
 
 /**
  * Main Integration Service (Facade Pattern)
@@ -32,11 +33,11 @@ export class IntegrationService {
     return this.configService.findById(id, includeSensitive);
   }
 
-  createIntegration(data: any) {
+  createIntegration(data: CreateIntegrationDto) {
     return this.configService.create(data);
   }
 
-  updateIntegration(id: string, data: any) {
+  updateIntegration(id: string, data: UpdateIntegrationDto) {
     return this.configService.update(id, data);
   }
 

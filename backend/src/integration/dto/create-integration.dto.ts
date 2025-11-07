@@ -12,6 +12,10 @@ import {
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IntegrationType } from '../entities/integration-config.entity';
+import type {
+  IntegrationSettings,
+  AuthenticationConfig,
+} from '../types';
 
 export class CreateIntegrationDto {
   @ApiProperty({
@@ -55,12 +59,12 @@ export class CreateIntegrationDto {
   @ApiPropertyOptional({ description: 'Integration-specific settings' })
   @IsOptional()
   @IsObject()
-  settings?: Record<string, any>;
+  settings?: IntegrationSettings;
 
   @ApiPropertyOptional({ description: 'Authentication configuration' })
   @IsOptional()
   @IsObject()
-  authentication?: Record<string, any>;
+  authentication?: AuthenticationConfig;
 
   @ApiPropertyOptional({
     description: 'Sync frequency in minutes',

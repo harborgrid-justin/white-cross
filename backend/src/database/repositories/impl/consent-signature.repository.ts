@@ -22,11 +22,11 @@ export class ConsentSignatureRepository {
   }
 
   async create(data: Partial<ConsentSignature>): Promise<ConsentSignature> {
-    return this.consentSignatureModel.create(data as any);
+    return this.consentSignatureModel.create(data);
   }
 
   async update(id: string, data: Partial<ConsentSignature>): Promise<[number]> {
-    return this.consentSignatureModel.update(data as any, {
+    return this.consentSignatureModel.update(data, {
       where: { id },
     });
   }

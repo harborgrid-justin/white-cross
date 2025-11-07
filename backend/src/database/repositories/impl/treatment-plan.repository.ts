@@ -68,7 +68,7 @@ export class TreatmentPlanRepository extends BaseRepository<
         where: { studentId },
         order: [['startDate', 'DESC']],
       });
-      return plans.map((p: any) => this.mapToEntity(p));
+      return plans.map((p: Prescription) => this.mapToEntity(p));
     } catch (error) {
       this.logger.error('Error finding treatment plans:', error);
       throw new RepositoryError(
@@ -88,7 +88,7 @@ export class TreatmentPlanRepository extends BaseRepository<
         where: { studentId, status: 'active' },
         order: [['startDate', 'DESC']],
       });
-      return plans.map((p: any) => this.mapToEntity(p));
+      return plans.map((p: Prescription) => this.mapToEntity(p));
     } catch (error) {
       this.logger.error('Error finding active treatment plans:', error);
       throw new RepositoryError(
@@ -106,7 +106,7 @@ export class TreatmentPlanRepository extends BaseRepository<
     data: UpdateTreatmentPlanDTO,
   ): Promise<void> {}
 
-  protected async invalidateCaches(plan: any): Promise<void> {
+  protected async invalidateCaches(plan: TreatmentPlan): Promise<void> {
     try {
       const planData = plan.get();
       await this.cacheManager.delete(
@@ -120,7 +120,7 @@ export class TreatmentPlanRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<TreatmentPlanAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({
       ...data,
       condition: '[PHI]',

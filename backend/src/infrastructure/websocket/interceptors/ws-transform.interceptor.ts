@@ -63,7 +63,7 @@ export class WsTransformInterceptor implements NestInterceptor {
    * @param data - The response data
    * @returns Transformed data
    */
-  private transformResponse(data: any): any {
+  private transformResponse(data: unknown): unknown {
     // If data has a toPayload method, use it
     if (typeof data?.toPayload === 'function') {
       return data.toPayload();
@@ -84,7 +84,7 @@ export class WsTransformInterceptor implements NestInterceptor {
    * @param obj - The object to sanitize
    * @returns Sanitized object
    */
-  private sanitizeObject(obj: any): any {
+  private sanitizeObject(obj: unknown): unknown {
     if (Array.isArray(obj)) {
       return obj.map((item) => this.sanitizeObject(item));
     }
@@ -93,7 +93,7 @@ export class WsTransformInterceptor implements NestInterceptor {
       return obj;
     }
 
-    const sanitized: any = {};
+    const sanitized: Record<string, unknown> = {};
 
     for (const [key, value] of Object.entries(obj)) {
       // Skip sensitive fields

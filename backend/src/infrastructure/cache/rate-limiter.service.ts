@@ -15,6 +15,17 @@ import { Injectable, Logger } from '@nestjs/common';
 import { CacheService } from './cache.service';
 import { RateLimitConfig, RateLimitStatus } from './cache.interfaces';
 
+
+/**
+ * Rate limit context
+ */
+interface RateLimitContext {
+  userId?: string;
+  ip?: string;
+  organizationId?: string;
+  [key: string]: unknown;
+}
+
 /**
  * Rate limiter service using token bucket algorithm
  */
@@ -48,7 +59,7 @@ export class RateLimiterService {
    * @param context - Context object (e.g., request, user)
    * @returns Rate limit status
    */
-  async checkLimit(configName: string, context: any): Promise<RateLimitStatus> {
+  async checkLimit(configName: string, context: RateLimitContext): Promise<RateLimitStatus> {
     const config = this.configs.get(configName);
     if (!config) {
       this.logger.warn(`Rate limit config not found: ${configName}`);

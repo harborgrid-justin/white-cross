@@ -36,6 +36,60 @@ import { StudentService } from '../../../student/student.service';
 import type { GraphQLContext } from '../types/context.interface';
 import { PHIField } from '../guards/field-authorization.guard';
 
+
+/**
+ * GraphQL context structure
+ */
+interface GraphQLContext {
+  req?: {
+    user?: {
+      userId: string;
+      organizationId: string;
+      role: string;
+      [key: string]: unknown;
+    };
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+/**
+ * Contact model type
+ */
+interface ContactModel {
+  id?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  relationshipType?: string;
+  [key: string]: unknown;
+}
+
+/**
+ * Student model type
+ */
+interface StudentModel {
+  id?: string;
+  firstName?: string;
+  lastName?: string;
+  studentId?: string;
+  gradeLevel?: string;
+  [key: string]: unknown;
+}
+
+/**
+ * Student medication model type
+ */
+interface StudentMedicationModel {
+  id?: string;
+  medicationId?: string;
+  studentId?: string;
+  dosage?: string;
+  frequency?: string;
+  [key: string]: unknown;
+}
+
 /**
  * Student Resolver
  * Handles all GraphQL operations for students
@@ -48,7 +102,7 @@ export class StudentResolver {
    * Map Contact model to ContactDto
    * Simplified mapper for field resolvers
    */
-  private mapContactToDto(contact: any): ContactDto {
+  private mapContactToDto(contact: ContactModel): ContactDto {
     return {
       id: contact.id,
       firstName: contact.firstName,
@@ -86,10 +140,10 @@ export class StudentResolver {
     orderDirection: string,
     @Args('filters', { type: () => StudentFilterInputDto, nullable: true })
     filters?: StudentFilterInputDto,
-    @Context() context?: any,
+    @Context() context?: GraphQLContext,
   ): Promise<StudentListResponseDto> {
     // Build filters for student service
-    const studentFilters: any = {};
+    const studentFilters: Record<string, unknown> = {};
     if (filters) {
       if (filters.isActive !== undefined)
         studentFilters.isActive = filters.isActive;
@@ -111,7 +165,7 @@ export class StudentResolver {
     const paginationData = result.meta || {};
 
     return {
-      students: students.map((student: any) => ({
+      students: students.map((student: StudentModel) => ({
         ...student,
         fullName: `${student.firstName} ${student.lastName}`,
       })),
@@ -140,7 +194,7 @@ export class StudentResolver {
   )
   async getStudent(
     @Args('id', { type: () => ID }) id: string,
-    @Context() context?: any,
+    @Context() context?: GraphQLContext,
   ): Promise<StudentDto | null> {
     const student = await this.studentService.findOne(id);
     if (!student) {
@@ -214,7 +268,7 @@ export class StudentResolver {
         await context.loaders.medicationsByStudentLoader.load(student.id);
 
       // Map StudentMedication to MedicationDto
-      return (studentMedications || []).map((sm: any) => ({
+      return (studentMedications || []).map((sm: StudentMedicationModel) => ({
         id: sm.id,
         studentId: sm.studentId,
         name: sm.medication?.name || sm.medicationName || 'Unknown',

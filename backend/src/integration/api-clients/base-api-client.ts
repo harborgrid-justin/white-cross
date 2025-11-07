@@ -3,6 +3,7 @@ import type {
   IApiClient,
   ApiClientConfig,
   ApiResponse,
+  JsonSerializable,
 } from '../interfaces/api-client.interface';
 
 @Injectable()
@@ -11,30 +12,30 @@ export class BaseApiClient implements IApiClient {
 
   constructor(private readonly config: ApiClientConfig) {}
 
-  async get<T = any>(
+  async get<T = unknown>(
     path: string,
     config?: Partial<ApiClientConfig>,
   ): Promise<ApiResponse<T>> {
     return this.request<T>('GET', path, undefined, config);
   }
 
-  async post<T = any>(
+  async post<T = unknown>(
     path: string,
-    data: any,
+    data: JsonSerializable,
     config?: Partial<ApiClientConfig>,
   ): Promise<ApiResponse<T>> {
     return this.request<T>('POST', path, data, config);
   }
 
-  async put<T = any>(
+  async put<T = unknown>(
     path: string,
-    data: any,
+    data: JsonSerializable,
     config?: Partial<ApiClientConfig>,
   ): Promise<ApiResponse<T>> {
     return this.request<T>('PUT', path, data, config);
   }
 
-  async delete<T = any>(
+  async delete<T = unknown>(
     path: string,
     config?: Partial<ApiClientConfig>,
   ): Promise<ApiResponse<T>> {
@@ -44,7 +45,7 @@ export class BaseApiClient implements IApiClient {
   private async request<T>(
     method: string,
     path: string,
-    data?: any,
+    data?: JsonSerializable,
     config?: Partial<ApiClientConfig>,
   ): Promise<ApiResponse<T>> {
     const mergedConfig = { ...this.config, ...config };

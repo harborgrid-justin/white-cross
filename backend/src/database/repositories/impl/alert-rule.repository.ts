@@ -35,7 +35,7 @@ export interface AlertRuleAttributes {
   cooldownPeriod?: number;
   requiresAcknowledgment: boolean;
   expiresAfter?: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   createdBy?: string;
   updatedBy?: string;
   lastTriggered?: Date;
@@ -61,7 +61,7 @@ export interface CreateAlertRuleDTO {
   cooldownPeriod?: number;
   requiresAcknowledgment?: boolean;
   expiresAfter?: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   createdBy?: string;
 }
 
@@ -82,7 +82,7 @@ export interface UpdateAlertRuleDTO {
   cooldownPeriod?: number;
   requiresAcknowledgment?: boolean;
   expiresAfter?: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   updatedBy?: string;
 }
 
@@ -254,7 +254,7 @@ export class AlertRuleRepository extends BaseRepository<
   /**
    * Invalidate caches for alert rule
    */
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: AlertRule): Promise<void> {
     try {
       const entityData = entity.get ? entity.get() : entity;
 
@@ -301,7 +301,7 @@ export class AlertRuleRepository extends BaseRepository<
   /**
    * Sanitize alert rule data for audit logs
    */
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<AlertRuleAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 

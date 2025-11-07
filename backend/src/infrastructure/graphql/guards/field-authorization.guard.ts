@@ -36,13 +36,13 @@ export const FIELD_AUTH_KEY = 'field_auth_roles';
  * @returns Method decorator
  */
 export function FieldAuthorization(roles: UserRole[]) {
-  return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
+  return (target: object, propertyKey: string, descriptor: PropertyDescriptor) => {
     // Store roles in metadata
     SetMetadata(FIELD_AUTH_KEY, roles)(target, propertyKey, descriptor);
 
     const originalMethod = descriptor.value;
 
-    descriptor.value = async function (...args: any[]) {
+    descriptor.value = async function (...args: unknown[]) {
       // Extract context from arguments
       // For field resolvers: (@Parent(), @Args(), @Context(), @Info())
       const context = args[2];

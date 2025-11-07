@@ -30,12 +30,17 @@ export enum AbacOperator {
 }
 
 /**
+ * Possible attribute value types for ABAC conditions
+ */
+export type AbacAttributeValue = string | number | boolean | string[] | number[] | Date | null;
+
+/**
  * ABAC Condition
  */
 export interface AbacCondition {
   attribute: string; // e.g., 'user.role', 'resource.sensitivity', 'environment.time'
   operator: AbacOperator;
-  value: any;
+  value: AbacAttributeValue;
 }
 
 /**
@@ -52,26 +57,41 @@ export interface AbacPolicyRule {
 }
 
 /**
+ * User context attributes
+ */
+export interface AbacUserContext {
+  id: string;
+  role: string;
+  attributes?: Record<string, string | number | boolean>;
+}
+
+/**
+ * Resource context attributes
+ */
+export interface AbacResourceContext {
+  type: string;
+  id?: string;
+  attributes?: Record<string, string | number | boolean>;
+}
+
+/**
+ * Environment context attributes
+ */
+export interface AbacEnvironmentContext {
+  time?: Date;
+  ipAddress?: string;
+  location?: string;
+  attributes?: Record<string, string | number | boolean>;
+}
+
+/**
  * ABAC Evaluation Context
  */
 export interface AbacContext {
-  user: {
-    id: string;
-    role: string;
-    attributes?: Record<string, any>;
-  };
-  resource: {
-    type: string;
-    id?: string;
-    attributes?: Record<string, any>;
-  };
+  user: AbacUserContext;
+  resource: AbacResourceContext;
   action: string;
-  environment: {
-    time?: Date;
-    ipAddress?: string;
-    location?: string;
-    attributes?: Record<string, any>;
-  };
+  environment: AbacEnvironmentContext;
 }
 
 /**

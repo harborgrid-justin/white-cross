@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { DynamicResourcePoolService } from '../services/dynamic-resource-pool.service';
+import { AuthenticatedRequest } from '../types/resource.types';
 
 interface ResourceQuotaConfig {
   maxConcurrentRequests: number;
@@ -117,7 +118,10 @@ export class ResourceQuotaGuard implements CanActivate {
   /**
    * Generate quota key based on configuration
    */
-  private generateQuotaKey(request: any, config: ResourceQuotaConfig): string {
+  private generateQuotaKey(
+    request: Partial<AuthenticatedRequest>,
+    config: ResourceQuotaConfig,
+  ): string {
     const parts: string[] = [];
 
     if (config.globalLimit) {
@@ -145,7 +149,7 @@ export class ResourceQuotaGuard implements CanActivate {
   private async checkResourceQuota(
     quotaKey: string,
     config: ResourceQuotaConfig,
-    request: any,
+    request: Partial<AuthenticatedRequest>,
   ): Promise<boolean> {
     const currentUsage = this.getOrCreateQuotaUsage(quotaKey, config);
     const currentTime = Date.now();

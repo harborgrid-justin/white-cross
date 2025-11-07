@@ -41,7 +41,7 @@ export class MessageService {
       attachments: data.attachments || [],
       senderId: data.senderId,
       templateId: data.templateId,
-    } as any);
+    });
 
     // OPTIMIZATION: Build all delivery records first, then bulk create instead of N individual creates
     const deliveryRecords: any[] = [];
@@ -186,7 +186,7 @@ export class MessageService {
     return this.sendMessage({
       recipients: [
         {
-          type: 'NURSE' as any,
+          type: 'NURSE',
           id: originalMessage.senderId,
           email: undefined,
         },
@@ -194,7 +194,7 @@ export class MessageService {
       channels: replyData.channels || ['EMAIL'],
       subject: `Re: ${originalMessage.subject || 'Your message'}`,
       content: replyData.content,
-      priority: 'MEDIUM' as any,
+      priority: 'MEDIUM',
       category: originalMessage.category,
       senderId,
     });

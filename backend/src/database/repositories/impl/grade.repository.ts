@@ -45,7 +45,7 @@ export class GradeRepository extends BaseRepository<
     data: UpdateGradeDTO,
   ): Promise<void> {}
 
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: Grade): Promise<void> {
     try {
       const entityData = entity.get();
       await this.cacheManager.delete(
@@ -59,7 +59,7 @@ export class GradeRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<GradeAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

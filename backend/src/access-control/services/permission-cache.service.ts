@@ -1,3 +1,6 @@
+import { UserPermissionsResult } from '../interfaces';
+import { CacheEntry, CacheStatisticsResult } from '../types';
+
 import { Injectable, Logger } from '@nestjs/common';
 
 /**
@@ -18,9 +21,9 @@ export class PermissionCacheService {
   private readonly logger = new Logger(PermissionCacheService.name);
 
   // Cache stores with TTL
-  private userPermissionsCache: Map<string, { data: any; expiresAt: number }> =
+  private userPermissionsCache: Map<string, CacheEntry<UserPermissionsResult>> =
     new Map();
-  private rolePermissionsCache: Map<string, { data: any; expiresAt: number }> =
+  private rolePermissionsCache: Map<string, CacheEntry<UserPermissionsResult>> =
     new Map();
 
   // Cache statistics
@@ -46,7 +49,7 @@ export class PermissionCacheService {
   /**
    * Get cached user permissions
    */
-  getUserPermissions(userId: string): any | null {
+  getUserPermissions(userId: string): UserPermissionsResult | null {
     const cached = this.userPermissionsCache.get(userId);
 
     if (!cached) {
@@ -69,7 +72,7 @@ export class PermissionCacheService {
   /**
    * Set user permissions in cache
    */
-  setUserPermissions(userId: string, permissions: any, ttl?: number): void {
+  setUserPermissions(userId: string, permissions: UserPermissionsResult, ttl?: number): void {
     const expiresAt = Date.now() + (ttl || this.USER_PERMISSIONS_TTL);
     this.userPermissionsCache.set(userId, {
       data: permissions,
@@ -105,7 +108,7 @@ export class PermissionCacheService {
   /**
    * Get cached role permissions
    */
-  getRolePermissions(roleId: string): any | null {
+  getRolePermissions(roleId: string): UserPermissionsResult | null {
     const cached = this.rolePermissionsCache.get(roleId);
 
     if (!cached) {
@@ -128,7 +131,7 @@ export class PermissionCacheService {
   /**
    * Set role permissions in cache
    */
-  setRolePermissions(roleId: string, permissions: any, ttl?: number): void {
+  setRolePermissions(roleId: string, permissions: UserPermissionsResult, ttl?: number): void {
     const expiresAt = Date.now() + (ttl || this.ROLE_PERMISSIONS_TTL);
     this.rolePermissionsCache.set(roleId, {
       data: permissions,
@@ -179,7 +182,7 @@ export class PermissionCacheService {
   /**
    * Get cache statistics
    */
-  getStatistics(): any {
+  getStatistics(): CacheStatisticsResult {
     const userHitRate =
       this.stats.userPermissions.hits + this.stats.userPermissions.misses > 0
         ? (
@@ -272,7 +275,7 @@ export class PermissionCacheService {
    * Warm cache with frequently accessed data
    */
   async warmCache(
-    getUserPermissionsFn: (userId: string) => Promise<any>,
+    getUserPermissionsFn: (userId: string) => Promise<UserPermissionsResult>,
     userIds: string[],
   ): Promise<void> {
     this.logger.log(`Warming cache for ${userIds.length} users`);

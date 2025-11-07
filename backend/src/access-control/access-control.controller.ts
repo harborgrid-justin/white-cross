@@ -14,6 +14,7 @@ import {
   ParseUUIDPipe,
   ForbiddenException,
 } from '@nestjs/common';
+import { AuthenticatedUser, SecurityIncidentFilters } from './types';
 import type { Request as ExpressRequest } from 'express';
 import {
   ApiTags,
@@ -101,7 +102,7 @@ export class AccessControlController {
   ) {
     return this.accessControlService.createRole(
       createRoleDto,
-      (req.user as any)?.id,
+      (req.user as AuthenticatedUser)?.id,
     );
   }
 
@@ -125,7 +126,7 @@ export class AccessControlController {
     return this.accessControlService.updateRole(
       id,
       updateRoleDto,
-      (req.user as any)?.id,
+      (req.user as AuthenticatedUser)?.id,
     );
   }
 
@@ -145,7 +146,7 @@ export class AccessControlController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Request() req: ExpressRequest,
   ) {
-    return this.accessControlService.deleteRole(id, (req.user as any)?.id);
+    return this.accessControlService.deleteRole(id, (req.user as AuthenticatedUser)?.id);
   }
 
   // ============================================================================
@@ -195,7 +196,7 @@ export class AccessControlController {
     return this.accessControlService.assignPermissionToRole(
       roleId,
       dto.permissionId,
-      (req.user as any)?.id,
+      (req.user as AuthenticatedUser)?.id,
     );
   }
 
@@ -249,7 +250,7 @@ export class AccessControlController {
     return this.accessControlService.assignRoleToUser(
       userId,
       dto.roleId,
-      (req.user as any)?.id,
+      (req.user as AuthenticatedUser)?.id,
     );
   }
 
@@ -283,9 +284,9 @@ export class AccessControlController {
     @Request() req: ExpressRequest,
   ) {
     // Allow users to view their own permissions, or require permission to view others
-    if (userId !== (req.user as any)?.id) {
+    if (userId !== (req.user as AuthenticatedUser)?.id) {
       const hasPermission = await this.accessControlService.checkPermission(
-        (req.user as any)?.id,
+        (req.user as AuthenticatedUser)?.id,
         'users',
         'manage',
       );
@@ -309,7 +310,7 @@ export class AccessControlController {
     @Request() req: ExpressRequest,
   ) {
     const hasPermission = await this.accessControlService.checkPermission(
-      (req.user as any)?.id,
+      (req.user as AuthenticatedUser)?.id,
       dto.resource,
       dto.action,
     );
@@ -330,9 +331,9 @@ export class AccessControlController {
     @Request() req: ExpressRequest,
   ) {
     // Allow users to view their own sessions, or require permission to view others
-    if (userId !== (req.user as any)?.id) {
+    if (userId !== (req.user as AuthenticatedUser)?.id) {
       const hasPermission = await this.accessControlService.checkPermission(
-        (req.user as any)?.id,
+        (req.user as AuthenticatedUser)?.id,
         'sessions',
         'manage',
       );
@@ -397,7 +398,7 @@ export class AccessControlController {
     @Query('severity') severity?: string,
     @Query('status') status?: string,
   ) {
-    const filters: any = {};
+    const filters: SecurityIncidentFilters = {};
     if (type) filters.type = type;
     if (severity) filters.severity = severity;
     if (status) filters.status = status;
@@ -426,7 +427,7 @@ export class AccessControlController {
   ) {
     return this.accessControlService.createSecurityIncident({
       ...dto,
-      detectedBy: dto.detectedBy || (req.user as any)?.id,
+      detectedBy: dto.detectedBy || (req.user as AuthenticatedUser)?.id,
     });
   }
 
@@ -470,7 +471,7 @@ export class AccessControlController {
   ) {
     return this.accessControlService.addIpRestriction({
       ...dto,
-      createdBy: dto.createdBy || (req.user as any)?.id,
+      createdBy: dto.createdBy || (req.user as AuthenticatedUser)?.id,
     });
   }
 

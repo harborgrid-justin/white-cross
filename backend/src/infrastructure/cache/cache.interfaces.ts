@@ -140,7 +140,7 @@ export interface CacheWarmingStrategy {
   priority: number;
   /** Data loader function */
   loader: () => Promise<
-    Array<{ key: string; value: any; options?: CacheOptions }>
+    Array<{ key: string; value: unknown; options?: CacheOptions }>
   >;
   /** Schedule (cron expression for scheduled strategies) */
   schedule?: string;
@@ -157,11 +157,11 @@ export interface RateLimitConfig {
   /** Time window in milliseconds */
   windowMs: number;
   /** Identifier function (e.g., user ID, IP) */
-  keyGenerator: (context: any) => string;
+  keyGenerator: (context: CacheContext) => string;
   /** Action to take when limit exceeded */
-  handler?: (context: any) => void | Promise<void>;
+  handler?: (context: CacheContext) => void | Promise<void>;
   /** Skip rate limiting function */
-  skip?: (context: any) => boolean;
+  skip?: (context: CacheContext) => boolean;
 }
 
 /**

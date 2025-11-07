@@ -37,7 +37,7 @@ export class IntegrationConfigService {
    */
   async findAll(type?: string): Promise<IntegrationConfig[]> {
     try {
-      const whereClause: any = {};
+      const whereClause: Record<string, string> = {};
       if (type) {
         whereClause.type = type;
       }

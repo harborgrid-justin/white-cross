@@ -27,6 +27,22 @@ import { Logger } from '@nestjs/common';
 import { AuthenticatedSocket } from '../interfaces';
 import { AuthPayload } from '../interfaces/auth-payload.interface';
 
+
+/**
+ * JWT payload structure
+ */
+interface JwtPayload {
+  sub?: string;
+  userId?: string;
+  id?: string;
+  organizationId?: string;
+  schoolId?: string;
+  districtId?: string;
+  role?: string;
+  email?: string;
+  [key: string]: unknown;
+}
+
 const logger = new Logger('WsAuthMiddleware');
 
 /**
@@ -112,7 +128,7 @@ function extractToken(socket: Socket): string | null {
  * @param payload - The decoded JWT payload
  * @returns Structured AuthPayload
  */
-function mapToAuthPayload(payload: any): AuthPayload {
+function mapToAuthPayload(payload: JwtPayload): AuthPayload {
   return {
     userId: payload.sub || payload.userId || payload.id,
     organizationId:

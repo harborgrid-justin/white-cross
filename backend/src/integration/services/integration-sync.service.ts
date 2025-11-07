@@ -122,7 +122,7 @@ export class IntegrationSyncService {
    * Perform actual sync operation
    * Mock implementation - in production, this would perform real data synchronization
    */
-  private async performSync(integration: any): Promise<IntegrationSyncResult> {
+  private async performSync(integration: IntegrationConfig): Promise<IntegrationSyncResult> {
     // Simulate processing records
     const recordsProcessed = Math.floor(Math.random() * 100) + 50;
     const recordsFailed = Math.floor(Math.random() * 5);

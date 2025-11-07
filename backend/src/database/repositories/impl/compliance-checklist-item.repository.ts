@@ -24,14 +24,14 @@ export class ComplianceChecklistItemRepository {
   async create(
     data: Partial<ComplianceChecklistItem>,
   ): Promise<ComplianceChecklistItem> {
-    return this.complianceChecklistItemModel.create(data as any);
+    return this.complianceChecklistItemModel.create(data);
   }
 
   async update(
     id: string,
     data: Partial<ComplianceChecklistItem>,
   ): Promise<[number]> {
-    return this.complianceChecklistItemModel.update(data as any, {
+    return this.complianceChecklistItemModel.update(data, {
       where: { id },
     });
   }

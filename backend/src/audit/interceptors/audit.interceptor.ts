@@ -1,14 +1,8 @@
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler, Logger } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { AuditService } from '../audit.service';
-import { AuditAction } from '../enums';
+import { AuditService } from '@/audit';
+import { AuditAction } from '@/audit';
 
 /**
  * Audit Interceptor
@@ -26,7 +20,7 @@ export class AuditInterceptor implements NestInterceptor {
 
   constructor(private readonly auditService: AuditService) {}
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest();
     const { method, url, user } = request;
 
@@ -46,7 +40,7 @@ export class AuditInterceptor implements NestInterceptor {
               userId,
               action,
               entityType,
-              entityId: data?.id,
+              entityId: data && typeof data === 'object' && 'id' in data ? String(data.id) : undefined,
               changes: { method, url, success: true },
               ipAddress,
               userAgent,
@@ -95,9 +89,7 @@ export class AuditInterceptor implements NestInterceptor {
 
   private getEntityTypeFromUrl(url: string): string {
     // Extract entity type from URL (e.g., /api/users/123 -> User)
-    const parts = url
-      .split('/')
-      .filter((p) => p && !p.match(/^\d+$/) && p !== 'api');
+    const parts = url.split('/').filter((p) => p && !p.match(/^\d+$/) && p !== 'api');
     if (parts.length > 0) {
       // Capitalize first letter and singularize
       const entity = parts[0];

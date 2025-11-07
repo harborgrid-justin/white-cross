@@ -66,7 +66,7 @@ export class MedicalHistoryRepository extends BaseRepository<
         where: { studentId },
         order: [['diagnosisDate', 'DESC']],
       });
-      return history.map((h: any) => this.mapToEntity(h));
+      return history.map((h: HealthRecord) => this.mapToEntity(h));
     } catch (error) {
       this.logger.error('Error finding medical history by student:', error);
       throw new RepositoryError(
@@ -87,7 +87,7 @@ export class MedicalHistoryRepository extends BaseRepository<
         where: { studentId, category },
         order: [['diagnosisDate', 'DESC']],
       });
-      return history.map((h: any) => this.mapToEntity(h));
+      return history.map((h: HealthRecord) => this.mapToEntity(h));
     } catch (error) {
       this.logger.error('Error finding medical history by category:', error);
       throw new RepositoryError(
@@ -107,7 +107,7 @@ export class MedicalHistoryRepository extends BaseRepository<
         where: { studentId, isResolved: false },
         order: [['diagnosisDate', 'DESC']],
       });
-      return history.map((h: any) => this.mapToEntity(h));
+      return history.map((h: HealthRecord) => this.mapToEntity(h));
     } catch (error) {
       this.logger.error('Error finding active conditions:', error);
       throw new RepositoryError(
@@ -130,7 +130,7 @@ export class MedicalHistoryRepository extends BaseRepository<
     // Validation logic
   }
 
-  protected async invalidateCaches(history: any): Promise<void> {
+  protected async invalidateCaches(history: MedicalHistory): Promise<void> {
     try {
       const historyData = history.get();
       await this.cacheManager.delete(
@@ -144,7 +144,7 @@ export class MedicalHistoryRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<MedicalHistoryAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({
       ...data,
       condition: '[PHI]',

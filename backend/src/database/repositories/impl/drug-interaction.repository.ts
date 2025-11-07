@@ -67,7 +67,7 @@ export class DrugInteractionRepository extends BaseRepository<
         },
         order: [['severity', 'DESC']],
       });
-      return interactions.map((i: any) => this.mapToEntity(i));
+      return interactions.map((i: Immunization) => this.mapToEntity(i));
     } catch (error) {
       this.logger.error('Error finding drug interactions:', error);
       throw new RepositoryError(
@@ -85,7 +85,7 @@ export class DrugInteractionRepository extends BaseRepository<
         where: { severity, isActive: true },
         order: [['drug1', 'ASC']],
       });
-      return interactions.map((i: any) => this.mapToEntity(i));
+      return interactions.map((i: Immunization) => this.mapToEntity(i));
     } catch (error) {
       this.logger.error('Error finding interactions by severity:', error);
       throw new RepositoryError(
@@ -106,7 +106,7 @@ export class DrugInteractionRepository extends BaseRepository<
     data: UpdateDrugInteractionDTO,
   ): Promise<void> {}
 
-  protected async invalidateCaches(interaction: any): Promise<void> {
+  protected async invalidateCaches(interaction: DrugInteraction): Promise<void> {
     try {
       const interactionData = interaction.get();
       await this.cacheManager.delete(
@@ -118,7 +118,7 @@ export class DrugInteractionRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<DrugInteractionAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

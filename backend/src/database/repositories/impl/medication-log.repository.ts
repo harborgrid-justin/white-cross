@@ -5,7 +5,7 @@
 
 import { Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, Transaction } from 'sequelize';
+import { Op, Transaction ,  WhereOptions} from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
 import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
@@ -77,7 +77,7 @@ export class MedicationLogRepository extends BaseRepository<
         order: [['administeredAt', 'DESC']],
         ...options,
       });
-      return logs.map((log: any) => this.mapToEntity(log));
+      return logs.map((log: MedicationLog) => this.mapToEntity(log));
     } catch (error) {
       this.logger.error('Error finding medication logs by student:', error);
       throw new RepositoryError(
@@ -97,7 +97,7 @@ export class MedicationLogRepository extends BaseRepository<
     options?: QueryOptions,
   ): Promise<MedicationLogAttributes[]> {
     try {
-      const where: any = { status: 'PENDING' };
+      const where: WhereOptions = { status: 'PENDING' };
       if (studentId) {
         where.studentId = studentId;
       }
@@ -107,7 +107,7 @@ export class MedicationLogRepository extends BaseRepository<
         order: [['scheduledAt', 'ASC']],
         ...options,
       });
-      return logs.map((log: any) => this.mapToEntity(log));
+      return logs.map((log: MedicationLog) => this.mapToEntity(log));
     } catch (error) {
       this.logger.error('Error finding pending medication logs:', error);
       throw new RepositoryError(
@@ -129,7 +129,7 @@ export class MedicationLogRepository extends BaseRepository<
     options?: QueryOptions,
   ): Promise<MedicationLogAttributes[]> {
     try {
-      const where: any = {
+      const where: WhereOptions = {
         administeredAt: {
           [Op.between]: [startDate, endDate],
         },
@@ -143,7 +143,7 @@ export class MedicationLogRepository extends BaseRepository<
         order: [['administeredAt', 'DESC']],
         ...options,
       });
-      return logs.map((log: any) => this.mapToEntity(log));
+      return logs.map((log: MedicationLog) => this.mapToEntity(log));
     } catch (error) {
       this.logger.error('Error finding medication logs by date range:', error);
       throw new RepositoryError(
@@ -169,7 +169,7 @@ export class MedicationLogRepository extends BaseRepository<
     adherenceRate: number;
   }> {
     try {
-      const where: any = { studentId };
+      const where: WhereOptions = { studentId };
       if (medicationId) {
         where.medicationId = medicationId;
       }
@@ -182,7 +182,7 @@ export class MedicationLogRepository extends BaseRepository<
       const logs = await this.model.findAll({ where });
       const totalScheduled = logs.length;
       const totalAdministered = logs.filter(
-        (log: any) => log.status === 'ADMINISTERED',
+        (log: MedicationLog) => log.status === 'ADMINISTERED',
       ).length;
 
       return {
@@ -215,7 +215,7 @@ export class MedicationLogRepository extends BaseRepository<
     // Validation logic
   }
 
-  protected async invalidateCaches(log: any): Promise<void> {
+  protected async invalidateCaches(log: MedicationLog): Promise<void> {
     try {
       const logData = log.get();
       await this.cacheManager.delete(
@@ -229,7 +229,7 @@ export class MedicationLogRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<MedicationLogAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

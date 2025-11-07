@@ -1,6 +1,36 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { AppointmentWaitlist } from '../../models/appointment-waitlist.model';
+import {
+  AppointmentWaitlist,
+  AppointmentWaitlistAttributes,
+} from '../../models/appointment-waitlist.model';
+import { AppointmentType } from '../../models/appointment.model';
+import { WaitlistPriority, WaitlistStatus } from '../../models/appointment-waitlist.model';
+
+export interface CreateAppointmentWaitlistDTO {
+  studentId: string;
+  nurseId?: string;
+  type: AppointmentType;
+  preferredDate?: Date;
+  duration: number;
+  priority: WaitlistPriority;
+  reason: string;
+  notes?: string;
+  status: WaitlistStatus;
+}
+
+export interface UpdateAppointmentWaitlistDTO {
+  nurseId?: string;
+  type?: AppointmentType;
+  preferredDate?: Date;
+  duration?: number;
+  priority?: WaitlistPriority;
+  reason?: string;
+  notes?: string;
+  status?: WaitlistStatus;
+  notifiedAt?: Date;
+  expiresAt?: Date;
+}
 
 /**
  * AppointmentWaitlist Repository Implementation
@@ -32,14 +62,14 @@ export class AppointmentWaitlistRepository {
   /**
    * Create new waitlist entry
    */
-  async create(data: any): Promise<AppointmentWaitlist> {
+  async create(data: CreateAppointmentWaitlistDTO): Promise<AppointmentWaitlist> {
     return this.appointmentWaitlistModel.create(data);
   }
 
   /**
    * Update waitlist entry
    */
-  async update(id: string, data: any): Promise<AppointmentWaitlist | null> {
+  async update(id: string, data: UpdateAppointmentWaitlistDTO): Promise<AppointmentWaitlist | null> {
     const [affectedCount] = await this.appointmentWaitlistModel.update(data, {
       where: { id },
     });

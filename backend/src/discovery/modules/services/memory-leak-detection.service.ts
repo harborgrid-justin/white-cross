@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DiscoveryService, Reflector } from '@nestjs/core';
+import { ProviderMetadata } from '../types/resource.types';
 
 export interface LeakSuspect {
   providerName: string;
@@ -27,7 +28,7 @@ export interface MemorySnapshot {
 @Injectable()
 export class MemoryLeakDetectionService {
   private readonly logger = new Logger(MemoryLeakDetectionService.name);
-  private monitoredProviders = new Map<string, any>();
+  private monitoredProviders = new Map<string, ProviderMetadata>();
   private memorySnapshots: MemorySnapshot[] = [];
   private leakSuspects = new Map<string, LeakSuspect>();
   private detectionInterval?: NodeJS.Timeout;
@@ -42,7 +43,10 @@ export class MemoryLeakDetectionService {
   /**
    * Add a provider to monitor for memory leaks
    */
-  addMonitoredProvider(providerName: string, metadata: any): void {
+  addMonitoredProvider(
+    providerName: string,
+    metadata: ProviderMetadata,
+  ): void {
     this.monitoredProviders.set(providerName, {
       ...metadata,
       addedAt: Date.now(),

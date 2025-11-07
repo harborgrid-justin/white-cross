@@ -1,5 +1,9 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { DiscoveryService, Reflector } from '@nestjs/core';
+import {
+  CacheableData,
+  MemoryCacheOptions,
+} from '../types/resource.types';
 
 export interface CacheProviderConfig {
   ttl: number;
@@ -9,7 +13,7 @@ export interface CacheProviderConfig {
 }
 
 export interface CacheEntry {
-  data: any;
+  data: CacheableData;
   timestamp: number;
   accessCount: number;
   lastAccessed: number;
@@ -35,7 +39,8 @@ export class MemoryOptimizedCacheService {
   private readonly compressionThreshold = 1024; // 1KB
 
   constructor(
-    @Inject('MEMORY_CACHE_OPTIONS') private readonly options: any,
+    @Inject('MEMORY_CACHE_OPTIONS')
+    private readonly options: MemoryCacheOptions,
     private readonly discoveryService: DiscoveryService,
     private readonly reflector: Reflector,
   ) {}
@@ -60,7 +65,7 @@ export class MemoryOptimizedCacheService {
    */
   async set(
     key: string,
-    data: any,
+    data: CacheableData,
     providerName?: string,
     customTtl?: number,
   ): Promise<void> {
@@ -297,7 +302,7 @@ export class MemoryOptimizedCacheService {
   /**
    * Calculate approximate size of data in bytes
    */
-  private calculateSize(data: any): number {
+  private calculateSize(data: CacheableData): number {
     try {
       return JSON.stringify(data).length * 2; // Rough estimate for UTF-16
     } catch {
@@ -308,7 +313,7 @@ export class MemoryOptimizedCacheService {
   /**
    * Compress data using simple JSON compression
    */
-  private async compressData(data: any): Promise<string> {
+  private async compressData(data: CacheableData): Promise<string> {
     // In a real implementation, you'd use a proper compression library like zlib
     // For this example, we'll use a simple JSON minification
     return JSON.stringify(data);
@@ -317,9 +322,9 @@ export class MemoryOptimizedCacheService {
   /**
    * Decompress data
    */
-  private async decompressData(compressedData: string): Promise<any> {
+  private async decompressData(compressedData: string): Promise<CacheableData> {
     // In a real implementation, you'd use the corresponding decompression
-    return JSON.parse(compressedData);
+    return JSON.parse(compressedData) as CacheableData;
   }
 
   /**

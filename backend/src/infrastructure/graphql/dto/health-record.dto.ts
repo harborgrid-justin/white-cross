@@ -80,7 +80,7 @@ export class HealthRecordDto {
   attachments: string[];
 
   @Field(() => GraphQLJSON, { nullable: true })
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 
   @Field()
   isConfidential: boolean;
@@ -203,7 +203,7 @@ export class HealthRecordInputDto {
 
   @Field(() => GraphQLJSON, { nullable: true })
   @IsOptional()
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 
   @Field({ defaultValue: false })
   @IsOptional()
@@ -312,7 +312,7 @@ export class HealthRecordUpdateInputDto {
 
   @Field(() => GraphQLJSON, { nullable: true })
   @IsOptional()
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 
   @Field({ nullable: true })
   @IsOptional()

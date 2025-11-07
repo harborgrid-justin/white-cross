@@ -1,5 +1,6 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { DiscoveryService, Reflector } from '@nestjs/core';
+import { ProviderMetadata, SmartGCOptions } from '../types/resource.types';
 
 export interface GcProviderConfig {
   priority: 'low' | 'normal' | 'high';
@@ -37,7 +38,7 @@ export interface GcEvent {
 export class SmartGarbageCollectionService {
   private readonly logger = new Logger(SmartGarbageCollectionService.name);
   private memoryIntensiveProviders = new Map<string, GcProviderConfig>();
-  private computationIntensiveProviders = new Map<string, any>();
+  private computationIntensiveProviders = new Map<string, ProviderMetadata>();
   private gcHistory: GcEvent[] = [];
   private gcMetrics: GcMetrics = {
     totalGcCycles: 0,
@@ -52,7 +53,7 @@ export class SmartGarbageCollectionService {
   private isMonitoring = false;
 
   constructor(
-    @Inject('SMART_GC_OPTIONS') private readonly options: any,
+    @Inject('SMART_GC_OPTIONS') private readonly options: SmartGCOptions,
     private readonly discoveryService: DiscoveryService,
     private readonly reflector: Reflector,
   ) {}
@@ -109,7 +110,10 @@ export class SmartGarbageCollectionService {
   /**
    * Register a computation-intensive provider
    */
-  registerComputationIntensiveProvider(name: string, metadata: any): void {
+  registerComputationIntensiveProvider(
+    name: string,
+    metadata: ProviderMetadata,
+  ): void {
     this.computationIntensiveProviders.set(name, metadata);
     this.logger.log(`Registered computation-intensive provider: ${name}`);
   }

@@ -47,7 +47,7 @@ export class IntegrationConfigRepository extends BaseRepository<
     data: UpdateIntegrationConfigDTO,
   ): Promise<void> {}
 
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: IntegrationConfig): Promise<void> {
     try {
       const entityData = entity.get();
       await this.cacheManager.delete(
@@ -61,7 +61,7 @@ export class IntegrationConfigRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<IntegrationConfigAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

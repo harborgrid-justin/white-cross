@@ -38,6 +38,14 @@ import { Roles } from '../../../auth/decorators/roles.decorator';
 import { UserRole } from '../../../database/models/user.model';
 import { HealthRecordDto, StudentDto, AlertDto, VitalsDto } from '../dto';
 
+
+/**
+ * Subscription payload type
+ */
+interface SubscriptionPayload {
+  [key: string]: unknown;
+}
+
 /**
  * Subscription event names
  * Centralized constants for PubSub topics
@@ -315,7 +323,7 @@ export class SubscriptionResolver {
 export async function publishSubscriptionEvent(
   pubSub: RedisPubSub,
   event: SubscriptionEvent,
-  payload: any,
+  payload: SubscriptionPayload,
 ): Promise<void> {
   try {
     await pubSub.publish(event, payload);

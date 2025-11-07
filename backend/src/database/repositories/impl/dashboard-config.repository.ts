@@ -47,7 +47,7 @@ export class DashboardConfigRepository extends BaseRepository<
     data: UpdateDashboardConfigDTO,
   ): Promise<void> {}
 
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: DashboardConfig): Promise<void> {
     try {
       const entityData = entity.get();
       await this.cacheManager.delete(
@@ -61,7 +61,7 @@ export class DashboardConfigRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<DashboardConfigAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

@@ -1,5 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { PHIAccessType, PHIDataCategory, AuditAction } from '../enums';
+import { PHIAccessType, PHIDataCategory, AuditAction } from '@/audit';
+import {
+  ValidationResult,
+  AuditRequest,
+  SanitizableData,
+} from '../types';
+import { IAuditLogEntry, IPHIAccessLog } from '../interfaces';
 
 /**
  * AuditUtilsService - Utility functions and helpers for audit operations
@@ -15,7 +21,7 @@ export class AuditUtilsService {
    * @param entry - Audit log entry to validate
    * @returns Validation result with errors if any
    */
-  validateAuditEntry(entry: any): { isValid: boolean; errors: string[] } {
+  validateAuditEntry(entry: Partial<IAuditLogEntry>): ValidationResult {
     const errors: string[] = [];
 
     if (!entry.action) {
@@ -42,7 +48,7 @@ export class AuditUtilsService {
    * @param entry - PHI access log entry to validate
    * @returns Validation result with errors if any
    */
-  validatePHIEntry(entry: any): { isValid: boolean; errors: string[] } {
+  validatePHIEntry(entry: Partial<IPHIAccessLog>): ValidationResult {
     const errors: string[] = [];
 
     const baseValidation = this.validateAuditEntry(entry);
@@ -54,13 +60,13 @@ export class AuditUtilsService {
 
     if (!entry.accessType) {
       errors.push('Access type is required for PHI access');
-    } else if (!Object.values(PHIAccessType).includes(entry.accessType)) {
+    } else if (!Object.values(PHIAccessType).includes(entry.accessType as PHIAccessType)) {
       errors.push('Invalid PHI access type');
     }
 
     if (!entry.dataCategory) {
       errors.push('Data category is required for PHI access');
-    } else if (!Object.values(PHIDataCategory).includes(entry.dataCategory)) {
+    } else if (!Object.values(PHIDataCategory).includes(entry.dataCategory as PHIDataCategory)) {
       errors.push('Invalid PHI data category');
     }
 
@@ -90,10 +96,10 @@ export class AuditUtilsService {
   /**
    * Extract IP address from request object
    *
-   * @param req - Request object
+   * @param req - Request object or string
    * @returns IP address string
    */
-  extractIPAddress(req: any): string | undefined {
+  extractIPAddress(req: AuditRequest | string): string | undefined {
     if (typeof req === 'string') {
       return req;
     }
@@ -111,10 +117,10 @@ export class AuditUtilsService {
   /**
    * Extract user agent from request object
    *
-   * @param req - Request object
+   * @param req - Request object or string
    * @returns User agent string
    */
-  extractUserAgent(req: any): string | undefined {
+  extractUserAgent(req: AuditRequest | string): string | undefined {
     if (typeof req === 'string') {
       return req;
     }
@@ -128,25 +134,25 @@ export class AuditUtilsService {
    * @param data - Raw audit data
    * @returns Sanitized audit data
    */
-  sanitizeAuditData(data: any): any {
-    const sanitized = { ...data };
+  sanitizeAuditData(data: SanitizableData): SanitizableData {
+    const sanitized: SanitizableData = { ...data };
 
-    if (sanitized.password) {
+    if ('password' in sanitized) {
       delete sanitized.password;
     }
 
-    if (sanitized.token) {
+    if ('token' in sanitized && typeof sanitized.token === 'string') {
       sanitized.token = '***REDACTED***';
     }
 
-    if (sanitized.apiKey) {
+    if ('apiKey' in sanitized && typeof sanitized.apiKey === 'string') {
       sanitized.apiKey = '***REDACTED***';
     }
 
     // Truncate very long strings
     Object.keys(sanitized).forEach((key) => {
-      if (typeof sanitized[key] === 'string' && sanitized[key].length > 1000) {
-        sanitized[key] = sanitized[key].substring(0, 1000) + '... [TRUNCATED]';
+      if (typeof sanitized[key] === 'string' && (sanitized[key] as string).length > 1000) {
+        sanitized[key] = (sanitized[key] as string).substring(0, 1000) + '... [TRUNCATED]';
       }
     });
 

@@ -17,6 +17,15 @@ import {
 } from '../../database/models/conversation-participant.model';
 import { ParticipantRole as ParticipantRoleEnum } from '../dto/conversation-participant.dto';
 import { Message } from '../../database/models/message.model';
+import {
+  CreateConversationResult,
+  GetConversationResult,
+  ListConversationsResult,
+  UpdateConversationResult,
+  AddParticipantResult,
+  UpdateParticipantResult,
+  GetParticipantsResult,
+} from '../types/conversation.types';
 import { CreateConversationDto } from '../dto/create-conversation.dto';
 import { UpdateConversationDto } from '../dto/update-conversation.dto';
 import {
@@ -73,7 +82,7 @@ export class ConversationService {
     dto: CreateConversationDto,
     creatorId: string,
     tenantId: string,
-  ): Promise<any> {
+  ): Promise<CreateConversationResult> {
     this.logger.log(`Creating ${dto.type} conversation by user ${creatorId}`);
 
     // Validate conversation type constraints
@@ -95,7 +104,7 @@ export class ConversationService {
       createdById: creatorId,
       isArchived: false,
       metadata: dto.metadata || {},
-    } as any);
+    });
 
     // Add participants
     const participantPromises = participants.map((participant) =>
@@ -111,7 +120,7 @@ export class ConversationService {
         isMuted: false,
         isPinned: false,
         notificationPreference: 'ALL',
-      } as any),
+      }),
     );
 
     const createdParticipants = await Promise.all(participantPromises);
@@ -136,7 +145,7 @@ export class ConversationService {
     conversationId: string,
     userId: string,
     tenantId: string,
-  ): Promise<any> {
+  ): Promise<CreateConversationResult> {
     const conversation = await this.conversationModel.findOne({
       where: { id: conversationId, tenantId },
       include: [
@@ -188,7 +197,7 @@ export class ConversationService {
       page?: number;
       limit?: number;
     } = {},
-  ): Promise<any> {
+  ): Promise<CreateConversationResult> {
     const page = options.page || 1;
     const limit = options.limit || 20;
     const offset = (page - 1) * limit;
@@ -299,7 +308,7 @@ export class ConversationService {
     dto: UpdateConversationDto,
     userId: string,
     tenantId: string,
-  ): Promise<any> {
+  ): Promise<CreateConversationResult> {
     const conversation = await this.conversationModel.findOne({
       where: { id: conversationId, tenantId },
     });
@@ -387,7 +396,7 @@ export class ConversationService {
     dto: AddParticipantDto,
     requesterId: string,
     tenantId: string,
-  ): Promise<any> {
+  ): Promise<CreateConversationResult> {
     this.logger.log(
       `Adding participant ${dto.userId} to conversation ${conversationId}`,
     );
@@ -432,7 +441,7 @@ export class ConversationService {
       isMuted: false,
       isPinned: false,
       notificationPreference: 'ALL',
-    } as any);
+    });
 
     return { participant: participant.toJSON() };
   }
@@ -511,7 +520,7 @@ export class ConversationService {
     conversationId: string,
     dto: UpdateParticipantDto,
     userId: string,
-  ): Promise<any> {
+  ): Promise<CreateConversationResult> {
     const participant = await this.participantModel.findOne({
       where: { conversationId, userId },
     });
@@ -553,7 +562,7 @@ export class ConversationService {
    * @returns List of participants
    * @throws ForbiddenException if user is not a participant
    */
-  async getParticipants(conversationId: string, userId: string): Promise<any> {
+  async getParticipants(conversationId: string, userId: string): Promise<CreateConversationResult> {
     // Verify user is a participant
     const isParticipant = await this.isParticipant(conversationId, userId);
     if (!isParticipant) {

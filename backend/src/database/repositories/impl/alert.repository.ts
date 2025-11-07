@@ -34,7 +34,7 @@ export class AlertRepository extends BaseRepository<
     @Inject('ICacheManager') cacheManager: ICacheManager,
   ) {
     // TODO: Inject proper Alert model when implemented
-    super(null as any, auditLogger, cacheManager, 'Alert');
+    super(null as Alert, auditLogger, cacheManager, 'Alert');
   }
 
   protected async validateCreate(data: CreateAlertDTO): Promise<void> {}
@@ -43,7 +43,7 @@ export class AlertRepository extends BaseRepository<
     data: UpdateAlertDTO,
   ): Promise<void> {}
 
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: Alert): Promise<void> {
     try {
       const entityData = entity.get();
       await this.cacheManager.delete(
@@ -57,7 +57,7 @@ export class AlertRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<AlertAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

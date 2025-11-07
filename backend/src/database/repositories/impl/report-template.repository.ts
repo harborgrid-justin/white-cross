@@ -47,7 +47,7 @@ export class ReportTemplateRepository extends BaseRepository<
     data: UpdateReportTemplateDTO,
   ): Promise<void> {}
 
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: ReportTemplate): Promise<void> {
     try {
       const entityData = entity.get();
       await this.cacheManager.delete(
@@ -61,7 +61,7 @@ export class ReportTemplateRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<ReportTemplateAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

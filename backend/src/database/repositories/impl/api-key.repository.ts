@@ -45,7 +45,7 @@ export class ApiKeyRepository extends BaseRepository<
     data: UpdateApiKeyDTO,
   ): Promise<void> {}
 
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: ApiKey): Promise<void> {
     try {
       const entityData = entity.get();
       await this.cacheManager.delete(
@@ -59,7 +59,7 @@ export class ApiKeyRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<ApiKeyAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

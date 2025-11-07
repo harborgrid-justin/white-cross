@@ -9,6 +9,7 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { DiscoveryService, Reflector } from '@nestjs/core';
 import { MemoryOptimizedCacheService } from '../services/memory-optimized-cache.service';
+import { AuthenticatedRequest, CacheableData } from '../types/resource.types';
 
 /**
  * Smart Cache Interceptor
@@ -26,7 +27,10 @@ export class SmartCacheInterceptor implements NestInterceptor {
     private readonly cacheService: MemoryOptimizedCacheService,
   ) {}
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(
+    context: ExecutionContext,
+    next: CallHandler,
+  ): Observable<CacheableData> {
     const request = context.switchToHttp().getRequest();
     const handler = context.getHandler();
     const controller = context.getClass();
@@ -94,7 +98,7 @@ export class SmartCacheInterceptor implements NestInterceptor {
   }
 
   private generateCacheKey(
-    request: any,
+    request: Partial<AuthenticatedRequest>,
     controllerName: string,
     handlerName: string,
   ): string {

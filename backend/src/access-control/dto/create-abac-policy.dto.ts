@@ -9,7 +9,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { AbacOperator } from '../interfaces/abac-policy.interface';
+import { AbacOperator, AbacAttributeValue } from '../interfaces/abac-policy.interface';
 
 /**
  * DTO for ABAC Condition
@@ -24,7 +24,7 @@ export class AbacConditionDto {
   operator: AbacOperator;
 
   @ApiProperty({ description: 'Value to compare against' })
-  value: any;
+  value: AbacAttributeValue;
 }
 
 /**

@@ -45,7 +45,7 @@ export class PdfTemplateRepository extends BaseRepository<
     data: UpdatePdfTemplateDTO,
   ): Promise<void> {}
 
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: PdfTemplate): Promise<void> {
     try {
       const entityData = entity.get();
       await this.cacheManager.delete(
@@ -59,7 +59,7 @@ export class PdfTemplateRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<PdfTemplateAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

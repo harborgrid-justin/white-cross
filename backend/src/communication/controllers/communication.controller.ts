@@ -8,6 +8,7 @@ import {
   Param,
   Query,
   UseGuards,
+import { AuthenticatedRequest } from '../types';
 } from '@nestjs/common';
 import {
   ApiTags,

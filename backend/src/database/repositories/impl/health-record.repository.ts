@@ -71,7 +71,7 @@ export class HealthRecordRepository extends BaseRepository<
         where: { studentId },
         order: [['recordDate', 'DESC']],
       });
-      return records.map((r: any) => this.mapToEntity(r));
+      return records.map((r: HealthRecord) => this.mapToEntity(r));
     } catch (error) {
       this.logger.error('Error finding health records by student:', error);
       throw new RepositoryError(
@@ -92,7 +92,7 @@ export class HealthRecordRepository extends BaseRepository<
         where: { studentId, recordType },
         order: [['recordDate', 'DESC']],
       });
-      return records.map((r: any) => this.mapToEntity(r));
+      return records.map((r: HealthRecord) => this.mapToEntity(r));
     } catch (error) {
       this.logger.error('Error finding health records by type:', error);
       throw new RepositoryError(
@@ -117,7 +117,7 @@ export class HealthRecordRepository extends BaseRepository<
         },
         order: [['recordDate', 'DESC']],
       });
-      return records.map((r: any) => this.mapToEntity(r));
+      return records.map((r: HealthRecord) => this.mapToEntity(r));
     } catch (error) {
       this.logger.error('Error finding health records by date range:', error);
       throw new RepositoryError(
@@ -140,7 +140,7 @@ export class HealthRecordRepository extends BaseRepository<
     // Validation logic for health record updates
   }
 
-  protected async invalidateCaches(record: any): Promise<void> {
+  protected async invalidateCaches(record: HealthRecord): Promise<void> {
     try {
       const recordData = record.get();
       await this.cacheManager.delete(
@@ -154,7 +154,7 @@ export class HealthRecordRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<HealthRecordAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({
       ...data,
       diagnosis: '[PHI]',

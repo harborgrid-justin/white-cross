@@ -9,6 +9,11 @@ import { Reflector } from '@nestjs/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { DynamicResourcePoolService } from '../services/dynamic-resource-pool.service';
+import {
+  ThrottleQueueItem,
+  TypedSubscriber,
+  AuthenticatedRequest,
+} from '../types/resource.types';
 
 interface ThrottleConfig {
   maxConcurrent: number;
@@ -36,10 +41,7 @@ interface RequestMetrics {
 export class ResourceThrottleInterceptor implements NestInterceptor {
   private readonly logger = new Logger(ResourceThrottleInterceptor.name);
   private readonly activeRequests = new Map<string, RequestMetrics>();
-  private readonly requestQueue = new Map<
-    string,
-    Array<{ resolve: Function; reject: Function; config: ThrottleConfig }>
-  >();
+  private readonly requestQueue = new Map<string, ThrottleQueueItem[]>();
   private readonly resourceCounters = new Map<string, number>();
 
   constructor(
@@ -50,7 +52,7 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
   async intercept(
     context: ExecutionContext,
     next: CallHandler,
-  ): Promise<Observable<any>> {
+  ): Promise<Observable<unknown>> {
     const handler = context.getHandler();
     const controllerClass = context.getClass();
 
@@ -133,7 +135,9 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
    * Generate unique request ID
    */
   private generateRequestId(context: ExecutionContext): string {
-    const request = context.switchToHttp().getRequest();
+    const request = context
+      .switchToHttp()
+      .getRequest<Partial<AuthenticatedRequest>>();
     const timestamp = Date.now();
     const random = Math.random().toString(36).substr(2, 9);
 
@@ -187,7 +191,7 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
   private addToQueue(
     requestId: string,
     config: ThrottleConfig,
-    subscriber: any,
+    subscriber: TypedSubscriber<unknown>,
   ): void {
     const resourceType = config.resourceType || 'default';
 
@@ -197,12 +201,12 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
 
     const queue = this.requestQueue.get(resourceType)!;
 
-    const queueItem = {
-      resolve: (result: any) => {
+    const queueItem: ThrottleQueueItem = {
+      resolve: (result: unknown) => {
         subscriber.next(result);
         subscriber.complete();
       },
-      reject: (error: any) => {
+      reject: (error: Error) => {
         subscriber.error(error);
       },
       config,
@@ -340,7 +344,7 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
   /**
    * Record request error
    */
-  private recordRequestError(requestId: string, error: any): void {
+  private recordRequestError(requestId: string, error: Error): void {
     const metrics = this.activeRequests.get(requestId);
     if (metrics) {
       metrics.endTime = Date.now();
@@ -365,14 +369,20 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
   /**
    * Get current resource usage statistics
    */
-  getResourceStats(): {
+  getResourceStats(): Array<{
     resourceType: string;
     activeRequests: number;
     queuedRequests: number;
     totalProcessed: number;
     averageExecutionTime: number;
-  }[] {
-    const stats: any[] = [];
+  }> {
+    const stats: Array<{
+      resourceType: string;
+      activeRequests: number;
+      queuedRequests: number;
+      totalProcessed: number;
+      averageExecutionTime: number;
+    }> = [];
 
     for (const [resourceType, count] of this.resourceCounters.entries()) {
       const queueSize = this.getQueueSize(resourceType);

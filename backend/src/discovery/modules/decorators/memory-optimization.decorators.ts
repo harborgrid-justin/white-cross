@@ -219,7 +219,7 @@ export const GCSchedule = (options: GCScheduleOptions) =>
 /**
  * High-performance configuration for critical services
  */
-export const HighPerformance = () => (target: any) => {
+export const HighPerformance = () => (target: object) => {
   SetMetadata('cacheable', {
     enabled: true,
     maxSize: 1000,
@@ -260,7 +260,7 @@ export const HighPerformance = () => (target: any) => {
 /**
  * Memory-efficient configuration for lightweight services
  */
-export const MemoryEfficient = () => (target: any) => {
+export const MemoryEfficient = () => (target: object) => {
   SetMetadata('cacheable', {
     enabled: true,
     maxSize: 100,
@@ -291,7 +291,7 @@ export const MemoryEfficient = () => (target: any) => {
 /**
  * Database service configuration
  */
-export const DatabaseOptimized = () => (target: any) => {
+export const DatabaseOptimized = () => (target: object) => {
   SetMetadata('resource-pool', {
     enabled: true,
     resourceType: 'connection',
@@ -318,7 +318,7 @@ export const DatabaseOptimized = () => (target: any) => {
 /**
  * CPU-intensive service configuration
  */
-export const CPUIntensive = () => (target: any) => {
+export const CPUIntensive = () => (target: object) => {
   SetMetadata('resource-pool', {
     enabled: true,
     resourceType: 'worker',
@@ -379,13 +379,13 @@ export const PriorityCache = (priority: number = 10) =>
 /**
  * Get memory optimization metadata from a class
  */
-export function getMemoryOptimizationMetadata(target: any): {
+export function getMemoryOptimizationMetadata(target: object): {
   cacheable?: CacheableOptions;
   resourcePool?: ResourcePoolOptions;
   memoryIntensive?: MemoryIntensiveOptions;
   garbageCollection?: GarbageCollectionOptions;
   memoryMonitoring?: MemoryMonitoringOptions;
-  leakProne?: any;
+  leakProne?: { monitoring: boolean; alertThreshold?: number };
 } {
   return {
     cacheable: Reflect.getMetadata('cacheable', target),
@@ -400,7 +400,7 @@ export function getMemoryOptimizationMetadata(target: any): {
 /**
  * Check if class has any memory optimization decorators
  */
-export function hasMemoryOptimization(target: any): boolean {
+export function hasMemoryOptimization(target: object): boolean {
   const metadata = getMemoryOptimizationMetadata(target);
   return Object.values(metadata).some((value) => value !== undefined);
 }
@@ -409,7 +409,7 @@ export function hasMemoryOptimization(target: any): boolean {
  * Get all cleanup methods from a class
  */
 export function getCleanupMethods(
-  target: any,
+  target: object,
 ): Array<{ methodName: string; priority: string }> {
   const prototype = target.prototype || target;
   const methods: Array<{ methodName: string; priority: string }> = [];
@@ -441,7 +441,12 @@ export function getCleanupMethods(
 /**
  * Validate decorator configuration
  */
-export function validateMemoryOptimizationConfig(config: any): string[] {
+export function validateMemoryOptimizationConfig(config: {
+  cacheable?: Partial<CacheableOptions>;
+  resourcePool?: Partial<ResourcePoolOptions>;
+  memoryIntensive?: Partial<MemoryIntensiveOptions>;
+  [key: string]: unknown;
+}): string[] {
   const errors: string[] = [];
 
   if (config.cacheable) {

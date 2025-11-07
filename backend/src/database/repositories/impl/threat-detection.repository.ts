@@ -48,7 +48,7 @@ export class ThreatDetectionRepository extends BaseRepository<
     data: UpdateThreatDetectionDTO,
   ): Promise<void> {}
 
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: ThreatDetection): Promise<void> {
     try {
       const entityData = entity.get();
       await this.cacheManager.delete(
@@ -62,7 +62,7 @@ export class ThreatDetectionRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<ThreatDetectionAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

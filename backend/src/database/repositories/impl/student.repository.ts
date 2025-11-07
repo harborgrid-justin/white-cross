@@ -23,7 +23,7 @@ import { Student } from '../../models/student.model';
 // You'll need to create the actual Sequelize model
 @Injectable()
 export class StudentRepository
-  extends BaseRepository<any, StudentAttributes, CreateStudentDTO>
+  extends BaseRepository<Student, StudentAttributes, CreateStudentDTO>
   implements IStudentRepository
 {
   constructor(
@@ -106,7 +106,7 @@ export class StudentRepository
         ],
       });
 
-      return students.map((s: any) => this.mapToEntity(s));
+      return students.map((s: Student) => this.mapToEntity(s));
     } catch (error) {
       this.logger.error('Error finding students by grade:', error);
       throw new RepositoryError(
@@ -134,7 +134,7 @@ export class StudentRepository
         ],
       });
 
-      return students.map((s: any) => this.mapToEntity(s));
+      return students.map((s: Student) => this.mapToEntity(s));
     } catch (error) {
       this.logger.error('Error finding students by nurse:', error);
       throw new RepositoryError(
@@ -167,7 +167,7 @@ export class StudentRepository
         limit: 50,
       });
 
-      return students.map((s: any) => this.mapToEntity(s));
+      return students.map((s: Student) => this.mapToEntity(s));
     } catch (error) {
       this.logger.error('Error searching students:', error);
       throw new RepositoryError(
@@ -290,7 +290,7 @@ export class StudentRepository
     }
   }
 
-  protected async invalidateCaches(student: any): Promise<void> {
+  protected async invalidateCaches(student: Student): Promise<void> {
     try {
       const studentData = student.get();
 
@@ -322,7 +322,7 @@ export class StudentRepository
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<StudentAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({
       ...data,
       // Student data is PHI but should be logged for audit trail

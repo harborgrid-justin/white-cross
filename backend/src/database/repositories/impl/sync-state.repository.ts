@@ -46,7 +46,7 @@ export class SyncStateRepository extends BaseRepository<
     data: UpdateSyncStateDTO,
   ): Promise<void> {}
 
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: SyncState): Promise<void> {
     try {
       const entityData = entity.get();
       await this.cacheManager.delete(
@@ -60,7 +60,7 @@ export class SyncStateRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<SyncStateAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

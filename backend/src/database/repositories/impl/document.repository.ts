@@ -45,7 +45,7 @@ export class DocumentRepository extends BaseRepository<
     data: UpdateDocumentDTO,
   ): Promise<void> {}
 
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: Document): Promise<void> {
     try {
       const entityData = entity.get();
       await this.cacheManager.delete(
@@ -59,7 +59,7 @@ export class DocumentRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<DocumentAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

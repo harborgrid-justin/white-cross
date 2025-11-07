@@ -19,7 +19,8 @@
  * @class RedisIoAdapter
  */
 import { IoAdapter } from '@nestjs/platform-socket.io';
-import { ServerOptions } from 'socket.io';
+import { Server, ServerOptions } from 'socket.io';
+import type { RedisClientConfig } from '../types/redis-config.types';
 import { createAdapter } from '@socket.io/redis-adapter';
 import { createClient } from 'redis';
 import type { INestApplicationContext } from '@nestjs/common';
@@ -55,7 +56,7 @@ export class RedisIoAdapter extends IoAdapter {
 
     try {
       // Create pub client with authentication if password is provided
-      const clientConfig: any = {
+      const clientConfig: RedisClientConfig = {
         socket: {
           host: redisHost,
           port: redisPort,
@@ -155,7 +156,7 @@ export class RedisIoAdapter extends IoAdapter {
    * @param options - Socket.IO server options
    * @returns The configured Socket.IO server
    */
-  createIOServer(port: number, options?: ServerOptions): any {
+  createIOServer(port: number, options?: ServerOptions): Server {
     if (!this.isConnected || !this.adapterConstructor) {
       this.logger.error(
         'Redis adapter not initialized. Call connectToRedis() before starting the server.',

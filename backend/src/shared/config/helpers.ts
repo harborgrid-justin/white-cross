@@ -44,7 +44,7 @@ export interface ConfigValidationSchema {
 
 export interface ConfigurationError {
   key: string;
-  value: any;
+  value: unknown;
   error: string;
   severity: 'error' | 'warning';
 }
@@ -52,7 +52,7 @@ export interface ConfigurationError {
 // Configuration cache
 const configCache = new Map<
   string,
-  { value: any; timestamp: number; ttl: number }
+  { value: unknown; timestamp: number; ttl: number }
 >();
 
 // Encryption key for sensitive configuration
@@ -77,10 +77,10 @@ if (!ENCRYPTION_KEY && process.env.NODE_ENV === 'production') {
  */
 export function getConfigWithFallback(
   key: string,
-  defaultValue: any = null,
+  defaultValue: unknown = null,
   useCache: boolean = true,
   cacheTTL: number = 5 * 60 * 1000,
-): any {
+): unknown {
   if (!key || typeof key !== 'string') {
     return defaultValue;
   }
@@ -132,7 +132,7 @@ export function getConfigWithFallback(
  */
 export function validateConfigurationValue(
   key: string,
-  value: any,
+  value: unknown,
   schema: ConfigValidationSchema,
 ): boolean {
   const errors = validateValue(key, value, schema);
@@ -176,7 +176,7 @@ export function encryptSensitiveConfig(
 
     // For GCM mode, get the auth tag
     const authTag = algorithm.includes('gcm')
-      ? (cipher as any).getAuthTag()
+      ? (cipher as crypto.CipherGCM).getAuthTag()
       : null;
 
     // Format: algorithm:iv:authTag:encrypted
@@ -227,7 +227,7 @@ export function decryptSensitiveConfig(encryptedValue: string): string {
     // Set auth tag for GCM mode
     if (algorithm.includes('gcm') && authTagHex) {
       const authTag = Buffer.from(authTagHex, 'hex');
-      (decipher as any).setAuthTag(authTag);
+      (decipher as crypto.DecipherGCM).setAuthTag(authTag);
     }
 
     let decrypted = decipher.update(encrypted, 'hex', 'utf8');
@@ -250,10 +250,10 @@ export function decryptSensitiveConfig(encryptedValue: string): string {
 export function getAllConfigWithValidation(
   schema: Record<string, ConfigValidationSchema>,
 ): {
-  config: Record<string, any>;
+  config: Record<string, unknown>;
   errors: ConfigurationError[];
 } {
-  const config: Record<string, any> = {};
+  const config: Record<string, unknown> = {};
   const errors: ConfigurationError[] = [];
 
   for (const [key, keySchema] of Object.entries(schema)) {
@@ -306,7 +306,7 @@ export function getConfigStats(): {
 /**
  * Parse environment variable value with type inference
  */
-function parseEnvironmentValue(value: string): any {
+function parseEnvironmentValue(value: string): unknown {
   if (value === 'true') return true;
   if (value === 'false') return false;
   if (value === 'null') return null;
@@ -339,7 +339,7 @@ function parseEnvironmentValue(value: string): any {
 /**
  * Get nested value from object using dot notation
  */
-function getNestedValue(obj: any, path: string): any {
+function getNestedValue(obj: any, path: string): unknown {
   return path.split('.').reduce((current, key) => {
     return current && current[key] !== undefined ? current[key] : undefined;
   }, obj);
@@ -350,7 +350,7 @@ function getNestedValue(obj: any, path: string): any {
  */
 function validateValue(
   key: string,
-  value: any,
+  value: unknown,
   schema: ConfigValidationSchema,
 ): ConfigurationError[] {
   const errors: ConfigurationError[] = [];

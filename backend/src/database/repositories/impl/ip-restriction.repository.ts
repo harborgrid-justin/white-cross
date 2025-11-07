@@ -45,7 +45,7 @@ export class IpRestrictionRepository extends BaseRepository<
     data: UpdateIpRestrictionDTO,
   ): Promise<void> {}
 
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: IpRestriction): Promise<void> {
     try {
       const entityData = entity.get();
       await this.cacheManager.delete(
@@ -59,7 +59,7 @@ export class IpRestrictionRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<IpRestrictionAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

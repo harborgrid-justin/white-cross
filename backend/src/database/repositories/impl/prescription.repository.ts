@@ -68,7 +68,7 @@ export class PrescriptionRepository extends BaseRepository<
         where: { studentId },
         order: [['prescribedDate', 'DESC']],
       });
-      return prescriptions.map((p: any) => this.mapToEntity(p));
+      return prescriptions.map((p: Prescription) => this.mapToEntity(p));
     } catch (error) {
       this.logger.error('Error finding prescriptions:', error);
       throw new RepositoryError(
@@ -92,7 +92,7 @@ export class PrescriptionRepository extends BaseRepository<
         },
         order: [['medicationName', 'ASC']],
       });
-      return prescriptions.map((p: any) => this.mapToEntity(p));
+      return prescriptions.map((p: Prescription) => this.mapToEntity(p));
     } catch (error) {
       this.logger.error('Error finding active prescriptions:', error);
       throw new RepositoryError(
@@ -110,7 +110,7 @@ export class PrescriptionRepository extends BaseRepository<
     data: UpdatePrescriptionDTO,
   ): Promise<void> {}
 
-  protected async invalidateCaches(prescription: any): Promise<void> {
+  protected async invalidateCaches(prescription: Prescription): Promise<void> {
     try {
       const prescriptionData = prescription.get();
       await this.cacheManager.delete(
@@ -124,7 +124,7 @@ export class PrescriptionRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<PrescriptionAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

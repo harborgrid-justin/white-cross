@@ -531,3 +531,261 @@ export function hasValue<T>(optional: Optional<T>): optional is { hasValue: true
 export function filterNullish<T>(array: (T | null | undefined)[]): T[] {
   return array.filter((item): item is T => item !== null && item !== undefined);
 }
+
+/**
+ * JSON-compatible primitive values
+ * @category JSON Types
+ */
+export type JsonPrimitive = string | number | boolean | null;
+
+/**
+ * JSON-compatible object
+ * @category JSON Types
+ */
+export interface JsonObject {
+  [key: string]: JsonValue;
+}
+
+/**
+ * JSON-compatible array
+ * @category JSON Types
+ */
+export type JsonArray = JsonValue[];
+
+/**
+ * Any JSON-serializable value
+ * Use this instead of 'any' for data that will be JSON serialized
+ * @category JSON Types
+ */
+export type JsonValue = JsonPrimitive | JsonObject | JsonArray;
+
+/**
+ * Value that can be transformed/sanitized
+ * Covers most input types from HTTP requests
+ * @category Transformation Types
+ */
+export type TransformableValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | TransformableObject
+  | TransformableArray;
+
+/**
+ * Object with transformable values
+ * @category Transformation Types
+ */
+export interface TransformableObject {
+  [key: string]: TransformableValue;
+}
+
+/**
+ * Array of transformable values
+ * @category Transformation Types
+ */
+export type TransformableArray = TransformableValue[];
+
+/**
+ * Sanitizable string value types
+ * @category Sanitization Types
+ */
+export type SanitizableValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | SanitizableObject
+  | SanitizableArray;
+
+/**
+ * Object with sanitizable values
+ * @category Sanitization Types
+ */
+export interface SanitizableObject {
+  [key: string]: SanitizableValue;
+}
+
+/**
+ * Array of sanitizable values
+ * @category Sanitization Types
+ */
+export type SanitizableArray = SanitizableValue[];
+
+/**
+ * Error details union type
+ * Provides type-safe error detail structures
+ * @category Error Types
+ */
+export type ErrorDetails =
+  | string[]
+  | Record<string, string | number | boolean | string[]>
+  | undefined;
+
+/**
+ * User authentication context from request
+ * @category Authentication Types
+ */
+export interface RequestUser {
+  id: string;
+  email?: string;
+  organizationId?: string;
+  roles?: string[];
+  permissions?: string[];
+}
+
+/**
+ * Extended request with user context
+ * @category Authentication Types
+ */
+export interface AuthenticatedRequest {
+  user?: RequestUser;
+  connection?: {
+    remoteAddress?: string;
+  };
+  socket?: {
+    remoteAddress?: string;
+  };
+  headers: Record<string, string | string[] | undefined>;
+  method: string;
+  url: string;
+  body?: unknown;
+  query?: Record<string, unknown>;
+  params?: Record<string, string>;
+}
+
+/**
+ * Validation error from class-validator
+ * @category Validation Types
+ */
+export interface ClassValidatorError {
+  target?: Record<string, unknown>;
+  property: string;
+  value?: unknown;
+  constraints?: Record<string, string>;
+  children?: ClassValidatorError[];
+  contexts?: Record<string, unknown>;
+}
+
+/**
+ * Sequelize validation error detail
+ * @category Database Types
+ */
+export interface SequelizeValidationError {
+  message: string;
+  type?: string;
+  path?: string;
+  value?: unknown;
+  origin?: string;
+  instance?: unknown;
+  validatorKey?: string;
+  validatorName?: string;
+  validatorArgs?: unknown[];
+  original?: unknown;
+}
+
+/**
+ * Database error with field information
+ * @category Database Types
+ */
+export interface DatabaseError {
+  name: string;
+  message: string;
+  errors?: SequelizeValidationError[];
+  original?: unknown;
+  sql?: string;
+  fields?: string[];
+  table?: string;
+}
+
+/**
+ * Generic metadata record
+ * Use for flexible but type-safe metadata
+ * @category Utility Types
+ */
+export type MetadataRecord = Record<
+  string,
+  string | number | boolean | null | undefined | string[] | number[]
+>;
+
+/**
+ * Generic context record
+ * Use for error contexts and logging contexts
+ * @category Utility Types
+ */
+export type ContextRecord = Record<
+  string,
+  string | number | boolean | null | undefined | MetadataRecord
+>;
+
+/**
+ * Default value types for pipes
+ * @category Pipe Types
+ */
+export type DefaultValue = string | number | boolean | null | string[] | number[];
+
+/**
+ * HTTP exception response from NestJS
+ * @category Error Types
+ */
+export interface HttpExceptionResponse {
+  statusCode: number;
+  message: string | string[];
+  error?: string;
+  [key: string]: unknown;
+}
+
+/**
+ * Type guard to check if value is JsonValue
+ * @category Type Guards
+ */
+export function isJsonValue(value: unknown): value is JsonValue {
+  if (value === null) return true;
+  if (typeof value === 'string') return true;
+  if (typeof value === 'number') return true;
+  if (typeof value === 'boolean') return true;
+  if (Array.isArray(value)) return value.every(isJsonValue);
+  if (typeof value === 'object') {
+    return Object.values(value).every(isJsonValue);
+  }
+  return false;
+}
+
+/**
+ * Type guard to check if value is a record
+ * @category Type Guards
+ */
+export function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Type guard to check if value is TransformableValue
+ * @category Type Guards
+ */
+export function isTransformableValue(value: unknown): value is TransformableValue {
+  if (value === null || value === undefined) return true;
+  if (typeof value === 'string') return true;
+  if (typeof value === 'number') return true;
+  if (typeof value === 'boolean') return true;
+  if (Array.isArray(value)) return value.every(isTransformableValue);
+  if (typeof value === 'object') {
+    return Object.values(value).every(isTransformableValue);
+  }
+  return false;
+}
+
+/**
+ * Type guard for RequestUser
+ * @category Type Guards
+ */
+export function isRequestUser(value: unknown): value is RequestUser {
+  return (
+    isRecord(value) &&
+    typeof value.id === 'string' &&
+    (value.email === undefined || typeof value.email === 'string') &&
+    (value.organizationId === undefined || typeof value.organizationId === 'string')
+  );
+}

@@ -13,6 +13,7 @@ import { Logger, UseFilters, UseGuards, UseInterceptors } from '@nestjs/common';
 import { WsExceptionFilter } from '../../infrastructure/websocket/filters/ws-exception.filter';
 import { WsJwtAuthGuard } from '../../infrastructure/websocket/guards/ws-jwt-auth.guard';
 import { WsLoggingInterceptor } from '../../infrastructure/websocket/interceptors/ws-logging.interceptor';
+import { DeliveryStatusUpdate } from '../types';
 
 @UseFilters(new WsExceptionFilter())
 @UseInterceptors(WsLoggingInterceptor)
@@ -74,7 +75,7 @@ export class CommunicationGateway
     return { success: true };
   }
 
-  emitDeliveryStatusUpdate(messageId: string, status: any) {
+  emitDeliveryStatusUpdate(messageId: string, status: DeliveryStatusUpdate) {
     this.server
       .to('message-' + messageId)
       .emit('delivery-status-update', status);

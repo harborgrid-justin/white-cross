@@ -20,14 +20,14 @@ export class AppointmentReminderRepository {
   async create(
     data: Partial<AppointmentReminder>,
   ): Promise<AppointmentReminder> {
-    return this.appointmentReminderModel.create(data as any);
+    return this.appointmentReminderModel.create(data);
   }
 
   async update(
     id: string,
     data: Partial<AppointmentReminder>,
   ): Promise<[number]> {
-    return this.appointmentReminderModel.update(data as any, {
+    return this.appointmentReminderModel.update(data, {
       where: { id },
     });
   }

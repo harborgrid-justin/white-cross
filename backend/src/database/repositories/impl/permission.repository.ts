@@ -87,7 +87,7 @@ export class PermissionRepository extends BaseRepository<
         where: { resource },
         order: [['action', 'ASC']],
       });
-      return permissions.map((p: any) => this.mapToEntity(p));
+      return permissions.map((p: Prescription) => this.mapToEntity(p));
     } catch (error) {
       this.logger.error('Error finding permissions by resource:', error);
       throw new RepositoryError(
@@ -131,7 +131,7 @@ export class PermissionRepository extends BaseRepository<
           ['action', 'ASC'],
         ],
       });
-      return permissions.map((p: any) => this.mapToEntity(p));
+      return permissions.map((p: Prescription) => this.mapToEntity(p));
     } catch (error) {
       this.logger.error('Error finding system permissions:', error);
       throw new RepositoryError(
@@ -212,7 +212,7 @@ export class PermissionRepository extends BaseRepository<
     }
   }
 
-  protected async invalidateCaches(permission: any): Promise<void> {
+  protected async invalidateCaches(permission: Permission): Promise<void> {
     try {
       const permissionData = permission.get();
       await this.cacheManager.delete(
@@ -235,7 +235,7 @@ export class PermissionRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<PermissionAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

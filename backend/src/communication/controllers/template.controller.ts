@@ -11,6 +11,7 @@ import {
   HttpCode,
   HttpStatus,
   Req,
+import { AuthenticatedRequest } from '../types';
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -59,7 +60,7 @@ export class TemplateController {
     },
   })
   @ApiResponse({ status: 400, description: 'Invalid template data' })
-  async createTemplate(@Body() dto: CreateTemplateDto, @Req() req: any) {
+  async createTemplate(@Body() dto: CreateTemplateDto, @Req() req: AuthenticatedRequest) {
     const createdById = req.user?.id;
     return this.templateService.createTemplate({ ...dto, createdById });
   }

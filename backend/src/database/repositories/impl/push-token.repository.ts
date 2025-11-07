@@ -45,7 +45,7 @@ export class PushTokenRepository extends BaseRepository<
     data: UpdatePushTokenDTO,
   ): Promise<void> {}
 
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: PushToken): Promise<void> {
     try {
       const entityData = entity.get();
       await this.cacheManager.delete(
@@ -59,7 +59,7 @@ export class PushTokenRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<PushTokenAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

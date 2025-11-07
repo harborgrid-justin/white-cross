@@ -10,6 +10,13 @@ import {
 } from './services';
 import { IAuditLogEntry, IPHIAccessLog } from './interfaces';
 import { AuditAction } from './enums';
+import {
+  AuditLogFilters,
+  AuditLogSearchCriteria,
+  PHIAccessLogFilters,
+  AuditRequest,
+  ValidationResult,
+} from './types';
 
 /**
  * Unified Audit Service Facade
@@ -68,7 +75,7 @@ export class AuditService {
   /**
    * Get audit logs with filtering and pagination
    */
-  async getAuditLogs(filters: any = {}) {
+  async getAuditLogs(filters: AuditLogFilters = {}) {
     return this.auditQueryService.getAuditLogs(filters);
   }
 
@@ -103,7 +110,7 @@ export class AuditService {
   /**
    * Search audit logs by keyword
    */
-  async searchAuditLogs(criteria: any) {
+  async searchAuditLogs(criteria: AuditLogSearchCriteria) {
     return this.auditQueryService.searchAuditLogs(criteria);
   }
 
@@ -129,7 +136,7 @@ export class AuditService {
   /**
    * Get PHI access logs with filtering and pagination
    */
-  async getPHIAccessLogs(filters: any = {}) {
+  async getPHIAccessLogs(filters: PHIAccessLogFilters = {}) {
     return this.phiAccessService.getPHIAccessLogs(filters);
   }
 
@@ -212,28 +219,28 @@ export class AuditService {
   /**
    * Validate audit log entry data
    */
-  validateAuditEntry(entry: any) {
+  validateAuditEntry(entry: Partial<IAuditLogEntry>): ValidationResult {
     return this.utilsService.validateAuditEntry(entry);
   }
 
   /**
    * Validate PHI access log entry
    */
-  validatePHIEntry(entry: any) {
+  validatePHIEntry(entry: Partial<IPHIAccessLog>): ValidationResult {
     return this.utilsService.validatePHIEntry(entry);
   }
 
   /**
    * Extract IP address from request object
    */
-  extractIPAddress(req: any) {
+  extractIPAddress(req: AuditRequest | string): string | undefined {
     return this.utilsService.extractIPAddress(req);
   }
 
   /**
    * Extract user agent from request object
    */
-  extractUserAgent(req: any) {
+  extractUserAgent(req: AuditRequest | string): string | undefined {
     return this.utilsService.extractUserAgent(req);
   }
 }

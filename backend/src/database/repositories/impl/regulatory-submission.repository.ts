@@ -47,7 +47,7 @@ export class RegulatorySubmissionRepository extends BaseRepository<
     data: UpdateRegulatorySubmissionDTO,
   ): Promise<void> {}
 
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: RegulatorySubmission): Promise<void> {
     try {
       const entityData = entity.get();
       await this.cacheManager.delete(
@@ -61,7 +61,7 @@ export class RegulatorySubmissionRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<RegulatorySubmissionAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

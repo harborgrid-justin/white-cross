@@ -47,6 +47,39 @@ import {
   MessageDeliveryDto,
 } from './dto';
 
+
+/**
+ * Alert data structure
+ */
+interface AlertData {
+  id?: string;
+  message: string;
+  severity?: string;
+  timestamp?: string;
+  [key: string]: unknown;
+}
+
+/**
+ * Notification data structure
+ */
+interface NotificationData {
+  id?: string;
+  title?: string;
+  message: string;
+  type?: string;
+  [key: string]: unknown;
+}
+
+/**
+ * Reminder data structure
+ */
+interface ReminderData {
+  id?: string;
+  message: string;
+  dueDate?: string;
+  [key: string]: unknown;
+}
+
 @Injectable()
 export class WebSocketService implements OnModuleDestroy {
   private readonly logger = new Logger(WebSocketService.name);
@@ -93,7 +126,7 @@ export class WebSocketService implements OnModuleDestroy {
    * @param data - The data payload to send
    * @throws Error if broadcast fails
    */
-  async broadcastToRoom(room: string, event: string, data: any): Promise<void> {
+  async broadcastToRoom(room: string, event: string, data: unknown): Promise<void> {
     try {
       const server = this.getServer();
 
@@ -128,7 +161,7 @@ export class WebSocketService implements OnModuleDestroy {
    */
   async broadcastEmergencyAlert(
     organizationId: string,
-    alert: any,
+    alert: AlertData,
   ): Promise<void> {
     try {
       const server = this.getServer();
@@ -171,7 +204,7 @@ export class WebSocketService implements OnModuleDestroy {
    * @param notification - The notification data
    * @throws Error if send fails
    */
-  async sendUserNotification(userId: string, notification: any): Promise<void> {
+  async sendUserNotification(userId: string, notification: NotificationData): Promise<void> {
     try {
       const server = this.getServer();
 
@@ -206,7 +239,7 @@ export class WebSocketService implements OnModuleDestroy {
    */
   async broadcastMedicationReminder(
     organizationId: string,
-    reminder: any,
+    reminder: ReminderData,
   ): Promise<void> {
     try {
       const server = this.getServer();
@@ -248,7 +281,7 @@ export class WebSocketService implements OnModuleDestroy {
    */
   async broadcastStudentHealthAlert(
     organizationId: string,
-    alert: any,
+    alert: AlertData,
   ): Promise<void> {
     try {
       const server = this.getServer();
@@ -292,7 +325,7 @@ export class WebSocketService implements OnModuleDestroy {
   async broadcastToRooms(
     rooms: string[],
     event: string,
-    data: any,
+    data: unknown,
   ): Promise<void> {
     try {
       const server = this.getServer();
@@ -349,7 +382,7 @@ export class WebSocketService implements OnModuleDestroy {
   async broadcastToSchool(
     schoolId: string,
     event: string,
-    data: any,
+    data: unknown,
   ): Promise<void> {
     await this.broadcastToRoom(`school:${schoolId}`, event, data);
   }
@@ -364,7 +397,7 @@ export class WebSocketService implements OnModuleDestroy {
   async broadcastToUser(
     userId: string,
     event: string,
-    data: any,
+    data: unknown,
   ): Promise<void> {
     await this.broadcastToRoom(`user:${userId}`, event, data);
   }
@@ -379,7 +412,7 @@ export class WebSocketService implements OnModuleDestroy {
   async broadcastToStudent(
     studentId: string,
     event: string,
-    data: any,
+    data: unknown,
   ): Promise<void> {
     await this.broadcastToRoom(`student:${studentId}`, event, data);
   }

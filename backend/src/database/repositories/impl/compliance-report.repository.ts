@@ -22,11 +22,11 @@ export class ComplianceReportRepository {
   }
 
   async create(data: Partial<ComplianceReport>): Promise<ComplianceReport> {
-    return this.complianceReportModel.create(data as any);
+    return this.complianceReportModel.create(data);
   }
 
   async update(id: string, data: Partial<ComplianceReport>): Promise<[number]> {
-    return this.complianceReportModel.update(data as any, {
+    return this.complianceReportModel.update(data, {
       where: { id },
     });
   }

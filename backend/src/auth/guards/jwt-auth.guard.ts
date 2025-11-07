@@ -1,12 +1,9 @@
-import {
-  Injectable,
-  ExecutionContext,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Reflector } from '@nestjs/core';
-import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
-import { TokenBlacklistService } from '../services/token-blacklist.service';
+import { IS_PUBLIC_KEY } from '@/auth/decorators';
+import { TokenBlacklistService } from '@/auth';
+import { SafeUser, DecodedToken, RequestWithAuth } from '@/auth/types';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
@@ -36,12 +33,11 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     }
 
     // Additional security check: verify token is not blacklisted
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<RequestWithAuth>();
     const token = this.extractTokenFromHeader(request);
 
     if (token) {
-      const isBlacklisted =
-        await this.tokenBlacklistService.isTokenBlacklisted(token);
+      const isBlacklisted = await this.tokenBlacklistService.isTokenBlacklisted(token);
 
       if (isBlacklisted) {
         throw new UnauthorizedException('Token has been revoked');
@@ -52,16 +48,13 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       if (user && user.id) {
         const tokenPayload = this.decodeToken(token);
         if (tokenPayload && tokenPayload.iat) {
-          const userTokensBlacklisted =
-            await this.tokenBlacklistService.areUserTokensBlacklisted(
-              user.id,
-              tokenPayload.iat,
-            );
+          const userTokensBlacklisted = await this.tokenBlacklistService.areUserTokensBlacklisted(
+            user.id,
+            tokenPayload.iat,
+          );
 
           if (userTokensBlacklisted) {
-            throw new UnauthorizedException(
-              'Session invalidated. Please login again.',
-            );
+            throw new UnauthorizedException('Session invalidated. Please login again.');
           }
         }
       }
@@ -70,21 +63,21 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     return true;
   }
 
-  handleRequest<TUser = any>(
-    err: any,
-    user: any,
-    info: any,
+  handleRequest<TUser = SafeUser>(
+    err: Error | null,
+    user: SafeUser | false,
+    info: Error | undefined,
     context: ExecutionContext,
-    status?: any,
+    status?: number,
   ): TUser {
     // You can throw an exception based on either "info" or "err" arguments
     if (err || !user) {
       throw err || new UnauthorizedException('Authentication required');
     }
-    return user;
+    return user as TUser;
   }
 
-  private extractTokenFromHeader(request: any): string | null {
+  private extractTokenFromHeader(request: RequestWithAuth): string | null {
     const authHeader = request.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return null;
@@ -92,11 +85,11 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     return authHeader.substring(7);
   }
 
-  private decodeToken(token: string): any {
+  private decodeToken(token: string): DecodedToken | null {
     try {
       const base64Payload = token.split('.')[1];
       const payload = Buffer.from(base64Payload, 'base64').toString();
-      return JSON.parse(payload);
+      return JSON.parse(payload) as DecodedToken;
     } catch {
       return null;
     }

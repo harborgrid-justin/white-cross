@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, literal } from 'sequelize';
-import { AuditLog } from '../../database/models/audit-log.model';
+import { AuditLog } from '@/database';
+import { ComplianceReport, PHIAccessSummary } from '../types';
 
 /**
  * ComplianceReportingService - HIPAA compliance reporting
@@ -26,7 +27,7 @@ export class ComplianceReportingService {
    * @param endDate - End date for the report period
    * @returns Promise with compliance report data
    */
-  async getComplianceReport(startDate: Date, endDate: Date): Promise<any> {
+  async getComplianceReport(startDate: Date, endDate: Date): Promise<ComplianceReport> {
     try {
       const phiLogs = await this.auditLogModel.findAll({
         where: {
@@ -39,20 +40,24 @@ export class ComplianceReportingService {
 
       const totalAccess = phiLogs.length;
       const failedAccess = phiLogs.filter(
-        (log) => log.changes?.['success'] === false,
+        (log) => log.changes && typeof log.changes === 'object' && 'success' in log.changes && log.changes['success'] === false
       ).length;
 
       // Group by access type
       const accessByType: Record<string, number> = {};
       phiLogs.forEach((log) => {
-        const type = log.changes?.['accessType'] || 'UNKNOWN';
+        const type = (log.changes && typeof log.changes === 'object' && 'accessType' in log.changes)
+          ? String(log.changes['accessType'])
+          : 'UNKNOWN';
         accessByType[type] = (accessByType[type] || 0) + 1;
       });
 
       // Group by data category
       const accessByCategory: Record<string, number> = {};
       phiLogs.forEach((log) => {
-        const category = log.changes?.['dataCategory'] || 'UNKNOWN';
+        const category = (log.changes && typeof log.changes === 'object' && 'dataCategory' in log.changes)
+          ? String(log.changes['dataCategory'])
+          : 'UNKNOWN';
         accessByCategory[category] = (accessByCategory[category] || 0) + 1;
       });
 
@@ -64,18 +69,16 @@ export class ComplianceReportingService {
         summary: {
           totalAccess,
           failedAccess,
-          successRate:
-            totalAccess > 0
-              ? ((totalAccess - failedAccess) / totalAccess) * 100
-              : 0,
+          successRate: totalAccess > 0 ? ((totalAccess - failedAccess) / totalAccess) * 100 : 0,
         },
         accessByType: Object.entries(accessByType).map(([type, count]) => ({
           type,
           count,
         })),
-        accessByCategory: Object.entries(accessByCategory).map(
-          ([category, count]) => ({ category, count }),
-        ),
+        accessByCategory: Object.entries(accessByCategory).map(([category, count]) => ({
+          category,
+          count,
+        })),
       };
     } catch (error) {
       this.logger.error('Error generating compliance report:', error);
@@ -90,7 +93,7 @@ export class ComplianceReportingService {
    * @param endDate - End date for the summary period
    * @returns Promise with PHI access summary data
    */
-  async getPHIAccessSummary(startDate: Date, endDate: Date): Promise<any> {
+  async getPHIAccessSummary(startDate: Date, endDate: Date): Promise<PHIAccessSummary> {
     try {
       const phiLogs = await this.auditLogModel.findAll({
         where: {
@@ -103,7 +106,7 @@ export class ComplianceReportingService {
 
       const totalAccess = phiLogs.length;
       const successfulAccess = phiLogs.filter(
-        (log) => log.changes?.['success'] !== false,
+        (log) => !(log.changes && typeof log.changes === 'object' && 'success' in log.changes && log.changes['success'] === false)
       ).length;
       const failedAccess = totalAccess - successfulAccess;
 
@@ -112,8 +115,7 @@ export class ComplianceReportingService {
         totalAccess,
         successfulAccess,
         failedAccess,
-        successRate:
-          totalAccess > 0 ? (successfulAccess / totalAccess) * 100 : 0,
+        successRate: totalAccess > 0 ? (successfulAccess / totalAccess) * 100 : 0,
       };
     } catch (error) {
       this.logger.error('Error generating PHI access summary:', error);

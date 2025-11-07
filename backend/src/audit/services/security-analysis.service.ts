@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, literal } from 'sequelize';
-import { AuditLog } from '../../database/models/audit-log.model';
+import { AuditLog } from '@/database';
+import { SuspiciousLoginDetection, SecurityReport } from '../types';
 
 /**
  * SecurityAnalysisService - Security monitoring and threat detection
@@ -26,7 +27,7 @@ export class SecurityAnalysisService {
    * @param endDate - End date for the analysis
    * @returns Promise with suspicious login patterns
    */
-  async detectSuspiciousLogins(startDate: Date, endDate: Date): Promise<any> {
+  async detectSuspiciousLogins(startDate: Date, endDate: Date): Promise<SuspiciousLoginDetection> {
     try {
       const failedLogins = await this.auditLogModel.findAll({
         where: {
@@ -34,10 +35,7 @@ export class SecurityAnalysisService {
             [Op.between]: [startDate, endDate],
           },
           action: 'LOGIN',
-          [Op.and]: [
-            literal(`changes->>'success' = 'false'`),
-            { ipAddress: { [Op.ne]: null } },
-          ],
+          [Op.and]: [literal(`changes->>'success' = 'false'`), { ipAddress: { [Op.ne]: null } }],
         },
         order: [['createdAt', 'DESC']],
       });
@@ -61,12 +59,7 @@ export class SecurityAnalysisService {
         period: { start: startDate, end: endDate },
         totalFailedLogins: failedLogins.length,
         suspiciousIPs,
-        riskLevel:
-          suspiciousIPs.length > 0
-            ? 'HIGH'
-            : failedLogins.length > 20
-              ? 'MEDIUM'
-              : 'LOW',
+        riskLevel: suspiciousIPs.length > 0 ? 'HIGH' : failedLogins.length > 20 ? 'MEDIUM' : 'LOW',
       };
     } catch (error) {
       this.logger.error('Error detecting suspicious logins:', error);
@@ -81,12 +74,9 @@ export class SecurityAnalysisService {
    * @param endDate - End date for the security analysis
    * @returns Promise with comprehensive security analysis
    */
-  async generateSecurityReport(startDate: Date, endDate: Date): Promise<any> {
+  async generateSecurityReport(startDate: Date, endDate: Date): Promise<SecurityReport> {
     try {
-      const suspiciousLogins = await this.detectSuspiciousLogins(
-        startDate,
-        endDate,
-      );
+      const suspiciousLogins = await this.detectSuspiciousLogins(startDate, endDate);
 
       let overallRiskScore = 0;
       if (suspiciousLogins.riskLevel === 'HIGH') overallRiskScore += 3;

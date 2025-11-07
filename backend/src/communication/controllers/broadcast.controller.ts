@@ -7,8 +7,10 @@ import {
   Query,
   UseGuards,
   Req,
+import { AuthenticatedRequest } from '../types';
 } from '@nestjs/common';
 import {
+import { CreateBroadcastDto } from '../dto/create-broadcast.dto';
   ApiTags,
   ApiOperation,
   ApiResponse,
@@ -18,7 +20,6 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { BroadcastService } from '../services/broadcast.service';
-import { CreateBroadcastDto } from '../dto/create-broadcast.dto';
 
 @ApiTags('Broadcasts')
 @ApiBearerAuth()
@@ -51,7 +52,7 @@ export class BroadcastController {
     },
   })
   @ApiResponse({ status: 400, description: 'Invalid audience or content' })
-  async createBroadcast(@Body() dto: CreateBroadcastDto, @Req() req: any) {
+  async createBroadcast(@Body() dto: CreateBroadcastDto, @Req() req: AuthenticatedRequest) {
     const senderId = req.user?.id;
     return this.broadcastService.createBroadcast({ ...dto, senderId });
   }
@@ -187,7 +188,7 @@ export class BroadcastController {
     status: 403,
     description: 'Not authorized to cancel this broadcast',
   })
-  async cancelBroadcast(@Param('id') id: string, @Req() req: any) {
+  async cancelBroadcast(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
     const userId = req.user?.id;
     return this.broadcastService.cancelBroadcast(id, userId);
   }
@@ -238,7 +239,7 @@ export class BroadcastController {
     status: 201,
     description: 'Broadcast scheduled successfully',
   })
-  async scheduleBroadcast(@Body() scheduleDto: any, @Req() req: any) {
+  async scheduleBroadcast(@Body() scheduleDto: Record<string, unknown>, @Req() req: AuthenticatedRequest) {
     const createdBy = req.user?.id;
     return this.broadcastService.scheduleBroadcast({
       ...scheduleDto,

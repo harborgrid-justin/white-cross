@@ -72,7 +72,7 @@ export class LabResultRepository extends BaseRepository<
         where: { studentId },
         order: [['testDate', 'DESC']],
       });
-      return results.map((r: any) => this.mapToEntity(r));
+      return results.map((r: LabResult) => this.mapToEntity(r));
     } catch (error) {
       this.logger.error('Error finding lab results by student:', error);
       throw new RepositoryError(
@@ -90,7 +90,7 @@ export class LabResultRepository extends BaseRepository<
         where: { studentId, isAbnormal: true },
         order: [['testDate', 'DESC']],
       });
-      return results.map((r: any) => this.mapToEntity(r));
+      return results.map((r: LabResult) => this.mapToEntity(r));
     } catch (error) {
       this.logger.error('Error finding abnormal lab results:', error);
       throw new RepositoryError(
@@ -111,7 +111,7 @@ export class LabResultRepository extends BaseRepository<
         where: { studentId, testName },
         order: [['testDate', 'DESC']],
       });
-      return results.map((r: any) => this.mapToEntity(r));
+      return results.map((r: LabResult) => this.mapToEntity(r));
     } catch (error) {
       this.logger.error('Error finding lab results by test name:', error);
       throw new RepositoryError(
@@ -134,7 +134,7 @@ export class LabResultRepository extends BaseRepository<
     // Validation logic
   }
 
-  protected async invalidateCaches(labResult: any): Promise<void> {
+  protected async invalidateCaches(labResult: LabResult): Promise<void> {
     try {
       const labResultData = labResult.get();
       await this.cacheManager.delete(
@@ -148,7 +148,7 @@ export class LabResultRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<LabResultAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({
       ...data,
       resultValue: '[PHI]',

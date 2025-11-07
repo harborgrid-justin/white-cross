@@ -28,6 +28,32 @@ import * as fs from 'fs/promises';
 import { promisify } from 'util';
 import { exec } from 'child_process';
 
+
+/**
+ * CPU information structure
+ */
+interface CpuInfo {
+  times: {
+    user: number;
+    nice: number;
+    sys: number;
+    idle: number;
+    irq: number;
+  };
+  [key: string]: unknown;
+}
+
+/**
+ * Network statistics structure
+ */
+interface NetworkStats {
+  [interface: string]: {
+    rx_bytes?: number;
+    tx_bytes?: number;
+    [key: string]: unknown;
+  };
+}
+
 const execAsync = promisify(exec);
 
 /**
@@ -114,8 +140,8 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(AdminMetricsService.name);
   private isEnabled = false;
   private metricsInterval: NodeJS.Timeout | null = null;
-  private previousCpuInfo: any = null;
-  private previousNetworkStats: any = null;
+  private previousCpuInfo: CpuInfo | null = null;
+  private previousNetworkStats: NetworkStats | null = null;
 
   // Metrics storage for trends
   private metricsHistory: SystemMetrics[] = [];

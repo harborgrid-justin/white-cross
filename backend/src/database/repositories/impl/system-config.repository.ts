@@ -46,7 +46,7 @@ export class SystemConfigRepository extends BaseRepository<
     data: UpdateSystemConfigDTO,
   ): Promise<void> {}
 
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: SystemConfig): Promise<void> {
     try {
       const entityData = entity.get();
       await this.cacheManager.delete(
@@ -60,7 +60,7 @@ export class SystemConfigRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<SystemConfigAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

@@ -1,11 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import {
-  AuditLog,
-  ComplianceType,
-  AuditSeverity,
-} from '../../database/models/audit-log.model';
-import { IAuditLogEntry } from '../interfaces';
+import { AuditLog, ComplianceType, AuditSeverity, AuditAction } from '@/database';
+import { IAuditLogEntry } from '@/audit';
 
 /**
  * AuditLogService - Core audit logging functionality
@@ -37,7 +33,7 @@ export class AuditLogService {
     try {
       await this.auditLogModel.create({
         userId: entry.userId || null,
-        action: entry.action as any,
+        action: entry.action as AuditAction,
         entityType: entry.entityType,
         entityId: entry.entityId || null,
         changes: {

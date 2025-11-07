@@ -24,14 +24,14 @@ export class ComplianceViolationRepository {
   async create(
     data: Partial<ComplianceViolation>,
   ): Promise<ComplianceViolation> {
-    return this.complianceViolationModel.create(data as any);
+    return this.complianceViolationModel.create(data);
   }
 
   async update(
     id: string,
     data: Partial<ComplianceViolation>,
   ): Promise<[number]> {
-    return this.complianceViolationModel.update(data as any, {
+    return this.complianceViolationModel.update(data, {
       where: { id },
     });
   }

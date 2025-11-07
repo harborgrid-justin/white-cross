@@ -80,7 +80,7 @@ export class IncidentReportRepository extends BaseRepository<
         order: [['occurredAt', 'DESC']],
         ...options,
       });
-      return incidents.map((incident: any) => this.mapToEntity(incident));
+      return incidents.map((incident: IncidentReport) => this.mapToEntity(incident));
     } catch (error) {
       this.logger.error('Error finding incidents by student:', error);
       throw new RepositoryError(
@@ -105,7 +105,7 @@ export class IncidentReportRepository extends BaseRepository<
         order: [['occurredAt', 'DESC']],
         ...options,
       });
-      return incidents.map((incident: any) => this.mapToEntity(incident));
+      return incidents.map((incident: IncidentReport) => this.mapToEntity(incident));
     } catch (error) {
       this.logger.error('Error finding incidents by severity:', error);
       throw new RepositoryError(
@@ -135,7 +135,7 @@ export class IncidentReportRepository extends BaseRepository<
         order: [['occurredAt', 'DESC']],
         ...options,
       });
-      return incidents.map((incident: any) => this.mapToEntity(incident));
+      return incidents.map((incident: IncidentReport) => this.mapToEntity(incident));
     } catch (error) {
       this.logger.error('Error finding incidents by date range:', error);
       throw new RepositoryError(
@@ -155,7 +155,7 @@ export class IncidentReportRepository extends BaseRepository<
     data: UpdateIncidentReportDTO,
   ): Promise<void> {}
 
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: IncidentReport): Promise<void> {
     try {
       const entityData = entity.get();
       await this.cacheManager.delete(
@@ -169,7 +169,7 @@ export class IncidentReportRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<IncidentReportAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

@@ -72,7 +72,7 @@ export class HealthAssessmentRepository extends BaseRepository<
         where: { studentId },
         order: [['assessmentDate', 'DESC']],
       });
-      return assessments.map((a: any) => this.mapToEntity(a));
+      return assessments.map((a: HealthAssessment) => this.mapToEntity(a));
     } catch (error) {
       this.logger.error('Error finding health assessments by student:', error);
       throw new RepositoryError(
@@ -92,7 +92,7 @@ export class HealthAssessmentRepository extends BaseRepository<
         where: { assessmentType },
         order: [['assessmentDate', 'DESC']],
       });
-      return assessments.map((a: any) => this.mapToEntity(a));
+      return assessments.map((a: HealthAssessment) => this.mapToEntity(a));
     } catch (error) {
       this.logger.error('Error finding health assessments by type:', error);
       throw new RepositoryError(
@@ -112,7 +112,7 @@ export class HealthAssessmentRepository extends BaseRepository<
         where: { riskLevel },
         order: [['assessmentDate', 'DESC']],
       });
-      return assessments.map((a: any) => this.mapToEntity(a));
+      return assessments.map((a: HealthAssessment) => this.mapToEntity(a));
     } catch (error) {
       this.logger.error(
         'Error finding health assessments by risk level:',
@@ -140,7 +140,7 @@ export class HealthAssessmentRepository extends BaseRepository<
     // Validation logic
   }
 
-  protected async invalidateCaches(assessment: any): Promise<void> {
+  protected async invalidateCaches(assessment: HealthAssessment): Promise<void> {
     try {
       const assessmentData = assessment.get();
       await this.cacheManager.delete(
@@ -154,7 +154,7 @@ export class HealthAssessmentRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<HealthAssessmentAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({
       ...data,
       findings: '[PHI]',

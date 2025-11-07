@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/sequelize';
+import { DecodedToken } from '../types';
+import { UserCreationAttributes } from '../../database/models/user.model';
 import { JwtService } from '@nestjs/jwt';
 import { User, UserRole } from '../../database/models/user.model';
 import { OAuthProfile } from '../dto/oauth.dto';
@@ -159,7 +161,7 @@ export class OAuthService {
       oauthProvider: profile.provider,
       oauthProviderId: profile.id,
       profilePictureUrl: profile.picture,
-    } as any);
+    } as UserCreationAttributes);
 
     return user;
   }
@@ -209,14 +211,14 @@ export class OAuthService {
    * Decode JWT without verification (for development)
    * In production, always use proper token verification
    */
-  private decodeJwt(token: string): any {
+  private decodeJwt(token: string): DecodedToken | null {
     try {
       const parts = token.split('.');
       if (parts.length !== 3) {
         return null;
       }
       const payload = Buffer.from(parts[1], 'base64').toString('utf-8');
-      return JSON.parse(payload);
+      return JSON.parse(payload) as DecodedToken;
     } catch (error) {
       return null;
     }

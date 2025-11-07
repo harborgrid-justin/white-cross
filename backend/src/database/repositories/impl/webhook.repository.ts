@@ -46,7 +46,7 @@ export class WebhookRepository extends BaseRepository<
     data: UpdateWebhookDTO,
   ): Promise<void> {}
 
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: Webhook): Promise<void> {
     try {
       const entityData = entity.get();
       await this.cacheManager.delete(
@@ -60,7 +60,7 @@ export class WebhookRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<WebhookAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

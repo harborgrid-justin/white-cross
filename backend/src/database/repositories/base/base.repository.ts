@@ -25,6 +25,8 @@ import {
   Attributes,
   CreationAttributes,
   Op,
+  Order,
+  Includeable,
 } from 'sequelize';
 import {
   IRepository,
@@ -151,7 +153,7 @@ export abstract class BaseRepository<
 
       const { rows, count } = await this.model.findAndCountAll(findOptions);
 
-      const entities = rows.map((row: any) => this.mapToEntity(row));
+      const entities = rows.map((row: TModel) => this.mapToEntity(row));
 
       return {
         data: entities,
@@ -411,7 +413,7 @@ export abstract class BaseRepository<
     try {
       transaction = await this.model.sequelize!.transaction();
 
-      const results = await this.model.bulkCreate(data as any[], {
+      const results = await this.model.bulkCreate(data as Array<CreationAttributes<TModel>>, {
         transaction,
         validate: true,
         returning: true,
@@ -433,7 +435,7 @@ export abstract class BaseRepository<
         `Bulk created ${results.length} ${this.entityName} records`,
       );
 
-      return results.map((r: any) => this.mapToEntity(r));
+      return results.map((r: TModel) => this.mapToEntity(r));
     } catch (error) {
       if (transaction) {
         await transaction.rollback();
@@ -498,7 +500,7 @@ export abstract class BaseRepository<
   /**
    * Build include clause for relations
    */
-  protected buildIncludeClause(include: QueryOptions['include']): any[] {
+  protected buildIncludeClause(include: QueryOptions['include']): Includeable[] {
     if (!include) return [];
     return Object.keys(include).filter((key) => include[key]);
   }
@@ -514,12 +516,12 @@ export abstract class BaseRepository<
   /**
    * Build where clause from criteria
    */
-  protected buildWhereClause(where: any): WhereOptions {
+  protected buildWhereClause(where: Partial<TAttributes> | WhereOptions<TAttributes> | undefined): WhereOptions {
     if (!where) return {};
 
     // Handle complex where clauses (AND, OR, NOT)
     if (where.AND || where.OR || where.NOT) {
-      const clause: any = {};
+      const clause: WhereOptions<TModel> = {};
 
       if (where.AND) {
         clause[Op.and] = where.AND;
@@ -542,7 +544,7 @@ export abstract class BaseRepository<
   /**
    * Build order clause from criteria
    */
-  protected buildOrderClause(orderBy: any): any {
+  protected buildOrderClause(orderBy: Array<[keyof TAttributes, 'ASC' | 'DESC']> | Record<string, 'ASC' | 'DESC'> | undefined): Order {
     if (!orderBy) return [];
 
     if (Array.isArray(orderBy)) {
@@ -562,10 +564,10 @@ export abstract class BaseRepository<
    * Calculate changes between before and after states
    */
   protected calculateChanges(
-    before: any,
-    after: any,
-  ): Record<string, { before: any; after: any }> {
-    const changes: Record<string, { before: any; after: any }> = {};
+    before: Partial<TAttributes>,
+    after: Partial<TAttributes>,
+  ): Record<string, { before: Partial<TAttributes>; after: Partial<TAttributes> }> {
+    const changes: Record<string, { before: Partial<TAttributes>; after: Partial<TAttributes> }> = {};
 
     for (const key in after) {
       if (
@@ -619,7 +621,7 @@ export abstract class BaseRepository<
    * Sanitize data for audit logging
    * Removes sensitive fields that shouldn't be logged
    */
-  protected abstract sanitizeForAudit(data: any): any;
+  protected abstract sanitizeForAudit(data: Partial<TAttributes>): Record<string, unknown>;
 }
 
 // Export RepositoryError for use by concrete repositories

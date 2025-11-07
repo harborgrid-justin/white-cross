@@ -81,7 +81,7 @@ export class PolicyDocumentRepository extends BaseRepository<
     data: UpdatePolicyDocumentDTO,
   ): Promise<void> {}
 
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: PolicyDocument): Promise<void> {
     try {
       const entityData = entity.get();
       await this.cacheManager.delete(
@@ -95,7 +95,7 @@ export class PolicyDocumentRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<PolicyDocumentAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

@@ -27,6 +27,22 @@ import { WsException } from '@nestjs/websockets';
 import { AuthenticatedSocket, AuthPayload } from '../interfaces';
 import { TokenBlacklistService } from '../../../auth/services/token-blacklist.service';
 
+
+/**
+ * JWT payload structure
+ */
+interface JwtPayload {
+  sub?: string;
+  userId?: string;
+  id?: string;
+  organizationId?: string;
+  schoolId?: string;
+  districtId?: string;
+  role?: string;
+  email?: string;
+  [key: string]: unknown;
+}
+
 @Injectable()
 export class WsJwtAuthGuard implements CanActivate {
   private readonly logger = new Logger(WsJwtAuthGuard.name);
@@ -230,7 +246,7 @@ export class WsJwtAuthGuard implements CanActivate {
    * @param payload - The decoded JWT payload
    * @returns Structured AuthPayload for WebSocket use
    */
-  private mapToAuthPayload(payload: any): AuthPayload {
+  private mapToAuthPayload(payload: JwtPayload): AuthPayload {
     return {
       userId: payload.sub || payload.userId || payload.id,
       organizationId:

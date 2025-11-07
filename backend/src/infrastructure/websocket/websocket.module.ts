@@ -45,7 +45,7 @@
  * // In a service
  * constructor(private readonly websocketService: WebSocketService) {}
  *
- * async sendAlert(organizationId: string, alert: any) {
+ * async sendAlert(organizationId: string, alert: Record<string, unknown>) {
  *   await this.websocketService.broadcastEmergencyAlert(organizationId, alert);
  * }
  *

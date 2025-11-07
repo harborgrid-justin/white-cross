@@ -1,19 +1,27 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { DiscoveryService, Reflector } from '@nestjs/core';
+import {
+  PoolableResource,
+  ResourceFactory,
+  ResourceValidator,
+  DatabaseProviderMetadata,
+  ResourcePoolGlobalOptions,
+  QueueItem,
+} from '../types/resource.types';
 
 export interface PoolConfig {
   minSize: number;
   maxSize: number;
   resourceType: 'connection' | 'worker' | 'cache' | 'generic';
-  factory?: () => Promise<any>;
-  validation?: (resource: any) => boolean;
+  factory?: ResourceFactory;
+  validation?: ResourceValidator;
   idleTimeout?: number; // ms
   maxLifetime?: number; // ms
 }
 
 export interface PoolResource {
   id: string;
-  resource: any;
+  resource: PoolableResource;
   createdAt: number;
   lastUsed: number;
   inUse: boolean;
@@ -41,10 +49,11 @@ export interface PoolStats {
 export class DynamicResourcePoolService {
   private readonly logger = new Logger(DynamicResourcePoolService.name);
   private pools = new Map<string, ResourcePool>();
-  private databaseProviders = new Map<string, any>();
+  private databaseProviders = new Map<string, DatabaseProviderMetadata>();
 
   constructor(
-    @Inject('RESOURCE_POOL_OPTIONS') private readonly options: any,
+    @Inject('RESOURCE_POOL_OPTIONS')
+    private readonly options: ResourcePoolGlobalOptions,
     private readonly discoveryService: DiscoveryService,
     private readonly reflector: Reflector,
   ) {}
@@ -72,7 +81,10 @@ export class DynamicResourcePoolService {
   /**
    * Get a resource from the pool
    */
-  async getResource(poolName: string, timeout: number = 30000): Promise<any> {
+  async getResource(
+    poolName: string,
+    timeout: number = 30000,
+  ): Promise<PoolableResource> {
     const pool = this.pools.get(poolName);
     if (!pool) {
       throw new Error(`Pool ${poolName} not found`);
@@ -84,7 +96,10 @@ export class DynamicResourcePoolService {
   /**
    * Return a resource to the pool
    */
-  async releaseResource(poolName: string, resource: any): Promise<void> {
+  async releaseResource(
+    poolName: string,
+    resource: PoolableResource,
+  ): Promise<void> {
     const pool = this.pools.get(poolName);
     if (!pool) {
       throw new Error(`Pool ${poolName} not found`);
@@ -96,7 +111,10 @@ export class DynamicResourcePoolService {
   /**
    * Register a database provider for automatic pool management
    */
-  async registerDatabaseProvider(name: string, metadata: any): Promise<void> {
+  async registerDatabaseProvider(
+    name: string,
+    metadata: DatabaseProviderMetadata,
+  ): Promise<void> {
     this.databaseProviders.set(name, metadata);
 
     // Create a pool for the database provider
@@ -191,11 +209,7 @@ export class DynamicResourcePoolService {
  */
 class ResourcePool {
   private resources: PoolResource[] = [];
-  private waitingQueue: Array<{
-    resolve: (resource: any) => void;
-    reject: (error: Error) => void;
-    timeout: NodeJS.Timeout;
-  }> = [];
+  private waitingQueue: QueueItem<PoolableResource>[] = [];
   private stats = {
     totalCreated: 0,
     totalDestroyed: 0,
@@ -206,7 +220,7 @@ class ResourcePool {
   constructor(
     private readonly name: string,
     private readonly config: PoolConfig,
-    private readonly globalOptions: any,
+    private readonly globalOptions: ResourcePoolGlobalOptions,
   ) {}
 
   async initialize(): Promise<void> {
@@ -216,7 +230,7 @@ class ResourcePool {
     }
   }
 
-  async acquire(timeout: number): Promise<any> {
+  async acquire(timeout: number): Promise<PoolableResource> {
     const startTime = Date.now();
 
     // Try to find an available resource
@@ -239,7 +253,7 @@ class ResourcePool {
     }
 
     // Wait for a resource to become available
-    return new Promise((resolve, reject) => {
+    return new Promise<PoolableResource>((resolve, reject) => {
       const timeoutHandle = setTimeout(() => {
         const index = this.waitingQueue.findIndex(
           (item) => item.resolve === resolve,
@@ -253,7 +267,7 @@ class ResourcePool {
       }, timeout);
 
       this.waitingQueue.push({
-        resolve: (resource: any) => {
+        resolve: (resource: PoolableResource) => {
           clearTimeout(timeoutHandle);
           const waitTime = Date.now() - startTime;
           this.stats.totalWaitTime += waitTime;
@@ -269,7 +283,7 @@ class ResourcePool {
     });
   }
 
-  async release(resourceToRelease: any): Promise<void> {
+  async release(resourceToRelease: PoolableResource): Promise<void> {
     const poolResource = this.resources.find(
       (r) => r.resource === resourceToRelease,
     );
@@ -408,7 +422,7 @@ class ResourcePool {
 
   private async createResource(): Promise<PoolResource | null> {
     try {
-      let resource: any;
+      let resource: PoolableResource;
 
       if (this.config.factory) {
         resource = await this.config.factory();
@@ -436,14 +450,26 @@ class ResourcePool {
     }
   }
 
-  private createDefaultResource(): any {
+  private createDefaultResource(): PoolableResource {
     switch (this.config.resourceType) {
       case 'connection':
-        return { type: 'connection', id: Math.random().toString(36) };
+        return {
+          type: 'connection',
+          id: Math.random().toString(36),
+          connected: false,
+        };
       case 'worker':
-        return { type: 'worker', id: Math.random().toString(36) };
+        return {
+          type: 'worker',
+          id: Math.random().toString(36),
+          busy: false,
+        };
       case 'cache':
-        return new Map();
+        return {
+          type: 'cache',
+          id: Math.random().toString(36),
+          size: 0,
+        };
       default:
         return { type: 'generic', id: Math.random().toString(36) };
     }
@@ -456,12 +482,15 @@ class ResourcePool {
       this.stats.totalDestroyed++;
 
       // Custom cleanup if provided
+      const resource = poolResource.resource;
       if (
-        poolResource.resource &&
-        typeof poolResource.resource.destroy === 'function'
+        resource &&
+        typeof resource === 'object' &&
+        'destroy' in resource &&
+        typeof resource.destroy === 'function'
       ) {
         try {
-          await poolResource.resource.destroy();
+          await resource.destroy();
         } catch (error) {
           console.error(`Error destroying resource ${poolResource.id}:`, error);
         }

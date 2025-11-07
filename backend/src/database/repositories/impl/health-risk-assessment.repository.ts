@@ -47,7 +47,7 @@ export class HealthRiskAssessmentRepository extends BaseRepository<
     data: UpdateHealthRiskAssessmentDTO,
   ): Promise<void> {}
 
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: HealthRiskAssessment): Promise<void> {
     try {
       const entityData = entity.get();
       await this.cacheManager.delete(
@@ -61,7 +61,7 @@ export class HealthRiskAssessmentRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<HealthRiskAssessmentAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

@@ -87,7 +87,7 @@ export class RoleRepository extends BaseRepository<
         where: { level, isActive: true },
         order: [['name', 'ASC']],
       });
-      return roles.map((r: any) => this.mapToEntity(r));
+      return roles.map((r: Role) => this.mapToEntity(r));
     } catch (error) {
       this.logger.error('Error finding roles by level:', error);
       throw new RepositoryError(
@@ -108,7 +108,7 @@ export class RoleRepository extends BaseRepository<
           ['name', 'ASC'],
         ],
       });
-      return roles.map((r: any) => this.mapToEntity(r));
+      return roles.map((r: Role) => this.mapToEntity(r));
     } catch (error) {
       this.logger.error('Error finding system roles:', error);
       throw new RepositoryError(
@@ -138,7 +138,7 @@ export class RoleRepository extends BaseRepository<
         ],
       });
 
-      const entities = roles.map((r: any) => this.mapToEntity(r));
+      const entities = roles.map((r: Role) => this.mapToEntity(r));
       await this.cacheManager.set(cacheKey, entities, 3600);
       return entities;
     } catch (error) {
@@ -193,7 +193,7 @@ export class RoleRepository extends BaseRepository<
     }
   }
 
-  protected async invalidateCaches(role: any): Promise<void> {
+  protected async invalidateCaches(role: Role): Promise<void> {
     try {
       const roleData = role.get();
       await this.cacheManager.delete(
@@ -217,7 +217,7 @@ export class RoleRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<RoleAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

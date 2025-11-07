@@ -55,7 +55,7 @@ export class HealthScreeningRepository extends BaseRepository<
   CreateHealthScreeningDTO
 > {
   constructor(
-    @InjectModel(HealthScreening) model: any,
+    @InjectModel(HealthScreening) model: typeof HealthScreening,
     @Inject('IAuditLogger') auditLogger: IAuditLogger,
     @Inject('ICacheManager') cacheManager: ICacheManager,
   ) {
@@ -68,7 +68,7 @@ export class HealthScreeningRepository extends BaseRepository<
         where: { studentId },
         order: [['screeningDate', 'DESC']],
       });
-      return screenings.map((s: any) => this.mapToEntity(s));
+      return screenings.map((s: Student) => this.mapToEntity(s));
     } catch (error) {
       this.logger.error('Error finding health screenings by student:', error);
       throw new RepositoryError(
@@ -88,7 +88,7 @@ export class HealthScreeningRepository extends BaseRepository<
         where: { screeningType },
         order: [['screeningDate', 'DESC']],
       });
-      return screenings.map((s: any) => this.mapToEntity(s));
+      return screenings.map((s: Student) => this.mapToEntity(s));
     } catch (error) {
       this.logger.error('Error finding health screenings by type:', error);
       throw new RepositoryError(
@@ -106,7 +106,7 @@ export class HealthScreeningRepository extends BaseRepository<
         where: { followUpRequired: true },
         order: [['screeningDate', 'ASC']],
       });
-      return screenings.map((s: any) => this.mapToEntity(s));
+      return screenings.map((s: Student) => this.mapToEntity(s));
     } catch (error) {
       this.logger.error('Error finding screenings requiring follow-up:', error);
       throw new RepositoryError(
@@ -131,7 +131,7 @@ export class HealthScreeningRepository extends BaseRepository<
     // Validation logic
   }
 
-  protected async invalidateCaches(screening: any): Promise<void> {
+  protected async invalidateCaches(screening: HealthScreening): Promise<void> {
     try {
       const screeningData = screening.get();
       await this.cacheManager.delete(
@@ -145,7 +145,7 @@ export class HealthScreeningRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<HealthScreeningAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

@@ -374,7 +374,7 @@ export class SentryService implements OnModuleInit {
   /**
    * Recursively sanitize values to remove PHI
    */
-  private sanitizeValue(value: any): any {
+  private sanitizeValue(value: unknown): unknown {
     if (value === null || value === undefined) return value;
 
     if (typeof value === 'string') {
@@ -386,7 +386,7 @@ export class SentryService implements OnModuleInit {
     }
 
     if (typeof value === 'object') {
-      const sanitized: any = {};
+      const sanitized: Record<string, unknown> = {};
       const sensitiveFields = [
         'password',
         'ssn',

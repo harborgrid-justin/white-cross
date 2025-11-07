@@ -39,6 +39,40 @@ import { ContactType as DomainContactType } from '../../../contact/enums/contact
 import { Contact } from '../../../database/models/contact.model';
 import type { GraphQLContext } from '../types/context.interface';
 
+
+/**
+ * GraphQL context structure
+ */
+interface GraphQLContext {
+  req?: {
+    user?: {
+      userId: string;
+      organizationId: string;
+      role: string;
+      [key: string]: unknown;
+    };
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+
+/**
+ * GraphQL context structure
+ */
+interface GraphQLContext {
+  req?: {
+    user?: {
+      userId: string;
+      organizationId: string;
+      role: string;
+      [key: string]: unknown;
+    };
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
 /**
  * Contact Resolver
  * Handles all GraphQL operations for contacts
@@ -146,10 +180,10 @@ export class ContactResolver {
     orderDirection: string,
     @Args('filters', { type: () => ContactFilterInputDto, nullable: true })
     filters?: ContactFilterInputDto,
-    @Context() context?: any,
+    @Context() context?: GraphQLContext,
   ): Promise<ContactListResponseDto> {
     // Convert filters to service format
-    const serviceFilters: any = {};
+    const serviceFilters: Record<string, unknown> = {};
     if (filters) {
       if (filters.type) serviceFilters.type = filters.type;
       if (filters.types) serviceFilters.type = filters.types;
@@ -192,7 +226,7 @@ export class ContactResolver {
   )
   async getContact(
     @Args('id', { type: () => ID }) id: string,
-    @Context() context?: any,
+    @Context() context?: GraphQLContext,
   ): Promise<ContactDto | null> {
     const contact = await this.contactService.getContactById(id);
     if (!contact) {
@@ -219,7 +253,7 @@ export class ContactResolver {
   async getContactsByRelation(
     @Args('relationTo', { type: () => ID }) relationTo: string,
     @Args('type', { type: () => String, nullable: true }) type?: string,
-    @Context() context?: any,
+    @Context() context?: GraphQLContext,
   ): Promise<ContactDto[]> {
     const contacts = await this.contactService.getContactsByRelation(
       relationTo,
@@ -245,7 +279,7 @@ export class ContactResolver {
   async searchContacts(
     @Args('query', { type: () => String }) query: string,
     @Args('limit', { type: () => Number, defaultValue: 10 }) limit: number,
-    @Context() context?: any,
+    @Context() context?: GraphQLContext,
   ): Promise<ContactDto[]> {
     const contacts = await this.contactService.searchContacts(query, limit);
     return contacts.map((contact) => this.mapContactToDto(contact));
@@ -259,7 +293,7 @@ export class ContactResolver {
   @Query(() => ContactStatsDto, { name: 'contactStats' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
   @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN)
-  async getContactStats(@Context() context?: any): Promise<ContactStatsDto> {
+  async getContactStats(@Context() context?: GraphQLContext): Promise<ContactStatsDto> {
     return await this.contactService.getContactStats();
   }
 
@@ -278,7 +312,7 @@ export class ContactResolver {
   )
   async createContact(
     @Args('input') input: ContactInputDto,
-    @Context() context: any,
+    @Context() context: GraphQLContext,
   ): Promise<ContactDto> {
     const userId = context.req?.user?.id;
     const transformedInput = {
@@ -306,7 +340,7 @@ export class ContactResolver {
   async updateContact(
     @Args('id', { type: () => ID }) id: string,
     @Args('input') input: ContactUpdateInputDto,
-    @Context() context: any,
+    @Context() context: GraphQLContext,
   ): Promise<ContactDto> {
     const userId = context.req?.user?.id;
     const transformedInput = {
@@ -333,7 +367,7 @@ export class ContactResolver {
   @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN)
   async deleteContact(
     @Args('id', { type: () => ID }) id: string,
-    @Context() context?: any,
+    @Context() context?: GraphQLContext,
   ): Promise<DeleteResponseDto> {
     await this.contactService.deleteContact(id);
     return {
@@ -357,7 +391,7 @@ export class ContactResolver {
   )
   async deactivateContact(
     @Args('id', { type: () => ID }) id: string,
-    @Context() context: any,
+    @Context() context: GraphQLContext,
   ): Promise<ContactDto> {
     const userId = context.req?.user?.id;
     const contact = await this.contactService.deactivateContact(id, userId);
@@ -380,7 +414,7 @@ export class ContactResolver {
   )
   async reactivateContact(
     @Args('id', { type: () => ID }) id: string,
-    @Context() context: any,
+    @Context() context: GraphQLContext,
   ): Promise<ContactDto> {
     const userId = context.req?.user?.id;
     const contact = await this.contactService.reactivateContact(id, userId);

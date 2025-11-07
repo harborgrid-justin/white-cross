@@ -1,8 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, literal } from 'sequelize';
-import { AuditLog } from '../../database/models/audit-log.model';
-import { IPHIAccessLog, IPaginatedResult } from '../interfaces';
+import { Op, literal, WhereOptions } from 'sequelize';
+import { AuditLog, AuditAction } from '@/database';
+import { IPHIAccessLog, IPaginatedResult } from '@/audit';
+import { PHIAccessLogFilters } from '../types';
 
 /**
  * PHIAccessService - HIPAA compliant PHI access logging
@@ -31,7 +32,7 @@ export class PHIAccessService {
     try {
       await this.auditLogModel.create({
         userId: entry.userId || null,
-        action: entry.action as any,
+        action: entry.action as AuditAction,
         entityType: entry.entityType,
         entityId: entry.entityId || null,
         changes: {
@@ -45,7 +46,7 @@ export class PHIAccessService {
         },
         ipAddress: entry.ipAddress || null,
         userAgent: entry.userAgent || null,
-      } as any);
+      });
 
       this.logger.log(
         `PHI Access: ${entry.accessType} ${entry.dataCategory} for student ${entry.studentId} by user ${entry.userId || 'SYSTEM'}`,
@@ -62,18 +63,7 @@ export class PHIAccessService {
    * @param filters - Filter criteria for PHI access logs
    * @returns Promise with paginated PHI access logs
    */
-  async getPHIAccessLogs(
-    filters: {
-      userId?: string;
-      studentId?: string;
-      accessType?: string;
-      dataCategory?: string;
-      startDate?: Date;
-      endDate?: Date;
-      page?: number;
-      limit?: number;
-    } = {},
-  ): Promise<IPaginatedResult<AuditLog>> {
+  async getPHIAccessLogs(filters: PHIAccessLogFilters = {}): Promise<IPaginatedResult<AuditLog>> {
     try {
       const {
         userId,
@@ -87,7 +77,7 @@ export class PHIAccessService {
       } = filters;
       const skip = (page - 1) * limit;
 
-      const whereClause: any = {
+      const whereClause: WhereOptions<AuditLog> & { [Op.and]?: Array<ReturnType<typeof literal>> } = {
         [Op.and]: [literal(`changes->>'isPHIAccess' = 'true'`)],
       };
 
@@ -96,21 +86,15 @@ export class PHIAccessService {
       }
 
       if (studentId) {
-        whereClause[Op.and].push(
-          literal(`changes->>'studentId' = '${studentId}'`),
-        );
+        whereClause[Op.and]!.push(literal(`changes->>'studentId' = '${studentId}'`));
       }
 
       if (accessType) {
-        whereClause[Op.and].push(
-          literal(`changes->>'accessType' = '${accessType}'`),
-        );
+        whereClause[Op.and]!.push(literal(`changes->>'accessType' = '${accessType}'`));
       }
 
       if (dataCategory) {
-        whereClause[Op.and].push(
-          literal(`changes->>'dataCategory' = '${dataCategory}'`),
-        );
+        whereClause[Op.and]!.push(literal(`changes->>'dataCategory' = '${dataCategory}'`));
       }
 
       if (startDate) {
@@ -121,13 +105,12 @@ export class PHIAccessService {
         whereClause.createdAt = { ...whereClause.createdAt, [Op.lte]: endDate };
       }
 
-      const { rows: data, count: total } =
-        await this.auditLogModel.findAndCountAll({
-          where: whereClause,
-          order: [['createdAt', 'DESC']],
-          offset: skip,
-          limit,
-        });
+      const { rows: data, count: total } = await this.auditLogModel.findAndCountAll({
+        where: whereClause,
+        order: [['createdAt', 'DESC']],
+        offset: skip,
+        limit,
+      });
 
       return {
         data,

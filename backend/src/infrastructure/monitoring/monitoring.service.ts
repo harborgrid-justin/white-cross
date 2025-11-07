@@ -32,6 +32,26 @@ import {
   LogQueryParams,
 } from './interfaces/metrics.interface';
 
+
+/**
+ * Service interfaces for optional dependencies
+ */
+interface CacheServiceInterface {
+  getStats?(): Promise<Record<string, unknown>>;
+}
+
+interface WebSocketServiceInterface {
+  getStats?(): Record<string, unknown>;
+}
+
+interface MessageQueueServiceInterface {
+  getStats?(): Record<string, unknown>;
+}
+
+interface CircuitBreakerServiceInterface {
+  getStats?(): Record<string, unknown>;
+}
+
 /**
  * MonitoringService
  *
@@ -109,10 +129,10 @@ export class MonitoringService implements OnModuleInit {
   private lastMetrics?: MetricsSnapshot;
 
   // Service dependencies (optional - injected if available)
-  private cacheService?: any;
-  private websocketService?: any;
-  private queueManagerService?: any;
-  private circuitBreakerService?: any;
+  private cacheService?: CacheServiceInterface;
+  private websocketService?: WebSocketServiceInterface;
+  private queueManagerService?: MessageQueueServiceInterface;
+  private circuitBreakerService?: CircuitBreakerServiceInterface;
 
   constructor(
     @InjectConnection()
@@ -141,22 +161,22 @@ export class MonitoringService implements OnModuleInit {
   /**
    * Inject optional service dependencies
    */
-  setCacheService(cacheService: any): void {
+  setCacheService(cacheService: CacheServiceInterface | undefined): void {
     this.cacheService = cacheService;
     this.logger.log('Cache service registered for monitoring');
   }
 
-  setWebSocketService(websocketService: any): void {
+  setWebSocketService(websocketService: WebSocketServiceInterface | undefined): void {
     this.websocketService = websocketService;
     this.logger.log('WebSocket service registered for monitoring');
   }
 
-  setQueueManagerService(queueManagerService: any): void {
+  setQueueManagerService(queueManagerService: MessageQueueServiceInterface | undefined): void {
     this.queueManagerService = queueManagerService;
     this.logger.log('Queue manager service registered for monitoring');
   }
 
-  setCircuitBreakerService(circuitBreakerService: any): void {
+  setCircuitBreakerService(circuitBreakerService: CircuitBreakerServiceInterface | undefined): void {
     this.circuitBreakerService = circuitBreakerService;
     this.logger.log('Circuit breaker service registered for monitoring');
   }
@@ -395,7 +415,7 @@ export class MonitoringService implements OnModuleInit {
       let totalFailed = 0;
       let totalDelayed = 0;
 
-      Object.values(allStats).forEach((stats: any) => {
+      Object.values(allStats).forEach((stats: Record<string, unknown>) => {
         totalWaiting += stats.waiting;
         totalActive += stats.active;
         totalCompleted += stats.completed;
@@ -715,7 +735,7 @@ export class MonitoringService implements OnModuleInit {
     if (this.queueManagerService) {
       try {
         const allStats = await this.queueManagerService.getAllQueueStats();
-        Object.values(allStats).forEach((stats: any) => {
+        Object.values(allStats).forEach((stats: Record<string, unknown>) => {
           queueMetrics.waitingJobs += stats.waiting;
           queueMetrics.activeJobs += stats.active;
           queueMetrics.completedJobs += stats.completed;

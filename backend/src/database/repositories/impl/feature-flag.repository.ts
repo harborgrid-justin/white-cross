@@ -45,7 +45,7 @@ export class FeatureFlagRepository extends BaseRepository<
     data: UpdateFeatureFlagDTO,
   ): Promise<void> {}
 
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: FeatureFlag): Promise<void> {
     try {
       const entityData = entity.get();
       await this.cacheManager.delete(
@@ -59,7 +59,7 @@ export class FeatureFlagRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<FeatureFlagAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

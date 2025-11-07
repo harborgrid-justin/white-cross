@@ -73,7 +73,7 @@ export class ClinicVisitRepository extends BaseRepository<
         where: { studentId },
         order: [['visitDate', 'DESC']],
       });
-      return visits.map((v: any) => this.mapToEntity(v));
+      return visits.map((v: ClinicVisit) => this.mapToEntity(v));
     } catch (error) {
       this.logger.error('Error finding clinic visits by student:', error);
       throw new RepositoryError(
@@ -91,7 +91,7 @@ export class ClinicVisitRepository extends BaseRepository<
         where: { providerId },
         order: [['visitDate', 'DESC']],
       });
-      return visits.map((v: any) => this.mapToEntity(v));
+      return visits.map((v: ClinicVisit) => this.mapToEntity(v));
     } catch (error) {
       this.logger.error('Error finding clinic visits by provider:', error);
       throw new RepositoryError(
@@ -109,7 +109,7 @@ export class ClinicVisitRepository extends BaseRepository<
         where: { followUpRequired: true },
         order: [['followUpDate', 'ASC']],
       });
-      return visits.map((v: any) => this.mapToEntity(v));
+      return visits.map((v: ClinicVisit) => this.mapToEntity(v));
     } catch (error) {
       this.logger.error('Error finding visits requiring follow-up:', error);
       throw new RepositoryError(
@@ -132,7 +132,7 @@ export class ClinicVisitRepository extends BaseRepository<
     // Validation logic
   }
 
-  protected async invalidateCaches(visit: any): Promise<void> {
+  protected async invalidateCaches(visit: ClinicVisit): Promise<void> {
     try {
       const visitData = visit.get();
       await this.cacheManager.delete(
@@ -146,7 +146,7 @@ export class ClinicVisitRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<ClinicVisitAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({
       ...data,
       diagnosis: '[PHI]',

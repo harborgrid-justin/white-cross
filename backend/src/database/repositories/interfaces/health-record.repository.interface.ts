@@ -45,7 +45,7 @@ export interface HealthRecordAttributes {
   followUpDate?: Date;
   followUpNotes?: string;
   attachments?: string[];
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   status: HealthRecordStatus;
   createdAt: Date;
   updatedAt: Date;
@@ -64,7 +64,7 @@ export interface CreateHealthRecordData {
   followUpDate?: Date;
   followUpNotes?: string;
   attachments?: string[];
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface UpdateHealthRecordData {
@@ -76,7 +76,7 @@ export interface UpdateHealthRecordData {
   followUpDate?: Date;
   followUpNotes?: string;
   attachments?: string[];
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   status?: HealthRecordStatus;
 }
 

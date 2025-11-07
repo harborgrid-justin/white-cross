@@ -6,12 +6,13 @@ import {
 } from '../../database/models/integration-config.model';
 import { IntegrationConfigService } from './integration-config.service';
 import { IntegrationLogService } from './integration-log.service';
+import type { IntegrationTestDetails } from '../types';
 
 export interface IntegrationTestResult {
   success: boolean;
   message: string;
   responseTime?: number;
-  details?: any;
+  details?: IntegrationTestDetails;
 }
 
 /**
@@ -105,7 +106,7 @@ export class IntegrationTestService {
    * Mock implementation - in production, this would make real API calls
    */
   private async performConnectionTest(
-    integration: any,
+    integration: IntegrationConfig,
   ): Promise<IntegrationTestResult> {
     // Validate required fields
     if (!integration.endpoint && integration.type !== 'GOVERNMENT_REPORTING') {

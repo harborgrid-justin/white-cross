@@ -1,3 +1,5 @@
+import { RoleModel } from '../types';
+
 import {
   Injectable,
   CanActivate,
@@ -85,11 +87,11 @@ export class RolesGuard implements CanActivate {
       const userPermissions =
         await this.accessControlService.getUserPermissions(user.id);
       const userRoles = userPermissions.roles;
-      const userRoleNames = userRoles.map((role: any) => role.name);
+      const userRoleNames = userRoles.map((role: RoleModel) => role.name);
 
       // Check if user has at least one of the required roles
       const hasRequiredRole = requiredRoles.some((requiredRole) =>
-        userRoles.some((role: any) => role.name === requiredRole),
+        userRoles.some((role: RoleModel) => role.name === requiredRole),
       );
 
       const duration = Date.now() - startTime;

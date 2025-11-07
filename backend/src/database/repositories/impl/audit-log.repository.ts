@@ -33,7 +33,7 @@ export class AuditLogRepository extends BaseRepository<
   CreateAuditLogDTO
 > {
   constructor(
-    @InjectModel(AuditLog) model: any,
+    @InjectModel(AuditLog) model: typeof AuditLog,
     @Inject('IAuditLogger') auditLogger: IAuditLogger,
     @Inject('ICacheManager') cacheManager: ICacheManager,
   ) {
@@ -46,7 +46,7 @@ export class AuditLogRepository extends BaseRepository<
     data: UpdateAuditLogDTO,
   ): Promise<void> {}
 
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: AuditLog): Promise<void> {
     try {
       const entityData = entity.get();
       await this.cacheManager.delete(
@@ -60,7 +60,7 @@ export class AuditLogRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<AuditLogAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

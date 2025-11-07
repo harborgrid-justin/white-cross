@@ -161,11 +161,14 @@ export class SisApiClient extends BaseApiClient {
       const response = await this.get<SisStudentDto>(`/students/${sisId}`);
 
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
       // Return null for 404 (student not found)
-      if (error.response?.status === 404) {
-        this.logger.warn(`Student not found in SIS with ID: ${sisId}`);
-        return null;
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { status?: number } };
+        if (axiosError.response?.status === 404) {
+          this.logger.warn(`Student not found in SIS with ID: ${sisId}`);
+          return null;
+        }
       }
 
       // Re-throw other errors

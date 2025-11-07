@@ -1,3 +1,5 @@
+import { RequestWithConnection } from '../types';
+
 import {
   Injectable,
   CanActivate,
@@ -53,7 +55,7 @@ export class IpRestrictionGuard implements CanActivate {
   /**
    * Extract IP address from request, handling proxies
    */
-  private extractIpAddress(request: any): string | null {
+  private extractIpAddress(request: RequestWithConnection): string | null {
     // Check X-Forwarded-For header (for proxies/load balancers)
     const forwardedFor = request.headers['x-forwarded-for'];
     if (forwardedFor) {

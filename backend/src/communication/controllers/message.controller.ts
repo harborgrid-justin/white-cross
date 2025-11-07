@@ -10,6 +10,7 @@ import {
   HttpCode,
   HttpStatus,
   Req,
+import { AuthenticatedRequest } from '../types';
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -63,7 +64,7 @@ export class MessageController {
   })
   @ApiResponse({ status: 400, description: 'Invalid input data' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async sendMessage(@Body() dto: SendMessageDto, @Req() req: any) {
+  async sendMessage(@Body() dto: SendMessageDto, @Req() req: AuthenticatedRequest) {
     const senderId = req.user?.id;
     return this.messageService.sendMessage({ ...dto, senderId });
   }
@@ -163,7 +164,7 @@ export class MessageController {
   async getInbox(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 20,
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
   ) {
     const userId = req.user?.id;
     return this.messageService.getInbox(userId, page, limit);
@@ -183,7 +184,7 @@ export class MessageController {
   async getSentMessages(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 20,
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
   ) {
     const userId = req.user?.id;
     return this.messageService.getSentMessages(userId, page, limit);
@@ -293,7 +294,7 @@ export class MessageController {
   async replyToMessage(
     @Param('id') id: string,
     @Body() replyDto: { content: string; channels?: string[] },
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
   ) {
     const senderId = req.user?.id;
     return this.messageService.replyToMessage(id, senderId, replyDto);
@@ -316,7 +317,7 @@ export class MessageController {
     description: 'Not authorized to delete this message',
   })
   @ApiResponse({ status: 404, description: 'Message not found' })
-  async deleteMessage(@Param('id') id: string, @Req() req: any) {
+  async deleteMessage(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
     const userId = req.user?.id;
     await this.messageService.deleteScheduledMessage(id, userId);
   }

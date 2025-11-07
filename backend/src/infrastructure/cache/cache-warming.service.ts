@@ -16,6 +16,16 @@ import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { CacheService } from './cache.service';
 import { CacheWarmingStrategy, CacheEvent } from './cache.interfaces';
 
+
+/**
+ * Cache miss event payload
+ */
+interface CacheMissPayload {
+  key?: string;
+  context?: string;
+  [key: string]: unknown;
+}
+
 /**
  * Cache warming service
  */
@@ -237,7 +247,7 @@ export class CacheWarmingService implements OnModuleInit {
    * @param payload - Cache event payload
    */
   @OnEvent(CacheEvent.MISS)
-  async handleCacheMiss(payload: any): Promise<void> {
+  async handleCacheMiss(payload: CacheMissPayload): Promise<void> {
     // Find lazy warming strategies
     for (const strategy of this.strategies.values()) {
       if (strategy.type === 'lazy') {

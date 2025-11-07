@@ -145,7 +145,7 @@ export interface FailedJobInfo {
   /**
    * Job data
    */
-  data: any;
+  data: unknown;
 
   /**
    * Error information

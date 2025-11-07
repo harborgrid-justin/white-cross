@@ -47,7 +47,7 @@ export class MessageTemplateRepository extends BaseRepository<
     data: UpdateMessageTemplateDTO,
   ): Promise<void> {}
 
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: MessageTemplate): Promise<void> {
     try {
       const entityData = entity.get();
       await this.cacheManager.delete(
@@ -61,7 +61,7 @@ export class MessageTemplateRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<MessageTemplateAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

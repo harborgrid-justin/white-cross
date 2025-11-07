@@ -37,7 +37,12 @@ export interface JobChainStep {
     | 'confirmation';
 
   /** Job data */
-  data: any;
+  data:
+    | SendMessageJobDto
+    | NotificationJobDto
+    | EncryptionJobDto
+    | IndexingJobDto
+    | DeliveryConfirmationJobDto;
 
   /** Job options (priority, delay, etc.) */
   options?: {
@@ -98,7 +103,7 @@ export interface MessageQueueContext {
   encrypted?: boolean;
   attachments?: string[];
   priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**

@@ -22,6 +22,14 @@ import { ConversationParticipant } from '../../database/models/conversation-part
 import { EncryptionService } from '../../infrastructure/encryption/encryption.service';
 import { MessageQueueService } from '../../infrastructure/queue/message-queue.service';
 import { QueueIntegrationHelper } from '../helpers/queue-integration.helper';
+import {
+  MessageOperationResult,
+  EditMessageResult,
+  MarkAsReadResult,
+  MessageHistoryResult,
+  MessageSearchResult,
+  UnreadCountResult,
+} from '../types';
 import { SendDirectMessageDto } from '../dto/send-direct-message.dto';
 import { SendGroupMessageDto } from '../dto/send-group-message.dto';
 import { EditMessageDto } from '../dto/edit-message.dto';
@@ -154,7 +162,7 @@ export class EnhancedMessageService {
       threadId,
       metadata: dto.metadata || {},
       isEdited: false,
-    } as any);
+    });
 
     // Update conversation's last message timestamp
     await conversation.update({ lastMessageAt: new Date() });
@@ -276,7 +284,7 @@ export class EnhancedMessageService {
         mentions: dto.mentions || [],
       },
       isEdited: false,
-    } as any);
+    });
 
     // Update conversation's last message timestamp
     await conversation.update({ lastMessageAt: new Date() });
@@ -422,7 +430,7 @@ export class EnhancedMessageService {
    * @param userId - ID of the user marking messages as read
    * @returns Number of messages marked as read
    */
-  async markMessagesAsRead(dto: MarkAsReadDto, userId: string): Promise<any> {
+  async markMessagesAsRead(dto: MarkAsReadDto, userId: string): Promise<MarkAsReadResult> {
     this.logger.log(
       `Marking ${dto.messageIds.length} messages as read for user ${userId}`,
     );
@@ -482,7 +490,7 @@ export class EnhancedMessageService {
 
     // Filter messages that haven't been read yet
     const unreadMessages = messages.filter(
-      (m: any) => !m.messageReads || m.messageReads.length === 0,
+      (m: Message) => !m.messageReads || m.messageReads.length === 0,
     );
 
     // Mark all as read
@@ -491,7 +499,7 @@ export class EnhancedMessageService {
         messageId: message.id,
         userId,
         readAt: new Date(),
-      } as any),
+      }),
     );
 
     await Promise.all(readPromises);
@@ -679,7 +687,7 @@ export class EnhancedMessageService {
    * @param conversationId - Optional: get count for specific conversation
    * @returns Unread count by conversation
    */
-  async getUnreadCount(userId: string, conversationId?: string): Promise<any> {
+  async getUnreadCount(userId: string, conversationId?: string): Promise<UnreadCountResult> {
     this.logger.log(`Getting unread count for user ${userId}`);
 
     const where: WhereOptions = {
@@ -718,7 +726,7 @@ export class EnhancedMessageService {
     const unreadByConversation: Record<string, number> = {};
     let totalUnread = 0;
 
-    messages.forEach((message: any) => {
+    messages.forEach((message: Message & { messageReads?: unknown[] }) => {
       const isRead = message.messageReads && message.messageReads.length > 0;
       if (!isRead) {
         const convId = message.conversationId;
@@ -781,7 +789,7 @@ export class EnhancedMessageService {
       createdById: userId1,
       isArchived: false,
       metadata: {},
-    } as any);
+    });
 
     // Add both users as participants
     await Promise.all([
@@ -793,7 +801,7 @@ export class EnhancedMessageService {
         isMuted: false,
         isPinned: false,
         notificationPreference: 'ALL',
-      } as any),
+      }),
       this.participantModel.create({
         conversationId: conversation.id,
         userId: userId2,
@@ -802,7 +810,7 @@ export class EnhancedMessageService {
         isMuted: false,
         isPinned: false,
         notificationPreference: 'ALL',
-      } as any),
+      }),
     ]);
 
     return conversation;

@@ -85,7 +85,7 @@ export class VitalSignsRepository extends BaseRepository<
         order: [['measurementDate', 'DESC']],
         limit,
       });
-      return vitalSigns.map((v: any) => this.mapToEntity(v));
+      return vitalSigns.map((v: ClinicVisit) => this.mapToEntity(v));
     } catch (error) {
       this.logger.error('Error finding vital signs by student:', error);
       throw new RepositoryError(
@@ -110,7 +110,7 @@ export class VitalSignsRepository extends BaseRepository<
         },
         order: [['measurementDate', 'ASC']],
       });
-      return vitalSigns.map((v: any) => this.mapToEntity(v));
+      return vitalSigns.map((v: ClinicVisit) => this.mapToEntity(v));
     } catch (error) {
       this.logger.error('Error finding vital signs by date range:', error);
       throw new RepositoryError(
@@ -133,7 +133,7 @@ export class VitalSignsRepository extends BaseRepository<
     // Validation logic
   }
 
-  protected async invalidateCaches(vitalSigns: any): Promise<void> {
+  protected async invalidateCaches(vitalSigns: VitalSigns): Promise<void> {
     try {
       const vitalSignsData = vitalSigns.get();
       await this.cacheManager.delete(
@@ -147,7 +147,7 @@ export class VitalSignsRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<VitalSignsAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

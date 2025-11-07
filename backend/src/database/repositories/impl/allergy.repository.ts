@@ -70,7 +70,7 @@ export class AllergyRepository extends BaseRepository<
           ['allergen', 'ASC'],
         ],
       });
-      return allergies.map((a: any) => this.mapToEntity(a));
+      return allergies.map((a: Allergy) => this.mapToEntity(a));
     } catch (error) {
       this.logger.error('Error finding allergies by student:', error);
       throw new RepositoryError(
@@ -91,7 +91,7 @@ export class AllergyRepository extends BaseRepository<
           ['allergen', 'ASC'],
         ],
       });
-      return allergies.map((a: any) => this.mapToEntity(a));
+      return allergies.map((a: Allergy) => this.mapToEntity(a));
     } catch (error) {
       this.logger.error('Error finding allergies by severity:', error);
       throw new RepositoryError(
@@ -112,7 +112,7 @@ export class AllergyRepository extends BaseRepository<
         },
         order: [['severity', 'DESC']],
       });
-      return allergies.map((a: any) => this.mapToEntity(a));
+      return allergies.map((a: Allergy) => this.mapToEntity(a));
     } catch (error) {
       this.logger.error('Error finding allergies by allergen:', error);
       throw new RepositoryError(
@@ -150,7 +150,7 @@ export class AllergyRepository extends BaseRepository<
     // Validation logic
   }
 
-  protected async invalidateCaches(allergy: any): Promise<void> {
+  protected async invalidateCaches(allergy: Allergy): Promise<void> {
     try {
       const allergyData = allergy.get();
       await this.cacheManager.delete(
@@ -164,7 +164,7 @@ export class AllergyRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<AllergyAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

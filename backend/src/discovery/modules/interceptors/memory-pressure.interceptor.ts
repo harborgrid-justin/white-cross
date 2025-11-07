@@ -51,7 +51,7 @@ export class MemoryPressureInterceptor implements NestInterceptor {
   async intercept(
     context: ExecutionContext,
     next: CallHandler,
-  ): Promise<Observable<any>> {
+  ): Promise<Observable<unknown>> {
     const handler = context.getHandler();
     const controllerClass = context.getClass();
 

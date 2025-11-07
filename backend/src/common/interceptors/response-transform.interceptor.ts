@@ -10,7 +10,6 @@ import {
   NestInterceptor,
   ExecutionContext,
   CallHandler,
-  HttpStatus,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -84,8 +83,10 @@ export class ResponseTransformInterceptor<T>
 
   /**
    * Check if response is already in standard format to avoid double-wrapping
+   * @param data - Response data to check
+   * @returns True if already formatted
    */
-  private isAlreadyFormatted(data: any): boolean {
+  private isAlreadyFormatted(data: unknown): boolean {
     if (!data || typeof data !== 'object') {
       return false;
     }

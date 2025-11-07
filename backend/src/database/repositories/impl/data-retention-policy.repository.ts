@@ -72,7 +72,7 @@ export class DataRetentionPolicyRepository extends BaseRepository<
     data: UpdateDataRetentionPolicyDTO,
   ): Promise<void> {}
 
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: DataRetentionPolicy): Promise<void> {
     try {
       const entityData = entity.get();
       await this.cacheManager.delete(
@@ -86,7 +86,7 @@ export class DataRetentionPolicyRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<DataRetentionPolicyAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

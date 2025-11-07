@@ -58,7 +58,7 @@ export class ImmunizationRepository extends BaseRepository<
   CreateImmunizationDTO
 > {
   constructor(
-    @InjectModel(Immunization) model: any,
+    @InjectModel(Immunization) model: typeof Immunization,
     @Inject('IAuditLogger') auditLogger: IAuditLogger,
     @Inject('ICacheManager') cacheManager: ICacheManager,
   ) {
@@ -71,7 +71,7 @@ export class ImmunizationRepository extends BaseRepository<
         where: { studentId },
         order: [['administeredDate', 'DESC']],
       });
-      return immunizations.map((i: any) => this.mapToEntity(i));
+      return immunizations.map((i: Immunization) => this.mapToEntity(i));
     } catch (error) {
       this.logger.error('Error finding immunizations by student:', error);
       throw new RepositoryError(
@@ -92,7 +92,7 @@ export class ImmunizationRepository extends BaseRepository<
         where: { studentId, vaccineName },
         order: [['dosageNumber', 'ASC']],
       });
-      return immunizations.map((i: any) => this.mapToEntity(i));
+      return immunizations.map((i: Immunization) => this.mapToEntity(i));
     } catch (error) {
       this.logger.error('Error finding immunizations by vaccine:', error);
       throw new RepositoryError(
@@ -119,7 +119,7 @@ export class ImmunizationRepository extends BaseRepository<
         },
         order: [['nextDueDate', 'ASC']],
       });
-      return immunizations.map((i: any) => this.mapToEntity(i));
+      return immunizations.map((i: Immunization) => this.mapToEntity(i));
     } catch (error) {
       this.logger.error('Error finding upcoming due immunizations:', error);
       throw new RepositoryError(
@@ -142,7 +142,7 @@ export class ImmunizationRepository extends BaseRepository<
     // Validation logic
   }
 
-  protected async invalidateCaches(immunization: any): Promise<void> {
+  protected async invalidateCaches(immunization: Immunization): Promise<void> {
     try {
       const immunizationData = immunization.get();
       await this.cacheManager.delete(
@@ -156,7 +156,7 @@ export class ImmunizationRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<ImmunizationAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

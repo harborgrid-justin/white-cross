@@ -102,7 +102,7 @@ export class WsLoggingInterceptor implements NestInterceptor {
    * @param data - The data object
    * @returns Array of top-level keys
    */
-  private getDataKeys(data: any): string[] {
+  private getDataKeys(data: unknown): string[] {
     if (!data || typeof data !== 'object') {
       return [];
     }

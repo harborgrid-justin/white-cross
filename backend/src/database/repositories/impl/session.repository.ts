@@ -98,7 +98,7 @@ export class SessionRepository extends BaseRepository<
         },
         order: [['lastActivityAt', 'DESC']],
       });
-      return sessions.map((s: any) => this.mapToEntity(s));
+      return sessions.map((s: Student) => this.mapToEntity(s));
     } catch (error) {
       this.logger.error('Error finding sessions by user:', error);
       throw new RepositoryError(
@@ -232,7 +232,7 @@ export class SessionRepository extends BaseRepository<
     // No validation needed for session updates
   }
 
-  protected async invalidateCaches(session: any): Promise<void> {
+  protected async invalidateCaches(session: Session): Promise<void> {
     try {
       const sessionData = session.get();
       await this.cacheManager.delete(
@@ -259,7 +259,7 @@ export class SessionRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<SessionAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({
       ...data,
       token: '[REDACTED]',

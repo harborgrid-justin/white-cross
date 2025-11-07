@@ -45,7 +45,7 @@ export class InventoryitemRepository extends BaseRepository<
     data: UpdateInventoryitemDTO,
   ): Promise<void> {}
 
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: InventoryItem): Promise<void> {
     try {
       const entityData = entity.get();
       await this.cacheManager.delete(
@@ -59,7 +59,7 @@ export class InventoryitemRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<InventoryItemAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-google-oauth20';
 import { ConfigService } from '@nestjs/config';
 import { OAuthProfile } from '../dto/oauth.dto';
+import { GooglePassportProfile } from '../types';
 
 /**
  * Google OAuth2 Strategy
@@ -46,19 +47,19 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   async validate(
     accessToken: string,
     refreshToken: string,
-    profile: any,
+    profile: GooglePassportProfile,
     done: VerifyCallback,
-  ): Promise<any> {
+  ): Promise<void> {
     try {
       const { id, emails, name, photos } = profile;
 
       const oauthProfile: OAuthProfile = {
         id,
-        email: emails[0]?.value,
+        email: emails?.[0]?.value || '',
         firstName: name?.givenName,
         lastName: name?.familyName,
         displayName: profile.displayName,
-        picture: photos[0]?.value,
+        picture: photos?.[0]?.value,
         provider: 'google',
       };
 
@@ -68,8 +69,8 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
 
       done(null, oauthProfile);
     } catch (error) {
-      this.logger.error(`Google OAuth validation failed: ${error.message}`);
-      done(error, false);
+      this.logger.error(`Google OAuth validation failed: ${(error as Error).message}`);
+      done(error as Error, undefined);
     }
   }
 }

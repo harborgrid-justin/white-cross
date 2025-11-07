@@ -60,7 +60,9 @@
       "Bash(npm run lint:*)",
       "Bash(git diff:*)",
       "Bash(find:*)",
-      "Bash(npm test:*)"
+      "Bash(npm test:*)",
+      "Bash(git checkout:*)",
+      "Bash(timeout 30 npm run build:*)"
     ],
     "deny": [],
     "ask": []

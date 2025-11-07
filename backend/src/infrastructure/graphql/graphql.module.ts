@@ -117,7 +117,7 @@ import {
           subscriptions: {
             'graphql-ws': {
               path: '/graphql',
-              onConnect: (context: any) => {
+              onConnect: (context: Record<string, unknown>) => {
                 const { connectionParams, extra } = context;
 
                 // Authenticate WebSocket connection
@@ -134,7 +134,7 @@ import {
                 // We just pass the token through context here
                 return { token };
               },
-              onDisconnect: (context: any) => {
+              onDisconnect: (context: Record<string, unknown>) => {
                 console.log('Client disconnected from GraphQL subscriptions');
               },
             },

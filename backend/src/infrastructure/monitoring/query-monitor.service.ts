@@ -22,6 +22,17 @@ import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize';
 import * as crypto from 'crypto';
 
+
+/**
+ * Query details for monitoring
+ */
+interface QueryDetails {
+  sql?: string;
+  type?: string;
+  table?: string;
+  [key: string]: unknown;
+}
+
 export interface QueryMetrics {
   querySignature: string;
   count: number;
@@ -57,7 +68,7 @@ export interface PerformanceAlert {
   type: 'slow_query' | 'n1_detected' | 'performance_degradation' | 'high_query_rate';
   severity: 'info' | 'warning' | 'critical';
   message: string;
-  details: any;
+  details: QueryDetails;
   timestamp: Date;
 }
 
@@ -137,12 +148,12 @@ export class QueryMonitorService implements OnModuleInit, OnModuleDestroy {
     this.isMonitoring = true;
 
     // Hook into Sequelize query lifecycle
-    this.sequelize.addHook('beforeQuery', (options: any, query: any) => {
+    this.sequelize.addHook('beforeQuery', (options: unknown, query: unknown) => {
       query.startTime = Date.now();
       query.model = options.model?.name;
     });
 
-    this.sequelize.addHook('afterQuery', (options: any, query: any) => {
+    this.sequelize.addHook('afterQuery', (options: unknown, query: unknown) => {
       const duration = Date.now() - query.startTime;
       this.recordQuery(options.sql, duration, query.model);
     });

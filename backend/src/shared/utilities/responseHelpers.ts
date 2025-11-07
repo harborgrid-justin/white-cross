@@ -49,7 +49,7 @@ import {
  * @property {object} [error] - Error details (present on failure)
  * @property {string} error.message - Human-readable error message
  * @property {string} [error.code] - Machine-readable error code for categorization
- * @property {any} [error.details] - Additional error context or validation details
+ * @property {unknown} [error.details] - Additional error context or validation details
  * @property {object} [meta] - Response metadata
  * @property {object} [meta.pagination] - Pagination information for list endpoints
  * @property {number} meta.pagination.page - Current page number
@@ -59,13 +59,13 @@ import {
  * @property {string} [meta.timestamp] - Response timestamp (ISO 8601)
  * @property {string} [meta.requestId] - Unique request identifier for tracing
  */
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: {
     message: string;
     code?: string;
-    details?: any;
+    details?: unknown;
   };
   meta?: {
     pagination?: {
@@ -144,7 +144,7 @@ export const errorResponse = (
   message: string,
   statusCode: number = 400,
   code?: string,
-  details?: any,
+  details?: unknown,
 ): Response => {
   const response: ApiResponse = {
     success: false,
@@ -190,7 +190,7 @@ export const noContentResponse = (res: Response): Response => {
 export const badRequestResponse = (
   res: Response,
   message: string = 'Bad request',
-  details?: any,
+  details?: unknown,
 ): Response => {
   return errorResponse(res, message, 400, 'BAD_REQUEST', details);
 };
@@ -231,7 +231,7 @@ export const notFoundResponse = (
 export const conflictResponse = (
   res: Response,
   message: string = 'Conflict',
-  details?: any,
+  details?: unknown,
 ): Response => {
   return errorResponse(res, message, 409, 'CONFLICT', details);
 };
@@ -242,7 +242,7 @@ export const conflictResponse = (
 export const unprocessableEntityResponse = (
   res: Response,
   message: string = 'Unprocessable entity',
-  details?: any,
+  details?: unknown,
 ): Response => {
   return errorResponse(res, message, 422, 'UNPROCESSABLE_ENTITY', details);
 };
@@ -336,7 +336,7 @@ export const paginatedResponse = <T>(
 export const asyncHandler = (
   fn: (req: any, res: Response, next?: any) => Promise<any>,
 ) => {
-  return (req: any, res: Response, next: any) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch((error: Error) => {
       // Log error with full context
       if (error instanceof ServiceError) {

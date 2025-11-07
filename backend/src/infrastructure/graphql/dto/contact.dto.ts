@@ -95,7 +95,7 @@ export class ContactDto {
   relationshipType?: string;
 
   @Field(() => GraphQLJSON, { nullable: true })
-  customFields?: any;
+  customFields?: Record<string, unknown>;
 
   @Field()
   isActive: boolean;
@@ -219,7 +219,7 @@ export class ContactInputDto {
 
   @Field(() => GraphQLJSON, { nullable: true })
   @IsOptional()
-  customFields?: any;
+  customFields?: Record<string, unknown>;
 
   @Field({ nullable: true, defaultValue: true })
   @IsOptional()
@@ -327,7 +327,7 @@ export class ContactUpdateInputDto {
 
   @Field(() => GraphQLJSON, { nullable: true })
   @IsOptional()
-  customFields?: any;
+  customFields?: Record<string, unknown>;
 
   @Field({ nullable: true })
   @IsOptional()
@@ -371,7 +371,7 @@ export class ContactStatsDto {
   total: number;
 
   @Field(() => GraphQLJSON)
-  byType: any;
+  byType: Record<string, number>;
 }
 
 /**

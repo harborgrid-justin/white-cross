@@ -45,7 +45,7 @@ export class BroadcastRepository extends BaseRepository<
     data: UpdateBroadcastDTO,
   ): Promise<void> {}
 
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: Broadcast): Promise<void> {
     try {
       const entityData = entity.get();
       await this.cacheManager.delete(
@@ -59,7 +59,7 @@ export class BroadcastRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<BroadcastAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

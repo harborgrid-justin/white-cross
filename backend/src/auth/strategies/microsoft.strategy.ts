@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-microsoft';
 import { ConfigService } from '@nestjs/config';
 import { OAuthProfile } from '../dto/oauth.dto';
+import { MicrosoftPassportProfile, OAuthDoneCallback } from '../types';
 
 /**
  * Microsoft OAuth2 Strategy
@@ -47,15 +48,15 @@ export class MicrosoftStrategy extends PassportStrategy(Strategy, 'microsoft') {
   async validate(
     accessToken: string,
     refreshToken: string,
-    profile: any,
-    done: (error?: any, user?: any) => void,
-  ): Promise<any> {
+    profile: MicrosoftPassportProfile,
+    done: OAuthDoneCallback,
+  ): Promise<void> {
     try {
       const { id, emails, name, photos } = profile;
 
       const oauthProfile: OAuthProfile = {
         id,
-        email: emails[0]?.value || profile.userPrincipalName,
+        email: emails?.[0]?.value || profile.userPrincipalName || '',
         firstName: name?.givenName,
         lastName: name?.familyName,
         displayName: profile.displayName,
@@ -69,8 +70,8 @@ export class MicrosoftStrategy extends PassportStrategy(Strategy, 'microsoft') {
 
       done(null, oauthProfile);
     } catch (error) {
-      this.logger.error(`Microsoft OAuth validation failed: ${error.message}`);
-      done(error, null);
+      this.logger.error(`Microsoft OAuth validation failed: ${(error as Error).message}`);
+      done(error as Error, undefined);
     }
   }
 }

@@ -23,11 +23,11 @@ export class ChronicConditionRepository {
   }
 
   async create(data: Partial<ChronicCondition>): Promise<ChronicCondition> {
-    return this.chronicConditionModel.create(data as any);
+    return this.chronicConditionModel.create(data);
   }
 
   async update(id: string, data: Partial<ChronicCondition>): Promise<[number]> {
-    return this.chronicConditionModel.update(data as any, {
+    return this.chronicConditionModel.update(data, {
       where: { id },
     });
   }

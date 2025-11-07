@@ -91,7 +91,7 @@ export const PUB_SUB = 'PUB_SUB';
           publisher,
           subscriber,
           // Optional: serialize/deserialize for complex data types
-          serializer: (value: any) => JSON.stringify(value),
+          serializer: (value: unknown) => JSON.stringify(value),
           deserializer: (value: string) => JSON.parse(value),
         });
       },

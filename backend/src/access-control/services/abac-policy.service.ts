@@ -201,9 +201,9 @@ export class AbacPolicyService {
    * Extract attribute value from context using dot notation
    * e.g., 'user.role' => context.user.role
    */
-  private extractAttribute(path: string, context: AbacContext): any {
+  private extractAttribute(path: string, context: AbacContext): unknown {
     const parts = path.split('.');
-    let value: any = context;
+    let value: unknown = context;
 
     for (const part of parts) {
       if (value && typeof value === 'object' && part in value) {

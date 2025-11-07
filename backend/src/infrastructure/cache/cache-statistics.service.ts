@@ -17,6 +17,17 @@ import { RateLimiterService } from './rate-limiter.service';
 import { CacheEvent } from './cache.interfaces';
 import type { CacheEventPayload } from './cache.interfaces';
 
+
+/**
+ * Cache warm event payload
+ */
+interface CacheWarmPayload {
+  keys?: string[];
+  pattern?: string;
+  count?: number;
+  [key: string]: unknown;
+}
+
 /**
  * Detailed cache metrics
  */
@@ -461,7 +472,7 @@ export class CacheStatisticsService extends HealthIndicator {
   }
 
   @OnEvent(CacheEvent.WARM)
-  handleCacheWarm(payload: any): void {
+  handleCacheWarm(payload: CacheWarmPayload): void {
     this.eventCounts.warms++;
   }
 

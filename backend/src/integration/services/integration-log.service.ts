@@ -2,6 +2,17 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { IntegrationLog } from '../../database/models/integration-log.model';
 import { IntegrationConfig } from '../../database/models/integration-config.model';
+import type { PaginationMeta } from '../types';
+
+/**
+ * Error detail for integration log
+ */
+export interface IntegrationErrorDetail {
+  code: string;
+  message: string;
+  field?: string;
+  context?: Record<string, unknown>;
+}
 
 export interface CreateIntegrationLogDto {
   integrationId?: string;
@@ -13,7 +24,7 @@ export interface CreateIntegrationLogDto {
   recordsFailed?: number;
   duration?: number;
   errorMessage?: string;
-  details?: any;
+  details?: IntegrationErrorDetail | IntegrationErrorDetail[] | Record<string, unknown>;
 }
 
 /**
@@ -56,9 +67,9 @@ export class IntegrationLogService {
     type?: string,
     page: number = 1,
     limit: number = 20,
-  ): Promise<{ logs: IntegrationLog[]; pagination: any }> {
+  ): Promise<{ logs: IntegrationLog[]; pagination: PaginationMeta }> {
     try {
-      const whereClause: any = {};
+      const whereClause: Record<string, string> = {};
       if (integrationId) {
         whereClause.integrationId = integrationId;
       }

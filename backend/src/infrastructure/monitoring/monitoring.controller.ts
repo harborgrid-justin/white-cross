@@ -389,7 +389,7 @@ export class MonitoringController {
     description: 'System metrics retrieved successfully',
   })
   async getSystemMetrics(): Promise<{
-    data: any;
+    data: Record<string, unknown>;
     statusCode: HttpStatus;
   }> {
     const metrics = await this.monitoringService.collectSystemMetrics();
@@ -416,7 +416,7 @@ export class MonitoringController {
     description: 'Performance metrics retrieved successfully',
   })
   async getPerformanceMetrics(): Promise<{
-    data: any;
+    data: Record<string, unknown>;
     statusCode: HttpStatus;
   }> {
     const metrics = await this.monitoringService.collectPerformanceMetrics();

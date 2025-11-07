@@ -1,5 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { createHmac } from 'crypto';
+import type {
+  WebhookPayload,
+  StudentCreatedPayload,
+  StudentUpdatedPayload,
+  HealthRecordUpdatedPayload,
+  isStudentCreatedPayload,
+  isStudentUpdatedPayload,
+  isHealthRecordUpdatedPayload,
+} from '../types/webhook.types';
 
 @Injectable()
 export class WebhookHandlerService {
@@ -31,7 +40,7 @@ export class WebhookHandlerService {
   async processWebhookEvent(
     integrationId: string,
     eventType: string,
-    payload: any,
+    payload: WebhookPayload,
   ): Promise<void> {
     this.logger.log(
       `Processing webhook event: ${eventType} for integration ${integrationId}`,
@@ -42,13 +51,19 @@ export class WebhookHandlerService {
 
     switch (eventType) {
       case 'student.created':
-        await this.handleStudentCreated(integrationId, payload);
+        if (isStudentCreatedPayload(payload)) {
+          await this.handleStudentCreated(integrationId, payload);
+        }
         break;
       case 'student.updated':
-        await this.handleStudentUpdated(integrationId, payload);
+        if (isStudentUpdatedPayload(payload)) {
+          await this.handleStudentUpdated(integrationId, payload);
+        }
         break;
       case 'health_record.updated':
-        await this.handleHealthRecordUpdated(integrationId, payload);
+        if (isHealthRecordUpdatedPayload(payload)) {
+          await this.handleHealthRecordUpdated(integrationId, payload);
+        }
         break;
       default:
         this.logger.warn(`Unknown webhook event type: ${eventType}`);
@@ -57,7 +72,7 @@ export class WebhookHandlerService {
 
   private async handleStudentCreated(
     integrationId: string,
-    payload: any,
+    payload: StudentCreatedPayload,
   ): Promise<void> {
     this.logger.log(`Handling student created event for ${integrationId}`);
     // Implementation would create or update student record
@@ -65,7 +80,7 @@ export class WebhookHandlerService {
 
   private async handleStudentUpdated(
     integrationId: string,
-    payload: any,
+    payload: StudentUpdatedPayload,
   ): Promise<void> {
     this.logger.log(`Handling student updated event for ${integrationId}`);
     // Implementation would update student record
@@ -73,7 +88,7 @@ export class WebhookHandlerService {
 
   private async handleHealthRecordUpdated(
     integrationId: string,
-    payload: any,
+    payload: HealthRecordUpdatedPayload,
   ): Promise<void> {
     this.logger.log(
       `Handling health record updated event for ${integrationId}`,

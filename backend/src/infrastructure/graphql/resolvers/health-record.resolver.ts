@@ -42,6 +42,37 @@ import { HealthRecordService } from '../../../health-record/health-record.servic
 import type { GraphQLContext } from '../types/context.interface';
 import { PHIField } from '../guards/field-authorization.guard';
 
+
+/**
+ * GraphQL context structure
+ */
+interface GraphQLContext {
+  req?: {
+    user?: {
+      userId: string;
+      organizationId: string;
+      role: string;
+      [key: string]: unknown;
+    };
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+/**
+ * Health record model type
+ */
+interface HealthRecordModel {
+  id?: string;
+  studentId?: string;
+  recordType?: string;
+  date?: Date;
+  notes?: string;
+  providerId?: string;
+  metadata?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
 /**
  * HealthRecord Resolver
  * Handles all GraphQL operations for health records (PHI)
@@ -53,7 +84,7 @@ export class HealthRecordResolver {
   /**
    * Map HealthRecord model to DTO
    */
-  private mapHealthRecordToDto(record: any): HealthRecordDto {
+  private mapHealthRecordToDto(record: HealthRecordModel): HealthRecordDto {
     return {
       id: record.id,
       studentId: record.studentId,
@@ -105,7 +136,7 @@ export class HealthRecordResolver {
     orderDirection: string,
     @Args('filters', { type: () => HealthRecordFilterInputDto, nullable: true })
     filters?: HealthRecordFilterInputDto,
-    @Context() context?: any,
+    @Context() context?: GraphQLContext,
   ): Promise<HealthRecordListResponseDto> {
     const userId = context.req?.user?.id;
 
@@ -120,7 +151,7 @@ export class HealthRecordResolver {
     });
 
     // Build filters for health record service
-    const serviceFilters: any = {
+    const serviceFilters: Record<string, unknown> = {
       page,
       limit,
       orderBy,
@@ -148,7 +179,7 @@ export class HealthRecordResolver {
     const paginationData = result.meta || {};
 
     return {
-      healthRecords: healthRecords.map((record: any) =>
+      healthRecords: healthRecords.map((record: HealthRecordModel) =>
         this.mapHealthRecordToDto(record),
       ),
       pagination: {
@@ -176,7 +207,7 @@ export class HealthRecordResolver {
   )
   async getHealthRecord(
     @Args('id', { type: () => ID }) id: string,
-    @Context() context?: any,
+    @Context() context?: GraphQLContext,
   ): Promise<HealthRecordDto | null> {
     const userId = context.req?.user?.id;
 
@@ -211,7 +242,7 @@ export class HealthRecordResolver {
   )
   async getHealthRecordsByStudent(
     @Args('studentId', { type: () => ID }) studentId: string,
-    @Context() context?: any,
+    @Context() context?: GraphQLContext,
   ): Promise<HealthRecordDto[]> {
     const userId = context.req?.user?.id;
 
@@ -223,7 +254,7 @@ export class HealthRecordResolver {
     });
 
     const records = await this.healthRecordService.findByStudent(studentId);
-    return records.map((record: any) => this.mapHealthRecordToDto(record));
+    return records.map((record: HealthRecordModel) => this.mapHealthRecordToDto(record));
   }
 
   /**
@@ -242,7 +273,7 @@ export class HealthRecordResolver {
   )
   async createHealthRecord(
     @Args('input') input: HealthRecordInputDto,
-    @Context() context: any,
+    @Context() context: GraphQLContext,
   ): Promise<HealthRecordDto> {
     const userId = context.req?.user?.id;
 
@@ -279,7 +310,7 @@ export class HealthRecordResolver {
   async updateHealthRecord(
     @Args('id', { type: () => ID }) id: string,
     @Args('input') input: HealthRecordUpdateInputDto,
-    @Context() context: any,
+    @Context() context: GraphQLContext,
   ): Promise<HealthRecordDto> {
     const userId = context.req?.user?.id;
 
@@ -309,7 +340,7 @@ export class HealthRecordResolver {
   @Roles(UserRole.ADMIN)
   async deleteHealthRecord(
     @Args('id', { type: () => ID }) id: string,
-    @Context() context?: any,
+    @Context() context?: GraphQLContext,
   ): Promise<DeleteResponseDto> {
     const userId = context.req?.user?.id;
 

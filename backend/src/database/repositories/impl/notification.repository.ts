@@ -45,7 +45,7 @@ export class NotificationRepository extends BaseRepository<
     data: UpdateNotificationDTO,
   ): Promise<void> {}
 
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: Notification): Promise<void> {
     try {
       const entityData = entity.get();
       await this.cacheManager.delete(
@@ -59,7 +59,7 @@ export class NotificationRepository extends BaseRepository<
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<NotificationAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

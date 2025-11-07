@@ -1,7 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, fn, col, literal } from 'sequelize';
-import { AuditLog } from '../../database/models/audit-log.model';
+import { AuditLog } from '@/database';
+import {
+  AuditStatistics,
+  AuditDashboard,
+  ActionDistributionQueryResult,
+  EntityTypeDistributionQueryResult,
+  UniqueUsersQueryResult,
+} from '../types';
 
 /**
  * AuditStatisticsService - Statistical analysis for audit data
@@ -26,7 +33,7 @@ export class AuditStatisticsService {
    * @param endDate - End date for statistics
    * @returns Promise with audit statistics
    */
-  async getAuditStatistics(startDate: Date, endDate: Date): Promise<any> {
+  async getAuditStatistics(startDate: Date, endDate: Date): Promise<AuditStatistics> {
     try {
       const totalLogs = await this.auditLogModel.count({
         where: {
@@ -79,14 +86,21 @@ export class AuditStatisticsService {
           end: endDate,
         },
         totalLogs,
-        uniqueUsers: parseInt((uniqueUsersResult[0] as any)?.count || '0', 10),
-        actionDistribution: actionDistribution.map((item: any) => ({
-          action: item.action,
-          count: parseInt(item.count, 10),
-        })),
-        entityTypeDistribution: entityTypeDistribution.map((item: any) => ({
+        uniqueUsers: parseInt(
+          String((uniqueUsersResult[0] as unknown as UniqueUsersQueryResult)?.count || '0'),
+          10,
+        ),
+        actionDistribution: (actionDistribution as unknown as ActionDistributionQueryResult[]).map(
+          (item) => ({
+            action: item.action,
+            count: typeof item.count === 'string' ? parseInt(item.count, 10) : item.count,
+          }),
+        ),
+        entityTypeDistribution: (
+          entityTypeDistribution as unknown as EntityTypeDistributionQueryResult[]
+        ).map((item) => ({
           entityType: item.entityType,
-          count: parseInt(item.count, 10),
+          count: typeof item.count === 'string' ? parseInt(item.count, 10) : item.count,
         })),
       };
     } catch (error) {
@@ -102,7 +116,7 @@ export class AuditStatisticsService {
    * @param endDate - End date for the dashboard period
    * @returns Promise with comprehensive dashboard data
    */
-  async getAuditDashboard(startDate: Date, endDate: Date): Promise<any> {
+  async getAuditDashboard(startDate: Date, endDate: Date): Promise<AuditDashboard> {
     try {
       const stats = await this.getAuditStatistics(startDate, endDate);
 
