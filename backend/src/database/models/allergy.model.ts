@@ -5,6 +5,7 @@ import {
   DataType,
   PrimaryKey,
   Default,
+  Index,
   ForeignKey,
   BelongsTo,
   BeforeCreate,
@@ -142,6 +143,11 @@ export interface AllergyAttributes {
       fields: ['updatedAt'],
       name: 'idx_allergy_updated_at',
     },
+    // Performance index for timeline queries
+    {
+      fields: ['diagnosedDate'],
+      name: 'idx_allergy_diagnosed_date',
+    },
   ],
 })
 export class Allergy
@@ -210,6 +216,7 @@ export class Allergy
   })
   onsetDate?: Date;
 
+  @Index({ name: 'idx_allergy_diagnosed_date' })
   @Column({
     type: DataType.DATE,
   })
@@ -288,14 +295,20 @@ export class Allergy
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
-  static async auditPHIAccess(instance: Allergy) {
+  static async auditPHIAccess(instance: Allergy, options: any) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] Allergy ${instance.id} modified for student ${instance.studentId} at ${new Date().toISOString()}`,
+      const { logModelPHIAccess } = await import(
+        '../services/model-audit-helper.service.js'
       );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
+      const action = instance.isNewRecord ? 'CREATE' : 'UPDATE';
+      await logModelPHIAccess(
+        'Allergy',
+        instance.id,
+        action,
+        changedFields,
+        options?.transaction,
+      );
     }
   }
 

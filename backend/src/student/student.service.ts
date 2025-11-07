@@ -21,6 +21,7 @@ import { HealthRecord } from '../database/models/health-record.model';
 import { MentalHealthRecord } from '../database/models/mental-health-record.model';
 import { AcademicTranscriptService } from '../academic-transcript/academic-transcript.service';
 import { QueryCacheService } from '../database/services/query-cache.service';
+import { AppConfigService } from '../config/app-config.service';
 import {
   CreateStudentDto,
   UpdateStudentDto,
@@ -72,6 +73,7 @@ export class StudentService {
     @InjectConnection()
     private readonly sequelize: Sequelize,
     private readonly queryCacheService: QueryCacheService,
+    private readonly config: AppConfigService,
   ) {}
 
   // ==================== CRUD Operations ====================

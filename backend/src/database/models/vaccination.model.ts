@@ -248,6 +248,12 @@ export class Vaccination
   @AllowNull
   @Column({
     type: DataType.STRING(10),
+    validate: {
+      is: {
+        args: /^\d{1,3}$/,
+        msg: 'CVX code must be 1-3 digits (e.g., 03, 21, 208)',
+      },
+    },
   })
   cvxCode?: string;
 
@@ -572,14 +578,20 @@ export class Vaccination
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
-  static async auditPHIAccess(instance: Vaccination) {
+  static async auditPHIAccess(instance: Vaccination, options: any) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] Vaccination ${instance.id} modified at ${new Date().toISOString()}`,
+      const { logModelPHIAccess } = await import(
+        '../services/model-audit-helper.service.js'
       );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
+      const action = instance.isNewRecord ? 'CREATE' : 'UPDATE';
+      await logModelPHIAccess(
+        'Vaccination',
+        instance.id,
+        action,
+        changedFields,
+        options?.transaction,
+      );
     }
   }
 }

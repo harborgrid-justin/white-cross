@@ -141,6 +141,12 @@ export class ChronicCondition
   @AllowNull
   @Column({
     type: DataType.STRING(20),
+    validate: {
+      is: {
+        args: /^[A-Z]\d{2}(\.\d{1,4})?$/,
+        msg: 'ICD-10 code must be in format A00 or A00.0 or A00.00 (letter followed by 2 digits, optional decimal and 1-4 digits)',
+      },
+    },
   })
   icdCode?: string;
 
@@ -186,30 +192,70 @@ export class ChronicCondition
   carePlan?: string;
 
   @Column({
-    type: DataType.JSON,
+    type: DataType.JSONB,
     allowNull: false,
     defaultValue: [],
+    validate: {
+      isArrayOfStrings(value: any) {
+        if (!Array.isArray(value)) {
+          throw new Error('Medications must be an array');
+        }
+        if (!value.every((item) => typeof item === 'string')) {
+          throw new Error('All medication entries must be strings');
+        }
+      },
+    },
   })
   medications: string[];
 
   @Column({
-    type: DataType.JSON,
+    type: DataType.JSONB,
     allowNull: false,
     defaultValue: [],
+    validate: {
+      isArrayOfStrings(value: any) {
+        if (!Array.isArray(value)) {
+          throw new Error('Restrictions must be an array');
+        }
+        if (!value.every((item) => typeof item === 'string')) {
+          throw new Error('All restriction entries must be strings');
+        }
+      },
+    },
   })
   restrictions: string[];
 
   @Column({
-    type: DataType.JSON,
+    type: DataType.JSONB,
     allowNull: false,
     defaultValue: [],
+    validate: {
+      isArrayOfStrings(value: any) {
+        if (!Array.isArray(value)) {
+          throw new Error('Triggers must be an array');
+        }
+        if (!value.every((item) => typeof item === 'string')) {
+          throw new Error('All trigger entries must be strings');
+        }
+      },
+    },
   })
   triggers: string[];
 
   @Column({
-    type: DataType.JSON,
+    type: DataType.JSONB,
     allowNull: false,
     defaultValue: [],
+    validate: {
+      isArrayOfStrings(value: any) {
+        if (!Array.isArray(value)) {
+          throw new Error('Accommodations must be an array');
+        }
+        if (!value.every((item) => typeof item === 'string')) {
+          throw new Error('All accommodation entries must be strings');
+        }
+      },
+    },
   })
   accommodations: string[];
 
@@ -278,14 +324,20 @@ export class ChronicCondition
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
-  static async auditPHIAccess(instance: ChronicCondition) {
+  static async auditPHIAccess(instance: ChronicCondition, options: any) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] ChronicCondition ${instance.id} modified at ${new Date().toISOString()}`,
+      const { logModelPHIAccess } = await import(
+        '../services/model-audit-helper.service.js'
       );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
+      const action = instance.isNewRecord ? 'CREATE' : 'UPDATE';
+      await logModelPHIAccess(
+        'ChronicCondition',
+        instance.id,
+        action,
+        changedFields,
+        options?.transaction,
+      );
     }
   }
 }

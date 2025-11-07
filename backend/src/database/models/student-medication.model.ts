@@ -5,6 +5,7 @@ import {
   DataType,
   PrimaryKey,
   Default,
+  Index,
   ForeignKey,
   BelongsTo,
   BeforeCreate,
@@ -85,6 +86,7 @@ export class StudentMedication
   @Column(DataType.UUID)
   declare id: string;
 
+  @Index
   @ForeignKey(() => require('./student.model').Student)
   @Column({
     type: DataType.UUID,
@@ -92,6 +94,7 @@ export class StudentMedication
   })
   studentId: string;
 
+  @Index
   @ForeignKey(() => require('./medication.model').Medication)
   @Column({
     type: DataType.UUID,
@@ -203,14 +206,20 @@ export class StudentMedication
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
-  static async auditPHIAccess(instance: StudentMedication) {
+  static async auditPHIAccess(instance: StudentMedication, options: any) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] StudentMedication ${instance.id} modified at ${new Date().toISOString()}`,
+      const { logModelPHIAccess } = await import(
+        '../services/model-audit-helper.service.js'
       );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
+      const action = instance.isNewRecord ? 'CREATE' : 'UPDATE';
+      await logModelPHIAccess(
+        'StudentMedication',
+        instance.id,
+        action,
+        changedFields,
+        options?.transaction,
+      );
     }
   }
 }

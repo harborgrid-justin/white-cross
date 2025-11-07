@@ -11,6 +11,7 @@
  * - Token blacklist verification
  * - Rate limiting for spam prevention
  * - Global availability for use across all modules
+ * - EVENT-DRIVEN: Appointment event listeners for real-time notifications
  *
  * Dependencies:
  * - JwtModule: For token verification
@@ -20,10 +21,16 @@
  * Exports:
  * - WebSocketService: For use in other modules to broadcast messages
  * - WebSocketGateway: For direct server access if needed
+ * - AppointmentWebSocketListener: Event listener for appointment events
  *
  * Usage:
  * Import this module in any feature module that needs to broadcast WebSocket messages.
  * Inject WebSocketService to send real-time updates to clients.
+ *
+ * Event-Driven Architecture:
+ * - Appointment events are automatically handled by AppointmentWebSocketListener
+ * - No need to inject WebSocketService into AppointmentService
+ * - Eliminates circular dependencies
  *
  * @example
  * // In another module
@@ -53,6 +60,7 @@ import { WsJwtAuthGuard } from './guards';
 import { RateLimiterService, AdminMetricsService } from './services';
 import { AdminWebSocketGateway } from './gateways';
 import { AuthModule } from '../../auth/auth.module';
+import { AppointmentWebSocketListener } from './listeners/appointment.listener';
 
 /**
  * WebSocket Module
@@ -94,12 +102,15 @@ import { AuthModule } from '../../auth/auth.module';
     RateLimiterService,
     AdminMetricsService,
     AdminWebSocketGateway,
+    // Event-driven architecture listeners
+    AppointmentWebSocketListener,
   ],
   exports: [
     WebSocketService,
     WebSocketGateway,
     AdminMetricsService,
     AdminWebSocketGateway,
+    AppointmentWebSocketListener,
   ],
 })
 export class WebSocketModule {}

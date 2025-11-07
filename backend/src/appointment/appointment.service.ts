@@ -9,13 +9,21 @@ import {
   NotFoundException,
   BadRequestException,
   Logger,
-  Inject,
-  forwardRef,
+  OnModuleDestroy,
 } from '@nestjs/common';
 import { InjectModel, InjectConnection } from '@nestjs/sequelize';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Op, Transaction, Sequelize } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
-import { WebSocketService } from '../infrastructure/websocket/websocket.service';
+import { AppConfigService } from '../config/app-config.service';
+import {
+  AppointmentCreatedEvent,
+  AppointmentUpdatedEvent,
+  AppointmentCancelledEvent,
+  AppointmentStartedEvent,
+  AppointmentCompletedEvent,
+  AppointmentNoShowEvent,
+} from './events/appointment.events';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import {
   UpdateAppointmentDto,
@@ -83,8 +91,9 @@ import { User } from '../database/models/user.model';
  * - Comprehensive error handling and logging
  */
 @Injectable()
-export class AppointmentService {
+export class AppointmentService implements OnModuleDestroy {
   private readonly logger = new Logger(AppointmentService.name);
+  private cleanupInterval?: NodeJS.Timeout;
 
   constructor(
     @InjectModel(Appointment)
@@ -97,9 +106,68 @@ export class AppointmentService {
     private readonly userModel: typeof User,
     @InjectConnection()
     private readonly sequelize: Sequelize,
-    @Inject(forwardRef(() => WebSocketService))
-    private readonly websocketService: WebSocketService,
-  ) {}
+    private readonly eventEmitter: EventEmitter2,
+    private readonly config: AppConfigService,
+  ) {
+    // Start periodic cleanup of expired waitlist entries
+    // Only run in production to avoid interfering with dev/test
+    if (this.config.isProduction) {
+      this.cleanupInterval = setInterval(
+        () => this.cleanupExpiredWaitlistEntries(),
+        24 * 60 * 60 * 1000, // Daily cleanup
+      );
+      this.logger.log('Appointment service initialized with daily cleanup interval');
+    }
+  }
+
+  /**
+   * Cleanup resources on module destroy
+   * Implements graceful shutdown for intervals and pending operations
+   */
+  async onModuleDestroy() {
+    this.logger.log('AppointmentService shutting down - cleaning up resources');
+
+    // Clear intervals
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.logger.log('Cleanup interval cleared');
+    }
+
+    // Flush any pending reminder processing
+    try {
+      await this.processPendingReminders();
+      this.logger.log('Pending reminders processed before shutdown');
+    } catch (error) {
+      this.logger.warn(`Error processing pending reminders during shutdown: ${error.message}`);
+    }
+
+    this.logger.log('AppointmentService destroyed, resources cleaned up');
+  }
+
+  /**
+   * Clean up expired waitlist entries
+   * Runs periodically to remove stale waitlist entries
+   */
+  private async cleanupExpiredWaitlistEntries(): Promise<void> {
+    try {
+      const now = new Date();
+      const result = await this.waitlistModel.update(
+        { status: WaitlistStatus.EXPIRED },
+        {
+          where: {
+            expiresAt: { [Op.lt]: now },
+            status: WaitlistStatus.WAITING,
+          },
+        },
+      );
+
+      if (result[0] > 0) {
+        this.logger.log(`Cleaned up ${result[0]} expired waitlist entries`);
+      }
+    } catch (error) {
+      this.logger.error(`Error cleaning up expired waitlist entries: ${error.message}`, error.stack);
+    }
+  }
 
   // ==================== CRUD Operations ====================
 
@@ -336,18 +404,27 @@ export class AppointmentService {
       // Fetch complete appointment with relations
       const appointment = await this.getAppointmentById(result.id);
 
-      // Send real-time notification about new appointment
-      try {
-        await this.sendAppointmentNotification(
-          appointment,
-          'appointment:created',
-        );
-      } catch (error) {
-        this.logger.error(
-          `Failed to send WebSocket notification: ${error.message}`,
-        );
-        // Don't fail the operation if notification fails
-      }
+      // Emit domain event for decoupled notification handling
+      this.eventEmitter.emit(
+        'appointment.created',
+        new AppointmentCreatedEvent(
+          {
+            id: appointment.id,
+            studentId: appointment.studentId,
+            nurseId: appointment.nurseId,
+            type: appointment.type as any,
+            scheduledAt: appointment.scheduledAt,
+            duration: appointment.duration,
+            status: appointment.status as any,
+            reason: appointment.reason,
+          },
+          {
+            userId: createDto.studentId, // In real implementation, get from request context
+            userRole: 'SYSTEM',
+            timestamp: new Date(),
+          },
+        ),
+      );
 
       return appointment;
     } catch (error) {
@@ -458,18 +535,28 @@ export class AppointmentService {
 
       const appointment = await this.getAppointmentById(id);
 
-      // Send real-time notification about appointment update
-      try {
-        await this.sendAppointmentNotification(
-          appointment,
-          'appointment:updated',
-        );
-      } catch (error) {
-        this.logger.error(
-          `Failed to send WebSocket notification: ${error.message}`,
-        );
-        // Don't fail the operation if notification fails
-      }
+      // Emit domain event for decoupled notification handling
+      this.eventEmitter.emit(
+        'appointment.updated',
+        new AppointmentUpdatedEvent(
+          {
+            id: appointment.id,
+            studentId: appointment.studentId,
+            nurseId: appointment.nurseId,
+            type: appointment.type as any,
+            scheduledAt: appointment.scheduledAt,
+            duration: appointment.duration,
+            status: appointment.status as any,
+            reason: appointment.reason,
+          },
+          updateDto as any,
+          {
+            userId: existingAppointment.nurseId, // In real implementation, get from request context
+            userRole: 'NURSE',
+            timestamp: new Date(),
+          },
+        ),
+      );
 
       return appointment;
     } catch (error) {
@@ -540,7 +627,32 @@ export class AppointmentService {
         );
       });
 
-      return await this.getAppointmentById(id);
+      const cancelledAppointment = await this.getAppointmentById(id);
+
+      // Emit domain event
+      this.eventEmitter.emit(
+        'appointment.cancelled',
+        new AppointmentCancelledEvent(
+          cancelledAppointment.id,
+          {
+            id: cancelledAppointment.id,
+            studentId: cancelledAppointment.studentId,
+            nurseId: cancelledAppointment.nurseId,
+            type: cancelledAppointment.type as any,
+            scheduledAt: cancelledAppointment.scheduledAt,
+            duration: cancelledAppointment.duration,
+            status: cancelledAppointment.status as any,
+          },
+          reason || 'Cancelled',
+          {
+            userId: cancelledAppointment.nurseId,
+            userRole: 'NURSE',
+            timestamp: new Date(),
+          },
+        ),
+      );
+
+      return cancelledAppointment;
     } catch (error) {
       this.logger.error(
         `Error cancelling appointment ${id}: ${error.message}`,
@@ -571,7 +683,30 @@ export class AppointmentService {
       status: ModelAppointmentStatus.IN_PROGRESS,
     });
 
-    return await this.getAppointmentById(id);
+    const updatedAppointment = await this.getAppointmentById(id);
+
+    // Emit domain event
+    this.eventEmitter.emit(
+      'appointment.started',
+      new AppointmentStartedEvent(
+        {
+          id: updatedAppointment.id,
+          studentId: updatedAppointment.studentId,
+          nurseId: updatedAppointment.nurseId,
+          type: updatedAppointment.type as any,
+          scheduledAt: updatedAppointment.scheduledAt,
+          duration: updatedAppointment.duration,
+          status: updatedAppointment.status as any,
+        },
+        {
+          userId: updatedAppointment.nurseId,
+          userRole: 'NURSE',
+          timestamp: new Date(),
+        },
+      ),
+    );
+
+    return updatedAppointment;
   }
 
   /**
@@ -616,7 +751,33 @@ export class AppointmentService {
       notes,
     });
 
-    return await this.getAppointmentById(id);
+    const completedAppointment = await this.getAppointmentById(id);
+
+    // Emit domain event
+    this.eventEmitter.emit(
+      'appointment.completed',
+      new AppointmentCompletedEvent(
+        {
+          id: completedAppointment.id,
+          studentId: completedAppointment.studentId,
+          nurseId: completedAppointment.nurseId,
+          type: completedAppointment.type as any,
+          scheduledAt: completedAppointment.scheduledAt,
+          duration: completedAppointment.duration,
+          status: completedAppointment.status as any,
+        },
+        completionData?.notes,
+        completionData?.outcomes,
+        completionData?.followUpRequired,
+        {
+          userId: completedAppointment.nurseId,
+          userRole: 'NURSE',
+          timestamp: new Date(),
+        },
+      ),
+    );
+
+    return completedAppointment;
   }
 
   /**
@@ -640,6 +801,29 @@ export class AppointmentService {
       status: ModelAppointmentStatus.NO_SHOW,
     });
 
+    const noShowAppointment = await this.getAppointmentById(id);
+
+    // Emit domain event
+    this.eventEmitter.emit(
+      'appointment.no-show',
+      new AppointmentNoShowEvent(
+        {
+          id: noShowAppointment.id,
+          studentId: noShowAppointment.studentId,
+          nurseId: noShowAppointment.nurseId,
+          type: noShowAppointment.type as any,
+          scheduledAt: noShowAppointment.scheduledAt,
+          duration: noShowAppointment.duration,
+          status: noShowAppointment.status as any,
+        },
+        {
+          userId: noShowAppointment.nurseId,
+          userRole: 'NURSE',
+          timestamp: new Date(),
+        },
+      ),
+    );
+
     // Try to fill slot from waitlist
     await this.sequelize.transaction(async (transaction: Transaction) => {
       await this.processWaitlistForSlot(
@@ -650,7 +834,7 @@ export class AppointmentService {
       );
     });
 
-    return await this.getAppointmentById(id);
+    return noShowAppointment;
   }
 
   // ==================== Query Operations ====================
@@ -2320,82 +2504,4 @@ export class AppointmentService {
     };
   }
 
-  /**
-   * Send real-time WebSocket notification for appointment events
-   *
-   * Broadcasts appointment events to relevant users via WebSockets:
-   * - Sends to student's room for student-specific notifications
-   * - Sends to nurse's room for nurse notifications
-   * - Sends to organization's room for admin monitoring
-   *
-   * Events:
-   * - appointment:created - New appointment scheduled
-   * - appointment:updated - Appointment modified or rescheduled
-   * - appointment:cancelled - Appointment cancelled
-   * - appointment:reminder - Upcoming appointment reminder
-   * - appointment:started - Appointment in progress
-   * - appointment:completed - Appointment finished
-   *
-   * @param appointment - The appointment record
-   * @param event - The event type to broadcast
-   * @private
-   */
-  private async sendAppointmentNotification(
-    appointment: any,
-    event:
-      | 'appointment:created'
-      | 'appointment:updated'
-      | 'appointment:cancelled'
-      | 'appointment:reminder'
-      | 'appointment:started'
-      | 'appointment:completed',
-  ): Promise<void> {
-    if (!this.websocketService || !this.websocketService.isInitialized()) {
-      this.logger.warn(
-        'WebSocket service not initialized, skipping notification',
-      );
-      return;
-    }
-
-    const payload = {
-      appointmentId: appointment.id,
-      studentId: appointment.studentId,
-      nurseId: appointment.nurseId,
-      type: appointment.type,
-      scheduledAt: appointment.scheduledAt,
-      duration: appointment.duration,
-      status: appointment.status,
-      reason: appointment.reason,
-      timestamp: new Date().toISOString(),
-    };
-
-    try {
-      // Send to student-specific room
-      if (appointment.studentId) {
-        await this.websocketService.broadcastToRoom(
-          `student:${appointment.studentId}`,
-          event,
-          payload,
-        );
-      }
-
-      // Send to nurse-specific room
-      if (appointment.nurseId) {
-        await this.websocketService.broadcastToRoom(
-          `user:${appointment.nurseId}`,
-          event,
-          payload,
-        );
-      }
-
-      this.logger.log(
-        `Sent ${event} notification for appointment ${appointment.id} (student: ${appointment.studentId}, nurse: ${appointment.nurseId})`,
-      );
-    } catch (error) {
-      this.logger.error(
-        `Failed to send ${event} notification: ${error.message}`,
-        error.stack,
-      );
-    }
-  }
 }

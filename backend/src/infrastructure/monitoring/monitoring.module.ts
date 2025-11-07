@@ -139,8 +139,25 @@ import { MonitoringController } from './monitoring.controller';
     SequelizeModule.forFeature([]),
   ],
   controllers: [HealthController, MonitoringController],
-  providers: [MonitoringService],
-  exports: [MonitoringService],
+  providers: [
+    MonitoringService,
+    // Add new performance monitoring services
+    {
+      provide: 'QueryMonitorService',
+      useFactory: async () => {
+        const { QueryMonitorService } = await import('./query-monitor.service');
+        return QueryMonitorService;
+      },
+    },
+    {
+      provide: 'PerformanceMetricsService',
+      useFactory: async () => {
+        const { PerformanceMetricsService } = await import('./performance-metrics.service');
+        return PerformanceMetricsService;
+      },
+    },
+  ],
+  exports: [MonitoringService, 'QueryMonitorService', 'PerformanceMetricsService'],
 })
 export class MonitoringModule {}
 

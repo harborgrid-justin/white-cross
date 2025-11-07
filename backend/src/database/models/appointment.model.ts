@@ -374,16 +374,20 @@ export class Appointment extends Model<
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
-  static async auditPHIAccess(instance: Appointment) {
+  static async auditPHIAccess(instance: Appointment, options: any) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] Appointment ${instance.id} modified for student ${instance.studentId} at ${new Date().toISOString()}`,
+      const { logModelPHIAccess } = await import(
+        '../services/model-audit-helper.service.js'
       );
-      console.log(
-        `[AUDIT] Changed fields: ${changedFields.join(', ')}, Nurse: ${instance.nurseId}`,
+      const action = instance.isNewRecord ? 'CREATE' : 'UPDATE';
+      await logModelPHIAccess(
+        'Appointment',
+        instance.id,
+        action,
+        changedFields,
+        options?.transaction,
       );
-      // TODO: Integrate with AuditLog service for persistent audit trail
     }
   }
 

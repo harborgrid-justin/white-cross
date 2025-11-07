@@ -28,6 +28,7 @@ import { ConnectionMonitorService } from './services/connection-monitor.service'
 import { QueryLoggerService } from './services/query-logger.service';
 import { QueryCacheService } from './services/query-cache.service';
 import { CacheMonitoringService } from './services/cache-monitoring.service';
+import { MaterializedViewService } from './services/materialized-view.service';
 
 // Core Models
 import { AuditLog } from './models/audit-log.model';
@@ -505,6 +506,9 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
     QueryCacheService,
     CacheMonitoringService,
 
+    // Materialized View Management
+    MaterializedViewService,
+
     // Repository Implementations
     // Add repositories as they are migrated following this pattern:
     StudentRepository,
@@ -547,6 +551,9 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
     QueryLoggerService,
     QueryCacheService,
     CacheMonitoringService,
+
+    // Export materialized view management
+    MaterializedViewService,
 
     // Export repositories as they are added
     StudentRepository,

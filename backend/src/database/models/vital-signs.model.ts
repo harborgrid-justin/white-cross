@@ -203,18 +203,25 @@ export class VitalSigns
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
-  static async auditPHIAccess(instance: VitalSigns) {
+  static async auditPHIAccess(instance: VitalSigns, options: any) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] VitalSigns ${instance.id} modified for student ${instance.studentId} at ${new Date().toISOString()}`,
+      const { logModelPHIAccess } = await import(
+        '../services/model-audit-helper.service.js'
       );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
+      const action = instance.isNewRecord ? 'CREATE' : 'UPDATE';
+      await logModelPHIAccess(
+        'VitalSigns',
+        instance.id || 'pending',
+        action,
+        changedFields,
+        options?.transaction,
+      );
     }
   }
 
   @BeforeCreate
+  @BeforeUpdate
   static async calculateBMI(instance: VitalSigns) {
     if (
       instance.height &&
@@ -228,13 +235,15 @@ export class VitalSigns
 
       if (instance.heightUnit === 'inches') {
         heightM = instance.height * 0.0254; // inches to meters
+      } else if (instance.heightUnit === 'cm') {
+        heightM = instance.height / 100; // cm to meters
       }
 
       if (instance.weightUnit === 'lbs') {
         weightKg = instance.weight * 0.453592; // lbs to kg
       }
 
-      instance.bmi = weightKg / (heightM * heightM);
+      instance.bmi = parseFloat((weightKg / (heightM * heightM)).toFixed(2));
     }
   }
 

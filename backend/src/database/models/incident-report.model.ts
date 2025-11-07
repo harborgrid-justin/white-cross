@@ -5,6 +5,7 @@ import {
   DataType,
   PrimaryKey,
   Default,
+  Index,
   ForeignKey,
   BelongsTo,
   HasMany,
@@ -182,6 +183,12 @@ export interface IncidentReportAttributes {
       fields: ['updatedAt'],
       name: 'idx_incident_reports_updated_at',
     },
+    // GIN index for efficient array searches on evidence photos
+    {
+      fields: ['evidencePhotos'],
+      using: 'GIN',
+      name: 'idx_incident_reports_evidence_photos_gin',
+    },
   ],
 })
 export class IncidentReport
@@ -312,6 +319,7 @@ export class IncidentReport
   })
   attachments: string[];
 
+  @Index({ using: 'GIN', name: 'idx_incident_reports_evidence_photos_gin' })
   @Default([])
   @Column({
     type: DataType.ARRAY(DataType.STRING(255)),
@@ -402,16 +410,20 @@ export class IncidentReport
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
-  static async auditPHIAccess(instance: IncidentReport) {
+  static async auditPHIAccess(instance: IncidentReport, options: any) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] IncidentReport ${instance.id} modified for student ${instance.studentId} at ${new Date().toISOString()}`,
+      const { logModelPHIAccess } = await import(
+        '../services/model-audit-helper.service.js'
       );
-      console.log(
-        `[AUDIT] Changed fields: ${changedFields.join(', ')}, Reporter: ${instance.reportedById}`,
+      const action = instance.isNewRecord ? 'CREATE' : 'UPDATE';
+      await logModelPHIAccess(
+        'IncidentReport',
+        instance.id,
+        action,
+        changedFields,
+        options?.transaction,
       );
-      // TODO: Integrate with AuditLog service for persistent audit trail
     }
   }
 

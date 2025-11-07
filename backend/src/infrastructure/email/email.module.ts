@@ -2,6 +2,11 @@
  * @fileoverview Email Module - Production Configuration
  * @module infrastructure/email
  * @description NestJS module for email infrastructure services with queue, rate limiting, and templating
+ *
+ * EVENT-DRIVEN ARCHITECTURE:
+ * - AppointmentEmailListener handles appointment domain events
+ * - Sends templated emails for appointment lifecycle events
+ * - Eliminates circular dependencies with event-based communication
  */
 
 import { Module } from '@nestjs/common';
@@ -11,6 +16,7 @@ import { EmailService } from './email.service';
 import { EmailTemplateService } from './email-template.service';
 import { EmailQueueService, EMAIL_QUEUE_NAME } from './email-queue.service';
 import { EmailRateLimiterService } from './email-rate-limiter.service';
+import { AppointmentEmailListener } from './listeners/appointment.listener';
 
 @Module({
   imports: [
@@ -47,7 +53,9 @@ import { EmailRateLimiterService } from './email-rate-limiter.service';
     EmailTemplateService,
     EmailQueueService,
     EmailRateLimiterService,
+    // Event-driven architecture listeners
+    AppointmentEmailListener,
   ],
-  exports: [EmailService],
+  exports: [EmailService, AppointmentEmailListener],
 })
 export class EmailModule {}

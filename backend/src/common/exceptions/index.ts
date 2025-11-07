@@ -17,6 +17,10 @@ export * from './exceptions/validation.exception';
 export * from './exceptions/healthcare.exception';
 export * from './exceptions/retryable.exception';
 
+// Domain-specific exceptions
+export * from './student.exceptions';
+export * from './user.exceptions';
+
 // Types
 export * from './types/error-response.types';
 

@@ -5,6 +5,7 @@ import {
   DataType,
   PrimaryKey,
   Default,
+  Index,
   BeforeCreate,
   BeforeUpdate,
   Scopes,
@@ -124,6 +125,11 @@ export interface MedicationAttributes {
       fields: ['updatedAt'],
       name: 'idx_medications_updated_at',
     },
+    // Performance index for recall queries by manufacturer
+    {
+      fields: ['manufacturer'],
+      name: 'idx_medications_manufacturer',
+    },
   ],
 })
 export class Medication
@@ -156,6 +162,7 @@ export class Medication
   })
   strength: string;
 
+  @Index({ name: 'idx_medications_manufacturer' })
   @Column(DataType.STRING(255))
   manufacturer?: string;
 
@@ -164,8 +171,8 @@ export class Medication
     unique: true,
     validate: {
       is: {
-        args: /^\d{4,5}-\d{3,4}-\d{1,2}$/,
-        msg: 'NDC must be in format 12345-1234-12 or 1234-123-1',
+        args: /^(\d{4}-\d{4}-\d{2}|\d{5}-\d{3}-\d{2}|\d{5}-\d{4}-\d{1}|\d{10,11})$/,
+        msg: 'NDC must be in valid format: 4-4-2, 5-3-2, 5-4-1, or 10-11 digits',
       },
     },
   })
@@ -216,14 +223,20 @@ export class Medication
   // Hooks for HIPAA compliance and validation
   @BeforeCreate
   @BeforeUpdate
-  static async auditAccess(instance: Medication) {
+  static async auditAccess(instance: Medication, options: any) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] Medication ${instance.id} (${instance.name}) modified at ${new Date().toISOString()}`,
+      const { logModelPHIAccess } = await import(
+        '../services/model-audit-helper.service.js'
       );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
+      const action = instance.isNewRecord ? 'CREATE' : 'UPDATE';
+      await logModelPHIAccess(
+        'Medication',
+        instance.id,
+        action,
+        changedFields,
+        options?.transaction,
+      );
     }
   }
 

@@ -42,11 +42,29 @@ export enum Gender {
   tableName: 'students',
   timestamps: true,
   paranoid: true, // Enables soft deletes
+  indexes: [
+    // Performance index for cohort queries
+    {
+      fields: ['enrollmentDate'],
+      name: 'idx_students_enrollment_date',
+    },
+    // Composite index for school roster filtering by grade and active status
+    {
+      fields: ['schoolId', 'grade', 'isActive'],
+      name: 'idx_students_school_grade_active',
+    },
+    // Partial index for active students only (smaller, faster)
+    {
+      fields: ['isActive'],
+      where: { isActive: true },
+      name: 'idx_students_active',
+    },
+  ],
 })
 export class Student extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
-  @Column(DataType.STRING)
+  @Column(DataType.UUID)
   declare id: string;
 
   /**
@@ -127,6 +145,12 @@ export class Student extends Model {
     type: DataType.STRING(50),
     allowNull: true,
     unique: true,
+    validate: {
+      is: {
+        args: /^[A-Z0-9]{6,20}$/i,
+        msg: 'Medical Record Number must be 6-20 alphanumeric characters',
+      },
+    },
   })
   medicalRecordNum?: string;
 
@@ -143,6 +167,7 @@ export class Student extends Model {
   /**
    * School enrollment date
    */
+  @Index({ name: 'idx_students_enrollment_date' })
   @Default(DataType.NOW)
   @Column({
     type: DataType.DATE,
@@ -153,9 +178,16 @@ export class Student extends Model {
   /**
    * Assigned nurse ID (foreign key to users table)
    */
+  @ForeignKey(() => require('../database/models/user.model').User)
   @Column({
-    type: DataType.STRING,
+    type: DataType.UUID,
     allowNull: true,
+    references: {
+      model: 'users',
+      key: 'id',
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'SET NULL',
   })
   nurseId?: string;
 
@@ -163,8 +195,14 @@ export class Student extends Model {
    * School ID (foreign key to schools table)
    */
   @Column({
-    type: DataType.STRING,
+    type: DataType.UUID,
     allowNull: true,
+    references: {
+      model: 'schools',
+      key: 'id',
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'SET NULL',
   })
   schoolId?: string;
 
@@ -172,8 +210,14 @@ export class Student extends Model {
    * District ID (foreign key to districts table)
    */
   @Column({
-    type: DataType.STRING,
+    type: DataType.UUID,
     allowNull: true,
+    references: {
+      model: 'districts',
+      key: 'id',
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'SET NULL',
   })
   districtId?: string;
 
@@ -181,7 +225,7 @@ export class Student extends Model {
    * User who created this record
    */
   @Column({
-    type: DataType.STRING,
+    type: DataType.UUID,
     allowNull: true,
   })
   createdBy?: string;
@@ -190,7 +234,7 @@ export class Student extends Model {
    * User who last updated this record
    */
   @Column({
-    type: DataType.STRING,
+    type: DataType.UUID,
     allowNull: true,
   })
   updatedBy?: string;

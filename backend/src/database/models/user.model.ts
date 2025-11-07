@@ -285,6 +285,12 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
   @Column({
     type: DataType.STRING(20),
     allowNull: true,
+    validate: {
+      is: {
+        args: /^\+?[1-9]\d{1,14}$/,
+        msg: 'Phone number must be in E.164 format (e.g., +12125551234)',
+      },
+    },
   })
   declare phone?: string;
 

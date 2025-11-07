@@ -67,6 +67,16 @@ export interface MedicationLogAttributes {
       fields: ['updatedAt'],
       name: 'idx_medication_log_updated_at',
     },
+    // Composite index for medication administration history queries
+    {
+      fields: ['medicationId', 'administeredAt', 'status'],
+      name: 'idx_medication_log_med_time_status',
+    },
+    // Composite index for student medication logs with status filtering
+    {
+      fields: ['studentId', 'administeredAt', 'status'],
+      name: 'idx_medication_log_student_time_status',
+    },
   ],
 })
 export class MedicationLog
@@ -198,14 +208,20 @@ export class MedicationLog
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
-  static async auditPHIAccess(instance: MedicationLog) {
+  static async auditPHIAccess(instance: MedicationLog, options: any) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] MedicationLog ${instance.id} modified at ${new Date().toISOString()}`,
+      const { logModelPHIAccess } = await import(
+        '../services/model-audit-helper.service.js'
       );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
+      const action = instance.isNewRecord ? 'CREATE' : 'UPDATE';
+      await logModelPHIAccess(
+        'MedicationLog',
+        instance.id,
+        action,
+        changedFields,
+        options?.transaction,
+      );
     }
   }
 }

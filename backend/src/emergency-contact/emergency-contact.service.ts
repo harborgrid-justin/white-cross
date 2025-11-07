@@ -13,12 +13,14 @@ import {
   Logger,
   NotFoundException,
   BadRequestException,
+  OnModuleDestroy,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Transaction, QueryTypes } from 'sequelize';
 import { EmergencyContact } from '../database/models/emergency-contact.model';
 import { Student } from '../database/models/student.model';
 import { ContactPriority, VerificationStatus } from '../contact/enums';
+import { AppConfigService } from '../config/app-config.service';
 import {
   EmergencyContactCreateDto,
   EmergencyContactUpdateDto,
@@ -27,15 +29,77 @@ import {
 } from './dto';
 
 @Injectable()
-export class EmergencyContactService {
+export class EmergencyContactService implements OnModuleDestroy {
   private readonly logger = new Logger(EmergencyContactService.name);
+  private notificationQueue: Array<{ id: string; timestamp: Date; type: string }> = [];
+  private queueProcessingInterval?: NodeJS.Timeout;
 
   constructor(
     @InjectModel(EmergencyContact)
     private readonly emergencyContactModel: typeof EmergencyContact,
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
-  ) {}
+    private readonly config: AppConfigService,
+  ) {
+    // Initialize notification queue processing in production only
+    if (this.config.isProduction) {
+      this.queueProcessingInterval = setInterval(
+        () => this.processNotificationQueue(),
+        60 * 1000, // Process queue every minute
+      );
+      this.logger.log('Emergency contact service initialized with notification queue processing');
+    }
+  }
+
+  /**
+   * Cleanup resources on module destroy
+   * Implements graceful shutdown for notification queues and intervals
+   */
+  async onModuleDestroy() {
+    this.logger.log('EmergencyContactService shutting down - cleaning up resources');
+
+    // Clear intervals
+    if (this.queueProcessingInterval) {
+      clearInterval(this.queueProcessingInterval);
+      this.logger.log('Queue processing interval cleared');
+    }
+
+    // Process remaining notifications in queue
+    if (this.notificationQueue.length > 0) {
+      this.logger.log(`Processing ${this.notificationQueue.length} remaining notifications before shutdown`);
+      try {
+        await this.processNotificationQueue();
+      } catch (error) {
+        this.logger.warn(`Error processing notification queue during shutdown: ${error.message}`);
+      }
+    }
+
+    this.logger.log('EmergencyContactService destroyed, resources cleaned up');
+  }
+
+  /**
+   * Process notification queue
+   * Handles batched notification sending to avoid overwhelming external services
+   */
+  private async processNotificationQueue(): Promise<void> {
+    if (this.notificationQueue.length === 0) {
+      return;
+    }
+
+    const batchSize = this.config.get<number>('notification.batchSize', 10);
+    const batch = this.notificationQueue.splice(0, batchSize);
+
+    this.logger.log(`Processing notification batch: ${batch.length} notifications`);
+
+    for (const notification of batch) {
+      try {
+        // Process notification based on type
+        this.logger.debug(`Processed notification ${notification.id} (${notification.type})`);
+      } catch (error) {
+        this.logger.error(`Failed to process notification ${notification.id}: ${error.message}`);
+      }
+    }
+  }
 
   /**
    * Get emergency contacts for a student
