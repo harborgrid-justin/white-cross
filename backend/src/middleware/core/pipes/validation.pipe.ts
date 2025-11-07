@@ -8,17 +8,8 @@
  * @compliance HIPAA - PHI data validation
  */
 
-import {
-  PipeTransform,
-  Injectable,
-  ArgumentMetadata,
-  BadRequestException,
-  Logger,
-} from '@nestjs/common';
-import {
-  validate,
-  ValidationError as ClassValidatorError,
-} from 'class-validator';
+import { ArgumentMetadata, BadRequestException, Injectable, Logger, PipeTransform } from '@nestjs/common';
+import { validate, ValidationError as ClassValidatorError } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import {
   HEALTHCARE_PATTERNS,

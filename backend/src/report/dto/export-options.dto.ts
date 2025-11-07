@@ -1,4 +1,4 @@
-import { IsEnum, IsOptional, IsBoolean, IsString, IsArray } from 'class-validator';
+import { IsArray, IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { OutputFormat, ReportType } from '../constants/report.constants';
 

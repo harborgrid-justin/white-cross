@@ -1,44 +1,22 @@
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  ForbiddenException,
-  BadRequestException,
-} from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, WhereOptions, Sequelize } from 'sequelize';
+import { Op, WhereOptions } from 'sequelize';
 import { Message } from '../../database/models/message.model';
-import {
-  MessageDelivery,
-  DeliveryStatus,
-} from '../../database/models/message-delivery.model';
+import { MessageDelivery } from '../../database/models/message-delivery.model';
 import { MessageRead } from '../../database/models/message-read.model';
 import { MessageReaction } from '../../database/models/message-reaction.model';
-import {
-  Conversation,
-  ConversationType,
-} from '../../database/models/conversation.model';
+import { Conversation, ConversationType } from '../../database/models/conversation.model';
 import { ConversationParticipant } from '../../database/models/conversation-participant.model';
 import { EncryptionService } from '../../infrastructure/encryption/encryption.service';
 import { MessageQueueService } from '../../infrastructure/queue/message-queue.service';
 import { QueueIntegrationHelper } from '../helpers/queue-integration.helper';
-import {
-  MessageOperationResult,
-  EditMessageResult,
-  MarkAsReadResult,
-  MessageHistoryResult,
-  MessageSearchResult,
-  UnreadCountResult,
-} from '../types';
+import { MarkAsReadResult, UnreadCountResult } from '../types';
 import { SendDirectMessageDto } from '../dto/send-direct-message.dto';
 import { SendGroupMessageDto } from '../dto/send-group-message.dto';
 import { EditMessageDto } from '../dto/edit-message.dto';
 import { MessagePaginationDto } from '../dto/message-pagination.dto';
 import { SearchMessagesDto } from '../dto/search-messages.dto';
-import {
-  MarkAsReadDto,
-  MarkConversationAsReadDto,
-} from '../dto/mark-as-read.dto';
+import { MarkAsReadDto, MarkConversationAsReadDto } from '../dto/mark-as-read.dto';
 
 /**
  * EnhancedMessageService

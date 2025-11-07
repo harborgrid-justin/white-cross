@@ -3,12 +3,11 @@
  * Injectable NestJS service for transaction management
  */
 
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Transaction } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
-import { IUnitOfWork, TransactionOptions } from './unit-of-work.interface';
+import { IUnitOfWork } from './unit-of-work.interface';
 import { ExecutionContext } from '../types';
-import { TransactionIsolationLevel } from '../types/database.enums';
 import type { IAuditLogger } from '../interfaces/audit/audit-logger.interface';
 
 @Injectable()

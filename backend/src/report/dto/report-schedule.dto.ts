@@ -1,14 +1,6 @@
-import {
-  IsEnum,
-  IsString,
-  IsEmail,
-  IsArray,
-  IsOptional,
-  IsBoolean,
-  ValidateIf,
-} from 'class-validator';
+import { IsArray, IsBoolean, IsEmail, IsEnum, IsOptional, IsString, ValidateIf } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ReportType, OutputFormat, ScheduleFrequency } from '../constants/report.constants';
+import { OutputFormat, ReportType, ScheduleFrequency } from '../constants/report.constants';
 
 /**
  * DTO for creating/updating report schedules

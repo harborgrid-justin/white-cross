@@ -16,30 +16,20 @@
  * - CPU-intensive task optimization
  */
 
-import {
-  OnModuleInit,
-  OnModuleDestroy,
-  Logger,
-  Injectable,
-} from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { Worker } from 'worker_threads';
 import { cpus } from 'os';
 import { EventEmitter } from 'events';
-import type {
-  WorkerTask,
-  WorkerInfo,
-  WorkerPoolOptions,
-  WorkerPoolStats,
-} from './worker-pool.interfaces';
+import type { WorkerInfo, WorkerPoolOptions, WorkerPoolStats, WorkerTask } from './worker-pool.interfaces';
 import {
-  CPUIntensive,
-  ResourcePool,
-  MemoryIntensive,
-  MemoryMonitoring,
   Cleanup,
-  MemorySensitive,
+  CPUIntensive,
   ImmediateCleanup,
   LeakProne,
+  MemoryIntensive,
+  MemoryMonitoring,
+  MemorySensitive,
+  ResourcePool,
 } from '@/discovery/modules';
 
 @CPUIntensive()

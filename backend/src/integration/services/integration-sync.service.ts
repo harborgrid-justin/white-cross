@@ -1,9 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import {
-  IntegrationConfig,
-  IntegrationStatus,
-} from '../../database/models/integration-config.model';
+import { IntegrationConfig, IntegrationStatus } from '../../database/models/integration-config.model';
 import { IntegrationConfigService } from './integration-config.service';
 import { IntegrationLogService } from './integration-log.service';
 

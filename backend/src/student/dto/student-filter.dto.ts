@@ -5,17 +5,8 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsOptional,
-  IsInt,
-  Min,
-  Max,
-  IsString,
-  IsBoolean,
-  IsUUID,
-  IsEnum,
-} from 'class-validator';
-import { Type, Transform } from 'class-transformer';
+import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
 import { Gender } from '../entities/student.entity';
 
 /**

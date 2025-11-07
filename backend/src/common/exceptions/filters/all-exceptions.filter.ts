@@ -4,27 +4,18 @@
  * @description Catch-all exception filter for unhandled errors with Winston logging and Sentry integration
  */
 
-import {
-  ExceptionFilter,
-  Catch,
-  ArgumentsHost,
-  HttpException,
-  HttpStatus,
-  Inject,
-} from '@nestjs/common';
+import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Inject } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import {
+  ErrorCategory,
   ErrorResponse,
   ErrorSeverity,
-  ErrorCategory,
+  getRequestContext,
+  getRequestId,
+  SystemErrorCodes,
 } from '@/common';
-import { SystemErrorCodes } from '@/common';
 import { LoggerService } from '../../../shared/logging/logger.service';
 import { SentryService } from '@/infrastructure/monitoring/sentry.service';
-import {
-  getRequestId,
-  getRequestContext,
-} from '@/common';
 
 /**
  * All Exceptions Filter

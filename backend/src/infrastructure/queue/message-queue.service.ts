@@ -4,33 +4,21 @@
  * @description Service for managing message-related queues with Bull and Redis
  */
 
-import {
-  Injectable,
-  Logger,
-  OnModuleInit,
-  OnModuleDestroy,
-} from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
-import type { Queue, Job } from 'bull';
-import { QueueName, JobPriority } from './enums';
-import { QueueConfigService, QUEUE_CONFIGS } from './queue.config';
+import type { Job, Queue } from 'bull';
+import { JobPriority, QueueName } from './enums';
+import { QUEUE_CONFIGS, QueueConfigService } from './queue.config';
 import {
-  SendMessageJobDto,
+  BatchMessageJobDto,
   DeliveryConfirmationJobDto,
-  NotificationJobDto,
   EncryptionJobDto,
   IndexingJobDto,
-  BatchMessageJobDto,
   MessageCleanupJobDto,
+  NotificationJobDto,
+  SendMessageJobDto,
 } from './dtos';
-import {
-  QueueJobOptions,
-  JobResult,
-  QueueMetrics,
-  QueueStats,
-  QueueHealth,
-  FailedJobInfo,
-} from './interfaces';
+import { FailedJobInfo, QueueHealth, QueueJobOptions, QueueMetrics, QueueStats } from './interfaces';
 
 /**
  * Message Queue Service

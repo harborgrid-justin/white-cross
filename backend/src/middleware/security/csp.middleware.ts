@@ -20,8 +20,8 @@
  * - HIPAA 164.312(b) - Audit Controls (violation reporting)
  */
 
-import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
-import type { Request, Response, NextFunction } from 'express';
+import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
+import type { NextFunction, Request, Response } from 'express';
 import * as crypto from 'crypto';
 
 export interface CSPConfig {

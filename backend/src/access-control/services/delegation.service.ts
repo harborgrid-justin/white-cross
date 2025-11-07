@@ -1,13 +1,5 @@
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
-import {
-  PermissionDelegation,
-  DelegationCheckResult,
-} from '../interfaces/permission-delegation.interface';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { DelegationCheckResult, PermissionDelegation } from '../interfaces/permission-delegation.interface';
 
 /**
  * Permission Delegation Service

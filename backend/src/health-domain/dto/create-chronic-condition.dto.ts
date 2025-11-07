@@ -1,17 +1,7 @@
-import {
-  IsString,
-  IsDate,
-  IsOptional,
-  IsEnum,
-  IsArray,
-  IsBoolean,
-} from 'class-validator';
+import { IsArray, IsBoolean, IsDate, IsEnum, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  ConditionStatus,
-  ConditionSeverity,
-} from '../../health-record/interfaces/chronic-condition.interface';
+import { ConditionSeverity, ConditionStatus } from '../../health-record/interfaces/chronic-condition.interface';
 
 export class HealthDomainCreateChronicConditionDto {
   @ApiProperty()

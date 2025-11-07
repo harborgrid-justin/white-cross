@@ -9,36 +9,22 @@
  * @route /allergy
  */
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
   Body,
-  Param,
-  Query,
-  ParseUUIDPipe,
-  ParseBoolPipe,
+  Controller,
+  Delete,
+  Get,
   HttpCode,
   HttpStatus,
+  Param,
+  ParseBoolPipe,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBody,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
-import { AllergyCrudService } from '@/allergy/services';
-import { AllergyQueryService } from '@/allergy/services';
-import { AllergySafetyService } from '@/allergy/services';
-import { CreateAllergyDto } from '@/allergy/dto';
-import { AllergyUpdateDto } from '@/allergy/dto';
-import { AllergyFiltersDto } from '@/allergy/dto';
-import { PaginationDto } from '@/allergy/dto';
-import { VerifyAllergyDto } from '@/allergy/dto';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { AllergyCrudService, AllergyQueryService, AllergySafetyService } from '@/allergy/services';
+import { AllergyFiltersDto, AllergyUpdateDto, CreateAllergyDto, PaginationDto, VerifyAllergyDto } from '@/allergy/dto';
 
 @ApiTags('Allergies')
 @ApiBearerAuth()

@@ -1,9 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DiscoveryService, Reflector } from '@nestjs/core';
-import {
-  DynamicResourcePoolService,
-  PoolStats,
-} from './dynamic-resource-pool.service';
+import { DynamicResourcePoolService, PoolStats } from './dynamic-resource-pool.service';
 import { ResourceMonitorService } from './resource-monitor.service';
 
 export interface OptimizationStrategy {

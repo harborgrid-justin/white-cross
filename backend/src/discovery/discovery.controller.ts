@@ -1,30 +1,16 @@
 import {
   Controller,
   Get,
-  Query,
   Param,
+  Query,
+  UseFilters,
   UseGuards,
+  UseInterceptors,
   UsePipes,
   ValidationPipe,
-  UseFilters,
-  UseInterceptors,
-  ParseEnumPipe,
-  DefaultValuePipe,
-  ParseIntPipe,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiQuery,
-  ApiParam,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
-import {
-  DiscoveryExampleService,
-  ProviderInfo,
-  ControllerInfo,
-} from './discovery-example.service';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ControllerInfo, DiscoveryExampleService, ProviderInfo } from './discovery-example.service';
 import { AdminDiscoveryGuard } from './guards/admin-discovery.guard';
 import { DiscoveryRateLimitGuard } from './guards/discovery-rate-limit.guard';
 import { DiscoveryExceptionFilter } from './filters/discovery-exception.filter';
@@ -32,24 +18,9 @@ import { DiscoveryLoggingInterceptor } from './interceptors/discovery-logging.in
 import { DiscoveryCacheInterceptor } from './interceptors/discovery-cache.interceptor';
 import { DiscoveryMetricsInterceptor } from './interceptors/discovery-metrics.interceptor';
 import { AdminOnly } from './decorators/admin-only.decorator';
-import {
-  RateLimit,
-  RateLimitModerate,
-  RateLimitLenient,
-} from './decorators/rate-limit.decorator';
-import {
-  CacheShort,
-  CacheMedium,
-  CacheLong,
-} from './decorators/cache-config.decorator';
-import {
-  ProviderQueryDto,
-  FeatureFlagQueryDto,
-  MonitoringQueryDto,
-  MetadataQueryDto,
-} from './dto/provider-query.dto';
+import { RateLimit, RateLimitLenient, RateLimitModerate } from './decorators/rate-limit.decorator';
+import { CacheMedium, CacheShort } from './decorators/cache-config.decorator';
 import { PaginationDto } from './dto/pagination.dto';
-import { ProviderType, MonitoringLevel } from './enums/provider-type.enum';
 
 @ApiTags('Discovery')
 @ApiBearerAuth()

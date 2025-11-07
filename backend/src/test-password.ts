@@ -28,9 +28,7 @@ async function testPassword() {
 
     console.log(`📧 Found user: ${adminUser.email}`);
     console.log(`👤 User ID: ${adminUser.id}`);
-    console.log(
-      `🔐 Stored password hash: ${adminUser.password.substring(0, 20)}...`,
-    );
+    console.log(`🔐 Stored password hash: ${adminUser.password.substring(0, 20)}...`);
     console.log('');
 
     // Test password comparison
@@ -38,19 +36,12 @@ async function testPassword() {
     console.log(`🔑 Testing password: ${testPassword}`);
 
     const isValid = await adminUser.comparePassword(testPassword);
-    console.log(
-      `✅ Password comparison result: ${isValid ? 'VALID ✓' : 'INVALID ✗'}`,
-    );
+    console.log(`✅ Password comparison result: ${isValid ? 'VALID ✓' : 'INVALID ✗'}`);
     console.log('');
 
     // Also test direct bcrypt comparison
-    const directCompare = await bcrypt.compare(
-      testPassword,
-      adminUser.password,
-    );
-    console.log(
-      `🔬 Direct bcrypt comparison: ${directCompare ? 'VALID ✓' : 'INVALID ✗'}`,
-    );
+    const directCompare = await bcrypt.compare(testPassword, adminUser.password);
+    console.log(`🔬 Direct bcrypt comparison: ${directCompare ? 'VALID ✓' : 'INVALID ✗'}`);
     console.log('');
 
     // Show user status
@@ -58,9 +49,7 @@ async function testPassword() {
     console.log(`   Active: ${adminUser.isActive}`);
     console.log(`   Email Verified: ${adminUser.emailVerified}`);
     console.log(`   Failed Login Attempts: ${adminUser.failedLoginAttempts}`);
-    console.log(
-      `   Locked: ${adminUser.isAccountLocked ? adminUser.isAccountLocked() : 'N/A'}`,
-    );
+    console.log(`   Locked: ${adminUser.isAccountLocked ? adminUser.isAccountLocked() : 'N/A'}`);
 
     // Close the application
     await app.close();

@@ -1,10 +1,4 @@
-import {
-  Module,
-  DynamicModule,
-  OnApplicationBootstrap,
-  OnApplicationShutdown,
-  Injectable,
-} from '@nestjs/common';
+import { DynamicModule, Injectable, Module, OnApplicationBootstrap, OnApplicationShutdown } from '@nestjs/common';
 import { DiscoveryModule, DiscoveryService, Reflector } from '@nestjs/core';
 import { SmartGarbageCollectionService } from './services/smart-garbage-collection.service';
 import { MemoryLeakDetectionService } from './services/memory-leak-detection.service';

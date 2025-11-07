@@ -1,14 +1,6 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PolicyRepository } from '../repositories/policy.repository';
-import {
-  CreatePolicyDto,
-  UpdatePolicyDto,
-  QueryPolicyDto,
-} from '../dto/policy.dto';
+import { CreatePolicyDto, QueryPolicyDto, UpdatePolicyDto } from '../dto/policy.dto';
 import { PolicyStatus } from '../../database/models/policy-document.model';
 
 @Injectable()

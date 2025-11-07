@@ -4,15 +4,7 @@
  * Validates all required and optional fields for allergy creation.
  * Ensures data integrity before persisting to database.
  */
-import {
-  IsString,
-  IsEnum,
-  IsBoolean,
-  IsOptional,
-  IsUUID,
-  MaxLength,
-  IsNotEmpty,
-} from 'class-validator';
+import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AllergySeverity } from '../../common/enums';
 import { AllergenType } from '../entities/allergy.entity';

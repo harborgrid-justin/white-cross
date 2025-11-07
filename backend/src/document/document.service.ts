@@ -1,14 +1,7 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-  Inject,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Document } from '@/document/entities';
-import { DocumentSignature } from '@/document/entities';
-import { DocumentAuditTrail } from '@/document/entities';
-import { CreateDocumentDto, UpdateDocumentDto, SignDocumentDto } from './dto';
+import { Document, DocumentAuditTrail, DocumentSignature } from '@/document/entities';
+import { CreateDocumentDto, SignDocumentDto, UpdateDocumentDto } from './dto';
 import { Op, Transaction } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 

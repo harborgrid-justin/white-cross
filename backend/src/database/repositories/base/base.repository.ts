@@ -14,40 +14,30 @@
 
 import { Logger } from '@nestjs/common';
 import {
-  Model,
-  ModelStatic,
-  Transaction,
-  FindOptions,
-  CreateOptions,
-  UpdateOptions,
-  DestroyOptions,
-  WhereOptions,
   Attributes,
+  CreateOptions,
   CreationAttributes,
+  DestroyOptions,
+  FindOptions,
+  Includeable,
+  Model,
   Op,
   Order,
-  Includeable,
+  Transaction,
+  UpdateOptions,
+  WhereOptions,
 } from 'sequelize';
+import { IRepository, RepositoryError } from '../interfaces/repository.interface';
 import {
-  IRepository,
-  RepositoryError,
-} from '../interfaces/repository.interface';
-import {
-  ExecutionContext,
-  QueryOptions,
-  QueryCriteria,
-  PaginatedResult,
-  createPaginationMetadata,
   calculateSkip,
+  createPaginationMetadata,
+  ExecutionContext,
+  PaginatedResult,
+  QueryCriteria,
+  QueryOptions,
 } from '../../types';
-import {
-  IAuditLogger,
-  sanitizeSensitiveData,
-} from '../../interfaces/audit/audit-logger.interface';
-import {
-  ICacheManager,
-  CacheKeyBuilder,
-} from '../../interfaces/cache/cache-manager.interface';
+import { IAuditLogger } from '../../interfaces/audit/audit-logger.interface';
+import { CacheKeyBuilder, ICacheManager } from '../../interfaces/cache/cache-manager.interface';
 import { getCacheTTL } from '../../types/database.enums';
 
 /**

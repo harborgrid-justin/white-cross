@@ -2,38 +2,44 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 
 // Models
-import { DrugCatalog } from '@/database';
-import { DrugInteraction } from '@/database';
-import { StudentDrugAllergy } from '@/database';
-import { TreatmentPlan } from '@/database';
-import { VitalSigns } from '@/database';
-import { ClinicVisit } from '@/database';
-import { Prescription } from '@/database';
-import { ClinicalProtocol } from '@/database';
-import { ClinicalNote } from '@/database';
-import { FollowUpAppointment } from '@/database';
+import {
+  ClinicalNote,
+  ClinicalProtocol,
+  ClinicVisit,
+  DrugCatalog,
+  DrugInteraction,
+  FollowUpAppointment,
+  Prescription,
+  StudentDrugAllergy,
+  TreatmentPlan,
+  VitalSigns,
+} from '@/database';
 
 // Services
-import { DrugInteractionService } from '@/clinical/services';
-import { ClinicVisitService } from '@/clinical/services';
-import { TreatmentPlanService } from '@/clinical/services';
-import { PrescriptionService } from '@/clinical/services';
-import { ClinicalProtocolService } from '@/clinical/services';
-import { ClinicalNoteService } from '@/clinical/services';
-import { VitalSignsService } from '@/clinical/services';
-import { FollowUpService } from '@/clinical/services';
+import {
+  ClinicalNoteService,
+  ClinicalProtocolService,
+  ClinicVisitService,
+  DrugInteractionService,
+  FollowUpService,
+  PrescriptionService,
+  TreatmentPlanService,
+  VitalSignsService,
+} from '@/clinical/services';
 
 // Controllers
-import { DrugInteractionController } from '@/clinical/controllers';
-import { ClinicVisitController } from '@/clinical/controllers';
-import { TreatmentPlanController } from '@/clinical/controllers';
-import { PrescriptionController } from '@/clinical/controllers';
-import { ClinicalProtocolController } from '@/clinical/controllers';
-import { ClinicalNoteController } from '@/clinical/controllers';
-import { VitalSignsController } from '@/clinical/controllers';
-import { FollowUpController } from '@/clinical/controllers';
-import { MedicationAdministrationController } from '@/clinical/controllers';
-import { PrescriptionAliasController } from '@/clinical/controllers';
+import {
+  ClinicalNoteController,
+  ClinicalProtocolController,
+  ClinicVisitController,
+  DrugInteractionController,
+  FollowUpController,
+  MedicationAdministrationController,
+  PrescriptionAliasController,
+  PrescriptionController,
+  TreatmentPlanController,
+  VitalSignsController,
+} from '@/clinical/controllers';
 
 /**
  * Clinical Module

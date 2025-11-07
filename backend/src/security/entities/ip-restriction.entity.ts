@@ -1,4 +1,4 @@
-import { Table, Column, Model, DataType, PrimaryKey, Default } from 'sequelize-typescript';
+import { Column, DataType, Default, Model, PrimaryKey, Table } from 'sequelize-typescript';
 import { IpRestrictionType } from '../enums';
 
 /**

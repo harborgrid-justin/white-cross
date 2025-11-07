@@ -5,15 +5,7 @@
  * Tracks all access to PHI and critical system changes
  */
 
-import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  Scopes,
-} from 'sequelize-typescript';
+import { Column, DataType, Default, Model, PrimaryKey, Scopes, Table } from 'sequelize-typescript';
 import { AuditAction } from '../types/database.enums';
 import { LoggerService } from '../../shared/logging/logger.service';
 

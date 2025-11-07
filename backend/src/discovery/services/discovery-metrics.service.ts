@@ -1,9 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import {
-  MetricsSnapshot,
-  MetricLabels,
-  HistogramEntry,
-} from '../interfaces/metrics.interface';
+import { HistogramEntry, MetricsSnapshot } from '../interfaces/metrics.interface';
 
 @Injectable()
 export class DiscoveryMetricsService {

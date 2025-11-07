@@ -5,35 +5,24 @@
  */
 
 import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
   Body,
+  Controller,
+  Delete,
+  Get,
+  Logger,
   Param,
-  Query,
   ParseIntPipe,
   ParseUUIDPipe,
-  Logger,
+  Post,
+  Put,
+  Query,
   Req,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiQuery,
-  ApiParam,
-  ApiBody,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 
 // Execution Context
-import {
-  createExecutionContext,
-  createSystemExecutionContext,
-} from '../database/types/execution-context.interface';
+import { createExecutionContext } from '../database/types/execution-context.interface';
 import { UserRole } from '../database/models/user.model';
 
 // Services
@@ -50,32 +39,20 @@ import { StatisticsService } from './services/statistics.service';
 import { CreateAuditLogDto } from './dto/create-audit-log.dto';
 import { SignConsentFormDto } from './dto/sign-consent-form.dto';
 import {
-  CreateComplianceReportDto,
-  UpdateComplianceReportDto,
   ComplianceGenerateReportDto,
+  CreateComplianceReportDto,
   QueryComplianceReportDto,
+  UpdateComplianceReportDto,
 } from './dto/compliance-report.dto';
+import { CreateChecklistDto, QueryChecklistDto, UpdateChecklistDto } from './dto/checklist.dto';
+import { CreatePolicyDto, QueryPolicyDto, UpdatePolicyDto } from './dto/policy.dto';
+import { CreateDataRetentionDto, QueryDataRetentionDto, UpdateDataRetentionDto } from './dto/data-retention.dto';
 import {
-  CreateChecklistDto,
-  UpdateChecklistDto,
-  QueryChecklistDto,
-} from './dto/checklist.dto';
-import {
-  CreatePolicyDto,
-  UpdatePolicyDto,
-  QueryPolicyDto,
-} from './dto/policy.dto';
-import {
-  CreateDataRetentionDto,
-  UpdateDataRetentionDto,
-  QueryDataRetentionDto,
-} from './dto/data-retention.dto';
-import {
-  CreateViolationDto,
-  UpdateViolationDto,
   CreateRemediationDto,
-  UpdateRemediationDto,
+  CreateViolationDto,
   QueryViolationDto,
+  UpdateRemediationDto,
+  UpdateViolationDto,
 } from './dto/violation.dto';
 import { QueryStatisticsDto } from './dto/statistics.dto';
 

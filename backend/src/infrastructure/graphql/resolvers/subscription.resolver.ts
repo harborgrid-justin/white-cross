@@ -29,14 +29,14 @@
  * }
  * ```
  */
-import { Resolver, Subscription, Args, ID } from '@nestjs/graphql';
+import { Args, ID, Resolver, Subscription } from '@nestjs/graphql';
 import { Inject, UseGuards } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../pubsub/pubsub.module';
 import { GqlAuthGuard, GqlRolesGuard } from '../guards';
 import { Roles } from '@/auth';
 import { UserRole } from '@/database';
-import { HealthRecordDto, StudentDto, AlertDto, VitalsDto } from '../dto';
+import { AlertDto, HealthRecordDto, StudentDto, VitalsDto } from '../dto';
 
 
 /**

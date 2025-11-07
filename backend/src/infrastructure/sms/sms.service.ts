@@ -23,26 +23,20 @@
  * ```
  */
 
-import {
-  Injectable,
-  Logger,
-  BadRequestException,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bullmq';
 import {
   AlertSmsDto,
-  GenericSmsDto,
-  SendSmsDto,
-  SendTemplatedSmsDto,
   BulkSmsDto,
   BulkSmsResultDto,
+  GenericSmsDto,
+  PhoneNumberValidationResult,
+  SendSmsDto,
+  SendTemplatedSmsDto,
   SmsPriority,
   SmsQueueJobDto,
-  PhoneNumberValidationResult,
 } from './dto';
 import { TwilioProvider } from './providers/twilio.provider';
 import { PhoneValidatorService } from './services/phone-validator.service';

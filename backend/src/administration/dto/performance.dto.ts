@@ -1,12 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsEnum,
-  IsNumber,
-  IsString,
-  IsOptional,
-  IsDate,
-  IsObject,
-} from 'class-validator';
+import { IsDate, IsEnum, IsNumber, IsObject, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 import { MetricType } from '../enums/administration.enums';
 

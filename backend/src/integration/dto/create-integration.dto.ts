@@ -1,21 +1,18 @@
 import {
-  IsString,
   IsEnum,
-  IsOptional,
-  IsObject,
   IsNumber,
+  IsObject,
+  IsOptional,
+  IsString,
   IsUrl,
-  MinLength,
+  Max,
   MaxLength,
   Min,
-  Max,
+  MinLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IntegrationType } from '../entities/integration-config.entity';
-import type {
-  IntegrationSettings,
-  AuthenticationConfig,
-} from '../types';
+import type { AuthenticationConfig, IntegrationSettings } from '../types';
 
 export class CreateIntegrationDto {
   @ApiProperty({

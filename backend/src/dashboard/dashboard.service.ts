@@ -8,20 +8,15 @@
  * These models should be registered in the DatabaseModule through Sequelize's model registry.
  */
 
-import {
-  Injectable,
-  Logger,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
-import { Sequelize, Op, fn, col } from 'sequelize';
+import { col, fn, Op, Sequelize } from 'sequelize';
 import {
+  ChartDataPointDto,
+  DashboardChartDataDto,
   DashboardStatsDto,
   RecentActivityDto,
   UpcomingAppointmentDto,
-  DashboardChartDataDto,
-  ChartDataPointDto,
-  TrendDataDto,
 } from './dto';
 
 // Enums from backend (replicated here for type safety)

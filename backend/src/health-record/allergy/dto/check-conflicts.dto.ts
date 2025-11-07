@@ -1,4 +1,4 @@
-import { IsString, IsUUID, MinLength, MaxLength } from 'class-validator';
+import { IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 /**

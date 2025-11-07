@@ -140,9 +140,7 @@ export class InventoryMaintenanceProcessor {
   ) {}
 
   @Process()
-  async processInventoryMaintenance(
-    job: Job<InventoryMaintenanceData>,
-  ): Promise<any> {
+  async processInventoryMaintenance(job: Job<InventoryMaintenanceData>): Promise<any> {
     const { organizationId, forceRefresh } = job.data;
 
     try {
@@ -161,8 +159,7 @@ export class InventoryMaintenanceProcessor {
       const alerts = await this.identifyCriticalAlerts(organizationId);
 
       // 3. Generate reorder suggestions
-      const reorderSuggestions =
-        await this.generateReorderSuggestions(organizationId);
+      const reorderSuggestions = await this.generateReorderSuggestions(organizationId);
 
       // 4. Send notifications if needed
       if (alerts.length > 0) {
@@ -217,15 +214,11 @@ export class InventoryMaintenanceProcessor {
   /**
    * Identify critical alerts that need immediate attention
    */
-  private async identifyCriticalAlerts(
-    organizationId?: string,
-  ): Promise<InventoryAlert[]> {
+  private async identifyCriticalAlerts(organizationId?: string): Promise<InventoryAlert[]> {
     const alerts: InventoryAlert[] = [];
 
     try {
-      const whereClause = organizationId
-        ? `AND organization_id = '${organizationId}'`
-        : '';
+      const whereClause = organizationId ? `AND organization_id = '${organizationId}'` : '';
 
       const criticalItems = await this.sequelize.query<{
         id: string;
@@ -272,10 +265,7 @@ export class InventoryMaintenanceProcessor {
         }
 
         // Near expiry (within 7 days)
-        if (
-          item.expiry_status === 'NEAR_EXPIRY' &&
-          item.days_until_expiry <= 7
-        ) {
+        if (item.expiry_status === 'NEAR_EXPIRY' && item.days_until_expiry <= 7) {
           alerts.push({
             type: 'NEAR_EXPIRY',
             medicationId: item.medication_id,
@@ -308,15 +298,12 @@ export class InventoryMaintenanceProcessor {
             batchNumber: item.batch_number,
             quantity: item.quantity,
             reorderLevel: item.reorder_level,
-            severity:
-              item.quantity <= item.reorder_level * 0.5 ? 'HIGH' : 'MEDIUM',
+            severity: item.quantity <= item.reorder_level * 0.5 ? 'HIGH' : 'MEDIUM',
           });
         }
       }
 
-      this.logger.debug(
-        `Identified ${alerts.length} critical inventory alerts`,
-      );
+      this.logger.debug(`Identified ${alerts.length} critical inventory alerts`);
     } catch (error) {
       this.logger.error('Failed to identify critical alerts', error);
     }
@@ -339,31 +326,19 @@ export class InventoryMaintenanceProcessor {
     const highAlerts = alerts.filter((a) => a.severity === 'HIGH');
 
     if (criticalAlerts.length > 0) {
-      this.logger.warn(
-        `CRITICAL INVENTORY ALERTS: ${criticalAlerts.length} items`,
-        {
-          alerts: criticalAlerts.map((a) => `${a.medicationName} - ${a.type}`),
-        },
-      );
+      this.logger.warn(`CRITICAL INVENTORY ALERTS: ${criticalAlerts.length} items`, {
+        alerts: criticalAlerts.map((a) => `${a.medicationName} - ${a.type}`),
+      });
 
-      await this.sendCriticalAlertNotifications(
-        criticalAlerts,
-        reorderSuggestions,
-      );
+      await this.sendCriticalAlertNotifications(criticalAlerts, reorderSuggestions);
     }
 
     if (highAlerts.length > 0) {
-      this.logger.warn(
-        `HIGH PRIORITY INVENTORY ALERTS: ${highAlerts.length} items`,
-        {
-          alerts: highAlerts.map((a) => `${a.medicationName} - ${a.type}`),
-        },
-      );
+      this.logger.warn(`HIGH PRIORITY INVENTORY ALERTS: ${highAlerts.length} items`, {
+        alerts: highAlerts.map((a) => `${a.medicationName} - ${a.type}`),
+      });
 
-      await this.sendHighPriorityAlertNotifications(
-        highAlerts,
-        reorderSuggestions,
-      );
+      await this.sendHighPriorityAlertNotifications(highAlerts, reorderSuggestions);
     }
 
     this.logger.log(
@@ -393,17 +368,11 @@ export class InventoryMaintenanceProcessor {
         .filter((p) => p.trim());
 
       if (adminEmails.length === 0 && adminPhones.length === 0) {
-        this.logger.warn(
-          'No notification recipients configured for inventory alerts',
-        );
+        this.logger.warn('No notification recipients configured for inventory alerts');
         return;
       }
 
-      const htmlMessage = this.buildAlertMessage(
-        alerts,
-        'CRITICAL',
-        reorderSuggestions,
-      );
+      const htmlMessage = this.buildAlertMessage(alerts, 'CRITICAL', reorderSuggestions);
       const subject = `CRITICAL: ${alerts.length} Medication Inventory Alert(s)`;
 
       // Send email notifications with delivery tracking
@@ -425,9 +394,7 @@ export class InventoryMaintenanceProcessor {
           });
 
           await delivery.update({
-            status: result.success
-              ? DeliveryStatus.SENT
-              : DeliveryStatus.FAILED,
+            status: result.success ? DeliveryStatus.SENT : DeliveryStatus.FAILED,
             sentAt: new Date(),
             deliveredAt: result.success ? new Date() : undefined,
             externalId: result.messageId,
@@ -436,10 +403,7 @@ export class InventoryMaintenanceProcessor {
 
           this.logger.log(`Critical inventory alert sent to: ${email}`);
         } catch (error) {
-          this.logger.error(
-            `Failed to send critical alert email to ${email}`,
-            error,
-          );
+          this.logger.error(`Failed to send critical alert email to ${email}`, error);
         }
       }
 
@@ -450,9 +414,7 @@ export class InventoryMaintenanceProcessor {
         );
       }
 
-      this.logger.log(
-        `Critical inventory notifications sent to ${adminEmails.length} emails`,
-      );
+      this.logger.log(`Critical inventory notifications sent to ${adminEmails.length} emails`);
     } catch (error) {
       this.logger.error('Failed to send critical inventory alerts', error);
     }
@@ -480,11 +442,7 @@ export class InventoryMaintenanceProcessor {
         return;
       }
 
-      const htmlMessage = this.buildAlertMessage(
-        alerts,
-        'HIGH',
-        reorderSuggestions,
-      );
+      const htmlMessage = this.buildAlertMessage(alerts, 'HIGH', reorderSuggestions);
       const subject = `HIGH PRIORITY: ${alerts.length} Medication Inventory Alert(s)`;
 
       // Send email notifications with delivery tracking
@@ -506,9 +464,7 @@ export class InventoryMaintenanceProcessor {
           });
 
           await delivery.update({
-            status: result.success
-              ? DeliveryStatus.SENT
-              : DeliveryStatus.FAILED,
+            status: result.success ? DeliveryStatus.SENT : DeliveryStatus.FAILED,
             sentAt: new Date(),
             deliveredAt: result.success ? new Date() : undefined,
             externalId: result.messageId,
@@ -517,16 +473,11 @@ export class InventoryMaintenanceProcessor {
 
           this.logger.log(`High priority inventory alert sent to: ${email}`);
         } catch (error) {
-          this.logger.error(
-            `Failed to send high priority alert email to ${email}`,
-            error,
-          );
+          this.logger.error(`Failed to send high priority alert email to ${email}`, error);
         }
       }
 
-      this.logger.log(
-        `High priority inventory notifications sent to ${adminEmails.length} emails`,
-      );
+      this.logger.log(`High priority inventory notifications sent to ${adminEmails.length} emails`);
     } catch (error) {
       this.logger.error('Failed to send high priority inventory alerts', error);
     }
@@ -582,10 +533,7 @@ export class InventoryMaintenanceProcessor {
 
           case 'NEAR_EXPIRY':
             const daysUntilExpiry = alert.expirationDate
-              ? Math.ceil(
-                  (alert.expirationDate.getTime() - Date.now()) /
-                    (1000 * 60 * 60 * 24),
-                )
+              ? Math.ceil((alert.expirationDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
               : 0;
             message += `Expiring in ${daysUntilExpiry} days (${alert.expirationDate?.toLocaleDateString()})<br>`;
             message += `Quantity: ${alert.quantity} units`;
@@ -708,9 +656,7 @@ export class InventoryMaintenanceProcessor {
       },
     );
 
-    this.logger.log(
-      `Found ${expiredItems.length} expired inventory items to mark for disposal`,
-    );
+    this.logger.log(`Found ${expiredItems.length} expired inventory items to mark for disposal`);
 
     if (expiredItems.length === 0) {
       return 0;
@@ -795,25 +741,19 @@ export class InventoryMaintenanceProcessor {
           },
         );
       } catch (error) {
-        this.logger.error(
-          `Failed to mark item for disposal: ${item.medication_name}`,
-          {
-            error: error.message,
-            medicationId: item.medication_id,
-            batchNumber: item.batch_number,
-          },
-        );
+        this.logger.error(`Failed to mark item for disposal: ${item.medication_name}`, {
+          error: error.message,
+          medicationId: item.medication_id,
+          batchNumber: item.batch_number,
+        });
       }
     }
 
     // Log disposal workflow initiation
-    this.logger.log(
-      `Disposal workflow initiated for ${disposalRecords.length} expired items`,
-      {
-        totalQuantity: disposalRecords.reduce((sum, r) => sum + r.quantity, 0),
-        medications: disposalRecords.map((r) => r.medicationName).join(', '),
-      },
-    );
+    this.logger.log(`Disposal workflow initiated for ${disposalRecords.length} expired items`, {
+      totalQuantity: disposalRecords.reduce((sum, r) => sum + r.quantity, 0),
+      medications: disposalRecords.map((r) => r.medicationName).join(', '),
+    });
 
     // Send notification to administrators about disposal requirements
     await this.sendDisposalNotification(disposalRecords);
@@ -827,9 +767,7 @@ export class InventoryMaintenanceProcessor {
    * @param disposalRecords - Disposal records to notify about
    * @private
    */
-  private async sendDisposalNotification(
-    disposalRecords: DisposalRecord[],
-  ): Promise<void> {
+  private async sendDisposalNotification(disposalRecords: DisposalRecord[]): Promise<void> {
     try {
       const adminEmails = this.configService
         .get<string>('INVENTORY_ALERT_EMAILS', '')
@@ -837,14 +775,11 @@ export class InventoryMaintenanceProcessor {
         .filter((e) => e.trim());
 
       if (adminEmails.length === 0) {
-        this.logger.warn(
-          'No email recipients configured for disposal notifications',
-        );
+        this.logger.warn('No email recipients configured for disposal notifications');
         return;
       }
 
-      const htmlMessage =
-        this.buildDisposalNotificationMessage(disposalRecords);
+      const htmlMessage = this.buildDisposalNotificationMessage(disposalRecords);
       const subject = `Medication Disposal Required: ${disposalRecords.length} Item(s)`;
 
       // Send email notifications with delivery tracking
@@ -866,9 +801,7 @@ export class InventoryMaintenanceProcessor {
           });
 
           await delivery.update({
-            status: result.success
-              ? DeliveryStatus.SENT
-              : DeliveryStatus.FAILED,
+            status: result.success ? DeliveryStatus.SENT : DeliveryStatus.FAILED,
             sentAt: new Date(),
             deliveredAt: result.success ? new Date() : undefined,
             externalId: result.messageId,
@@ -877,10 +810,7 @@ export class InventoryMaintenanceProcessor {
 
           this.logger.log(`Disposal notification sent to: ${email}`);
         } catch (error) {
-          this.logger.error(
-            `Failed to send disposal notification to ${email}`,
-            error,
-          );
+          this.logger.error(`Failed to send disposal notification to ${email}`, error);
         }
       }
     } catch (error) {
@@ -895,9 +825,7 @@ export class InventoryMaintenanceProcessor {
    * @returns Formatted HTML message
    * @private
    */
-  private buildDisposalNotificationMessage(
-    disposalRecords: DisposalRecord[],
-  ): string {
+  private buildDisposalNotificationMessage(disposalRecords: DisposalRecord[]): string {
     let message = `<html><body>`;
     message += `<h2 style="color: #d32f2f;">Medication Disposal Required</h2>`;
     message += `<p>The following expired medications have been marked for disposal:</p>`;
@@ -931,9 +859,7 @@ export class InventoryMaintenanceProcessor {
    * @returns Array of reorder suggestions
    * @private
    */
-  private async generateReorderSuggestions(
-    organizationId?: string,
-  ): Promise<ReorderSuggestion[]> {
+  private async generateReorderSuggestions(organizationId?: string): Promise<ReorderSuggestion[]> {
     try {
       this.logger.debug('Generating reorder suggestions');
 
@@ -986,9 +912,7 @@ export class InventoryMaintenanceProcessor {
 
         // Estimate days remaining
         const estimatedDaysRemaining =
-          usageStats.averageDailyUsage > 0
-            ? item.quantity / usageStats.averageDailyUsage
-            : 999;
+          usageStats.averageDailyUsage > 0 ? item.quantity / usageStats.averageDailyUsage : 999;
 
         // Determine priority
         let priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
@@ -1018,9 +942,7 @@ export class InventoryMaintenanceProcessor {
 
       // Sort by priority
       const priorityOrder = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
-      suggestions.sort(
-        (a, b) => priorityOrder[a.priority] - priorityOrder[b.priority],
-      );
+      suggestions.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
 
       this.logger.log(
         `Generated ${suggestions.length} reorder suggestions (${suggestions.filter((s) => s.priority === 'CRITICAL' || s.priority === 'HIGH').length} high priority)`,
@@ -1041,10 +963,7 @@ export class InventoryMaintenanceProcessor {
    * @returns Calculated reorder point
    * @private
    */
-  private calculateReorderPoint(
-    averageDailyUsage: number,
-    leadTimeDays: number,
-  ): number {
+  private calculateReorderPoint(averageDailyUsage: number, leadTimeDays: number): number {
     const leadTimeDemand = averageDailyUsage * leadTimeDays;
     const safetyStock = leadTimeDemand * SAFETY_STOCK_PERCENTAGE;
     return Math.ceil(leadTimeDemand + safetyStock);
@@ -1079,9 +998,7 @@ export class InventoryMaintenanceProcessor {
    * @returns Usage statistics
    * @private
    */
-  private async getUsageStatistics(
-    medicationId: string,
-  ): Promise<UsageStatistics> {
+  private async getUsageStatistics(medicationId: string): Promise<UsageStatistics> {
     try {
       const usageData = await this.sequelize.query<{
         total_administered: number;
@@ -1109,10 +1026,7 @@ export class InventoryMaintenanceProcessor {
       const data = usageData[0];
 
       // Calculate average daily usage
-      const daysInPeriod = Math.min(
-        USAGE_CALCULATION_DAYS,
-        data.days_with_usage || 1,
-      );
+      const daysInPeriod = Math.min(USAGE_CALCULATION_DAYS, data.days_with_usage || 1);
       const averageDailyUsage = data.total_administered / daysInPeriod || 0;
 
       // Determine trend (simplified - could be enhanced with time-series analysis)
@@ -1124,10 +1038,7 @@ export class InventoryMaintenanceProcessor {
         usageTrend,
       };
     } catch (error) {
-      this.logger.error(
-        `Failed to get usage statistics for medication ${medicationId}`,
-        error,
-      );
+      this.logger.error(`Failed to get usage statistics for medication ${medicationId}`, error);
       return {
         medicationId,
         averageDailyUsage: 1, // Default fallback
@@ -1142,9 +1053,7 @@ export class InventoryMaintenanceProcessor {
    * @param organizationId - Optional organization filter
    * @private
    */
-  private async generateAndSendInventoryReport(
-    organizationId?: string,
-  ): Promise<void> {
+  private async generateAndSendInventoryReport(organizationId?: string): Promise<void> {
     try {
       this.logger.log('Generating inventory report');
 
@@ -1160,9 +1069,7 @@ export class InventoryMaintenanceProcessor {
         .filter((e) => e.trim());
 
       if (adminEmails.length === 0) {
-        this.logger.warn(
-          'No email recipients configured for inventory reports',
-        );
+        this.logger.warn('No email recipients configured for inventory reports');
         return;
       }
 
@@ -1179,10 +1086,7 @@ export class InventoryMaintenanceProcessor {
 
           this.logger.log(`Inventory report sent to: ${email}`);
         } catch (error) {
-          this.logger.error(
-            `Failed to send inventory report to ${email}`,
-            error,
-          );
+          this.logger.error(`Failed to send inventory report to ${email}`, error);
         }
       }
     } catch (error) {
@@ -1196,13 +1100,10 @@ export class InventoryMaintenanceProcessor {
    * @param organizationId - Optional organization filter
    * @returns Inventory report
    */
-  async generateInventoryReport(
-    organizationId?: string,
-  ): Promise<InventoryReport> {
+  async generateInventoryReport(organizationId?: string): Promise<InventoryReport> {
     const summary = await this.getInventoryStatus();
     const alerts = await this.identifyCriticalAlerts(organizationId);
-    const reorderSuggestions =
-      await this.generateReorderSuggestions(organizationId);
+    const reorderSuggestions = await this.generateReorderSuggestions(organizationId);
 
     // Get expiring items
     const expiringItems = await this.sequelize.query<{

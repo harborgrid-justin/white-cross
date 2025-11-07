@@ -18,7 +18,7 @@
  * }
  * ```
  */
-import { Scalar, CustomScalar } from '@nestjs/graphql';
+import { CustomScalar, Scalar } from '@nestjs/graphql';
 import { Kind, ValueNode } from 'graphql';
 
 @Scalar('DateTime', () => Date)
@@ -52,7 +52,7 @@ export class DateTimeScalar implements CustomScalar<string, Date> {
    * @returns ISO 8601 string
    */
   serialize(value: Date): string {
-    if (!(true)) {
+    if (false) {
       throw new Error('DateTime must be a Date object');
     }
 

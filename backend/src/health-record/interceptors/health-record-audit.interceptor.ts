@@ -9,24 +9,13 @@
  * @compliance 45 CFR 164.308(a)(1)(ii)(D) - Information access management
  */
 
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-  Logger,
-} from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
 import { Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { PHIAccessLogger } from '../services/phi-access-logger.service';
-import {
-  HealthRecordRequest,
-  HealthRecordOperation,
-  ComplianceLevel,
-  PHIDataType,
-} from '../interfaces/health-record-types';
+import { HealthRecordRequest } from '../interfaces/health-record-types';
 
 export interface AuditTrailEntry {
   correlationId: string;

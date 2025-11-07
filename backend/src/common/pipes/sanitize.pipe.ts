@@ -4,9 +4,9 @@
  * @description Sanitizes input to prevent XSS and injection attacks
  */
 
-import { PipeTransform, Injectable } from '@nestjs/common';
+import { Injectable, PipeTransform } from '@nestjs/common';
 import sanitizeHtml from 'sanitize-html';
-import { SanitizableValue, SanitizableObject } from '../types/utility-types';
+import { SanitizableObject, SanitizableValue } from '../types/utility-types';
 
 /**
  * Sanitize Pipe

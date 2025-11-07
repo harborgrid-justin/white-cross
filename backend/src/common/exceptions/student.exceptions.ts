@@ -10,10 +10,10 @@
  */
 
 import {
-  NotFoundException,
-  ConflictException,
   BadRequestException,
+  ConflictException,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 
 /**

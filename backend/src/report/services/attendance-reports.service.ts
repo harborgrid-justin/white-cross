@@ -2,8 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { QueryTypes } from 'sequelize';
-import { ChronicCondition } from '@/database';
-import { Student } from '@/database';
+import { ChronicCondition, Student } from '@/database';
 import { AttendanceCorrelationReport } from '@/report/interfaces';
 import { AttendanceCorrelationDto } from '@/report';
 

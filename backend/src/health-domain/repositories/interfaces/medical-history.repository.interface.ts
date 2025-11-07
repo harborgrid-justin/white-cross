@@ -4,7 +4,7 @@
  */
 
 import { IRepository } from '../../../database/repositories/interfaces/repository.interface';
-import { ExecutionContext, QueryOptions } from '../../../database/types';
+import { QueryOptions } from '../../../database/types';
 
 export interface MedicalHistoryAttributes {
   id: string;

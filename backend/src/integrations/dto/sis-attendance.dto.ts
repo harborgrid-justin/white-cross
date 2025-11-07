@@ -7,7 +7,7 @@
  * @module integrations/dto/sis-attendance
  */
 
-import { IsString, IsEnum, IsOptional, IsDateString } from 'class-validator';
+import { IsDateString, IsEnum, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 /**

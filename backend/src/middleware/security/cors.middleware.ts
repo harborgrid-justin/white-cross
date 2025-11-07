@@ -17,8 +17,8 @@
  * @compliance HIPAA - Access Control (164.312(a)(1)), Transmission Security (164.312(e)(1))
  */
 
-import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
-import type { Request, Response, NextFunction } from 'express';
+import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
+import type { NextFunction, Request, Response } from 'express';
 
 export enum CorsMethod {
   GET = 'GET',

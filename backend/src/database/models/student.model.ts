@@ -1,22 +1,19 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
   AllowNull,
-  Index,
-  ForeignKey,
-  BelongsTo,
-  HasMany,
   BeforeCreate,
   BeforeUpdate,
+  BelongsTo,
+  Column,
+  DataType,
+  Default,
+  ForeignKey,
+  HasMany,
+  Model,
+  PrimaryKey,
   Scopes,
+  Table,
 } from 'sequelize-typescript';
-import { Optional } from 'sequelize';
-import { Op } from 'sequelize';
-import { v4 as uuidv4 } from 'uuid';
+import { Op, Optional } from 'sequelize';
 import type { User } from './user.model';
 import type { School } from './school.model';
 import type { District } from './district.model';

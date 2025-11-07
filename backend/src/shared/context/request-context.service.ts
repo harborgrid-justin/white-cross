@@ -13,7 +13,7 @@
  * Lifecycle: Created at request start, destroyed at request end
  */
 
-import { Injectable, Scope, Inject } from '@nestjs/common';
+import { Inject, Injectable, Scope } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import type { Request } from 'express';
 import { randomUUID } from 'crypto';

@@ -6,7 +6,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { User, UserRole } from '@/database';
-import * as bcrypt from 'bcrypt';
 
 async function createAdminUser() {
   console.log('🔄 Creating admin user...');
@@ -26,9 +25,7 @@ async function createAdminUser() {
       console.log('⚠️  Admin user already exists!');
       console.log('📧 Email: admin@whitecross.health');
       console.log('👤 User ID:', existingAdmin.id);
-      console.log(
-        'ℹ️  If you need to reset the password, delete the user first.',
-      );
+      console.log('ℹ️  If you need to reset the password, delete the user first.');
       await app.close();
       return;
     }

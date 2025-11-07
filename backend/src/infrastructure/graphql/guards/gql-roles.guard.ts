@@ -9,12 +9,7 @@
  * - Logs authorization failures for audit trail
  * - Prevents unauthorized access to sensitive queries/mutations
  */
-import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
-  ForbiddenException,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { ROLES_KEY } from '@/auth/decorators';

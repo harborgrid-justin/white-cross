@@ -1,7 +1,6 @@
 import { Injectable, Logger, NotFoundException, OnModuleDestroy } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { IncidentReport } from '@/database';
-import { EmergencyContact } from '@/database';
+import { EmergencyContact, IncidentReport } from '@/database';
 import { ContactPriority } from '@/contact';
 import { AppConfigService } from '@/config';
 

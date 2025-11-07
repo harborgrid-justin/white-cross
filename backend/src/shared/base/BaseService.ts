@@ -3,14 +3,11 @@
  */
 
 import { LoggerService } from '../logging/logger.service';
-import { PaginationParams, PaginatedResponse, PaginationConstraints } from '../types/pagination';
-import {
-  buildPaginationQuery,
-  processPaginatedResult,
-  validatePaginationParams,
-} from '../database/pagination';
-import { ValidationResult, BulkOperationResult, ServiceResponse } from '../types/common';
+import { PaginatedResponse, PaginationConstraints, PaginationParams } from '../types/pagination';
+import { buildPaginationQuery, processPaginatedResult, validatePaginationParams } from '../database/pagination';
+import { BulkOperationResult, ServiceResponse, ValidationResult } from '../types/common';
 import { validateUUID } from '../validation/commonValidators';
+import { Model, ModelStatic, Op, Sequelize, Transaction } from 'sequelize';
 
 // Placeholder types for missing validation types
 interface ErrorMetadata {
@@ -43,8 +40,6 @@ enum ValidationErrorCode {
   PERMISSION_DENIED = 'PERMISSION_DENIED',
   BUSINESS_RULE_VIOLATION = 'BUSINESS_RULE_VIOLATION',
 }
-
-import { Model, ModelStatic, Transaction, Op, Sequelize } from 'sequelize';
 
 /**
  * Base service configuration options

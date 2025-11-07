@@ -1,20 +1,17 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  ForeignKey,
-  BelongsTo,
-  HasMany,
-  CreatedAt,
-  UpdatedAt,
-  Scopes,
   BeforeCreate,
   BeforeUpdate,
+  Column,
+  CreatedAt,
+  DataType,
+  Default,
+  HasMany,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
+  UpdatedAt,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 
 /**
  * Budget Category Model

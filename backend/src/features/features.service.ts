@@ -21,7 +21,7 @@
  * 15. Disaster Recovery
  */
 
-import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 
 // ==================== Interfaces ====================
 

@@ -10,14 +10,8 @@
  * @service AllergyCrudService
  * @compliance HIPAA, Healthcare Allergy Documentation Standards
  */
-import {
-  Injectable,
-  NotFoundException,
-  ConflictException,
-  Logger,
-} from '@nestjs/common';
+import { ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Model } from 'sequelize-typescript';
 import { Allergy } from '../models/allergy.model';
 import { CreateAllergyDto } from '../dto/create-allergy.dto';
 import { AllergyUpdateDto } from '../dto/update-allergy.dto';

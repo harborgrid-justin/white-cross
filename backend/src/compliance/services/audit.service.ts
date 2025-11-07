@@ -8,11 +8,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import {
-  AuditLog,
-  ComplianceType,
-  AuditSeverity,
-} from '../../database/models/audit-log.model';
+import { AuditLog, AuditSeverity, ComplianceType } from '../../database/models/audit-log.model';
 import { CreateAuditLogDto } from '../dto/create-audit-log.dto';
 import { AuditAction } from '../../database/types/database.enums';
 

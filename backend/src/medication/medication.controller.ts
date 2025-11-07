@@ -1,35 +1,22 @@
 import {
+  Body,
   Controller,
   Get,
-  Post,
-  Put,
-  Body,
-  Param,
-  Query,
   HttpCode,
   HttpStatus,
   Logger,
+  Param,
   ParseUUIDPipe,
+  Post,
+  Put,
+  Query,
   UseInterceptors,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiBody,
-  ApiQuery,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { HealthRecordAuditInterceptor } from '../health-record/interceptors/health-record-audit.interceptor';
 import { MedicationService } from './services/medication.service';
-import {
-  CreateMedicationDto,
-  UpdateMedicationDto,
-  DeactivateMedicationDto,
-  ListMedicationsQueryDto,
-} from './dto';
+import { CreateMedicationDto, DeactivateMedicationDto, ListMedicationsQueryDto, UpdateMedicationDto } from './dto';
 
 /**
  * Medication Controller

@@ -4,11 +4,10 @@
  * @description Comprehensive security tests for permission-based authorization
  */
 
-import { Test, TestingModule } from '@nestjs/testing';
 import { ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PermissionsGuard } from './permissions.guard';
-import { Permission, UserRole, ROLE_HIERARCHY, ROLE_PERMISSIONS } from '../types/rbac.types';
+import { Permission, UserRole } from '../types/rbac.types';
 
 describe('PermissionsGuard - CRITICAL SECURITY', () => {
   let guard: PermissionsGuard;

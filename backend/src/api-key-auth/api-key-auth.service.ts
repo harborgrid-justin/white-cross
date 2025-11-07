@@ -1,12 +1,7 @@
-import {
-  Injectable,
-  Logger,
-  UnauthorizedException,
-  BadRequestException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { ApiKeyEntity } from './entities/api-key.entity';
-import { CreateApiKeyDto, ApiKeyResponseDto } from './dto';
+import { ApiKeyResponseDto, CreateApiKeyDto } from './dto';
 import * as crypto from 'crypto';
 import { AppConfigService } from '../config/app-config.service';
 

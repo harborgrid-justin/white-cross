@@ -9,20 +9,19 @@
  */
 
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  Index,
-  CreatedAt,
-  UpdatedAt,
-  PrimaryKey,
   AutoIncrement,
-  Scopes,
   BeforeCreate,
   BeforeUpdate,
+  Column,
+  CreatedAt,
+  DataType,
+  Index,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
+  UpdatedAt,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 
 export interface CacheEntryAttributes {
   id?: number;

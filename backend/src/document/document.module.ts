@@ -2,9 +2,7 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { DocumentController } from './document.controller';
 import { DocumentService } from './document.service';
-import { Document } from '@/document/entities';
-import { DocumentSignature } from '@/document/entities';
-import { DocumentAuditTrail } from '@/document/entities';
+import { Document, DocumentAuditTrail, DocumentSignature } from '@/document/entities';
 
 /**
  * Document Module

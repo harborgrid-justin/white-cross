@@ -7,7 +7,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, fn, col, literal } from 'sequelize';
+import { Op } from 'sequelize';
 import { Student } from '../../database/models/student.model';
 import { Vaccination } from '../../database/models/vaccination.model';
 import { Allergy } from '../../database/models/allergy.model';

@@ -1,16 +1,10 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { SyncQueueItem } from '../../database/models/sync-queue-item.model';
 import { SyncConflict } from '../../database/models/sync-conflict.model';
-import { QueueSyncActionDto, SyncOptionsDto, ResolveConflictDto } from '../dto';
-import {
-  SyncActionType,
-  SyncEntityType,
-  SyncPriority,
-  ConflictResolution,
-  SyncStatus,
-} from '../enums';
+import { QueueSyncActionDto, ResolveConflictDto, SyncOptionsDto } from '../dto';
+import { ConflictResolution, SyncActionType, SyncEntityType, SyncPriority, SyncStatus } from '../enums';
 
 /**
  * Sync Statistics Response Interface

@@ -1,12 +1,4 @@
-import {
-  IsString,
-  IsUUID,
-  IsInt,
-  IsOptional,
-  IsDate,
-  IsEnum,
-  Min,
-} from 'class-validator';
+import { IsDate, IsEnum, IsInt, IsOptional, IsString, IsUUID, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PrescriptionStatus } from '../../enums/prescription-status.enum';

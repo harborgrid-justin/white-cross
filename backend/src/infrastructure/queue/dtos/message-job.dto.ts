@@ -5,22 +5,20 @@
  */
 
 import {
-  IsString,
-  IsNotEmpty,
-  IsUUID,
-  IsOptional,
-  IsObject,
-  IsEnum,
-  IsDateString,
   IsArray,
-  ValidateNested,
   IsBoolean,
-  MaxLength,
+  IsDateString,
+  IsEnum,
+  IsNotEmpty,
   IsNumber,
-  Min,
+  IsObject,
+  IsOptional,
+  IsString,
+  IsUUID,
   Max,
+  MaxLength,
+  Min,
 } from 'class-validator';
-import { Type } from 'class-transformer';
 import { BaseQueueJob } from '../interfaces';
 
 /**

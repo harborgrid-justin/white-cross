@@ -1,11 +1,4 @@
-import {
-  IsString,
-  IsUUID,
-  IsArray,
-  IsOptional,
-  IsDate,
-  IsEnum,
-} from 'class-validator';
+import { IsArray, IsDate, IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { TreatmentStatus } from '../../enums/treatment-status.enum';

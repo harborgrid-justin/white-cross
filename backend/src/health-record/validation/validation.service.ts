@@ -5,12 +5,7 @@
  * HIPAA Compliance: All validation operations are audited and PHI data is handled securely
  */
 
-import {
-  Injectable,
-  Logger,
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { Student } from '../../database/models/student.model';

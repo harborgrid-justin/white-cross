@@ -1,10 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ChecklistRepository } from '../repositories/checklist.repository';
-import {
-  CreateChecklistDto,
-  UpdateChecklistDto,
-  QueryChecklistDto,
-} from '../dto/checklist.dto';
+import { CreateChecklistDto, QueryChecklistDto, UpdateChecklistDto } from '../dto/checklist.dto';
 import { ChecklistItemStatus } from '../../database/models/compliance-checklist-item.model';
 
 @Injectable()

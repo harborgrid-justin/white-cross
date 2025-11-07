@@ -1,9 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import {
-  PolicyDocument,
-  PolicyDocumentAttributes,
-} from '../../database/models/policy-document.model';
+import { PolicyDocument, PolicyDocumentAttributes } from '../../database/models/policy-document.model';
 import {
   PolicyAcknowledgment,
   PolicyAcknowledgmentAttributes,

@@ -1,15 +1,15 @@
 import {
-  IsString,
-  IsOptional,
-  IsEnum,
+  ArrayMinSize,
   IsArray,
   IsBoolean,
   IsDateString,
+  IsEnum,
+  IsOptional,
+  IsString,
   ValidateNested,
-  ArrayMinSize,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { MessageType, MessagePriority, MessageCategory } from '../enums';
+import { MessageCategory, MessagePriority, MessageType } from '../enums';
 
 class BroadcastAudienceDto {
   @IsOptional()

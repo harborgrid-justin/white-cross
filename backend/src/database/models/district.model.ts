@@ -5,20 +5,19 @@
  */
 
 import {
-  Table,
+  AllowNull,
+  BeforeCreate,
+  BeforeUpdate,
   Column,
-  Model,
   DataType,
-  PrimaryKey,
   Default,
   HasMany,
   Index,
-  AllowNull,
+  Model,
+  PrimaryKey,
   Scopes,
-  BeforeCreate,
-  BeforeUpdate,
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import type { School } from './school.model';
 import type { License } from './license.model';
 

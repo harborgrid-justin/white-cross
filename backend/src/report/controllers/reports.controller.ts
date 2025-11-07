@@ -1,12 +1,5 @@
-import { Controller, Get, Post, Body, Query, Logger } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiQuery,
-  ApiBody,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { Body, Controller, Get, Logger, Post, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ReportGenerationService } from '../services/report-generation.service';
 import { ReportExportService } from '../services/report-export.service';
 import { DashboardService } from '../services/dashboard.service';

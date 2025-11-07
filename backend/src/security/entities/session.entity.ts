@@ -1,4 +1,4 @@
-import { Table, Column, Model, DataType, PrimaryKey, Default, Index } from 'sequelize-typescript';
+import { Column, DataType, Default, Index, Model, PrimaryKey, Table } from 'sequelize-typescript';
 
 /**
  * Session Entity

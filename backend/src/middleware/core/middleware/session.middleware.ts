@@ -8,21 +8,10 @@
  * @compliance HIPAA - Access control and audit logging
  */
 
-import {
-  Injectable,
-  NestMiddleware,
-  UnauthorizedException,
-  Logger,
-  Optional,
-} from '@nestjs/common';
-import type { Request, Response, NextFunction } from 'express';
+import { Injectable, Logger, NestMiddleware, UnauthorizedException } from '@nestjs/common';
+import type { NextFunction, Request, Response } from 'express';
 import * as crypto from 'crypto';
-import type {
-  SessionConfig,
-  SessionData,
-  SessionResult,
-  SessionStore,
-} from '../types/session.types';
+import type { SessionConfig, SessionData, SessionResult, SessionStore } from '../types/session.types';
 import { SESSION_CONFIGS } from '../types/session.types';
 
 /**

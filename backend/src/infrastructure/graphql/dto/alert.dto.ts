@@ -3,7 +3,7 @@
  *
  * Defines GraphQL object types for real-time alerts and notifications.
  */
-import { ObjectType, Field, ID, registerEnumType } from '@nestjs/graphql';
+import { Field, ID, ObjectType, registerEnumType } from '@nestjs/graphql';
 
 /**
  * Alert Type Enum

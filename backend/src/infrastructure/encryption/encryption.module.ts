@@ -20,7 +20,7 @@
  * ```
  */
 
-import { Module, Global } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { CacheModule } from '../cache/cache.module';
 import { EncryptionService } from './encryption.service';

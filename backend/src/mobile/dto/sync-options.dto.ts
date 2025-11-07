@@ -1,4 +1,4 @@
-import { IsBoolean, IsNumber, IsEnum, IsOptional } from 'class-validator';
+import { IsBoolean, IsEnum, IsNumber, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { ConflictResolution } from '../enums';
 

@@ -20,13 +20,12 @@ import { Student } from '../database/models/student.model';
 import { ChronicCondition } from '../database/models/chronic-condition.model';
 import { Vaccination } from '../database/models/vaccination.model';
 import {
-  PaginatedHealthRecords,
-  PaginationResult,
+  BulkDeleteResults,
   GrowthDataPoint,
+  HealthRecordStatistics,
   HealthSummary,
   ImportResults,
-  BulkDeleteResults,
-  HealthRecordStatistics,
+  PaginatedHealthRecords,
   VitalSigns,
 } from './interfaces';
 

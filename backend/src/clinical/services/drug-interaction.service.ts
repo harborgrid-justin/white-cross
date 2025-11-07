@@ -1,20 +1,11 @@
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  ConflictException,
-  BadRequestException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, fn, col, literal } from 'sequelize';
+import { literal, Op } from 'sequelize';
 import { DrugCatalog } from '../entities/drug-catalog.entity';
 import { DrugInteraction } from '../entities/drug-interaction.entity';
 import { StudentDrugAllergy } from '../entities/student-drug-allergy.entity';
 import { InteractionSeverity } from '../enums/interaction-severity.enum';
-import {
-  InteractionResult,
-  RiskLevel,
-} from '../interfaces/interaction-result.interface';
+import { InteractionResult, RiskLevel } from '../interfaces/interaction-result.interface';
 import { AddDrugDto } from '../dto/drug/add-drug.dto';
 import { UpdateDrugDto } from '../dto/drug/update-drug.dto';
 import { AddInteractionDto } from '../dto/drug/add-interaction.dto';

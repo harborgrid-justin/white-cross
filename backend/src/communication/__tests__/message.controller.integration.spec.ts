@@ -3,7 +3,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { MessageController } from '../controllers/message.controller';
 import { MessageService } from '../services/message.service';
-import { MessagePriority, MessageCategory, MessageType, RecipientType } from '../dto/send-message.dto';
+import { MessageCategory, MessagePriority, MessageType, RecipientType } from '../dto/send-message.dto';
 import { DeliveryChannelType, DeliveryStatus } from '../../database/models/message-delivery.model';
 
 describe('MessageController Integration Tests (e2e)', () => {

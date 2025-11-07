@@ -6,12 +6,7 @@
  * for healthcare applications with HIPAA compliance.
  */
 
-import {
-  Module,
-  NestModule,
-  MiddlewareConsumer,
-  RequestMethod,
-} from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AuditMiddleware } from './audit.middleware';
 import { TracingMiddleware } from './tracing.middleware';

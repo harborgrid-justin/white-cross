@@ -1,33 +1,12 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  Query,
-  HttpCode,
-  HttpStatus,
-  UseGuards,
-  Req,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBearerAuth,
-  ApiBody,
-} from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, Req } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ConfigurationService } from './services/configuration.service';
 import {
-  CreateConfigurationDto,
-  UpdateConfigurationDto,
-  FilterConfigurationDto,
   ConfigurationBulkUpdateDto,
+  CreateConfigurationDto,
+  FilterConfigurationDto,
   ImportConfigurationsDto,
+  UpdateConfigurationDto,
 } from './dto';
 import { ConfigCategory } from '../administration/enums/administration.enums';
 

@@ -2,12 +2,7 @@
  * Emergency Contact Service
  * @description Service for managing student emergency contacts with verification and notification routing
  */
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-  Logger,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { EmergencyContact } from '../../database/models/emergency-contact.model';

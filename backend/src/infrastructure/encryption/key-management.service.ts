@@ -24,15 +24,15 @@ import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 import { CacheService } from '../cache/cache.service';
 import {
+  EncryptedKeyStorage,
   IKeyManagementService,
-  KeyPair,
   KeyGenerationOptions,
   KeyGenerationResult,
   KeyMetadata,
-  KeyType,
-  KeyStatus,
+  KeyPair,
   KeyRotationOptions,
-  EncryptedKeyStorage,
+  KeyStatus,
+  KeyType,
 } from './interfaces';
 
 /**

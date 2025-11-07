@@ -1,10 +1,4 @@
-import {
-  IsOptional,
-  IsString,
-  IsBoolean,
-  IsNumber,
-  IsArray,
-} from 'class-validator';
+import { IsArray, IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 
 export class GetVitalsQueryDto {

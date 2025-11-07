@@ -5,31 +5,16 @@
  * @description REST API endpoints for advanced monitoring, metrics, and dashboard
  */
 
-import {
-  Controller,
-  Get,
-  Post,
-  Param,
-  Query,
-  Body,
-  HttpStatus,
-} from '@nestjs/common';
-import {
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-  ApiQuery,
-  ApiParam,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { Body, Controller, Get, HttpStatus, Param, Post, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { MonitoringService } from './monitoring.service';
 import type {
-  MetricsSnapshot,
-  DashboardData,
   Alert,
-  PerformanceEntry,
+  DashboardData,
   LogEntry,
   LogQueryParams,
+  MetricsSnapshot,
+  PerformanceEntry,
 } from './interfaces/metrics.interface';
 
 /**

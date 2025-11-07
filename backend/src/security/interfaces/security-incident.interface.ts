@@ -1,8 +1,4 @@
-import {
-  SecurityIncidentType,
-  IncidentSeverity,
-  IncidentStatus,
-} from '../enums';
+import { IncidentSeverity, IncidentStatus, SecurityIncidentType } from '../enums';
 
 /**
  * Security Incident Interface

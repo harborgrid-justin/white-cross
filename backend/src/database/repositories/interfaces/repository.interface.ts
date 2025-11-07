@@ -4,12 +4,7 @@
  * audit logging, and caching
  */
 
-import {
-  ExecutionContext,
-  QueryOptions,
-  QueryCriteria,
-  PaginatedResult,
-} from '../../types';
+import { ExecutionContext, PaginatedResult, QueryCriteria, QueryOptions } from '../../types';
 
 /**
  * Base repository interface for data access operations

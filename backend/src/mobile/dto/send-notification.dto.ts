@@ -1,12 +1,4 @@
-import {
-  IsString,
-  IsArray,
-  IsEnum,
-  IsOptional,
-  IsObject,
-  IsNumber,
-  ValidateNested,
-} from 'class-validator';
+import { IsArray, IsEnum, IsNumber, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { NotificationCategory, NotificationPriority } from '../enums';

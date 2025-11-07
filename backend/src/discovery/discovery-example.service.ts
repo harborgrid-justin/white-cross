@@ -1,23 +1,14 @@
 import {
   Injectable,
   Logger,
-  OnModuleInit,
   OnApplicationBootstrap,
   OnApplicationShutdown,
   OnModuleDestroy,
+  OnModuleInit,
 } from '@nestjs/common';
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
 import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
-import { Module } from '@nestjs/core/injector/module';
-import {
-  FeatureFlag,
-  ExperimentalFeature,
-  Analytics,
-  Domain,
-  Cacheable,
-  Monitored,
-} from './decorators/metadata.decorator';
-import { RateLimit } from './decorators/rate-limit.decorator';
+import { ExperimentalFeature } from './decorators/metadata.decorator';
 import { DiscoveryMetricsService } from './services/discovery-metrics.service';
 import { DiscoveryCacheService } from './services/discovery-cache.service';
 

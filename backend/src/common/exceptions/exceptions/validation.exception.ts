@@ -5,7 +5,7 @@
  */
 
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { ValidationErrorCodes, ErrorCode } from '../constants/error-codes';
+import { ErrorCode, ValidationErrorCodes } from '../constants/error-codes';
 import { ValidationErrorDetail } from '../types/error-response.types';
 
 /**

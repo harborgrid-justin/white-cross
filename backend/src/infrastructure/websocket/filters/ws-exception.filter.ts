@@ -22,7 +22,7 @@
  *
  * @class WsExceptionFilter
  */
-import { Catch, ArgumentsHost, Logger } from '@nestjs/common';
+import { ArgumentsHost, Catch, Logger } from '@nestjs/common';
 import { BaseWsExceptionFilter, WsException } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
 import type { JsonValue } from '@/infrastructure/websocket';

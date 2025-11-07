@@ -3,11 +3,7 @@
  * DTO for recipient delivery status
  */
 
-import {
-  RecipientType,
-  CommunicationChannel,
-  DeliveryStatus,
-} from '@/emergency-broadcast';
+import { CommunicationChannel, DeliveryStatus, RecipientType } from '@/emergency-broadcast';
 
 export class RecipientDeliveryStatusDto {
   recipientId: string;

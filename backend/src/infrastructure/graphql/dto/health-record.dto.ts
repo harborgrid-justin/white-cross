@@ -9,19 +9,10 @@
  * - Access must be restricted to authorized users only
  * - All operations must be audited
  */
-import { ObjectType, Field, ID, InputType } from '@nestjs/graphql';
+import { Field, ID, InputType, ObjectType } from '@nestjs/graphql';
 import { GraphQLJSON } from 'graphql-scalars';
 import { PaginationDto } from './pagination.dto';
-import {
-  IsString,
-  IsOptional,
-  IsBoolean,
-  IsDateString,
-  IsUUID,
-  MinLength,
-  MaxLength,
-  IsArray,
-} from 'class-validator';
+import { IsArray, IsBoolean, IsDateString, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
 
 /**
  * HealthRecord GraphQL Object Type

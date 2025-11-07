@@ -1,27 +1,11 @@
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { License } from '../entities/license.entity';
 import { District } from '../entities/district.entity';
 import { AuditService } from './audit.service';
-import {
-  CreateLicenseDto,
-  UpdateLicenseDto,
-  LicenseQueryDto,
-} from '../dto/license.dto';
-import {
-  AuditAction,
-  LicenseType,
-  LicenseStatus,
-} from '../enums/administration.enums';
-import {
-  PaginatedResponse,
-  PaginationResult,
-} from '../interfaces/administration.interfaces';
+import { CreateLicenseDto, LicenseQueryDto, UpdateLicenseDto } from '../dto/license.dto';
+import { AuditAction, LicenseStatus, LicenseType } from '../enums/administration.enums';
+import { PaginatedResponse, PaginationResult } from '../interfaces/administration.interfaces';
 
 @Injectable()
 export class LicenseService {

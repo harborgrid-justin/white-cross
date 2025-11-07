@@ -1,22 +1,12 @@
-import { Injectable, Logger, NotFoundException, Inject } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import * as jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import {
-  ReportType,
-  ReportFormat,
-  ReportStatus,
-  ComplianceStatus,
-} from '../enums';
-import {
-  ComplianceReport,
-  ScheduledReportConfig,
-  ReportSection,
-  Finding,
-} from '../interfaces';
+import { ComplianceStatus, ReportFormat, ReportStatus, ReportType } from '../enums';
+import { ComplianceReport, Finding, ReportSection, ScheduledReportConfig } from '../interfaces';
 import { Student } from '../../student/entities/student.entity';
 import { HealthRecord } from '../../health-record/entities/health-record.entity';
 import { AnalyticsReport } from '../entities/analytics-report.entity';

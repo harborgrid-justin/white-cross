@@ -12,7 +12,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
-import * as crypto from 'crypto';
 
 export interface QueryMetrics {
   count: number;

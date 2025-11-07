@@ -28,11 +28,11 @@
  */
 
 import {
-  Injectable,
   CanActivate,
   ExecutionContext,
   HttpException,
   HttpStatus,
+  Injectable,
   Logger,
   ServiceUnavailableException,
 } from '@nestjs/common';

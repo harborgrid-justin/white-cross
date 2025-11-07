@@ -8,13 +8,7 @@
  * @security All user operations require proper authentication and authorization
  */
 
-import {
-  NotFoundException,
-  ConflictException,
-  UnauthorizedException,
-  ForbiddenException,
-  BadRequestException,
-} from '@nestjs/common';
+import { ConflictException, ForbiddenException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 
 /**
  * Context information for user-related errors.

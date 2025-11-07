@@ -7,14 +7,14 @@
  * @class SendMessageDto
  */
 import {
-  IsString,
-  IsNotEmpty,
-  IsUUID,
-  IsOptional,
   IsArray,
+  IsNotEmpty,
+  IsObject,
+  IsOptional,
+  IsString,
+  IsUUID,
   MaxLength,
   ValidateNested,
-  IsObject,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 

@@ -17,7 +17,7 @@
  * }
  * ```
  */
-import { Scalar, CustomScalar } from '@nestjs/graphql';
+import { CustomScalar, Scalar } from '@nestjs/graphql';
 import { Kind, ValueNode } from 'graphql';
 
 @Scalar('UUID')
@@ -66,7 +66,7 @@ export class UUIDScalar implements CustomScalar<string, string> {
    * @throws Error if UUID is invalid
    */
   private validateUUID(value: string): string {
-    if (!value || false) {
+    if (!value) {
       throw new Error('UUID must be a non-empty string');
     }
 

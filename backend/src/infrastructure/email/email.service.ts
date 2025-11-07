@@ -46,15 +46,13 @@ import * as SMTPTransport from 'nodemailer/lib/smtp-transport';
 import * as validator from 'email-validator';
 import {
   AlertEmailData,
-  GenericEmailData,
   EmailDeliveryResult,
-  SendEmailDto,
-  EmailTemplate,
   EmailPriority,
-  EmailValidationResult,
   EmailStatistics,
-  EmailTrackingData,
-  BulkEmailDto,
+  EmailTemplate,
+  EmailValidationResult,
+  GenericEmailData,
+  SendEmailDto,
 } from './dto/email.dto';
 import { EmailTemplateService } from './email-template.service';
 import { EmailQueueService } from './email-queue.service';
@@ -87,12 +85,8 @@ export class EmailService {
     private readonly queueService: EmailQueueService,
     private readonly rateLimiterService: EmailRateLimiterService,
   ) {
-    this.isProduction =
-      this.configService.get<string>('NODE_ENV') === 'production';
-    this.queueEnabled = this.configService.get<boolean>(
-      'EMAIL_QUEUE_ENABLED',
-      true,
-    );
+    this.isProduction = this.configService.get<string>('NODE_ENV') === 'production';
+    this.queueEnabled = this.configService.get<boolean>('EMAIL_QUEUE_ENABLED', true);
     this.defaultFrom = this.configService.get<string>(
       'EMAIL_FROM',
       'noreply@whitecross.healthcare',
@@ -115,10 +109,7 @@ export class EmailService {
    * @private
    */
   private createTransporter(): Transporter<SMTPTransport.SentMessageInfo> {
-    const transportType = this.configService.get<string>(
-      'EMAIL_TRANSPORT',
-      'smtp',
-    );
+    const transportType = this.configService.get<string>('EMAIL_TRANSPORT', 'smtp');
 
     if (transportType === 'smtp') {
       return nodemailer.createTransport({
@@ -130,18 +121,9 @@ export class EmailService {
           pass: this.configService.get<string>('EMAIL_SMTP_PASS', ''),
         },
         pool: true,
-        maxConnections: this.configService.get<number>(
-          'EMAIL_SMTP_MAX_CONNECTIONS',
-          5,
-        ),
-        maxMessages: this.configService.get<number>(
-          'EMAIL_SMTP_MAX_MESSAGES',
-          100,
-        ),
-        rateDelta: this.configService.get<number>(
-          'EMAIL_SMTP_RATE_DELTA',
-          1000,
-        ),
+        maxConnections: this.configService.get<number>('EMAIL_SMTP_MAX_CONNECTIONS', 5),
+        maxMessages: this.configService.get<number>('EMAIL_SMTP_MAX_MESSAGES', 100),
+        rateDelta: this.configService.get<number>('EMAIL_SMTP_RATE_DELTA', 1000),
         rateLimit: this.configService.get<number>('EMAIL_SMTP_RATE_LIMIT', 5),
       } as SMTPTransport.Options);
     }
@@ -188,25 +170,18 @@ export class EmailService {
           : 'not configured',
       };
 
-      this.logger.error(
-        `Email transporter verification failed: ${error.message}`,
-        {
-          error: error.message,
-          config: transportConfig,
-          isProduction: this.isProduction,
-          recommendation:
-            'Verify SMTP credentials and ensure mail server is accessible',
-        },
-      );
+      this.logger.error(`Email transporter verification failed: ${error.message}`, {
+        error: error.message,
+        config: transportConfig,
+        isProduction: this.isProduction,
+        recommendation: 'Verify SMTP credentials and ensure mail server is accessible',
+      });
 
       if (this.isProduction) {
-        this.logger.error(
-          'CRITICAL: Email functionality may not work correctly in production',
-          {
-            impact: 'Alert notifications and system emails will fail',
-            action: 'Check SMTP configuration and credentials immediately',
-          },
-        );
+        this.logger.error('CRITICAL: Email functionality may not work correctly in production', {
+          impact: 'Alert notifications and system emails will fail',
+          action: 'Check SMTP configuration and credentials immediately',
+        });
       }
     }
   }
@@ -220,13 +195,8 @@ export class EmailService {
    *
    * @throws Error if email validation fails or delivery fails
    */
-  async sendAlertEmail(
-    to: string,
-    data: AlertEmailData,
-  ): Promise<EmailDeliveryResult> {
-    this.logger.log(
-      `Sending alert email to ${to}: [${data.severity}] ${data.title}`,
-    );
+  async sendAlertEmail(to: string, data: AlertEmailData): Promise<EmailDeliveryResult> {
+    this.logger.log(`Sending alert email to ${to}: [${data.severity}] ${data.title}`);
 
     // Validate email
     const validation = this.validateEmail(to);
@@ -263,10 +233,7 @@ export class EmailService {
    *
    * @throws Error if email validation fails or delivery fails
    */
-  async sendEmail(
-    to: string,
-    data: GenericEmailData,
-  ): Promise<EmailDeliveryResult> {
+  async sendEmail(to: string, data: GenericEmailData): Promise<EmailDeliveryResult> {
     this.logger.log(`Sending email to ${to}: ${data.subject}`);
 
     const sendData: SendEmailDto = {
@@ -287,9 +254,7 @@ export class EmailService {
    *
    * @throws Error if validation or sending fails
    */
-  async sendTemplatedEmail(
-    emailData: SendEmailDto,
-  ): Promise<EmailDeliveryResult> {
+  async sendTemplatedEmail(emailData: SendEmailDto): Promise<EmailDeliveryResult> {
     return this.send(emailData);
   }
 
@@ -305,18 +270,12 @@ export class EmailService {
 
     try {
       // Validate all recipient emails
-      const allRecipients = [
-        ...emailData.to,
-        ...(emailData.cc || []),
-        ...(emailData.bcc || []),
-      ];
+      const allRecipients = [...emailData.to, ...(emailData.cc || []), ...(emailData.bcc || [])];
 
       for (const recipient of allRecipients) {
         const validation = this.validateEmail(recipient);
         if (!validation.valid) {
-          throw new Error(
-            `Invalid email address ${recipient}: ${validation.reason}`,
-          );
+          throw new Error(`Invalid email address ${recipient}: ${validation.reason}`);
         }
       }
 
@@ -379,9 +338,7 @@ export class EmailService {
    * @returns Promise that resolves with delivery result
    * @private
    */
-  private async sendImmediate(
-    emailData: SendEmailDto,
-  ): Promise<EmailDeliveryResult> {
+  private async sendImmediate(emailData: SendEmailDto): Promise<EmailDeliveryResult> {
     let htmlContent = emailData.html;
     let textContent = emailData.body;
 
@@ -395,9 +352,7 @@ export class EmailService {
         htmlContent = rendered.html;
         textContent = rendered.text;
       } catch (error) {
-        this.logger.warn(
-          `Template rendering failed, using plain content: ${error.message}`,
-        );
+        this.logger.warn(`Template rendering failed, using plain content: ${error.message}`);
       }
     }
 
@@ -460,10 +415,7 @@ export class EmailService {
    * @returns Promise that resolves with queued result
    * @private
    */
-  private async queueEmail(
-    emailData: SendEmailDto,
-    delay?: number,
-  ): Promise<EmailDeliveryResult> {
+  private async queueEmail(emailData: SendEmailDto, delay?: number): Promise<EmailDeliveryResult> {
     try {
       const jobId = await this.queueService.addToQueue(emailData, {
         priority: emailData.priority,
@@ -622,9 +574,7 @@ export class EmailService {
     const total = this.emailStats.sent + this.emailStats.failed;
     const successRate = total > 0 ? (this.emailStats.sent / total) * 100 : 0;
     const avgDeliveryTime =
-      this.emailStats.sent > 0
-        ? this.emailStats.totalDeliveryTime / this.emailStats.sent
-        : 0;
+      this.emailStats.sent > 0 ? this.emailStats.totalDeliveryTime / this.emailStats.sent : 0;
 
     return {
       totalSent: this.emailStats.sent,
@@ -691,9 +641,7 @@ Do not reply to this email.
    * @returns Nodemailer priority
    * @private
    */
-  private getNodemailerPriority(
-    priority?: EmailPriority,
-  ): 'high' | 'normal' | 'low' | undefined {
+  private getNodemailerPriority(priority?: EmailPriority): 'high' | 'normal' | 'low' | undefined {
     if (!priority) return undefined;
 
     const priorityMap: Record<EmailPriority, 'high' | 'normal' | 'low'> = {

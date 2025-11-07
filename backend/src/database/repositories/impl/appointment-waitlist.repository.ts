@@ -1,11 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import {
-  AppointmentWaitlist,
-  AppointmentWaitlistAttributes,
-} from '../../models/appointment-waitlist.model';
+import { AppointmentWaitlist, WaitlistPriority, WaitlistStatus } from '../../models/appointment-waitlist.model';
 import { AppointmentType } from '../../models/appointment.model';
-import { WaitlistPriority, WaitlistStatus } from '../../models/appointment-waitlist.model';
 
 export interface CreateAppointmentWaitlistDTO {
   studentId: string;

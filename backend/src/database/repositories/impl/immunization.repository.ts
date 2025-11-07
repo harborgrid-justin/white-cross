@@ -3,14 +3,13 @@
  * Injectable NestJS repository for vaccine records with schedule tracking
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, Transaction } from 'sequelize';
+import { Op } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
 import type { IAuditLogger } from '../../interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../interfaces/audit/audit-logger.interface';
 import type { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
-import { ExecutionContext, QueryOptions } from '../../types';
 import { Immunization } from '../../models/immunization.model';
 
 export interface ImmunizationAttributes {

@@ -1,12 +1,4 @@
-import {
-  IsString,
-  IsUUID,
-  IsArray,
-  IsOptional,
-  IsEnum,
-  IsBoolean,
-  MaxLength,
-} from 'class-validator';
+import { IsArray, IsBoolean, IsEnum, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { NoteType } from '../../enums/note-type.enum';
 

@@ -10,13 +10,7 @@
  * - HIPAA-compliant caching (no PHI in cache keys)
  */
 
-import {
-  Injectable,
-  Logger,
-  OnModuleInit,
-  OnModuleDestroy,
-} from '@nestjs/common';
-import { Inject } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { Model, ModelCtor } from 'sequelize-typescript';
 import * as crypto from 'crypto';
 

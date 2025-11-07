@@ -6,16 +6,10 @@
  * for fine-grained tracking of healthcare operations.
  */
 
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-  Logger,
-} from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
-import { AuditMiddleware, AuditEventType } from './audit.middleware';
+import { catchError, tap } from 'rxjs/operators';
+import { AuditEventType, AuditMiddleware } from './audit.middleware';
 
 /**
  * Audit Interceptor for method-level logging

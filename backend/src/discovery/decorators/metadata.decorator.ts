@@ -1,4 +1,4 @@
-import { SetMetadata, CustomDecorator } from '@nestjs/common';
+import { CustomDecorator, SetMetadata } from '@nestjs/common';
 import { DiscoveryService } from '@nestjs/core';
 
 // Feature Flag decorator for tagging providers with experimental features

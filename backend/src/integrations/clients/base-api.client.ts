@@ -30,14 +30,13 @@
 
 import { HttpService } from '@nestjs/axios';
 import { Logger } from '@nestjs/common';
-import { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
-import { firstValueFrom } from 'rxjs';
-import { catchError, map, retry, delay } from 'rxjs/operators';
-import { throwError } from 'rxjs';
+import { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { firstValueFrom, throwError } from 'rxjs';
+import { catchError, delay, map, retry } from 'rxjs/operators';
 import {
-  CircuitState,
   CircuitBreakerConfig,
   CircuitBreakerStatus,
+  CircuitState,
   RateLimiterConfig,
   RateLimiterStatus,
 } from '../interfaces';

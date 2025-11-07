@@ -5,22 +5,22 @@
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsString,
-  IsNotEmpty,
+  ArrayMaxSize,
+  IsArray,
+  IsBoolean,
   IsEnum,
+  IsNotEmpty,
   IsNumber,
+  IsOptional,
+  IsString,
   IsUrl,
   IsUUID,
-  IsArray,
-  IsOptional,
-  IsBoolean,
-  MaxLength,
-  MinLength,
-  Min,
   Max,
-  ArrayMaxSize,
+  MaxLength,
+  Min,
+  MinLength,
 } from 'class-validator';
-import { DocumentCategory, DocumentAccessLevel } from '../enums';
+import { DocumentAccessLevel, DocumentCategory } from '../enums';
 
 export class CreateDocumentDto {
   @ApiProperty({

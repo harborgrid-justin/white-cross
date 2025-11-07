@@ -1,17 +1,16 @@
 import {
-  IsString,
-  IsEnum,
-  IsUUID,
-  IsBoolean,
-  IsOptional,
   IsArray,
-  MinLength,
-  MaxLength,
+  IsBoolean,
   IsDateString,
-  ArrayMinSize,
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MaxLength,
+  MinLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IncidentType, IncidentSeverity, ComplianceStatus } from '../enums';
+import { ComplianceStatus, IncidentSeverity, IncidentType } from '../enums';
 
 export class CreateIncidentReportDto {
   @ApiProperty({ description: 'Student ID', example: 'uuid' })

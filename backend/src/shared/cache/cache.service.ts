@@ -17,7 +17,7 @@
  * DOWNSTREAM: Services requiring caching (students, medications, health records)
  */
 
-import { Injectable, OnModuleDestroy, Inject, Optional } from '@nestjs/common';
+import { Inject, Injectable, OnModuleDestroy, Optional } from '@nestjs/common';
 import { AppConfigService } from '../../config/app-config.service';
 
 /**

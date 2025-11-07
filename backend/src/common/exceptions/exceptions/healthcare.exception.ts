@@ -5,7 +5,7 @@
  */
 
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { HealthcareErrorCodes, ErrorCode } from '../constants/error-codes';
+import { ErrorCode, HealthcareErrorCodes } from '../constants/error-codes';
 
 /**
  * Healthcare domain type

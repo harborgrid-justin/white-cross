@@ -1,33 +1,20 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
   Body,
-  Param,
-  Query,
-  UseGuards,
+  Controller,
+  DefaultValuePipe,
+  Delete,
+  Get,
   HttpCode,
   HttpStatus,
+  Param,
   ParseIntPipe,
-  DefaultValuePipe,
-  UseInterceptors,
-  UploadedFile,
+  Patch,
+  Post,
+  Query,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiConsumes,
-  ApiBearerAuth,
-  ApiParam,
-  ApiQuery,
-  ApiBody,
-} from '@nestjs/swagger';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { DocumentService } from './document.service';
-import { CreateDocumentDto, UpdateDocumentDto, SignDocumentDto } from './dto';
+import { CreateDocumentDto, SignDocumentDto, UpdateDocumentDto } from './dto';
 import { CurrentUser, IpAddress } from '@/auth/decorators';
 
 /**

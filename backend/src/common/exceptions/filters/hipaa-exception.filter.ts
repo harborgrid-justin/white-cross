@@ -10,28 +10,12 @@
  * - Implements defense-in-depth for PHI protection
  */
 
-import {
-  ExceptionFilter,
-  Catch,
-  ArgumentsHost,
-  HttpException,
-  HttpStatus,
-  Logger,
-  Inject,
-} from '@nestjs/common';
+import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Inject, Logger } from '@nestjs/common';
 import type { Request, Response } from 'express';
-import {
-  ErrorResponse,
-  ErrorSeverity,
-  ErrorCategory,
-} from '../types/error-response.types';
+import { ErrorCategory, ErrorResponse, ErrorSeverity } from '../types/error-response.types';
 import { SystemErrorCodes } from '../constants/error-codes';
-import { LoggerService } from '../../../shared/logging/logger.service';
 import { SentryService } from '../../../infrastructure/monitoring/sentry.service';
-import {
-  getRequestId,
-  getRequestContext,
-} from '../../middleware/request-context.middleware';
+import { getRequestContext, getRequestId } from '../../middleware/request-context.middleware';
 
 /**
  * HIPAA Exception Filter

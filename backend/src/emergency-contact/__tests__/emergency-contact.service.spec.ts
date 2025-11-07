@@ -12,12 +12,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { EmergencyContactService } from '../emergency-contact.service';
 import { getModelToken } from '@nestjs/sequelize';
-import { EmergencyContact } from '../../database';
-import { Student } from '../../database';
-import { ContactPriority, VerificationStatus, NotificationChannel } from '../../contact';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { EmergencyContactCreateDto } from '../dto';
-import { NotificationDto, NotificationType, NotificationPriority } from '../dto';
+import { EmergencyContact, Student } from '../../database';
+import { ContactPriority, NotificationChannel, VerificationStatus } from '../../contact';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { EmergencyContactCreateDto, NotificationDto, NotificationPriority, NotificationType } from '../dto';
 
 describe('EmergencyContactService (CRITICAL HEALTHCARE)', () => {
   let service: EmergencyContactService;

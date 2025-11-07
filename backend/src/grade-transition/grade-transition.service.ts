@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Transaction } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { Student } from '../database/models/student.model';
-import { TransitionResultDto, BulkTransitionResultDto } from './dto';
+import { BulkTransitionResultDto, TransitionResultDto } from './dto';
 
 /**
  * Automated Grade Transition Workflow Service

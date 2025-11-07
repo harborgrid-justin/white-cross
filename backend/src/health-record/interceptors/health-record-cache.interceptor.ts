@@ -9,23 +9,13 @@
  * @compliance 45 CFR 164.312(a)(2)(iv) - Automatic logoff
  */
 
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-  Logger,
-} from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common';
 import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Reflector } from '@nestjs/core';
 import { EnterpriseCacheService } from '../../shared/enterprise/services/enterprise-cache.service';
 import { HealthRecordMetricsService } from '../services/health-record-metrics.service';
-import {
-  HealthRecordRequest,
-  HealthRecordCacheConfig,
-  ComplianceLevel,
-} from '../interfaces/health-record-types';
+import { ComplianceLevel, HealthRecordRequest } from '../interfaces/health-record-types';
 import { ENTERPRISE_CACHE_KEY } from '../../shared/enterprise/decorators/enterprise-decorators';
 
 /**

@@ -1,18 +1,18 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import {
-  IsString,
-  IsOptional,
-  IsUUID,
-  IsEnum,
-  IsArray,
-  IsNumber,
-  IsDate,
-  Min,
-  Matches,
   ArrayMinSize,
+  IsArray,
+  IsDate,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Matches,
+  Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { LicenseType, LicenseStatus } from '../enums/administration.enums';
+import { LicenseStatus, LicenseType } from '../enums/administration.enums';
 
 /**
  * DTO for creating a new license

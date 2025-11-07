@@ -4,7 +4,6 @@
  * @description Comprehensive security tests for CSRF protection
  */
 
-import { Test, TestingModule } from '@nestjs/testing';
 import { ExecutionContext, HttpStatus } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { CsrfGuard } from './csrf.guard';

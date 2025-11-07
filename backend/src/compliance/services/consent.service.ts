@@ -3,21 +3,13 @@
  * HIPAA Compliance: 45 CFR 164.508 - Authorization requirements
  */
 
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  BadRequestException,
-  Inject,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Model, Transaction } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
-import { ConsentForm } from '../../database/models/consent-form.model';
+import { ConsentForm, ConsentType } from '../../database/models/consent-form.model';
 import { ConsentSignature } from '../../database/models/consent-signature.model';
 import { SignConsentFormDto } from '../dto/sign-consent-form.dto';
-import { ComplianceUtils, COMPLIANCE_ERRORS } from '../utils';
-import { ConsentType } from '../../database/models/consent-form.model';
+import { COMPLIANCE_ERRORS, ComplianceUtils } from '../utils';
 
 export interface CreateConsentFormData {
   type: ConsentType;

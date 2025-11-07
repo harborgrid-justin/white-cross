@@ -5,15 +5,7 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsNotEmpty,
-  IsString,
-  IsUUID,
-  IsOptional,
-  IsEnum,
-  IsArray,
-  MaxLength,
-} from 'class-validator';
+import { IsArray, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
 
 export enum EmergencyType {
   MEDICAL = 'medical',

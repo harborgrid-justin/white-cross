@@ -17,7 +17,7 @@
  * DOWNSTREAM: All NestJS modules, services, controllers
  */
 
-import { Injectable, LoggerService as NestLoggerService, Scope, Inject } from '@nestjs/common';
+import { Inject, Injectable, LoggerService as NestLoggerService, Scope } from '@nestjs/common';
 import * as winston from 'winston';
 import { AppConfigService } from '../../config/app-config.service';
 

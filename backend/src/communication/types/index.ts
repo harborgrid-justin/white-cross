@@ -6,7 +6,7 @@
 
 import { Request } from 'express';
 import { Message } from '../../database/models/message.model';
-import { DeliveryStatus, DeliveryChannelType } from '../../database/models/message-delivery.model';
+import { DeliveryChannelType, DeliveryStatus } from '../../database/models/message-delivery.model';
 
 /**
  * Authenticated request with user context

@@ -1,16 +1,5 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
-  Body,
-  Param,
-  Query,
-  HttpCode,
-  HttpStatus,
-} from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { FollowUpService } from '../services/follow-up.service';
 import { ScheduleFollowUpDto } from '../dto/follow-up/schedule-follow-up.dto';
 import { UpdateFollowUpDto } from '../dto/follow-up/update-follow-up.dto';

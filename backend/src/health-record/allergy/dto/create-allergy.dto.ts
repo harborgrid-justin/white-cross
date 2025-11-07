@@ -7,20 +7,17 @@
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsString,
-  IsEnum,
-  IsOptional,
   IsBoolean,
   IsDateString,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
   IsUUID,
   MaxLength,
   MinLength,
-  IsNotEmpty,
 } from 'class-validator';
-import {
-  AllergyType,
-  AllergySeverity,
-} from '../../../database/models/allergy.model';
+import { AllergySeverity, AllergyType } from '../../../database/models/allergy.model';
 
 export class CreateAllergyDto {
   @ApiProperty({

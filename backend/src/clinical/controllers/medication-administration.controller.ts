@@ -1,38 +1,18 @@
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
-  Body,
-  Param,
-  Query,
-  HttpCode,
-  HttpStatus,
-  UseGuards,
-  Req,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
-import {
-  InitiateAdministrationDto,
-  VerifyFiveRightsDto,
+  AdministrationHistoryFiltersDto,
+  CalculateDoseDto,
+  CheckSafetyDto,
   FiveRightsVerificationResultDto,
+  InitiateAdministrationDto,
   RecordAdministrationDto,
-  RecordRefusalDto,
-  RecordMissedDoseDto,
   RecordHeldMedicationDto,
+  RecordMissedDoseDto,
+  RecordRefusalDto,
   RequestWitnessSignatureDto,
   SubmitWitnessSignatureDto,
-  AdministrationHistoryFiltersDto,
-  CheckSafetyDto,
-  CalculateDoseDto,
+  VerifyFiveRightsDto,
 } from '../dto/administration';
 
 /**

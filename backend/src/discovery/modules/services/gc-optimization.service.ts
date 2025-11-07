@@ -1,12 +1,6 @@
-import {
-  Injectable,
-  Logger,
-  OnModuleInit,
-  OnApplicationShutdown,
-} from '@nestjs/common';
+import { Injectable, Logger, OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
 import { DiscoveryService, Reflector } from '@nestjs/core';
 import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
-import { Module } from '@nestjs/core/injector/module';
 import { SmartGarbageCollectionService } from './smart-garbage-collection.service';
 import { MemoryLeakDetectionService } from './memory-leak-detection.service';
 import {

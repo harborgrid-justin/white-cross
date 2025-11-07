@@ -1,15 +1,7 @@
-import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
-  Logger,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, Logger } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
-import {
-  RATE_LIMIT_KEY,
-  RateLimitConfig,
-} from '../decorators/rate-limit.decorator';
+import { RATE_LIMIT_KEY, RateLimitConfig } from '../decorators/rate-limit.decorator';
 import { RateLimitExceededException } from '../exceptions/discovery.exceptions';
 
 interface RequestRecord {

@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/sequelize';
 import { ConfigService } from '@nestjs/config';
 import { ApiKeyAuthService } from '../api-key-auth.service';

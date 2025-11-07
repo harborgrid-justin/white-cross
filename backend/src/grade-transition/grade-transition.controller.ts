@@ -1,25 +1,7 @@
-import {
-  Controller,
-  Post,
-  Get,
-  Body,
-  Param,
-  HttpStatus,
-  HttpCode,
-  UseGuards,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GradeTransitionService } from './grade-transition.service';
-import {
-  BulkTransitionDto,
-  TransitionStudentDto,
-  BulkTransitionResultDto,
-} from './dto';
+import { BulkTransitionDto, BulkTransitionResultDto, TransitionStudentDto } from './dto';
 import { Student } from '../student/entities/student.entity';
 
 /**

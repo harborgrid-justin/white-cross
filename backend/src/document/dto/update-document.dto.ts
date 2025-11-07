@@ -6,16 +6,16 @@
 
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsString,
-  IsEnum,
+  ArrayMaxSize,
   IsArray,
+  IsDateString,
+  IsEnum,
   IsOptional,
+  IsString,
   MaxLength,
   MinLength,
-  IsDateString,
-  ArrayMaxSize,
 } from 'class-validator';
-import { DocumentStatus, DocumentAccessLevel } from '../enums';
+import { DocumentAccessLevel, DocumentStatus } from '../enums';
 
 export class UpdateDocumentDto {
   @ApiPropertyOptional({

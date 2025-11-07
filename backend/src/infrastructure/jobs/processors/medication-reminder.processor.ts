@@ -86,9 +86,7 @@ export class MedicationReminderProcessor {
   ) {}
 
   @Process()
-  async processMedicationReminder(
-    job: Job<MedicationReminderData>,
-  ): Promise<any> {
+  async processMedicationReminder(job: Job<MedicationReminderData>): Promise<any> {
     const { organizationId, medicationId, studentId } = job.data;
 
     this.logger.log('Processing medication reminder job', {
@@ -275,10 +273,7 @@ export class MedicationReminderProcessor {
   /**
    * Generate reminders for specific student (used for on-demand requests)
    */
-  async generateForStudent(
-    studentId: string,
-    date: Date,
-  ): Promise<MedicationReminder[]> {
+  async generateForStudent(studentId: string, date: Date): Promise<MedicationReminder[]> {
     return this.generateRemindersOptimized(date, undefined, studentId);
   }
 
@@ -306,11 +301,7 @@ export class MedicationReminderProcessor {
 
     // Not cached - generate on demand
     this.logger.debug(`Cache miss for ${cacheKey}, generating reminders`);
-    const reminders = await this.generateRemindersOptimized(
-      date,
-      organizationId,
-      studentId,
-    );
+    const reminders = await this.generateRemindersOptimized(date, organizationId, studentId);
 
     // Cache for future requests
     await this.cacheReminders(reminders, date, organizationId, studentId);
@@ -337,9 +328,7 @@ export class MedicationReminderProcessor {
     const tags = this.buildCacheTags(organizationId, studentId, reminders);
 
     this.cacheService.set(cacheKey, reminders, CACHE_TTL, tags);
-    this.logger.debug(
-      `Cached ${reminders.length} reminders with key: ${cacheKey}`,
-    );
+    this.logger.debug(`Cached ${reminders.length} reminders with key: ${cacheKey}`);
   }
 
   /**
@@ -351,11 +340,7 @@ export class MedicationReminderProcessor {
    * @returns Cache key string
    * @private
    */
-  private buildCacheKey(
-    date: Date,
-    organizationId?: string,
-    studentId?: string,
-  ): string {
+  private buildCacheKey(date: Date, organizationId?: string, studentId?: string): string {
     const dateKey = date.toISOString().split('T')[0];
     const parts = [CACHE_TAG_PREFIX, dateKey];
 
@@ -394,9 +379,7 @@ export class MedicationReminderProcessor {
 
     // Add unique student IDs from reminders for granular invalidation
     if (reminders && reminders.length > 0) {
-      const uniqueStudentIds = new Set(
-        reminders.map((r) => `student:${r.studentId}`),
-      );
+      const uniqueStudentIds = new Set(reminders.map((r) => `student:${r.studentId}`));
       tags.push(...Array.from(uniqueStudentIds));
     }
 
@@ -421,9 +404,7 @@ export class MedicationReminderProcessor {
 
     // Filter for reminders that are due now (within the current hour)
     const dueReminders = reminders.filter((reminder) => {
-      const hourDiff = Math.abs(
-        now.getHours() - reminder.scheduledTime.getHours(),
-      );
+      const hourDiff = Math.abs(now.getHours() - reminder.scheduledTime.getHours());
       return (
         reminder.status === 'PENDING' &&
         reminder.scheduledTime.getDate() === now.getDate() &&
@@ -436,25 +417,19 @@ export class MedicationReminderProcessor {
       return { sent, failed };
     }
 
-    this.logger.log(
-      `Sending notifications for ${dueReminders.length} due reminders`,
-    );
+    this.logger.log(`Sending notifications for ${dueReminders.length} due reminders`);
 
     // Group reminders by student for batch processing
     const remindersByStudent = this.groupRemindersByStudent(dueReminders);
 
     // Send notifications for each student
-    for (const [studentId, studentReminders] of Object.entries(
-      remindersByStudent,
-    )) {
+    for (const [studentId, studentReminders] of Object.entries(remindersByStudent)) {
       try {
         // Get contact information for the student
         const contacts = await this.getStudentContacts(studentId);
 
         if (contacts.length === 0) {
-          this.logger.warn(
-            `No contact information found for student ${studentId}`,
-          );
+          this.logger.warn(`No contact information found for student ${studentId}`);
           failed += studentReminders.length;
           continue;
         }
@@ -466,33 +441,23 @@ export class MedicationReminderProcessor {
               await this.sendEmailReminder(contact, studentReminders, jobId);
               sent++;
             } catch (error) {
-              this.logger.error(
-                `Failed to send email reminder to ${contact.email}`,
-                error,
-              );
+              this.logger.error(`Failed to send email reminder to ${contact.email}`, error);
               failed++;
             }
           }
 
           // SMS notifications - placeholder for future implementation
           if (contact.phone) {
-            this.logger.debug(
-              `SMS reminder would be sent to ${contact.phone} (not implemented)`,
-            );
+            this.logger.debug(`SMS reminder would be sent to ${contact.phone} (not implemented)`);
           }
         }
       } catch (error) {
-        this.logger.error(
-          `Failed to send notifications for student ${studentId}`,
-          error,
-        );
+        this.logger.error(`Failed to send notifications for student ${studentId}`, error);
         failed += studentReminders.length;
       }
     }
 
-    this.logger.log(
-      `Notification delivery complete: ${sent} sent, ${failed} failed`,
-    );
+    this.logger.log(`Notification delivery complete: ${sent} sent, ${failed} failed`);
     return { sent, failed };
   }
 
@@ -525,7 +490,7 @@ export class MedicationReminderProcessor {
 
     try {
       // Send email
-      const result = await this.emailService.sendEmail(contact.email!, {
+      const result = await this.emailService.sendEmail(contact.email, {
         subject,
         body,
         html,
@@ -650,9 +615,7 @@ export class MedicationReminderProcessor {
    * @returns Array of contact information
    * @private
    */
-  private async getStudentContacts(
-    studentId: string,
-  ): Promise<ReminderContact[]> {
+  private async getStudentContacts(studentId: string): Promise<ReminderContact[]> {
     try {
       const contacts = await this.sequelize.query<{
         student_id: string;
@@ -700,10 +663,7 @@ export class MedicationReminderProcessor {
         guardianName: c.guardian_name,
       }));
     } catch (error) {
-      this.logger.error(
-        `Failed to get contacts for student ${studentId}`,
-        error,
-      );
+      this.logger.error(`Failed to get contacts for student ${studentId}`, error);
       return [];
     }
   }
@@ -717,9 +677,7 @@ export class MedicationReminderProcessor {
   async invalidateStudentReminders(studentId: string): Promise<void> {
     const tag = `student:${studentId}`;
     const count = this.cacheService.invalidateByTag(tag);
-    this.logger.debug(
-      `Invalidated ${count} cached reminder entries for student ${studentId}`,
-    );
+    this.logger.debug(`Invalidated ${count} cached reminder entries for student ${studentId}`);
   }
 
   /**
@@ -769,9 +727,7 @@ export class MedicationReminderProcessor {
         return 0;
       }
 
-      this.logger.log(
-        `Found ${failedDeliveries.length} failed deliveries to retry`,
-      );
+      this.logger.log(`Found ${failedDeliveries.length} failed deliveries to retry`);
 
       // Group by student and retry
       const studentIds = new Set(failedDeliveries.map((d) => d.recipientId));
@@ -779,11 +735,7 @@ export class MedicationReminderProcessor {
       let retried = 0;
       for (const studentId of studentIds) {
         try {
-          const reminders = await this.getMedicationReminders(
-            date,
-            undefined,
-            studentId,
-          );
+          const reminders = await this.getMedicationReminders(date, undefined, studentId);
           const contacts = await this.getStudentContacts(studentId);
 
           for (const contact of contacts) {
@@ -793,10 +745,7 @@ export class MedicationReminderProcessor {
             }
           }
         } catch (error) {
-          this.logger.error(
-            `Failed to retry notifications for student ${studentId}`,
-            error,
-          );
+          this.logger.error(`Failed to retry notifications for student ${studentId}`, error);
         }
       }
 

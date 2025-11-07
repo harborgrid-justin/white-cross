@@ -5,18 +5,10 @@
  * HIPAA Compliance: All chronic condition data is PHI and requires audit logging
  */
 
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import {
-  ChronicCondition,
-  ConditionStatus,
-} from '../../database/models/chronic-condition.model';
+import { ChronicCondition, ConditionStatus } from '../../database/models/chronic-condition.model';
 import { Student } from '../../database/models/student.model';
 
 @Injectable()

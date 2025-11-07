@@ -8,14 +8,9 @@
  * CDC Compliance: CVX codes, dose tracking, VIS documentation, compliance monitoring
  */
 
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Model, Op } from 'sequelize';
+import { Op } from 'sequelize';
 import { Vaccination } from '../../database/models/vaccination.model';
 import { Student } from '../../database/models/student.model';
 import { ComplianceStatus } from '../interfaces/vaccination.interface';

@@ -1,12 +1,6 @@
 import { RoleModel } from '../types';
 
-import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
-  Logger,
-  ForbiddenException,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';

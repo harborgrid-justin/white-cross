@@ -8,28 +8,17 @@
  * @compliance HIPAA - PHI access permissions trigger audit logging
  */
 
-import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
-  ForbiddenException,
-  Logger,
-  Optional,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable, Logger, Optional } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import {
   Permission,
-  UserRole,
+  type RbacConfig,
   ROLE_HIERARCHY,
   ROLE_PERMISSIONS,
-  type RbacConfig,
   type UserProfile,
+  UserRole,
 } from '../types/rbac.types';
-import {
-  PERMISSIONS_KEY,
-  PERMISSIONS_MODE_KEY,
-  type PermissionsMode,
-} from '../decorators/permissions.decorator';
+import { PERMISSIONS_KEY, PERMISSIONS_MODE_KEY, type PermissionsMode } from '../decorators/permissions.decorator';
 
 /**
  * Permissions Guard - Fine-grained permission-based authorization

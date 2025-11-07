@@ -1,10 +1,4 @@
-import {
-  Module,
-  DynamicModule,
-  OnApplicationBootstrap,
-  OnApplicationShutdown,
-  Injectable,
-} from '@nestjs/common';
+import { DynamicModule, Injectable, Module, OnApplicationBootstrap, OnApplicationShutdown } from '@nestjs/common';
 import { DiscoveryModule, DiscoveryService, Reflector } from '@nestjs/core';
 import { MemoryOptimizedCacheService } from './services/memory-optimized-cache.service';
 import { CacheEvictionService } from './services/cache-eviction.service';

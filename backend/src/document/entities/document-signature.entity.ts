@@ -13,16 +13,16 @@
  */
 
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  CreatedAt,
-  ForeignKey,
   BelongsTo,
+  Column,
+  CreatedAt,
+  DataType,
+  Default,
+  ForeignKey,
   Index,
+  Model,
+  PrimaryKey,
+  Table,
 } from 'sequelize-typescript';
 import type { Document } from './document.entity';
 

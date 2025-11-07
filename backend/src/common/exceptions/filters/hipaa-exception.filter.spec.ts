@@ -4,11 +4,9 @@
  * @description Comprehensive security tests for HIPAA-compliant error handling
  */
 
-import { Test, TestingModule } from '@nestjs/testing';
 import { HipaaExceptionFilter } from './hipaa-exception.filter';
-import { HttpException, HttpStatus, ArgumentsHost } from '@nestjs/common';
+import { ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
 import { SentryService } from '../../../infrastructure/monitoring/sentry.service';
-import { LoggerService } from '../../../shared/logging/logger.service';
 
 describe('HipaaExceptionFilter - SECURITY CRITICAL', () => {
   let filter: HipaaExceptionFilter;

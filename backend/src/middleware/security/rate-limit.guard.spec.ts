@@ -4,10 +4,9 @@
  * @description Comprehensive security tests for rate limiting functionality
  */
 
-import { Test, TestingModule } from '@nestjs/testing';
 import { ExecutionContext, HttpStatus, ServiceUnavailableException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { RateLimitGuard, RATE_LIMIT_CONFIGS } from './rate-limit.guard';
+import { RATE_LIMIT_CONFIGS, RateLimitGuard } from './rate-limit.guard';
 
 describe('RateLimitGuard - CRITICAL SECURITY', () => {
   let guard: RateLimitGuard;

@@ -5,18 +5,9 @@
  */
 
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsOptional,
-  IsEnum,
-  IsUUID,
-  IsString,
-  IsBoolean,
-} from 'class-validator';
+import { IsBoolean, IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
-import {
-  AllergyType,
-  AllergySeverity,
-} from '../../../database/models/allergy.model';
+import { AllergySeverity, AllergyType } from '../../../database/models/allergy.model';
 
 export class AllergyFilterDto {
   @ApiPropertyOptional({

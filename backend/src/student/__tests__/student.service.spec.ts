@@ -23,7 +23,7 @@
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { StudentService } from '../student.service';
-import { getModelToken, getConnectionToken } from '@nestjs/sequelize';
+import { getConnectionToken, getModelToken } from '@nestjs/sequelize';
 import { Student } from '../../database/models/student.model';
 import { User } from '../../database/models/user.model';
 import { UserRole } from '../../user/enums/user-role.enum';
@@ -32,13 +32,8 @@ import { MentalHealthRecord } from '../../database/models/mental-health-record.m
 import { AcademicTranscriptService } from '../../academic-transcript/academic-transcript.service';
 import { QueryCacheService } from '../../database/services/query-cache.service';
 import { AppConfigService } from '../../config/app-config.service';
-import {
-  NotFoundException,
-  ConflictException,
-  BadRequestException,
-  InternalServerErrorException,
-} from '@nestjs/common';
-import { Op, Transaction } from 'sequelize';
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
+import { Op } from 'sequelize';
 
 describe('StudentService (CRITICAL - HIPAA COMPLIANT)', () => {
   let service: StudentService;

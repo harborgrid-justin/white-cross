@@ -6,11 +6,8 @@
 
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  BullModuleOptions,
-  SharedBullConfigurationFactory,
-} from '@nestjs/bull';
-import { QueueName, JobPriority } from './enums';
+import { BullModuleOptions, SharedBullConfigurationFactory } from '@nestjs/bull';
+import { JobPriority, QueueName } from './enums';
 
 /**
  * Queue-specific configuration

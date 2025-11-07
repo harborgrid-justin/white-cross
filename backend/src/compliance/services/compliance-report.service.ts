@@ -1,10 +1,10 @@
-import { Injectable, NotFoundException, Inject } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ComplianceReportRepository } from '../../database/repositories/impl/compliance-report.repository';
 import {
-  CreateComplianceReportDto,
-  UpdateComplianceReportDto,
   ComplianceGenerateReportDto,
+  CreateComplianceReportDto,
   QueryComplianceReportDto,
+  UpdateComplianceReportDto,
 } from '../dto/compliance-report.dto';
 import { ComplianceStatus } from '../entities/compliance-report.entity';
 import { ExecutionContext } from '../../database/types';

@@ -39,13 +39,7 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { WebSocketGateway } from './websocket.gateway';
 import { AppConfigService } from '@/config';
-import {
-  BroadcastMessageDto,
-  MessageEventDto,
-  TypingIndicatorDto,
-  ReadReceiptDto,
-  MessageDeliveryDto,
-} from './dto';
+import { BroadcastMessageDto, MessageDeliveryDto, MessageEventDto, ReadReceiptDto, TypingIndicatorDto } from './dto';
 
 
 /**

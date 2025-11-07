@@ -8,11 +8,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Process, Processor } from '@nestjs/bull';
 import { Job } from 'bullmq';
 import { TwilioProvider } from '../providers/twilio.provider';
-import {
-  SmsQueueJobDto,
-  SmsDeliveryResultDto,
-  SmsDeliveryStatus,
-} from '../dto/sms-queue-job.dto';
+import { SmsDeliveryResultDto, SmsDeliveryStatus, SmsQueueJobDto } from '../dto/sms-queue-job.dto';
 
 /**
  * Queue name for SMS processing

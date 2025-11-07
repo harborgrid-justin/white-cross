@@ -1,13 +1,5 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import {
-  IsEnum,
-  IsString,
-  IsOptional,
-  IsArray,
-  IsDateString,
-  IsIP,
-  IsNotEmpty,
-} from 'class-validator';
+import { IsArray, IsDateString, IsEnum, IsIP, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { IpRestrictionType } from '../enums';
 
 /**

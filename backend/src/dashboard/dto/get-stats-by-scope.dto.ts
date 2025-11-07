@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsUUID, IsOptional } from 'class-validator';
+import { IsOptional, IsUUID } from 'class-validator';
 
 /**
  * Query parameters for scoped dashboard statistics

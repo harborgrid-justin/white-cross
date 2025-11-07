@@ -29,7 +29,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { BaseApiClient } from './base-api.client';
-import { SisStudentDto, SisAttendanceDto, SisEnrollmentStatus } from '../dto';
+import { SisAttendanceDto, SisEnrollmentStatus, SisStudentDto } from '../dto';
 
 /**
  * Response wrapper for student list from SIS API

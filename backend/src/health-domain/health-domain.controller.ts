@@ -1,52 +1,30 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  Query,
-  HttpCode,
-  HttpStatus,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { HealthDomainService } from './health-domain.service';
 import {
-  HealthDomainCreateRecordDto,
-  HealthDomainUpdateRecordDto,
-  HealthDomainCreateAllergyDto,
-  HealthDomainUpdateAllergyDto,
-  CreateImmunizationDto,
-  UpdateImmunizationDto,
-  HealthDomainCreateChronicConditionDto,
-  HealthDomainUpdateChronicConditionDto,
-  HealthRecordFiltersDto,
   AllergyFiltersDto,
-  VaccinationFiltersDto,
   ChronicConditionFiltersDto,
+  CreateImmunizationDto,
+  HealthDomainCreateAllergyDto,
+  HealthDomainCreateChronicConditionDto,
+  HealthDomainCreateRecordDto,
+  HealthDomainUpdateAllergyDto,
+  HealthDomainUpdateChronicConditionDto,
+  HealthDomainUpdateRecordDto,
+  HealthRecordFiltersDto,
   PaginationDto,
+  UpdateImmunizationDto,
+  VaccinationFiltersDto,
 } from './dto';
+import { ExemptionFilterDto, HealthDomainCreateExemptionDto, UpdateExemptionDto } from './dto/exemption.dto';
 import {
-  HealthDomainCreateExemptionDto,
-  UpdateExemptionDto,
-  ExemptionFilterDto,
-} from './dto/exemption.dto';
-import {
-  GetScheduleByAgeDto,
-  GetCatchUpScheduleDto,
-  SchoolEntryRequirementsDto,
   CheckContraindicationsDto,
-  VaccinationRatesQueryDto,
-  StateReportingExportDto,
+  GetCatchUpScheduleDto,
+  GetScheduleByAgeDto,
   OverdueVaccinationsQueryDto,
+  SchoolEntryRequirementsDto,
+  StateReportingExportDto,
+  VaccinationRatesQueryDto,
 } from './dto/schedule.dto';
 
 @ApiTags('health-domain')

@@ -1,14 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsString,
-  IsEnum,
-  IsArray,
-  IsOptional,
-  IsBoolean,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
-import { MessageType, MessageCategory } from './send-message.dto';
+import { IsArray, IsBoolean, IsEnum, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { MessageCategory, MessageType } from './send-message.dto';
 
 export class CreateTemplateDto {
   @ApiProperty({

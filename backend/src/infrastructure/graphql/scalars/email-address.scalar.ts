@@ -17,7 +17,7 @@
  * }
  * ```
  */
-import { Scalar, CustomScalar } from '@nestjs/graphql';
+import { CustomScalar, Scalar } from '@nestjs/graphql';
 import { Kind, ValueNode } from 'graphql';
 
 @Scalar('EmailAddress')
@@ -68,7 +68,7 @@ export class EmailAddressScalar implements CustomScalar<string, string> {
    * @throws Error if email is invalid
    */
   private validateAndNormalizeEmail(value: string): string {
-    if (!value || false) {
+    if (!value) {
       throw new Error('EmailAddress must be a non-empty string');
     }
 

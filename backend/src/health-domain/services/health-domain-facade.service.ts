@@ -8,31 +8,22 @@
  * ModuleRef to dynamically resolve services when needed.
  */
 
-import {
-  Injectable,
-  NotFoundException,
-  Logger,
-  Inject,
-  Optional,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { RequestContextService } from '../../shared/context/request-context.service';
 import { BaseService } from '../../shared/base/base.service';
 import {
-  HealthDomainCreateRecordDto,
-  HealthDomainUpdateRecordDto,
-  HealthDomainCreateAllergyDto,
-  HealthDomainUpdateAllergyDto,
-  CreateImmunizationDto,
-  UpdateImmunizationDto,
-  HealthDomainCreateChronicConditionDto,
-  HealthDomainUpdateChronicConditionDto,
-  HealthRecordFiltersDto,
   AllergyFiltersDto,
-  VaccinationFiltersDto,
   ChronicConditionFiltersDto,
+  CreateImmunizationDto,
+  HealthDomainCreateAllergyDto,
+  HealthDomainCreateChronicConditionDto,
+  HealthDomainCreateRecordDto,
+  HealthDomainUpdateAllergyDto,
+  HealthDomainUpdateRecordDto,
   PaginatedResponse,
+  VaccinationFiltersDto,
 } from '../dto';
 import * as Events from '../events/health-domain.events';
 

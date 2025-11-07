@@ -18,9 +18,7 @@ import { Allergy } from '@/database';
 import { Student } from '@/student/models';
 
 // Services
-import { AllergyCrudService } from '@/allergy/services';
-import { AllergyQueryService } from '@/allergy/services';
-import { AllergySafetyService } from '@/allergy/services';
+import { AllergyCrudService, AllergyQueryService, AllergySafetyService } from '@/allergy/services';
 
 // Controllers
 import { AllergyController } from './allergy.controller';

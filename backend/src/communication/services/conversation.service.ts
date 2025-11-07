@@ -1,37 +1,17 @@
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  ForbiddenException,
-  BadRequestException,
-} from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, WhereOptions } from 'sequelize';
-import {
-  Conversation,
-  ConversationType,
-} from '../../database/models/conversation.model';
-import {
-  ConversationParticipant,
-  ParticipantRole,
-} from '../../database/models/conversation-participant.model';
-import { ParticipantRole as ParticipantRoleEnum } from '../dto/conversation-participant.dto';
-import { Message } from '../../database/models/message.model';
-import {
-  CreateConversationResult,
-  GetConversationResult,
-  ListConversationsResult,
-  UpdateConversationResult,
-  AddParticipantResult,
-  UpdateParticipantResult,
-  GetParticipantsResult,
-} from '../types/conversation.types';
-import { CreateConversationDto } from '../dto/create-conversation.dto';
-import { UpdateConversationDto } from '../dto/update-conversation.dto';
+import { Conversation, ConversationType } from '../../database/models/conversation.model';
+import { ConversationParticipant, ParticipantRole } from '../../database/models/conversation-participant.model';
 import {
   AddParticipantDto,
+  ParticipantRole as ParticipantRoleEnum,
   UpdateParticipantDto,
 } from '../dto/conversation-participant.dto';
+import { Message } from '../../database/models/message.model';
+import { CreateConversationResult } from '../types/conversation.types';
+import { CreateConversationDto } from '../dto/create-conversation.dto';
+import { UpdateConversationDto } from '../dto/update-conversation.dto';
 
 /**
  * ConversationService

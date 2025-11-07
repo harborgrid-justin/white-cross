@@ -1,19 +1,8 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-  Logger,
-  Optional,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException, Optional } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MedicationRepository } from '../medication.repository';
-import {
-  CreateMedicationDto,
-  UpdateMedicationDto,
-  DeactivateMedicationDto,
-  ListMedicationsQueryDto,
-} from '../dto';
-import { StudentMedication, PaginatedMedicationResponse } from '../entities';
+import { CreateMedicationDto, DeactivateMedicationDto, ListMedicationsQueryDto, UpdateMedicationDto } from '../dto';
+import { PaginatedMedicationResponse, StudentMedication } from '../entities';
 
 /**
  * Medication Service

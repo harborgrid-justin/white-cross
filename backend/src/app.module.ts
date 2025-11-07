@@ -4,15 +4,28 @@
  */
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR, Reflector } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import { Redis } from 'ioredis';
 import { DatabaseModule } from '@/database';
-import { AuthModule, JwtAuthGuard } from '@/auth';
+import { AuthModule, JwtAuthGuard, TokenBlacklistService } from '@/auth';
 import { AccessControlModule, IpRestrictionGuard } from '@/access-control';
 import { CsrfGuard } from '@/middleware/security';
+import { Injectable } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { HealthRecordModule } from '@/health-record';
+
+/**
+ * Global Authentication Guard
+ * Wraps JwtAuthGuard to ensure proper dependency injection in AppModule context
+ */
+@Injectable()
+export class GlobalAuthGuard extends JwtAuthGuard {
+  constructor(reflector: Reflector, tokenBlacklistService: TokenBlacklistService) {
+    super(reflector, tokenBlacklistService);
+  }
+}
 import { UserModule } from '@/user';
 import { ResponseTransformInterceptor } from './common/interceptors/response-transform.interceptor';
 import {
@@ -299,6 +312,12 @@ import { SentryModule } from './infrastructure/monitoring/sentry.module';
     // Global configuration service (type-safe configuration access)
     AppConfigService,
 
+    // Global authentication guard
+    GlobalAuthGuard,
+
+    // Token blacklist service (ensure availability in AppModule context)
+    TokenBlacklistService,
+
     /**
      * GLOBAL INTERCEPTORS
      *
@@ -366,7 +385,7 @@ import { SentryModule } from './infrastructure/monitoring/sentry.module';
     // 3. AUTHENTICATION - Validate JWT tokens (RUNS THIRD)
     {
       provide: APP_GUARD,
-      useClass: JwtAuthGuard,
+      useClass: GlobalAuthGuard,
     },
 
     // 4. CSRF PROTECTION - Prevent Cross-Site Request Forgery (RUNS FOURTH)

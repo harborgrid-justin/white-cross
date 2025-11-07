@@ -4,17 +4,9 @@
  * @description Data transfer objects for key exchange operations
  */
 
-import {
-  IsString,
-  IsNumber,
-  IsEnum,
-  IsOptional,
-  IsBoolean,
-  Min,
-  Max,
-} from 'class-validator';
+import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { KeyType, KeyStatus } from '../interfaces';
+import { KeyStatus, KeyType } from '../interfaces';
 
 /**
  * DTO for requesting key pair generation

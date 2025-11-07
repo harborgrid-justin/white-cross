@@ -20,9 +20,9 @@
  *
  * @requires npm install libphonenumber-js
  */
-import { Scalar, CustomScalar } from '@nestjs/graphql';
+import { CustomScalar, Scalar } from '@nestjs/graphql';
 import { Kind, ValueNode } from 'graphql';
-import { parsePhoneNumber, CountryCode } from 'libphonenumber-js';
+import { CountryCode, parsePhoneNumber } from 'libphonenumber-js';
 
 @Scalar('PhoneNumber')
 export class PhoneNumberScalar implements CustomScalar<string, string> {
@@ -68,7 +68,7 @@ export class PhoneNumberScalar implements CustomScalar<string, string> {
    * @throws Error if phone number is invalid
    */
   private validateAndFormatPhone(value: string): string {
-    if (!value || false) {
+    if (!value) {
       throw new Error('PhoneNumber must be a non-empty string');
     }
 

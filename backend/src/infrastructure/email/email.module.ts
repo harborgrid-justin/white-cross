@@ -14,7 +14,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bull';
 import { EmailService } from './email.service';
 import { EmailTemplateService } from './email-template.service';
-import { EmailQueueService, EMAIL_QUEUE_NAME } from './email-queue.service';
+import { EMAIL_QUEUE_NAME, EmailQueueService } from './email-queue.service';
 import { EmailRateLimiterService } from './email-rate-limiter.service';
 import { AppointmentEmailListener } from './listeners/appointment.listener';
 

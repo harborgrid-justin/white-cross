@@ -1,22 +1,7 @@
-import {
-  IsString,
-  IsEnum,
-  IsArray,
-  IsOptional,
-  IsDateString,
-  MinLength,
-  MaxLength,
-} from 'class-validator';
+import { IsArray, IsDateString, IsEnum, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  ViolationType,
-  ViolationSeverity,
-  ViolationStatus,
-} from '../entities/compliance-violation.entity';
-import {
-  RemediationPriority,
-  RemediationStatus,
-} from '../entities/remediation-action.entity';
+import { ViolationSeverity, ViolationStatus, ViolationType } from '../entities/compliance-violation.entity';
+import { RemediationPriority, RemediationStatus } from '../entities/remediation-action.entity';
 
 export class CreateViolationDto {
   @ApiProperty({ enum: ViolationType, description: 'Type of violation' })

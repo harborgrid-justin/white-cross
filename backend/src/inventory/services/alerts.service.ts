@@ -1,12 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Sequelize } from 'sequelize-typescript';
 import { QueryTypes } from 'sequelize';
-import {
-  InventoryAlertDto,
-  AlertType,
-  AlertSeverity,
-  AlertSummaryDto,
-} from '../dto/inventory-alert.dto';
+import { AlertSeverity, AlertSummaryDto, AlertType, InventoryAlertDto } from '../dto/inventory-alert.dto';
 
 interface StockQueryResult {
   id: string;

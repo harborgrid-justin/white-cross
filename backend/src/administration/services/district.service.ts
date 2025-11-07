@@ -1,25 +1,13 @@
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { District } from '../entities/district.entity';
 import { School } from '../entities/school.entity';
 import { License } from '../entities/license.entity';
 import { AuditService } from './audit.service';
-import {
-  CreateDistrictDto,
-  UpdateDistrictDto,
-  DistrictQueryDto,
-} from '../dto/district.dto';
+import { CreateDistrictDto, DistrictQueryDto, UpdateDistrictDto } from '../dto/district.dto';
 import { AuditAction, LicenseStatus } from '../enums/administration.enums';
-import {
-  PaginatedResponse,
-  PaginationResult,
-} from '../interfaces/administration.interfaces';
+import { PaginatedResponse, PaginationResult } from '../interfaces/administration.interfaces';
 
 @Injectable()
 export class DistrictService {

@@ -1,15 +1,6 @@
-import {
-  IsString,
-  IsEnum,
-  IsOptional,
-  IsDate,
-  IsBoolean,
-  IsArray,
-  IsNumber,
-} from 'class-validator';
+import { IsArray, IsBoolean, IsDate, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { TimePeriod } from '../enums';
 
 /**
  * Get Health Metrics Query DTO

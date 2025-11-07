@@ -3,14 +3,14 @@
  * Tracks medication administration logs for compliance and adherence monitoring
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, Transaction ,  WhereOptions} from 'sequelize';
+import { Op, WhereOptions } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
 import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
 import type { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
-import { ExecutionContext, QueryOptions } from '../../types';
+import { QueryOptions } from '../../types';
 import { MedicationLog } from '../../models/medication-log.model';
 
 export interface MedicationLogAttributes {

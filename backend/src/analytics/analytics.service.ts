@@ -1,29 +1,25 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { HealthTrendAnalyticsService } from '@/analytics/services';
-import { ComplianceReportGeneratorService } from '@/analytics/services';
+import { ComplianceReportGeneratorService, HealthTrendAnalyticsService } from '@/analytics/services';
 import { TimePeriod } from './enums';
-import { HealthRecord } from '@/database';
-import { Appointment } from '@/database';
-import { MedicationLog } from '@/database';
-import { IncidentReport } from '@/database';
+import { Appointment, HealthRecord, IncidentReport, MedicationLog } from '@/database';
 import { Op } from 'sequelize';
 import {
+  AnalyticsGenerateCustomReportDto,
+  GetAdminDashboardQueryDto,
+  GetAppointmentTrendsQueryDto,
   GetHealthMetricsQueryDto,
   GetHealthTrendsQueryDto,
-  GetStudentHealthMetricsQueryDto,
-  GetSchoolMetricsQueryDto,
-  GetIncidentTrendsQueryDto,
   GetIncidentsByLocationQueryDto,
-  GetMedicationUsageQueryDto,
+  GetIncidentTrendsQueryDto,
   GetMedicationAdherenceQueryDto,
-  GetAppointmentTrendsQueryDto,
+  GetMedicationUsageQueryDto,
   GetNoShowRateQueryDto,
   GetNurseDashboardQueryDto,
-  GetAdminDashboardQueryDto,
   GetPlatformSummaryQueryDto,
-  AnalyticsGenerateCustomReportDto,
   GetReportQueryDto,
+  GetSchoolMetricsQueryDto,
+  GetStudentHealthMetricsQueryDto,
 } from './dto';
 
 /**

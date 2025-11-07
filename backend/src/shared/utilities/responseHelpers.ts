@@ -32,12 +32,12 @@
 import { Response } from 'express';
 import { logger } from '../logging/logger';
 import {
-  ServiceError,
-  NotFoundError,
-  ConflictError,
-  ValidationError,
   AuthenticationError,
   AuthorizationError,
+  ConflictError,
+  NotFoundError,
+  ServiceError,
+  ValidationError,
 } from '../../errors/ServiceError';
 
 /**

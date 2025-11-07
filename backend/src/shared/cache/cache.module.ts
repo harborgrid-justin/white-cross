@@ -4,7 +4,7 @@
  * @description NestJS module for caching functionality
  */
 
-import { Module, Global } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { CacheService } from './cache.service';
 
 /**

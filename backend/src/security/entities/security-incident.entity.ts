@@ -1,5 +1,5 @@
-import { Table, Column, Model, DataType, PrimaryKey, Default } from 'sequelize-typescript';
-import { SecurityIncidentType, IncidentSeverity, IncidentStatus } from '../enums';
+import { Column, DataType, Default, Model, PrimaryKey, Table } from 'sequelize-typescript';
+import { IncidentSeverity, IncidentStatus, SecurityIncidentType } from '../enums';
 
 /**
  * Security Incident Entity

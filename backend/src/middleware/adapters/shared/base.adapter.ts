@@ -9,17 +9,14 @@
 
 import { Injectable } from '@nestjs/common';
 import {
-  IMiddleware,
-  IRequest,
-  IResponse,
-  INextFunction,
-  MiddlewareContext,
-  HealthcareUser,
-  UserRole,
-  Permission,
   HealthcareContext,
+  HealthcareUser,
   IFrameworkAdapter,
+  IMiddleware,
+  MiddlewareContext,
   MiddlewareFactory,
+  Permission,
+  UserRole,
 } from '../../utils/types/middleware.types';
 
 /**

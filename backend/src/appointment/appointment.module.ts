@@ -12,7 +12,6 @@
 
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AppointmentController } from './appointment.controller';
 import { AppointmentService } from './appointment.service';
 import { Appointment } from '../database/models/appointment.model';

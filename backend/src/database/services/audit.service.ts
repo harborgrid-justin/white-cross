@@ -6,19 +6,11 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, QueryTypes } from 'sequelize';
+import { Op } from 'sequelize';
 import { IAuditLogger } from '../interfaces/audit/audit-logger.interface';
 import { ExecutionContext } from '../types';
-import {
-  AuditAction,
-  isPHIEntity,
-  SENSITIVE_FIELDS,
-} from '../types/database.enums';
-import {
-  AuditLog,
-  ComplianceType,
-  AuditSeverity,
-} from '../models/audit-log.model';
+import { AuditAction, isPHIEntity, SENSITIVE_FIELDS } from '../types/database.enums';
+import { AuditLog, AuditSeverity, ComplianceType } from '../models/audit-log.model';
 
 /**
  * Interface for audit log query filters

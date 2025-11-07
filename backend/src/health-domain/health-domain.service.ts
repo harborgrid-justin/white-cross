@@ -1,23 +1,18 @@
+import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import {
-  Injectable,
-  NotFoundException,
-  Inject,
-  forwardRef,
-} from '@nestjs/common';
-import {
-  HealthDomainCreateRecordDto,
-  HealthDomainUpdateRecordDto,
-  HealthDomainCreateAllergyDto,
-  HealthDomainUpdateAllergyDto,
-  CreateImmunizationDto,
-  UpdateImmunizationDto,
-  HealthDomainCreateChronicConditionDto,
-  HealthDomainUpdateChronicConditionDto,
-  HealthRecordFiltersDto,
   AllergyFiltersDto,
-  VaccinationFiltersDto,
   ChronicConditionFiltersDto,
+  CreateImmunizationDto,
+  HealthDomainCreateAllergyDto,
+  HealthDomainCreateChronicConditionDto,
+  HealthDomainCreateRecordDto,
+  HealthDomainUpdateAllergyDto,
+  HealthDomainUpdateChronicConditionDto,
+  HealthDomainUpdateRecordDto,
+  HealthRecordFiltersDto,
   PaginatedResponse,
+  UpdateImmunizationDto,
+  VaccinationFiltersDto,
 } from './dto';
 
 // Import all health-record services

@@ -5,21 +5,12 @@
  * HIPAA Compliance: All allergy data is PHI and requires audit logging
  */
 
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import {
-  Allergy,
-  AllergySeverity,
-  AllergyType,
-} from '../../database/models/allergy.model';
+import { Allergy, AllergySeverity, AllergyType } from '../../database/models/allergy.model';
 import { Student } from '../../database/models/student.model';
-import { CreateAllergyDto, UpdateAllergyDto, AllergyFilterDto } from './dto';
+import { AllergyFilterDto, CreateAllergyDto, UpdateAllergyDto } from './dto';
 import { AuthenticatedUser } from '../../shared/types';
 
 @Injectable()

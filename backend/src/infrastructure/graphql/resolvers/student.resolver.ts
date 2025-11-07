@@ -26,7 +26,7 @@ import {
 } from '../dto';
 import { StudentService } from '@/student';
 import type { GraphQLContext } from '../types/context.interface';
-import { PHIField } from '@/infrastructure/graphql';
+import { PHIField } from '@/infrastructure/graphql/guards';
 
 
 /**

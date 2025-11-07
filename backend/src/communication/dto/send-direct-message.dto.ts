@@ -1,14 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsString,
-  IsUUID,
-  IsOptional,
-  IsArray,
-  IsUrl,
-  MaxLength,
-  MinLength,
-  IsBoolean,
-} from 'class-validator';
+import { IsArray, IsBoolean, IsOptional, IsString, IsUrl, IsUUID, MaxLength, MinLength } from 'class-validator';
 
 /**
  * DTO for sending direct messages (1-to-1 conversations)

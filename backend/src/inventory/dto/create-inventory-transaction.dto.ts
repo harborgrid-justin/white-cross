@@ -1,13 +1,4 @@
-import {
-  IsString,
-  IsNumber,
-  IsEnum,
-  IsOptional,
-  IsInt,
-  IsUUID,
-  IsDateString,
-  MaxLength,
-} from 'class-validator';
+import { IsDateString, IsEnum, IsInt, IsNumber, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { InventoryTransactionType } from '../entities/inventory-transaction.entity';
 

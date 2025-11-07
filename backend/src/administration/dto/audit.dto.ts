@@ -1,13 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsOptional,
-  IsUUID,
-  IsString,
-  IsEnum,
-  IsDate,
-  IsNumber,
-  Min,
-} from 'class-validator';
+import { IsDate, IsEnum, IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { AuditAction } from '../enums/administration.enums';
 

@@ -1,15 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { createHmac } from 'crypto';
 import {
-  WebhookPayload,
-  StudentCreatedPayload,
-  StudentUpdatedPayload,
   HealthRecordUpdatedPayload,
-} from '../types/webhook.types';
-import {
+  isHealthRecordUpdatedPayload,
   isStudentCreatedPayload,
   isStudentUpdatedPayload,
-  isHealthRecordUpdatedPayload,
+  StudentCreatedPayload,
+  StudentUpdatedPayload,
+  WebhookPayload,
 } from '../types/webhook.types';
 
 @Injectable()

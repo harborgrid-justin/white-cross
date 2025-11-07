@@ -9,13 +9,7 @@
  */
 
 import { Request, ResponseToolkit } from '@hapi/hapi';
-import {
-  checkPermission,
-  Role,
-  Resource,
-  Action,
-  PermissionContext,
-} from './Permission';
+import { Action, checkPermission, PermissionContext, Resource, Role } from './Permission';
 import { ErrorFactory } from '../errors';
 
 /**

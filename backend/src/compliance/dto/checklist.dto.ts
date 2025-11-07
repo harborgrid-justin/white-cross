@@ -1,16 +1,6 @@
-import {
-  IsString,
-  IsEnum,
-  IsOptional,
-  IsDateString,
-  MinLength,
-  MaxLength,
-} from 'class-validator';
+import { IsDateString, IsEnum, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  ComplianceCategory,
-  ChecklistItemStatus,
-} from '../entities/compliance-checklist-item.entity';
+import { ChecklistItemStatus, ComplianceCategory } from '../entities/compliance-checklist-item.entity';
 
 export class CreateChecklistDto {
   @ApiProperty({

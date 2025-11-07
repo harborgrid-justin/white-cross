@@ -1,17 +1,9 @@
-import {
-  Injectable,
-  NotFoundException,
-  Logger,
-  BadRequestException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { FollowUpAction } from '@/database';
-import { IncidentReport } from '@/database';
-import { CreateFollowUpActionDto } from '@/incident-report';
-import { UpdateFollowUpActionDto } from '@/incident-report';
-import { IncidentValidationService } from '@/incident-report';
-import { ActionStatus, ActionPriority } from '../enums';
+import { FollowUpAction, IncidentReport } from '@/database';
+import { CreateFollowUpActionDto, IncidentValidationService, UpdateFollowUpActionDto } from '@/incident-report';
+import { ActionPriority, ActionStatus } from '../enums';
 
 @Injectable()
 export class IncidentFollowUpService {

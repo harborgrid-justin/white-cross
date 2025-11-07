@@ -5,21 +5,21 @@
  */
 
 import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
   CallHandler,
+  ExecutionContext,
   HttpException,
   HttpStatus,
+  Injectable,
   Logger,
+  NestInterceptor,
 } from '@nestjs/common';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import {
-  QueryError,
-  ValidationError as SequelizeValidationError,
-  UniqueConstraintError,
   ForeignKeyConstraintError,
+  QueryError,
+  UniqueConstraintError,
+  ValidationError as SequelizeValidationError,
 } from 'sequelize';
 
 /**

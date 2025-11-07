@@ -5,7 +5,7 @@
  */
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsDateString, IsBoolean, IsOptional, IsObject } from 'class-validator';
+import { IsBoolean, IsDateString, IsNotEmpty, IsObject, IsOptional } from 'class-validator';
 
 /**
  * Bulk Grade Transition DTO

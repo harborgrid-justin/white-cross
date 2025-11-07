@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ViolationRepository } from '../repositories/violation.repository';
 import {
-  CreateViolationDto,
-  UpdateViolationDto,
   CreateRemediationDto,
-  UpdateRemediationDto,
+  CreateViolationDto,
   QueryViolationDto,
+  UpdateRemediationDto,
+  UpdateViolationDto,
 } from '../dto/violation.dto';
 import { ViolationStatus } from '../../database/models/compliance-violation.model';
 import { RemediationStatus } from '../../database/models/remediation-action.model';

@@ -4,11 +4,11 @@
  */
 
 import {
-  EmergencyType,
-  EmergencyPriority,
   BroadcastAudience,
   BroadcastStatus,
   CommunicationChannel,
+  EmergencyPriority,
+  EmergencyType,
 } from '@/emergency-broadcast';
 
 export class EmergencyBroadcastResponseDto {

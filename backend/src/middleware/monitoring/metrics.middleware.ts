@@ -6,8 +6,8 @@
  * Collects performance metrics, usage statistics, and system health indicators.
  */
 
-import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
-import type { Request, Response, NextFunction } from 'express';
+import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
+import type { NextFunction, Request, Response } from 'express';
 
 /**
  * Metric types for categorization

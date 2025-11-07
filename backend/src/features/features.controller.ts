@@ -4,22 +4,8 @@
  * @description HTTP endpoints for feature flag management
  */
 
-import {
-  Controller,
-  Get,
-  Patch,
-  Body,
-  Param,
-  HttpCode,
-  HttpStatus,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { FeaturesService } from './features.service';
 import { ToggleFeatureDto } from '@/features/dto';
 

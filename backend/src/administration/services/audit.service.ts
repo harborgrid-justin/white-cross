@@ -4,10 +4,7 @@ import { Op } from 'sequelize';
 import { AuditLog } from '../entities/audit-log.entity';
 import { AuditAction } from '../enums/administration.enums';
 import { AuditQueryDto } from '../dto/audit.dto';
-import {
-  PaginatedResponse,
-  PaginationResult,
-} from '../interfaces/administration.interfaces';
+import { PaginatedResponse, PaginationResult } from '../interfaces/administration.interfaces';
 
 /**
  * AuditService

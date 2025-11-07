@@ -5,7 +5,7 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsBoolean } from 'class-validator';
+import { IsBoolean, IsNotEmpty } from 'class-validator';
 
 export class ToggleFeatureDto {
   @ApiProperty({

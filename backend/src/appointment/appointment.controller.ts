@@ -4,50 +4,21 @@
  * @description HTTP endpoints for appointment management with comprehensive healthcare workflow support
  */
 
-import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
-  Body,
-  Param,
-  Query,
-  HttpCode,
-  HttpStatus,
-  ParseUUIDPipe,
-  Logger,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiBody,
-  ApiQuery,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Logger, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AppointmentService } from './appointment.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { AppointmentFiltersDto } from './dto/appointment-filters.dto';
 import {
   CreateWaitlistEntryDto,
-  WaitlistFiltersDto,
-  UpdateWaitlistPriorityDto,
-  RemoveFromWaitlistDto,
   NotifyWaitlistEntryDto,
+  RemoveFromWaitlistDto,
+  UpdateWaitlistPriorityDto,
+  WaitlistFiltersDto,
 } from './dto/waitlist.dto';
-import {
-  CreateReminderDto,
-  ReminderProcessingResultDto,
-} from './dto/reminder.dto';
-import {
-  StatisticsFiltersDto,
-  SearchAppointmentsDto,
-  BulkCancelDto,
-  DateRangeDto,
-} from './dto/statistics.dto';
+import { CreateReminderDto, ReminderProcessingResultDto } from './dto/reminder.dto';
+import { BulkCancelDto, DateRangeDto, SearchAppointmentsDto, StatisticsFiltersDto } from './dto/statistics.dto';
 import { CreateRecurringAppointmentDto } from './dto/recurring.dto';
 
 /**

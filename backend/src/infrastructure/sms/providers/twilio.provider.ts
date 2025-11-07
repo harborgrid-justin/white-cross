@@ -8,10 +8,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Twilio from 'twilio';
 import { MessageInstance } from 'twilio/lib/rest/api/v2010/account/message';
-import {
-  SmsDeliveryResultDto,
-  SmsDeliveryStatus,
-} from '../dto/sms-queue-job.dto';
+import { SmsDeliveryResultDto, SmsDeliveryStatus } from '../dto/sms-queue-job.dto';
 
 /**
  * Twilio-specific error codes

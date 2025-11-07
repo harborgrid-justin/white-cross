@@ -15,13 +15,13 @@ import { Job } from 'bull';
 import { MessageQueueService } from '../../infrastructure/queue/message-queue.service';
 import { JobPriority } from '../../infrastructure/queue/enums';
 import {
-  SendMessageJobDto,
-  NotificationJobDto,
+  DeliveryConfirmationJobDto,
   EncryptionJobDto,
   IndexingJobDto,
-  DeliveryConfirmationJobDto,
-  NotificationType,
+  NotificationJobDto,
   NotificationPriority,
+  NotificationType,
+  SendMessageJobDto,
 } from '../../infrastructure/queue/dtos';
 
 /**

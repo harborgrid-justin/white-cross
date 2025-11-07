@@ -1,22 +1,9 @@
-import {
-  Controller,
-  Post,
-  Get,
-  Body,
-  Param,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { OfflineSyncService } from '../services/offline-sync.service';
-import { QueueSyncActionDto, SyncOptionsDto, ResolveConflictDto } from '../dto';
+import { QueueSyncActionDto, ResolveConflictDto, SyncOptionsDto } from '../dto';
 
 /**
  * Sync Controller

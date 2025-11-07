@@ -45,20 +45,19 @@ import { BullModule } from '@nestjs/bull';
 import { ConfigModule } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { QueueName } from './enums';
-import { QueueConfigService, QUEUE_CONFIGS } from './queue.config';
+import { QUEUE_CONFIGS, QueueConfigService } from './queue.config';
 import { MessageQueueService } from './message-queue.service';
 import {
-  MessageDeliveryProcessor,
-  MessageNotificationProcessor,
-  MessageEncryptionProcessor,
-  MessageIndexingProcessor,
   BatchMessageProcessor,
   MessageCleanupProcessor,
+  MessageDeliveryProcessor,
+  MessageEncryptionProcessor,
+  MessageIndexingProcessor,
+  MessageNotificationProcessor,
 } from './message-queue.processor.complete';
 import { EncryptionModule } from '@/infrastructure/encryption';
 import { WebSocketModule } from '@/infrastructure/websocket';
-import { Message } from '@/database';
-import { MessageDelivery } from '@/database';
+import { Message, MessageDelivery } from '@/database';
 
 @Module({
   imports: [

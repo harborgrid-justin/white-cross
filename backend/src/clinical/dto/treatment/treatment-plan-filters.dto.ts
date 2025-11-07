@@ -1,4 +1,4 @@
-import { IsOptional, IsUUID, IsEnum, IsInt, Min, Max } from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsUUID, Max, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { TreatmentStatus } from '../../enums/treatment-status.enum';

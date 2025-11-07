@@ -1,19 +1,18 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  ForeignKey,
-  BelongsTo,
-  CreatedAt,
-  UpdatedAt,
-  Scopes,
   BeforeCreate,
   BeforeUpdate,
+  BelongsTo,
+  Column,
+  CreatedAt,
+  DataType,
+  Default,
+  ForeignKey,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
+  UpdatedAt,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 
 /**
  * Budget Transaction Model

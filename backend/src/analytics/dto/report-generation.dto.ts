@@ -1,7 +1,7 @@
-import { IsString, IsEnum, IsDate, IsArray, IsOptional } from 'class-validator';
+import { IsArray, IsDate, IsEnum, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { ReportType, ReportFormat } from '../enums';
+import { ReportFormat, ReportType } from '../enums';
 
 /**
  * Generate Report Base DTO

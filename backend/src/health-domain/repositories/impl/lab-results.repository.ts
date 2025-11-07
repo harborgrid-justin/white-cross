@@ -6,22 +6,19 @@
 
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, Transaction } from 'sequelize';
+import { Op } from 'sequelize';
+import { BaseRepository, RepositoryError } from '../../../database/repositories/base/base.repository';
 import {
-  BaseRepository,
-  RepositoryError,
-} from '../../../database/repositories/base/base.repository';
-import {
+  CreateLabResultsDTO,
   ILabResultsRepository,
   LabResultsAttributes,
-  CreateLabResultsDTO,
-  UpdateLabResultsDTO,
   LabResultTrend,
+  UpdateLabResultsDTO,
 } from '../interfaces/lab-results.repository.interface';
 import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
 import type { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
-import { ExecutionContext, QueryOptions } from '../../../database/types';
+import { QueryOptions } from '../../../database/types';
 import { LabResults } from '../../../database/models/lab-results.model';
 
 @Injectable()

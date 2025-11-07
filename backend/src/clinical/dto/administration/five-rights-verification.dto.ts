@@ -1,12 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsString,
-  IsBoolean,
-  IsEnum,
-  IsOptional,
-  IsArray,
-  IsDateString,
-} from 'class-validator';
+import { IsArray, IsBoolean, IsDateString, IsEnum, IsOptional, IsString } from 'class-validator';
 
 export enum AdministrationRoute {
   ORAL = 'oral',

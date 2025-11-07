@@ -2,14 +2,12 @@
  * Data Retention Policy Repository Implementation
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
-import { BaseRepository, RepositoryError } from '../base/base.repository';
+import { BaseRepository } from '../base/base.repository';
 import type { IAuditLogger } from '../../interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../interfaces/audit/audit-logger.interface';
 import type { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
-import { ExecutionContext } from '../../types';
 import { DataRetentionPolicy } from '../../models/data-retention-policy.model';
 
 export interface DataRetentionPolicyAttributes {

@@ -3,7 +3,7 @@
  * DTO for recording acknowledgment
  */
 
-import { IsString, IsNotEmpty, IsDate, IsOptional } from 'class-validator';
+import { IsDate, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class RecordAcknowledgmentDto {

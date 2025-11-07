@@ -1,10 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import axios, {
-  AxiosInstance,
-  AxiosRequestConfig,
-  AxiosResponse,
-  AxiosError,
-} from 'axios';
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import axiosRetry from 'axios-retry';
 import { CircuitBreakerService } from '../services/circuit-breaker.service';
 import { RateLimiterService } from '../services/rate-limiter.service';

@@ -1,34 +1,31 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
   Body,
-  Param,
-  Query,
-  UseGuards,
+  Controller,
+  Delete,
+  Get,
   HttpCode,
   HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
   Req,
-  UseInterceptors,
-  UploadedFile,
   UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthenticatedRequest } from '../types';
 import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
   ApiBearerAuth,
   ApiBody,
   ApiConsumes,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express';
-import * as multer from 'multer';
 import { EnhancedMessageService } from '../services/enhanced-message.service';
 import { ConversationService } from '../services/conversation.service';
 import { MessageQueueService } from '../../infrastructure/queue/message-queue.service';
@@ -40,14 +37,8 @@ import { ConversationType } from '../../database/models/conversation.model';
 import { EditMessageDto } from '../dto/edit-message.dto';
 import { MessagePaginationDto } from '../dto/message-pagination.dto';
 import { SearchMessagesDto } from '../dto/search-messages.dto';
-import {
-  MarkAsReadDto,
-  MarkConversationAsReadDto,
-} from '../dto/mark-as-read.dto';
-import {
-  AddParticipantDto,
-  UpdateParticipantDto,
-} from '../dto/conversation-participant.dto';
+import { MarkAsReadDto, MarkConversationAsReadDto } from '../dto/mark-as-read.dto';
+import { AddParticipantDto, UpdateParticipantDto } from '../dto/conversation-participant.dto';
 
 /**
  * EnhancedMessageController

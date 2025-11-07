@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { IntegrationType } from '../entities/integration-config.entity';
 import { CreateIntegrationDto } from '../dto';
 

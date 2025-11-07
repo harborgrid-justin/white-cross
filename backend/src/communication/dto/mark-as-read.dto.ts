@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsUUID, IsOptional, IsArray, ArrayMinSize } from 'class-validator';
+import { ArrayMinSize, IsArray, IsOptional, IsUUID } from 'class-validator';
 
 /**
  * DTO for marking messages as read

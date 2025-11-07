@@ -2,15 +2,7 @@
  * Emergency Contact Query DTO
  * @description DTO for filtering emergency contacts
  */
-import {
-  IsOptional,
-  IsEnum,
-  IsBoolean,
-  IsUUID,
-  IsInt,
-  Min,
-  Max,
-} from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsOptional, IsUUID, Max, Min } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { ContactPriority, VerificationStatus } from '../enums';

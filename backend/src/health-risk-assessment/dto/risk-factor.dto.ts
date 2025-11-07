@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, Min, Max } from 'class-validator';
+import { IsNumber, IsString, Max, Min } from 'class-validator';
 
 /**
  * DTO representing a risk factor in the health risk assessment.

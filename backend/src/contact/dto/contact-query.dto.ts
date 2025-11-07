@@ -2,17 +2,7 @@
  * Contact Query DTO
  * @description DTO for filtering and paginating contacts
  */
-import {
-  IsOptional,
-  IsEnum,
-  IsBoolean,
-  IsString,
-  IsInt,
-  Min,
-  Max,
-  IsIn,
-  IsUUID,
-} from 'class-validator';
+import { IsBoolean, IsEnum, IsIn, IsInt, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { ContactType } from '../enums';

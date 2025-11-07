@@ -4,15 +4,10 @@
  * @description Sanitize inputs to prevent XSS and injection attacks
  */
 
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-} from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { SanitizableValue, SanitizableObject } from '../types/utility-types';
+import { SanitizableObject, SanitizableValue } from '../types/utility-types';
 
 /**
  * Sanitization Interceptor

@@ -16,20 +16,10 @@
  */
 
 import { Test, TestingModule } from '@nestjs/testing';
-import {
-  NotFoundException,
-  ConflictException,
-  BadRequestException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { MedicationController } from '../medication.controller';
 import { MedicationService } from '../services/medication.service';
-import {
-  CreateMedicationDto,
-  UpdateMedicationDto,
-  DeactivateMedicationDto,
-  ListMedicationsQueryDto,
-} from '../dto';
+import { CreateMedicationDto, DeactivateMedicationDto, ListMedicationsQueryDto, UpdateMedicationDto } from '../dto';
 
 describe('MedicationController', () => {
   let controller: MedicationController;

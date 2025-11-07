@@ -5,18 +5,12 @@
  * Migrated from backend/src/services/academicTranscript
  */
 
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  ConflictException,
-} from '@nestjs/common';
-import { Inject } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import {
   AcademicRecord,
-  SubjectGrade,
   AttendanceRecord,
   BehaviorRecord,
+  SubjectGrade,
 } from './interfaces/academic-record.interface';
 import { TranscriptImportDto } from './dto/transcript-import.dto';
 import { AcademicTranscriptRepository } from '../database/repositories/impl/academic-transcript.repository';

@@ -1,13 +1,4 @@
-import {
-  IsOptional,
-  IsUUID,
-  IsEnum,
-  IsInt,
-  Min,
-  Max,
-  IsDate,
-  IsBoolean,
-} from 'class-validator';
+import { IsBoolean, IsDate, IsEnum, IsInt, IsOptional, IsUUID, Max, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { FollowUpStatus } from '../../enums/follow-up-status.enum';

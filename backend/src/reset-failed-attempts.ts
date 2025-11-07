@@ -27,9 +27,7 @@ async function resetFailedAttempts() {
 
     console.log(`📧 Found user: ${adminUser.email}`);
     console.log(`❌ Failed login attempts: ${adminUser.failedLoginAttempts}`);
-    console.log(
-      `🔒 Lockout until: ${adminUser.lockoutUntil || 'Not locked'}\n`,
-    );
+    console.log(`🔒 Lockout until: ${adminUser.lockoutUntil || 'Not locked'}\n`);
 
     // Reset failed attempts
     await adminUser.resetFailedLoginAttempts();

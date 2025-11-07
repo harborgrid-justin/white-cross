@@ -1,19 +1,18 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
   AllowNull,
-  Index,
-  Scopes,
   BeforeCreate,
   BeforeUpdate,
+  Column,
+  DataType,
+  Default,
+  Index,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
-import { SyncEntityType, ConflictResolution } from './sync-queue-item.model';
+import { ConflictResolution, SyncEntityType } from './sync-queue-item.model';
 
 /**
  * Sync Conflict Version Interface

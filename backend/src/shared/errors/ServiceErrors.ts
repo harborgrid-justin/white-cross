@@ -28,7 +28,7 @@
  * @since 2025-10-23
  */
 
-import { ErrorCode, AppError } from './ErrorCode';
+import { AppError, ErrorCode } from './ErrorCode';
 
 /**
  * Base ServiceError class with retry semantics

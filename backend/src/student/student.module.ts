@@ -8,10 +8,7 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { StudentService } from './student.service';
 import { StudentController } from './student.controller';
-import { Student } from '@/database';
-import { User } from '@/database';
-import { HealthRecord } from '@/database';
-import { MentalHealthRecord } from '@/database';
+import { HealthRecord, MentalHealthRecord, Student, User } from '@/database';
 import { AcademicTranscriptModule } from '@/academic-transcript';
 
 /**

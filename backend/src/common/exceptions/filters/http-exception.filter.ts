@@ -4,26 +4,11 @@
  * @description Global exception filter for HTTP exceptions with HIPAA compliance, Winston logging, Sentry, and audit logging
  */
 
-import {
-  ExceptionFilter,
-  Catch,
-  ArgumentsHost,
-  HttpException,
-  HttpStatus,
-  Inject,
-} from '@nestjs/common';
+import { ArgumentsHost, Catch, ExceptionFilter, HttpException, Inject } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import {
-  ErrorResponse,
-  ErrorCategory,
-  ErrorSeverity,
-  ErrorLoggingContext,
-} from '../types/error-response.types';
-import {
-  getErrorCodeCategory,
-  getHttpStatusForErrorCode,
-} from '../constants/error-codes';
+import { ErrorCategory, ErrorLoggingContext, ErrorResponse, ErrorSeverity } from '../types/error-response.types';
+import { getErrorCodeCategory } from '../constants/error-codes';
 import { LoggerService } from '../../../shared/logging/logger.service';
 import { SentryService } from '../../../infrastructure/monitoring/sentry.service';
 import { AuditService } from '../../../audit/audit.service';

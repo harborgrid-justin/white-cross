@@ -4,15 +4,10 @@
  * @description Comprehensive structured logging with Winston, PHI redaction, and Sentry integration
  */
 
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-} from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { SentryService } from '../../infrastructure/monitoring/sentry.service';

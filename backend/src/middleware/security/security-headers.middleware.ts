@@ -19,8 +19,8 @@
  * - HIPAA 164.312(a)(1) - Access Control (CSP, frame protection)
  */
 
-import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
-import type { Request, Response, NextFunction } from 'express';
+import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
+import type { NextFunction, Request, Response } from 'express';
 import * as crypto from 'crypto';
 
 export interface SecurityHeadersConfig {

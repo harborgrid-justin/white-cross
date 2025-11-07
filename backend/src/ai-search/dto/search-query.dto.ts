@@ -5,17 +5,7 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsNotEmpty,
-  IsString,
-  IsOptional,
-  IsNumber,
-  IsArray,
-  IsObject,
-  Min,
-  Max,
-  MaxLength,
-} from 'class-validator';
+import { IsNotEmpty, IsObject, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class SearchQueryDto {
   @ApiProperty({

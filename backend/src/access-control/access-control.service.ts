@@ -1,14 +1,7 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-  Logger,
-  Inject,
-} from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
-import { Sequelize, Op } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 import { AuditService } from '../database/services/audit.service';
-import { AuditAction } from '../database/types/database.enums';
 import { ExecutionContext } from '../database/types/execution-context.interface';
 import { PermissionCacheService } from './services/permission-cache.service';
 import { CreateRoleDto } from './dto/create-role.dto';
@@ -16,44 +9,31 @@ import { UpdateRoleDto } from './dto/update-role.dto';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { LogLoginAttemptDto } from './dto/log-login-attempt.dto';
-import {
-  AccessControlCreateIpRestrictionDto,
-  IpRestrictionType,
-} from './dto/create-ip-restriction.dto';
+import { AccessControlCreateIpRestrictionDto, IpRestrictionType } from './dto/create-ip-restriction.dto';
 import {
   AccessControlCreateIncidentDto,
-  SecurityIncidentType,
   IncidentSeverity,
+  SecurityIncidentType,
 } from './dto/create-security-incident.dto';
+import { IpRestrictionCheckResult, SecurityStatistics, UserPermissionsResult } from './interfaces';
 import {
-  UserPermissionsResult,
-  SecurityStatistics,
-  IpRestrictionCheckResult,
-} from './interfaces';
-import {
-  RoleModel,
-  PermissionModel,
-  RolePermissionModel,
-  UserRoleAssignmentModel,
-  SessionModel,
-  LoginAttemptModel,
-  IpRestrictionModel,
-  SecurityIncidentModel,
-  UserModel,
-  SequelizeModelClass,
-  RoleWithPermissions,
-  PermissionInstance,
-  SessionInstance,
-  LoginAttemptInstance,
   IpRestrictionInstance,
-  SecurityIncidentInstance,
-  UserRoleInstance,
-  RolePermissionInstance,
-  RoleUpdateData,
-  SecurityIncidentUpdateData,
-  SecurityIncidentFilters,
-  SecurityIncidentWhereClause,
+  LoginAttemptInstance,
   PaginationResult,
+  PermissionInstance,
+  PermissionModel,
+  RoleModel,
+  RolePermissionInstance,
+  RolePermissionModel,
+  RoleUpdateData,
+  RoleWithPermissions,
+  SecurityIncidentFilters,
+  SecurityIncidentInstance,
+  SecurityIncidentUpdateData,
+  SecurityIncidentWhereClause,
+  SequelizeModelClass,
+  SessionInstance,
+  UserRoleAssignmentModel,
 } from './types';
 
 /**

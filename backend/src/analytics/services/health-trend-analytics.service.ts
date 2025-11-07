@@ -1,19 +1,19 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { TimePeriod, TrendDirection } from '../enums';
 import {
-  PopulationHealthSummary,
   ChartData,
-  HealthMetric,
-  TimeSeriesDataPoint,
-  IncidentTrend,
-  PredictiveInsight,
   CohortComparison,
   HealthConditionTrend,
+  HealthMetric,
+  IncidentTrend,
   MedicationTrend,
+  PopulationHealthSummary,
+  PredictiveInsight,
+  TimeSeriesDataPoint,
 } from '../interfaces';
 import { Student } from '../../database/models/student.model';
 import { HealthRecord } from '../../database/models/health-record.model';

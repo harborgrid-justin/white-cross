@@ -1,9 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import {
-  CacheConfig,
-  CacheStats,
-  CacheEntry,
-} from '../interfaces/cache-config.interface';
+import { CacheEntry, CacheStats } from '../interfaces/cache-config.interface';
 
 @Injectable()
 export class DiscoveryCacheService {

@@ -15,29 +15,25 @@
  */
 
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  CreatedAt,
-  UpdatedAt,
-  DeletedAt,
-  ForeignKey,
-  BelongsTo,
-  HasMany,
-  Index,
   BeforeCreate,
   BeforeUpdate,
+  BelongsTo,
+  Column,
+  CreatedAt,
+  DataType,
+  Default,
+  DeletedAt,
+  ForeignKey,
+  HasMany,
+  Index,
+  Model,
+  PrimaryKey,
+  Table,
+  UpdatedAt,
 } from 'sequelize-typescript';
 import type { DocumentSignature } from './document-signature.entity';
 import type { DocumentAuditTrail } from './document-audit-trail.entity';
-import {
-  DocumentCategory,
-  DocumentStatus,
-  DocumentAccessLevel,
-} from '../enums';
+import { DocumentAccessLevel, DocumentCategory, DocumentStatus } from '../enums';
 
 @Table({
   tableName: 'documents',

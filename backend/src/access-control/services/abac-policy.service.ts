@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
-  AbacPolicyRule,
+  AbacCondition,
   AbacContext,
   AbacEvaluationResult,
   AbacOperator,
-  AbacCondition,
+  AbacPolicyRule,
 } from '../interfaces/abac-policy.interface';
 
 /**

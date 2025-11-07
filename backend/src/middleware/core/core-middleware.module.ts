@@ -14,13 +14,7 @@
  * @compliance HIPAA - Healthcare data protection and access control
  */
 
-import {
-  Module,
-  Global,
-  NestModule,
-  MiddlewareConsumer,
-  RequestMethod,
-} from '@nestjs/common';
+import { Global, MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { SessionMiddleware } from './middleware/session.middleware';
 import { RbacGuard } from './guards/rbac.guard';
 import { PermissionsGuard } from './guards/permissions.guard';

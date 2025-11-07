@@ -4,25 +4,10 @@
  * Defines GraphQL object types, input types, and response types for Contact entity
  * using NestJS GraphQL decorators for code-first schema generation.
  */
-import {
-  ObjectType,
-  Field,
-  ID,
-  InputType,
-  registerEnumType,
-} from '@nestjs/graphql';
+import { Field, ID, InputType, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { GraphQLJSON } from 'graphql-scalars';
 import { PaginationDto } from './pagination.dto';
-import {
-  IsString,
-  IsEmail,
-  IsOptional,
-  IsBoolean,
-  IsEnum,
-  MinLength,
-  MaxLength,
-  Matches,
-} from 'class-validator';
+import { IsBoolean, IsEmail, IsEnum, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
 
 /**
  * Contact Type Enum for GraphQL

@@ -18,20 +18,12 @@
  */
 
 import { Test, TestingModule } from '@nestjs/testing';
-import {
-  NotFoundException,
-  BadRequestException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { HealthRecordController } from '../health-record.controller';
 import { HealthRecordService } from '../health-record.service';
 import { PHIAccessLogger } from '../services/phi-access-logger.service';
 import { HealthRecordMetricsService } from '../services/health-record-metrics.service';
-import {
-  HealthRecordCreateDto,
-  HealthRecordUpdateDto,
-  HealthRecordFilterDto,
-} from '../dto';
+import { HealthRecordCreateDto, HealthRecordUpdateDto } from '../dto';
 
 describe('HealthRecordController', () => {
   let controller: HealthRecordController;

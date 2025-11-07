@@ -1,16 +1,6 @@
-import {
-  IsString,
-  IsEnum,
-  IsOptional,
-  IsDateString,
-  MinLength,
-  MaxLength,
-} from 'class-validator';
+import { IsDateString, IsEnum, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  PolicyCategory,
-  PolicyStatus,
-} from '../entities/policy-document.entity';
+import { PolicyCategory, PolicyStatus } from '../entities/policy-document.entity';
 
 export class CreatePolicyDto {
   @ApiProperty({

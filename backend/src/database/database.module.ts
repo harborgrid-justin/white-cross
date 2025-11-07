@@ -14,160 +14,150 @@
  * - Query result caching with automatic invalidation
  */
 
-import { Module, Global } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { Sequelize } from 'sequelize-typescript';
 
 // Services
-import { CacheService } from '@/database/services';
-import { AuditService } from '@/database/services';
-import { ModelAuditHelper } from '@/database/services';
+import {
+  AuditService,
+  CacheMonitoringService,
+  CacheService,
+  ConnectionMonitorService,
+  MaterializedViewService,
+  ModelAuditHelper,
+  QueryCacheService,
+  QueryLoggerService,
+} from '@/database/services';
 import { SequelizeUnitOfWorkService } from '@/database/uow';
-import { ConnectionMonitorService } from '@/database/services';
-import { QueryLoggerService } from '@/database/services';
-import { QueryCacheService } from '@/database/services';
-import { CacheMonitoringService } from '@/database/services';
-import { MaterializedViewService } from '@/database/services';
 
 // Core Models
-import { AuditLog } from '@/database/models';
-import { Student } from '@/database/models';
-import { User } from '@/database/models';
-import { Contact } from '@/database/models';
-import { District } from '@/database/models';
-import { School } from '@/database/models';
-import { EmergencyContact } from '@/database/models';
-
 // Academic Models
-import { AcademicTranscript } from '@/database/models';
-
 // Healthcare Models
-import { Appointment } from '@/database/models';
-import { AppointmentReminder } from '@/database/models';
-import { AppointmentWaitlist } from '@/database/models';
-import { GrowthTracking } from '@/database/models';
-import { HealthRecord } from '@/database/models';
-import { HealthScreening } from '@/database/models';
-import { Immunization } from '@/database/models';
-import { LabResults } from '@/database/models';
-import { MedicalHistory } from '@/database/models';
-import { MentalHealthRecord } from '@/database/models';
-import { TreatmentPlan } from '@/database/models';
-import { VitalSigns } from '@/database/models';
-import { Prescription } from '@/database/models';
-import { ClinicVisit } from '@/database/models';
-import { ClinicalNote } from '@/database/models';
-import { ClinicalProtocol } from '@/database/models';
-import { FollowUpAction } from '@/database/models';
-import { FollowUpAppointment } from '@/database/models';
-
 // Communication Models
-import { EmergencyBroadcast } from '@/database/models';
-import { Message } from '@/database/models';
-import { MessageDelivery } from '@/database/models';
-import { MessageTemplate } from '@/database/models';
-import { PushNotification } from '@/database/models';
-import { DeviceToken } from '@/database/models';
-
 // System Models
-import { Supplier } from '@/database/models';
-import { SyncState } from '@/database/models';
-import { SystemConfig } from '@/database/models';
-import { ThreatDetection } from '@/database/models';
-import { Webhook } from '@/database/models';
-import { License } from '@/database/models';
-import { ConfigurationHistory } from '@/database/models';
-import { BackupLog } from '@/database/models';
-import { PerformanceMetric } from '@/database/models';
-
 // Health Risk Assessment Models
-import { Allergy } from '@/database/models';
-import { ChronicCondition } from '@/database/models';
-import { StudentMedication } from '@/database/models';
-import { IncidentReport } from '@/database/models';
-import { MedicationLog } from '@/database/models';
-import { WitnessStatement } from '@/database/models';
-
 // Medication Models
-import { Medication } from '@/database/models';
-import { Vaccination } from '@/database/models';
-
 // Clinical Models
-import { DrugCatalog } from '@/database/models';
-import { DrugInteraction } from '@/database/models';
-import { StudentDrugAllergy } from '@/database/models';
-
 // Analytics Models
-import { AnalyticsReport } from '@/database/models';
-import { HealthMetricSnapshot } from '@/database/models';
-
 // Inventory Models
-import { InventoryItem } from '@/database/models';
-import { InventoryTransaction } from '@/database/models';
-import { MaintenanceLog } from '@/database/models';
-import { PurchaseOrder } from '@/database/models';
-import { PurchaseOrderItem } from '@/database/models';
-import { Vendor } from '@/database/models';
-
 // Compliance Models
-import { ConsentForm } from '@/database/models';
-import { ConsentSignature } from '@/database/models';
-import { ComplianceReport } from '@/database/models';
-import { ComplianceChecklistItem } from '@/database/models';
-import { ComplianceViolation } from '@/database/models';
-import { PolicyDocument } from '@/database/models';
-import { PolicyAcknowledgment } from '@/database/models';
-import { DataRetentionPolicy } from '@/database/models';
-import { PhiDisclosure } from '@/database/models';
-import { PhiDisclosureAudit } from '@/database/models';
-import { RemediationAction } from '@/database/models';
-
 // Alert Models
-import { Alert } from '@/database/models';
-import { AlertRule } from '@/database/models';
-import { AlertPreferences } from '@/database/models';
-import { DeliveryLog } from '@/database/models';
-
 // Integration & Sync Models
-import { IntegrationConfig } from '@/database/models';
-import { IntegrationLog } from '@/database/models';
-import { SyncSession } from '@/database/models';
-import { SyncConflict } from '@/database/models';
-import { SyncQueueItem } from '@/database/models';
-import { SISSyncConflict } from '@/database/models';
-
 // Budget Models
-import { BudgetCategory } from '@/database/models';
-import { BudgetTransaction } from '@/database/models';
-
 // Report Models
-import { ReportTemplate } from '@/database/models';
-import { ReportExecution } from '@/database/models';
-import { ReportSchedule } from '@/database/models';
-
 // Training Models
-import { TrainingModule } from '@/database/models';
+import {
+  AcademicTranscript,
+  Alert,
+  AlertPreferences,
+  AlertRule,
+  Allergy,
+  AnalyticsReport,
+  Appointment,
+  AppointmentReminder,
+  AppointmentWaitlist,
+  AuditLog,
+  BackupLog,
+  BudgetCategory,
+  BudgetTransaction,
+  ChronicCondition,
+  ClinicalNote,
+  ClinicalProtocol,
+  ClinicVisit,
+  ComplianceChecklistItem,
+  ComplianceReport,
+  ComplianceViolation,
+  ConfigurationHistory,
+  ConsentForm,
+  ConsentSignature,
+  Contact,
+  DataRetentionPolicy,
+  DeliveryLog,
+  DeviceToken,
+  District,
+  DrugCatalog,
+  DrugInteraction,
+  EmergencyBroadcast,
+  EmergencyContact,
+  FollowUpAction,
+  FollowUpAppointment,
+  GrowthTracking,
+  HealthMetricSnapshot,
+  HealthRecord,
+  HealthScreening,
+  Immunization,
+  IncidentReport,
+  IntegrationConfig,
+  IntegrationLog,
+  InventoryItem,
+  InventoryTransaction,
+  LabResults,
+  License,
+  MaintenanceLog,
+  MedicalHistory,
+  Medication,
+  MedicationLog,
+  MentalHealthRecord,
+  Message,
+  MessageDelivery,
+  MessageTemplate,
+  PerformanceMetric,
+  PhiDisclosure,
+  PhiDisclosureAudit,
+  PolicyAcknowledgment,
+  PolicyDocument,
+  Prescription,
+  PurchaseOrder,
+  PurchaseOrderItem,
+  PushNotification,
+  RemediationAction,
+  ReportExecution,
+  ReportSchedule,
+  ReportTemplate,
+  School,
+  SISSyncConflict,
+  Student,
+  StudentDrugAllergy,
+  StudentMedication,
+  Supplier,
+  SyncConflict,
+  SyncQueueItem,
+  SyncSession,
+  SyncState,
+  SystemConfig,
+  ThreatDetection,
+  TrainingModule,
+  TreatmentPlan,
+  User,
+  Vaccination,
+  Vendor,
+  VitalSigns,
+  Webhook,
+  WitnessStatement,
+} from '@/database/models';
 
 // Sample Repositories (add more as they are migrated)
-import { StudentRepository } from '@/database/repositories/impl';
-import { AcademicTranscriptRepository } from '@/database/repositories/impl';
-import { ConsentFormRepository } from '@/database/repositories/impl';
-import { ConsentSignatureRepository } from '@/database/repositories/impl';
-import { ComplianceChecklistItemRepository } from '@/database/repositories/impl';
-import { PolicyDocumentRepository } from '@/database/repositories/impl';
-import { DataRetentionPolicyRepository } from '@/database/repositories/impl';
-import { ComplianceViolationRepository } from '@/database/repositories/impl';
-import { EmergencyBroadcastRepository } from '@/database/repositories/impl';
-import { ComplianceReportRepository } from '@/database/repositories/impl';
-import { AppointmentRepository } from '@/database/repositories/impl';
-import { HealthRecordRepository } from '@/database/repositories/impl';
-import { MedicationLogRepository } from '@/database/repositories/impl';
-import { IncidentReportRepository } from '@/database/repositories/impl';
-import { AllergyRepository } from '@/database/repositories/impl';
-import { ChronicConditionRepository } from '@/database/repositories/impl';
-import { AppointmentReminderRepository } from '@/database/repositories/impl';
-import { AppointmentWaitlistRepository } from '@/database/repositories/impl';
+import {
+  AcademicTranscriptRepository,
+  AllergyRepository,
+  AppointmentReminderRepository,
+  AppointmentRepository,
+  AppointmentWaitlistRepository,
+  ChronicConditionRepository,
+  ComplianceChecklistItemRepository,
+  ComplianceReportRepository,
+  ComplianceViolationRepository,
+  ConsentFormRepository,
+  ConsentSignatureRepository,
+  DataRetentionPolicyRepository,
+  EmergencyBroadcastRepository,
+  HealthRecordRepository,
+  IncidentReportRepository,
+  MedicationLogRepository,
+  PolicyDocumentRepository,
+  StudentRepository,
+} from '@/database/repositories/impl';
 
 /**
  * Database Module

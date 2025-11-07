@@ -32,15 +32,15 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import type { Request, Response, NextFunction, RequestHandler } from 'express';
+import type { NextFunction, Request, RequestHandler, Response } from 'express';
 import {
-  IMiddleware,
-  IRequest,
-  IResponse,
-  INextFunction,
-  MiddlewareContext,
   HealthcareRequest,
   HealthcareResponse,
+  IMiddleware,
+  INextFunction,
+  IRequest,
+  IResponse,
+  MiddlewareContext,
 } from '../../utils/types/middleware.types';
 
 /**

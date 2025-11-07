@@ -1,18 +1,17 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  Index,
   BeforeCreate,
   BeforeUpdate,
-  Scopes,
+  Column,
+  DataType,
+  Default,
   HasMany,
+  Index,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { Op } from 'sequelize';
 
 export interface MedicationAttributes {
   id: string;

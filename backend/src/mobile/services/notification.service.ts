@@ -1,24 +1,15 @@
-import {
-  Injectable,
-  NotFoundException,
-  Logger,
-  OnModuleInit,
-} from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { ConfigService } from '@nestjs/config';
 import { DeviceToken, PushNotification } from '../entities';
+import { MobileUpdatePreferencesDto, RegisterDeviceDto, SendNotificationDto } from '../dto';
 import {
-  RegisterDeviceDto,
-  SendNotificationDto,
-  MobileUpdatePreferencesDto,
-} from '../dto';
-import {
-  NotificationPlatform,
-  NotificationStatus,
   DeliveryStatus,
-  NotificationPriority,
   NotificationCategory,
+  NotificationPlatform,
+  NotificationPriority,
+  NotificationStatus,
 } from '../enums';
 
 /**

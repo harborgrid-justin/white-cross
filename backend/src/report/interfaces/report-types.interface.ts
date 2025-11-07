@@ -3,7 +3,7 @@
  * Defines the structure of various report types
  */
 
-import { HealthRecordType, AllergySeverity } from '../../common/enums';
+import { AllergySeverity, HealthRecordType } from '../../common/enums';
 import { MedicationLog } from '../../database/models/medication-log.model';
 import { IncidentReport } from '../../database/models/incident-report.model';
 import { ChronicCondition } from '../../database/models/chronic-condition.model';

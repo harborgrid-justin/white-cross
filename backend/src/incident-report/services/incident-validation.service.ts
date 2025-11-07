@@ -1,8 +1,6 @@
-import { Injectable, BadRequestException, Logger } from '@nestjs/common';
-import { CreateIncidentReportDto } from '@/incident-report';
-import { CreateWitnessStatementDto } from '@/incident-report';
-import { CreateFollowUpActionDto } from '@/incident-report';
-import { ActionStatus, ActionPriority, IncidentType } from '../enums';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { CreateFollowUpActionDto, CreateIncidentReportDto, CreateWitnessStatementDto } from '@/incident-report';
+import { ActionPriority, ActionStatus, IncidentType } from '../enums';
 
 @Injectable()
 export class IncidentValidationService {

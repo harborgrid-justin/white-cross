@@ -1,11 +1,6 @@
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, literal } from 'sequelize';
+import { literal, Op } from 'sequelize';
 import { Prescription } from '../entities/prescription.entity';
 import { PrescriptionStatus } from '../enums/prescription-status.enum';
 import { CreatePrescriptionDto } from '../dto/prescription/create-prescription.dto';

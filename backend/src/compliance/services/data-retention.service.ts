@@ -1,10 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DataRetentionRepository } from '../repositories/data-retention.repository';
-import {
-  CreateDataRetentionDto,
-  UpdateDataRetentionDto,
-  QueryDataRetentionDto,
-} from '../dto/data-retention.dto';
+import { CreateDataRetentionDto, QueryDataRetentionDto, UpdateDataRetentionDto } from '../dto/data-retention.dto';
 import { RetentionStatus } from '../../database/models/data-retention-policy.model';
 
 @Injectable()

@@ -1,18 +1,16 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
   AllowNull,
-  Index,
-  HasMany,
-  Scopes,
   BeforeCreate,
   BeforeUpdate,
-  UpdatedAt,
-  CreatedAt,
+  Column,
+  DataType,
+  Default,
+  HasMany,
+  Index,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';

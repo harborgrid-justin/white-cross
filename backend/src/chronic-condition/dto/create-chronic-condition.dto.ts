@@ -1,14 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsString,
-  IsUUID,
-  IsEnum,
-  IsOptional,
   IsArray,
   IsBoolean,
   IsDateString,
-  MinLength,
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsUUID,
   MaxLength,
+  MinLength,
 } from 'class-validator';
 import { ConditionStatus } from '../enums';
 

@@ -22,7 +22,7 @@
  *
  * @class WsValidationPipe
  */
-import { PipeTransform, Injectable, ArgumentMetadata } from '@nestjs/common';
+import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
 import { WsException } from '@nestjs/websockets';
 import { validate, ValidationError } from 'class-validator';
 import { plainToClass } from 'class-transformer';

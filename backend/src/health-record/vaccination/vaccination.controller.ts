@@ -4,35 +4,17 @@
  * @description HTTP endpoints for CDC-compliant vaccination tracking
  */
 
-import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Body,
-  Param,
-  Query,
-  HttpCode,
-  HttpStatus,
-  ParseUUIDPipe,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { VaccinationService } from './vaccination.service';
 import { CreateVaccinationDto } from './dto/create-vaccination.dto';
-import { UpdateVaccinationDto } from './dto/update-vaccination.dto';
 import {
-  CDCScheduleQueryDto,
-  BatchVaccinationDto,
-  CreateExemptionDto,
-  ComplianceReportQueryDto,
-  DueVaccinationsResponseDto,
   BatchImportResponseDto,
+  BatchVaccinationDto,
+  CDCScheduleQueryDto,
+  ComplianceReportQueryDto,
+  CreateExemptionDto,
+  DueVaccinationsResponseDto,
 } from './dto/vaccination-endpoints.dto';
 
 @ApiTags('health-record-vaccination')

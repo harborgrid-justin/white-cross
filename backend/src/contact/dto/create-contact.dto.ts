@@ -2,17 +2,7 @@
  * Create Contact DTO
  * @description DTO for creating a new contact with validation
  */
-import {
-  IsString,
-  IsEmail,
-  IsEnum,
-  IsOptional,
-  IsBoolean,
-  IsUUID,
-  Length,
-  Matches,
-  IsObject,
-} from 'class-validator';
+import { IsBoolean, IsEmail, IsEnum, IsObject, IsOptional, IsString, IsUUID, Length, Matches } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ContactType } from '../enums';
 

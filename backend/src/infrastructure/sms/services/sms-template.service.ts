@@ -4,12 +4,7 @@
  * @description Manages SMS templates with variable substitution
  */
 
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateSmsTemplateDto, SmsTemplateType } from '../dto/sms-template.dto';
 
 /**

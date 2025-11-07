@@ -1,11 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiExcludeEndpoint,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AppService } from './app.service';
 
 @ApiTags('Application')
@@ -17,8 +11,7 @@ export class AppController {
   @Get()
   @ApiOperation({
     summary: 'Health check endpoint',
-    description:
-      'Returns a simple health check message to verify the API is running',
+    description: 'Returns a simple health check message to verify the API is running',
   })
   @ApiResponse({
     status: 200,

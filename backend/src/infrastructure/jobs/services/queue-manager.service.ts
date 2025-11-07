@@ -11,15 +11,9 @@
  * - Comprehensive job monitoring
  * - Horizontal scalability
  */
-import {
-  Injectable,
-  Logger,
-  OnModuleDestroy,
-  OnModuleInit,
-} from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { InjectQueue } from '@nestjs/bull';
-import { Queue, Job } from 'bullmq';
+import { Job, Queue } from 'bullmq';
 import { JobType } from '@/infrastructure/jobs';
 
 export interface JobOptions {

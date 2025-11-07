@@ -5,11 +5,11 @@
  */
 
 import {
-  StudentAttributes as Student,
   CreateStudentDTO as CreateStudentData,
-  UpdateStudentDTO as UpdateStudentData,
-  StudentFilters,
   GradeStatistics,
+  StudentAttributes as Student,
+  StudentFilters,
+  UpdateStudentDTO as UpdateStudentData,
 } from '../database/repositories/interfaces/student.repository.interface';
 
 /**

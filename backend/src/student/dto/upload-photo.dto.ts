@@ -5,7 +5,7 @@
  */
 
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsObject } from 'class-validator';
+import { IsObject, IsOptional, IsString } from 'class-validator';
 
 /**
  * Upload Student Photo DTO

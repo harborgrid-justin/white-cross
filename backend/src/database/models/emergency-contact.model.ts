@@ -1,21 +1,19 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  CreatedAt,
-  UpdatedAt,
-  Index,
-  ForeignKey,
-  BelongsTo,
-  Scopes,
   BeforeCreate,
   BeforeUpdate,
+  BelongsTo,
+  Column,
+  CreatedAt,
+  DataType,
+  Default,
+  ForeignKey,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
+  UpdatedAt,
 } from 'sequelize-typescript';
-import { Optional } from 'sequelize';
-import { Op } from 'sequelize';
+import { Op, Optional } from 'sequelize';
 import type { Student } from './student.model';
 
 import { ContactPriority } from '../../contact/enums/contact-priority.enum';

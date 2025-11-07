@@ -4,13 +4,13 @@
  */
 
 import {
-  EmergencyType,
-  EmergencyPriority,
   BroadcastAudience,
   BroadcastStatus,
   CommunicationChannel,
-  RecipientType,
   DeliveryStatus,
+  EmergencyPriority,
+  EmergencyType,
+  RecipientType,
 } from './emergency-broadcast.enums';
 
 /**

@@ -31,15 +31,14 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { Request, ResponseToolkit, ServerRoute, Plugin } from '@hapi/hapi';
+import { Plugin, Request, ResponseToolkit, ServerRoute } from '@hapi/hapi';
 import {
+  HealthcareRequest,
   IMiddleware,
+  INextFunction,
   IRequest,
   IResponse,
-  INextFunction,
   MiddlewareContext,
-  HealthcareRequest,
-  HealthcareResponse,
 } from '../../utils/types/middleware.types';
 
 /**

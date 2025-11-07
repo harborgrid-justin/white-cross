@@ -1,4 +1,4 @@
-import { IsString, IsArray, IsEnum } from 'class-validator';
+import { IsArray, IsEnum, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class SendBulkMessageDto {

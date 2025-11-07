@@ -193,8 +193,7 @@ export type ErrorCode = (typeof ErrorCodes)[keyof typeof ErrorCodes];
  * @returns Error category
  */
 export function getErrorCodeCategory(code: string): string {
-  const prefix = code.split('_')[0];
-  return prefix;
+  return code.split('_')[0];
 }
 
 /**

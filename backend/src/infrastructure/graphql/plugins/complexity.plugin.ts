@@ -17,11 +17,7 @@ import { Plugin } from '@nestjs/apollo';
 import { GraphQLSchemaHost } from '@nestjs/graphql';
 import { ApolloServerPlugin, GraphQLRequestListener } from '@apollo/server';
 import { GraphQLError } from 'graphql';
-import {
-  fieldExtensionsEstimator,
-  getComplexity,
-  simpleEstimator,
-} from 'graphql-query-complexity';
+import { fieldExtensionsEstimator, getComplexity, simpleEstimator } from 'graphql-query-complexity';
 
 /**
  * Maximum allowed query complexity

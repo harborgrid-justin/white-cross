@@ -1,4 +1,4 @@
-import { MessageType, MessagePriority, DeliveryStatus } from '../enums';
+import { DeliveryStatus, MessagePriority, MessageType } from '../enums';
 
 export interface ChannelSendData {
   to: string;

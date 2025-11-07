@@ -5,25 +5,20 @@
  * Includes validation rules for all required and optional fields.
  */
 import {
-  IsString,
-  IsEmail,
-  IsOptional,
-  IsEnum,
-  IsBoolean,
-  IsArray,
-  IsUUID,
-  MinLength,
-  MaxLength,
-  Matches,
   ArrayMinSize,
-  ValidateIf,
+  IsArray,
+  IsBoolean,
+  IsEmail,
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Matches,
+  MaxLength,
+  MinLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  ContactPriority,
-  PreferredContactMethod,
-  NotificationChannel,
-} from '@/contact';
+import { ContactPriority, NotificationChannel, PreferredContactMethod } from '@/contact';
 
 export class EmergencyContactCreateDto {
   @ApiProperty({

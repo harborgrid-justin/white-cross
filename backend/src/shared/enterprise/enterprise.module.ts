@@ -1,4 +1,4 @@
-import { Module, DynamicModule, Provider } from '@nestjs/common';
+import { DynamicModule, Module, Provider } from '@nestjs/common';
 import { EnterpriseCacheService } from './services/enterprise-cache.service';
 import { EnterpriseMetricsService } from './services/enterprise-metrics.service';
 

@@ -15,7 +15,7 @@
 import { ExecutionContext, HttpStatus, ServiceUnavailableException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Test, TestingModule } from '@nestjs/testing';
-import { RateLimitGuard, RATE_LIMIT_CONFIGS } from '../rate-limit.guard';
+import { RATE_LIMIT_CONFIGS, RateLimitGuard } from '../rate-limit.guard';
 
 describe('RateLimitGuard', () => {
   let guard: RateLimitGuard;

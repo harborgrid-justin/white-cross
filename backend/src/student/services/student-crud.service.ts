@@ -11,9 +11,9 @@
  * - Basic validation
  */
 
-import { Injectable, NotFoundException, ConflictException, Logger, Optional } from '@nestjs/common';
-import { InjectModel, InjectConnection } from '@nestjs/sequelize';
-import { Op, Transaction, Sequelize } from 'sequelize';
+import { ConflictException, Injectable, Logger, NotFoundException, Optional } from '@nestjs/common';
+import { InjectConnection, InjectModel } from '@nestjs/sequelize';
+import { Op, Sequelize, Transaction } from 'sequelize';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Student } from '../../database/models/student.model';
 import { User, UserRole } from '../../database/models/user.model';
@@ -22,11 +22,11 @@ import { RequestContextService } from '../../shared/context/request-context.serv
 import { BaseService } from '../../shared/base/base.service';
 import {
   CreateStudentDto,
-  UpdateStudentDto,
+  PaginatedResponse,
+  StudentBulkUpdateDto,
   StudentFilterDto,
   TransferStudentDto,
-  StudentBulkUpdateDto,
-  PaginatedResponse,
+  UpdateStudentDto,
 } from '../dto';
 
 /**

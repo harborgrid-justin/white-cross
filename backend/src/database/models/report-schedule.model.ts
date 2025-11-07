@@ -1,21 +1,20 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
   AllowNull,
-  ForeignKey,
-  BelongsTo,
-  Scopes,
   BeforeCreate,
   BeforeUpdate,
+  BelongsTo,
+  Column,
+  DataType,
+  Default,
+  ForeignKey,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 import { ReportTemplate } from './report-template.model';
-import { ReportType, OutputFormat } from './report-execution.model';
+import { OutputFormat, ReportType } from './report-execution.model';
 
 export enum ScheduleFrequency {
   DAILY = 'daily',

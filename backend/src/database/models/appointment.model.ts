@@ -1,20 +1,19 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  ForeignKey,
-  BelongsTo,
-  HasMany,
-  Index,
-  Scopes,
   BeforeCreate,
   BeforeUpdate,
+  BelongsTo,
+  Column,
+  DataType,
+  Default,
+  ForeignKey,
+  HasMany,
+  Index,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
 } from 'sequelize-typescript';
-import { Optional } from 'sequelize';
-import { Op } from 'sequelize';
+import { Op, Optional } from 'sequelize';
 import type { User } from './user.model';
 import type { Student } from './student.model';
 import type { AppointmentReminder } from './appointment-reminder.model';

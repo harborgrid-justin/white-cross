@@ -17,12 +17,11 @@
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
-import { AppointmentService } from '../appointment.service';
 import { AppointmentWebSocketListener } from '../../infrastructure/websocket/listeners/appointment.listener';
 import { AppointmentEmailListener } from '../../infrastructure/email/listeners/appointment.listener';
 import {
-  AppointmentCreatedEvent,
   AppointmentCancelledEvent,
+  AppointmentCreatedEvent,
   AppointmentRescheduledEvent,
 } from '../events/appointment.events';
 

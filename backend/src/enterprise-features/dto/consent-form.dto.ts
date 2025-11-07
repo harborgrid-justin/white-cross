@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsDateString, IsNumber } from 'class-validator';
+import { IsDateString, IsNumber, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateConsentFormDto {

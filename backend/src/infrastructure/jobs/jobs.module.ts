@@ -15,10 +15,7 @@ import { BullModule } from '@nestjs/bull';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JobType } from './enums/job-type.enum';
 import { QueueManagerService } from '@/infrastructure/jobs/services';
-import {
-  MedicationReminderProcessor,
-  InventoryMaintenanceProcessor,
-} from './processors';
+import { InventoryMaintenanceProcessor, MedicationReminderProcessor } from './processors';
 import { EmailModule } from '../email/email.module';
 
 @Module({

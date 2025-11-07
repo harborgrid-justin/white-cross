@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ComplianceReportRepository } from '../repositories/compliance-report.repository';
 import { ChecklistRepository } from '../repositories/checklist.repository';
 import { PolicyRepository } from '../repositories/policy.repository';

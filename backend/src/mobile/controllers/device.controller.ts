@@ -1,23 +1,9 @@
-import {
-  Controller,
-  Post,
-  Put,
-  Delete,
-  Get,
-  Body,
-  Param,
-  UseGuards,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { NotificationService } from '../services/notification.service';
-import { RegisterDeviceDto, MobileUpdatePreferencesDto } from '../dto';
+import { MobileUpdatePreferencesDto, RegisterDeviceDto } from '../dto';
 
 /**
  * Device Controller

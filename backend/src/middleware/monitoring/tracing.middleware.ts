@@ -6,8 +6,8 @@
  * Provides request correlation, performance monitoring, and audit trails.
  */
 
-import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
-import type { Request, Response, NextFunction } from 'express';
+import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
+import type { NextFunction, Request, Response } from 'express';
 
 /**
  * Trace span interface

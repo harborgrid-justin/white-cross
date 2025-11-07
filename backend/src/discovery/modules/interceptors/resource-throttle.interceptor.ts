@@ -1,19 +1,9 @@
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-  Logger,
-} from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { DynamicResourcePoolService } from '../services/dynamic-resource-pool.service';
-import {
-  ThrottleQueueItem,
-  TypedSubscriber,
-  AuthenticatedRequest,
-} from '../types/resource.types';
+import { AuthenticatedRequest, ThrottleQueueItem, TypedSubscriber } from '../types/resource.types';
 
 interface ThrottleConfig {
   maxConcurrent: number;

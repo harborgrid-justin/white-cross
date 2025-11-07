@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsIn, IsUUID } from 'class-validator';
+import { IsIn, IsString, IsUUID } from 'class-validator';
 
 /**
  * Recent activity item for dashboard feed

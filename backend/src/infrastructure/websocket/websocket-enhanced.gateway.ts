@@ -13,22 +13,16 @@
  * @class EnhancedWebSocketGateway
  */
 import {
-  WebSocketGateway as NestWebSocketGateway,
-  WebSocketServer,
-  OnGatewayInit,
-  OnGatewayConnection,
-  OnGatewayDisconnect,
-  SubscribeMessage,
   ConnectedSocket,
   MessageBody,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  OnGatewayInit,
+  SubscribeMessage,
+  WebSocketGateway as NestWebSocketGateway,
+  WebSocketServer,
 } from '@nestjs/websockets';
-import {
-  Logger,
-  UseGuards,
-  UseFilters,
-  UsePipes,
-  UseInterceptors,
-} from '@nestjs/common';
+import { Logger, UseFilters, UseGuards, UseInterceptors, UsePipes } from '@nestjs/common';
 import { Server } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -40,13 +34,7 @@ import { WsLoggingInterceptor } from './interceptors/ws-logging.interceptor';
 import { WsTransformInterceptor } from './interceptors/ws-transform.interceptor';
 import { RateLimiterService } from './services';
 import { createWsAuthMiddleware } from './middleware/ws-auth.middleware';
-import {
-  SendMessageDto,
-  EditMessageDto,
-  DeleteMessageDto,
-  JoinConversationDto,
-  TypingIndicatorInputDto,
-} from './dto';
+import { DeleteMessageDto, EditMessageDto, JoinConversationDto, SendMessageDto, TypingIndicatorInputDto } from './dto';
 
 /**
  * Enhanced WebSocket Gateway with full lifecycle management

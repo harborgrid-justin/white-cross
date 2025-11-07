@@ -4,25 +4,8 @@
  * @description HTTP endpoints for academic transcript management and SIS integration
  */
 
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Query,
-  HttpCode,
-  HttpStatus,
-  ParseUUIDPipe,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AcademicTranscriptService } from './academic-transcript.service';
 import { TranscriptImportDto } from './dto/transcript-import.dto';
 import { AcademicGenerateReportDto } from './dto/generate-report.dto';

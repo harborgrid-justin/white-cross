@@ -9,10 +9,7 @@
  */
 import type { Request, Response } from 'express';
 import type DataLoader from 'dataloader';
-import type { Student } from '@/database';
-import type { Contact } from '@/database';
-import type { StudentMedication } from '@/database';
-import type { HealthRecord } from '@/database';
+import type { Contact, HealthRecord, Student, StudentMedication } from '@/database';
 
 /**
  * GraphQL Context

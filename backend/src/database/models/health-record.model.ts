@@ -1,20 +1,18 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  ForeignKey,
-  BelongsTo,
-  HasMany,
   BeforeCreate,
   BeforeUpdate,
+  BelongsTo,
+  Column,
+  DataType,
+  Default,
+  ForeignKey,
+  Model,
+  PrimaryKey,
   Scopes,
+  Table,
 } from 'sequelize-typescript';
-import { Optional } from 'sequelize';
+import { Op, Optional } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
-import { Op } from 'sequelize';
 import type { Student } from './student.model';
 
 export interface HealthRecordAttributes {

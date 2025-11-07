@@ -5,8 +5,8 @@
  */
 
 import {
-  Medication,
   CreateMedicationData,
+  Medication,
   UpdateMedicationData,
 } from '../database/repositories/interfaces/medication.repository.interface';
 

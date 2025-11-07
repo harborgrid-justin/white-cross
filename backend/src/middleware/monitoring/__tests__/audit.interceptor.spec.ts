@@ -16,7 +16,7 @@ import { CallHandler, ExecutionContext } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { of, throwError } from 'rxjs';
 import { AuditInterceptor } from '../audit.interceptor';
-import { AuditMiddleware, AuditEventType } from '../audit.middleware';
+import { AuditEventType, AuditMiddleware } from '../audit.middleware';
 
 describe('AuditInterceptor (HIPAA-CRITICAL)', () => {
   let interceptor: AuditInterceptor;

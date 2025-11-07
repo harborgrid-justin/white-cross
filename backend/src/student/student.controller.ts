@@ -5,58 +5,47 @@
  */
 
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
   Body,
-  Param,
-  Query,
+  Controller,
+  Delete,
+  Get,
   HttpCode,
   HttpStatus,
+  Param,
   ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '@/auth';
 import { HealthRecordAuditInterceptor } from '@/health-record/interceptors';
 import { StudentService } from './student.service';
-import type {
-  PaginatedResponse,
-  StudentStatistics,
-  StudentDataExport,
-} from './dto';
-import { Student } from '@/database';
+import type { PaginatedResponse, StudentDataExport, StudentStatistics } from './dto';
 import {
-  CreateStudentDto,
-  UpdateStudentDto,
-  StudentFilterDto,
-  TransferStudentDto,
-  StudentBulkUpdateDto,
-  StudentHealthRecordsDto,
-  MentalHealthRecordsDto,
-  UploadPhotoDto,
-  SearchPhotoDto,
-  ImportTranscriptDto,
   AcademicHistoryDto,
-  PerformanceTrendsDto,
-  BulkGradeTransitionDto,
-  GraduatingStudentsDto,
-  StudentScanBarcodeDto,
-  VerifyMedicationDto,
   AddWaitlistDto,
+  BulkGradeTransitionDto,
+  CreateStudentDto,
+  GraduatingStudentsDto,
+  ImportTranscriptDto,
+  MentalHealthRecordsDto,
+  PerformanceTrendsDto,
+  SearchPhotoDto,
+  StudentBulkUpdateDto,
+  StudentFilterDto,
+  StudentHealthRecordsDto,
+  StudentScanBarcodeDto,
+  TransferStudentDto,
+  UpdateStudentDto,
+  UploadPhotoDto,
+  VerifyMedicationDto,
   WaitlistStatusDto,
 } from './dto';
+import { Student } from '@/database';
 
 /**
  * Student Controller

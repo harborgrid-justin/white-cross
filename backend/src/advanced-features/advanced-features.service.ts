@@ -11,7 +11,7 @@
  * Note: This is a stub implementation. Replace with actual business logic and database integration.
  */
 
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { RecordScreeningDto } from './dto/record-screening.dto';
 import { RecordMeasurementDto } from './dto/record-measurement.dto';
 import { SendEmergencyNotificationDto } from './dto/send-emergency-notification.dto';

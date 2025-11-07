@@ -7,15 +7,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Transaction } from 'sequelize';
+import { BaseRepository, RepositoryError } from '../../../database/repositories/base/base.repository';
 import {
-  BaseRepository,
-  RepositoryError,
-} from '../../../database/repositories/base/base.repository';
-import {
-  IVitalSignsRepository,
-  VitalSignsAttributes,
   CreateVitalSignsDTO,
+  IVitalSignsRepository,
   UpdateVitalSignsDTO,
+  VitalSignsAttributes,
 } from '../interfaces/vital-signs.repository.interface';
 import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';

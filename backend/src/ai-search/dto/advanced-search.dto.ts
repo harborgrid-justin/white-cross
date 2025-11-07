@@ -5,17 +5,7 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsOptional,
-  IsNumber,
-  IsString,
-  IsBoolean,
-  IsArray,
-  IsObject,
-  ValidateNested,
-  Min,
-  Max,
-} from 'class-validator';
+import { IsArray, IsBoolean, IsNumber, IsOptional, IsString, Max, Min, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class AgeRangeDto {

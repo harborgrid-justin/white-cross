@@ -5,10 +5,7 @@
 
 import { MessageAttributes } from '../../models/message.model';
 import { MessageTemplateAttributes } from '../../models/message-template.model';
-import {
-  MessageDeliveryAttributes,
-  DeliveryStatus,
-} from '../../models/message-delivery.model';
+import { DeliveryStatus, MessageDeliveryAttributes } from '../../models/message-delivery.model';
 import { IRepository } from './repository.interface';
 
 export interface CreateMessageDTO {

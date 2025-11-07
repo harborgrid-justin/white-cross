@@ -1,4 +1,4 @@
-import { IsOptional, IsUUID, IsString, IsDate, IsEnum } from 'class-validator';
+import { IsDate, IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { AppointmentStatus } from './update-appointment.dto';

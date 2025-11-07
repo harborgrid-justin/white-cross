@@ -1,4 +1,4 @@
-import { RoleModel, PermissionModel } from '../types';
+import { PermissionModel, RoleModel } from '../types';
 
 /**
  * Interface for user permissions result

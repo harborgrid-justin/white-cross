@@ -3,14 +3,7 @@
  * HIPAA compliance helper functions and configuration constants
  */
 
-import {
-  ComplianceReportType,
-  ComplianceCategory,
-  ComplianceStatus,
-  ChecklistItemStatus,
-  PolicyStatus,
-  ConsentType,
-} from '../enums';
+import { ComplianceCategory, ComplianceReportType, PolicyStatus } from '../enums';
 
 /**
  * Compliance validation and utility methods

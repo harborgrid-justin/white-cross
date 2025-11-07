@@ -5,14 +5,7 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsOptional,
-  IsNumber,
-  IsString,
-  IsArray,
-  Min,
-  Max,
-} from 'class-validator';
+import { IsArray, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class SimilarCasesDto {
   @ApiProperty({

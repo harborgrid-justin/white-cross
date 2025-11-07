@@ -6,18 +6,8 @@
  * HIPAA Compliance: All screening data is PHI and requires audit logging
  */
 
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
-import {
-  HealthScreening,
-  HealthScreeningAttributes,
-} from '../../database/models/health-screening.model';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { HealthScreeningAttributes } from '../../database/models/health-screening.model';
 
 @Injectable()
 export class ScreeningService {

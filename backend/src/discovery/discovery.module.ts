@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { DiscoveryModule as NestDiscoveryModule } from '@nestjs/core';
-import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { DiscoveryExampleService } from './discovery-example.service';
 import { DiscoveryController } from './discovery.controller';
 import { AdminDiscoveryGuard } from './guards/admin-discovery.guard';
@@ -12,13 +11,13 @@ import { DiscoveryLoggingInterceptor } from './interceptors/discovery-logging.in
 import { DiscoveryCacheInterceptor } from './interceptors/discovery-cache.interceptor';
 import { DiscoveryMetricsInterceptor } from './interceptors/discovery-metrics.interceptor';
 import {
-  ExperimentalHealthService,
   AiDiagnosisService,
-  UserAnalyticsService,
-  ReportCacheService,
+  ExperimentalHealthService,
   ExternalApiService,
   RegularService,
+  ReportCacheService,
   StudentHealthService,
+  UserAnalyticsService,
 } from './examples/example-services';
 
 @Module({

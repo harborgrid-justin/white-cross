@@ -1,20 +1,18 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  Index,
   BeforeCreate,
-  CreatedAt,
-  UpdatedAt,
-  ForeignKey,
-  BelongsTo,
-  Scopes,
   BeforeUpdate,
+  BelongsTo,
+  Column,
+  CreatedAt,
+  DataType,
+  Default,
+  ForeignKey,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
+  UpdatedAt,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface StudentDrugAllergyAttributes {

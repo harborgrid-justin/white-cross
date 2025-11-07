@@ -1,10 +1,4 @@
-import {
-  IsString,
-  IsOptional,
-  IsEnum,
-  IsEmail,
-  Matches,
-} from 'class-validator';
+import { IsEmail, IsEnum, IsOptional, IsString, Matches } from 'class-validator';
 import { RecipientType } from '../enums';
 
 export class RecipientDto {

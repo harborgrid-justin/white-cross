@@ -23,10 +23,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { MedicationService } from '../services/medication.service';
 import { MedicationRepository } from '../medication.repository';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import {
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 describe('MedicationService (CRITICAL - SAFETY & COMPLIANCE)', () => {
   let service: MedicationService;

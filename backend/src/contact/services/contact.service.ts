@@ -2,17 +2,11 @@
  * Contact Service
  * @description Service for managing general contacts (guardians, staff, vendors, providers)
  */
-import {
-  Injectable,
-  NotFoundException,
-  ConflictException,
-  BadRequestException,
-  Logger,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { Contact } from '../../database/models/contact.model';
-import { CreateContactDto, UpdateContactDto, ContactQueryDto } from '../dto';
+import { ContactQueryDto, CreateContactDto, UpdateContactDto } from '../dto';
 import { ContactType } from '../enums';
 
 @Injectable()

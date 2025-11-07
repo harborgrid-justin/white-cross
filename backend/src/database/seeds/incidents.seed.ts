@@ -4,11 +4,11 @@
  */
 
 import {
-  IncidentType,
+  ComplianceStatus,
   IncidentSeverity,
   IncidentStatus,
+  IncidentType,
   InsuranceClaimStatus,
-  ComplianceStatus,
 } from '../models/incident-report.model';
 
 export interface IncidentSeedData {

@@ -14,8 +14,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression, SchedulerRegistry } from '@nestjs/schedule';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { CacheService } from './cache.service';
-import { CacheWarmingStrategy, CacheEvent } from './cache.interfaces';
-
+import { CacheEvent, CacheWarmingStrategy } from './cache.interfaces';
 
 /**
  * Cache miss event payload
@@ -60,9 +59,7 @@ export class CacheWarmingService implements OnModuleInit {
    */
   registerStrategy(strategy: CacheWarmingStrategy): void {
     this.strategies.set(strategy.name, strategy);
-    this.logger.log(
-      `Registered cache warming strategy: ${strategy.name} (${strategy.type})`,
-    );
+    this.logger.log(`Registered cache warming strategy: ${strategy.name} (${strategy.type})`);
 
     // Schedule cron-based strategies
     if (strategy.type === 'scheduled' && strategy.schedule) {
@@ -105,9 +102,7 @@ export class CacheWarmingService implements OnModuleInit {
    * Warm cache using all registered strategies
    * @param filterType - Optional filter by strategy type
    */
-  async warmAll(
-    filterType?: 'scheduled' | 'on-demand' | 'lazy' | 'priority',
-  ): Promise<number> {
+  async warmAll(filterType?: 'scheduled' | 'on-demand' | 'lazy' | 'priority'): Promise<number> {
     if (this.warmingInProgress) {
       this.logger.warn('Cache warming already in progress, skipping');
       return 0;
@@ -131,10 +126,7 @@ export class CacheWarmingService implements OnModuleInit {
           const count = await this.executeStrategy(strategy);
           totalWarmed += count;
         } catch (error) {
-          this.logger.error(
-            `Failed to execute warming strategy ${strategy.name}:`,
-            error,
-          );
+          this.logger.error(`Failed to execute warming strategy ${strategy.name}:`, error);
           this.warmingStats.failures++;
         }
       }
@@ -158,9 +150,7 @@ export class CacheWarmingService implements OnModuleInit {
    * @param strategy - Strategy to execute
    * @private
    */
-  private async executeStrategy(
-    strategy: CacheWarmingStrategy,
-  ): Promise<number> {
+  private async executeStrategy(strategy: CacheWarmingStrategy): Promise<number> {
     this.logger.log(`Executing cache warming strategy: ${strategy.name}`);
     const startTime = Date.now();
 
@@ -196,10 +186,7 @@ export class CacheWarmingService implements OnModuleInit {
 
       return warmed;
     } catch (error) {
-      this.logger.error(
-        `Cache warming strategy ${strategy.name} failed:`,
-        error,
-      );
+      this.logger.error(`Cache warming strategy ${strategy.name} failed:`, error);
       throw error;
     }
   }
@@ -235,10 +222,7 @@ export class CacheWarmingService implements OnModuleInit {
         `Scheduled cache warming strategy ${strategy.name} with schedule: ${strategy.schedule}`,
       );
     } catch (error) {
-      this.logger.error(
-        `Failed to schedule warming strategy ${strategy.name}:`,
-        error,
-      );
+      this.logger.error(`Failed to schedule warming strategy ${strategy.name}:`, error);
     }
   }
 
@@ -257,10 +241,7 @@ export class CacheWarmingService implements OnModuleInit {
           try {
             await this.executeStrategy(strategy);
           } catch (error) {
-            this.logger.error(
-              `Lazy warming failed for strategy ${strategy.name}:`,
-              error,
-            );
+            this.logger.error(`Lazy warming failed for strategy ${strategy.name}:`, error);
           }
         });
       }

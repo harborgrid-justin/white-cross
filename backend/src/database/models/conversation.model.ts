@@ -1,16 +1,16 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  HasMany,
-  Index,
-  DeletedAt,
-  Scopes,
   BeforeCreate,
   BeforeUpdate,
+  Column,
+  DataType,
+  Default,
+  DeletedAt,
+  HasMany,
+  Index,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
 } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 import type { ConversationParticipant } from './conversation-participant.model';

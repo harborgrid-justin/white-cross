@@ -1,4 +1,4 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ReportType } from '../constants/report.constants';
 import { HealthReportsService } from './health-reports.service';
 import { MedicationReportsService } from './medication-reports.service';

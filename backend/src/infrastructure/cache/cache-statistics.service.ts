@@ -6,16 +6,12 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import {
-  HealthIndicator,
-  HealthIndicatorResult,
-  HealthCheckError,
-} from '@nestjs/terminus';
+import { HealthCheckError, HealthIndicator, HealthIndicatorResult } from '@nestjs/terminus';
 import { CacheService } from './cache.service';
 import { CacheWarmingService } from './cache-warming.service';
 import { RateLimiterService } from './rate-limiter.service';
-import { CacheEvent } from './cache.interfaces';
 import type { CacheEventPayload } from './cache.interfaces';
+import { CacheEvent } from './cache.interfaces';
 
 
 /**

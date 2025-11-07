@@ -25,12 +25,12 @@ import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { EmailService } from '../email.service';
 import {
-  AppointmentCreatedEvent,
   AppointmentCancelledEvent,
-  AppointmentRescheduledEvent,
-  AppointmentReminderEvent,
   AppointmentCompletedEvent,
+  AppointmentCreatedEvent,
   AppointmentNoShowEvent,
+  AppointmentReminderEvent,
+  AppointmentRescheduledEvent,
   WaitlistEntryAddedEvent,
   WaitlistSlotAvailableEvent,
 } from '@/appointment/events';
@@ -75,12 +75,8 @@ export class AppointmentEmailListener {
    * @event appointment.created
    */
   @OnEvent('appointment.created')
-  async handleAppointmentCreated(
-    event: AppointmentCreatedEvent,
-  ): Promise<void> {
-    this.logger.log(
-      `Sending appointment confirmation email for: ${event.appointment.id}`,
-    );
+  async handleAppointmentCreated(event: AppointmentCreatedEvent): Promise<void> {
+    this.logger.log(`Sending appointment confirmation email for: ${event.appointment.id}`);
 
     try {
       // TODO: Fetch student/parent email from Student service
@@ -130,12 +126,8 @@ export class AppointmentEmailListener {
    * @event appointment.cancelled
    */
   @OnEvent('appointment.cancelled')
-  async handleAppointmentCancelled(
-    event: AppointmentCancelledEvent,
-  ): Promise<void> {
-    this.logger.log(
-      `Sending appointment cancellation email for: ${event.appointmentId}`,
-    );
+  async handleAppointmentCancelled(event: AppointmentCancelledEvent): Promise<void> {
+    this.logger.log(`Sending appointment cancellation email for: ${event.appointmentId}`);
 
     try {
       const recipientEmail = 'student@example.com'; // From student record
@@ -170,12 +162,8 @@ export class AppointmentEmailListener {
    * @event appointment.rescheduled
    */
   @OnEvent('appointment.rescheduled')
-  async handleAppointmentRescheduled(
-    event: AppointmentRescheduledEvent,
-  ): Promise<void> {
-    this.logger.log(
-      `Sending appointment rescheduled email for: ${event.appointment.id}`,
-    );
+  async handleAppointmentRescheduled(event: AppointmentRescheduledEvent): Promise<void> {
+    this.logger.log(`Sending appointment rescheduled email for: ${event.appointment.id}`);
 
     try {
       const recipientEmail = 'student@example.com'; // From student record
@@ -211,17 +199,13 @@ export class AppointmentEmailListener {
    * @event appointment.reminder
    */
   @OnEvent('appointment.reminder')
-  async handleAppointmentReminder(
-    event: AppointmentReminderEvent,
-  ): Promise<void> {
+  async handleAppointmentReminder(event: AppointmentReminderEvent): Promise<void> {
     // Only send email for EMAIL reminder type
     if (event.reminderType !== 'EMAIL') {
       return;
     }
 
-    this.logger.log(
-      `Sending appointment reminder email for: ${event.appointment.id}`,
-    );
+    this.logger.log(`Sending appointment reminder email for: ${event.appointment.id}`);
 
     try {
       const recipientEmail = 'student@example.com'; // From student record
@@ -238,10 +222,7 @@ export class AppointmentEmailListener {
         `Successfully queued appointment reminder email for: ${event.appointment.id}`,
       );
     } catch (error) {
-      this.logger.error(
-        `Failed to send appointment reminder email: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Failed to send appointment reminder email: ${error.message}`, error.stack);
     }
   }
 
@@ -257,12 +238,8 @@ export class AppointmentEmailListener {
    * @event appointment.completed
    */
   @OnEvent('appointment.completed')
-  async handleAppointmentCompleted(
-    event: AppointmentCompletedEvent,
-  ): Promise<void> {
-    this.logger.log(
-      `Sending appointment completion email for: ${event.appointment.id}`,
-    );
+  async handleAppointmentCompleted(event: AppointmentCompletedEvent): Promise<void> {
+    this.logger.log(`Sending appointment completion email for: ${event.appointment.id}`);
 
     try {
       const recipientEmail = 'student@example.com'; // From student record
@@ -299,9 +276,7 @@ export class AppointmentEmailListener {
    */
   @OnEvent('appointment.no-show')
   async handleAppointmentNoShow(event: AppointmentNoShowEvent): Promise<void> {
-    this.logger.log(
-      `Sending appointment no-show email for: ${event.appointment.id}`,
-    );
+    this.logger.log(`Sending appointment no-show email for: ${event.appointment.id}`);
 
     try {
       const recipientEmail = 'student@example.com'; // From student record
@@ -314,14 +289,9 @@ export class AppointmentEmailListener {
 
       await this.emailService.sendTemplatedEmail(emailData as any);
 
-      this.logger.log(
-        `Successfully queued appointment no-show email for: ${event.appointment.id}`,
-      );
+      this.logger.log(`Successfully queued appointment no-show email for: ${event.appointment.id}`);
     } catch (error) {
-      this.logger.error(
-        `Failed to send appointment no-show email: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Failed to send appointment no-show email: ${error.message}`, error.stack);
     }
   }
 
@@ -336,12 +306,8 @@ export class AppointmentEmailListener {
    * @event appointment.waitlist.added
    */
   @OnEvent('appointment.waitlist.added')
-  async handleWaitlistEntryAdded(
-    event: WaitlistEntryAddedEvent,
-  ): Promise<void> {
-    this.logger.log(
-      `Sending waitlist confirmation email for: ${event.waitlistEntryId}`,
-    );
+  async handleWaitlistEntryAdded(event: WaitlistEntryAddedEvent): Promise<void> {
+    this.logger.log(`Sending waitlist confirmation email for: ${event.waitlistEntryId}`);
 
     try {
       const recipientEmail = 'student@example.com'; // From student record
@@ -376,9 +342,7 @@ export class AppointmentEmailListener {
    * @event appointment.waitlist.slot-available
    */
   @OnEvent('appointment.waitlist.slot-available')
-  async handleWaitlistSlotAvailable(
-    event: WaitlistSlotAvailableEvent,
-  ): Promise<void> {
+  async handleWaitlistSlotAvailable(event: WaitlistSlotAvailableEvent): Promise<void> {
     this.logger.log(
       `Sending waitlist slot available emails to ${event.notifiedWaitlistEntryIds.length} recipients`,
     );
@@ -409,9 +373,7 @@ export class AppointmentEmailListener {
 
   // ==================== Email Body Builders ====================
 
-  private buildConfirmationEmailBody(
-    event: AppointmentCreatedEvent,
-  ): string {
+  private buildConfirmationEmailBody(event: AppointmentCreatedEvent): string {
     const { appointment } = event;
     return `
       <h2>Appointment Confirmation</h2>
@@ -433,9 +395,7 @@ export class AppointmentEmailListener {
     `;
   }
 
-  private buildCancellationEmailBody(
-    event: AppointmentCancelledEvent,
-  ): string {
+  private buildCancellationEmailBody(event: AppointmentCancelledEvent): string {
     return `
       <h2>Appointment Cancellation</h2>
       <p>Your appointment scheduled for ${event.appointment.scheduledAt.toLocaleString()} has been cancelled.</p>
@@ -446,9 +406,7 @@ export class AppointmentEmailListener {
     `;
   }
 
-  private buildRescheduledEmailBody(
-    event: AppointmentRescheduledEvent,
-  ): string {
+  private buildRescheduledEmailBody(event: AppointmentRescheduledEvent): string {
     return `
       <h2>Appointment Rescheduled</h2>
       <p>Your appointment has been rescheduled.</p>
@@ -462,8 +420,7 @@ export class AppointmentEmailListener {
   }
 
   private buildReminderEmailBody(event: AppointmentReminderEvent): string {
-    const timeUntil =
-      event.hoursBeforeAppointment === 24 ? 'tomorrow' : 'in 1 hour';
+    const timeUntil = event.hoursBeforeAppointment === 24 ? 'tomorrow' : 'in 1 hour';
     return `
       <h2>Appointment Reminder</h2>
       <p>This is a reminder that you have an appointment ${timeUntil}.</p>
@@ -480,9 +437,7 @@ export class AppointmentEmailListener {
     `;
   }
 
-  private buildCompletionEmailBody(
-    event: AppointmentCompletedEvent,
-  ): string {
+  private buildCompletionEmailBody(event: AppointmentCompletedEvent): string {
     return `
       <h2>Thank You</h2>
       <p>Thank you for attending your appointment on ${event.appointment.scheduledAt.toLocaleDateString()}.</p>
@@ -507,9 +462,7 @@ export class AppointmentEmailListener {
     `;
   }
 
-  private buildWaitlistConfirmationEmailBody(
-    event: WaitlistEntryAddedEvent,
-  ): string {
+  private buildWaitlistConfirmationEmailBody(event: WaitlistEntryAddedEvent): string {
     return `
       <h2>Waitlist Confirmation</h2>
       <p>You have been successfully added to the appointment waitlist.</p>
@@ -522,9 +475,7 @@ export class AppointmentEmailListener {
     `;
   }
 
-  private buildSlotAvailableEmailBody(
-    event: WaitlistSlotAvailableEvent,
-  ): string {
+  private buildSlotAvailableEmailBody(event: WaitlistSlotAvailableEvent): string {
     return `
       <h2>URGENT: Appointment Slot Available</h2>
       <p>Good news! An appointment slot has become available.</p>

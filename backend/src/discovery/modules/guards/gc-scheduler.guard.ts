@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
-  Logger,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, Logger } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { SmartGarbageCollectionService } from '../services/smart-garbage-collection.service';
 import { GCOptimizationService } from '../services/gc-optimization.service';

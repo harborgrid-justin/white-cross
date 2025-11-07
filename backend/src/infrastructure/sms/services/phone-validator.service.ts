@@ -5,16 +5,8 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import {
-  parsePhoneNumber,
-  isValidPhoneNumber,
-  CountryCode,
-  PhoneNumber as LibPhoneNumber,
-} from 'libphonenumber-js';
-import {
-  PhoneNumberValidationResult,
-  PhoneNumberType,
-} from '../dto/phone-number.dto';
+import { CountryCode, isValidPhoneNumber, parsePhoneNumber, PhoneNumber as LibPhoneNumber } from 'libphonenumber-js';
+import { PhoneNumberType, PhoneNumberValidationResult } from '../dto/phone-number.dto';
 
 /**
  * Phone Number Validator Service

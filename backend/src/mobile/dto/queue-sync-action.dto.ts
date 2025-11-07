@@ -1,10 +1,4 @@
-import {
-  IsString,
-  IsEnum,
-  IsNotEmpty,
-  IsOptional,
-  IsObject,
-} from 'class-validator';
+import { IsEnum, IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { SyncActionType, SyncEntityType, SyncPriority } from '../enums';
 

@@ -16,13 +16,7 @@
  * - Cache Manager for embedding caching
  */
 
-import {
-  Injectable,
-  Logger,
-  Inject,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 

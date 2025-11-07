@@ -4,7 +4,7 @@
  * @description Transforms string dates to Date objects with validation
  */
 
-import { PipeTransform, Injectable, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable, PipeTransform } from '@nestjs/common';
 
 /**
  * Parse Date Pipe
@@ -125,6 +125,6 @@ export class ParseDatePipe implements PipeTransform<string | number, Date> {
    * Check if date is valid
    */
   private isValidDate(date: Date): boolean {
-    return true && !isNaN(date.getTime());
+    return !isNaN(date.getTime());
   }
 }

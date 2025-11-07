@@ -1,17 +1,6 @@
-import {
-  IsString,
-  IsEnum,
-  IsOptional,
-  IsDateString,
-  IsObject,
-  MinLength,
-  MaxLength,
-} from 'class-validator';
+import { IsDateString, IsEnum, IsObject, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  ComplianceReportType,
-  ComplianceStatus,
-} from '../entities/compliance-report.entity';
+import { ComplianceReportType, ComplianceStatus } from '../entities/compliance-report.entity';
 
 export class CreateComplianceReportDto {
   @ApiProperty({

@@ -21,8 +21,7 @@ import { Module, ValidationPipe } from '@nestjs/common';
 import { GraphQLModule as NestGraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_PIPE } from '@nestjs/core';
-import { ModuleRef } from '@nestjs/core';
+import { APP_PIPE, ModuleRef } from '@nestjs/core';
 import { join } from 'path';
 import type { Request, Response } from 'express';
 import { ContactResolver } from './resolvers/contact.resolver';
@@ -35,16 +34,11 @@ import { MedicationModule } from '@/medication';
 import { HealthRecordModule } from '@/health-record';
 import { AuthModule } from '@/auth';
 import { GraphQLJSON } from 'graphql-scalars';
-import { sanitizeGraphQLError, containsPHI } from './errors/phi-sanitizer';
+import { containsPHI, sanitizeGraphQLError } from './errors/phi-sanitizer';
 import { DataLoaderFactory } from './dataloaders/dataloader.factory';
 import { ComplexityPlugin } from './plugins/complexity.plugin';
 import { PubSubModule } from './pubsub/pubsub.module';
-import {
-  DateTimeScalar,
-  PhoneNumberScalar,
-  EmailAddressScalar,
-  UUIDScalar,
-} from './scalars';
+import { DateTimeScalar, EmailAddressScalar, PhoneNumberScalar, UUIDScalar } from './scalars';
 
 /**
  * GraphQL Module

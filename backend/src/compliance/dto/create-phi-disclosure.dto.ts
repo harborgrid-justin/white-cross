@@ -5,23 +5,18 @@
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsString,
-  IsEnum,
-  IsDate,
   IsArray,
   IsBoolean,
-  IsNotEmpty,
-  MinLength,
-  IsOptional,
+  IsDate,
   IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MinLength,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import {
-  DisclosureType,
-  DisclosurePurpose,
-  DisclosureMethod,
-  RecipientType,
-} from '../enums';
+import { DisclosureMethod, DisclosurePurpose, DisclosureType, RecipientType } from '../enums';
 
 export class CreatePhiDisclosureDto {
   @ApiProperty({

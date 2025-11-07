@@ -1,22 +1,5 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
-  Body,
-  Param,
-  Query,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBearerAuth,
-  ApiBody,
-} from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { InventoryService } from './inventory.service';
 import { StockManagementService } from './services/stock-management.service';
 import { AlertsService } from './services/alerts.service';
@@ -29,7 +12,7 @@ import { StockAdjustmentDto } from './dto/stock-adjustment.dto';
 import { CreatePurchaseOrderDto } from './dto/create-purchase-order.dto';
 import { CreateInventoryTransactionDto } from './dto/create-inventory-transaction.dto';
 import { PurchaseOrderStatus } from './entities/purchase-order.entity';
-import { AlertType, AlertSeverity } from './dto/inventory-alert.dto';
+import { AlertSeverity, AlertType } from './dto/inventory-alert.dto';
 
 @ApiTags('inventory')
 @Controller('inventory')

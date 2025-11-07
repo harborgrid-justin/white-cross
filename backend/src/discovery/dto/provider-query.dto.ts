@@ -1,7 +1,7 @@
 import { IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationDto } from './pagination.dto';
-import { ProviderType, MonitoringLevel } from '../enums/provider-type.enum';
+import { MonitoringLevel, ProviderType } from '../enums/provider-type.enum';
 
 export class ProviderQueryDto extends PaginationDto {
   @ApiProperty({

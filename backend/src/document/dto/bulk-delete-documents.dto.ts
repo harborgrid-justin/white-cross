@@ -4,12 +4,7 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsArray,
-  IsNotEmpty,
-  ArrayMinSize,
-  ArrayMaxSize,
-} from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsNotEmpty } from 'class-validator';
 
 export class BulkDeleteDocumentsDto {
   @ApiProperty({

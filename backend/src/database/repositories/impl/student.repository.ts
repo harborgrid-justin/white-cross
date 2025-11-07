@@ -3,14 +3,14 @@
  * Injectable NestJS repository for student data access
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Transaction } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
 import {
+  CreateStudentDTO,
   IStudentRepository,
   StudentAttributes,
-  CreateStudentDTO,
   UpdateStudentDTO,
 } from '../interfaces/student.repository.interface';
 import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';

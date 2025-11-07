@@ -9,22 +9,11 @@
  * @compliance 45 CFR 164.308(a)(5)(ii)(B) - Protection from malicious software
  */
 
-import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
-  Logger,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { HealthRecordMetricsService } from '../services/health-record-metrics.service';
 import { PHIAccessLogger } from '../services/phi-access-logger.service';
-import {
-  HealthRecordRequest,
-  HealthRecordRateLimitConfig,
-  ComplianceLevel,
-} from '../interfaces/health-record-types';
+import { HealthRecordRequest } from '../interfaces/health-record-types';
 import { ENTERPRISE_RATE_LIMIT_KEY } from '../../shared/enterprise/decorators/enterprise-decorators';
 
 interface RateLimitEntry {

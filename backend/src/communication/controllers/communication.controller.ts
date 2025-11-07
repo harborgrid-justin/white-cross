@@ -1,21 +1,12 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
-import { AuthenticatedRequest } from '../types';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBody,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CommunicationService } from '../services/communication.service';
 import {
-  CreateMessageTemplateDto,
-  UpdateMessageTemplateDto,
-  CreateMessageDto,
   BroadcastMessageDto,
+  CreateMessageDto,
+  CreateMessageTemplateDto,
   EmergencyAlertDto,
+  UpdateMessageTemplateDto,
 } from '../dto';
 
 @ApiTags('Communication')

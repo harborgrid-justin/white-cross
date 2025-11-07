@@ -40,10 +40,7 @@ export class EmailTemplateService implements OnModuleInit {
   private readonly templateDirectory: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.cacheEnabled = this.configService.get<boolean>(
-      'EMAIL_TEMPLATE_CACHE_ENABLED',
-      true,
-    );
+    this.cacheEnabled = this.configService.get<boolean>('EMAIL_TEMPLATE_CACHE_ENABLED', true);
     this.templateDirectory = path.join(
       __dirname,
       this.configService.get<string>('EMAIL_TEMPLATE_DIR', 'templates'),
@@ -109,9 +106,7 @@ export class EmailTemplateService implements OnModuleInit {
         await this.loadTemplate(template);
         this.logger.debug(`Preloaded template: ${template}`);
       } catch (error) {
-        this.logger.warn(
-          `Failed to preload template ${template}: ${error.message}`,
-        );
+        this.logger.warn(`Failed to preload template ${template}: ${error.message}`);
       }
     });
 
@@ -126,18 +121,10 @@ export class EmailTemplateService implements OnModuleInit {
    * @throws Error if template files cannot be read
    * @private
    */
-  private async loadTemplate(
-    template: EmailTemplate,
-  ): Promise<TemplateCacheEntry> {
+  private async loadTemplate(template: EmailTemplate): Promise<TemplateCacheEntry> {
     const templateName = this.getTemplateName(template);
-    const htmlPath = path.join(
-      this.templateDirectory,
-      `${templateName}.html.hbs`,
-    );
-    const textPath = path.join(
-      this.templateDirectory,
-      `${templateName}.text.hbs`,
-    );
+    const htmlPath = path.join(this.templateDirectory, `${templateName}.html.hbs`);
+    const textPath = path.join(this.templateDirectory, `${templateName}.text.hbs`);
 
     try {
       const [htmlSource, textSource] = await Promise.all([
@@ -157,9 +144,7 @@ export class EmailTemplateService implements OnModuleInit {
 
       return entry;
     } catch (error) {
-      this.logger.error(
-        `Failed to load template ${templateName}: ${error.message}`,
-      );
+      this.logger.error(`Failed to load template ${templateName}: ${error.message}`);
       throw new Error(`Template ${template} not found or cannot be read`);
     }
   }
@@ -181,15 +166,12 @@ export class EmailTemplateService implements OnModuleInit {
    * @returns Rendered HTML and text versions
    * @throws Error if template cannot be rendered
    */
-  async render(
-    template: EmailTemplate,
-    data: Record<string, unknown>,
-  ): Promise<RenderedEmail> {
+  async render(template: EmailTemplate, data: Record<string, unknown>): Promise<RenderedEmail> {
     try {
       let templateEntry: TemplateCacheEntry;
 
       if (this.cacheEnabled && this.templateCache.has(template)) {
-        templateEntry = this.templateCache.get(template) as TemplateCacheEntry;
+        templateEntry = this.templateCache.get(template);
       } else {
         templateEntry = await this.loadTemplate(template);
       }
@@ -201,9 +183,7 @@ export class EmailTemplateService implements OnModuleInit {
 
       return { html, text };
     } catch (error) {
-      this.logger.error(
-        `Failed to render template ${template}: ${error.message}`,
-      );
+      this.logger.error(`Failed to render template ${template}: ${error.message}`);
       throw new Error(`Failed to render email template: ${error.message}`);
     }
   }
@@ -234,10 +214,7 @@ export class EmailTemplateService implements OnModuleInit {
    */
   async templateExists(template: EmailTemplate): Promise<boolean> {
     const templateName = this.getTemplateName(template);
-    const htmlPath = path.join(
-      this.templateDirectory,
-      `${templateName}.html.hbs`,
-    );
+    const htmlPath = path.join(this.templateDirectory, `${templateName}.html.hbs`);
 
     try {
       await fs.access(htmlPath);

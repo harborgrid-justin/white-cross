@@ -1,15 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsString,
-  IsEnum,
+  ArrayMinSize,
   IsArray,
+  IsEnum,
   IsOptional,
+  IsString,
+  IsUrl,
   IsUUID,
   MaxLength,
   MinLength,
-  IsUrl,
   ValidateNested,
-  ArrayMinSize,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 

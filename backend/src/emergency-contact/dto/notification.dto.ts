@@ -3,15 +3,7 @@
  *
  * Data Transfer Object for sending notifications to emergency contacts.
  */
-import {
-  IsString,
-  IsEnum,
-  IsArray,
-  IsOptional,
-  IsUUID,
-  MinLength,
-  ArrayMinSize,
-} from 'class-validator';
+import { ArrayMinSize, IsArray, IsEnum, IsOptional, IsString, IsUUID, MinLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { NotificationChannel } from '@/contact';
 

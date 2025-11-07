@@ -3,11 +3,11 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { IncidentReportController } from './incident-report.controller';
 import {
   IncidentCoreService,
-  IncidentValidationService,
-  IncidentNotificationService,
   IncidentFollowUpService,
-  IncidentWitnessService,
+  IncidentNotificationService,
   IncidentStatisticsService,
+  IncidentValidationService,
+  IncidentWitnessService,
 } from './services';
 import { IncidentReport } from '../database/models/incident-report.model';
 import { FollowUpAction } from '../database/models/follow-up-action.model';

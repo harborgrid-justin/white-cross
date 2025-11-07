@@ -8,31 +8,24 @@
  * @route /emergency-contact
  */
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
   Body,
-  Param,
-  ParseUUIDPipe,
+  Controller,
+  Delete,
+  Get,
   HttpCode,
   HttpStatus,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiBody,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { EmergencyContactService } from './emergency-contact.service';
 import {
   EmergencyContactCreateDto,
   EmergencyContactUpdateDto,
-  NotificationDto,
   EmergencyVerifyContactDto,
+  NotificationDto,
 } from './dto';
 
 @ApiTags('Emergency Contacts')

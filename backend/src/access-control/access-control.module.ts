@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { SequelizeModule } from '@nestjs/sequelize';
 import { AccessControlService } from './access-control.service';
 import { AccessControlController } from './access-control.controller';
 import { PermissionCacheService } from './services/permission-cache.service';

@@ -4,24 +4,9 @@
  * Defines GraphQL object types, input types, and response types for Student entity
  * using NestJS GraphQL decorators for code-first schema generation.
  */
-import {
-  ObjectType,
-  Field,
-  ID,
-  InputType,
-  registerEnumType,
-} from '@nestjs/graphql';
+import { Field, ID, InputType, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { PaginationDto } from './pagination.dto';
-import {
-  IsString,
-  IsOptional,
-  IsBoolean,
-  IsEnum,
-  IsDateString,
-  MinLength,
-  MaxLength,
-  Matches,
-} from 'class-validator';
+import { IsBoolean, IsDateString, IsEnum, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
 
 /**
  * Gender Enum for GraphQL

@@ -4,8 +4,8 @@
  * @description Trims whitespace from string inputs
  */
 
-import { PipeTransform, Injectable } from '@nestjs/common';
-import { TransformableValue, TransformableObject } from '../types/utility-types';
+import { Injectable, PipeTransform } from '@nestjs/common';
+import { TransformableObject, TransformableValue } from '../types/utility-types';
 
 /**
  * Trim Pipe

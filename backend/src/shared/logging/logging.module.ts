@@ -4,7 +4,7 @@
  * @description NestJS module for centralized logging functionality
  */
 
-import { Module, Global } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { LoggerService } from './logger.service';
 
 /**

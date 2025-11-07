@@ -51,13 +51,13 @@
  *
  * @module WebSocketModule
  */
-import { Module, Global } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { WebSocketGateway } from './websocket.gateway';
 import { WebSocketService } from './websocket.service';
 import { WsJwtAuthGuard } from './guards';
-import { RateLimiterService, AdminMetricsService } from './services';
+import { AdminMetricsService, RateLimiterService } from './services';
 import { AdminWebSocketGateway } from './gateways';
 import { AuthModule } from '@/auth';
 import { AppointmentWebSocketListener } from './listeners/appointment.listener';

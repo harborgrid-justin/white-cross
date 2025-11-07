@@ -3,38 +3,30 @@
  * @description REST API controller for contact management
  */
 import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Patch,
   Body,
-  Param,
-  Query,
+  Controller,
+  Delete,
+  Get,
   HttpCode,
   HttpStatus,
-  ValidationPipe,
+  Param,
   ParseUUIDPipe,
+  Patch,
+  Post,
+  Put,
+  Query,
+  ValidationPipe,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ContactService, EmergencyContactService } from '@/contact/services';
 import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
-import { ContactService } from '@/contact/services';
-import { EmergencyContactService } from '@/contact/services';
-import {
-  CreateContactDto,
-  UpdateContactDto,
-  ContactQueryDto,
   ContactCreateEmergencyDto,
+  ContactQueryDto,
   ContactUpdateEmergencyDto,
   ContactVerifyDto,
+  CreateContactDto,
   EmergencyContactQueryDto,
+  UpdateContactDto,
 } from './dto';
 import { ContactType } from './enums';
 

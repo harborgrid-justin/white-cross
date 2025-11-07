@@ -1,14 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
-  EnterpriseMetricsSnapshot,
+  ComplianceMetrics,
   CounterMetric,
+  EnterpriseHealthCheck,
+  EnterpriseMetricsSnapshot,
   GaugeMetric,
   HistogramMetric,
-  SecurityMetrics,
-  PerformanceMetrics,
-  ComplianceMetrics,
   ModuleHealthStatus,
-  EnterpriseHealthCheck,
+  PerformanceMetrics,
+  SecurityMetrics,
 } from '../interfaces/enterprise-metrics.interface';
 
 @Injectable()

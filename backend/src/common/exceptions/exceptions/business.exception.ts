@@ -5,7 +5,7 @@
  */
 
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { ErrorCodes, ErrorCode } from '../constants/error-codes';
+import { ErrorCode, ErrorCodes } from '../constants/error-codes';
 
 /**
  * Business Logic Exception

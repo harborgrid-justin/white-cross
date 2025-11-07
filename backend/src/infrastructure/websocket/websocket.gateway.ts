@@ -33,25 +33,25 @@
  * @class WebSocketGateway
  */
 import {
-  WebSocketGateway as NestWebSocketGateway,
-  WebSocketServer,
+  ConnectedSocket,
+  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
   SubscribeMessage,
-  ConnectedSocket,
-  MessageBody,
+  WebSocketGateway as NestWebSocketGateway,
+  WebSocketServer,
+  WsException,
 } from '@nestjs/websockets';
-import { Logger, UseGuards, UseFilters } from '@nestjs/common';
+import { Logger, UseFilters, UseGuards } from '@nestjs/common';
 import { Server } from 'socket.io';
-import { WsException } from '@nestjs/websockets';
 import type { AuthenticatedSocket } from './interfaces';
 import {
   ConnectionConfirmedDto,
-  MessageEventDto,
-  TypingIndicatorDto,
-  ReadReceiptDto,
-  MessageDeliveryDto,
   ConversationEventDto,
+  MessageDeliveryDto,
+  MessageEventDto,
+  ReadReceiptDto,
+  TypingIndicatorDto,
 } from './dto';
 import { WsJwtAuthGuard } from './guards';
 import { RateLimiterService } from './services/rate-limiter.service';

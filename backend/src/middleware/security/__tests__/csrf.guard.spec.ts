@@ -12,7 +12,7 @@
  * @compliance OWASP A01:2021 - Broken Access Control
  */
 
-import { ExecutionContext, HttpStatus, HttpException, UnauthorizedException } from '@nestjs/common';
+import { ExecutionContext, HttpException, HttpStatus } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Test, TestingModule } from '@nestjs/testing';
 import { CsrfGuard } from '../csrf.guard';

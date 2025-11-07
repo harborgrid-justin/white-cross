@@ -3,8 +3,7 @@
  * DTO for broadcast status response
  */
 
-import { EmergencyBroadcastResponseDto } from '@/emergency-broadcast';
-import { RecipientDeliveryStatusDto } from '@/emergency-broadcast';
+import { EmergencyBroadcastResponseDto, RecipientDeliveryStatusDto } from '@/emergency-broadcast';
 
 export class DeliveryStatsDto {
   total: number;

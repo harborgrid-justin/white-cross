@@ -1,32 +1,8 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  Query,
-  UseGuards,
-  HttpCode,
-  HttpStatus,
-  Req,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, Req } from '@nestjs/common';
 import { AuthenticatedRequest } from '../types';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBearerAuth,
-  ApiBody,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { TemplateService } from '../services/template.service';
-import {
-  CreateTemplateDto,
-  UpdateTemplateDto,
-} from '../dto/create-template.dto';
+import { CreateTemplateDto, UpdateTemplateDto } from '../dto/create-template.dto';
 
 @ApiTags('Message Templates')
 @ApiBearerAuth()

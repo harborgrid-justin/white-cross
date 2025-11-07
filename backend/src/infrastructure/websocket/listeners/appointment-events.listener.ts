@@ -22,14 +22,14 @@ import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { WebSocketService } from '../websocket.service';
 import {
-  AppointmentCreatedEvent,
-  AppointmentUpdatedEvent,
   AppointmentCancelledEvent,
-  AppointmentStartedEvent,
   AppointmentCompletedEvent,
+  AppointmentCreatedEvent,
   AppointmentNoShowEvent,
   AppointmentReminderEvent,
   AppointmentRescheduledEvent,
+  AppointmentStartedEvent,
+  AppointmentUpdatedEvent,
 } from '@/appointment/events';
 
 /**

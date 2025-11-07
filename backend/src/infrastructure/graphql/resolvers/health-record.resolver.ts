@@ -15,32 +15,23 @@
  * - PHI access auditing
  * - Input validation
  */
-import {
-  Resolver,
-  Query,
-  Mutation,
-  Args,
-  ID,
-  Context,
-  ResolveField,
-  Parent,
-} from '@nestjs/graphql';
+import { Args, Context, ID, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { GqlAuthGuard, GqlRolesGuard } from '../guards';
 import { Roles } from '@/auth';
 import { UserRole } from '@/database';
 import {
-  HealthRecordDto,
-  HealthRecordListResponseDto,
-  HealthRecordInputDto,
-  HealthRecordUpdateInputDto,
-  HealthRecordFilterInputDto,
   DeleteResponseDto,
+  HealthRecordDto,
+  HealthRecordFilterInputDto,
+  HealthRecordInputDto,
+  HealthRecordListResponseDto,
+  HealthRecordUpdateInputDto,
   StudentDto,
 } from '../dto';
 import { HealthRecordService } from '@/health-record';
 import type { GraphQLContext } from '../types/context.interface';
-import { PHIField } from '@/infrastructure/graphql';
+import { PHIField } from '@/infrastructure/graphql/guards';
 
 
 /**
@@ -376,10 +367,9 @@ export class HealthRecordResolver {
   ): Promise<StudentDto | null> {
     try {
       // Use the shared DataLoader from context for optimal batching
-      const student = await context.loaders.studentLoader.load(
+      return await context.loaders.studentLoader.load(
         healthRecord.studentId,
       );
-      return student;
     } catch (error) {
       console.error(
         `Error loading student for health record ${healthRecord.id}:`,

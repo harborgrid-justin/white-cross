@@ -1,7 +1,6 @@
 import { Command, CommandRunner } from 'nest-commander';
 import { InjectModel } from '@nestjs/sequelize';
-import { School } from '@/database';
-import { District } from '@/database';
+import { District, School } from '@/database';
 import { generateSchools } from '@/database/seeds';
 
 @Command({

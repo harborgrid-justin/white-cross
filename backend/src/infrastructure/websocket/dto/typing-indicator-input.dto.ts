@@ -5,7 +5,7 @@
  *
  * @class TypingIndicatorInputDto
  */
-import { IsNotEmpty, IsUUID, IsBoolean } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsUUID } from 'class-validator';
 
 export class TypingIndicatorInputDto {
   @IsUUID('4')

@@ -1,40 +1,31 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
   Body,
-  Param,
-  Query,
+  Controller,
+  Delete,
+  Get,
   HttpCode,
   HttpStatus,
-  UseGuards,
+  Param,
   ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiParam,
-  ApiQuery,
-  ApiBody,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   IncidentCoreService,
   IncidentFollowUpService,
-  IncidentWitnessService,
-  IncidentStatisticsService,
   IncidentNotificationService,
+  IncidentStatisticsService,
+  IncidentWitnessService,
 } from './services';
 import {
-  CreateIncidentReportDto,
-  UpdateIncidentReportDto,
   CreateFollowUpActionDto,
-  UpdateFollowUpActionDto,
+  CreateIncidentReportDto,
   CreateWitnessStatementDto,
   IncidentFiltersDto,
+  UpdateFollowUpActionDto,
+  UpdateIncidentReportDto,
 } from './dto';
 
 @ApiTags('incident-report')

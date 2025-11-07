@@ -1,24 +1,14 @@
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, Sequelize, QueryTypes } from 'sequelize';
-import { SystemConfig } from '../../database/models/system-config.model';
+import { Op, QueryTypes, Sequelize } from 'sequelize';
+import { ConfigCategory, ConfigScope, ConfigValueType, SystemConfig } from '../../database/models/system-config.model';
 import { ConfigurationHistory } from '../../database/models/configuration-history.model';
 import {
-  ConfigCategory,
-  ConfigValueType,
-  ConfigScope,
-} from '../../database/models/system-config.model';
-import {
-  CreateConfigurationDto,
-  UpdateConfigurationDto,
-  FilterConfigurationDto,
   ConfigurationBulkUpdateDto,
+  CreateConfigurationDto,
+  FilterConfigurationDto,
   ImportConfigurationsDto,
+  UpdateConfigurationDto,
 } from '../dto';
 
 /**

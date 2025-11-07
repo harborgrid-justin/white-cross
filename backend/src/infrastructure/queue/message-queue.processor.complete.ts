@@ -11,33 +11,26 @@
  * - External services for notifications
  */
 
-import {
-  Processor,
-  Process,
-  OnQueueActive,
-  OnQueueCompleted,
-  OnQueueFailed,
-} from '@nestjs/bull';
-import { Logger, Inject, forwardRef } from '@nestjs/common';
+import { OnQueueActive, OnQueueCompleted, OnQueueFailed, Process, Processor } from '@nestjs/bull';
+import { forwardRef, Inject, Logger } from '@nestjs/common';
 import type { Job } from 'bull';
-import type { JobResult, JobProgress } from './interfaces';
+import type { JobProgress, JobResult } from './interfaces';
 import { InjectModel } from '@nestjs/sequelize';
 import { QueueName } from './enums';
 import {
-  SendMessageJobDto,
+  BatchMessageJobDto,
   DeliveryConfirmationJobDto,
-  NotificationJobDto,
   EncryptionJobDto,
   IndexingJobDto,
-  BatchMessageJobDto,
   MessageCleanupJobDto,
+  NotificationJobDto,
+  SendMessageJobDto,
 } from './dtos';
 import { CleanupType } from './dtos/message-job.dto';
 
 import { EncryptionService } from '@/infrastructure/encryption';
 import { WebSocketService } from '@/infrastructure/websocket';
-import { Message } from '@/database';
-import { MessageDelivery } from '@/database';
+import { Message, MessageDelivery } from '@/database';
 import { Op } from 'sequelize';
 
 /**

@@ -4,13 +4,7 @@
  * HIPAA Compliance: Ensures cached PHI data is always current
  */
 
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-  Logger,
-} from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { HealthDataCacheService } from '../services/health-data-cache.service';

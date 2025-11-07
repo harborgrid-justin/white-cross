@@ -5,11 +5,11 @@
  */
 
 import {
-  HealthRecord,
   CreateHealthRecordData,
-  UpdateHealthRecordData,
-  HealthSummary,
+  HealthRecord,
   HealthRecordFilters,
+  HealthSummary,
+  UpdateHealthRecordData,
 } from '../database/repositories/interfaces/health-record.repository.interface';
 
 /**

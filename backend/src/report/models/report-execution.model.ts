@@ -1,16 +1,16 @@
 import {
-  Table,
+  BelongsTo,
   Column,
-  Model,
+  CreatedAt,
   DataType,
-  PrimaryKey,
   Default,
   ForeignKey,
-  BelongsTo,
-  CreatedAt,
+  Model,
+  PrimaryKey,
+  Table,
 } from 'sequelize-typescript';
 import { ReportSchedule } from './report-schedule.model';
-import { ReportType, OutputFormat, ReportStatus } from '../constants/report.constants';
+import { OutputFormat, ReportStatus, ReportType } from '../constants/report.constants';
 
 /**
  * Report Execution Model

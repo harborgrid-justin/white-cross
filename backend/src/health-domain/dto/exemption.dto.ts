@@ -8,16 +8,7 @@
  */
 
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import {
-  IsUUID,
-  IsString,
-  IsEnum,
-  IsOptional,
-  IsDate,
-  IsBoolean,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
+import { IsBoolean, IsDate, IsEnum, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
 import { Type } from 'class-transformer';
 
 /**

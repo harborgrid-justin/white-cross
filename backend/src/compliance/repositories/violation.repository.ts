@@ -1,13 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import {
-  ComplianceViolation,
-  ComplianceViolationAttributes,
-} from '../../database/models/compliance-violation.model';
-import {
-  RemediationAction,
-  RemediationActionAttributes,
-} from '../../database/models/remediation-action.model';
+import { ComplianceViolation, ComplianceViolationAttributes } from '../../database/models/compliance-violation.model';
+import { RemediationAction, RemediationActionAttributes } from '../../database/models/remediation-action.model';
 
 @Injectable()
 export class ViolationRepository {

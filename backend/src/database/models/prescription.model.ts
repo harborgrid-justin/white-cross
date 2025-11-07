@@ -1,20 +1,20 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
   AllowNull,
-  Index,
-  ForeignKey,
-  BelongsTo,
-  Scopes,
   BeforeCreate,
   BeforeUpdate,
+  BelongsTo,
+  Column,
+  DataType,
+  Default,
+  ForeignKey,
+  Index,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { Op, literal } from 'sequelize';
+import { literal, Op } from 'sequelize';
 
 import { PrescriptionStatus } from '../../clinical/enums/prescription-status.enum';
 

@@ -5,19 +5,18 @@
  */
 
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  Index,
-  HasMany,
-  Scopes,
   BeforeCreate,
   BeforeUpdate,
+  Column,
+  DataType,
+  Default,
+  HasMany,
+  Index,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 
 export enum SyncStatus {
   PENDING = 'PENDING',

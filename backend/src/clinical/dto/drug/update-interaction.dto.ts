@@ -1,6 +1,5 @@
-import { PartialType } from '@nestjs/swagger';
+import { OmitType, PartialType } from '@nestjs/swagger';
 import { AddInteractionDto } from './add-interaction.dto';
-import { OmitType } from '@nestjs/swagger';
 
 /**
  * Update Drug Interaction DTO

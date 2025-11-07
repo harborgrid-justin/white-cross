@@ -1,21 +1,14 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { ChronicCondition } from '../database/models/chronic-condition.model';
+import { AccommodationType, ChronicCondition, ConditionStatus } from '../database/models/chronic-condition.model';
 import {
   ChronicConditionCreateDto,
-  ChronicConditionUpdateDto,
   ChronicConditionFiltersDto,
+  ChronicConditionUpdateDto,
   PaginationDto,
 } from './dto';
-import {
-  ConditionStatus,
-  AccommodationType,
-} from '../database/models/chronic-condition.model';
-import {
-  ChronicConditionStatistics,
-  ChronicConditionSearchResult,
-} from './interfaces';
+import { ChronicConditionSearchResult, ChronicConditionStatistics } from './interfaces';
 
 /**
  * ChronicConditionService

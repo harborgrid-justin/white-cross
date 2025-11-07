@@ -5,7 +5,7 @@
  * through Sequelize's model registry.
  */
 
-import { Model, FindOptions, CreateOptions, UpdateOptions, DestroyOptions } from 'sequelize';
+import { CreateOptions, DestroyOptions, FindOptions, Model, UpdateOptions } from 'sequelize';
 
 /**
  * Base Sequelize Model interface with common properties

@@ -1,14 +1,14 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import {
-  IsString,
-  IsOptional,
-  IsEnum,
-  IsBoolean,
-  IsNumber,
   IsArray,
-  MinLength,
+  IsBoolean,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
   MaxLength,
   Min,
+  MinLength,
 } from 'class-validator';
 import { TrainingCategory } from '../enums/administration.enums';
 

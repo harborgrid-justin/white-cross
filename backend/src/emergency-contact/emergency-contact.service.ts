@@ -8,25 +8,14 @@
  * - Contact verification workflows
  * - Statistics and reporting
  */
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  BadRequestException,
-  OnModuleDestroy,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException, OnModuleDestroy } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, Transaction, QueryTypes } from 'sequelize';
+import { Op, QueryTypes, Transaction } from 'sequelize';
 import { EmergencyContact } from '../database/models/emergency-contact.model';
 import { Student } from '../database/models/student.model';
 import { ContactPriority, VerificationStatus } from '../contact/enums';
 import { AppConfigService } from '../config/app-config.service';
-import {
-  EmergencyContactCreateDto,
-  EmergencyContactUpdateDto,
-  NotificationDto,
-  NotificationResultDto,
-} from './dto';
+import { EmergencyContactCreateDto, EmergencyContactUpdateDto, NotificationDto, NotificationResultDto } from './dto';
 
 @Injectable()
 export class EmergencyContactService implements OnModuleDestroy {

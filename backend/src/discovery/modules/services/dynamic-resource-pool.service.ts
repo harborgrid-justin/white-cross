@@ -1,12 +1,12 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { DiscoveryService, Reflector } from '@nestjs/core';
 import {
-  PoolableResource,
-  ResourceFactory,
-  ResourceValidator,
   DatabaseProviderMetadata,
-  ResourcePoolGlobalOptions,
+  PoolableResource,
   QueueItem,
+  ResourceFactory,
+  ResourcePoolGlobalOptions,
+  ResourceValidator,
 } from '../types/resource.types';
 
 export interface PoolConfig {

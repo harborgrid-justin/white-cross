@@ -4,76 +4,37 @@
  * @description Business logic for appointment management with comprehensive healthcare workflow support
  */
 
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-  Logger,
-  OnModuleDestroy,
-} from '@nestjs/common';
-import { InjectModel, InjectConnection } from '@nestjs/sequelize';
+import { BadRequestException, Injectable, Logger, NotFoundException, OnModuleDestroy } from '@nestjs/common';
+import { InjectConnection, InjectModel } from '@nestjs/sequelize';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Op, Transaction, Sequelize } from 'sequelize';
+import { Op, Sequelize, Transaction } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 import { AppConfigService } from '../config/app-config.service';
 import {
-  AppointmentCreatedEvent,
-  AppointmentUpdatedEvent,
   AppointmentCancelledEvent,
-  AppointmentStartedEvent,
   AppointmentCompletedEvent,
+  AppointmentCreatedEvent,
   AppointmentNoShowEvent,
+  AppointmentStartedEvent,
+  AppointmentUpdatedEvent,
 } from './events/appointment.events';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
-import {
-  UpdateAppointmentDto,
-  AppointmentStatus,
-} from './dto/update-appointment.dto';
+import { AppointmentStatus, UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { AppointmentFiltersDto } from './dto/appointment-filters.dto';
-import {
-  CreateWaitlistEntryDto,
-  WaitlistFiltersDto,
-  WaitlistPriority as DtoWaitlistPriority,
-  WaitlistStatus as DtoWaitlistStatus,
-} from './dto/waitlist.dto';
-import {
-  CreateReminderDto,
-  ReminderProcessingResultDto,
-  MessageType as DtoMessageType,
-  ReminderStatus as DtoReminderStatus,
-} from './dto/reminder.dto';
-import {
-  StatisticsFiltersDto,
-  SearchAppointmentsDto,
-  BulkCancelDto,
-  DateRangeDto,
-} from './dto/statistics.dto';
-import {
-  CreateRecurringAppointmentDto,
-  RecurrenceFrequency,
-} from './dto/recurring.dto';
-import {
-  AppointmentEntity,
-  PaginatedResponse,
-  AvailabilitySlot,
-} from './entities/appointment.entity';
+import { WaitlistFiltersDto, WaitlistPriority as DtoWaitlistPriority } from './dto/waitlist.dto';
+import { CreateReminderDto, ReminderProcessingResultDto } from './dto/reminder.dto';
+import { BulkCancelDto, DateRangeDto, SearchAppointmentsDto, StatisticsFiltersDto } from './dto/statistics.dto';
+import { CreateRecurringAppointmentDto, RecurrenceFrequency } from './dto/recurring.dto';
+import { AppointmentEntity, AvailabilitySlot, PaginatedResponse } from './entities/appointment.entity';
 import { AppointmentValidation } from './validators/appointment-validation';
 import { AppointmentStatusTransitions } from './validators/status-transitions';
 import {
   Appointment,
-  AppointmentType as ModelAppointmentType,
   AppointmentStatus as ModelAppointmentStatus,
+  AppointmentType as ModelAppointmentType,
 } from '../database/models/appointment.model';
-import {
-  AppointmentReminder,
-  MessageType,
-  ReminderStatus,
-} from '../database/models/appointment-reminder.model';
-import {
-  AppointmentWaitlist,
-  WaitlistPriority,
-  WaitlistStatus,
-} from '../database/models/appointment-waitlist.model';
+import { AppointmentReminder, MessageType, ReminderStatus } from '../database/models/appointment-reminder.model';
+import { AppointmentWaitlist, WaitlistPriority, WaitlistStatus } from '../database/models/appointment-waitlist.model';
 import { User } from '../database/models/user.model';
 
 /**
@@ -733,6 +694,7 @@ export class AppointmentService implements OnModuleDestroy {
   /**
    * Complete an appointment
    *
+   * @param id
    * @param completionData Optional completion notes, outcomes, follow-up requirements
    */
   async completeAppointment(
@@ -1024,6 +986,15 @@ export class AppointmentService implements OnModuleDestroy {
    * Returns conflicting appointments if any exist
    * Considers buffer time between appointments
    *
+   * @param nurseId
+   * @param startTime
+   * @param duration
+   * @param nurseId
+   * @param startTime
+   * @param duration
+   * @param nurseId
+   * @param startTime
+   * @param duration
    * @param excludeAppointmentId Optional appointment to exclude (for updates)
    */
   async checkAvailability(
@@ -1188,7 +1159,7 @@ export class AppointmentService implements OnModuleDestroy {
       const expiresAt = new Date();
       expiresAt.setHours(expiresAt.getHours() + 48);
 
-      const waitlistEntry = await this.waitlistModel.create({
+      return await this.waitlistModel.create({
         id: uuidv4(),
         studentId: data.studentId,
         nurseId: data.nurseId,
@@ -1203,8 +1174,6 @@ export class AppointmentService implements OnModuleDestroy {
         createdAt: new Date(),
         updatedAt: new Date(),
       });
-
-      return waitlistEntry;
     } catch (error) {
       this.logger.error(
         `Error adding to waitlist: ${error.message}`,
@@ -1257,7 +1226,7 @@ export class AppointmentService implements OnModuleDestroy {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysBack);
 
-    const count = await this.appointmentModel.count({
+    return await this.appointmentModel.count({
       where: {
         studentId,
         status: ModelAppointmentStatus.NO_SHOW,
@@ -1266,8 +1235,6 @@ export class AppointmentService implements OnModuleDestroy {
         },
       },
     });
-
-    return count;
   }
 
   // ==================== Private Helper Methods ====================

@@ -1,12 +1,9 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { QueryTypes } from 'sequelize';
 import { InventoryItem } from '../entities/inventory-item.entity';
-import {
-  InventoryTransaction,
-  InventoryTransactionType,
-} from '../entities/inventory-transaction.entity';
+import { InventoryTransaction, InventoryTransactionType } from '../entities/inventory-transaction.entity';
 import { StockAdjustmentDto } from '../dto/stock-adjustment.dto';
 
 export interface StockAdjustmentResult {

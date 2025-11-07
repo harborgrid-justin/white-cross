@@ -1,10 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
-import {
-  SystemConfig,
-  ConfigCategory,
-} from '../../database/models/system-config.model';
+import { ConfigCategory, SystemConfig } from '../../database/models/system-config.model';
 import { ConfigurationHistory } from '../../database/models/configuration-history.model';
 import { ConfigurationDto } from '../dto/configuration.dto';
 

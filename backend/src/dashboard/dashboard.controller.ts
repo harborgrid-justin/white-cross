@@ -3,33 +3,18 @@
  * Provides REST API endpoints for dashboard statistics, analytics, and real-time data
  */
 
-import {
-  Controller,
-  Get,
-  Delete,
-  Query,
-  HttpCode,
-  HttpStatus,
-  ValidationPipe,
-  Logger,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiQuery,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { Controller, Delete, Get, HttpCode, HttpStatus, Logger, Query, ValidationPipe } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { DashboardService } from './dashboard.service';
 import {
-  DashboardStatsDto,
-  RecentActivityDto,
-  UpcomingAppointmentDto,
   DashboardChartDataDto,
+  DashboardStatsDto,
   GetChartDataDto,
   GetRecentActivitiesDto,
-  GetUpcomingAppointmentsDto,
   GetStatsByScopeDto,
+  GetUpcomingAppointmentsDto,
+  RecentActivityDto,
+  UpcomingAppointmentDto,
 } from './dto';
 
 /**

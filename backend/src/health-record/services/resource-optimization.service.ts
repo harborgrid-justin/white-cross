@@ -15,7 +15,6 @@ import { HealthRecordMetricsService } from './health-record-metrics.service';
 import { PHIAccessLogger } from './phi-access-logger.service';
 import { CacheStrategyService } from './cache-strategy.service';
 import { QueryPerformanceAnalyzer } from './query-performance-analyzer.service';
-import { ComplianceLevel } from '../interfaces/health-record-types';
 
 export interface ResourceMetrics {
   timestamp: Date;

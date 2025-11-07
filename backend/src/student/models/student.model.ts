@@ -1,15 +1,15 @@
 import {
-  Table,
   Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  Index,
-  ForeignKey,
   CreatedAt,
-  UpdatedAt,
+  DataType,
+  Default,
   DeletedAt,
+  ForeignKey,
+  Index,
+  Model,
+  PrimaryKey,
+  Table,
+  UpdatedAt,
 } from 'sequelize-typescript';
 import { User } from '../../database/models/user.model';
 

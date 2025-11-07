@@ -1,12 +1,4 @@
-import {
-  IsString,
-  IsOptional,
-  IsArray,
-  IsInt,
-  Min,
-  Max,
-  MinLength,
-} from 'class-validator';
+import { IsArray, IsInt, IsOptional, IsString, Max, Min, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateApiKeyDto {

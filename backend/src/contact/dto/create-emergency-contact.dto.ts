@@ -3,26 +3,26 @@
  * @description DTO for creating a new emergency contact with validation
  */
 import {
-  IsString,
+  ArrayMaxSize,
+  ArrayMinSize,
+  IsArray,
+  IsBoolean,
   IsEmail,
   IsEnum,
+  IsIn,
   IsOptional,
-  IsBoolean,
+  IsString,
   IsUUID,
   Length,
   Matches,
-  IsArray,
-  ArrayMinSize,
-  ArrayMaxSize,
-  IsIn,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   ContactPriority,
-  VerificationStatus,
   PreferredContactMethod,
   VALID_NOTIFICATION_CHANNELS,
   VALID_RELATIONSHIPS,
+  VerificationStatus,
 } from '../enums';
 
 export class ContactCreateEmergencyDto {

@@ -1,4 +1,4 @@
-import { IsString, IsArray, IsIn } from 'class-validator';
+import { IsArray, IsIn, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class GetTrendsQueryDto {

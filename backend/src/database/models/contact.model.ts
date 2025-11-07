@@ -1,17 +1,17 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  CreatedAt,
-  UpdatedAt,
-  DeletedAt,
-  Index,
-  Scopes,
   BeforeCreate,
   BeforeUpdate,
+  Column,
+  CreatedAt,
+  DataType,
+  Default,
+  DeletedAt,
+  Index,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
+  UpdatedAt,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { ContactType } from '../../contact/enums/contact-type.enum';

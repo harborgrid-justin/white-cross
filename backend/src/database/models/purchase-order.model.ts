@@ -1,18 +1,17 @@
 import {
-  Table,
+  BeforeCreate,
+  BeforeUpdate,
+  BelongsTo,
   Column,
-  Model,
   DataType,
-  PrimaryKey,
   Default,
   ForeignKey,
-  BelongsTo,
   HasMany,
-  BeforeCreate,
+  Model,
+  PrimaryKey,
   Scopes,
-  BeforeUpdate,
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum PurchaseOrderStatus {

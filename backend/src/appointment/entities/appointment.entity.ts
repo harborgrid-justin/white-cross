@@ -13,10 +13,7 @@
  * Re-export of Sequelize model for backward compatibility
  */
 
-import {
-  AppointmentType,
-  AppointmentStatus,
-} from '../../database/models/appointment.model';
+import { AppointmentStatus, AppointmentType } from '../../database/models/appointment.model';
 
 // Re-export the Sequelize model and enums
 export {

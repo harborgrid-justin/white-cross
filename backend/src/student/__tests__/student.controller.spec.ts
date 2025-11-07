@@ -15,19 +15,15 @@
  */
 
 import { Test, TestingModule } from '@nestjs/testing';
-import {
-  NotFoundException,
-  ConflictException,
-  BadRequestException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { StudentController } from '../student.controller';
 import { StudentService } from '../student.service';
 import {
   CreateStudentDto,
-  UpdateStudentDto,
+  StudentBulkUpdateDto,
   StudentFilterDto,
   TransferStudentDto,
-  StudentBulkUpdateDto,
+  UpdateStudentDto,
 } from '../dto';
 
 describe('StudentController', () => {

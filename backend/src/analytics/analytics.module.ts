@@ -1,22 +1,25 @@
 import { Module } from '@nestjs/common';
 import { CacheModule } from '@nestjs/cache-manager';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { DatabaseModule } from '@/database';
+import {
+  AnalyticsReport,
+  Appointment,
+  AppointmentRepository,
+  DatabaseModule,
+  HealthMetricSnapshot,
+  HealthRecord,
+  IncidentReport,
+  MedicationLog,
+  Student,
+} from '@/database';
 import { AnalyticsController } from './analytics.controller';
 import { AnalyticsService } from './analytics.service';
-import { HealthTrendAnalyticsService } from '@/analytics/services';
-import { ComplianceReportGeneratorService } from '@/analytics/services';
-import { HealthMetricSnapshot } from '@/database';
-import { AnalyticsReport } from '@/database';
-import { Student } from '@/database';
-import { HealthRecord } from '@/database';
-import { Appointment } from '@/database';
-import { MedicationLog } from '@/database';
-import { IncidentReport } from '@/database';
-import { AppointmentRepository } from '@/database';
-import { HealthRecordRepository } from '@/database/repositories/impl';
-import { MedicationLogRepository } from '@/database/repositories/impl';
-import { IncidentReportRepository } from '@/database/repositories/impl';
+import { ComplianceReportGeneratorService, HealthTrendAnalyticsService } from '@/analytics/services';
+import {
+  HealthRecordRepository,
+  IncidentReportRepository,
+  MedicationLogRepository,
+} from '@/database/repositories/impl';
 
 /**
  * Analytics Module

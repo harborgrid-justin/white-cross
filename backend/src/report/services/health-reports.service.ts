@@ -1,12 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectModel, InjectConnection } from '@nestjs/sequelize';
-import { Sequelize, Op, fn, col, literal, QueryTypes } from 'sequelize';
+import { InjectConnection, InjectModel } from '@nestjs/sequelize';
+import { col, fn, literal, Op, QueryTypes, Sequelize } from 'sequelize';
 import { HealthRecord } from '../../database/models/health-record.model';
 import { ChronicCondition } from '../../database/models/chronic-condition.model';
 import { Allergy } from '../../database/models/allergy.model';
 import { HealthTrendsReport } from '../interfaces/report-types.interface';
 import { HealthTrendsDto } from '../dto/health-trends.dto';
-import { HealthRecordType, AllergySeverity } from '../../common/enums';
+import { AllergySeverity, HealthRecordType } from '../../common/enums';
 
 /**
  * Health Reports Service

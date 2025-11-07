@@ -5,15 +5,7 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsNotEmpty,
-  IsArray,
-  IsUUID,
-  IsOptional,
-  IsString,
-  IsBoolean,
-  Length,
-} from 'class-validator';
+import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString, IsUUID, Length } from 'class-validator';
 
 /**
  * Bulk Update DTO

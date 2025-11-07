@@ -5,15 +5,7 @@
  */
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsNotEmpty,
-  IsArray,
-  IsString,
-  ArrayMinSize,
-  ArrayMaxSize,
-  IsOptional,
-  IsObject,
-} from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
 import { GenericSmsDto } from './generic-sms.dto';
 import { SmsPriority } from './send-sms.dto';
 

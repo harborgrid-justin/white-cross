@@ -10,23 +10,18 @@
  * - Statistical aggregations
  */
 
-import {
-  Injectable,
-  OnModuleInit,
-  OnModuleDestroy,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { join } from 'path';
 import { WorkerPoolService } from './worker-pool.service';
 import {
-  CPUIntensive,
-  ResourcePool,
-  MemoryIntensive,
-  MemoryMonitoring,
   Cleanup,
-  MemorySensitive,
+  CPUIntensive,
   ImmediateCleanup,
   LeakProne,
+  MemoryIntensive,
+  MemoryMonitoring,
+  MemorySensitive,
+  ResourcePool,
 } from '@/discovery/modules';
 
 /**

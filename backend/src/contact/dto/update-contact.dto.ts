@@ -2,10 +2,9 @@
  * Update Contact DTO
  * @description DTO for updating an existing contact
  */
-import { PartialType } from '@nestjs/swagger';
+import { ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { CreateContactDto } from './create-contact.dto';
 import { IsOptional, IsUUID } from 'class-validator';
-import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateContactDto extends PartialType(CreateContactDto) {
   @ApiPropertyOptional({

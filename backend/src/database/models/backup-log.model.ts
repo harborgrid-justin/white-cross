@@ -5,19 +5,18 @@
  */
 
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  Index,
   AllowNull,
-  Scopes,
   BeforeCreate,
   BeforeUpdate,
+  Column,
+  DataType,
+  Default,
+  Index,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 
 /**
  * Backup types

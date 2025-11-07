@@ -1,14 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsString,
-  IsUUID,
-  IsNumber,
-  IsEnum,
-  IsArray,
-  IsDate,
-  Min,
-  Max,
-} from 'class-validator';
+import { IsArray, IsDate, IsEnum, IsNumber, IsString, IsUUID, Max, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { RiskFactorDto } from './risk-factor.dto';
 

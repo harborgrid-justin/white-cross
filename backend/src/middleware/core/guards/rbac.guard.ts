@@ -8,29 +8,18 @@
  * @compliance HIPAA - Implements minimum necessary access principle
  */
 
-import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
-  ForbiddenException,
-  Logger,
-  Optional,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable, Logger, Optional } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import {
-  UserRole,
   Permission,
+  type RbacConfig,
   ROLE_HIERARCHY,
   ROLE_PERMISSIONS,
-  type RbacConfig,
   type UserProfile,
+  UserRole,
 } from '../types/rbac.types';
 import { ROLES_KEY } from '../../../auth/decorators/roles.decorator';
-import {
-  PERMISSIONS_KEY,
-  PERMISSIONS_MODE_KEY,
-  type PermissionsMode,
-} from '../decorators/permissions.decorator';
+import { PERMISSIONS_KEY, PERMISSIONS_MODE_KEY, type PermissionsMode } from '../decorators/permissions.decorator';
 
 /**
  * RBAC Guard - Combined role and permission authorization
