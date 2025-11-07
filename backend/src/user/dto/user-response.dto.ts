@@ -10,27 +10,27 @@ import { UserRole } from '../enums/user-role.enum';
 export class UserResponseDto {
   @Expose()
   @ApiProperty({ description: 'User ID', example: 'uuid' })
-  id: string;
+  id!: string;
 
   @Expose()
   @ApiProperty({ description: 'Email address', example: 'nurse@school.edu' })
-  email: string;
+  email!: string;
 
   @Expose()
   @ApiProperty({ description: 'First name', example: 'Jane' })
-  firstName: string;
+  firstName!: string;
 
   @Expose()
   @ApiProperty({ description: 'Last name', example: 'Doe' })
-  lastName: string;
+  lastName!: string;
 
   @Expose()
   @ApiProperty({ description: 'User role', enum: UserRole })
-  role: UserRole;
+  role!: UserRole;
 
   @Expose()
   @ApiProperty({ description: 'Active status', example: true })
-  isActive: boolean;
+  isActive!: boolean;
 
   @Expose()
   @ApiPropertyOptional({ description: 'Last login timestamp' })
@@ -50,15 +50,15 @@ export class UserResponseDto {
 
   @Expose()
   @ApiProperty({ description: 'Email verified status', example: false })
-  emailVerified: boolean;
+  emailVerified!: boolean;
 
   @Expose()
   @ApiProperty({ description: '2FA enabled status', example: false })
-  twoFactorEnabled: boolean;
+  twoFactorEnabled!: boolean;
 
   @Expose()
   @ApiProperty({ description: 'Failed login attempts', example: 0 })
-  failedLoginAttempts: number;
+  failedLoginAttempts!: number;
 
   @Expose()
   @ApiPropertyOptional({ description: 'Lockout expiration' })
@@ -70,15 +70,15 @@ export class UserResponseDto {
 
   @Expose()
   @ApiProperty({ description: 'Must change password flag', example: false })
-  mustChangePassword: boolean;
+  mustChangePassword!: boolean;
 
   @Expose()
   @ApiProperty({ description: 'Created timestamp' })
-  createdAt: Date;
+  createdAt!: Date;
 
   @Expose()
   @ApiProperty({ description: 'Updated timestamp' })
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @Expose()
   @ApiPropertyOptional({ description: 'Activity counts' })
@@ -96,13 +96,13 @@ export class UserResponseDto {
  */
 export class UserListResponseDto {
   @ApiProperty({ type: [UserResponseDto] })
-  users: UserResponseDto[];
+  users!: UserResponseDto[];
 
   @ApiProperty({
     description: 'Pagination metadata',
     example: { total: 100, page: 1, limit: 20, pages: 5 },
   })
-  pagination: {
+  pagination!: {
     total: number;
     page: number;
     limit: number;

@@ -5,7 +5,7 @@ export class SignPdfDto {
   @ApiProperty({ description: 'Base64-encoded PDF buffer' })
   @IsString()
   @IsNotEmpty()
-  pdfBuffer: string;
+  pdfBuffer!: string;
 
   @ApiPropertyOptional({ description: 'Certificate data (base64)' })
   @IsString()

@@ -10,8 +10,8 @@ import {
   HttpCode,
   HttpStatus,
   Req,
-import { AuthenticatedRequest } from '../types';
 } from '@nestjs/common';
+import { AuthenticatedRequest } from '../types';
 import {
   ApiTags,
   ApiOperation,

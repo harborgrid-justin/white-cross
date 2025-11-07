@@ -1,12 +1,4 @@
-import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  Index,
-} from 'sequelize-typescript';
+import { Table, Column, Model, DataType, PrimaryKey, Default } from 'sequelize-typescript';
 import { IpRestrictionType } from '../enums';
 
 /**
@@ -28,7 +20,7 @@ export class IpRestrictionEntity extends Model {
     type: DataType.ENUM(...(Object.values(IpRestrictionType) as string[])),
     allowNull: false,
   })
-  type: IpRestrictionType;
+  type!: IpRestrictionType;
 
   @Column({
     type: DataType.STRING,
@@ -56,14 +48,14 @@ export class IpRestrictionEntity extends Model {
     allowNull: false,
     field: 'reason',
   })
-  reason: string;
+  reason!: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
     field: 'createdBy',
   })
-  createdBy: string;
+  createdBy!: string;
 
   @Column({
     type: DataType.DATE,
@@ -85,7 +77,7 @@ export class IpRestrictionEntity extends Model {
     allowNull: false,
     field: 'isActive',
   })
-  isActive: boolean;
+  isActive!: boolean;
 
   @Column({
     type: DataType.DATE,

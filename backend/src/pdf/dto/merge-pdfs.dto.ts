@@ -9,5 +9,5 @@ export class MergePdfsDto {
   @IsArray()
   @IsString({ each: true })
   @IsNotEmpty()
-  pdfBuffers: string[];
+  pdfBuffers!: string[];
 }

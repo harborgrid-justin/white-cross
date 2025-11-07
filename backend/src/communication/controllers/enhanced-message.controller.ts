@@ -14,8 +14,8 @@ import {
   UseInterceptors,
   UploadedFile,
   UploadedFiles,
-import { AuthenticatedRequest } from '../types';
 } from '@nestjs/common';
+import { AuthenticatedRequest } from '../types';
 import {
   ApiTags,
   ApiOperation,

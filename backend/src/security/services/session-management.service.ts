@@ -19,11 +19,6 @@ export class SessionManagementService {
     private readonly sessionModel: typeof SessionEntity,
   ) {}
 
-  // Alias for backward compatibility
-  private get sessionRepo() {
-    return this.sessionModel;
-  }
-
   /**
    * Create a new session
    */
@@ -101,10 +96,7 @@ export class SessionManagementService {
    */
   async invalidateSession(sessionId: string): Promise<boolean> {
     try {
-      await this.sessionModel.update(
-        { isActive: false },
-        { where: { id: sessionId } },
-      );
+      await this.sessionModel.update({ isActive: false }, { where: { id: sessionId } });
       this.logger.log('Session invalidated', { sessionId });
       return true;
     } catch (error) {
@@ -167,13 +159,10 @@ export class SessionManagementService {
         // Invalidate the oldest session
         const oldestSession = activeSessions[activeSessions.length - 1];
         await this.invalidateSession(oldestSession.id);
-        this.logger.warn(
-          'Concurrent session limit reached, oldest session invalidated',
-          {
-            userId,
-            limit: this.MAX_CONCURRENT_SESSIONS,
-          },
-        );
+        this.logger.warn('Concurrent session limit reached, oldest session invalidated', {
+          userId,
+          limit: this.MAX_CONCURRENT_SESSIONS,
+        });
       }
     } catch (error) {
       this.logger.error('Error enforcing session limit', { error, userId });

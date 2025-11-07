@@ -1,18 +1,6 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Res,
-  HttpStatus,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Post, Body, Res, HttpStatus } from '@nestjs/common';
 import type { Response } from 'express';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { PdfService } from './pdf.service';
 import { GenerateStudentHealthSummaryDto } from '@/pdf/dto';
 import { GenerateMedicationLogDto } from '@/pdf/dto';
@@ -170,10 +158,7 @@ export class PdfController {
     description: 'PDFs merged successfully',
     type: Buffer,
   })
-  async mergePdfs(
-    @Body() dto: MergePdfsDto,
-    @Res() res: Response,
-  ): Promise<void> {
+  async mergePdfs(@Body() dto: MergePdfsDto, @Res() res: Response): Promise<void> {
     const pdfBuffer = await this.pdfService.mergePdfs(dto.pdfBuffers);
 
     res.set({
@@ -195,10 +180,7 @@ export class PdfController {
     description: 'Watermark added successfully',
     type: Buffer,
   })
-  async addWatermark(
-    @Body() dto: WatermarkPdfDto,
-    @Res() res: Response,
-  ): Promise<void> {
+  async addWatermark(@Body() dto: WatermarkPdfDto, @Res() res: Response): Promise<void> {
     const pdfBuffer = await this.pdfService.addWatermark(dto);
 
     res.set({
@@ -221,12 +203,7 @@ export class PdfController {
     type: Buffer,
   })
   async signPdf(@Body() dto: SignPdfDto, @Res() res: Response): Promise<void> {
-    const pdfBuffer = await this.pdfService.signPdf(
-      dto.pdfBuffer,
-      dto.signatureName,
-      dto.signatureReason,
-      dto.signatureLocation,
-    );
+    const pdfBuffer = await this.pdfService.signPdf(dto.pdfBuffer, dto.signatureName);
 
     res.set({
       'Content-Type': 'application/pdf',

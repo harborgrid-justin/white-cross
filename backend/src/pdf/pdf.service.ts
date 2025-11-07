@@ -32,9 +32,7 @@ export class PdfService {
   /**
    * Generate student health summary PDF
    */
-  async generateStudentHealthSummary(
-    data: GenerateStudentHealthSummaryDto,
-  ): Promise<Buffer> {
+  async generateStudentHealthSummary(data: GenerateStudentHealthSummaryDto): Promise<Buffer> {
     try {
       const doc = new jsPDF();
 
@@ -45,11 +43,7 @@ export class PdfService {
       // Student information
       doc.setFontSize(12);
       doc.text(`Name: ${data.firstName} ${data.lastName}`, 20, 40);
-      doc.text(
-        `Date of Birth: ${new Date(data.dateOfBirth).toLocaleDateString()}`,
-        20,
-        50,
-      );
+      doc.text(`Date of Birth: ${new Date(data.dateOfBirth).toLocaleDateString()}`, 20, 50);
       doc.text(`Grade: ${data.grade || 'N/A'}`, 20, 60);
       doc.text(`Student ID: ${data.studentNumber || 'N/A'}`, 20, 70);
 
@@ -87,12 +81,7 @@ export class PdfService {
         doc.autoTable({
           startY: yPosition,
           head: [['Medication', 'Dosage', 'Frequency', 'Route']],
-          body: data.medications.map((med) => [
-            med.name,
-            med.dosage,
-            med.frequency,
-            med.route,
-          ]),
+          body: data.medications.map((med) => [med.name, med.dosage, med.frequency, med.route]),
           theme: 'striped',
           headStyles: { fillColor: [41, 128, 185] },
         });
@@ -132,16 +121,12 @@ export class PdfService {
       });
 
       const pdfBuffer = Buffer.from(doc.output('arraybuffer'));
-      this.logger.log(
-        `Student health summary PDF generated for ID: ${data.id}`,
-      );
+      this.logger.log(`Student health summary PDF generated for ID: ${data.id}`);
 
       return pdfBuffer;
     } catch (error) {
       this.logger.error('Error generating student health summary PDF', error);
-      throw new BadRequestException(
-        'Failed to generate student health summary PDF',
-      );
+      throw new BadRequestException('Failed to generate student health summary PDF');
     }
   }
 
@@ -200,9 +185,7 @@ export class PdfService {
   /**
    * Generate immunization compliance report PDF
    */
-  async generateImmunizationReport(
-    data: GenerateImmunizationReportDto,
-  ): Promise<Buffer> {
+  async generateImmunizationReport(data: GenerateImmunizationReportDto): Promise<Buffer> {
     try {
       const doc = new jsPDF();
 
@@ -217,11 +200,7 @@ export class PdfService {
       doc.text(`Organization: ${data.organizationName}`, 20, 40);
       doc.text(`Report Date: ${new Date().toLocaleDateString()}`, 20, 50);
       doc.text(`Total Students: ${data.totalStudents}`, 20, 60);
-      doc.text(
-        `Compliant: ${data.compliantStudents} (${data.complianceRate}%)`,
-        20,
-        70,
-      );
+      doc.text(`Compliant: ${data.compliantStudents} (${data.complianceRate}%)`, 20, 70);
 
       // Student immunization status
       if (data.students && data.students.length > 0) {
@@ -255,18 +234,14 @@ export class PdfService {
       return pdfBuffer;
     } catch (error) {
       this.logger.error('Error generating immunization report PDF', error);
-      throw new BadRequestException(
-        'Failed to generate immunization report PDF',
-      );
+      throw new BadRequestException('Failed to generate immunization report PDF');
     }
   }
 
   /**
    * Generate incident report PDF
    */
-  async generateIncidentReport(
-    data: GenerateIncidentReportDto,
-  ): Promise<Buffer> {
+  async generateIncidentReport(data: GenerateIncidentReportDto): Promise<Buffer> {
     try {
       const doc = new jsPDF();
 
@@ -277,11 +252,7 @@ export class PdfService {
       // Incident details
       doc.setFontSize(12);
       doc.text(`Incident ID: ${data.id}`, 20, 40);
-      doc.text(
-        `Date/Time: ${new Date(data.incidentDateTime).toLocaleString()}`,
-        20,
-        50,
-      );
+      doc.text(`Date/Time: ${new Date(data.incidentDateTime).toLocaleString()}`, 20, 50);
       doc.text(`Location: ${data.location}`, 20, 60);
       doc.text(`Severity: ${data.severity}`, 20, 70);
 
@@ -301,10 +272,7 @@ export class PdfService {
       doc.setFontSize(14);
       doc.text('Actions Taken:', 20, yPosition);
       doc.setFontSize(10);
-      const splitActions = doc.splitTextToSize(
-        data.actionsTaken || 'None',
-        170,
-      );
+      const splitActions = doc.splitTextToSize(data.actionsTaken || 'None', 170);
       doc.text(splitActions, 20, yPosition + 10);
 
       // Footer
@@ -327,9 +295,7 @@ export class PdfService {
   /**
    * Generate custom report with tables
    */
-  async generateCustomReport(
-    data: PdfGenerateCustomReportDto,
-  ): Promise<Buffer> {
+  async generateCustomReport(data: PdfGenerateCustomReportDto): Promise<Buffer> {
     try {
       const doc = new jsPDF();
       let yPosition = 20;
@@ -409,10 +375,7 @@ export class PdfService {
       for (const base64Buffer of pdfBuffers) {
         const buffer = Buffer.from(base64Buffer, 'base64');
         const pdf = await PDFDocument.load(buffer);
-        const copiedPages = await mergedPdf.copyPages(
-          pdf,
-          pdf.getPageIndices(),
-        );
+        const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
         copiedPages.forEach((page) => mergedPdf.addPage(page));
       }
 
@@ -463,12 +426,7 @@ export class PdfService {
    * Note: This is a basic implementation. For production use,
    * implement proper certificate handling and signature validation.
    */
-  async signPdf(
-    pdfBuffer: string,
-    signatureName?: string,
-    signatureReason?: string,
-    signatureLocation?: string,
-  ): Promise<Buffer> {
+  async signPdf(pdfBuffer: string, signatureName?: string): Promise<Buffer> {
     try {
       const buffer = Buffer.from(pdfBuffer, 'base64');
       const pdfDoc = await PDFDocument.load(buffer);

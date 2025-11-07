@@ -11,7 +11,7 @@ export class UserChangePasswordDto {
   })
   @IsString()
   @IsNotEmpty()
-  currentPassword: string;
+  currentPassword!: string;
 
   @ApiProperty({
     description:
@@ -25,5 +25,5 @@ export class UserChangePasswordDto {
     message:
       'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
   })
-  newPassword: string;
+  newPassword!: string;
 }

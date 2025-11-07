@@ -1,10 +1,4 @@
-import {
-  IsEnum,
-  IsOptional,
-  IsBoolean,
-  IsString,
-  IsArray,
-} from 'class-validator';
+import { IsEnum, IsOptional, IsBoolean, IsString, IsArray } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { OutputFormat, ReportType } from '../constants/report.constants';
 
@@ -17,14 +11,14 @@ export class ExportOptionsDto {
     description: 'Type of report to export',
   })
   @IsEnum(ReportType)
-  reportType: ReportType;
+  reportType!: ReportType;
 
   @ApiProperty({
     enum: OutputFormat,
     description: 'Export format',
   })
   @IsEnum(OutputFormat)
-  format: OutputFormat;
+  format!: OutputFormat;
 
   @ApiPropertyOptional({
     description: 'Include charts in export (PDF only)',

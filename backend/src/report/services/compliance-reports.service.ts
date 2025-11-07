@@ -3,8 +3,6 @@ import { InjectModel, InjectConnection } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { Op, QueryTypes } from 'sequelize';
 import { AuditLog } from '../../database/models/audit-log.model';
-import { StudentMedication } from '../../database/models/student-medication.model';
-import { IncidentReport } from '../../database/models/incident-report.model';
 import { ComplianceReport } from '../interfaces/report-types.interface';
 import { BaseReportDto } from '../dto/base-report.dto';
 
@@ -19,10 +17,6 @@ export class ComplianceReportsService {
   constructor(
     @InjectModel(AuditLog)
     private auditLogModel: typeof AuditLog,
-    @InjectModel(StudentMedication)
-    private studentMedicationModel: typeof StudentMedication,
-    @InjectModel(IncidentReport)
-    private incidentReportModel: typeof IncidentReport,
     @InjectConnection()
     private sequelize: Sequelize,
   ) {}
@@ -66,12 +60,10 @@ export class ComplianceReportsService {
         },
       );
 
-      const medicationCompliance = medicationComplianceRaw.map(
-        (record: any) => ({
-          isActive: record.isActive as boolean,
-          count: parseInt(record.count, 10),
-        }),
-      );
+      const medicationCompliance = medicationComplianceRaw.map((record: any) => ({
+        isActive: record.isActive as boolean,
+        count: parseInt(record.count, 10),
+      }));
 
       // SECURITY FIX: Replaced complex string concatenation with proper parameterized query
       // Get incident compliance statistics
@@ -82,8 +74,7 @@ export class ComplianceReportsService {
       const incidentReplacements: any = {};
 
       if (startDate && endDate) {
-        incidentQuery +=
-          ' WHERE "createdAt" >= :startDate AND "createdAt" <= :endDate';
+        incidentQuery += ' WHERE "createdAt" >= :startDate AND "createdAt" <= :endDate';
         incidentReplacements.startDate = startDate;
         incidentReplacements.endDate = endDate;
       } else if (startDate) {
@@ -109,13 +100,11 @@ export class ComplianceReportsService {
 
       // SECURITY FIX: Replaced string concatenation with parameterized query
       // Get vaccination record count
-      let vaccinationQuery =
-        'SELECT COUNT(*)::integer as count FROM vaccinations';
+      let vaccinationQuery = 'SELECT COUNT(*)::integer as count FROM vaccinations';
       const vaccinationReplacements: any = {};
 
       if (startDate && endDate) {
-        vaccinationQuery +=
-          ' WHERE "createdAt" >= :startDate AND "createdAt" <= :endDate';
+        vaccinationQuery += ' WHERE "createdAt" >= :startDate AND "createdAt" <= :endDate';
         vaccinationReplacements.startDate = startDate;
         vaccinationReplacements.endDate = endDate;
       } else if (startDate) {

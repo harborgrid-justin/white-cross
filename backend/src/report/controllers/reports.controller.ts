@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Query,
-  UseGuards,
-  Logger,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Logger } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -24,7 +16,6 @@ import { IncidentStatisticsDto } from '../dto/incident-statistics.dto';
 import { AttendanceCorrelationDto } from '../dto/attendance-correlation.dto';
 import { BaseReportDto } from '../dto/base-report.dto';
 import { ExportOptionsDto } from '../dto/export-options.dto';
-import { DashboardMetricsDto } from '../dto/dashboard-metrics.dto';
 import { ReportType } from '../constants/report.constants';
 
 /**
@@ -98,10 +89,7 @@ export class ReportsController {
   @ApiResponse({ status: 400, description: 'Invalid query parameters' })
   async getHealthTrends(@Query() dto: HealthTrendsDto) {
     this.logger.log('Generating health trends report');
-    return this.reportGenerationService.generateReport(
-      ReportType.HEALTH_TRENDS,
-      dto,
-    );
+    return this.reportGenerationService.generateReport(ReportType.HEALTH_TRENDS, dto);
   }
 
   /**
@@ -157,10 +145,7 @@ export class ReportsController {
   @ApiResponse({ status: 400, description: 'Invalid query parameters' })
   async getMedicationUsage(@Query() dto: MedicationUsageDto) {
     this.logger.log('Generating medication usage report');
-    return this.reportGenerationService.generateReport(
-      ReportType.MEDICATION_USAGE,
-      dto,
-    );
+    return this.reportGenerationService.generateReport(ReportType.MEDICATION_USAGE, dto);
   }
 
   /**
@@ -215,10 +200,7 @@ export class ReportsController {
   @ApiResponse({ status: 400, description: 'Invalid query parameters' })
   async getIncidentStatistics(@Query() dto: IncidentStatisticsDto) {
     this.logger.log('Generating incident statistics report');
-    return this.reportGenerationService.generateReport(
-      ReportType.INCIDENT_STATISTICS,
-      dto,
-    );
+    return this.reportGenerationService.generateReport(ReportType.INCIDENT_STATISTICS, dto);
   }
 
   /**
@@ -269,10 +251,7 @@ export class ReportsController {
   @ApiResponse({ status: 400, description: 'Invalid correlation parameters' })
   async getAttendanceCorrelation(@Query() dto: AttendanceCorrelationDto) {
     this.logger.log('Generating attendance correlation report');
-    return this.reportGenerationService.generateReport(
-      ReportType.ATTENDANCE_CORRELATION,
-      dto,
-    );
+    return this.reportGenerationService.generateReport(ReportType.ATTENDANCE_CORRELATION, dto);
   }
 
   /**
@@ -323,10 +302,7 @@ export class ReportsController {
   })
   async getComplianceReport(@Query() dto: BaseReportDto) {
     this.logger.log('Generating compliance report');
-    return this.reportGenerationService.generateReport(
-      ReportType.COMPLIANCE,
-      dto,
-    );
+    return this.reportGenerationService.generateReport(ReportType.COMPLIANCE, dto);
   }
 
   /**
@@ -364,7 +340,7 @@ export class ReportsController {
     },
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getDashboardMetrics(@Query() dto: DashboardMetricsDto) {
+  async getDashboardMetrics() {
     this.logger.log('Retrieving dashboard metrics');
     return this.dashboardService.getRealTimeDashboard();
   }
@@ -462,8 +438,7 @@ export class ReportsController {
   })
   @ApiResponse({
     status: 400,
-    description:
-      'Bad Request - invalid export parameters or unsupported format',
+    description: 'Bad Request - invalid export parameters or unsupported format',
   })
   @ApiResponse({
     status: 401,
@@ -592,8 +567,7 @@ export class ReportsController {
         },
         data: {
           type: 'object',
-          description:
-            'Report data structure varies by report type and parameters',
+          description: 'Report data structure varies by report type and parameters',
         },
         visualizations: {
           type: 'array',
@@ -619,13 +593,11 @@ export class ReportsController {
               category: { type: 'string', example: 'safety' },
               recommendation: {
                 type: 'string',
-                example:
-                  'Increase playground supervision during peak injury hours',
+                example: 'Increase playground supervision during peak injury hours',
               },
               evidence: {
                 type: 'string',
-                example:
-                  'Based on 65% of playground injuries occurring between 12-1 PM',
+                example: 'Based on 65% of playground injuries occurring between 12-1 PM',
               },
             },
           },
@@ -635,8 +607,7 @@ export class ReportsController {
   })
   @ApiResponse({
     status: 400,
-    description:
-      'Bad Request - invalid report parameters or unsupported report type',
+    description: 'Bad Request - invalid report parameters or unsupported report type',
   })
   @ApiResponse({
     status: 401,
@@ -644,21 +615,14 @@ export class ReportsController {
   })
   @ApiResponse({
     status: 403,
-    description:
-      'Forbidden - insufficient permissions for custom report generation',
+    description: 'Forbidden - insufficient permissions for custom report generation',
   })
   @ApiResponse({
     status: 422,
-    description:
-      'Unprocessable Entity - report parameters conflict or produce no data',
+    description: 'Unprocessable Entity - report parameters conflict or produce no data',
   })
-  async generateCustomReport(
-    @Body() body: { reportType: ReportType; parameters: any },
-  ) {
+  async generateCustomReport(@Body() body: { reportType: ReportType; parameters: any }) {
     this.logger.log(`Generating custom report: ${body.reportType}`);
-    return this.reportGenerationService.generateReport(
-      body.reportType,
-      body.parameters,
-    );
+    return this.reportGenerationService.generateReport(body.reportType, body.parameters);
   }
 }

@@ -6,7 +6,6 @@ import { IncidentReportsService } from './incident-reports.service';
 import { AttendanceReportsService } from './attendance-reports.service';
 import { ComplianceReportsService } from './compliance-reports.service';
 import { DashboardService } from './dashboard.service';
-import { ReportExportService } from './report-export.service';
 import { ReportResult } from '../interfaces/report-types.interface';
 import { HealthTrendsDto } from '../dto/health-trends.dto';
 import { MedicationUsageDto } from '../dto/medication-usage.dto';
@@ -30,16 +29,12 @@ export class ReportGenerationService {
     private readonly attendanceReportsService: AttendanceReportsService,
     private readonly complianceReportsService: ComplianceReportsService,
     private readonly dashboardService: DashboardService,
-    private readonly reportExportService: ReportExportService,
   ) {}
 
   /**
    * Generate report by type
    */
-  async generateReport(
-    reportType: ReportType,
-    parameters: any,
-  ): Promise<ReportResult<any>> {
+  async generateReport(reportType: ReportType, parameters: any): Promise<ReportResult<any>> {
     const startTime = Date.now();
 
     try {
@@ -47,9 +42,7 @@ export class ReportGenerationService {
 
       switch (reportType) {
         case ReportType.HEALTH_TRENDS:
-          data = await this.healthReportsService.getHealthTrends(
-            parameters as HealthTrendsDto,
-          );
+          data = await this.healthReportsService.getHealthTrends(parameters as HealthTrendsDto);
           break;
 
         case ReportType.MEDICATION_USAGE:
@@ -81,9 +74,7 @@ export class ReportGenerationService {
           break;
 
         default:
-          throw new BadRequestException(
-            `Unsupported report type: ${reportType}`,
-          );
+          throw new BadRequestException(`Unsupported report type: ${reportType}`);
       }
 
       const executionTime = Date.now() - startTime;
@@ -117,9 +108,7 @@ export class ReportGenerationService {
       return data.length;
     } else if (typeof data === 'object' && data !== null) {
       // Find the first array property and count its length
-      const arrayProps = Object.keys(data).filter((key) =>
-        Array.isArray(data[key]),
-      );
+      const arrayProps = Object.keys(data).filter((key) => Array.isArray(data[key]));
       if (arrayProps.length > 0) {
         return data[arrayProps[0]].length;
       }

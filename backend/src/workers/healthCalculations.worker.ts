@@ -74,8 +74,8 @@ function analyzeVitalTrends(vitals: Array<{ date: Date; value: number }>) {
   const average = sorted.reduce((sum, v) => sum + v.value, 0) / sorted.length;
 
   // Simple linear trend analysis
-  const firstValue = sorted[0].value;
-  const lastValue = sorted[sorted.length - 1].value;
+  const firstValue = sorted[0]!.value;
+  const lastValue = sorted[sorted.length - 1]!.value;
   const changeRate = ((lastValue - firstValue) / firstValue) * 100;
 
   let trend: 'increasing' | 'decreasing' | 'stable' = 'stable';
@@ -118,7 +118,7 @@ function calculateAggregations(values: number[]) {
   // Calculate median
   const mid = Math.floor(count / 2);
   const median =
-    count % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+    count % 2 === 0 ? (sorted[mid - 1]! + sorted[mid]!) / 2 : sorted[mid]!;
 
   // Calculate standard deviation
   const squaredDiffs = values.map((v) => Math.pow(v - average, 2));

@@ -28,7 +28,7 @@ export class ReportTemplate extends Model {
     type: DataType.STRING(255),
     allowNull: false,
   })
-  name: string;
+  name!: string;
 
   @Column({
     type: DataType.TEXT,
@@ -40,7 +40,7 @@ export class ReportTemplate extends Model {
     type: DataType.ENUM(...(Object.values(ReportType) as string[])),
     allowNull: false,
   })
-  reportType: ReportType;
+  reportType!: ReportType;
 
   @Column({
     type: DataType.JSONB,
@@ -53,7 +53,7 @@ export class ReportTemplate extends Model {
     type: DataType.ENUM(...(Object.values(OutputFormat) as string[])),
     allowNull: false,
   })
-  defaultOutputFormat: OutputFormat;
+  defaultOutputFormat!: OutputFormat;
 
   @Column({
     type: DataType.JSONB,
@@ -66,7 +66,7 @@ export class ReportTemplate extends Model {
     type: DataType.BOOLEAN,
     allowNull: false,
   })
-  isActive: boolean;
+  isActive!: boolean;
 
   @Column({
     type: DataType.STRING,

@@ -13,7 +13,6 @@ import {
   ConflictException,
   UnauthorizedException,
   Logger,
-  BadRequestException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
@@ -127,7 +126,7 @@ export class UserService {
         throw new NotFoundException('User not found');
       }
 
-      return users[0].toSafeObject();
+      return users[0]!.toSafeObject();
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;

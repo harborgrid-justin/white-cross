@@ -22,10 +22,7 @@ export class ReportExportService {
   /**
    * Export report data to specified format
    */
-  async exportReport(
-    data: any,
-    options: ExportOptionsDto,
-  ): Promise<ExportResult> {
+  async exportReport(data: any, options: ExportOptionsDto): Promise<ExportResult> {
     try {
       const { format, reportType } = options;
 
@@ -61,9 +58,7 @@ export class ReportExportService {
       const downloadUrl = `/api/reports/download/${path.basename(filePath)}`;
       const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
-      this.logger.log(
-        `Report exported: ${reportType} as ${format}, size: ${fileSize} bytes`,
-      );
+      this.logger.log(`Report exported: ${reportType} as ${format}, size: ${fileSize} bytes`);
 
       return {
         format,
@@ -82,25 +77,17 @@ export class ReportExportService {
   /**
    * Export to PDF format
    */
-  private async exportToPdf(
-    data: any,
-    options: ExportOptionsDto,
-  ): Promise<Buffer> {
+  private async exportToPdf(data: any): Promise<Buffer> {
     // PDF generation using pdfkit would go here
     // For now, returning a placeholder
-    this.logger.warn(
-      'PDF export not fully implemented - returning JSON as fallback',
-    );
+    this.logger.warn('PDF export not fully implemented - returning JSON as fallback');
     return Buffer.from(JSON.stringify(data, null, 2));
   }
 
   /**
    * Export to Excel format
    */
-  private async exportToExcel(
-    data: any,
-    options: ExportOptionsDto,
-  ): Promise<Buffer> {
+  private async exportToExcel(data: any, options: ExportOptionsDto): Promise<Buffer> {
     // Excel generation using xlsx would go here
     // Basic implementation for demonstration
     try {
@@ -115,9 +102,7 @@ export class ReportExportService {
       const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
       return buffer;
     } catch (error) {
-      this.logger.warn(
-        'Excel library not available - returning JSON as fallback',
-      );
+      this.logger.warn('Excel library not available - returning JSON as fallback');
       return Buffer.from(JSON.stringify(data, null, 2));
     }
   }
@@ -125,10 +110,7 @@ export class ReportExportService {
   /**
    * Export to CSV format
    */
-  private async exportToCsv(
-    data: any,
-    options: ExportOptionsDto,
-  ): Promise<Buffer> {
+  private async exportToCsv(data: any, options: ExportOptionsDto): Promise<Buffer> {
     try {
       const flatData = this.flattenData(data);
 
@@ -171,9 +153,7 @@ export class ReportExportService {
       return data.map((item) => this.flattenObject(item));
     } else if (typeof data === 'object' && data !== null) {
       // If data is an object with array properties, extract the first array
-      const arrayProps = Object.keys(data).filter((key) =>
-        Array.isArray(data[key]),
-      );
+      const arrayProps = Object.keys(data).filter((key) => Array.isArray(data[key]));
       if (arrayProps.length > 0) {
         return data[arrayProps[0]].map((item: any) => this.flattenObject(item));
       }
@@ -195,11 +175,7 @@ export class ReportExportService {
 
         if (value === null || value === undefined) {
           flattened[newKey] = '';
-        } else if (
-          typeof value === 'object' &&
-          !Array.isArray(value) &&
-          !(value instanceof Date)
-        ) {
+        } else if (typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date)) {
           // Recursively flatten nested objects
           Object.assign(flattened, this.flattenObject(value, newKey));
         } else if (Array.isArray(value)) {
@@ -219,11 +195,7 @@ export class ReportExportService {
   /**
    * Save file to disk
    */
-  private async saveFile(
-    buffer: Buffer,
-    reportType: string,
-    extension: string,
-  ): Promise<string> {
+  private async saveFile(buffer: Buffer, reportType: string, extension: string): Promise<string> {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const filename = `${reportType}_${timestamp}.${extension}`;
     const filePath = path.join(this.outputDir, filename);

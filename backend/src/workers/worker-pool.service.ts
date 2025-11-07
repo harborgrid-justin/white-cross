@@ -167,7 +167,7 @@ export class WorkerPoolService
    * Handle message from worker thread
    * @private
    */
-  private handleWorkerMessage(workerInfo: WorkerInfo, message: any): void {
+  private handleWorkerMessage(workerInfo: WorkerInfo, _message: any): void {
     workerInfo.busy = false;
     workerInfo.taskCount++;
 

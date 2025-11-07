@@ -11,14 +11,7 @@
  * - Basic validation
  */
 
-import {
-  Injectable,
-  NotFoundException,
-  ConflictException,
-  BadRequestException,
-  Logger,
-  Optional,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, Logger, Optional } from '@nestjs/common';
 import { InjectModel, InjectConnection } from '@nestjs/sequelize';
 import { Op, Transaction, Sequelize } from 'sequelize';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -123,19 +116,9 @@ export class StudentCrudService extends BaseService {
   /**
    * Find all students with pagination and filters
    */
-  async findAll(
-    filterDto: StudentFilterDto,
-  ): Promise<PaginatedResponse<Student>> {
+  async findAll(filterDto: StudentFilterDto): Promise<PaginatedResponse<Student>> {
     try {
-      const {
-        page = 1,
-        limit = 20,
-        search,
-        grade,
-        isActive,
-        nurseId,
-        gender,
-      } = filterDto;
+      const { page = 1, limit = 20, search, grade, isActive, nurseId, gender } = filterDto;
 
       const where: any = {};
 
@@ -168,28 +151,27 @@ export class StudentCrudService extends BaseService {
       const offset = (page - 1) * limit;
 
       // Execute query with eager loading
-      const { rows: data, count: total } =
-        await this.studentModel.findAndCountAll({
-          where,
-          offset,
-          limit,
-          order: [
-            ['lastName', 'ASC'],
-            ['firstName', 'ASC'],
-          ],
-          include: [
-            {
-              model: User,
-              as: 'nurse',
-              attributes: ['id', 'firstName', 'lastName', 'email', 'role'],
-              required: false,
-            },
-          ],
-          attributes: {
-            exclude: ['schoolId', 'districtId'],
+      const { rows: data, count: total } = await this.studentModel.findAndCountAll({
+        where,
+        offset,
+        limit,
+        order: [
+          ['lastName', 'ASC'],
+          ['firstName', 'ASC'],
+        ],
+        include: [
+          {
+            model: User,
+            as: 'nurse',
+            attributes: ['id', 'firstName', 'lastName', 'email', 'role'],
+            required: false,
           },
-          distinct: true,
-        });
+        ],
+        attributes: {
+          exclude: ['schoolId', 'districtId'],
+        },
+        distinct: true,
+      });
 
       return {
         data,
@@ -238,10 +220,7 @@ export class StudentCrudService extends BaseService {
   /**
    * Update student information
    */
-  async update(
-    id: string,
-    updateStudentDto: UpdateStudentDto,
-  ): Promise<Student> {
+  async update(id: string, updateStudentDto: UpdateStudentDto): Promise<Student> {
     try {
       this.validateUUID(id, 'Student ID');
 
@@ -252,10 +231,7 @@ export class StudentCrudService extends BaseService {
       const normalizedData = this.normalizeUpdateData(updateStudentDto);
 
       // Validate student number if being updated
-      if (
-        normalizedData.studentNumber &&
-        normalizedData.studentNumber !== student.studentNumber
-      ) {
+      if (normalizedData.studentNumber && normalizedData.studentNumber !== student.studentNumber) {
         await this.validateStudentNumber(normalizedData.studentNumber, id);
       }
 
@@ -264,10 +240,7 @@ export class StudentCrudService extends BaseService {
         normalizedData.medicalRecordNum &&
         normalizedData.medicalRecordNum !== student.medicalRecordNum
       ) {
-        await this.validateMedicalRecordNumber(
-          normalizedData.medicalRecordNum,
-          id,
-        );
+        await this.validateMedicalRecordNumber(normalizedData.medicalRecordNum, id);
       }
 
       // Validate date of birth if being updated
@@ -383,10 +356,7 @@ export class StudentCrudService extends BaseService {
   /**
    * Transfer student to different nurse or grade
    */
-  async transfer(
-    id: string,
-    transferDto: TransferStudentDto,
-  ): Promise<Student> {
+  async transfer(id: string, transferDto: TransferStudentDto): Promise<Student> {
     try {
       this.validateUUID(id, 'Student ID');
 
@@ -420,9 +390,7 @@ export class StudentCrudService extends BaseService {
   /**
    * Bulk update students
    */
-  async bulkUpdate(
-    bulkUpdateDto: StudentBulkUpdateDto,
-  ): Promise<{ updated: number }> {
+  async bulkUpdate(bulkUpdateDto: StudentBulkUpdateDto): Promise<{ updated: number }> {
     try {
       const { studentIds, nurseId, grade, isActive } = bulkUpdateDto;
 
@@ -448,9 +416,7 @@ export class StudentCrudService extends BaseService {
               );
             }
 
-            this.logInfo(
-              `Nurse validation successful: ${nurse.fullName} (${nurseId})`,
-            );
+            this.logInfo(`Nurse validation successful: ${nurse.fullName} (${nurseId})`);
           }
 
           // Build update object
@@ -561,10 +527,7 @@ export class StudentCrudService extends BaseService {
 
   // ==================== Validation Methods ====================
 
-  private async validateStudentNumber(
-    studentNumber: string,
-    excludeId?: string,
-  ): Promise<void> {
+  private async validateStudentNumber(studentNumber: string, excludeId?: string): Promise<void> {
     const where: any = { studentNumber };
     if (excludeId) {
       where.id = { [Op.ne]: excludeId };
@@ -592,8 +555,7 @@ export class StudentCrudService extends BaseService {
   }
 
   private validateDateOfBirth(dateOfBirth: Date | string): void {
-    const dob =
-      typeof dateOfBirth === 'string' ? new Date(dateOfBirth) : dateOfBirth;
+    const dob = typeof dateOfBirth === 'string' ? new Date(dateOfBirth) : dateOfBirth;
     this.validateNotFuture(dob, 'Date of birth');
   }
 
@@ -609,9 +571,7 @@ export class StudentCrudService extends BaseService {
     });
 
     if (!nurse) {
-      throw new NotFoundException(
-        'Assigned nurse not found. Please select a valid, active nurse.',
-      );
+      throw new NotFoundException('Assigned nurse not found. Please select a valid, active nurse.');
     }
   }
 
@@ -629,13 +589,11 @@ export class StudentCrudService extends BaseService {
   private normalizeUpdateData(data: UpdateStudentDto): UpdateStudentDto {
     const normalized: any = { ...data };
 
-    if (normalized.firstName)
-      normalized.firstName = normalized.firstName.trim();
+    if (normalized.firstName) normalized.firstName = normalized.firstName.trim();
     if (normalized.lastName) normalized.lastName = normalized.lastName.trim();
     if (normalized.studentNumber)
       normalized.studentNumber = normalized.studentNumber.trim().toUpperCase();
-    if (normalized.email)
-      normalized.email = normalized.email.trim().toLowerCase();
+    if (normalized.email) normalized.email = normalized.email.trim().toLowerCase();
 
     return normalized;
   }

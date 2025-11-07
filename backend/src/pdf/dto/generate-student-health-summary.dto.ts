@@ -13,12 +13,12 @@ export class AllergyDto {
   @ApiProperty({ description: 'Name of the allergen' })
   @IsString()
   @IsNotEmpty()
-  allergen: string;
+  allergen!: string;
 
   @ApiProperty({ description: 'Severity of the allergy' })
   @IsString()
   @IsNotEmpty()
-  severity: string;
+  severity!: string;
 
   @ApiPropertyOptional({ description: 'Reaction description' })
   @IsString()
@@ -30,51 +30,51 @@ export class MedicationDto {
   @ApiProperty({ description: 'Medication name' })
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 
   @ApiProperty({ description: 'Dosage' })
   @IsString()
   @IsNotEmpty()
-  dosage: string;
+  dosage!: string;
 
   @ApiProperty({ description: 'Frequency of administration' })
   @IsString()
   @IsNotEmpty()
-  frequency: string;
+  frequency!: string;
 
   @ApiProperty({ description: 'Route of administration' })
   @IsString()
   @IsNotEmpty()
-  route: string;
+  route!: string;
 }
 
 export class ChronicConditionDto {
   @ApiProperty({ description: 'Diagnosis name' })
   @IsString()
   @IsNotEmpty()
-  diagnosisName: string;
+  diagnosisName!: string;
 }
 
 export class GenerateStudentHealthSummaryDto {
   @ApiProperty({ description: 'Student ID' })
   @IsString()
   @IsNotEmpty()
-  id: string;
+  id!: string;
 
   @ApiProperty({ description: 'Student first name' })
   @IsString()
   @IsNotEmpty()
-  firstName: string;
+  firstName!: string;
 
   @ApiProperty({ description: 'Student last name' })
   @IsString()
   @IsNotEmpty()
-  lastName: string;
+  lastName!: string;
 
   @ApiProperty({ description: 'Date of birth' })
   @IsDateString()
   @IsNotEmpty()
-  dateOfBirth: string;
+  dateOfBirth!: string;
 
   @ApiPropertyOptional({ description: 'Student grade' })
   @IsString()

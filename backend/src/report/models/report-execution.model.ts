@@ -10,11 +10,7 @@ import {
   CreatedAt,
 } from 'sequelize-typescript';
 import { ReportSchedule } from './report-schedule.model';
-import {
-  ReportType,
-  OutputFormat,
-  ReportStatus,
-} from '../constants/report.constants';
+import { ReportType, OutputFormat, ReportStatus } from '../constants/report.constants';
 
 /**
  * Report Execution Model
@@ -44,13 +40,13 @@ export class ReportExecution extends Model {
     type: DataType.ENUM(...(Object.values(ReportType) as string[])),
     allowNull: false,
   })
-  reportType: ReportType;
+  reportType!: ReportType;
 
   @Column({
     type: DataType.ENUM(...(Object.values(OutputFormat) as string[])),
     allowNull: false,
   })
-  outputFormat: OutputFormat;
+  outputFormat!: OutputFormat;
 
   @Column({
     type: DataType.JSONB,
@@ -63,7 +59,7 @@ export class ReportExecution extends Model {
     type: DataType.ENUM(...(Object.values(ReportStatus) as string[])),
     allowNull: false,
   })
-  status: ReportStatus;
+  status!: ReportStatus;
 
   @Column({
     type: DataType.STRING(500),
@@ -112,7 +108,7 @@ export class ReportExecution extends Model {
     type: DataType.DATE,
     allowNull: false,
   })
-  startedAt: Date;
+  startedAt!: Date;
 
   @Column({
     type: DataType.DATE,

@@ -1,4 +1,4 @@
-import { IsOptional, IsUUID, IsBoolean, IsEnum } from 'class-validator';
+import { IsOptional, IsUUID, IsBoolean } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { BaseReportDto } from './base-report.dto';
 

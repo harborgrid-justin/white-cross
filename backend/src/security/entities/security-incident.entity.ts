@@ -1,17 +1,5 @@
-import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  Index,
-} from 'sequelize-typescript';
-import {
-  SecurityIncidentType,
-  IncidentSeverity,
-  IncidentStatus,
-} from '../enums';
+import { Table, Column, Model, DataType, PrimaryKey, Default } from 'sequelize-typescript';
+import { SecurityIncidentType, IncidentSeverity, IncidentStatus } from '../enums';
 
 /**
  * Security Incident Entity
@@ -37,32 +25,32 @@ export class SecurityIncidentEntity extends Model {
     type: DataType.ENUM(...(Object.values(SecurityIncidentType) as string[])),
     allowNull: false,
   })
-  type: SecurityIncidentType;
+  type!: SecurityIncidentType;
 
   @Column({
     type: DataType.ENUM(...(Object.values(IncidentSeverity) as string[])),
     allowNull: false,
   })
-  severity: IncidentSeverity;
+  severity!: IncidentSeverity;
 
   @Default(IncidentStatus.DETECTED)
   @Column({
     type: DataType.ENUM(...(Object.values(IncidentStatus) as string[])),
     allowNull: false,
   })
-  status: IncidentStatus;
+  status!: IncidentStatus;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
   })
-  title: string;
+  title!: string;
 
   @Column({
     type: DataType.TEXT,
     allowNull: false,
   })
-  description: string;
+  description!: string;
 
   @Column({
     type: DataType.STRING,
@@ -104,14 +92,14 @@ export class SecurityIncidentEntity extends Model {
     allowNull: false,
     field: 'detectionMethod',
   })
-  detectionMethod: string; // 'automated', 'manual', 'pattern_matching', etc.
+  detectionMethod!: string; // 'automated', 'manual', 'pattern_matching', etc.
 
   @Column({
     type: DataType.JSON,
     allowNull: false,
     field: 'indicators',
   })
-  indicators: string[]; // List of indicators that triggered detection
+  indicators!: string[]; // List of indicators that triggered detection
 
   @Column({
     type: DataType.TEXT,

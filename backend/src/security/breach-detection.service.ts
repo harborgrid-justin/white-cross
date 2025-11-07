@@ -16,12 +16,17 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { AuditLog, AuditSeverity, ComplianceType } from '@/database';
+import { AuditLog, AuditSeverity } from '@/database';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
 export interface BreachAlert {
   id: string;
-  type: 'UNAUTHORIZED_ACCESS' | 'FAILED_AUTH' | 'SUSPICIOUS_PATTERN' | 'DATA_EXPORT' | 'PRIVILEGE_ESCALATION';
+  type:
+    | 'UNAUTHORIZED_ACCESS'
+    | 'FAILED_AUTH'
+    | 'SUSPICIOUS_PATTERN'
+    | 'DATA_EXPORT'
+    | 'PRIVILEGE_ESCALATION';
   severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   description: string;
   affectedRecords: number;
@@ -88,7 +93,7 @@ export class BreachDetectionService {
         this.logger.warn(`Breach detection found ${alerts.length} potential security incidents`);
 
         // Send critical alerts immediately
-        const criticalAlerts = alerts.filter(a => a.severity === 'CRITICAL');
+        const criticalAlerts = alerts.filter((a) => a.severity === 'CRITICAL');
         if (criticalAlerts.length > 0) {
           await this.sendCriticalAlerts(criticalAlerts);
         }
@@ -126,7 +131,7 @@ export class BreachDetectionService {
       const failuresByUser = new Map<string, any[]>();
       const failuresByIP = new Map<string, any[]>();
 
-      failedLogins.forEach(log => {
+      failedLogins.forEach((log) => {
         const userId = log.userId || 'UNKNOWN';
         const ipAddress = log.ipAddress || 'UNKNOWN';
 
@@ -153,7 +158,7 @@ export class BreachDetectionService {
             affectedUsers: [userId],
             detectedAt: new Date(),
             evidence: {
-              failures: failures.map(f => ({
+              failures: failures.map((f) => ({
                 timestamp: f.createdAt,
                 ipAddress: f.ipAddress,
               })),
@@ -177,11 +182,11 @@ export class BreachDetectionService {
             severity: failures.length >= 20 ? 'CRITICAL' : 'HIGH',
             description: `IP ${ipAddress} has ${failures.length} failed login attempts in ${this.FAILED_AUTH_WINDOW_MINUTES} minutes`,
             affectedRecords: 0,
-            affectedUsers: [...new Set(failures.map(f => f.userId).filter(Boolean))],
+            affectedUsers: [...new Set(failures.map((f) => f.userId).filter(Boolean))],
             detectedAt: new Date(),
             evidence: {
               ipAddress,
-              failures: failures.map(f => ({
+              failures: failures.map((f) => ({
                 timestamp: f.createdAt,
                 userId: f.userId,
               })),
@@ -226,7 +231,7 @@ export class BreachDetectionService {
       if (unauthorizedAttempts.length > 0) {
         // Group by user
         const attemptsByUser = new Map<string, any[]>();
-        unauthorizedAttempts.forEach(attempt => {
+        unauthorizedAttempts.forEach((attempt) => {
           const userId = attempt.userId || 'UNKNOWN';
           if (!attemptsByUser.has(userId)) {
             attemptsByUser.set(userId, []);
@@ -245,7 +250,7 @@ export class BreachDetectionService {
               affectedUsers: [userId],
               detectedAt: new Date(),
               evidence: {
-                attempts: attempts.map(a => ({
+                attempts: attempts.map((a) => ({
                   timestamp: a.createdAt,
                   entityType: a.entityType,
                   entityId: a.entityId,
@@ -293,7 +298,7 @@ export class BreachDetectionService {
 
       const suspiciousByUser = new Map<string, any[]>();
 
-      unusualTimeAccess.forEach(log => {
+      unusualTimeAccess.forEach((log) => {
         const hour = log.createdAt!.getHours();
         if (hour >= this.UNUSUAL_HOUR_START || hour < this.UNUSUAL_HOUR_END) {
           const userId = log.userId || 'UNKNOWN';
@@ -315,7 +320,7 @@ export class BreachDetectionService {
             affectedUsers: [userId],
             detectedAt: new Date(),
             evidence: {
-              accesses: accesses.map(a => ({
+              accesses: accesses.map((a) => ({
                 timestamp: a.createdAt,
                 entityType: a.entityType,
                 ipAddress: a.ipAddress,
@@ -346,7 +351,7 @@ export class BreachDetectionService {
       });
 
       const accessByUser = new Map<string, number>();
-      recentPHIAccess.forEach(log => {
+      recentPHIAccess.forEach((log) => {
         const userId = log.userId || 'UNKNOWN';
         accessByUser.set(userId, (accessByUser.get(userId) || 0) + 1);
       });
@@ -401,7 +406,7 @@ export class BreachDetectionService {
       });
 
       const exportsByUser = new Map<string, any[]>();
-      exportActions.forEach(action => {
+      exportActions.forEach((action) => {
         const userId = action.userId || 'UNKNOWN';
         if (!exportsByUser.has(userId)) {
           exportsByUser.set(userId, []);
@@ -424,7 +429,7 @@ export class BreachDetectionService {
             affectedUsers: [userId],
             detectedAt: new Date(),
             evidence: {
-              exports: exports.map(e => ({
+              exports: exports.map((e) => ({
                 timestamp: e.createdAt,
                 recordCount: e.metadata?.recordCount || 1,
                 entityType: e.entityType,
@@ -468,10 +473,10 @@ export class BreachDetectionService {
         },
       });
 
-      privilegeChanges.forEach(change => {
+      privilegeChanges.forEach((change) => {
         const changedFields = change.newValues?.changedFields || [];
         const hasPrivilegeChange = changedFields.some((field: string) =>
-          ['role', 'permissions', 'isAdmin', 'accessLevel'].includes(field.toLowerCase())
+          ['role', 'permissions', 'isAdmin', 'accessLevel'].includes(field.toLowerCase()),
         );
 
         if (hasPrivilegeChange) {
@@ -529,7 +534,7 @@ export class BreachDetectionService {
 
       const activitiesByUser = new Map<string, SuspiciousActivity>();
 
-      suspiciousLogs.forEach(log => {
+      suspiciousLogs.forEach((log) => {
         const key = `${log.userId}_${log.action}_${log.entityType}`;
         if (!activitiesByUser.has(key)) {
           activitiesByUser.set(key, {
@@ -557,8 +562,7 @@ export class BreachDetectionService {
         }
       });
 
-      return Array.from(activitiesByUser.values())
-        .sort((a, b) => b.occurrences - a.occurrences);
+      return Array.from(activitiesByUser.values()).sort((a, b) => b.occurrences - a.occurrences);
     } catch (error) {
       this.logger.error('Error getting suspicious activity summary:', error);
       throw error;
@@ -577,14 +581,10 @@ export class BreachDetectionService {
     // - Create Slack/Teams alert
     // - Page security incident response team
 
-    alerts.forEach(alert => {
-      this.logger.error(
-        `[CRITICAL BREACH ALERT] ${alert.type}: ${alert.description}`,
-      );
+    alerts.forEach((alert) => {
+      this.logger.error(`[CRITICAL BREACH ALERT] ${alert.type}: ${alert.description}`);
       if (alert.requiresBreachNotification) {
-        this.logger.error(
-          `[HIPAA BREACH NOTIFICATION REQUIRED] Alert ID: ${alert.id}`,
-        );
+        this.logger.error(`[HIPAA BREACH NOTIFICATION REQUIRED] Alert ID: ${alert.id}`);
       }
     });
   }
@@ -592,10 +592,7 @@ export class BreachDetectionService {
   /**
    * Get breach alerts for a time period
    */
-  async getBreachAlerts(
-    startDate: Date,
-    endDate: Date,
-  ): Promise<BreachAlert[]> {
+  async getBreachAlerts(startDate: Date, endDate: Date): Promise<BreachAlert[]> {
     // This would retrieve stored alerts from database
     // For now, run detection on historical data
     return this.performBreachScan();

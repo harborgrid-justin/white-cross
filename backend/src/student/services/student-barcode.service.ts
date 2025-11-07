@@ -4,13 +4,7 @@
  * @description Barcode scanning and verification for student identification
  */
 
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-  Logger,
-  Optional,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, Logger, Optional } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Student } from '../../database/models/student.model';

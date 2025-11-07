@@ -7,12 +7,11 @@ import {
   Default,
   Index,
   ForeignKey,
-  BelongsTo,
-  HasMany,
   CreatedAt,
   UpdatedAt,
   DeletedAt,
 } from 'sequelize-typescript';
+import { User } from '../../database/models/user.model';
 
 /**
  * Student gender enumeration
@@ -77,7 +76,7 @@ export class Student extends Model {
     allowNull: false,
     unique: true,
   })
-  studentNumber: string;
+  studentNumber!: string;
 
   /**
    * Student's first name
@@ -87,7 +86,7 @@ export class Student extends Model {
     type: DataType.STRING(100),
     allowNull: false,
   })
-  firstName: string;
+  firstName!: string;
 
   /**
    * Student's last name
@@ -97,7 +96,7 @@ export class Student extends Model {
     type: DataType.STRING(100),
     allowNull: false,
   })
-  lastName: string;
+  lastName!: string;
 
   /**
    * Student's date of birth
@@ -107,7 +106,7 @@ export class Student extends Model {
     type: DataType.DATEONLY,
     allowNull: false,
   })
-  dateOfBirth: Date;
+  dateOfBirth!: Date;
 
   /**
    * Current grade level (e.g., "K", "1", "2", "12")
@@ -116,7 +115,7 @@ export class Student extends Model {
     type: DataType.STRING(10),
     allowNull: false,
   })
-  grade: string;
+  grade!: string;
 
   /**
    * Student gender
@@ -125,7 +124,7 @@ export class Student extends Model {
     type: DataType.ENUM(...(Object.values(Gender) as string[])),
     allowNull: false,
   })
-  gender: Gender;
+  gender!: Gender;
 
   /**
    * Profile photo URL (must point to encrypted storage)
@@ -162,7 +161,7 @@ export class Student extends Model {
     type: DataType.BOOLEAN,
     allowNull: false,
   })
-  isActive: boolean;
+  isActive!: boolean;
 
   /**
    * School enrollment date
@@ -173,12 +172,12 @@ export class Student extends Model {
     type: DataType.DATE,
     allowNull: false,
   })
-  enrollmentDate: Date;
+  enrollmentDate!: Date;
 
   /**
    * Assigned nurse ID (foreign key to users table)
    */
-  @ForeignKey(() => require('../../database/models/user.model').User)
+  @ForeignKey(() => User)
   @Column({
     type: DataType.UUID,
     allowNull: true,
@@ -348,10 +347,7 @@ export class Student extends Model {
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
 
-    if (
-      monthDiff < 0 ||
-      (monthDiff === 0 && today.getDate() < birthDate.getDate())
-    ) {
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
       age--;
     }
 

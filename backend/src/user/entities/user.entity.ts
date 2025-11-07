@@ -78,34 +78,34 @@ export class User extends Model<UserAttributes> {
     allowNull: false,
     validate: { isEmail: true },
   })
-  email: string;
+  email!: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
   })
-  password: string;
+  password!: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
     field: 'firstName',
   })
-  firstName: string;
+  firstName!: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
     field: 'lastName',
   })
-  lastName: string;
+  lastName!: string;
 
   @Column({
     type: DataType.ENUM(...(Object.values(UserRole) as string[])),
     allowNull: false,
     defaultValue: UserRole.NURSE,
   })
-  role: UserRole;
+  role!: UserRole;
 
   @Default(true)
   @Column({
@@ -113,7 +113,7 @@ export class User extends Model<UserAttributes> {
     allowNull: false,
     field: 'isActive',
   })
-  isActive: boolean;
+  isActive!: boolean;
 
   @Column({
     type: DataType.DATE,
@@ -150,7 +150,7 @@ export class User extends Model<UserAttributes> {
     allowNull: false,
     field: 'emailVerified',
   })
-  emailVerified: boolean;
+  emailVerified!: boolean;
 
   @Column({
     type: DataType.STRING,
@@ -193,7 +193,7 @@ export class User extends Model<UserAttributes> {
     allowNull: false,
     field: 'twoFactorEnabled',
   })
-  twoFactorEnabled: boolean;
+  twoFactorEnabled!: boolean;
 
   @Column({
     type: DataType.STRING,
@@ -208,7 +208,7 @@ export class User extends Model<UserAttributes> {
     allowNull: false,
     field: 'failedLoginAttempts',
   })
-  failedLoginAttempts: number;
+  failedLoginAttempts!: number;
 
   @Column({
     type: DataType.DATE,
@@ -230,7 +230,7 @@ export class User extends Model<UserAttributes> {
     allowNull: false,
     field: 'mustChangePassword',
   })
-  mustChangePassword: boolean;
+  mustChangePassword!: boolean;
 
   /**
    * Hash password before creating user

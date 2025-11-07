@@ -1,4 +1,4 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { Op, QueryTypes } from 'sequelize';
@@ -26,9 +26,7 @@ export class MedicationReportsService {
   /**
    * Generate comprehensive medication usage and compliance report
    */
-  async getMedicationUsageReport(
-    dto: MedicationUsageDto,
-  ): Promise<MedicationUsageReport> {
+  async getMedicationUsageReport(dto: MedicationUsageDto): Promise<MedicationUsageReport> {
     try {
       const { startDate, endDate, medicationId } = dto;
       const whereClause: any = {};
@@ -52,8 +50,7 @@ export class MedicationReportsService {
             as: 'studentMedication',
             include: [
               {
-                model:
-                  this.studentMedicationModel.associations.medication?.target,
+                model: this.studentMedicationModel.associations.medication?.target,
                 as: 'medication',
               },
               {
@@ -131,8 +128,7 @@ export class MedicationReportsService {
             as: 'studentMedication',
             include: [
               {
-                model:
-                  this.studentMedicationModel.associations.medication?.target,
+                model: this.studentMedicationModel.associations.medication?.target,
                 as: 'medication',
               },
               {
