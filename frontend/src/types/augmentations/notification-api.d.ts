@@ -7,3 +7,5 @@
 interface NotificationOptions {
   vibrate?: number[] | number; // Vibration pattern for mobile devices
 }
+
+export {};

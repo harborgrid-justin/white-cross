@@ -26,7 +26,7 @@ import { Medication } from '../../database/models/medication.model';
 @ApiTags('medications')
 @ApiBearerAuth()
 @Controller('medications')
-export class MedicationController {
+export class HealthRecordMedicationController {
   constructor(private readonly medicationService: MedicationService) {}
 
   @Post()

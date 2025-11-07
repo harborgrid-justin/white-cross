@@ -6,7 +6,7 @@
  * @module hooks/domains/purchase-orders/composites/useReceivingWorkflow
  */
 
-import { useMutation, useQueryClient } from '@tantml:react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { useCreateReceipt } from '../mutations/usePurchaseOrderMutations';
 import { purchaseOrderKeys } from '../config';

@@ -55,8 +55,8 @@ export function SystemAlertsPanel({
   const hasWarnings = alerts.some(alert => alert.type === 'warning');
   const hasErrors = alerts.some(alert => alert.type === 'error');
 
-  const getBadgeVariant = () => {
-    if (hasErrors) return 'danger';
+  const getBadgeVariant = (): "error" | "warning" | "info" => {
+    if (hasErrors) return 'error';
     if (hasWarnings) return 'warning';
     return 'info';
   };
