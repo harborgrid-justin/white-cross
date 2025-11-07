@@ -1,7 +1,9 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { IncidentReport, WitnessStatement } from '@/database';
-import { CreateWitnessStatementDto, IncidentValidationService, UpdateWitnessStatementDto } from '@/incident-report';
+import { CreateWitnessStatementDto } from '../dto/create-witness-statement.dto';
+import { UpdateWitnessStatementDto } from '../dto/update-witness-statement.dto';
+import { IncidentValidationService } from './incident-validation.service';
 
 @Injectable()
 export class IncidentWitnessService {

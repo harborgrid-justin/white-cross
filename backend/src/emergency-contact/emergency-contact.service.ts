@@ -8,7 +8,7 @@
  * - Contact verification workflows
  * - Statistics and reporting
  */
-import { BadRequestException, Injectable, Logger, NotFoundException, OnModuleDestroy } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException, OnModuleDestroy, Optional } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, QueryTypes, Transaction } from 'sequelize';
 import { EmergencyContact } from '../database/models/emergency-contact.model';
@@ -28,10 +28,10 @@ export class EmergencyContactService implements OnModuleDestroy {
     private readonly emergencyContactModel: typeof EmergencyContact,
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
-    private readonly config: AppConfigService,
+    @Optional() private readonly config?: AppConfigService,
   ) {
     // Initialize notification queue processing in production only
-    if (this.config.isProduction) {
+    if (this.config?.isProduction) {
       this.queueProcessingInterval = setInterval(
         () => this.processNotificationQueue(),
         60 * 1000, // Process queue every minute

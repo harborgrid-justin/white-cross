@@ -36,11 +36,16 @@
  *
  * @class WebSocketService
  */
-import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, Optional } from '@nestjs/common';
 import { WebSocketGateway } from './websocket.gateway';
 import { AppConfigService } from '@/config';
-import { BroadcastMessageDto, MessageDeliveryDto, MessageEventDto, ReadReceiptDto, TypingIndicatorDto } from './dto';
-
+import {
+  BroadcastMessageDto,
+  MessageDeliveryDto,
+  MessageEventDto,
+  ReadReceiptDto,
+  TypingIndicatorDto,
+} from './dto';
 
 /**
  * Alert data structure
@@ -125,9 +130,7 @@ export class WebSocketService implements OnModuleDestroy {
       const server = this.getServer();
 
       if (!server) {
-        this.logger.warn(
-          'WebSocket server not initialized, cannot broadcast message',
-        );
+        this.logger.warn('WebSocket server not initialized, cannot broadcast message');
         return;
       }
 
@@ -153,17 +156,12 @@ export class WebSocketService implements OnModuleDestroy {
    * @param alert - The alert data
    * @throws Error if broadcast fails
    */
-  async broadcastEmergencyAlert(
-    organizationId: string,
-    alert: AlertData,
-  ): Promise<void> {
+  async broadcastEmergencyAlert(organizationId: string, alert: AlertData): Promise<void> {
     try {
       const server = this.getServer();
 
       if (!server) {
-        this.logger.warn(
-          'WebSocket server not initialized, cannot broadcast alert',
-        );
+        this.logger.warn('WebSocket server not initialized, cannot broadcast alert');
         return;
       }
 
@@ -175,13 +173,10 @@ export class WebSocketService implements OnModuleDestroy {
 
       server.to(room).emit('emergency:alert', message);
 
-      this.logger.log(
-        `Emergency alert broadcasted to organization ${organizationId}`,
-        {
-          alertId: alert.id,
-          severity: alert.severity,
-        },
-      );
+      this.logger.log(`Emergency alert broadcasted to organization ${organizationId}`, {
+        alertId: alert.id,
+        severity: alert.severity,
+      });
     } catch (error) {
       this.logger.error(
         `Failed to broadcast emergency alert to organization ${organizationId}`,
@@ -203,9 +198,7 @@ export class WebSocketService implements OnModuleDestroy {
       const server = this.getServer();
 
       if (!server) {
-        this.logger.warn(
-          'WebSocket server not initialized, cannot send notification',
-        );
+        this.logger.warn('WebSocket server not initialized, cannot send notification');
         return;
       }
 
@@ -231,17 +224,12 @@ export class WebSocketService implements OnModuleDestroy {
    * @param reminder - The reminder data
    * @throws Error if broadcast fails
    */
-  async broadcastMedicationReminder(
-    organizationId: string,
-    reminder: ReminderData,
-  ): Promise<void> {
+  async broadcastMedicationReminder(organizationId: string, reminder: ReminderData): Promise<void> {
     try {
       const server = this.getServer();
 
       if (!server) {
-        this.logger.warn(
-          'WebSocket server not initialized, cannot broadcast reminder',
-        );
+        this.logger.warn('WebSocket server not initialized, cannot broadcast reminder');
         return;
       }
 
@@ -250,13 +238,10 @@ export class WebSocketService implements OnModuleDestroy {
 
       server.to(room).emit('medication:reminder', message);
 
-      this.logger.log(
-        `Medication reminder broadcasted to organization ${organizationId}`,
-        {
-          medicationId: reminder.medicationId,
-          studentId: reminder.studentId,
-        },
-      );
+      this.logger.log(`Medication reminder broadcasted to organization ${organizationId}`, {
+        medicationId: reminder.medicationId,
+        studentId: reminder.studentId,
+      });
     } catch (error) {
       this.logger.error(
         `Failed to broadcast medication reminder to organization ${organizationId}`,
@@ -273,17 +258,12 @@ export class WebSocketService implements OnModuleDestroy {
    * @param alert - The alert data
    * @throws Error if broadcast fails
    */
-  async broadcastStudentHealthAlert(
-    organizationId: string,
-    alert: AlertData,
-  ): Promise<void> {
+  async broadcastStudentHealthAlert(organizationId: string, alert: AlertData): Promise<void> {
     try {
       const server = this.getServer();
 
       if (!server) {
-        this.logger.warn(
-          'WebSocket server not initialized, cannot broadcast alert',
-        );
+        this.logger.warn('WebSocket server not initialized, cannot broadcast alert');
         return;
       }
 
@@ -292,13 +272,10 @@ export class WebSocketService implements OnModuleDestroy {
 
       server.to(room).emit('student:health:alert', message);
 
-      this.logger.log(
-        `Student health alert broadcasted to organization ${organizationId}`,
-        {
-          studentId: alert.studentId,
-          alertType: alert.type,
-        },
-      );
+      this.logger.log(`Student health alert broadcasted to organization ${organizationId}`, {
+        studentId: alert.studentId,
+        alertType: alert.type,
+      });
     } catch (error) {
       this.logger.error(
         `Failed to broadcast student health alert to organization ${organizationId}`,
@@ -316,18 +293,12 @@ export class WebSocketService implements OnModuleDestroy {
    * @param data - The data payload to send
    * @throws Error if broadcast fails
    */
-  async broadcastToRooms(
-    rooms: string[],
-    event: string,
-    data: unknown,
-  ): Promise<void> {
+  async broadcastToRooms(rooms: string[], event: string, data: unknown): Promise<void> {
     try {
       const server = this.getServer();
 
       if (!server) {
-        this.logger.warn(
-          'WebSocket server not initialized, cannot broadcast message',
-        );
+        this.logger.warn('WebSocket server not initialized, cannot broadcast message');
         return;
       }
 
@@ -373,11 +344,7 @@ export class WebSocketService implements OnModuleDestroy {
    * @param event - The event name
    * @param data - The alert data
    */
-  async broadcastToSchool(
-    schoolId: string,
-    event: string,
-    data: unknown,
-  ): Promise<void> {
+  async broadcastToSchool(schoolId: string, event: string, data: unknown): Promise<void> {
     await this.broadcastToRoom(`school:${schoolId}`, event, data);
   }
 
@@ -388,11 +355,7 @@ export class WebSocketService implements OnModuleDestroy {
    * @param event - The event name
    * @param data - The alert data
    */
-  async broadcastToUser(
-    userId: string,
-    event: string,
-    data: unknown,
-  ): Promise<void> {
+  async broadcastToUser(userId: string, event: string, data: unknown): Promise<void> {
     await this.broadcastToRoom(`user:${userId}`, event, data);
   }
 
@@ -403,11 +366,7 @@ export class WebSocketService implements OnModuleDestroy {
    * @param event - The event name
    * @param data - The alert data
    */
-  async broadcastToStudent(
-    studentId: string,
-    event: string,
-    data: unknown,
-  ): Promise<void> {
+  async broadcastToStudent(studentId: string, event: string, data: unknown): Promise<void> {
     await this.broadcastToRoom(`student:${studentId}`, event, data);
   }
 
@@ -419,17 +378,12 @@ export class WebSocketService implements OnModuleDestroy {
    * @param message - The message event DTO
    * @throws Error if broadcast fails
    */
-  async sendMessageToConversation(
-    conversationId: string,
-    message: MessageEventDto,
-  ): Promise<void> {
+  async sendMessageToConversation(conversationId: string, message: MessageEventDto): Promise<void> {
     try {
       const server = this.getServer();
 
       if (!server) {
-        this.logger.warn(
-          'WebSocket server not initialized, cannot send message',
-        );
+        this.logger.warn('WebSocket server not initialized, cannot send message');
         return;
       }
 
@@ -441,10 +395,7 @@ export class WebSocketService implements OnModuleDestroy {
         senderId: message.senderId,
       });
     } catch (error) {
-      this.logger.error(
-        `Failed to send message to conversation ${conversationId}`,
-        error,
-      );
+      this.logger.error(`Failed to send message to conversation ${conversationId}`, error);
       throw error;
     }
   }
@@ -457,17 +408,12 @@ export class WebSocketService implements OnModuleDestroy {
    * @param message - The message event DTO
    * @throws Error if broadcast fails
    */
-  async sendMessageToUsers(
-    userIds: string[],
-    message: MessageEventDto,
-  ): Promise<void> {
+  async sendMessageToUsers(userIds: string[], message: MessageEventDto): Promise<void> {
     try {
       const server = this.getServer();
 
       if (!server) {
-        this.logger.warn(
-          'WebSocket server not initialized, cannot send message',
-        );
+        this.logger.warn('WebSocket server not initialized, cannot send message');
         return;
       }
 
@@ -503,22 +449,17 @@ export class WebSocketService implements OnModuleDestroy {
       const server = this.getServer();
 
       if (!server) {
-        this.logger.warn(
-          'WebSocket server not initialized, cannot broadcast typing indicator',
-        );
+        this.logger.warn('WebSocket server not initialized, cannot broadcast typing indicator');
         return;
       }
 
       const room = `conversation:${conversationId}`;
       server.to(room).emit('message:typing', typingIndicator.toPayload());
 
-      this.logger.debug(
-        `Typing indicator broadcasted to conversation ${conversationId}`,
-        {
-          userId: typingIndicator.userId,
-          isTyping: typingIndicator.isTyping,
-        },
-      );
+      this.logger.debug(`Typing indicator broadcasted to conversation ${conversationId}`, {
+        userId: typingIndicator.userId,
+        isTyping: typingIndicator.isTyping,
+      });
     } catch (error) {
       this.logger.error(
         `Failed to broadcast typing indicator to conversation ${conversationId}`,
@@ -535,30 +476,22 @@ export class WebSocketService implements OnModuleDestroy {
    * @param readReceipt - The read receipt DTO
    * @throws Error if broadcast fails
    */
-  async broadcastReadReceipt(
-    conversationId: string,
-    readReceipt: ReadReceiptDto,
-  ): Promise<void> {
+  async broadcastReadReceipt(conversationId: string, readReceipt: ReadReceiptDto): Promise<void> {
     try {
       const server = this.getServer();
 
       if (!server) {
-        this.logger.warn(
-          'WebSocket server not initialized, cannot broadcast read receipt',
-        );
+        this.logger.warn('WebSocket server not initialized, cannot broadcast read receipt');
         return;
       }
 
       const room = `conversation:${conversationId}`;
       server.to(room).emit('message:read', readReceipt.toPayload());
 
-      this.logger.log(
-        `Read receipt broadcasted to conversation ${conversationId}`,
-        {
-          messageId: readReceipt.messageId,
-          userId: readReceipt.userId,
-        },
-      );
+      this.logger.log(`Read receipt broadcasted to conversation ${conversationId}`, {
+        messageId: readReceipt.messageId,
+        userId: readReceipt.userId,
+      });
     } catch (error) {
       this.logger.error(
         `Failed to broadcast read receipt to conversation ${conversationId}`,
@@ -576,17 +509,12 @@ export class WebSocketService implements OnModuleDestroy {
    * @param delivery - The delivery confirmation DTO
    * @throws Error if broadcast fails
    */
-  async broadcastMessageDelivery(
-    senderId: string,
-    delivery: MessageDeliveryDto,
-  ): Promise<void> {
+  async broadcastMessageDelivery(senderId: string, delivery: MessageDeliveryDto): Promise<void> {
     try {
       const server = this.getServer();
 
       if (!server) {
-        this.logger.warn(
-          'WebSocket server not initialized, cannot broadcast delivery',
-        );
+        this.logger.warn('WebSocket server not initialized, cannot broadcast delivery');
         return;
       }
 
@@ -598,10 +526,7 @@ export class WebSocketService implements OnModuleDestroy {
         status: delivery.status,
       });
     } catch (error) {
-      this.logger.error(
-        `Failed to broadcast delivery confirmation to user ${senderId}`,
-        error,
-      );
+      this.logger.error(`Failed to broadcast delivery confirmation to user ${senderId}`, error);
       throw error;
     }
   }
@@ -624,9 +549,7 @@ export class WebSocketService implements OnModuleDestroy {
       const server = this.getServer();
 
       if (!server) {
-        this.logger.warn(
-          'WebSocket server not initialized, cannot update presence',
-        );
+        this.logger.warn('WebSocket server not initialized, cannot update presence');
         return;
       }
 
@@ -642,10 +565,7 @@ export class WebSocketService implements OnModuleDestroy {
         organizationId,
       });
     } catch (error) {
-      this.logger.error(
-        `Failed to broadcast presence update for user ${userId}`,
-        error,
-      );
+      this.logger.error(`Failed to broadcast presence update for user ${userId}`, error);
       throw error;
     }
   }

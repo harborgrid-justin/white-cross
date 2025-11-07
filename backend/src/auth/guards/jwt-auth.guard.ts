@@ -1,4 +1,4 @@
-import { ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ExecutionContext, Injectable, UnauthorizedException, Optional } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from '@/auth/decorators';
@@ -9,7 +9,7 @@ import { DecodedToken, RequestWithAuth, SafeUser } from '@/auth/types';
 export class JwtAuthGuard extends AuthGuard('jwt') {
   constructor(
     private reflector: Reflector,
-    private tokenBlacklistService: TokenBlacklistService,
+    @Optional() private tokenBlacklistService?: TokenBlacklistService,
   ) {
     super();
   }
@@ -36,7 +36,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     const request = context.switchToHttp().getRequest<RequestWithAuth>();
     const token = this.extractTokenFromHeader(request);
 
-    if (token) {
+    if (token && this.tokenBlacklistService) {
       const isBlacklisted = await this.tokenBlacklistService.isTokenBlacklisted(token);
 
       if (isBlacklisted) {

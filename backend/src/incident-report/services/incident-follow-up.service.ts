@@ -2,7 +2,9 @@ import { BadRequestException, Injectable, Logger, NotFoundException } from '@nes
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { FollowUpAction, IncidentReport } from '@/database';
-import { CreateFollowUpActionDto, IncidentValidationService, UpdateFollowUpActionDto } from '@/incident-report';
+import { CreateFollowUpActionDto } from '../dto/create-follow-up-action.dto';
+import { UpdateFollowUpActionDto } from '../dto/update-follow-up-action.dto';
+import { IncidentValidationService } from './incident-validation.service';
 import { ActionPriority, ActionStatus } from '../enums';
 
 @Injectable()

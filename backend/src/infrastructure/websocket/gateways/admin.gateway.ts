@@ -21,7 +21,7 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Logger, UseFilters, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Logger, UseFilters, UseGuards, UseInterceptors, Optional } from '@nestjs/common';
 import { Server } from 'socket.io';
 import { WsJwtAuthGuard } from '../guards/ws-jwt-auth.guard';
 import { WsExceptionFilter } from '../filters/ws-exception.filter';
@@ -132,7 +132,7 @@ export class AdminWebSocketGateway
     'tools-results',
   ]);
 
-  constructor(private readonly adminMetricsService: AdminMetricsService) {}
+  constructor(@Optional() private readonly adminMetricsService?: AdminMetricsService) {}
 
   /**
    * Gateway initialization
@@ -192,22 +192,39 @@ export class AdminWebSocketGateway
       );
 
       // Send current system status
-      const currentMetrics = await this.adminMetricsService.getCurrentMetrics();
-      const activeAlerts = this.adminMetricsService.getActiveAlerts();
-      const systemStatus = this.adminMetricsService.getSystemHealthStatus();
+      if (this.adminMetricsService) {
+        const currentMetrics = await this.adminMetricsService.getCurrentMetrics();
+        const activeAlerts = this.adminMetricsService.getActiveAlerts();
+        const systemStatus = this.adminMetricsService.getSystemHealthStatus();
 
-      if (currentMetrics) {
-        client.emit('admin:metrics:update', {
-          metrics: currentMetrics,
-          trend: this.calculateTrend(),
-          alerts: activeAlerts,
+        if (currentMetrics) {
+          client.emit('admin:metrics:update', {
+            metrics: currentMetrics,
+            trend: this.calculateTrend(),
+            alerts: activeAlerts,
+          });
+        }
+
+        client.emit('admin:system:status', {
+          status: systemStatus,
+          timestamp: new Date().toISOString(),
+        });
+
+        // Log admin connection activity
+        await this.adminMetricsService.logAdminActivity({
+          userId: user.userId,
+          userName: adminClient.userName,
+          action: 'admin_dashboard_connected',
+          resource: 'admin_websocket',
+          ipAddress: client.handshake.address,
+          userAgent: client.handshake.headers['user-agent'] || '',
+          severity: 'info',
+          details: {
+            socketId: client.id,
+            namespace: '/admin',
+          },
         });
       }
-
-      client.emit('admin:system:status', {
-        status: systemStatus,
-        timestamp: new Date().toISOString(),
-      });
 
       // Broadcast new admin connection to other admins
       this.server.to('admin:activity').emit('admin:client:connected', {
@@ -216,20 +233,6 @@ export class AdminWebSocketGateway
         timestamp: new Date().toISOString(),
       });
 
-      // Log admin connection activity
-      await this.adminMetricsService.logAdminActivity({
-        userId: user.userId,
-        userName: adminClient.userName,
-        action: 'admin_dashboard_connected',
-        resource: 'admin_websocket',
-        ipAddress: client.handshake.address,
-        userAgent: client.handshake.headers['user-agent'] || '',
-        severity: 'info',
-        details: {
-          socketId: client.id,
-          namespace: '/admin',
-        },
-      });
     } catch (error) {
       this.logger.error(`Admin connection error for ${client.id}:`, error);
       client.disconnect();
@@ -255,19 +258,21 @@ export class AdminWebSocketGateway
       });
 
       // Log admin disconnection activity
-      this.adminMetricsService.logAdminActivity({
-        userId: adminClient.userId,
-        userName: adminClient.userName,
-        action: 'admin_dashboard_disconnected',
-        resource: 'admin_websocket',
-        ipAddress: client.handshake.address,
-        userAgent: client.handshake.headers['user-agent'] || '',
-        severity: 'info',
-        details: {
-          socketId: client.id,
-          sessionDuration: Date.now() - adminClient.connectedAt.getTime(),
-        },
-      });
+      if (this.adminMetricsService) {
+        this.adminMetricsService.logAdminActivity({
+          userId: adminClient.userId,
+          userName: adminClient.userName,
+          action: 'admin_dashboard_disconnected',
+          resource: 'admin_websocket',
+          ipAddress: client.handshake.address,
+          userAgent: client.handshake.headers['user-agent'] || '',
+          severity: 'info',
+          details: {
+            socketId: client.id,
+            sessionDuration: Date.now() - adminClient.connectedAt.getTime(),
+          },
+        });
+      }
 
       this.connectedClients.delete(client.id);
     }
@@ -373,22 +378,24 @@ export class AdminWebSocketGateway
     const adminClient = this.connectedClients.get(client.id);
     if (!adminClient) return;
 
-    await this.adminMetricsService.acknowledgeAlert(
-      alertId,
-      adminClient.userId,
-    );
+    if (this.adminMetricsService) {
+      await this.adminMetricsService.acknowledgeAlert(
+        alertId,
+        adminClient.userId,
+      );
 
-    // Log the acknowledgment
-    await this.adminMetricsService.logAdminActivity({
-      userId: adminClient.userId,
-      userName: adminClient.userName,
-      action: 'alert_acknowledged',
-      resource: `alert:${alertId}`,
-      ipAddress: client.handshake.address,
-      userAgent: client.handshake.headers['user-agent'] || '',
-      severity: 'info',
-      details: { alertId },
-    });
+      // Log the acknowledgment
+      await this.adminMetricsService.logAdminActivity({
+        userId: adminClient.userId,
+        userName: adminClient.userName,
+        action: 'alert_acknowledged',
+        resource: `alert:${alertId}`,
+        ipAddress: client.handshake.address,
+        userAgent: client.handshake.headers['user-agent'] || '',
+        severity: 'info',
+        details: { alertId },
+      });
+    }
   }
 
   /**
@@ -474,31 +481,40 @@ export class AdminWebSocketGateway
     channel: string,
   ): Promise<void> {
     switch (channel) {
-      case 'metrics':
-        const metrics = await this.adminMetricsService.getCurrentMetrics();
-        if (metrics) {
-          client.emit('admin:metrics:update', {
-            metrics,
-            trend: this.calculateTrend(),
-            alerts: this.adminMetricsService.getActiveAlerts(),
+      case 'metrics': {
+        if (this.adminMetricsService) {
+          const metrics = await this.adminMetricsService.getCurrentMetrics();
+          if (metrics) {
+            client.emit('admin:metrics:update', {
+              metrics,
+              trend: this.calculateTrend(),
+              alerts: this.adminMetricsService.getActiveAlerts(),
+            });
+          }
+        }
+        break;
+      }
+
+      case 'alerts': {
+        if (this.adminMetricsService) {
+          const alerts = this.adminMetricsService.getActiveAlerts();
+          alerts.forEach((alert) => {
+            client.emit('admin:alert:new', alert);
           });
         }
         break;
+      }
 
-      case 'alerts':
-        const alerts = this.adminMetricsService.getActiveAlerts();
-        alerts.forEach((alert) => {
-          client.emit('admin:alert:new', alert);
-        });
+      case 'system-status': {
+        if (this.adminMetricsService) {
+          const status = this.adminMetricsService.getSystemHealthStatus();
+          client.emit('admin:system:status', {
+            status,
+            timestamp: new Date().toISOString(),
+          });
+        }
         break;
-
-      case 'system-status':
-        const status = this.adminMetricsService.getSystemHealthStatus();
-        client.emit('admin:system:status', {
-          status,
-          timestamp: new Date().toISOString(),
-        });
-        break;
+      }
     }
   }
 
@@ -522,19 +538,19 @@ export class AdminWebSocketGateway
   private async executeAdminTool(toolId: string): Promise<unknown> {
     // Placeholder implementation - add actual admin tools
     const tools: Record<string, () => Promise<any>> = {
-      'cache-clear': async () => ({
+      'cache-clear': () => Promise.resolve({
         success: true,
         message: 'Cache cleared successfully',
       }),
-      'database-backup': async () => ({
+      'database-backup': () => Promise.resolve({
         success: true,
         message: 'Database backup initiated',
       }),
-      'log-cleanup': async () => ({
+      'log-cleanup': () => Promise.resolve({
         success: true,
         message: 'Log cleanup completed',
       }),
-      'system-restart': async () => ({
+      'system-restart': () => Promise.resolve({
         success: true,
         message: 'System restart scheduled',
       }),

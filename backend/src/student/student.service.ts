@@ -12,6 +12,7 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/sequelize';
 import { Op, Sequelize, Transaction } from 'sequelize';
@@ -69,8 +70,8 @@ export class StudentService {
     @InjectConnection()
     private readonly sequelize: Sequelize,
     private readonly queryCacheService: QueryCacheService,
-    private readonly config: AppConfigService,
-    private readonly poolMonitor: DatabasePoolMonitorService,
+    @Optional() private readonly config?: AppConfigService,
+    @Optional() private readonly poolMonitor?: DatabasePoolMonitorService, // Made optional to prevent dependency injection issues
   ) {}
 
   // ==================== CRUD Operations ====================
@@ -104,9 +105,7 @@ export class StudentService {
       // Create student
       const student = await this.studentModel.create(normalizedData as any);
 
-      this.logger.log(
-        `Student created: ${student.id} (${student.studentNumber})`,
-      );
+      this.logger.log(`Student created: ${student.id} (${student.studentNumber})`);
       return student;
     } catch (error) {
       this.handleError('Failed to create student', error);
@@ -122,19 +121,9 @@ export class StudentService {
    * After: 1 query with JOINs
    * Performance improvement: ~97% query reduction
    */
-  async findAll(
-    filterDto: StudentFilterDto,
-  ): Promise<PaginatedResponse<Student>> {
+  async findAll(filterDto: StudentFilterDto): Promise<PaginatedResponse<Student>> {
     try {
-      const {
-        page = 1,
-        limit = 20,
-        search,
-        grade,
-        isActive,
-        nurseId,
-        gender,
-      } = filterDto;
+      const { page = 1, limit = 20, search, grade, isActive, nurseId, gender } = filterDto;
 
       const where: any = {};
 
@@ -167,28 +156,27 @@ export class StudentService {
       const offset = (page - 1) * limit;
 
       // OPTIMIZATION: Execute query with eager loading to prevent N+1
-      const { rows: data, count: total } =
-        await this.studentModel.findAndCountAll({
-          where,
-          offset,
-          limit,
-          order: [
-            ['lastName', 'ASC'],
-            ['firstName', 'ASC'],
-          ],
-          include: [
-            {
-              model: User,
-              as: 'nurse',
-              attributes: ['id', 'firstName', 'lastName', 'email', 'role'],
-              required: false, // LEFT JOIN - include students without assigned nurse
-            },
-          ],
-          attributes: {
-            exclude: ['schoolId', 'districtId'],
+      const { rows: data, count: total } = await this.studentModel.findAndCountAll({
+        where,
+        offset,
+        limit,
+        order: [
+          ['lastName', 'ASC'],
+          ['firstName', 'ASC'],
+        ],
+        include: [
+          {
+            model: User,
+            as: 'nurse',
+            attributes: ['id', 'firstName', 'lastName', 'email', 'role'],
+            required: false, // LEFT JOIN - include students without assigned nurse
           },
-          distinct: true, // Prevent duplicate counts with JOINs
-        });
+        ],
+        attributes: {
+          exclude: ['schoolId', 'districtId'],
+        },
+        distinct: true, // Prevent duplicate counts with JOINs
+      });
 
       return {
         data,
@@ -243,10 +231,7 @@ export class StudentService {
    * Update student information
    * Validates all changes and checks for conflicts
    */
-  async update(
-    id: string,
-    updateStudentDto: UpdateStudentDto,
-  ): Promise<Student> {
+  async update(id: string, updateStudentDto: UpdateStudentDto): Promise<Student> {
     try {
       this.validateUUID(id);
 
@@ -257,10 +242,7 @@ export class StudentService {
       const normalizedData = this.normalizeUpdateData(updateStudentDto);
 
       // Validate student number if being updated
-      if (
-        normalizedData.studentNumber &&
-        normalizedData.studentNumber !== student.studentNumber
-      ) {
+      if (normalizedData.studentNumber && normalizedData.studentNumber !== student.studentNumber) {
         await this.validateStudentNumber(normalizedData.studentNumber, id);
       }
 
@@ -269,10 +251,7 @@ export class StudentService {
         normalizedData.medicalRecordNum &&
         normalizedData.medicalRecordNum !== student.medicalRecordNum
       ) {
-        await this.validateMedicalRecordNumber(
-          normalizedData.medicalRecordNum,
-          id,
-        );
+        await this.validateMedicalRecordNumber(normalizedData.medicalRecordNum, id);
       }
 
       // Validate date of birth if being updated
@@ -289,9 +268,7 @@ export class StudentService {
       Object.assign(student, normalizedData);
       const updated = await student.save();
 
-      this.logger.log(
-        `Student updated: ${updated.id} (${updated.studentNumber})`,
-      );
+      this.logger.log(`Student updated: ${updated.id} (${updated.studentNumber})`);
       return updated;
     } catch (error) {
       if (error instanceof NotFoundException) {
@@ -314,9 +291,7 @@ export class StudentService {
       student.isActive = false;
       await student.save();
 
-      this.logger.log(
-        `Student deleted (soft): ${id} (${student.studentNumber})`,
-      );
+      this.logger.log(`Student deleted (soft): ${id} (${student.studentNumber})`);
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
@@ -379,10 +354,7 @@ export class StudentService {
    * Transfer student to different nurse or grade
    * Updates nurse assignment and/or grade level
    */
-  async transfer(
-    id: string,
-    transferDto: TransferStudentDto,
-  ): Promise<Student> {
+  async transfer(id: string, transferDto: TransferStudentDto): Promise<Student> {
     try {
       this.validateUUID(id);
 
@@ -422,9 +394,7 @@ export class StudentService {
    * After: Atomic update with automatic rollback on error, validation inside transaction scope
    * Data Integrity: All-or-nothing updates, HIPAA-compliant audit trail, no race conditions
    */
-  async bulkUpdate(
-    bulkUpdateDto: StudentBulkUpdateDto,
-  ): Promise<{ updated: number }> {
+  async bulkUpdate(bulkUpdateDto: StudentBulkUpdateDto): Promise<{ updated: number }> {
     try {
       const { studentIds, nurseId, grade, isActive } = bulkUpdateDto;
 
@@ -433,7 +403,7 @@ export class StudentService {
       if (poolStatus && poolStatus.utilizationPercent > 80) {
         this.logger.warn(
           `High pool utilization (${poolStatus.utilizationPercent.toFixed(1)}%) before bulk update. ` +
-          `Active: ${poolStatus.activeConnections}, Waiting: ${poolStatus.waitingRequests}`,
+            `Active: ${poolStatus.activeConnections}, Waiting: ${poolStatus.waitingRequests}`,
         );
       }
 
@@ -460,9 +430,7 @@ export class StudentService {
               );
             }
 
-            this.logger.log(
-              `Nurse validation successful: ${nurse.fullName} (${nurseId})`,
-            );
+            this.logger.log(`Nurse validation successful: ${nurse.fullName} (${nurseId})`);
           }
 
           // Build update object
@@ -553,10 +521,7 @@ export class StudentService {
       const result = await this.studentModel.findAll({
         attributes: [
           [
-            this.studentModel.sequelize!.fn(
-              'DISTINCT',
-              this.studentModel.sequelize!.col('grade'),
-            ),
+            this.studentModel.sequelize.fn('DISTINCT', this.studentModel.sequelize.col('grade')),
             'grade',
           ],
         ],
@@ -660,10 +625,7 @@ export class StudentService {
   /**
    * Validate student number uniqueness
    */
-  private async validateStudentNumber(
-    studentNumber: string,
-    excludeId?: string,
-  ): Promise<void> {
+  private async validateStudentNumber(studentNumber: string, excludeId?: string): Promise<void> {
     const normalized = studentNumber.toUpperCase().trim();
 
     const where: any = { studentNumber: normalized };
@@ -717,9 +679,7 @@ export class StudentService {
     }
 
     if (age < 3 || age > 100) {
-      throw new BadRequestException(
-        'Student age must be between 3 and 100 years.',
-      );
+      throw new BadRequestException('Student age must be between 3 and 100 years.');
     }
   }
 
@@ -739,22 +699,17 @@ export class StudentService {
     });
 
     if (!nurse) {
-      throw new NotFoundException(
-        'Assigned nurse not found. Please select a valid, active nurse.',
-      );
+      throw new NotFoundException('Assigned nurse not found. Please select a valid, active nurse.');
     }
 
-    this.logger.log(
-      `Nurse validation successful: ${nurse.fullName} (${nurseId})`,
-    );
+    this.logger.log(`Nurse validation successful: ${nurse.fullName} (${nurseId})`);
   }
 
   /**
    * Validate UUID format
    */
   private validateUUID(id: string): void {
-    const uuidRegex =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!id || !uuidRegex.test(id)) {
       throw new BadRequestException('Invalid ID format. Must be a valid UUID.');
     }
@@ -784,8 +739,7 @@ export class StudentService {
 
     if (data.firstName) normalized.firstName = data.firstName.trim();
     if (data.lastName) normalized.lastName = data.lastName.trim();
-    if (data.studentNumber)
-      normalized.studentNumber = data.studentNumber.toUpperCase().trim();
+    if (data.studentNumber) normalized.studentNumber = data.studentNumber.toUpperCase().trim();
     if (data.medicalRecordNum)
       normalized.medicalRecordNum = data.medicalRecordNum.toUpperCase().trim();
 
@@ -803,10 +757,7 @@ export class StudentService {
     this.logger.error(`${message}: ${error.message}`, error.stack);
 
     // Throw generic error client-side to avoid PHI leakage
-    if (
-      error instanceof ConflictException ||
-      error instanceof BadRequestException
-    ) {
+    if (error instanceof ConflictException || error instanceof BadRequestException) {
       throw error;
     }
 
@@ -834,19 +785,18 @@ export class StudentService {
       const offset = (page - 1) * limit;
 
       // Query health records with pagination
-      const { rows: healthRecords, count: total } =
-        await this.healthRecordModel.findAndCountAll({
-          where: { studentId },
-          offset,
-          limit,
-          order: [
-            ['recordDate', 'DESC'],
-            ['createdAt', 'DESC'],
-          ],
-          attributes: {
-            exclude: ['updatedBy'], // Exclude internal tracking fields
-          },
-        });
+      const { rows: healthRecords, count: total } = await this.healthRecordModel.findAndCountAll({
+        where: { studentId },
+        offset,
+        limit,
+        order: [
+          ['recordDate', 'DESC'],
+          ['createdAt', 'DESC'],
+        ],
+        attributes: {
+          exclude: ['updatedBy'], // Exclude internal tracking fields
+        },
+      });
 
       const pages = Math.ceil(total / limit);
 
@@ -963,10 +913,7 @@ export class StudentService {
    * Upload student photo
    * Stores photo URL/path in student record and prepares for facial recognition indexing
    */
-  async uploadStudentPhoto(
-    studentId: string,
-    uploadPhotoDto: UploadPhotoDto,
-  ): Promise<any> {
+  async uploadStudentPhoto(studentId: string, uploadPhotoDto: UploadPhotoDto): Promise<any> {
     try {
       this.validateUUID(studentId);
 
@@ -1007,10 +954,7 @@ export class StudentService {
         indexStatus: 'pending',
       };
     } catch (error) {
-      if (
-        error instanceof NotFoundException ||
-        error instanceof BadRequestException
-      ) {
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
         throw error;
       }
       this.handleError('Failed to upload student photo', error);
@@ -1026,9 +970,7 @@ export class StudentService {
     try {
       // Validate search parameters
       if (!searchPhotoDto.imageData && !searchPhotoDto.metadata) {
-        throw new BadRequestException(
-          'Either imageData or metadata must be provided for search',
-        );
+        throw new BadRequestException('Either imageData or metadata must be provided for search');
       }
 
       const threshold = searchPhotoDto.threshold || 0.8;
@@ -1119,13 +1061,8 @@ export class StudentService {
       const student = await this.findOne(studentId);
 
       // Validate transcript data
-      if (
-        !importTranscriptDto.grades ||
-        importTranscriptDto.grades.length === 0
-      ) {
-        throw new BadRequestException(
-          'Transcript must include at least one course grade',
-        );
+      if (!importTranscriptDto.grades || importTranscriptDto.grades.length === 0) {
+        throw new BadRequestException('Transcript must include at least one course grade');
       }
 
       // Map ImportTranscriptDto to TranscriptImportDto format expected by AcademicTranscriptService
@@ -1142,21 +1079,16 @@ export class StudentService {
           teacher: 'N/A', // Not provided in ImportTranscriptDto
         })),
         attendance: {
-          totalDays:
-            (importTranscriptDto.daysPresent || 0) +
-            (importTranscriptDto.daysAbsent || 0),
+          totalDays: (importTranscriptDto.daysPresent || 0) + (importTranscriptDto.daysAbsent || 0),
           presentDays: importTranscriptDto.daysPresent || 0,
           absentDays: importTranscriptDto.daysAbsent || 0,
           tardyDays: 0,
           attendanceRate:
             importTranscriptDto.daysPresent &&
-            importTranscriptDto.daysPresent +
-              (importTranscriptDto.daysAbsent || 0) >
-              0
+            importTranscriptDto.daysPresent + (importTranscriptDto.daysAbsent || 0) > 0
               ? Math.round(
                   (importTranscriptDto.daysPresent /
-                    (importTranscriptDto.daysPresent +
-                      (importTranscriptDto.daysAbsent || 0))) *
+                    (importTranscriptDto.daysPresent + (importTranscriptDto.daysAbsent || 0))) *
                     1000,
                 ) / 10
               : 100,
@@ -1170,8 +1102,7 @@ export class StudentService {
       };
 
       // Import transcript using AcademicTranscriptService
-      const transcript =
-        await this.academicTranscriptService.importTranscript(transcriptData);
+      const transcript = await this.academicTranscriptService.importTranscript(transcriptData);
 
       this.logger.log(
         `Academic transcript imported for student: ${studentId} (${student.firstName} ${student.lastName}), Year: ${importTranscriptDto.academicYear}, Courses: ${importTranscriptDto.grades.length}, GPA: ${transcript.gpa}`,
@@ -1193,10 +1124,7 @@ export class StudentService {
         },
       };
     } catch (error) {
-      if (
-        error instanceof NotFoundException ||
-        error instanceof BadRequestException
-      ) {
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
         throw error;
       }
       this.handleError('Failed to import academic transcript', error);
@@ -1207,10 +1135,7 @@ export class StudentService {
    * Get academic history
    * Returns comprehensive academic history with transcripts and achievements
    */
-  async getAcademicHistory(
-    studentId: string,
-    query: AcademicHistoryDto,
-  ): Promise<any> {
+  async getAcademicHistory(studentId: string, query: AcademicHistoryDto): Promise<any> {
     try {
       this.validateUUID(studentId);
 
@@ -1218,8 +1143,7 @@ export class StudentService {
       const student = await this.findOne(studentId);
 
       // Get academic history from AcademicTranscriptService
-      const transcripts =
-        await this.academicTranscriptService.getAcademicHistory(studentId);
+      const transcripts = await this.academicTranscriptService.getAcademicHistory(studentId);
 
       // Filter by academic year if specified
       const filteredTranscripts = query.academicYear
@@ -1238,13 +1162,9 @@ export class StudentService {
               ) / 100
             : 0,
         highestGPA:
-          filteredTranscripts.length > 0
-            ? Math.max(...filteredTranscripts.map((t) => t.gpa))
-            : 0,
+          filteredTranscripts.length > 0 ? Math.max(...filteredTranscripts.map((t) => t.gpa)) : 0,
         lowestGPA:
-          filteredTranscripts.length > 0
-            ? Math.min(...filteredTranscripts.map((t) => t.gpa))
-            : 0,
+          filteredTranscripts.length > 0 ? Math.min(...filteredTranscripts.map((t) => t.gpa)) : 0,
       };
 
       this.logger.log(
@@ -1271,10 +1191,7 @@ export class StudentService {
    * Get performance trends
    * Analyzes academic performance over time with trend analysis
    */
-  async getPerformanceTrends(
-    studentId: string,
-    query: PerformanceTrendsDto,
-  ): Promise<any> {
+  async getPerformanceTrends(studentId: string, query: PerformanceTrendsDto): Promise<any> {
     try {
       this.validateUUID(studentId);
 
@@ -1282,10 +1199,7 @@ export class StudentService {
       const student = await this.findOne(studentId);
 
       // Get performance trends from AcademicTranscriptService
-      const analysis =
-        await this.academicTranscriptService.analyzePerformanceTrends(
-          studentId,
-        );
+      const analysis = await this.academicTranscriptService.analyzePerformanceTrends(studentId);
 
       // Enhance with query parameters
       const enhancedAnalysis = {
@@ -1323,9 +1237,7 @@ export class StudentService {
    * Perform bulk grade transition
    * Processes grade level transitions for all eligible students based on promotion criteria
    */
-  async performBulkGradeTransition(
-    bulkGradeTransitionDto: BulkGradeTransitionDto,
-  ): Promise<any> {
+  async performBulkGradeTransition(bulkGradeTransitionDto: BulkGradeTransitionDto): Promise<any> {
     try {
       const isDryRun = bulkGradeTransitionDto.dryRun || false;
       const effectiveDate = new Date(bulkGradeTransitionDto.effectiveDate);
@@ -1475,8 +1387,7 @@ export class StudentService {
    */
   async getGraduatingStudents(query: GraduatingStudentsDto): Promise<any> {
     try {
-      const academicYear =
-        query.academicYear || new Date().getFullYear().toString();
+      const academicYear = query.academicYear || new Date().getFullYear().toString();
       const minimumGpa = query.minimumGpa || 2.0;
       const minimumCredits = query.minimumCredits || 24;
 
@@ -1499,9 +1410,7 @@ export class StudentService {
       // Single batch query replaces N individual queries
       const allTranscriptsMap =
         studentIds.length > 0
-          ? await this.academicTranscriptService.batchGetAcademicHistories(
-              studentIds,
-            )
+          ? await this.academicTranscriptService.batchGetAcademicHistories(studentIds)
           : new Map<string, any[]>();
 
       // Evaluate graduation eligibility for each student
@@ -1533,8 +1442,7 @@ export class StudentService {
           }
         }
 
-        const averageGpa =
-          totalTranscripts > 0 ? cumulativeGpa / totalTranscripts : 0;
+        const averageGpa = totalTranscripts > 0 ? cumulativeGpa / totalTranscripts : 0;
 
         // Check eligibility criteria
         const meetsGpaRequirement = averageGpa >= minimumGpa;
@@ -1699,19 +1607,13 @@ export class StudentService {
         };
       }
       // Nurse barcode detection (format: NURSE-*, NRS-*)
-      else if (
-        normalized.startsWith('NURSE-') ||
-        normalized.startsWith('NRS-')
-      ) {
+      else if (normalized.startsWith('NURSE-') || normalized.startsWith('NRS-')) {
         entityType = 'nurse';
         // Try to find nurse user
         const nurseId = normalized.replace(/^(NURSE-|NRS-)/, '');
         const nurse = await this.userModel.findOne({
           where: {
-            [Op.or]: [
-              { id: nurseId },
-              { email: { [Op.iLike]: `%${nurseId}%` } },
-            ],
+            [Op.or]: [{ id: nurseId }, { email: { [Op.iLike]: `%${nurseId}%` } }],
             role: UserRole.NURSE,
             isActive: true,
           } as any,
@@ -1777,10 +1679,7 @@ export class StudentService {
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
 
-    if (
-      monthDiff < 0 ||
-      (monthDiff === 0 && today.getDate() < birthDate.getDate())
-    ) {
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
       age--;
     }
 
@@ -1792,12 +1691,9 @@ export class StudentService {
    * Three-point barcode verification for medication safety
    * Implements the Five Rights of Medication Administration
    */
-  async verifyMedicationAdministration(
-    verifyMedicationDto: VerifyMedicationDto,
-  ): Promise<any> {
+  async verifyMedicationAdministration(verifyMedicationDto: VerifyMedicationDto): Promise<any> {
     try {
-      const { studentBarcode, medicationBarcode, nurseBarcode } =
-        verifyMedicationDto;
+      const { studentBarcode, medicationBarcode, nurseBarcode } = verifyMedicationDto;
 
       // Initialize verification results
       const verificationChecks: any[] = [];
@@ -1815,14 +1711,7 @@ export class StudentService {
           ],
           isActive: true,
         },
-        attributes: [
-          'id',
-          'studentNumber',
-          'firstName',
-          'lastName',
-          'dateOfBirth',
-          'photo',
-        ],
+        attributes: ['id', 'studentNumber', 'firstName', 'lastName', 'dateOfBirth', 'photo'],
       });
 
       const studentCheck = {
@@ -1848,8 +1737,7 @@ export class StudentService {
         checkName: 'Right Medication',
         barcodeScanned: medicationBarcode,
         verified:
-          medicationNormalized.startsWith('MED-') ||
-          medicationNormalized.includes('MEDICATION'),
+          medicationNormalized.startsWith('MED-') || medicationNormalized.includes('MEDICATION'),
         details: {
           medicationBarcode: medicationNormalized,
           status: 'MedicationInventory service integration pending',
@@ -1986,9 +1874,7 @@ export class StudentService {
 
       const estimatedPosition = priorityPositions[priority || 'medium'];
       const estimatedWaitMinutes = estimatedPosition * 15; // 15 minutes per position
-      const estimatedAvailability = new Date(
-        Date.now() + estimatedWaitMinutes * 60000,
-      );
+      const estimatedAvailability = new Date(Date.now() + estimatedWaitMinutes * 60000);
 
       // In production, would create actual waitlist entry in database:
       // const waitlistEntry = await this.waitlistRepository.create({
@@ -2043,10 +1929,7 @@ export class StudentService {
    * Returns current waitlist positions and estimated wait times
    * Simulates waitlist status retrieval until Waitlist module is available
    */
-  async getStudentWaitlistStatus(
-    studentId: string,
-    query: WaitlistStatusDto,
-  ): Promise<any> {
+  async getStudentWaitlistStatus(studentId: string, query: WaitlistStatusDto): Promise<any> {
     try {
       this.validateUUID(studentId);
 
@@ -2086,11 +1969,7 @@ export class StudentService {
         });
       } else {
         // Show multiple waitlists for different appointment types
-        const appointmentTypes = [
-          'vision_screening',
-          'dental_checkup',
-          'immunization',
-        ];
+        const appointmentTypes = ['vision_screening', 'dental_checkup', 'immunization'];
 
         for (let i = 0; i < Math.min(2, appointmentTypes.length); i++) {
           const position = Math.floor(Math.random() * 10) + 1;
@@ -2115,26 +1994,18 @@ export class StudentService {
       // Calculate summary statistics
       const summary = {
         totalActiveWaitlists: simulatedWaitlists.length,
-        highPriorityCount: simulatedWaitlists.filter(
-          (w) => w.priority === 'high',
-        ).length,
+        highPriorityCount: simulatedWaitlists.filter((w) => w.priority === 'high').length,
         averagePosition:
           simulatedWaitlists.length > 0
             ? Math.round(
-                simulatedWaitlists.reduce(
-                  (sum, w) => sum + w.currentPosition,
-                  0,
-                ) / simulatedWaitlists.length,
+                simulatedWaitlists.reduce((sum, w) => sum + w.currentPosition, 0) /
+                  simulatedWaitlists.length,
               )
             : 0,
         nextAppointmentType:
-          simulatedWaitlists.length > 0
-            ? simulatedWaitlists[0].appointmentType
-            : null,
+          simulatedWaitlists.length > 0 ? simulatedWaitlists[0].appointmentType : null,
         nextEstimatedTime:
-          simulatedWaitlists.length > 0
-            ? simulatedWaitlists[0].estimatedAvailability
-            : null,
+          simulatedWaitlists.length > 0 ? simulatedWaitlists[0].estimatedAvailability : null,
       };
 
       this.logger.log(
@@ -2153,8 +2024,7 @@ export class StudentService {
         notifications: {
           enabled: true,
           methods: ['email', 'sms'],
-          message:
-            'Student will receive notifications when appointment slots become available',
+          message: 'Student will receive notifications when appointment slots become available',
         },
         note: 'Waitlist module integration pending - This is a simulated response with realistic data',
       };
@@ -2227,19 +2097,15 @@ export class StudentService {
           if (!studentsBySchool.has(schoolId)) {
             studentsBySchool.set(schoolId, []);
           }
-          studentsBySchool.get(schoolId)!.push(student);
+          studentsBySchool.get(schoolId).push(student);
         }
       });
 
       // Return in same order as input, empty array for missing
       return schoolIds.map((id) => studentsBySchool.get(id) || []);
     } catch (error) {
-      this.logger.error(
-        `Failed to batch fetch students by school IDs: ${error.message}`,
-      );
-      throw new BadRequestException(
-        'Failed to batch fetch students by school IDs',
-      );
+      this.logger.error(`Failed to batch fetch students by school IDs: ${error.message}`);
+      throw new BadRequestException('Failed to batch fetch students by school IDs');
     }
   }
 }

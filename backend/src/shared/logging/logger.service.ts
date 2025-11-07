@@ -17,7 +17,7 @@
  * DOWNSTREAM: All NestJS modules, services, controllers
  */
 
-import { Inject, Injectable, LoggerService as NestLoggerService, Scope } from '@nestjs/common';
+import { Injectable, LoggerService as NestLoggerService, Optional, Scope } from '@nestjs/common';
 import * as winston from 'winston';
 import { AppConfigService } from '../../config/app-config.service';
 
@@ -43,7 +43,8 @@ export class LoggerService implements NestLoggerService {
   private readonly winston: winston.Logger;
   private context?: string;
 
-  constructor(@Inject(AppConfigService) private readonly config?: AppConfigService) {
+  constructor(@Optional() private readonly config?: AppConfigService) {
+    // Config service is optional to prevent circular dependencies
     const logFormat = winston.format.combine(
       winston.format.timestamp(),
       winston.format.errors({ stack: true }),

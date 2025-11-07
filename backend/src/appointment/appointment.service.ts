@@ -4,7 +4,14 @@
  * @description Business logic for appointment management with comprehensive healthcare workflow support
  */
 
-import { BadRequestException, Injectable, Logger, NotFoundException, OnModuleDestroy } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+  OnModuleDestroy,
+  Optional,
+} from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/sequelize';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Op, Sequelize, Transaction } from 'sequelize';
@@ -23,9 +30,18 @@ import { AppointmentStatus, UpdateAppointmentDto } from './dto/update-appointmen
 import { AppointmentFiltersDto } from './dto/appointment-filters.dto';
 import { WaitlistFiltersDto, WaitlistPriority as DtoWaitlistPriority } from './dto/waitlist.dto';
 import { CreateReminderDto, ReminderProcessingResultDto } from './dto/reminder.dto';
-import { BulkCancelDto, DateRangeDto, SearchAppointmentsDto, StatisticsFiltersDto } from './dto/statistics.dto';
+import {
+  BulkCancelDto,
+  DateRangeDto,
+  SearchAppointmentsDto,
+  StatisticsFiltersDto,
+} from './dto/statistics.dto';
 import { CreateRecurringAppointmentDto, RecurrenceFrequency } from './dto/recurring.dto';
-import { AppointmentEntity, AvailabilitySlot, PaginatedResponse } from './entities/appointment.entity';
+import {
+  AppointmentEntity,
+  AvailabilitySlot,
+  PaginatedResponse,
+} from './entities/appointment.entity';
 import { AppointmentValidation } from './validators/appointment-validation';
 import { AppointmentStatusTransitions } from './validators/status-transitions';
 import {
@@ -33,8 +49,16 @@ import {
   AppointmentStatus as ModelAppointmentStatus,
   AppointmentType as ModelAppointmentType,
 } from '../database/models/appointment.model';
-import { AppointmentReminder, MessageType, ReminderStatus } from '../database/models/appointment-reminder.model';
-import { AppointmentWaitlist, WaitlistPriority, WaitlistStatus } from '../database/models/appointment-waitlist.model';
+import {
+  AppointmentReminder,
+  MessageType,
+  ReminderStatus,
+} from '../database/models/appointment-reminder.model';
+import {
+  AppointmentWaitlist,
+  WaitlistPriority,
+  WaitlistStatus,
+} from '../database/models/appointment-waitlist.model';
 import { User } from '../database/models/user.model';
 
 /**
@@ -68,11 +92,11 @@ export class AppointmentService implements OnModuleDestroy {
     @InjectConnection()
     private readonly sequelize: Sequelize,
     private readonly eventEmitter: EventEmitter2,
-    private readonly config: AppConfigService,
+    @Optional() private readonly config?: AppConfigService,
   ) {
     // Start periodic cleanup of expired waitlist entries
     // Only run in production to avoid interfering with dev/test
-    if (this.config.isProduction) {
+    if (this.config?.isProduction) {
       this.cleanupInterval = setInterval(
         () => this.cleanupExpiredWaitlistEntries(),
         24 * 60 * 60 * 1000, // Daily cleanup
@@ -126,7 +150,10 @@ export class AppointmentService implements OnModuleDestroy {
         this.logger.log(`Cleaned up ${result[0]} expired waitlist entries`);
       }
     } catch (error) {
-      this.logger.error(`Error cleaning up expired waitlist entries: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error cleaning up expired waitlist entries: ${error.message}`,
+        error.stack,
+      );
     }
   }
 
@@ -213,10 +240,7 @@ export class AppointmentService implements OnModuleDestroy {
         },
       };
     } catch (error) {
-      this.logger.error(
-        `Error fetching appointments: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error fetching appointments: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to fetch appointments');
     }
   }
@@ -233,14 +257,7 @@ export class AppointmentService implements OnModuleDestroy {
           {
             model: User,
             as: 'nurse',
-            attributes: [
-              'id',
-              'firstName',
-              'lastName',
-              'email',
-              'role',
-              'phone',
-            ],
+            attributes: ['id', 'firstName', 'lastName', 'email', 'role', 'phone'],
           },
         ],
       });
@@ -254,10 +271,7 @@ export class AppointmentService implements OnModuleDestroy {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      this.logger.error(
-        `Error fetching appointment ${id}: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error fetching appointment ${id}: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to fetch appointment');
     }
   }
@@ -275,30 +289,22 @@ export class AppointmentService implements OnModuleDestroy {
    * @throws BadRequestException if validation fails
    * @throws BadRequestException if conflicts detected
    */
-  async createAppointment(
-    createDto: CreateAppointmentDto,
-  ): Promise<AppointmentEntity> {
+  async createAppointment(createDto: CreateAppointmentDto): Promise<AppointmentEntity> {
     this.logger.log(`Creating appointment for student ${createDto.studentId}`);
 
     // Apply defaults
-    const duration =
-      createDto.duration || AppointmentValidation.DEFAULT_DURATION_MINUTES;
+    const duration = createDto.duration || AppointmentValidation.DEFAULT_DURATION_MINUTES;
 
     // Validate appointment data
     AppointmentValidation.validateFutureDateTime(createDto.scheduledDate);
     AppointmentValidation.validateDuration(duration);
-    AppointmentValidation.validateBusinessHours(
-      createDto.scheduledDate,
-      duration,
-    );
+    AppointmentValidation.validateBusinessHours(createDto.scheduledDate, duration);
     AppointmentValidation.validateNotWeekend(createDto.scheduledDate);
 
     // Verify nurse exists
     const nurse = await this.userModel.findByPk(createDto.nurseId);
     if (!nurse) {
-      throw new BadRequestException(
-        `Nurse with ID ${createDto.nurseId} not found`,
-      );
+      throw new BadRequestException(`Nurse with ID ${createDto.nurseId} not found`);
     }
 
     // Check for conflicts
@@ -315,10 +321,7 @@ export class AppointmentService implements OnModuleDestroy {
     }
 
     // Check daily appointment limit for nurse
-    await this.validateDailyAppointmentLimit(
-      createDto.nurseId,
-      createDto.scheduledDate,
-    );
+    await this.validateDailyAppointmentLimit(createDto.nurseId, createDto.scheduledDate);
 
     try {
       // Create appointment within transaction
@@ -347,11 +350,7 @@ export class AppointmentService implements OnModuleDestroy {
           );
 
           // Schedule reminders
-          await this.scheduleReminders(
-            appointment.id,
-            createDto.scheduledDate,
-            transaction,
-          );
+          await this.scheduleReminders(appointment.id, createDto.scheduledDate, transaction);
 
           // Remove from waitlist if student was waiting
           await this.waitlistModel.update(
@@ -396,10 +395,7 @@ export class AppointmentService implements OnModuleDestroy {
 
       return appointment;
     } catch (error) {
-      this.logger.error(
-        `Error creating appointment: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error creating appointment: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to create appointment');
     }
   }
@@ -413,10 +409,7 @@ export class AppointmentService implements OnModuleDestroy {
    * - Status transitions are valid
    * - No scheduling conflicts if rescheduling
    */
-  async updateAppointment(
-    id: string,
-    updateDto: UpdateAppointmentDto,
-  ): Promise<AppointmentEntity> {
+  async updateAppointment(id: string, updateDto: UpdateAppointmentDto): Promise<AppointmentEntity> {
     this.logger.log(`Updating appointment: ${id}`);
 
     // Fetch existing appointment
@@ -442,10 +435,7 @@ export class AppointmentService implements OnModuleDestroy {
     if (updateDto.scheduledDate) {
       const duration = updateDto.duration || existingAppointment.duration;
       AppointmentValidation.validateFutureDateTime(updateDto.scheduledDate);
-      AppointmentValidation.validateBusinessHours(
-        updateDto.scheduledDate,
-        duration,
-      );
+      AppointmentValidation.validateBusinessHours(updateDto.scheduledDate, duration);
       AppointmentValidation.validateNotWeekend(updateDto.scheduledDate);
 
       // Check conflicts (excluding this appointment)
@@ -457,9 +447,7 @@ export class AppointmentService implements OnModuleDestroy {
       );
 
       if (conflicts.length > 0) {
-        throw new BadRequestException(
-          `Nurse has conflicting appointments at the new time`,
-        );
+        throw new BadRequestException(`Nurse has conflicting appointments at the new time`);
       }
     }
 
@@ -487,25 +475,22 @@ export class AppointmentService implements OnModuleDestroy {
             isolationLevel: Transaction.ISOLATION_LEVELS.READ_COMMITTED,
           },
           async (transaction: Transaction) => {
-          // Cancel old reminders
-          await this.reminderModel.update(
-            { status: ReminderStatus.CANCELLED },
-            {
-              where: {
-                appointmentId: id,
-                status: ReminderStatus.SCHEDULED,
+            // Cancel old reminders
+            await this.reminderModel.update(
+              { status: ReminderStatus.CANCELLED },
+              {
+                where: {
+                  appointmentId: id,
+                  status: ReminderStatus.SCHEDULED,
+                },
+                transaction,
               },
-              transaction,
-            },
-          );
+            );
 
-          // Schedule new reminders
-          await this.scheduleReminders(
-            id,
-            updateDto.scheduledDate!,
-            transaction,
-          );
-        });
+            // Schedule new reminders
+            await this.scheduleReminders(id, updateDto.scheduledDate, transaction);
+          },
+        );
       }
 
       const appointment = await this.getAppointmentById(id);
@@ -535,10 +520,7 @@ export class AppointmentService implements OnModuleDestroy {
 
       return appointment;
     } catch (error) {
-      this.logger.error(
-        `Error updating appointment ${id}: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error updating appointment ${id}: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to update appointment');
     }
   }
@@ -551,10 +533,7 @@ export class AppointmentService implements OnModuleDestroy {
    * - Minimum cancellation notice period (2 hours)
    * - Attempts to fill slot from waitlist
    */
-  async cancelAppointment(
-    id: string,
-    reason?: string,
-  ): Promise<AppointmentEntity> {
+  async cancelAppointment(id: string, reason?: string): Promise<AppointmentEntity> {
     this.logger.log(`Cancelling appointment: ${id}`);
 
     const appointment = await this.appointmentModel.findByPk(id);
@@ -578,36 +557,37 @@ export class AppointmentService implements OnModuleDestroy {
         },
         async (transaction: Transaction) => {
           // Update status to CANCELLED
-        await appointment.update(
-          {
-            status: ModelAppointmentStatus.CANCELLED,
-            notes: reason
-              ? `${appointment.notes || ''}\nCancellation reason: ${reason}`
-              : appointment.notes,
-          },
-          { transaction },
-        );
-
-        // Cancel reminders
-        await this.reminderModel.update(
-          { status: ReminderStatus.CANCELLED },
-          {
-            where: {
-              appointmentId: id,
-              status: ReminderStatus.SCHEDULED,
+          await appointment.update(
+            {
+              status: ModelAppointmentStatus.CANCELLED,
+              notes: reason
+                ? `${appointment.notes || ''}\nCancellation reason: ${reason}`
+                : appointment.notes,
             },
-            transaction,
-          },
-        );
+            { transaction },
+          );
 
-        // Process waitlist to fill the slot
-        await this.processWaitlistForSlot(
-          appointment.nurseId,
-          appointment.scheduledAt,
-          appointment.duration,
-          transaction,
-        );
-      });
+          // Cancel reminders
+          await this.reminderModel.update(
+            { status: ReminderStatus.CANCELLED },
+            {
+              where: {
+                appointmentId: id,
+                status: ReminderStatus.SCHEDULED,
+              },
+              transaction,
+            },
+          );
+
+          // Process waitlist to fill the slot
+          await this.processWaitlistForSlot(
+            appointment.nurseId,
+            appointment.scheduledAt,
+            appointment.duration,
+            transaction,
+          );
+        },
+      );
 
       const cancelledAppointment = await this.getAppointmentById(id);
 
@@ -636,10 +616,7 @@ export class AppointmentService implements OnModuleDestroy {
 
       return cancelledAppointment;
     } catch (error) {
-      this.logger.error(
-        `Error cancelling appointment ${id}: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error cancelling appointment ${id}: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to cancel appointment');
     }
   }
@@ -656,9 +633,7 @@ export class AppointmentService implements OnModuleDestroy {
     }
 
     // Validate can be started
-    AppointmentValidation.validateCanBeStarted(
-      appointment.status as unknown as AppointmentStatus,
-    );
+    AppointmentValidation.validateCanBeStarted(appointment.status as unknown as AppointmentStatus);
     AppointmentValidation.validateStartTiming(appointment.scheduledAt);
 
     await appointment.update({
@@ -818,13 +793,14 @@ export class AppointmentService implements OnModuleDestroy {
         isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE,
       },
       async (transaction: Transaction) => {
-      await this.processWaitlistForSlot(
-        appointment.nurseId,
-        appointment.scheduledAt,
-        appointment.duration,
-        transaction,
-      );
-    });
+        await this.processWaitlistForSlot(
+          appointment.nurseId,
+          appointment.scheduledAt,
+          appointment.duration,
+          transaction,
+        );
+      },
+    );
 
     return noShowAppointment;
   }
@@ -834,10 +810,7 @@ export class AppointmentService implements OnModuleDestroy {
   /**
    * Get upcoming appointments for a nurse with proper joins
    */
-  async getUpcomingAppointments(
-    nurseId: string,
-    limit: number = 10,
-  ): Promise<AppointmentEntity[]> {
+  async getUpcomingAppointments(nurseId: string, limit: number = 10): Promise<AppointmentEntity[]> {
     this.logger.log(`Fetching upcoming appointments for nurse: ${nurseId}`);
 
     try {
@@ -848,10 +821,7 @@ export class AppointmentService implements OnModuleDestroy {
             [Op.gt]: new Date(),
           },
           status: {
-            [Op.in]: [
-              ModelAppointmentStatus.SCHEDULED,
-              ModelAppointmentStatus.IN_PROGRESS,
-            ],
+            [Op.in]: [ModelAppointmentStatus.SCHEDULED, ModelAppointmentStatus.IN_PROGRESS],
           },
         },
         order: [['scheduledAt', 'ASC']],
@@ -867,10 +837,7 @@ export class AppointmentService implements OnModuleDestroy {
 
       return appointments.map((apt) => this.mapToEntity(apt));
     } catch (error) {
-      this.logger.error(
-        `Error fetching upcoming appointments: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error fetching upcoming appointments: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to fetch upcoming appointments');
     }
   }
@@ -878,18 +845,14 @@ export class AppointmentService implements OnModuleDestroy {
   /**
    * Get appointments by a specific date
    */
-  async getAppointmentsByDate(
-    dateStr: string,
-  ): Promise<{ data: AppointmentEntity[] }> {
+  async getAppointmentsByDate(dateStr: string): Promise<{ data: AppointmentEntity[] }> {
     this.logger.log(`Fetching appointments for date: ${dateStr}`);
 
     try {
       // Parse the date string and create start/end of day boundaries
       const date = new Date(dateStr);
       if (isNaN(date.getTime())) {
-        throw new BadRequestException(
-          'Invalid date format. Expected YYYY-MM-DD',
-        );
+        throw new BadRequestException('Invalid date format. Expected YYYY-MM-DD');
       }
 
       const dayStart = new Date(date);
@@ -921,10 +884,7 @@ export class AppointmentService implements OnModuleDestroy {
       if (error instanceof BadRequestException) {
         throw error;
       }
-      this.logger.error(
-        `Error fetching appointments by date: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error fetching appointments by date: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to fetch appointments by date');
     }
   }
@@ -950,10 +910,7 @@ export class AppointmentService implements OnModuleDestroy {
             [Op.lte]: futureDate,
           },
           status: {
-            [Op.in]: [
-              ModelAppointmentStatus.SCHEDULED,
-              ModelAppointmentStatus.IN_PROGRESS,
-            ],
+            [Op.in]: [ModelAppointmentStatus.SCHEDULED, ModelAppointmentStatus.IN_PROGRESS],
           },
         },
         order: [['scheduledAt', 'ASC']],
@@ -1008,19 +965,14 @@ export class AppointmentService implements OnModuleDestroy {
     // Calculate time range including buffer
     const bufferMinutes = AppointmentValidation.BUFFER_TIME_MINUTES;
     const slotStart = new Date(startTime.getTime() - bufferMinutes * 60000);
-    const slotEnd = new Date(
-      startTime.getTime() + (duration + bufferMinutes) * 60000,
-    );
+    const slotEnd = new Date(startTime.getTime() + (duration + bufferMinutes) * 60000);
 
     try {
       // Build where clause
       const whereClause: any = {
         nurseId,
         status: {
-          [Op.in]: [
-            ModelAppointmentStatus.SCHEDULED,
-            ModelAppointmentStatus.IN_PROGRESS,
-          ],
+          [Op.in]: [ModelAppointmentStatus.SCHEDULED, ModelAppointmentStatus.IN_PROGRESS],
         },
         [Op.or]: [
           // Appointment starts within the requested slot
@@ -1066,10 +1018,7 @@ export class AppointmentService implements OnModuleDestroy {
 
       return conflicts.map((apt) => this.mapToEntity(apt));
     } catch (error) {
-      this.logger.error(
-        `Error checking availability: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error checking availability: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to check availability');
     }
   }
@@ -1100,9 +1049,7 @@ export class AppointmentService implements OnModuleDestroy {
     // Generate slots in slotDuration increments
     let currentSlotStart = new Date(dayStart);
     while (currentSlotStart < dayEnd) {
-      const currentSlotEnd = new Date(
-        currentSlotStart.getTime() + slotDuration * 60000,
-      );
+      const currentSlotEnd = new Date(currentSlotStart.getTime() + slotDuration * 60000);
 
       // Skip if slot extends beyond business hours
       if (currentSlotEnd > dayEnd) {
@@ -1110,11 +1057,7 @@ export class AppointmentService implements OnModuleDestroy {
       }
 
       // Check for conflicts
-      const conflicts = await this.checkAvailability(
-        nurseId,
-        currentSlotStart,
-        slotDuration,
-      );
+      const conflicts = await this.checkAvailability(nurseId, currentSlotStart, slotDuration);
 
       slots.push({
         startTime: new Date(currentSlotStart),
@@ -1129,9 +1072,7 @@ export class AppointmentService implements OnModuleDestroy {
       });
 
       // Move to next slot
-      currentSlotStart = new Date(
-        currentSlotStart.getTime() + slotDuration * 60000,
-      );
+      currentSlotStart = new Date(currentSlotStart.getTime() + slotDuration * 60000);
     }
 
     return slots;
@@ -1175,10 +1116,7 @@ export class AppointmentService implements OnModuleDestroy {
         updatedAt: new Date(),
       });
     } catch (error) {
-      this.logger.error(
-        `Error adding to waitlist: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error adding to waitlist: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to add to waitlist');
     }
   }
@@ -1186,10 +1124,7 @@ export class AppointmentService implements OnModuleDestroy {
   /**
    * Get appointment history for a student
    */
-  async getAppointmentHistory(
-    studentId: string,
-    limit: number = 50,
-  ): Promise<AppointmentEntity[]> {
+  async getAppointmentHistory(studentId: string, limit: number = 50): Promise<AppointmentEntity[]> {
     this.logger.log(`Fetching appointment history for student: ${studentId}`);
 
     try {
@@ -1208,10 +1143,7 @@ export class AppointmentService implements OnModuleDestroy {
 
       return appointments.map((apt) => this.mapToEntity(apt));
     } catch (error) {
-      this.logger.error(
-        `Error fetching appointment history: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error fetching appointment history: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to fetch appointment history');
     }
   }
@@ -1219,10 +1151,7 @@ export class AppointmentService implements OnModuleDestroy {
   /**
    * Get no-show statistics for a student (for cancellation policy enforcement)
    */
-  async getNoShowCount(
-    studentId: string,
-    daysBack: number = 90,
-  ): Promise<number> {
+  async getNoShowCount(studentId: string, daysBack: number = 90): Promise<number> {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysBack);
 
@@ -1320,15 +1249,10 @@ export class AppointmentService implements OnModuleDestroy {
           { transaction },
         );
 
-        this.logger.log(
-          `Notified waitlist entry ${entry.id} about available slot`,
-        );
+        this.logger.log(`Notified waitlist entry ${entry.id} about available slot`);
       }
     } catch (error) {
-      this.logger.error(
-        `Error processing waitlist: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error processing waitlist: ${error.message}`, error.stack);
       // Don't throw - this is a best-effort operation
     }
   }
@@ -1336,10 +1260,7 @@ export class AppointmentService implements OnModuleDestroy {
   /**
    * Validate daily appointment limit for nurse (max 20 per day)
    */
-  private async validateDailyAppointmentLimit(
-    nurseId: string,
-    date: Date,
-  ): Promise<void> {
+  private async validateDailyAppointmentLimit(nurseId: string, date: Date): Promise<void> {
     const dayStart = new Date(date);
     dayStart.setHours(0, 0, 0, 0);
 
@@ -1354,18 +1275,13 @@ export class AppointmentService implements OnModuleDestroy {
           [Op.lte]: dayEnd,
         },
         status: {
-          [Op.in]: [
-            ModelAppointmentStatus.SCHEDULED,
-            ModelAppointmentStatus.IN_PROGRESS,
-          ],
+          [Op.in]: [ModelAppointmentStatus.SCHEDULED, ModelAppointmentStatus.IN_PROGRESS],
         },
       },
     });
 
     if (count >= 20) {
-      throw new BadRequestException(
-        'Nurse has reached maximum daily appointment limit (20)',
-      );
+      throw new BadRequestException('Nurse has reached maximum daily appointment limit (20)');
     }
   }
 
@@ -1374,9 +1290,7 @@ export class AppointmentService implements OnModuleDestroy {
   /**
    * Get waitlist with filtering and pagination
    */
-  async getWaitlist(
-    filters: WaitlistFiltersDto = {},
-  ): Promise<{ waitlist: any[] }> {
+  async getWaitlist(filters: WaitlistFiltersDto = {}): Promise<{ waitlist: any[] }> {
     this.logger.log('Fetching waitlist entries');
 
     try {
@@ -1414,10 +1328,7 @@ export class AppointmentService implements OnModuleDestroy {
 
       return { waitlist: waitlistEntries };
     } catch (error) {
-      this.logger.error(
-        `Error fetching waitlist: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error fetching waitlist: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to fetch waitlist');
     }
   }
@@ -1425,10 +1336,7 @@ export class AppointmentService implements OnModuleDestroy {
   /**
    * Update waitlist entry priority
    */
-  async updateWaitlistPriority(
-    id: string,
-    priority: DtoWaitlistPriority,
-  ): Promise<{ entry: any }> {
+  async updateWaitlistPriority(id: string, priority: DtoWaitlistPriority): Promise<{ entry: any }> {
     this.logger.log(`Updating waitlist priority: ${id}`);
 
     try {
@@ -1443,10 +1351,7 @@ export class AppointmentService implements OnModuleDestroy {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      this.logger.error(
-        `Error updating waitlist priority: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error updating waitlist priority: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to update waitlist priority');
     }
   }
@@ -1454,9 +1359,7 @@ export class AppointmentService implements OnModuleDestroy {
   /**
    * Get waitlist position
    */
-  async getWaitlistPosition(
-    id: string,
-  ): Promise<{ position: number; total: number }> {
+  async getWaitlistPosition(id: string): Promise<{ position: number; total: number }> {
     this.logger.log(`Getting waitlist position: ${id}`);
 
     try {
@@ -1488,10 +1391,7 @@ export class AppointmentService implements OnModuleDestroy {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      this.logger.error(
-        `Error getting waitlist position: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error getting waitlist position: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to get waitlist position');
     }
   }
@@ -1528,10 +1428,7 @@ export class AppointmentService implements OnModuleDestroy {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      this.logger.error(
-        `Error notifying waitlist entry: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error notifying waitlist entry: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to notify waitlist entry');
     }
   }
@@ -1539,10 +1436,7 @@ export class AppointmentService implements OnModuleDestroy {
   /**
    * Remove from waitlist
    */
-  async removeFromWaitlist(
-    id: string,
-    reason?: string,
-  ): Promise<{ entry: any }> {
+  async removeFromWaitlist(id: string, reason?: string): Promise<{ entry: any }> {
     this.logger.log(`Removing from waitlist: ${id}`);
 
     try {
@@ -1560,10 +1454,7 @@ export class AppointmentService implements OnModuleDestroy {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      this.logger.error(
-        `Error removing from waitlist: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error removing from waitlist: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to remove from waitlist');
     }
   }
@@ -1607,7 +1498,7 @@ export class AppointmentService implements OnModuleDestroy {
           });
           failed++;
           errors.push({
-            reminderId: reminder.id!,
+            reminderId: reminder.id,
             error: error.message,
           });
         }
@@ -1620,10 +1511,7 @@ export class AppointmentService implements OnModuleDestroy {
         errors: errors.length > 0 ? errors : undefined,
       };
     } catch (error) {
-      this.logger.error(
-        `Error processing reminders: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error processing reminders: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to process reminders');
     }
   }
@@ -1631,9 +1519,7 @@ export class AppointmentService implements OnModuleDestroy {
   /**
    * Get appointment reminders
    */
-  async getAppointmentReminders(
-    appointmentId: string,
-  ): Promise<{ reminders: any[] }> {
+  async getAppointmentReminders(appointmentId: string): Promise<{ reminders: any[] }> {
     this.logger.log(`Getting reminders for appointment: ${appointmentId}`);
 
     try {
@@ -1644,10 +1530,7 @@ export class AppointmentService implements OnModuleDestroy {
 
       return { reminders };
     } catch (error) {
-      this.logger.error(
-        `Error getting appointment reminders: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error getting appointment reminders: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to get appointment reminders');
     }
   }
@@ -1655,20 +1538,14 @@ export class AppointmentService implements OnModuleDestroy {
   /**
    * Schedule reminder
    */
-  async scheduleReminder(
-    createDto: CreateReminderDto,
-  ): Promise<{ reminder: any }> {
+  async scheduleReminder(createDto: CreateReminderDto): Promise<{ reminder: any }> {
     this.logger.log('Scheduling custom reminder');
 
     try {
       // Verify appointment exists
-      const appointment = await this.appointmentModel.findByPk(
-        createDto.appointmentId,
-      );
+      const appointment = await this.appointmentModel.findByPk(createDto.appointmentId);
       if (!appointment) {
-        throw new NotFoundException(
-          `Appointment with ID ${createDto.appointmentId} not found`,
-        );
+        throw new NotFoundException(`Appointment with ID ${createDto.appointmentId} not found`);
       }
 
       const reminder = await this.reminderModel.create({
@@ -1687,10 +1564,7 @@ export class AppointmentService implements OnModuleDestroy {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      this.logger.error(
-        `Error scheduling reminder: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error scheduling reminder: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to schedule reminder');
     }
   }
@@ -1713,10 +1587,7 @@ export class AppointmentService implements OnModuleDestroy {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      this.logger.error(
-        `Error cancelling reminder: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error cancelling reminder: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to cancel reminder');
     }
   }
@@ -1750,20 +1621,14 @@ export class AppointmentService implements OnModuleDestroy {
 
       const byStatus = await this.appointmentModel.findAll({
         where: whereClause,
-        attributes: [
-          'status',
-          [Sequelize.fn('COUNT', Sequelize.col('id')), 'count'],
-        ],
+        attributes: ['status', [Sequelize.fn('COUNT', Sequelize.col('id')), 'count']],
         group: ['status'],
         raw: true,
       });
 
       const byType = await this.appointmentModel.findAll({
         where: whereClause,
-        attributes: [
-          'type',
-          [Sequelize.fn('COUNT', Sequelize.col('id')), 'count'],
-        ],
+        attributes: ['type', [Sequelize.fn('COUNT', Sequelize.col('id')), 'count']],
         group: ['type'],
         raw: true,
       });
@@ -1778,22 +1643,25 @@ export class AppointmentService implements OnModuleDestroy {
 
       return {
         total,
-        byStatus: byStatus.reduce((acc, item: any) => {
-          acc[item.status] = parseInt(item.count);
-          return acc;
-        }, {} as Record<string, number>),
-        byType: byType.reduce((acc, item: any) => {
-          acc[item.type] = parseInt(item.count);
-          return acc;
-        }, {} as Record<string, number>),
+        byStatus: byStatus.reduce(
+          (acc, item: any) => {
+            acc[item.status] = parseInt(item.count);
+            return acc;
+          },
+          {} as Record<string, number>,
+        ),
+        byType: byType.reduce(
+          (acc, item: any) => {
+            acc[item.type] = parseInt(item.count);
+            return acc;
+          },
+          {} as Record<string, number>,
+        ),
         noShowRate: total > 0 ? (noShowCount / total) * 100 : 0,
         completionRate: total > 0 ? (completedCount / total) * 100 : 0,
       };
     } catch (error) {
-      this.logger.error(
-        `Error getting statistics: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error getting statistics: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to get statistics');
     }
   }
@@ -1876,10 +1744,7 @@ export class AppointmentService implements OnModuleDestroy {
         },
       };
     } catch (error) {
-      this.logger.error(
-        `Error searching appointments: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error searching appointments: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to search appointments');
     }
   }
@@ -1921,10 +1786,7 @@ export class AppointmentService implements OnModuleDestroy {
       const data = appointments.map((apt) => this.mapToEntity(apt));
       return { appointments: data };
     } catch (error) {
-      this.logger.error(
-        `Error getting appointments by date range: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error getting appointments by date range: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to get appointments by date range');
     }
   }
@@ -1967,10 +1829,7 @@ export class AppointmentService implements OnModuleDestroy {
 
       return { trends };
     } catch (error) {
-      this.logger.error(
-        `Error getting appointment trends: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error getting appointment trends: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to get appointment trends');
     }
   }
@@ -1978,11 +1837,7 @@ export class AppointmentService implements OnModuleDestroy {
   /**
    * Get no-show statistics
    */
-  async getNoShowStats(
-    nurseId?: string,
-    dateFrom?: string,
-    dateTo?: string,
-  ): Promise<any> {
+  async getNoShowStats(nurseId?: string, dateFrom?: string, dateTo?: string): Promise<any> {
     this.logger.log('Getting no-show statistics');
 
     try {
@@ -2016,10 +1871,7 @@ export class AppointmentService implements OnModuleDestroy {
         byStudent: [], // Mock - would implement proper aggregation
       };
     } catch (error) {
-      this.logger.error(
-        `Error getting no-show stats: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error getting no-show stats: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to get no-show statistics');
     }
   }
@@ -2027,11 +1879,7 @@ export class AppointmentService implements OnModuleDestroy {
   /**
    * Get utilization statistics
    */
-  async getUtilizationStats(
-    nurseId: string,
-    dateFrom: string,
-    dateTo: string,
-  ): Promise<any> {
+  async getUtilizationStats(nurseId: string, dateFrom: string, dateTo: string): Promise<any> {
     this.logger.log('Getting utilization statistics');
 
     try {
@@ -2072,8 +1920,7 @@ export class AppointmentService implements OnModuleDestroy {
       const slotsPerDay = (hoursPerDay * 60) / 30; // 30-minute slots
       const totalSlots = businessDays * slotsPerDay;
       const availableSlots = totalSlots - bookedSlots;
-      const utilizationRate =
-        totalSlots > 0 ? (bookedSlots / totalSlots) * 100 : 0;
+      const utilizationRate = totalSlots > 0 ? (bookedSlots / totalSlots) * 100 : 0;
 
       return {
         utilizationRate,
@@ -2083,10 +1930,7 @@ export class AppointmentService implements OnModuleDestroy {
         byDay: [], // Mock - would implement proper daily breakdown
       };
     } catch (error) {
-      this.logger.error(
-        `Error getting utilization stats: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error getting utilization stats: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to get utilization statistics');
     }
   }
@@ -2152,29 +1996,20 @@ export class AppointmentService implements OnModuleDestroy {
         // Move to next occurrence
         switch (createDto.recurrence.frequency) {
           case RecurrenceFrequency.DAILY:
-            currentDate.setDate(
-              currentDate.getDate() + createDto.recurrence.interval,
-            );
+            currentDate.setDate(currentDate.getDate() + createDto.recurrence.interval);
             break;
           case RecurrenceFrequency.WEEKLY:
-            currentDate.setDate(
-              currentDate.getDate() + 7 * createDto.recurrence.interval,
-            );
+            currentDate.setDate(currentDate.getDate() + 7 * createDto.recurrence.interval);
             break;
           case RecurrenceFrequency.MONTHLY:
-            currentDate.setMonth(
-              currentDate.getMonth() + createDto.recurrence.interval,
-            );
+            currentDate.setMonth(currentDate.getMonth() + createDto.recurrence.interval);
             break;
         }
       }
 
       return { appointments, count: appointments.length };
     } catch (error) {
-      this.logger.error(
-        `Error creating recurring appointments: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error creating recurring appointments: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to create recurring appointments');
     }
   }
@@ -2213,14 +2048,10 @@ export class AppointmentService implements OnModuleDestroy {
             AppointmentValidation.validateCanBeCancelled(
               appointment.status as unknown as AppointmentStatus,
             );
-            AppointmentValidation.validateCancellationNotice(
-              appointment.scheduledAt,
-            );
+            AppointmentValidation.validateCancellationNotice(appointment.scheduledAt);
             validAppointments.push(appointment.id);
           } catch (error) {
-            this.logger.warn(
-              `Cannot cancel appointment ${appointment.id}: ${error.message}`,
-            );
+            this.logger.warn(`Cannot cancel appointment ${appointment.id}: ${error.message}`);
             invalidAppointments.push(appointment.id);
           }
         }
@@ -2242,11 +2073,7 @@ export class AppointmentService implements OnModuleDestroy {
             ) as any,
           },
           {
-            where: this.sequelize.where(
-              this.sequelize.col('id'),
-              Op.in,
-              validAppointments,
-            ) as any,
+            where: this.sequelize.where(this.sequelize.col('id'), Op.in, validAppointments) as any,
             transaction,
           },
         );
@@ -2283,10 +2110,7 @@ export class AppointmentService implements OnModuleDestroy {
       );
       return result;
     } catch (error) {
-      this.logger.error(
-        `Error in bulk cancellation: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error in bulk cancellation: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to bulk cancel appointments');
     }
   }
@@ -2336,10 +2160,7 @@ export class AppointmentService implements OnModuleDestroy {
       const data = appointments.map((apt) => this.mapToEntity(apt));
       return { appointments: data };
     } catch (error) {
-      this.logger.error(
-        `Error getting appointments for students: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error getting appointments for students: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to get appointments for students');
     }
   }
@@ -2364,11 +2185,7 @@ export class AppointmentService implements OnModuleDestroy {
         excludeAppointmentId,
       );
 
-      const availableSlots = await this.getAvailableSlots(
-        nurseId,
-        startDateTime,
-        duration,
-      );
+      const availableSlots = await this.getAvailableSlots(nurseId, startDateTime, duration);
 
       return {
         hasConflict: conflicts.length > 0,
@@ -2376,10 +2193,7 @@ export class AppointmentService implements OnModuleDestroy {
         availableSlots: availableSlots.filter((slot) => slot.isAvailable),
       };
     } catch (error) {
-      this.logger.error(
-        `Error checking conflicts: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error checking conflicts: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to check conflicts');
     }
   }
@@ -2387,11 +2201,7 @@ export class AppointmentService implements OnModuleDestroy {
   /**
    * Export calendar
    */
-  async exportCalendar(
-    nurseId: string,
-    dateFrom?: string,
-    dateTo?: string,
-  ): Promise<string> {
+  async exportCalendar(nurseId: string, dateFrom?: string, dateTo?: string): Promise<string> {
     this.logger.log('Exporting calendar');
 
     try {
@@ -2418,14 +2228,9 @@ export class AppointmentService implements OnModuleDestroy {
 
       for (const appointment of appointments) {
         const startTime =
-          appointment.scheduledAt
-            .toISOString()
-            .replace(/[-:]/g, '')
-            .split('.')[0] + 'Z';
+          appointment.scheduledAt.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
         const endTime =
-          new Date(
-            appointment.scheduledAt.getTime() + appointment.duration * 60000,
-          )
+          new Date(appointment.scheduledAt.getTime() + appointment.duration * 60000)
             .toISOString()
             .replace(/[-:]/g, '')
             .split('.')[0] + 'Z';
@@ -2443,10 +2248,7 @@ export class AppointmentService implements OnModuleDestroy {
 
       return icalContent;
     } catch (error) {
-      this.logger.error(
-        `Error exporting calendar: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error exporting calendar: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to export calendar');
     }
   }
@@ -2500,5 +2302,4 @@ export class AppointmentService implements OnModuleDestroy {
         : undefined,
     };
   }
-
 }

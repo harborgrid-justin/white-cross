@@ -8,13 +8,13 @@ import { APP_GUARD, APP_INTERCEPTOR, Reflector } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import { Redis } from 'ioredis';
-import { DatabaseModule } from '@/database';
-import { AuthModule, JwtAuthGuard, TokenBlacklistService } from '@/auth';
-import { AccessControlModule, IpRestrictionGuard } from '@/access-control';
-import { CsrfGuard } from '@/middleware/security';
-import { Injectable } from '@nestjs/common';
+import { DatabaseModule } from './database/database.module';
+import { AuthModule, JwtAuthGuard, TokenBlacklistService } from './auth';
+import { AccessControlModule, IpRestrictionGuard } from './access-control';
+import { CsrfGuard } from './middleware/security';
+import { Injectable, Optional } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { HealthRecordModule } from '@/health-record';
+import { HealthRecordModule } from './health-record';
 
 /**
  * Global Authentication Guard
@@ -22,11 +22,11 @@ import { HealthRecordModule } from '@/health-record';
  */
 @Injectable()
 export class GlobalAuthGuard extends JwtAuthGuard {
-  constructor(reflector: Reflector, tokenBlacklistService: TokenBlacklistService) {
+  constructor(reflector: Reflector, @Optional() tokenBlacklistService?: TokenBlacklistService) {
     super(reflector, tokenBlacklistService);
   }
 }
-import { UserModule } from '@/user';
+import { UserModule } from './user';
 import { ResponseTransformInterceptor } from './common/interceptors/response-transform.interceptor';
 import {
   appConfig,
@@ -43,53 +43,53 @@ import {
   validationSchema,
 } from './config';
 
-import { AnalyticsModule } from '@/analytics';
-import { ChronicConditionModule } from '@/chronic-condition';
+import { AnalyticsModule } from './analytics';
+import { ChronicConditionModule } from './chronic-condition';
 // import { AllergyModule } from './allergy/allergy.module'; // Already converted to Sequelize
-import { BudgetModule } from '@/budget';
-import { AdministrationModule } from '@/administration';
-import { AuditModule } from '@/audit';
-import { ContactModule } from '@/contact';
-import { ComplianceModule } from '@/compliance';
-import { ClinicalModule } from '@/clinical';
-import { IncidentReportModule } from '@/incident-report';
-import { IntegrationModule } from '@/integration';
-import { IntegrationsModule } from '@/integrations';
-import { SecurityModule } from '@/security';
-import { ReportModule } from '@/report';
-import { MobileModule } from '@/mobile';
-import { PdfModule } from '@/pdf';
-import { AcademicTranscriptModule } from '@/academic-transcript';
-import { AiSearchModule } from '@/ai-search';
-import { AlertsModule } from '@/alerts';
-import { FeaturesModule } from '@/features';
-import { HealthDomainModule } from '@/health-domain';
+import { BudgetModule } from './budget';
+import { AdministrationModule } from './administration';
+import { AuditModule } from './audit';
+import { ContactModule } from './contact';
+import { ComplianceModule } from './compliance';
+import { ClinicalModule } from './clinical';
+import { IncidentReportModule } from './incident-report';
+import { IntegrationModule } from './integration';
+import { IntegrationsModule } from './integrations';
+import { SecurityModule } from './security';
+import { ReportModule } from './report';
+import { MobileModule } from './mobile';
+import { PdfModule } from './pdf';
+import { AcademicTranscriptModule } from './academic-transcript';
+import { AiSearchModule } from './ai-search';
+import { AlertsModule } from './alerts';
+import { FeaturesModule } from './features';
+import { HealthDomainModule } from './health-domain';
 import { InterfacesModule } from './interfaces/interfaces.module';
 import { SharedModule } from './shared/shared.module';
-import { DashboardModule } from '@/dashboard';
-import { AdvancedFeaturesModule } from '@/advanced-features';
-import { ConfigurationModule } from '@/configuration';
-import { EmergencyBroadcastModule } from '@/emergency-broadcast';
-import { GradeTransitionModule } from '@/grade-transition';
-import { EnterpriseFeaturesModule } from '@/enterprise-features';
-import { HealthMetricsModule } from '@/health-metrics';
-import { MedicationInteractionModule } from '@/medication-interaction';
-import { HealthRiskAssessmentModule } from '@/health-risk-assessment';
-import { EmergencyContactModule } from '@/emergency-contact';
-import { EmailModule } from '@/infrastructure/email';
-import { SmsModule } from '@/infrastructure/sms';
-import { MonitoringModule } from '@/infrastructure/monitoring';
-import { JobsModule } from '@/infrastructure/jobs';
-import { WebSocketModule } from '@/infrastructure/websocket';
-import { GraphQLModule } from '@/infrastructure/graphql';
-import { CoreMiddlewareModule } from '@/middleware/core';
-import { WorkersModule } from '@/workers';
-import { MedicationModule } from '@/medication';
-import { StudentModule } from '@/student';
-import { AppointmentModule } from '@/appointment';
-import { DiscoveryExampleModule } from '@/discovery';
-import { CommandsModule } from '@/commands';
-import { CoreModule } from '@/core';
+import { DashboardModule } from './dashboard';
+import { AdvancedFeaturesModule } from './advanced-features';
+import { ConfigurationModule } from './configuration';
+import { EmergencyBroadcastModule } from './emergency-broadcast';
+import { GradeTransitionModule } from './grade-transition';
+import { EnterpriseFeaturesModule } from './enterprise-features';
+import { HealthMetricsModule } from './health-metrics';
+import { MedicationInteractionModule } from './medication-interaction';
+import { HealthRiskAssessmentModule } from './health-risk-assessment';
+import { EmergencyContactModule } from './emergency-contact';
+import { EmailModule } from './infrastructure/email';
+import { SmsModule } from './infrastructure/sms';
+import { MonitoringModule } from './infrastructure/monitoring';
+import { JobsModule } from './infrastructure/jobs';
+import { WebSocketModule } from './infrastructure/websocket';
+import { GraphQLModule } from './infrastructure/graphql';
+import { CoreMiddlewareModule } from './middleware/core';
+import { WorkersModule } from './workers';
+import { MedicationModule } from './medication';
+import { StudentModule } from './student';
+import { AppointmentModule } from './appointment';
+import { DiscoveryExampleModule } from './discovery';
+import { CommandsModule } from './commands';
+import { CoreModule } from './core';
 import { SentryModule } from './infrastructure/monitoring/sentry.module';
 
 @Module({
@@ -175,14 +175,14 @@ import { SentryModule } from './infrastructure/monitoring/sentry.module';
       },
     }),
 
-    // Database connection (Sequelize)
+    // Database connection (Sequelize) - must be first
     DatabaseModule,
+
+    // Authentication module - must be early for global guards
+    AuthModule,
 
     // Core middleware (RBAC, validation, session management)
     CoreMiddlewareModule,
-
-    // Authentication module
-    AuthModule,
 
     // Security module (IP restrictions, threat detection, incidents)
     SecurityModule,
@@ -311,6 +311,9 @@ import { SentryModule } from './infrastructure/monitoring/sentry.module';
   providers: [
     // Global configuration service (type-safe configuration access)
     AppConfigService,
+
+    // Core NestJS services required by guards
+    Reflector,
 
     // Global authentication guard
     GlobalAuthGuard,

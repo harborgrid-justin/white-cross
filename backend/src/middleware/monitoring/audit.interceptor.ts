@@ -9,7 +9,6 @@
 import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
-import { AuditEventType, AuditMiddleware } from './audit.middleware';
 
 /**
  * Audit Interceptor for method-level logging
@@ -22,7 +21,7 @@ import { AuditEventType, AuditMiddleware } from './audit.middleware';
 export class AuditInterceptor implements NestInterceptor {
   private readonly logger = new Logger(AuditInterceptor.name);
 
-  constructor(private readonly auditMiddleware: AuditMiddleware) {}
+  constructor() {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest();
@@ -47,23 +46,19 @@ export class AuditInterceptor implements NestInterceptor {
     });
 
     return next.handle().pipe(
-      tap(async (data) => {
+      tap(() => {
         const duration = Date.now() - startTime;
 
         // Determine if this is a PHI operation
         const isPHI = this.isPHIOperation(controllerName, methodName);
 
+        // Note: Audit logging disabled in interceptor to prevent circular dependency
+        // PHI access logging is handled by the audit middleware at the request level
         if (isPHI && user) {
-          await this.auditMiddleware.logPHIAccess(
-            this.getOperationType(request.method),
-            this.extractStudentId(request),
-            user.userId,
-            user.email,
-            user.role,
-            ipAddress,
-            `${controllerName}.${methodName}`,
-            undefined,
-          );
+          this.logger.debug(`PHI operation detected: ${controllerName}.${methodName}`, {
+            userId: user.userId,
+            operation: this.getOperationType(request.method),
+          });
         }
 
         this.logger.debug(`Completed ${controllerName}.${methodName}`, {
@@ -72,30 +67,17 @@ export class AuditInterceptor implements NestInterceptor {
           success: true,
         });
       }),
-      catchError(async (error) => {
+      catchError((error) => {
         const duration = Date.now() - startTime;
 
-        // Log error event
+        // Log error event (simplified logging to prevent circular dependency)
         if (user) {
-          await this.auditMiddleware.logEvent(
-            AuditEventType.SYSTEM_ACCESS,
-            `${controllerName}.${methodName}`,
-            'FAILURE',
-            {
-              userId: user.userId,
-              userEmail: user.email,
-              userRole: user.role,
-              ipAddress,
-              userAgent,
-              resource: request.path,
-              error: error.message,
-              details: {
-                method: request.method,
-                duration,
-                errorStack: error.stack,
-              },
-            },
-          );
+          this.logger.error(`Method execution failed: ${controllerName}.${methodName}`, {
+            userId: user.userId,
+            userEmail: user.email,
+            error: error.message,
+            duration,
+          });
         }
 
         this.logger.error(`Failed ${controllerName}.${methodName}`, {

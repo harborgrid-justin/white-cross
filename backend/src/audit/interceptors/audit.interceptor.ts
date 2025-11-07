@@ -1,4 +1,4 @@
-import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor, Optional } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { AuditAction, AuditService } from '@/audit';
@@ -17,7 +17,7 @@ import { AuditAction, AuditService } from '@/audit';
 export class AuditInterceptor implements NestInterceptor {
   private readonly logger = new Logger(AuditInterceptor.name);
 
-  constructor(private readonly auditService: AuditService) {}
+  constructor(@Optional() private readonly auditService?: AuditService) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest();
@@ -27,44 +27,48 @@ export class AuditInterceptor implements NestInterceptor {
     const action = this.getActionFromMethod(method);
     const entityType = this.getEntityTypeFromUrl(url);
     const userId = user?.id || user?.userId;
-    const ipAddress = this.auditService.extractIPAddress(request);
-    const userAgent = this.auditService.extractUserAgent(request);
+    const ipAddress = this.auditService?.extractIPAddress(request) || 'unknown';
+    const userAgent = this.auditService?.extractUserAgent(request) || 'unknown';
 
     return next.handle().pipe(
       tap({
         next: (data) => {
           // Log successful action (async, fail-safe)
-          this.auditService
-            .logAction({
-              userId,
-              action,
-              entityType,
-              entityId: data && typeof data === 'object' && 'id' in data ? String(data.id) : undefined,
-              changes: { method, url, success: true },
-              ipAddress,
-              userAgent,
-              success: true,
-            })
-            .catch((error) => {
-              this.logger.error('Failed to log audit action:', error);
-            });
+          if (this.auditService) {
+            this.auditService
+              .logAction({
+                userId,
+                action,
+                entityType,
+                entityId: data && typeof data === 'object' && 'id' in data ? String(data.id) : undefined,
+                changes: { method, url, success: true },
+                ipAddress,
+                userAgent,
+                success: true,
+              })
+              .catch((error) => {
+                this.logger.error('Failed to log audit action:', error);
+              });
+          }
         },
         error: (error) => {
           // Log failed action (async, fail-safe)
-          this.auditService
-            .logAction({
-              userId,
-              action,
-              entityType,
-              changes: { method, url, success: false },
-              ipAddress,
-              userAgent,
-              success: false,
-              errorMessage: error.message,
-            })
-            .catch((err) => {
-              this.logger.error('Failed to log audit action error:', err);
-            });
+          if (this.auditService) {
+            this.auditService
+              .logAction({
+                userId,
+                action,
+                entityType,
+                changes: { method, url, success: false },
+                ipAddress,
+                userAgent,
+                success: false,
+                errorMessage: error.message,
+              })
+              .catch((err) => {
+                this.logger.error('Failed to log audit action error:', err);
+              });
+          }
         },
       }),
     );

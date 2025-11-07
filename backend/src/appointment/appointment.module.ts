@@ -12,8 +12,17 @@
 
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { AppointmentController } from './appointment.controller';
-import { AppointmentService } from './appointment.service';
+import { AppointmentCoreController } from './controllers/appointment-core.controller';
+import { AppointmentStatusController } from './controllers/appointment-status.controller';
+import { AppointmentQueryController } from './controllers/appointment-query.controller';
+import { WaitlistController } from './controllers/waitlist.controller';
+import { ReminderController } from './controllers/reminder.controller';
+import { AppointmentReadService } from './services/appointment-read.service';
+import { AppointmentWriteService } from './services/appointment-write.service';
+import { AppointmentStatusService } from './services/appointment-status.service';
+import { AppointmentQueryService } from './services/appointment-query.service';
+import { WaitlistService } from './services/waitlist.service';
+import { ReminderService } from './services/reminder.service';
 import { Appointment } from '../database/models/appointment.model';
 import { AppointmentReminder } from '../database/models/appointment-reminder.model';
 import { AppointmentWaitlist } from '../database/models/appointment-waitlist.model';
@@ -54,19 +63,34 @@ import { EmailModule } from '../infrastructure/email/email.module';
 @Module({
   imports: [
     // Register models with Sequelize
-    SequelizeModule.forFeature([
-      Appointment,
-      AppointmentReminder,
-      AppointmentWaitlist,
-      User,
-    ]),
+    SequelizeModule.forFeature([Appointment, AppointmentReminder, AppointmentWaitlist, User]),
     // Event-driven architecture modules
     // EventEmitterModule is global (registered in AppModule)
     WebSocketModule, // Provides AppointmentWebSocketListener
     EmailModule, // Provides AppointmentEmailListener
   ],
-  controllers: [AppointmentController],
-  providers: [AppointmentService],
-  exports: [AppointmentService], // Export for use in other modules
+  controllers: [
+    AppointmentCoreController,
+    AppointmentStatusController,
+    AppointmentQueryController,
+    WaitlistController,
+    ReminderController,
+  ],
+  providers: [
+    AppointmentReadService,
+    AppointmentWriteService,
+    AppointmentStatusService,
+    AppointmentQueryService,
+    WaitlistService,
+    ReminderService,
+  ],
+  exports: [
+    AppointmentReadService,
+    AppointmentWriteService,
+    AppointmentStatusService,
+    AppointmentQueryService,
+    WaitlistService,
+    ReminderService,
+  ], // Export for use in other modules
 })
 export class AppointmentModule {}

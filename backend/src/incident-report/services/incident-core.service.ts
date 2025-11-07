@@ -2,13 +2,11 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { IncidentReport } from '@/database';
-import {
-  CreateIncidentReportDto,
-  IncidentFiltersDto,
-  IncidentNotificationService,
-  IncidentValidationService,
-  UpdateIncidentReportDto,
-} from '@/incident-report';
+import { CreateIncidentReportDto } from '../dto/create-incident-report.dto';
+import { IncidentFiltersDto } from '../dto/incident-filters.dto';
+import { UpdateIncidentReportDto } from '../dto/update-incident-report.dto';
+import { IncidentNotificationService } from './incident-notification.service';
+import { IncidentValidationService } from './incident-validation.service';
 import { IncidentSeverity } from '../enums';
 
 @Injectable()

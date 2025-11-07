@@ -8,6 +8,10 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { StudentService } from './student.service';
 import { StudentController } from './student.controller';
+import { StudentCoreController } from './controllers/student-core.controller';
+import { StudentStatusController } from './controllers/student-status.controller';
+import { StudentCrudService } from './services/student-crud.service';
+import { StudentStatusService } from './services/student-status.service';
 import { HealthRecord, MentalHealthRecord, Student, User } from '@/database';
 import { AcademicTranscriptModule } from '@/academic-transcript';
 
@@ -30,18 +34,25 @@ import { AcademicTranscriptModule } from '@/academic-transcript';
 @Module({
   imports: [
     // Register models with Sequelize
-    SequelizeModule.forFeature([
-      Student,
-      User,
-      HealthRecord,
-      MentalHealthRecord,
-    ]),
+    SequelizeModule.forFeature([Student, User, HealthRecord, MentalHealthRecord]),
 
     // Import AcademicTranscriptModule for transcript-related operations
     AcademicTranscriptModule,
   ],
-  controllers: [StudentController],
-  providers: [StudentService],
-  exports: [StudentService], // Export for use in other modules
+  controllers: [
+    StudentController, // Keep original for backward compatibility
+    StudentCoreController,
+    StudentStatusController,
+  ],
+  providers: [
+    StudentService, // Keep original for backward compatibility
+    StudentCrudService,
+    StudentStatusService,
+  ],
+  exports: [
+    StudentService, // Keep original for backward compatibility
+    StudentCrudService,
+    StudentStatusService,
+  ],
 })
 export class StudentModule {}
