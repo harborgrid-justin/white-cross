@@ -7,7 +7,7 @@ export class StockAdjustmentDto {
     example: -5,
   })
   @IsInt()
-  quantity: number;
+  quantity!: number;
 
   @ApiProperty({
     description: 'Reason for adjustment',
@@ -15,9 +15,9 @@ export class StockAdjustmentDto {
   })
   @IsString()
   @MaxLength(255)
-  reason: string;
+  reason!: string;
 
   @ApiProperty({ description: 'User UUID performing the adjustment' })
   @IsUUID()
-  performedById: string;
+  performedById!: string;
 }

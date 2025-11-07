@@ -2,51 +2,51 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class IntegrationStatsByTypeDto {
   @ApiProperty({ description: 'Number of successful syncs' })
-  success: number;
+  success!: number;
 
   @ApiProperty({ description: 'Number of failed syncs' })
-  failed: number;
+  failed!: number;
 
   @ApiProperty({ description: 'Total syncs' })
-  total: number;
+  total!: number;
 }
 
 export class SyncStatisticsDto {
   @ApiProperty({ description: 'Total number of syncs' })
-  totalSyncs: number;
+  totalSyncs!: number;
 
   @ApiProperty({ description: 'Number of successful syncs' })
-  successfulSyncs: number;
+  successfulSyncs!: number;
 
   @ApiProperty({ description: 'Number of failed syncs' })
-  failedSyncs: number;
+  failedSyncs!: number;
 
   @ApiProperty({ description: 'Success rate percentage' })
-  successRate: number;
+  successRate!: number;
 
   @ApiProperty({ description: 'Total records processed' })
-  totalRecordsProcessed: number;
+  totalRecordsProcessed!: number;
 
   @ApiProperty({ description: 'Total records succeeded' })
-  totalRecordsSucceeded: number;
+  totalRecordsSucceeded!: number;
 
   @ApiProperty({ description: 'Total records failed' })
-  totalRecordsFailed: number;
+  totalRecordsFailed!: number;
 }
 
 export class IntegrationStatisticsDto {
   @ApiProperty({ description: 'Total number of integrations' })
-  totalIntegrations: number;
+  totalIntegrations!: number;
 
   @ApiProperty({ description: 'Number of active integrations' })
-  activeIntegrations: number;
+  activeIntegrations!: number;
 
   @ApiProperty({ description: 'Number of inactive integrations' })
-  inactiveIntegrations: number;
+  inactiveIntegrations!: number;
 
   @ApiProperty({ description: 'Sync statistics' })
-  syncStatistics: SyncStatisticsDto;
+  syncStatistics!: SyncStatisticsDto;
 
   @ApiProperty({ description: 'Statistics by integration type' })
-  statsByType: Record<string, IntegrationStatsByTypeDto>;
+  statsByType!: Record<string, IntegrationStatsByTypeDto>;
 }

@@ -13,5 +13,5 @@ export class CheckNewMedicationDto {
   })
   @IsString()
   @IsNotEmpty()
-  medicationName: string;
+  medicationName!: string;
 }

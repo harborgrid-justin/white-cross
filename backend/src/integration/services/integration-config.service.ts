@@ -5,7 +5,6 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Model } from 'sequelize-typescript';
 import {
   IntegrationConfig,
   IntegrationStatus,
@@ -130,7 +129,7 @@ export class IntegrationConfigService {
       // Validate settings if provided
       if (data.settings) {
         this.validationService.validateIntegrationSettings(
-          data.settings,
+          data.settings as Record<string, unknown>,
           data.type,
         );
       }
@@ -209,7 +208,7 @@ export class IntegrationConfigService {
       // Validate settings if being updated
       if (data.settings) {
         this.validationService.validateIntegrationSettings(
-          data.settings,
+          data.settings as Record<string, unknown>,
           existing.type,
         );
       }

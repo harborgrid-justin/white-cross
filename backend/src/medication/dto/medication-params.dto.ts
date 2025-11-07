@@ -11,7 +11,7 @@ export class MedicationIdParamDto {
   })
   @IsUUID()
   @IsNotEmpty()
-  id: string;
+  id!: string;
 }
 
 /**
@@ -24,5 +24,5 @@ export class StudentIdParamDto {
   })
   @IsUUID()
   @IsNotEmpty()
-  studentId: string;
+  studentId!: string;
 }

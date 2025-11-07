@@ -214,11 +214,15 @@ export function decryptSensitiveConfig(encryptedValue: string): string {
 
   try {
     const parts = encryptedValue.split(':');
-    if (parts.length < 3) {
+    if (parts.length !== 4) {
       throw new Error('Invalid encrypted value format');
     }
 
     const [algorithm, ivHex, authTagHex, encrypted] = parts;
+    if (!algorithm || !ivHex || !encrypted) {
+      throw new Error('Invalid encrypted value format');
+    }
+
     const key = crypto.scryptSync(ENCRYPTION_KEY, 'salt', 32);
     const iv = Buffer.from(ivHex, 'hex');
 
@@ -448,10 +452,12 @@ function validateValue(
   if (
     schema.type === 'object' &&
     schema.properties &&
-    typeof value === 'object'
+    typeof value === 'object' &&
+    value !== null
   ) {
+    const objValue = value as Record<string, unknown>;
     for (const [propKey, propSchema] of Object.entries(schema.properties)) {
-      const propValue = value[propKey];
+      const propValue = objValue[propKey];
       const propErrors = validateValue(
         `${key}.${propKey}`,
         propValue,

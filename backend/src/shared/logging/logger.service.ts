@@ -43,7 +43,7 @@ export class LoggerService implements NestLoggerService {
   private readonly winston: winston.Logger;
   private context?: string;
 
-  constructor(@Inject(AppConfigService) private readonly config: AppConfigService) {
+  constructor(@Inject(AppConfigService) private readonly config?: AppConfigService) {
     const logFormat = winston.format.combine(
       winston.format.timestamp(),
       winston.format.errors({ stack: true }),
@@ -71,8 +71,8 @@ export class LoggerService implements NestLoggerService {
       }),
     );
 
-    const logLevel = this.config.get<string>('app.logging.level', 'info');
-    const isProduction = this.config.isProduction;
+    const logLevel = this.config?.get<string>('app.logging.level', 'info') ?? 'info';
+    const isProduction = this.config?.isProduction ?? false;
 
     this.winston = winston.createLogger({
       level: logLevel,

@@ -141,10 +141,10 @@ export class PerformanceMiddleware implements NestMiddleware {
 
     // Hook into response to capture end metrics
     const originalEnd = res.end;
-    res.end = ((...args: any[]) => {
+    res.end = ((chunk?: any, encoding?: BufferEncoding, cb?: () => void) => {
       this.endRequest(requestId, res.statusCode, undefined);
 
-      return originalEnd.apply(res, args);
+      return originalEnd.call(res, chunk, encoding || 'utf8', cb);
     }) as any;
 
     next();

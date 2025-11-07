@@ -56,12 +56,12 @@ export function validateEmailAddress(email: string): boolean {
   const [localPart, domain] = parts;
 
   // Local part checks
-  if (localPart.length > 64 || localPart.length === 0) {
+  if (localPart!.length > 64 || localPart!.length === 0) {
     return false;
   }
 
   // Domain checks
-  if (domain.length > 253 || domain.length === 0) {
+  if (domain!.length > 253 || domain!.length === 0) {
     return false;
   }
 
@@ -71,7 +71,7 @@ export function validateEmailAddress(email: string): boolean {
   }
 
   // Check for leading/trailing periods in local part
-  if (localPart.startsWith('.') || localPart.endsWith('.')) {
+  if (localPart!.startsWith('.') || localPart!.endsWith('.')) {
     return false;
   }
 

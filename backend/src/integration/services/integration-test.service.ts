@@ -69,7 +69,7 @@ export class IntegrationTestService {
         status: testResult.success ? 'success' : 'failed',
         duration: responseTime,
         errorMessage: testResult.success ? undefined : testResult.message,
-        details: testResult.details,
+        details: testResult.details as any,
       });
 
       this.logger.log(

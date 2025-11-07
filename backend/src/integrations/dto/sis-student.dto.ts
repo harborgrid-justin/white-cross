@@ -41,7 +41,7 @@ export class SisStudentDto {
     example: 'PS-12345',
   })
   @IsString()
-  sisId: string;
+  sisId!: string;
 
   /**
    * Student's first name
@@ -52,7 +52,7 @@ export class SisStudentDto {
     example: 'John',
   })
   @IsString()
-  firstName: string;
+  firstName!: string;
 
   /**
    * Student's last name
@@ -63,7 +63,7 @@ export class SisStudentDto {
     example: 'Doe',
   })
   @IsString()
-  lastName: string;
+  lastName!: string;
 
   /**
    * Student's date of birth in ISO 8601 format
@@ -74,7 +74,7 @@ export class SisStudentDto {
     example: '2010-05-15',
   })
   @IsDateString()
-  dateOfBirth: string;
+  dateOfBirth!: string;
 
   /**
    * Student's current grade level
@@ -85,7 +85,7 @@ export class SisStudentDto {
     example: '8',
   })
   @IsString()
-  grade: string;
+  grade!: string;
 
   /**
    * Current enrollment status
@@ -96,7 +96,7 @@ export class SisStudentDto {
     example: SisEnrollmentStatus.ACTIVE,
   })
   @IsEnum(SisEnrollmentStatus)
-  enrollmentStatus: SisEnrollmentStatus;
+  enrollmentStatus!: SisEnrollmentStatus;
 
   /**
    * Date when student was enrolled (optional)

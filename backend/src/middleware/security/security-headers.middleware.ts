@@ -114,7 +114,7 @@ export class SecurityHeadersMiddleware implements NestMiddleware {
     this.validateConfig();
   }
 
-  use(req: Request, res: Response, next: NextFunction): void {
+  use(_req: Request, res: Response, next: NextFunction): void {
     try {
       const headers = this.applyHeaders({});
 

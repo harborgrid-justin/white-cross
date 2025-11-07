@@ -97,7 +97,7 @@ export function isWithinBusinessHours(
 
   // Check if it's a school holiday
   const dateString = datetime.toISOString().split('T')[0]; // YYYY-MM-DD
-  if (SCHOOL_HOLIDAYS.includes(dateString)) {
+  if (dateString && SCHOOL_HOLIDAYS.includes(dateString)) {
     return false;
   }
 
@@ -119,8 +119,17 @@ export function isWithinBusinessHours(
   }
 
   // Parse time strings
-  const [startHour, startMinute] = dayHours.start.split(':').map(Number);
-  const [endHour, endMinute] = dayHours.end.split(':').map(Number);
+  const startParts = dayHours.start.split(':').map(Number);
+  const endParts = dayHours.end.split(':').map(Number);
+
+  const startHour = startParts[0];
+  const startMinute = startParts[1] || 0;
+  const endHour = endParts[0];
+  const endMinute = endParts[1] || 0;
+
+  if (startHour == null || endHour == null) {
+    return false;
+  }
 
   // Create start and end times for the same date
   const startTime = new Date(datetime);
@@ -372,8 +381,17 @@ export function getAvailableSlots(
   }
 
   // Create start and end times for the business day
-  const [startHour, startMinute] = dayHours.start.split(':').map(Number);
-  const [endHour, endMinute] = dayHours.end.split(':').map(Number);
+  const startParts = dayHours.start.split(':').map(Number);
+  const endParts = dayHours.end.split(':').map(Number);
+
+  const startHour = startParts[0];
+  const startMinute = startParts[1] || 0;
+  const endHour = endParts[0];
+  const endMinute = endParts[1] || 0;
+
+  if (startHour == null || endHour == null) {
+    return [];
+  }
 
   const startTime = new Date(date);
   startTime.setHours(startHour, startMinute, 0, 0);

@@ -8,6 +8,7 @@
  */
 
 import type { Request, Response } from 'express';
+import type { SafeUser } from '../../../auth/types/auth.types';
 
 /**
  * Framework-agnostic request interface
@@ -89,10 +90,7 @@ export interface IMiddleware {
 /**
  * Healthcare-specific user context
  */
-export interface HealthcareUser {
-  userId: string;
-  email: string;
-  role: UserRole;
+export interface HealthcareUser extends SafeUser {
   permissions?: Permission[];
   facilityId?: string;
   npiNumber?: string;

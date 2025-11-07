@@ -2,11 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { StudentMedication } from '../database/models/student-medication.model';
 import { Medication } from '../database/models/medication.model';
-import {
-  DrugInteractionDto,
-  InteractionCheckResultDto,
-  InteractionSeverity,
-} from './dto';
+import { DrugInteractionDto, InteractionCheckResultDto, InteractionSeverity } from './dto';
 
 /**
  * Medication Interaction Checker Service
@@ -24,8 +20,7 @@ const KNOWN_INTERACTIONS: { [key: string]: DrugInteractionDto[] } = {
       medication1: 'warfarin',
       medication2: 'aspirin',
       description: 'Increased risk of bleeding',
-      recommendation:
-        'Monitor INR closely, consider alternative pain management',
+      recommendation: 'Monitor INR closely, consider alternative pain management',
     },
   ],
   metformin: [
@@ -51,9 +46,7 @@ export class MedicationInteractionService {
   /**
    * Check for interactions in student's current medications
    */
-  async checkStudentMedications(
-    studentId: string,
-  ): Promise<InteractionCheckResultDto> {
+  async checkStudentMedications(studentId: string): Promise<InteractionCheckResultDto> {
     try {
       const medications = await this.studentMedicationModel.findAll({
         where: { studentId, isActive: true },
@@ -65,8 +58,8 @@ export class MedicationInteractionService {
       // Check all medication pairs
       for (let i = 0; i < medications.length; i++) {
         for (let j = i + 1; j < medications.length; j++) {
-          const med1 = medications[i].medication?.name.toLowerCase() || '';
-          const med2 = medications[j].medication?.name.toLowerCase() || '';
+          const med1 = medications[i]?.medication?.name?.toLowerCase() ?? '';
+          const med2 = medications[j]?.medication?.name?.toLowerCase() ?? '';
 
           const foundInteractions = this.findInteractions(med1, med2);
           interactions.push(...foundInteractions);
@@ -185,16 +178,12 @@ export class MedicationInteractionService {
 
     // Check both directions
     if (KNOWN_INTERACTIONS[med1]) {
-      const matches = KNOWN_INTERACTIONS[med1].filter(
-        (i) => i.medication2.toLowerCase() === med2,
-      );
+      const matches = KNOWN_INTERACTIONS[med1].filter((i) => i.medication2.toLowerCase() === med2);
       interactions.push(...matches);
     }
 
     if (KNOWN_INTERACTIONS[med2]) {
-      const matches = KNOWN_INTERACTIONS[med2].filter(
-        (i) => i.medication2.toLowerCase() === med1,
-      );
+      const matches = KNOWN_INTERACTIONS[med2].filter((i) => i.medication2.toLowerCase() === med1);
       interactions.push(...matches);
     }
 

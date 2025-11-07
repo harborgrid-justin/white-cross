@@ -43,18 +43,18 @@ export class MessageMetadataDto {
 export class SendMessageDto {
   @IsUUID('4')
   @IsNotEmpty()
-  messageId: string;
+  messageId!: string;
 
   @IsUUID('4')
   @IsNotEmpty()
-  conversationId: string;
+  conversationId!: string;
 
   @IsString()
   @IsNotEmpty()
   @MaxLength(10000, {
     message: 'Message content cannot exceed 10,000 characters',
   })
-  content: string;
+  content!: string;
 
   @IsOptional()
   @IsArray()

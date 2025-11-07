@@ -1,12 +1,4 @@
-import {
-  IsString,
-  IsEnum,
-  IsObject,
-  IsBoolean,
-  IsOptional,
-  IsDate,
-  ValidateNested,
-} from 'class-validator';
+import { IsString, IsEnum, IsObject, IsBoolean, IsOptional, ValidateNested } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
@@ -37,45 +29,45 @@ export enum ConflictResolutionStrategy {
 export class SyncEntitiesDto {
   @ApiProperty({ description: 'Sync students' })
   @IsBoolean()
-  students: boolean;
+  students!: boolean;
 
   @ApiProperty({ description: 'Sync demographics' })
   @IsBoolean()
-  demographics: boolean;
+  demographics!: boolean;
 
   @ApiProperty({ description: 'Sync enrollment' })
   @IsBoolean()
-  enrollment: boolean;
+  enrollment!: boolean;
 
   @ApiProperty({ description: 'Sync attendance' })
   @IsBoolean()
-  attendance: boolean;
+  attendance!: boolean;
 
   @ApiProperty({ description: 'Sync grades' })
   @IsBoolean()
-  grades: boolean;
+  grades!: boolean;
 
   @ApiProperty({ description: 'Sync schedules' })
   @IsBoolean()
-  schedules: boolean;
+  schedules!: boolean;
 
   @ApiProperty({ description: 'Sync contacts' })
   @IsBoolean()
-  contacts: boolean;
+  contacts!: boolean;
 }
 
 export class CreateSISConfigurationDto {
   @ApiProperty({ description: 'School ID' })
   @IsString()
-  schoolId: string;
+  schoolId!: string;
 
   @ApiProperty({ enum: SISPlatform, description: 'SIS platform' })
   @IsEnum(SISPlatform)
-  platform: SISPlatform;
+  platform!: SISPlatform;
 
   @ApiProperty({ description: 'API URL' })
   @IsString()
-  apiUrl: string;
+  apiUrl!: string;
 
   @ApiPropertyOptional({ description: 'API version' })
   @IsOptional()
@@ -102,33 +94,33 @@ export class CreateSISConfigurationDto {
     description: 'Sync direction',
   })
   @IsString()
-  syncDirection: 'PULL' | 'PUSH' | 'BIDIRECTIONAL';
+  syncDirection!: 'PULL' | 'PUSH' | 'BIDIRECTIONAL';
 
   @ApiProperty({ enum: SyncSchedule, description: 'Sync schedule' })
   @IsEnum(SyncSchedule)
-  syncSchedule: SyncSchedule;
+  syncSchedule!: SyncSchedule;
 
   @ApiProperty({ description: 'Field mappings' })
   @IsObject()
-  fieldMappings: Record<string, string>;
+  fieldMappings!: Record<string, string>;
 
   @ApiProperty({ description: 'Entities to sync' })
   @ValidateNested()
   @Type(() => SyncEntitiesDto)
-  syncEntities: SyncEntitiesDto;
+  syncEntities!: SyncEntitiesDto;
 
   @ApiProperty({ description: 'Auto-create students' })
   @IsBoolean()
-  autoCreateStudents: boolean;
+  autoCreateStudents!: boolean;
 
   @ApiProperty({ description: 'Update existing only' })
   @IsBoolean()
-  updateExistingOnly: boolean;
+  updateExistingOnly!: boolean;
 
   @ApiProperty({
     enum: ConflictResolutionStrategy,
     description: 'Conflict resolution strategy',
   })
   @IsEnum(ConflictResolutionStrategy)
-  conflictResolution: ConflictResolutionStrategy;
+  conflictResolution!: ConflictResolutionStrategy;
 }

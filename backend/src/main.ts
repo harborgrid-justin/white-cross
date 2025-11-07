@@ -130,7 +130,7 @@ async function gracefulShutdown(app: any, exitCode: number) {
 
     process.exit(exitCode);
   } catch (error) {
-    logger.error('Error during graceful shutdown', error);
+    logger.error('Error during graceful shutdown', error instanceof Error ? error : String(error));
     process.exit(1);
   }
 }
@@ -314,7 +314,7 @@ async function bootstrap() {
         'Redis adapter enabled for WebSocket horizontal scaling',
       );
     } catch (error) {
-      bootstrapLogger.error('Failed to initialize Redis adapter', error);
+      bootstrapLogger.error('Failed to initialize Redis adapter', error instanceof Error ? error : String(error));
 
       if (configService.isProduction) {
         throw new Error(
@@ -486,7 +486,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config, {
-    operationIdFactory: (controllerKey: string, methodKey: string) => methodKey,
+    operationIdFactory: (_controllerKey: string, methodKey: string) => methodKey,
     deepScanRoutes: true,
   });
 
@@ -553,7 +553,7 @@ async function bootstrap() {
   });
 
   // Also expose the JSON spec at /api/docs-json for automated tools
-  app.getHttpAdapter().get('/api/docs-json', (req, res) => {
+  app.getHttpAdapter().get('/api/docs-json', (_req, res) => {
     res.setHeader('Content-Type', 'application/json');
     res.json(document);
   });

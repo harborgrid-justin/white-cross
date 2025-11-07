@@ -26,11 +26,11 @@ export class CreateIntegrationDto {
   @IsString()
   @MinLength(2)
   @MaxLength(100)
-  name: string;
+  name!: string;
 
   @ApiProperty({ enum: IntegrationType, description: 'Type of integration' })
   @IsEnum(IntegrationType)
-  type: IntegrationType;
+  type!: IntegrationType;
 
   @ApiPropertyOptional({ description: 'API endpoint URL' })
   @IsOptional()

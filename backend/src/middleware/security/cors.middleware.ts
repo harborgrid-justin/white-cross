@@ -234,7 +234,7 @@ export class CorsMiddleware implements NestMiddleware {
       }
 
       // Set CORS headers
-      await this.setCorsHeaders(res, origin, req);
+      await this.setCorsHeaders(res, origin);
 
       // Handle preflight requests
       if (isPreflight) {
@@ -307,7 +307,6 @@ export class CorsMiddleware implements NestMiddleware {
   private async setCorsHeaders(
     res: Response,
     origin: string | null,
-    request: Request,
   ): Promise<void> {
     if (origin) {
       res.setHeader('Access-Control-Allow-Origin', origin);

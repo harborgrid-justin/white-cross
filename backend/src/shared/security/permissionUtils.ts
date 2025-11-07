@@ -186,9 +186,9 @@ export function requirePermission(
  * @returns Promise<boolean> indicating if access is allowed
  */
 export async function canAccessStudent(
-  userId: string,
+  _userId: string,
   userRole: UserRole,
-  studentId: string,
+  _studentId: string,
 ): Promise<boolean> {
   // Admins and District Admins can access all students
   if (userRole === UserRole.ADMIN || userRole === UserRole.DISTRICT_ADMIN) {

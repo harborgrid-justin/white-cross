@@ -95,19 +95,22 @@ export class IntegrationStatisticsService {
         { success: number; failed: number; total: number }
       > = {};
       recentLogs.forEach((log) => {
-        if (!statsByType[log.integrationType]) {
-          statsByType[log.integrationType] = {
-            success: 0,
-            failed: 0,
-            total: 0,
-          };
+        const type = log.integrationType;
+        if (type) {
+          if (!statsByType[type]) {
+            statsByType[type] = {
+              success: 0,
+              failed: 0,
+              total: 0,
+            };
+          }
+          if (log.status === 'success') {
+            statsByType[type].success++;
+          } else if (log.status === 'failed') {
+            statsByType[type].failed++;
+          }
+          statsByType[type].total++;
         }
-        if (log.status === 'success') {
-          statsByType[log.integrationType].success++;
-        } else if (log.status === 'failed') {
-          statsByType[log.integrationType].failed++;
-        }
-        statsByType[log.integrationType].total++;
       });
 
       return {

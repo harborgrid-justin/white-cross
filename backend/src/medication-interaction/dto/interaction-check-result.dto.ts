@@ -1,11 +1,4 @@
-import {
-  IsBoolean,
-  IsArray,
-  IsNumber,
-  Min,
-  Max,
-  ValidateNested,
-} from 'class-validator';
+import { IsBoolean, IsArray, IsNumber, Min, Max, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { DrugInteractionDto } from './drug-interaction.dto';
@@ -19,7 +12,7 @@ export class InteractionCheckResultDto {
     example: true,
   })
   @IsBoolean()
-  hasInteractions: boolean;
+  hasInteractions!: boolean;
 
   @ApiProperty({
     description: 'Array of identified drug interactions',
@@ -37,7 +30,7 @@ export class InteractionCheckResultDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => DrugInteractionDto)
-  interactions: DrugInteractionDto[];
+  interactions!: DrugInteractionDto[];
 
   @ApiProperty({
     description: 'Overall safety score (0-100, higher is safer)',
@@ -48,5 +41,5 @@ export class InteractionCheckResultDto {
   @IsNumber()
   @Min(0)
   @Max(100)
-  safetyScore: number;
+  safetyScore!: number;
 }

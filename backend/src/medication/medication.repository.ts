@@ -1,4 +1,4 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import {
@@ -150,7 +150,7 @@ export class MedicationRepository {
       },
     );
 
-    return medications.length > 0 ? medications[0] : null;
+    return medications.length > 0 ? medications[0]! : null;
   }
 
   /**
@@ -220,8 +220,8 @@ export class MedicationRepository {
    */
   async deactivate(
     id: string,
-    reason: string,
-    deactivationType: string,
+    _reason: string,
+    _deactivationType: string,
   ): Promise<StudentMedication> {
     const medication = await this.studentMedicationModel.findByPk(id);
     if (!medication) {
@@ -326,7 +326,8 @@ export class MedicationRepository {
       // Return in same order as requested IDs, null for missing
       return ids.map((id) => medicationMap.get(id) || null);
     } catch (error) {
-      this.logger.error(`Failed to batch fetch medications: ${error.message}`);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`Failed to batch fetch medications: ${message}`);
       throw new Error('Failed to batch fetch medications');
     }
   }
@@ -361,8 +362,9 @@ export class MedicationRepository {
       // Return medications array for each student, empty array for missing
       return studentIds.map((id) => medicationsByStudent.get(id) || []);
     } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(
-        `Failed to batch fetch medications by student IDs: ${error.message}`,
+        `Failed to batch fetch medications by student IDs: ${message}`,
       );
       throw new Error('Failed to batch fetch medications by student IDs');
     }

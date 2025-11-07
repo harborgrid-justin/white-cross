@@ -54,7 +54,7 @@ export interface MedicationInfo {
 export function calculateDosageSchedule(
   frequency: string,
   startDate: Date,
-  endDate?: Date,
+  _endDate?: Date,
 ): DosageSchedule {
   const schedule: DosageSchedule = {
     times: [],
@@ -103,8 +103,8 @@ export function calculateDosageSchedule(
     default:
       // Try to parse custom interval (e.g., "Q8H")
       const match = frequency.match(/Q(\d+)H/i);
-      if (match) {
-        const hours = parseInt(match[1]);
+      if (match && match[1]) {
+        const hours = parseInt(match[1], 10);
         schedule.intervalHours = hours;
         schedule.dailyCount = Math.floor(24 / hours);
       }
@@ -140,7 +140,7 @@ export function validateDosageAmount(
 
   // Extract numeric value from dosage string
   const numericMatch = dosage.match(/(\d+(?:\.\d+)?)/);
-  if (!numericMatch) {
+  if (!numericMatch || !numericMatch[1]) {
     return false;
   }
 
@@ -211,8 +211,8 @@ export function calculateMedicationExpiry(
  */
 export function formatMedicationName(
   name: string,
-  strength: string,
-  form: string,
+  strength?: string,
+  form?: string,
 ): string {
   if (!name) {
     return '';

@@ -142,7 +142,6 @@ export class IntegrationValidationService {
    */
   validateIntegrationSettings(
     settings: Record<string, unknown>,
-    integrationType: IntegrationType,
   ): void {
     if (!settings || typeof settings !== 'object' || Array.isArray(settings)) {
       throw new BadRequestException('Settings must be a valid JSON object');

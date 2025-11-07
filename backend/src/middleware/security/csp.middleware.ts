@@ -363,7 +363,7 @@ export class CspMiddleware implements NestMiddleware {
       }
 
       // Build CSP policy
-      const policy = this.buildCSPPolicy(req, nonce);
+      const policy = this.buildCSPPolicy(nonce);
 
       // Set CSP header
       const headerName = this.config.reportOnly
@@ -426,7 +426,7 @@ export class CspMiddleware implements NestMiddleware {
   /**
    * Build CSP policy string
    */
-  private buildCSPPolicy(req: Request, nonce?: string): string {
+  private buildCSPPolicy(nonce?: string): string {
     let directives: Partial<CSPDirectives>;
 
     // Start with healthcare-compliant base

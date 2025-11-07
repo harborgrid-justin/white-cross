@@ -22,7 +22,7 @@ import {
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Logger, UseGuards, UseFilters, UseInterceptors } from '@nestjs/common';
-import { Server, Socket } from 'socket.io';
+import { Server } from 'socket.io';
 import { WsJwtAuthGuard } from '@/infrastructure/websocket';
 import { WsExceptionFilter } from '@/infrastructure/websocket';
 import { WsLoggingInterceptor } from '@/infrastructure/websocket';
@@ -42,6 +42,9 @@ interface TrendData {
   value: number;
   change: number;
   direction: 'up' | 'down' | 'stable';
+  cpu: 'up' | 'down' | 'stable';
+  memory: 'up' | 'down' | 'stable';
+  disk: 'up' | 'down' | 'stable';
 }
 
 /**
@@ -120,7 +123,7 @@ export class AdminWebSocketGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   @WebSocketServer()
-  server: Server<AdminClientToServerEvents, AdminServerToClientEvents>;
+  server!: Server<AdminClientToServerEvents, AdminServerToClientEvents>;
 
   private readonly logger = new Logger(AdminWebSocketGateway.name);
   private readonly connectedClients = new Map<string, AdminClient>();
@@ -139,7 +142,7 @@ export class AdminWebSocketGateway
   /**
    * Gateway initialization
    */
-  afterInit(server: Server): void {
+  afterInit(): void {
     this.logger.log('Admin WebSocket Gateway initialized');
 
     // Set up admin-specific rooms
@@ -411,7 +414,7 @@ export class AdminWebSocketGateway
       );
 
       // Execute the admin tool (placeholder - implement actual tools)
-      const result = await this.executeAdminTool(data.toolId, data.params);
+      const result = await this.executeAdminTool(data.toolId);
 
       // Send result back to client
       client.emit('admin:tools:result', {
@@ -436,7 +439,7 @@ export class AdminWebSocketGateway
 
       client.emit('admin:tools:result', {
         toolId: data.toolId,
-        result: { success: false, error: error.message },
+        result: { success: false, error: (error as Error).message },
         timestamp: new Date().toISOString(),
       });
     }
@@ -509,6 +512,9 @@ export class AdminWebSocketGateway
    */
   private calculateTrend(): TrendData {
     return {
+      value: 0,
+      change: 0,
+      direction: 'stable',
       cpu: 'stable',
       memory: 'stable',
       disk: 'stable',
@@ -518,7 +524,7 @@ export class AdminWebSocketGateway
   /**
    * Execute admin tool (placeholder)
    */
-  private async executeAdminTool(toolId: string, params?: Record<string, unknown>): Promise<unknown> {
+  private async executeAdminTool(toolId: string): Promise<unknown> {
     // Placeholder implementation - add actual admin tools
     const tools: Record<string, () => Promise<any>> = {
       'cache-clear': async () => ({

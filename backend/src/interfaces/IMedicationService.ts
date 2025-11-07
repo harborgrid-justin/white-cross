@@ -4,7 +4,6 @@
  * Enables testability, mocking, and future service implementations
  */
 
-import { IMedicationRepository } from '../database/repositories/interfaces/medication.repository.interface';
 import {
   Medication,
   CreateMedicationData,

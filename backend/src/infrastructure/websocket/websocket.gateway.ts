@@ -73,7 +73,7 @@ export class WebSocketGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
   @WebSocketServer()
-  server: Server;
+  server!: Server;
 
   private readonly logger = new Logger(WebSocketGateway.name);
 
@@ -334,7 +334,7 @@ export class WebSocketGateway
       this.logger.error(`Message send error for user ${user.userId}:`, error);
       client.emit('error', {
         type: 'MESSAGE_SEND_FAILED',
-        message: error.message || 'Failed to send message',
+        message: (error as Error).message || 'Failed to send message',
       });
     }
   }
@@ -400,7 +400,7 @@ export class WebSocketGateway
       this.logger.error(`Message edit error for user ${user.userId}:`, error);
       client.emit('error', {
         type: 'MESSAGE_EDIT_FAILED',
-        message: error.message || 'Failed to edit message',
+        message: (error as Error).message || 'Failed to edit message',
       });
     }
   }
@@ -471,7 +471,7 @@ export class WebSocketGateway
       this.logger.error(`Message delete error for user ${user.userId}:`, error);
       client.emit('error', {
         type: 'MESSAGE_DELETE_FAILED',
-        message: error.message || 'Failed to delete message',
+        message: (error as Error).message || 'Failed to delete message',
       });
     }
   }
@@ -702,7 +702,7 @@ export class WebSocketGateway
       );
       client.emit('error', {
         type: 'CONVERSATION_JOIN_FAILED',
-        message: error.message || 'Failed to join conversation',
+        message: (error as Error).message || 'Failed to join conversation',
       });
     }
   }
@@ -766,7 +766,7 @@ export class WebSocketGateway
       );
       client.emit('error', {
         type: 'CONVERSATION_LEAVE_FAILED',
-        message: error.message || 'Failed to leave conversation',
+        message: (error as Error).message || 'Failed to leave conversation',
       });
     }
   }

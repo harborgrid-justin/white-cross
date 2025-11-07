@@ -58,27 +58,6 @@ interface FirebaseMessage {
 }
 
 /**
- * APNs Provider types (to be imported when apn is installed)
- * @example
- * ```bash
- * npm install apn @types/apn
- * ```
- */
-interface APNsNotification {
-  topic: string;
-  alert: {
-    title: string;
-    body: string;
-  };
-  badge?: number;
-  sound?: string;
-  payload?: Record<string, any>;
-  contentAvailable?: boolean;
-  priority?: number;
-  expiry?: number;
-}
-
-/**
  * Notification Template Interface
  */
 export interface NotificationTemplate {
@@ -1399,7 +1378,7 @@ export class NotificationService implements OnModuleInit {
    */
   private calculateRetryTime(retryCount: number): Date {
     const delays = [5, 15, 30]; // minutes
-    const delayMinutes = delays[Math.min(retryCount, delays.length - 1)];
+    const delayMinutes = delays[Math.min(retryCount, delays.length - 1)]!;
     const nextRetry = new Date();
     nextRetry.setMinutes(nextRetry.getMinutes() + delayMinutes);
     return nextRetry;

@@ -14,29 +14,29 @@ export enum AlertSeverity {
 }
 
 export class InventoryAlertDto {
-  id: string;
-  type: AlertType;
-  severity: AlertSeverity;
-  message: string;
-  itemId: string;
-  itemName: string;
+  id!: string;
+  type!: AlertType;
+  severity!: AlertSeverity;
+  message!: string;
+  itemId!: string;
+  itemName!: string;
   daysUntilAction?: number;
 }
 
 export class AlertSummaryDto {
-  timestamp: Date;
-  totalAlerts: number;
-  criticalCount: number;
-  highCount: number;
-  mediumCount: number;
-  lowCount: number;
-  typeBreakdown: {
+  timestamp!: Date;
+  totalAlerts!: number;
+  criticalCount!: number;
+  highCount!: number;
+  mediumCount!: number;
+  lowCount!: number;
+  typeBreakdown!: {
     LOW_STOCK: number;
     OUT_OF_STOCK: number;
     EXPIRED: number;
     NEAR_EXPIRY: number;
     MAINTENANCE_DUE: number;
   };
-  topAlerts: InventoryAlertDto[];
-  recommendations: string[];
+  topAlerts!: InventoryAlertDto[];
+  recommendations!: string[];
 }

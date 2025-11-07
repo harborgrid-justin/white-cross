@@ -39,11 +39,11 @@ export class WsTransformInterceptor implements NestInterceptor {
   /**
    * Intercepts and transforms WebSocket responses
    *
-   * @param context - Execution context
+   * @param _context - Execution context
    * @param next - Call handler
    * @returns Observable with transformed response
    */
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(_context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
       map((data) => {
         // Don't transform null/undefined responses
@@ -65,8 +65,8 @@ export class WsTransformInterceptor implements NestInterceptor {
    */
   private transformResponse(data: unknown): unknown {
     // If data has a toPayload method, use it
-    if (typeof data?.toPayload === 'function') {
-      return data.toPayload();
+    if (typeof (data as any)?.toPayload === 'function') {
+      return (data as any).toPayload();
     }
 
     // For objects, sanitize and add metadata

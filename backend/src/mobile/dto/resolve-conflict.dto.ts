@@ -11,7 +11,7 @@ export class ResolveConflictDto {
     enum: ConflictResolution,
   })
   @IsEnum(ConflictResolution)
-  resolution: ConflictResolution;
+  resolution!: ConflictResolution;
 
   @ApiProperty({
     description: 'Manually merged data (for MERGE strategy)',
@@ -19,5 +19,5 @@ export class ResolveConflictDto {
   })
   @IsObject()
   @IsOptional()
-  mergedData?: any;
+  mergedData?: Record<string, any>;
 }

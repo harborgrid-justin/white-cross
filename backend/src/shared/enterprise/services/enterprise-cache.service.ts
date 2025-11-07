@@ -175,12 +175,12 @@ export class EnterpriseCacheService {
       let deletedCount = 0;
       const regex = new RegExp(pattern);
 
-      for (const [key, entry] of this.cache.entries()) {
-        if (regex.test(key) && entry.module === this.moduleName) {
-          this.cache.delete(key);
-          deletedCount++;
-        }
+    for (const [_key, entry] of this.cache.entries()) {
+      if (regex.test(_key) && entry.module === this.moduleName) {
+        this.cache.delete(_key);
+        deletedCount++;
       }
+    }
 
       this.updateStats();
       this.logger.log(

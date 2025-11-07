@@ -21,22 +21,22 @@ export class ReadReceiptDto {
   /**
    * Unique identifier of the message that was read
    */
-  messageId: string;
+  messageId!: string;
 
   /**
    * Conversation identifier where the message exists
    */
-  conversationId: string;
+  conversationId!: string;
 
   /**
    * User ID of the person who read the message
    */
-  userId: string;
+  userId!: string;
 
   /**
    * Organization ID for multi-tenant isolation
    */
-  organizationId: string;
+  organizationId!: string;
 
   /**
    * Optional user display name for UI rendering
@@ -47,7 +47,7 @@ export class ReadReceiptDto {
   /**
    * ISO timestamp when the message was read
    */
-  readAt: string;
+  readAt!: string;
 
   /**
    * Optional: Last message ID that was read in the conversation

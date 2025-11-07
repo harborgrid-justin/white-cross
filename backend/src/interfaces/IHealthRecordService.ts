@@ -4,7 +4,6 @@
  * Enables testability, mocking, and future service implementations
  */
 
-import { IHealthRecordRepository } from '../database/repositories/interfaces/health-record.repository.interface';
 import {
   HealthRecord,
   CreateHealthRecordData,

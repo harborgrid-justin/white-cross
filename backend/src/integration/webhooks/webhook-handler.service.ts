@@ -1,10 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { createHmac } from 'crypto';
-import type {
+import {
   WebhookPayload,
   StudentCreatedPayload,
   StudentUpdatedPayload,
   HealthRecordUpdatedPayload,
+} from '../types/webhook.types';
+import {
   isStudentCreatedPayload,
   isStudentUpdatedPayload,
   isHealthRecordUpdatedPayload,
@@ -72,7 +74,7 @@ export class WebhookHandlerService {
 
   private async handleStudentCreated(
     integrationId: string,
-    payload: StudentCreatedPayload,
+    _payload: StudentCreatedPayload,
   ): Promise<void> {
     this.logger.log(`Handling student created event for ${integrationId}`);
     // Implementation would create or update student record
@@ -80,7 +82,7 @@ export class WebhookHandlerService {
 
   private async handleStudentUpdated(
     integrationId: string,
-    payload: StudentUpdatedPayload,
+    _payload: StudentUpdatedPayload,
   ): Promise<void> {
     this.logger.log(`Handling student updated event for ${integrationId}`);
     // Implementation would update student record
@@ -88,7 +90,7 @@ export class WebhookHandlerService {
 
   private async handleHealthRecordUpdated(
     integrationId: string,
-    payload: HealthRecordUpdatedPayload,
+    _payload: HealthRecordUpdatedPayload,
   ): Promise<void> {
     this.logger.log(
       `Handling health record updated event for ${integrationId}`,

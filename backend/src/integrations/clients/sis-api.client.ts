@@ -64,7 +64,7 @@ export class SisApiClient extends BaseApiClient {
    */
   constructor(
     protected readonly httpService: HttpService,
-    private readonly configService: ConfigService,
+    configService: ConfigService,
   ) {
     const baseURL =
       configService.get<string>('SIS_API_URL') || 'https://sis-api.example.com';

@@ -13,7 +13,6 @@ import {
   ApiOperation,
   ApiResponse,
   ApiParam,
-  ApiBody,
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { MedicationInteractionService } from './medication-interaction.service';

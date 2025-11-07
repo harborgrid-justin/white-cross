@@ -29,8 +29,6 @@ import {
   UpdateMedicationDto,
   DeactivateMedicationDto,
   ListMedicationsQueryDto,
-  MedicationIdParamDto,
-  StudentIdParamDto,
 } from './dto';
 
 /**

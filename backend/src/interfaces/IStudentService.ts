@@ -4,7 +4,6 @@
  * Enables testability, mocking, and future service implementations
  */
 
-import { IStudentRepository } from '../database/repositories/interfaces/student.repository.interface';
 import {
   StudentAttributes as Student,
   CreateStudentDTO as CreateStudentData,

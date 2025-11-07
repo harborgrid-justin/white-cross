@@ -14,21 +14,21 @@ import { InventoryTransactionType } from '../entities/inventory-transaction.enti
 export class CreateInventoryTransactionDto {
   @ApiProperty({ description: 'Inventory item UUID' })
   @IsUUID()
-  inventoryItemId: string;
+  inventoryItemId!: string;
 
   @ApiProperty({
     enum: InventoryTransactionType,
     description: 'Transaction type',
   })
   @IsEnum(InventoryTransactionType)
-  type: InventoryTransactionType;
+  type!: InventoryTransactionType;
 
   @ApiProperty({
     description: 'Quantity (positive for additions, negative for removals)',
     example: 100,
   })
   @IsInt()
-  quantity: number;
+  quantity!: number;
 
   @ApiPropertyOptional({
     description: 'Unit cost at time of transaction',
@@ -66,7 +66,7 @@ export class CreateInventoryTransactionDto {
 
   @ApiProperty({ description: 'User UUID who performed the transaction' })
   @IsUUID()
-  performedById: string;
+  performedById!: string;
 
   @ApiPropertyOptional({ description: 'Additional notes' })
   @IsOptional()

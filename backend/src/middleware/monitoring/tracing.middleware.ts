@@ -355,7 +355,7 @@ class HealthcareTraceUtils {
 export class TracingMiddleware implements NestMiddleware {
   private readonly logger = new Logger(TracingMiddleware.name);
   private config: ITracingConfig;
-  private spanStorage: SpanStorage;
+  private spanStorage?: SpanStorage;
   private activeSpans: Map<string, TracingContext> = new Map();
 
   constructor() {
@@ -555,7 +555,7 @@ export class TracingMiddleware implements NestMiddleware {
   private instrumentResponse(res: Response, context: TracingContext): void {
     const originalEnd = res.end;
 
-    res.end = ((...args: any[]) => {
+    res.end = ((chunk?: any, encoding?: BufferEncoding, cb?: () => void) => {
       const endTime = Date.now();
       context.tags['http.status_code'] = res.statusCode;
 
@@ -565,7 +565,7 @@ export class TracingMiddleware implements NestMiddleware {
       // Complete the span
       this.completeSpan(context, endTime, status);
 
-      return originalEnd.apply(res, args);
+      return originalEnd.call(res, chunk, encoding || 'utf8', cb);
     }) as any;
   }
 

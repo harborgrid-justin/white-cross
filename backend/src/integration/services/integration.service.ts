@@ -4,8 +4,6 @@ import { IntegrationTestService } from './integration-test.service';
 import { IntegrationSyncService } from './integration-sync.service';
 import { IntegrationLogService } from './integration-log.service';
 import { IntegrationStatisticsService } from './integration-statistics.service';
-import { IntegrationValidationService } from './integration-validation.service';
-import { IntegrationEncryptionService } from './integration-encryption.service';
 import { CreateIntegrationDto, UpdateIntegrationDto } from '../dto';
 
 /**
@@ -20,8 +18,6 @@ export class IntegrationService {
     private readonly syncService: IntegrationSyncService,
     private readonly logService: IntegrationLogService,
     private readonly statisticsService: IntegrationStatisticsService,
-    private readonly validationService: IntegrationValidationService,
-    private readonly encryptionService: IntegrationEncryptionService,
   ) {}
 
   // Configuration Management

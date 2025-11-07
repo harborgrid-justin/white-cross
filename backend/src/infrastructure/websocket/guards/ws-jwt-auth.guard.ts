@@ -193,7 +193,7 @@ export class WsJwtAuthGuard implements CanActivate {
         socketId: client.id,
         remoteAddress: client.handshake.address,
       });
-      return typeof queryToken === 'string' ? queryToken : queryToken[0];
+      return typeof queryToken === 'string' ? queryToken : (Array.isArray(queryToken) && queryToken.length > 0 ? queryToken[0] : null) || null;
     }
 
     return null;
@@ -247,8 +247,13 @@ export class WsJwtAuthGuard implements CanActivate {
    * @returns Structured AuthPayload for WebSocket use
    */
   private mapToAuthPayload(payload: JwtPayload): AuthPayload {
+    const userId = payload.sub || payload.userId || payload.id;
+    if (!userId) {
+      throw new Error('User ID not found in token payload');
+    }
+
     return {
-      userId: payload.sub || payload.userId || payload.id,
+      userId,
       organizationId:
         payload.organizationId || payload.schoolId || payload.districtId || '',
       role: payload.role || 'user',

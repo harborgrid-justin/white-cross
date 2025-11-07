@@ -76,22 +76,22 @@ export class RequestContextService {
     this._timestamp = new Date();
 
     // Extract request metadata
-    this._ipAddress = this.extractIpAddress(request);
-    this._userAgent = request.get('user-agent');
-    this._path = request.path;
-    this._method = request.method;
+    this._ipAddress = this.extractIpAddress();
+    this._userAgent = this.request.get('user-agent');
+    this._path = this.request.path;
+    this._method = this.request.method;
 
     // Extract user context from authenticated request
-    this.extractUserContext(request);
+    this.extractUserContext();
   }
 
   /**
    * Extract user context from request
    * Supports multiple authentication strategies
    */
-  private extractUserContext(request: Request): void {
+  private extractUserContext(): void {
     // Check for user in request (set by authentication middleware)
-    const user = (request as any).user;
+    const user = (this.request as any).user;
 
     if (user) {
       this._userId = user.id || user.userId || user.sub;
@@ -106,12 +106,12 @@ export class RequestContextService {
    * Extract IP address from request
    * Handles proxy headers (X-Forwarded-For, X-Real-IP)
    */
-  private extractIpAddress(request: Request): string | undefined {
+  private extractIpAddress(): string | undefined {
     return (
-      (request.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
-      (request.headers['x-real-ip'] as string) ||
-      request.ip ||
-      request.socket?.remoteAddress
+      (this.request.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+      (this.request.headers['x-real-ip'] as string) ||
+      this.request.ip ||
+      this.request.socket?.remoteAddress
     );
   }
 

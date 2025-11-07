@@ -21,21 +21,21 @@ export class DrugInteractionDto {
     example: InteractionSeverity.MODERATE,
   })
   @IsEnum(InteractionSeverity)
-  severity: InteractionSeverity;
+  severity!: InteractionSeverity;
 
   @ApiProperty({
     description: 'Name of the first medication in the interaction',
     example: 'Warfarin',
   })
   @IsString()
-  medication1: string;
+  medication1!: string;
 
   @ApiProperty({
     description: 'Name of the second medication in the interaction',
     example: 'Aspirin',
   })
   @IsString()
-  medication2: string;
+  medication2!: string;
 
   @ApiProperty({
     description: 'Detailed description of the interaction and its effects',
@@ -43,7 +43,7 @@ export class DrugInteractionDto {
       'Concurrent use may increase bleeding risk due to additive anticoagulant effects',
   })
   @IsString()
-  description: string;
+  description!: string;
 
   @ApiProperty({
     description: 'Clinical recommendation for managing this interaction',
@@ -51,5 +51,5 @@ export class DrugInteractionDto {
       'Monitor INR levels more frequently. Consider alternative pain management options.',
   })
   @IsString()
-  recommendation: string;
+  recommendation!: string;
 }

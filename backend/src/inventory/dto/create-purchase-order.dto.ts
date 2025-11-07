@@ -16,35 +16,35 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 export class PurchaseOrderItemDto {
   @ApiProperty({ description: 'Inventory item UUID' })
   @IsUUID()
-  inventoryItemId: string;
+  inventoryItemId!: string;
 
   @ApiProperty({ description: 'Order quantity', example: 100 })
   @IsInt()
   @Min(1)
-  quantity: number;
+  quantity!: number;
 
   @ApiProperty({ description: 'Unit cost', example: 5.99 })
   @IsNumber()
   @Min(0)
-  unitCost: number;
+  unitCost!: number;
 }
 
 export class CreatePurchaseOrderDto {
   @ApiProperty({ description: 'Unique order number', example: 'PO-2024-001' })
   @IsString()
   @MaxLength(100)
-  orderNumber: string;
+  orderNumber!: string;
 
   @ApiProperty({ description: 'Vendor UUID' })
   @IsUUID()
-  vendorId: string;
+  vendorId!: string;
 
   @ApiProperty({
     description: 'Order date (ISO 8601)',
     example: '2024-10-28T00:00:00Z',
   })
   @IsDateString()
-  orderDate: string;
+  orderDate!: string;
 
   @ApiPropertyOptional({
     description: 'Expected delivery date (ISO 8601)',
@@ -66,5 +66,5 @@ export class CreatePurchaseOrderDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => PurchaseOrderItemDto)
-  items: PurchaseOrderItemDto[];
+  items!: PurchaseOrderItemDto[];
 }

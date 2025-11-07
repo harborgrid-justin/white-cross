@@ -9,7 +9,6 @@
  */
 
 import { Request, ResponseToolkit } from '@hapi/hapi';
-import Boom from '@hapi/boom';
 import {
   checkPermission,
   Role,

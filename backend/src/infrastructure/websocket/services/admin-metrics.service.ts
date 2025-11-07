@@ -22,37 +22,12 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WebSocketService } from '../websocket.service';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import * as os from 'os';
-import * as fs from 'fs/promises';
 import { promisify } from 'util';
 import { exec } from 'child_process';
 
 
-/**
- * CPU information structure
- */
-interface CpuInfo {
-  times: {
-    user: number;
-    nice: number;
-    sys: number;
-    idle: number;
-    irq: number;
-  };
-  [key: string]: unknown;
-}
 
-/**
- * Network statistics structure
- */
-interface NetworkStats {
-  [interface: string]: {
-    rx_bytes?: number;
-    tx_bytes?: number;
-    [key: string]: unknown;
-  };
-}
 
 const execAsync = promisify(exec);
 
@@ -140,8 +115,7 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(AdminMetricsService.name);
   private isEnabled = false;
   private metricsInterval: NodeJS.Timeout | null = null;
-  private previousCpuInfo: CpuInfo | null = null;
-  private previousNetworkStats: NetworkStats | null = null;
+  private previousCpuInfo: { totalTick: number; totalIdle: number } | null = null;
 
   // Metrics storage for trends
   private metricsHistory: SystemMetrics[] = [];
@@ -308,6 +282,11 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
         const { stdout } = await execAsync('df -h / | tail -1');
         const parts = stdout.trim().split(/\s+/);
 
+        if (parts.length < 5) {
+          this.logger.warn('Unexpected df output format');
+          return { total: 0, used: 0, free: 0, percentage: 0 };
+        }
+
         const parseSize = (size: string): number => {
           const unit = size.slice(-1).toLowerCase();
           const value = parseFloat(size);
@@ -320,10 +299,10 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
           return value * (multipliers[unit] || 1);
         };
 
-        const total = parseSize(parts[1]);
-        const used = parseSize(parts[2]);
-        const free = parseSize(parts[3]);
-        const percentage = parseFloat(parts[4].replace('%', ''));
+        const total = parseSize(parts[1]!);
+        const used = parseSize(parts[2]!);
+        const free = parseSize(parts[3]!);
+        const percentage = parseFloat(parts[4]!.replace('%', ''));
 
         return { total, used, free, percentage };
       } else {
@@ -336,7 +315,7 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
         };
       }
     } catch (error) {
-      this.logger.warn('Failed to get disk metrics:', error.message);
+      this.logger.warn('Failed to get disk metrics:', (error as Error).message);
       return { total: 0, used: 0, free: 0, percentage: 0 };
     }
   }
@@ -353,9 +332,6 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
     try {
       // This is a simplified implementation
       // In production, you'd want to read from /proc/net/dev or similar
-      const networkInterfaces = os.networkInterfaces();
-      const bytesIn = 0;
-      const bytesOut = 0;
 
       // Placeholder values - integrate with your network monitoring
       return {
@@ -365,7 +341,10 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
         packetsOut: Math.floor(Math.random() * 10000),
       };
     } catch (error) {
-      this.logger.warn('Failed to get network metrics:', error.message);
+      this.logger.warn(
+        'Failed to get network metrics:',
+        (error as Error).message,
+      );
       return { bytesIn: 0, bytesOut: 0, packetsIn: 0, packetsOut: 0 };
     }
   }
@@ -389,7 +368,10 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
         uptime: os.uptime(),
       };
     } catch (error) {
-      this.logger.warn('Failed to get database metrics:', error.message);
+      this.logger.warn(
+        'Failed to get database metrics:',
+        (error as Error).message,
+      );
       return { connections: 0, activeQueries: 0, slowQueries: 0, uptime: 0 };
     }
   }
@@ -414,7 +396,10 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
         errors: Math.floor(Math.random() * 10), // Placeholder
       };
     } catch (error) {
-      this.logger.warn('Failed to get WebSocket metrics:', error.message);
+      this.logger.warn(
+        'Failed to get WebSocket metrics:',
+        (error as Error).message,
+      );
       return { connectedClients: 0, totalMessages: 0, errors: 0 };
     }
   }
@@ -569,14 +554,18 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
       return { cpu: 'stable', memory: 'stable', disk: 'stable' };
     }
 
-    const current = this.metricsHistory[this.metricsHistory.length - 1];
-    const previous = this.metricsHistory[this.metricsHistory.length - 2];
+    const current = this.getLatestMetric();
+    const previous = this.getPreviousMetric();
+
+    if (!current || !previous) {
+      return { cpu: 'stable', memory: 'stable', disk: 'stable' };
+    }
 
     const calculateDirection = (
-      current: number,
-      previous: number,
+      currentVal: number,
+      previousVal: number,
     ): 'up' | 'down' | 'stable' => {
-      const diff = current - previous;
+      const diff = currentVal - previousVal;
       if (Math.abs(diff) < 1) return 'stable';
       return diff > 0 ? 'up' : 'down';
     };
@@ -595,11 +584,25 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
+   * Get the latest recorded metric.
+   * @returns The latest SystemMetrics object or null if history is empty.
+   */
+  getLatestMetric(): SystemMetrics | null {
+    return this.metricsHistory[this.metricsHistory.length - 1] ?? null;
+  }
+
+  /**
+   * Get the second to last recorded metric.
+   * @returns The previous SystemMetrics object or null if history has less than 2 entries.
+   */
+  getPreviousMetric(): SystemMetrics | null {
+    return this.metricsHistory[this.metricsHistory.length - 2] ?? null;
+  }
+
+  /**
    * Log admin activity and broadcast to monitoring clients
    */
-  async logAdminActivity(
-    activity: Omit<AdminActivity, 'id' | 'timestamp'>,
-  ): Promise<void> {
+  async logAdminActivity(activity: Omit<AdminActivity, 'id' | 'timestamp'>): Promise<void> {
     const adminActivity: AdminActivity = {
       id: `activity_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       timestamp: new Date().toISOString(),
@@ -635,7 +638,7 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
     if (this.metricsHistory.length === 0) {
       return await this.collectSystemMetrics();
     }
-    return this.metricsHistory[this.metricsHistory.length - 1];
+    return this.getLatestMetric();
   }
 
   /**
@@ -691,18 +694,5 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
     }
 
     return 'healthy';
-  }
-
-  /**
-   * Cron job to cleanup old metrics (runs every hour)
-   */
-  @Cron(CronExpression.EVERY_HOUR)
-  private cleanupOldMetrics() {
-    if (this.metricsHistory.length > this.maxHistorySize) {
-      this.metricsHistory = this.metricsHistory.slice(-this.maxHistorySize);
-      this.logger.debug(
-        `Cleaned up old metrics, keeping last ${this.maxHistorySize} entries`,
-      );
-    }
   }
 }

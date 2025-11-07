@@ -290,7 +290,9 @@ export class IpRestrictionService {
   private matchesCIDR(ipAddress: string, cidr: string): boolean {
     try {
       const [subnet, maskBits] = cidr.split('/');
-      const mask = ~((1 << (32 - parseInt(maskBits))) - 1);
+      if (!maskBits || !subnet) return false;
+
+      const mask = ~((1 << (32 - parseInt(maskBits, 10))) - 1);
 
       const ipNum = this.ipToNumber(ipAddress);
       const subnetNum = this.ipToNumber(subnet);

@@ -383,7 +383,7 @@ export class AuthenticationService {
 
     // Support both "Bearer token" and "token" formats
     const match = authHeader.match(/^(?:Bearer\s+)?(.+)$/i);
-    return match ? match[1].trim() : null;
+    return match && match[1] ? match[1].trim() : null;
   }
 
   /**

@@ -31,7 +31,7 @@ export class ReportExportService {
 
       switch (format) {
         case OutputFormat.PDF:
-          buffer = await this.exportToPdf(data, options);
+          buffer = await this.exportToPdf(data);
           filePath = await this.saveFile(buffer, reportType, 'pdf');
           break;
 
@@ -155,7 +155,8 @@ export class ReportExportService {
       // If data is an object with array properties, extract the first array
       const arrayProps = Object.keys(data).filter((key) => Array.isArray(data[key]));
       if (arrayProps.length > 0) {
-        return data[arrayProps[0]].map((item: any) => this.flattenObject(item));
+        const arrayData = data[arrayProps[0] as string];
+        return Array.isArray(arrayData) ? arrayData.map((item: any) => this.flattenObject(item)) : [this.flattenObject(data)];
       }
       return [this.flattenObject(data)];
     }

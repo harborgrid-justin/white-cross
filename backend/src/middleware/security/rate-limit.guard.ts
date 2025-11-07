@@ -436,7 +436,8 @@ export class RateLimitGuard implements CanActivate {
     const realIP = req.headers['x-real-ip'];
 
     if (typeof forwarded === 'string') {
-      return forwarded.split(',')[0].trim();
+      const firstIP = forwarded.split(',')[0];
+      return firstIP ? firstIP.trim() : undefined;
     }
 
     if (typeof realIP === 'string') {
@@ -469,5 +470,5 @@ export class RateLimitGuard implements CanActivate {
 }
 
 // Custom decorator for rate limiting
-export const RateLimit = (type: keyof typeof RATE_LIMIT_CONFIGS) =>
+export const RateLimit = (_type: keyof typeof RATE_LIMIT_CONFIGS) =>
   Reflector.createDecorator<string>({ key: 'rateLimit' });

@@ -24,7 +24,6 @@ export interface ReorderRecommendation {
 @Injectable()
 export class ReorderAutomationService {
   private readonly logger = new Logger(ReorderAutomationService.name);
-  private readonly DEFAULT_LEAD_TIME_DAYS = 7;
 
   constructor(
     @InjectModel(InventoryItem)

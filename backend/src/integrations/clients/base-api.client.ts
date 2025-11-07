@@ -250,7 +250,7 @@ export abstract class BaseApiClient {
 
     // Check if limit exceeded
     if (this.requestTimestamps.length >= this.rateLimitConfig.maxRequests) {
-      const oldestTimestamp = this.requestTimestamps[0];
+      const oldestTimestamp = this.requestTimestamps[0]!;
       const waitTime = oldestTimestamp + this.rateLimitConfig.windowMs - now;
 
       throw new Error(

@@ -108,9 +108,11 @@ export class ReportGenerationService {
       return data.length;
     } else if (typeof data === 'object' && data !== null) {
       // Find the first array property and count its length
-      const arrayProps = Object.keys(data).filter((key) => Array.isArray(data[key]));
+      const arrayProps = Object.keys(data).filter((key) => Array.isArray((data as Record<string, unknown>)[key]));
       if (arrayProps.length > 0) {
-        return data[arrayProps[0]].length;
+        const firstArrayKey = arrayProps[0];
+        const arrayData = (data as Record<string, unknown>)[firstArrayKey];
+        return Array.isArray(arrayData) ? arrayData.length : 1;
       }
       return 1;
     }

@@ -137,14 +137,14 @@ export class WebSocketService implements OnModuleDestroy {
         return;
       }
 
-      const message = new BroadcastMessageDto(data);
+      const message = new BroadcastMessageDto(data as any);
 
       server.to(room).emit(event, message);
 
       this.logger.debug(`Broadcasted ${event} to room ${room}`, {
         event,
         room,
-        dataKeys: Object.keys(data),
+        dataKeys: Object.keys(data as any),
       });
     } catch (error) {
       this.logger.error(`Failed to broadcast to room ${room}`, error);
@@ -216,7 +216,7 @@ export class WebSocketService implements OnModuleDestroy {
       }
 
       const room = `user:${userId}`;
-      const message = new BroadcastMessageDto(notification);
+      const message = new BroadcastMessageDto(notification as any);
 
       server.to(room).emit('health:notification', message);
 
@@ -252,7 +252,7 @@ export class WebSocketService implements OnModuleDestroy {
       }
 
       const room = `org:${organizationId}`;
-      const message = new BroadcastMessageDto(reminder);
+      const message = new BroadcastMessageDto(reminder as any);
 
       server.to(room).emit('medication:reminder', message);
 
@@ -294,7 +294,7 @@ export class WebSocketService implements OnModuleDestroy {
       }
 
       const room = `org:${organizationId}`;
-      const message = new BroadcastMessageDto(alert);
+      const message = new BroadcastMessageDto(alert as any);
 
       server.to(room).emit('student:health:alert', message);
 
@@ -337,7 +337,7 @@ export class WebSocketService implements OnModuleDestroy {
         return;
       }
 
-      const message = new BroadcastMessageDto(data);
+      const message = new BroadcastMessageDto(data as Record<string, any>);
 
       for (const room of rooms) {
         server.to(room).emit(event, message);
@@ -346,7 +346,7 @@ export class WebSocketService implements OnModuleDestroy {
       this.logger.debug(`Broadcasted ${event} to ${rooms.length} rooms`, {
         event,
         rooms,
-        dataKeys: Object.keys(data),
+        dataKeys: Object.keys(data as any),
       });
     } catch (error) {
       this.logger.error('Failed to broadcast to multiple rooms', error);

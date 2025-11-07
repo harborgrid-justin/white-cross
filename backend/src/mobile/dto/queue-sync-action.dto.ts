@@ -15,26 +15,26 @@ export class QueueSyncActionDto {
   @ApiProperty({ description: 'Device identifier' })
   @IsString()
   @IsNotEmpty()
-  deviceId: string;
+  deviceId!: string;
 
   @ApiProperty({
     description: 'Sync action type',
     enum: SyncActionType,
   })
   @IsEnum(SyncActionType)
-  actionType: SyncActionType;
+  actionType!: SyncActionType;
 
   @ApiProperty({
     description: 'Entity type being synced',
     enum: SyncEntityType,
   })
   @IsEnum(SyncEntityType)
-  entityType: SyncEntityType;
+  entityType!: SyncEntityType;
 
   @ApiProperty({ description: 'Entity identifier' })
   @IsString()
   @IsNotEmpty()
-  entityId: string;
+  entityId!: string;
 
   @ApiProperty({ description: 'Entity data' })
   @IsObject()

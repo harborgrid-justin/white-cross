@@ -200,6 +200,10 @@ export const isValidDate = (date: Date | string | number | null | undefined): bo
     return !isNaN(date.getTime());
   }
 
+  if (date == null) {
+    return false;
+  }
+
   const parsedDate = new Date(date);
   return !isNaN(parsedDate.getTime());
 };

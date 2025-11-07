@@ -94,7 +94,7 @@ export class IntegrationEncryptionService {
     try {
       const parts = encryptedCredential.split(':');
 
-      if (parts.length !== 4) {
+      if (parts.length !== 4 || !parts[0] || !parts[2] || !parts[3]) {
         throw new Error('Invalid encrypted credential format');
       }
 

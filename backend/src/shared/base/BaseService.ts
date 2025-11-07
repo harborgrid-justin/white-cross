@@ -143,11 +143,10 @@ export abstract class BaseService {
   protected handleError<T>(
     operation: string,
     error: ApplicationError | Error | unknown,
-    metadata?: ErrorMetadata,
   ): ServiceResponse<T> {
     const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
 
-    this.logError(`Error in ${operation}`, error, metadata);
+    this.logError(`Error in ${operation}`, error as Error);
 
     // Don't expose internal errors to clients
     let clientMessage = errorMessage;
@@ -178,9 +177,8 @@ export abstract class BaseService {
     operation: string,
     data: T,
     message?: string,
-    metadata?: ErrorMetadata,
   ): ServiceResponse<T> {
-    this.logInfo(`${operation} completed successfully`, metadata);
+    this.logInfo(`${operation} completed successfully`);
 
     return {
       success: true,
@@ -320,19 +318,11 @@ export abstract class BaseService {
           `Item ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         );
 
-        this.logError(`Bulk operation ${operation} failed for item ${i + 1}`, error, {
-          additionalContext: { item },
-        });
+        this.logError(`Bulk operation ${operation} failed for item ${i + 1}`, error as Error);
       }
     }
 
-    this.logInfo(`Bulk operation ${operation} completed`, {
-      additionalContext: {
-        processed: results.processed,
-        successful: results.successful,
-        failed: results.failed,
-      },
-    });
+    this.logInfo(`Bulk operation ${operation} completed`);
 
     return results;
   }
@@ -360,9 +350,7 @@ export abstract class BaseService {
         entity,
       };
     } catch (error) {
-      this.logError(`Error checking ${entityName} existence`, error, {
-        additionalContext: { id },
-      });
+      this.logError(`Error checking ${entityName} existence`, error as Error);
       return {
         exists: false,
         error: `Error checking ${entityName} existence`,
@@ -388,13 +376,13 @@ export abstract class BaseService {
   /**
    * Add audit trail entry (if enabled)
    */
-  protected async addAuditEntry(
+  protected async logAuditEvent(
     action: string,
     entityType: string,
-    entityId: string,
-    userId?: string,
-    changes?: Record<string, unknown>,
-    metadata?: ErrorMetadata,
+    _entityId: string,
+    _userId?: string,
+    _changes?: Record<string, unknown>,
+    _metadata?: ErrorMetadata,
   ): Promise<void> {
     if (!this.enableAuditLogging) {
       return;
@@ -403,25 +391,9 @@ export abstract class BaseService {
     try {
       // This would typically use an audit service
       // For now, just log the audit information
-      this.logInfo('Audit entry', {
-        userId,
-        timestamp: new Date(),
-        additionalContext: {
-          action,
-          entityType,
-          entityId,
-          changes,
-          ...metadata,
-        },
-      });
+      this.logInfo(`Audit entry: ${action} on ${entityType}`);
     } catch (error) {
-      this.logError('Failed to create audit entry', error, {
-        additionalContext: {
-          action,
-          entityType,
-          entityId,
-        },
-      });
+      this.logError('Failed to create audit entry', error as Error);
     }
   }
 
@@ -452,7 +424,7 @@ export abstract class BaseService {
 
       await entity.update({ isActive: false } as unknown as Partial<T>);
 
-      await this.addAuditEntry('soft_delete', model.name, id, userId);
+      await this.logAuditEvent('soft_delete', model.name, id, userId);
 
       return this.handleSuccess('soft delete', { success: true });
     } catch (error) {
@@ -487,7 +459,7 @@ export abstract class BaseService {
 
       await entity.update({ isActive: true } as unknown as Partial<T>);
 
-      await this.addAuditEntry('reactivate', model.name, id, userId);
+      await this.logAuditEvent('reactivate', model.name, id, userId);
 
       return this.handleSuccess('reactivate', { success: true });
     } catch (error) {

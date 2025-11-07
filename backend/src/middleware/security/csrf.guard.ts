@@ -353,6 +353,10 @@ export class CsrfGuard implements CanActivate {
       const [tokenUserId, tokenSessionId, timestamp, randomBytes, signature] =
         parts;
 
+      if (!tokenUserId || !tokenSessionId || !timestamp || !randomBytes || !signature) {
+        return false;
+      }
+
       // Validate user and session match
       if (tokenUserId !== userId || tokenSessionId !== sessionId) {
         return false;

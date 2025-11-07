@@ -12,12 +12,12 @@ export class CreateInventoryItemDto {
   @ApiProperty({ description: 'Item name', example: 'Ibuprofen 200mg' })
   @IsString()
   @MaxLength(255)
-  name: string;
+  name!: string;
 
   @ApiProperty({ description: 'Item category', example: 'MEDICATION' })
   @IsString()
   @MaxLength(100)
-  category: string;
+  category!: string;
 
   @ApiPropertyOptional({ description: 'Item description' })
   @IsOptional()
@@ -48,7 +48,7 @@ export class CreateInventoryItemDto {
   @ApiProperty({ description: 'Reorder level (trigger point)', example: 50 })
   @IsInt()
   @Min(0)
-  reorderLevel: number;
+  reorderLevel!: number;
 
   @ApiProperty({
     description: 'Reorder quantity (amount to order)',
@@ -56,7 +56,7 @@ export class CreateInventoryItemDto {
   })
   @IsInt()
   @Min(1)
-  reorderQuantity: number;
+  reorderQuantity!: number;
 
   @ApiPropertyOptional({
     description: 'Storage location',

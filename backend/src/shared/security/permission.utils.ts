@@ -430,9 +430,9 @@ export function requirePermission(
  * @future Implement emergency access override with break-glass functionality
  */
 export async function canAccessStudent(
-  userId: string,
+  _userId: string,
   userRole: UserRole,
-  studentId: string,
+  _studentId: string,
 ): Promise<boolean> {
   // Admins and District Admins can access all students
   if (userRole === UserRole.ADMIN || userRole === UserRole.DISTRICT_ADMIN) {

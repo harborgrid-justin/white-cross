@@ -59,10 +59,7 @@ export interface MessageCostCalculation {
  * @param variables - Record of variable names to values
  * @returns Processed message string with variables substituted
  */
-export function buildMessageTemplate(
-  template: string,
-  variables: Record<string, any>,
-): string {
+export function buildMessageTemplate(template: string, variables: Record<string, any>): string {
   if (!template || typeof template !== 'string') {
     return '';
   }
@@ -72,36 +69,34 @@ export function buildMessageTemplate(
   // Replace all {{variable}} placeholders
   const variableRegex = /\{\{([^}]+)\}\}/g;
 
-  processedMessage = processedMessage.replace(
-    variableRegex,
-    (match, variableName) => {
-      const trimmedName = variableName.trim();
+  processedMessage = processedMessage.replace(variableRegex, (_match, variableName) => {
+    if (typeof variableName !== 'string') return '';
+    const trimmedName = variableName.trim();
 
-      // Check if variable exists
-      if (variables.hasOwnProperty(trimmedName)) {
-        const value = variables[trimmedName];
+    // Check if variable exists
+    if (Object.prototype.hasOwnProperty.call(variables, trimmedName)) {
+      const value = variables[trimmedName];
 
-        // Handle different value types
-        if (value === null || value === undefined) {
-          return '';
-        } else if (typeof value === 'object') {
-          return JSON.stringify(value);
-        } else {
-          return String(value);
-        }
+      // Handle different value types
+      if (value === null || value === undefined) {
+        return '';
+      } else if (typeof value === 'object') {
+        return JSON.stringify(value);
+      } else {
+        return String(value);
       }
+    }
 
-      // Return placeholder if variable not found (for debugging)
-      return `{{${trimmedName}}}`;
-    },
-  );
+    // Return placeholder if variable not found (for debugging)
+    return `{{${trimmedName}}}`;
+  });
 
   // Handle conditional sections [if:variable]content[/if]
   const conditionalRegex = /\[if:([^\]]+)\](.*?)\[\/if\]/g;
 
   processedMessage = processedMessage.replace(
     conditionalRegex,
-    (match, condition, content) => {
+    (_match, condition, content) => {
       const trimmedCondition = condition.trim();
 
       // Check if condition variable exists and is truthy
@@ -156,27 +151,33 @@ export function extractTemplateVariables(template: string): string[] {
 
   let match;
   while ((match = variableRegex.exec(template)) !== null) {
-    const variableName = match[1].trim();
-    if (!variables.includes(variableName)) {
-      variables.push(variableName);
+    if (match[1]) {
+      const variableName = match[1].trim();
+      if (!variables.includes(variableName)) {
+        variables.push(variableName);
+      }
     }
   }
 
   // Also extract conditional variables
   const conditionalRegex = /\[if:([^\]]+)\]/g;
   while ((match = conditionalRegex.exec(template)) !== null) {
-    const variableName = match[1].trim();
-    if (!variables.includes(variableName)) {
-      variables.push(variableName);
+    if (match[1]) {
+      const variableName = match[1].trim();
+      if (!variables.includes(variableName)) {
+        variables.push(variableName);
+      }
     }
   }
 
   // Extract date variables
   const dateRegex = /\[date:([^:]+):/g;
   while ((match = dateRegex.exec(template)) !== null) {
-    const variableName = match[1].trim();
-    if (!variables.includes(variableName)) {
-      variables.push(variableName);
+    if (match[1]) {
+      const variableName = match[1].trim();
+      if (!variables.includes(variableName)) {
+        variables.push(variableName);
+      }
     }
   }
 
@@ -286,8 +287,6 @@ export function sanitizeMessageContent(
 
     case 'EMAIL':
       // Allow basic HTML tags for email
-      const allowedTags =
-        /<\/?(?:b|i|u|strong|em|br|p|a|h[1-6]|ul|ol|li|blockquote)\b[^>]*>/gi;
       sanitized = sanitized.replace(
         /<(?!\/?(?:b|i|u|strong|em|br|p|a|h[1-6]|ul|ol|li|blockquote)\b)[^>]*>/gi,
         '',

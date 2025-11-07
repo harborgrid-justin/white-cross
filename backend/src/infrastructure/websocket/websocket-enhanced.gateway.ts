@@ -69,7 +69,7 @@ export class EnhancedWebSocketGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   @WebSocketServer()
-  server: Server;
+  server!: Server;
 
   private readonly logger = new Logger(EnhancedWebSocketGateway.name);
 
@@ -182,7 +182,7 @@ export class EnhancedWebSocketGateway
    * Handles ping requests for connection health checks
    */
   @SubscribeMessage('ping')
-  handlePing(@ConnectedSocket() client: AuthenticatedSocket): { pong: string } {
+  handlePing(): { pong: string } {
     return { pong: new Date().toISOString() };
   }
 
