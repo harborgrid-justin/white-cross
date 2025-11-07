@@ -8,7 +8,7 @@ import {
   HasMany,
   BeforeCreate,
   Scopes,
-  BeforeUpdate
+  BeforeUpdate,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
@@ -31,10 +31,10 @@ export interface VendorAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'vendors',
@@ -42,26 +42,29 @@ export interface VendorAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['name']
+      fields: ['name'],
     },
     {
       fields: ['email'],
-      unique: true
+      unique: true,
     },
     {
-      fields: ['isActive']
+      fields: ['isActive'],
     },
     {
       fields: ['createdAt'],
-      name: 'idx_vendor_created_at'
+      name: 'idx_vendor_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_vendor_updated_at'
-    }
-  ]
+      name: 'idx_vendor_updated_at',
+    },
+  ],
 })
-export class Vendor extends Model<VendorAttributes> implements VendorAttributes {
+export class Vendor
+  extends Model<VendorAttributes>
+  implements VendorAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -69,7 +72,7 @@ export class Vendor extends Model<VendorAttributes> implements VendorAttributes 
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   name: string;
 
@@ -78,7 +81,7 @@ export class Vendor extends Model<VendorAttributes> implements VendorAttributes 
 
   @Column({
     type: DataType.STRING(255),
-    unique: true
+    unique: true,
   })
   email?: string;
 
@@ -101,7 +104,7 @@ export class Vendor extends Model<VendorAttributes> implements VendorAttributes 
   notes?: string;
 
   @Column({
-    type: DataType.DECIMAL(3, 2)
+    type: DataType.DECIMAL(3, 2),
   })
   rating?: number;
 
@@ -119,14 +122,15 @@ export class Vendor extends Model<VendorAttributes> implements VendorAttributes 
   @HasMany(() => require('./purchase-order.model').PurchaseOrder)
   declare purchaseOrders?: any[];
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: Vendor) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] Vendor ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] Vendor ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

@@ -45,7 +45,8 @@ export class ScreeningController {
   @Get('student/:studentId')
   @ApiOperation({
     summary: 'Get student screenings',
-    description: 'Retrieves all health screening records for a specific student.',
+    description:
+      'Retrieves all health screening records for a specific student.',
   })
   @ApiParam({
     name: 'studentId',
@@ -73,7 +74,8 @@ export class ScreeningController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Import screenings in batch',
-    description: 'Creates multiple screening records at once for mass screening events.',
+    description:
+      'Creates multiple screening records at once for mass screening events.',
   })
   @ApiResponse({
     status: 201,
@@ -133,7 +135,8 @@ export class ScreeningController {
   @Get('schedule')
   @ApiOperation({
     summary: 'Get screening schedule',
-    description: 'Retrieves required screening schedule by grade level and state.',
+    description:
+      'Retrieves required screening schedule by grade level and state.',
   })
   @ApiQuery({
     name: 'gradeLevel',
@@ -160,7 +163,8 @@ export class ScreeningController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Create screening referral',
-    description: 'Creates a referral to a specialist based on screening results.',
+    description:
+      'Creates a referral to a specialist based on screening results.',
   })
   @ApiParam({
     name: 'id',

@@ -3,7 +3,9 @@ import { CreateWitnessStatementDto } from './create-witness-statement.dto';
 import { IsBoolean, IsOptional, IsString, IsUUID } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
-export class UpdateWitnessStatementDto extends PartialType(CreateWitnessStatementDto) {
+export class UpdateWitnessStatementDto extends PartialType(
+  CreateWitnessStatementDto,
+) {
   @ApiPropertyOptional({
     description: 'Witness statement text',
     example: 'Updated witness statement with additional details',

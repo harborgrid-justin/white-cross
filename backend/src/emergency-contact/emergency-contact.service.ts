@@ -8,7 +8,12 @@
  * - Contact verification workflows
  * - Statistics and reporting
  */
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Transaction, QueryTypes } from 'sequelize';
 import { EmergencyContact } from '../database/models/emergency-contact.model';
@@ -35,7 +40,9 @@ export class EmergencyContactService {
   /**
    * Get emergency contacts for a student
    */
-  async getStudentEmergencyContacts(studentId: string): Promise<EmergencyContact[]> {
+  async getStudentEmergencyContacts(
+    studentId: string,
+  ): Promise<EmergencyContact[]> {
     try {
       const contacts = await this.emergencyContactModel.findAll({
         where: {
@@ -48,10 +55,15 @@ export class EmergencyContactService {
         ],
       });
 
-      this.logger.log(`Retrieved ${contacts.length} emergency contacts for student ${studentId}`);
+      this.logger.log(
+        `Retrieved ${contacts.length} emergency contacts for student ${studentId}`,
+      );
       return contacts;
     } catch (error) {
-      this.logger.error(`Error fetching student emergency contacts: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error fetching student emergency contacts: ${error.message}`,
+        error.stack,
+      );
       throw new Error('Failed to fetch emergency contacts');
     }
   }
@@ -59,7 +71,9 @@ export class EmergencyContactService {
   /**
    * Create new emergency contact
    */
-  async createEmergencyContact(data: EmergencyContactCreateDto): Promise<EmergencyContact> {
+  async createEmergencyContact(
+    data: EmergencyContactCreateDto,
+  ): Promise<EmergencyContact> {
     if (!this.emergencyContactModel.sequelize) {
       throw new Error('Database connection not available');
     }
@@ -79,13 +93,17 @@ export class EmergencyContactService {
       }
 
       if (!student.isActive) {
-        throw new BadRequestException('Cannot add emergency contact to inactive student');
+        throw new BadRequestException(
+          'Cannot add emergency contact to inactive student',
+        );
       }
 
       // Validate phone number format
       const cleanPhone = data.phoneNumber.replace(/[\s\-().]/g, '');
       if (cleanPhone.length < 10) {
-        throw new BadRequestException('Phone number must contain at least 10 digits');
+        throw new BadRequestException(
+          'Phone number must contain at least 10 digits',
+        );
       }
 
       // Validate email format if provided
@@ -116,10 +134,13 @@ export class EmergencyContactService {
 
         // Ensure SMS/voice channels have phone number
         if (
-          (data.notificationChannels.includes('sms') || data.notificationChannels.includes('voice')) &&
+          (data.notificationChannels.includes('sms') ||
+            data.notificationChannels.includes('voice')) &&
           !data.phoneNumber
         ) {
-          throw new BadRequestException('Phone number is required for SMS or voice notification channels');
+          throw new BadRequestException(
+            'Phone number is required for SMS or voice notification channels',
+          );
         }
       }
 
@@ -149,7 +170,10 @@ export class EmergencyContactService {
           : JSON.stringify(['sms', 'email']), // Default channels
       };
 
-      const savedContact = await this.emergencyContactModel.create(contactData, { transaction });
+      const savedContact = await this.emergencyContactModel.create(
+        contactData,
+        { transaction },
+      );
 
       await transaction.commit();
 
@@ -161,10 +185,16 @@ export class EmergencyContactService {
     } catch (error) {
       await transaction.rollback();
       // HIPAA-compliant error handling - log details server-side only
-      this.logger.error(`Error creating emergency contact: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error creating emergency contact: ${error.message}`,
+        error.stack,
+      );
 
       // Return generic error to client without PHI
-      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
         throw error; // Business logic errors are safe to expose
       }
       throw new Error('Failed to create emergency contact. Please try again.');
@@ -199,7 +229,9 @@ export class EmergencyContactService {
       if (data.phoneNumber) {
         const cleanPhone = data.phoneNumber.replace(/[\s\-().]/g, '');
         if (cleanPhone.length < 10) {
-          throw new BadRequestException('Phone number must contain at least 10 digits');
+          throw new BadRequestException(
+            'Phone number must contain at least 10 digits',
+          );
         }
       }
 
@@ -223,7 +255,8 @@ export class EmergencyContactService {
         }
 
         // Check if email channel requires email address
-        const finalEmail = data.email !== undefined ? data.email : existingContact.email;
+        const finalEmail =
+          data.email !== undefined ? data.email : existingContact.email;
         if (data.notificationChannels.includes('email') && !finalEmail) {
           throw new BadRequestException(
             'Email address is required when email is selected as a notification channel',
@@ -232,18 +265,22 @@ export class EmergencyContactService {
       }
 
       // Handle priority changes with PRIMARY contact enforcement
-      if (data.priority !== undefined && data.priority !== existingContact.priority) {
+      if (
+        data.priority !== undefined &&
+        data.priority !== existingContact.priority
+      ) {
         if (data.priority === ContactPriority.PRIMARY) {
           // Check if student already has 2 PRIMARY contacts
-          const existingPrimaryContacts = await this.emergencyContactModel.count({
-            where: {
-              studentId: existingContact.studentId,
-              priority: ContactPriority.PRIMARY,
-              isActive: true,
-              id: { [Op.ne]: id },
-            },
-            transaction,
-          });
+          const existingPrimaryContacts =
+            await this.emergencyContactModel.count({
+              where: {
+                studentId: existingContact.studentId,
+                priority: ContactPriority.PRIMARY,
+                isActive: true,
+                id: { [Op.ne]: id },
+              },
+              transaction,
+            });
 
           if (existingPrimaryContacts >= 2) {
             throw new BadRequestException(
@@ -276,15 +313,16 @@ export class EmergencyContactService {
         existingContact.isActive &&
         existingContact.priority === ContactPriority.PRIMARY
       ) {
-        const otherActivePrimaryContacts = await this.emergencyContactModel.count({
-          where: {
-            studentId: existingContact.studentId,
-            priority: ContactPriority.PRIMARY,
-            isActive: true,
-            id: { [Op.ne]: id },
-          },
-          transaction,
-        });
+        const otherActivePrimaryContacts =
+          await this.emergencyContactModel.count({
+            where: {
+              studentId: existingContact.studentId,
+              priority: ContactPriority.PRIMARY,
+              isActive: true,
+              id: { [Op.ne]: id },
+            },
+            transaction,
+          });
 
         if (otherActivePrimaryContacts === 0) {
           throw new BadRequestException(
@@ -296,7 +334,9 @@ export class EmergencyContactService {
       // Prepare update data with serialized notification channels
       const updateData: any = { ...data };
       if (data.notificationChannels) {
-        updateData.notificationChannels = JSON.stringify(data.notificationChannels);
+        updateData.notificationChannels = JSON.stringify(
+          data.notificationChannels,
+        );
       }
 
       await existingContact.update(updateData, { transaction });
@@ -311,10 +351,16 @@ export class EmergencyContactService {
     } catch (error) {
       await transaction.rollback();
       // HIPAA-compliant error handling - log details server-side only
-      this.logger.error(`Error updating emergency contact: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error updating emergency contact: ${error.message}`,
+        error.stack,
+      );
 
       // Return generic error to client without PHI
-      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
         throw error; // Business logic errors are safe to expose
       }
       throw new Error('Failed to update emergency contact. Please try again.');
@@ -344,15 +390,16 @@ export class EmergencyContactService {
 
       // Prevent deletion if this is the only active PRIMARY contact
       if (contact.isActive && contact.priority === ContactPriority.PRIMARY) {
-        const otherActivePrimaryContacts = await this.emergencyContactModel.count({
-          where: {
-            studentId: contact.studentId,
-            priority: ContactPriority.PRIMARY,
-            isActive: true,
-            id: { [Op.ne]: id },
-          },
-          transaction,
-        });
+        const otherActivePrimaryContacts =
+          await this.emergencyContactModel.count({
+            where: {
+              studentId: contact.studentId,
+              priority: ContactPriority.PRIMARY,
+              isActive: true,
+              id: { [Op.ne]: id },
+            },
+            transaction,
+          });
 
         if (otherActivePrimaryContacts === 0) {
           throw new BadRequestException(
@@ -365,16 +412,24 @@ export class EmergencyContactService {
 
       await transaction.commit();
 
-      this.logger.log(`Emergency contact deleted: ${contact.firstName} ${contact.lastName}`);
+      this.logger.log(
+        `Emergency contact deleted: ${contact.firstName} ${contact.lastName}`,
+      );
 
       return { success: true };
     } catch (error) {
       await transaction.rollback();
       // HIPAA-compliant error handling - log details server-side only
-      this.logger.error(`Error deleting emergency contact: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error deleting emergency contact: ${error.message}`,
+        error.stack,
+      );
 
       // Return generic error to client without PHI
-      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
         throw error; // Business logic errors are safe to expose
       }
       throw new Error('Failed to delete emergency contact. Please try again.');
@@ -415,8 +470,14 @@ export class EmergencyContactService {
         // Send SMS if requested and phone number is available
         if (notificationData.channels.includes('sms') && contact.phoneNumber) {
           try {
-            const smsResult = await this.sendSMS(contact.phoneNumber, notificationData.message);
-            result.channels.sms = { success: true, messageId: smsResult.messageId };
+            const smsResult = await this.sendSMS(
+              contact.phoneNumber,
+              notificationData.message,
+            );
+            result.channels.sms = {
+              success: true,
+              messageId: smsResult.messageId,
+            };
           } catch (error) {
             result.channels.sms = { success: false, error: error.message };
           }
@@ -431,17 +492,29 @@ export class EmergencyContactService {
               notificationData.message,
               notificationData.attachments,
             );
-            result.channels.email = { success: true, messageId: emailResult.messageId };
+            result.channels.email = {
+              success: true,
+              messageId: emailResult.messageId,
+            };
           } catch (error) {
             result.channels.email = { success: false, error: error.message };
           }
         }
 
         // Send voice call if requested and phone number is available
-        if (notificationData.channels.includes('voice') && contact.phoneNumber) {
+        if (
+          notificationData.channels.includes('voice') &&
+          contact.phoneNumber
+        ) {
           try {
-            const voiceResult = await this.makeVoiceCall(contact.phoneNumber, notificationData.message);
-            result.channels.voice = { success: true, callId: voiceResult.callId };
+            const voiceResult = await this.makeVoiceCall(
+              contact.phoneNumber,
+              notificationData.message,
+            );
+            result.channels.voice = {
+              success: true,
+              callId: voiceResult.callId,
+            };
           } catch (error) {
             result.channels.voice = { success: false, error: error.message };
           }
@@ -456,7 +529,10 @@ export class EmergencyContactService {
 
       return results;
     } catch (error) {
-      this.logger.error(`Error sending emergency notification: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error sending emergency notification: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -499,8 +575,14 @@ export class EmergencyContactService {
           case 'sms':
             if (contact.phoneNumber) {
               try {
-                const smsResult = await this.sendSMS(contact.phoneNumber, notificationData.message);
-                result.channels.sms = { success: true, messageId: smsResult.messageId };
+                const smsResult = await this.sendSMS(
+                  contact.phoneNumber,
+                  notificationData.message,
+                );
+                result.channels.sms = {
+                  success: true,
+                  messageId: smsResult.messageId,
+                };
               } catch (error) {
                 result.channels.sms = { success: false, error: error.message };
               }
@@ -516,9 +598,15 @@ export class EmergencyContactService {
                   notificationData.message,
                   notificationData.attachments,
                 );
-                result.channels.email = { success: true, messageId: emailResult.messageId };
+                result.channels.email = {
+                  success: true,
+                  messageId: emailResult.messageId,
+                };
               } catch (error) {
-                result.channels.email = { success: false, error: error.message };
+                result.channels.email = {
+                  success: false,
+                  error: error.message,
+                };
               }
             }
             break;
@@ -526,20 +614,34 @@ export class EmergencyContactService {
           case 'voice':
             if (contact.phoneNumber) {
               try {
-                const voiceResult = await this.makeVoiceCall(contact.phoneNumber, notificationData.message);
-                result.channels.voice = { success: true, callId: voiceResult.callId };
+                const voiceResult = await this.makeVoiceCall(
+                  contact.phoneNumber,
+                  notificationData.message,
+                );
+                result.channels.voice = {
+                  success: true,
+                  callId: voiceResult.callId,
+                };
               } catch (error) {
-                result.channels.voice = { success: false, error: error.message };
+                result.channels.voice = {
+                  success: false,
+                  error: error.message,
+                };
               }
             }
             break;
         }
       }
 
-      this.logger.log(`Notification sent to contact ${contact.firstName} ${contact.lastName}`);
+      this.logger.log(
+        `Notification sent to contact ${contact.firstName} ${contact.lastName}`,
+      );
       return result;
     } catch (error) {
-      this.logger.error(`Error sending contact notification: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error sending contact notification: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -547,7 +649,10 @@ export class EmergencyContactService {
   /**
    * Verify emergency contact information
    */
-  async verifyContact(contactId: string, verificationMethod: 'sms' | 'email' | 'voice') {
+  async verifyContact(
+    contactId: string,
+    verificationMethod: 'sms' | 'email' | 'voice',
+  ) {
     try {
       const contact = await this.emergencyContactModel.findOne({
         where: { id: contactId },
@@ -557,28 +662,40 @@ export class EmergencyContactService {
         throw new NotFoundException('Emergency contact not found');
       }
 
-      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const verificationCode = Math.floor(
+        100000 + Math.random() * 900000,
+      ).toString();
       const message = `Verification code for student emergency contact: ${verificationCode}`;
 
       let result;
       switch (verificationMethod) {
         case 'sms':
           if (!contact.phoneNumber) {
-            throw new BadRequestException('Phone number not available for SMS verification');
+            throw new BadRequestException(
+              'Phone number not available for SMS verification',
+            );
           }
           result = await this.sendSMS(contact.phoneNumber, message);
           break;
 
         case 'email':
           if (!contact.email) {
-            throw new BadRequestException('Email address not available for email verification');
+            throw new BadRequestException(
+              'Email address not available for email verification',
+            );
           }
-          result = await this.sendEmail(contact.email, 'Contact Verification', message);
+          result = await this.sendEmail(
+            contact.email,
+            'Contact Verification',
+            message,
+          );
           break;
 
         case 'voice':
           if (!contact.phoneNumber) {
-            throw new BadRequestException('Phone number not available for voice verification');
+            throw new BadRequestException(
+              'Phone number not available for voice verification',
+            );
           }
           result = await this.makeVoiceCall(contact.phoneNumber, message);
           break;
@@ -592,7 +709,9 @@ export class EmergencyContactService {
         verificationStatus: VerificationStatus.PENDING,
       });
 
-      this.logger.log(`Verification ${verificationMethod} sent to contact ${contact.firstName} ${contact.lastName}`);
+      this.logger.log(
+        `Verification ${verificationMethod} sent to contact ${contact.firstName} ${contact.lastName}`,
+      );
 
       return {
         verificationCode, // In production, this should not be returned
@@ -600,7 +719,10 @@ export class EmergencyContactService {
         ...result,
       };
     } catch (error) {
-      this.logger.error(`Error verifying contact: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error verifying contact: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -633,22 +755,27 @@ export class EmergencyContactService {
           where: { isActive: true },
         }),
 
+        // SECURITY FIX: Parameterized query replaces string concatenation
         // OPTIMIZATION: Single GROUP BY query replaces N individual COUNT queries
         // Before: 3 separate queries (one per priority level)
         // After: 1 query with GROUP BY priority
-        this.emergencyContactModel.sequelize.query<{ priority: string; count: string }>(
+        this.emergencyContactModel.sequelize.query<{
+          priority: string;
+          count: string;
+        }>(
           `
           SELECT
             priority,
             COUNT(*) as count
           FROM "EmergencyContacts"
-          WHERE "isActive" = true
+          WHERE "isActive" = :isActive
           GROUP BY priority
           `,
           {
             type: QueryTypes.SELECT,
             raw: true,
-          }
+            replacements: { isActive: true },
+          },
         ),
 
         // Total active students
@@ -656,31 +783,35 @@ export class EmergencyContactService {
           where: { isActive: true },
         }),
 
+        // SECURITY FIX: Parameterized query with named replacements
         // Students with at least one contact
         this.emergencyContactModel.sequelize.query<{ count: string }>(
-          'SELECT COUNT(DISTINCT "studentId") as count FROM "EmergencyContacts" WHERE "isActive" = true',
+          'SELECT COUNT(DISTINCT "studentId") as count FROM "EmergencyContacts" WHERE "isActive" = :isActive',
           {
             type: QueryTypes.SELECT,
             raw: true,
-          }
+            replacements: { isActive: true },
+          },
         ),
       ]);
 
       // Transform GROUP BY results into priority map
       // Initialize with 0 for all priority levels to ensure all are present
       const byPriority: Record<string, number> = {};
-      Object.values(ContactPriority).forEach(priority => {
+      Object.values(ContactPriority).forEach((priority) => {
         byPriority[priority] = 0;
       });
 
       // Fill in actual counts from query results
-      priorityResults.forEach(row => {
+      priorityResults.forEach((row) => {
         if (row && row.priority && row.count) {
           byPriority[row.priority] = parseInt(row.count, 10);
         }
       });
 
-      const studentsWithoutContacts = allStudents - (parseInt(studentsWithContactsResult[0]?.count || '0', 10) || 0);
+      const studentsWithoutContacts =
+        allStudents -
+        (parseInt(studentsWithContactsResult[0]?.count || '0', 10) || 0);
 
       this.logger.log(
         `Contact statistics: ${totalContacts} total, ${studentsWithoutContacts} students without contacts`,
@@ -692,7 +823,10 @@ export class EmergencyContactService {
         byPriority,
       };
     } catch (error) {
-      this.logger.error(`Error fetching contact statistics: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error fetching contact statistics: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -713,7 +847,10 @@ export class EmergencyContactService {
       this.logger.log(`Retrieved emergency contact: ${id}`);
       return contact;
     } catch (error) {
-      this.logger.error(`Error getting emergency contact by ID ${id}: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error getting emergency contact by ID ${id}: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -730,7 +867,12 @@ export class EmergencyContactService {
     };
   }
 
-  private async sendEmail(email: string, subject: string, message: string, attachments?: string[]) {
+  private async sendEmail(
+    email: string,
+    subject: string,
+    message: string,
+    attachments?: string[],
+  ) {
     // Mock implementation - replace with actual email service
     this.logger.log(`Email would be sent to ${email}: ${subject}`);
     return {

@@ -10,7 +10,14 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { TreatmentPlanService } from '../services/treatment-plan.service';
 import { CreateTreatmentPlanDto } from '../dto/treatment/create-treatment-plan.dto';
 import { UpdateTreatmentPlanDto } from '../dto/treatment/update-treatment-plan.dto';
@@ -27,15 +34,27 @@ export class TreatmentPlanController {
   constructor(private readonly treatmentPlanService: TreatmentPlanService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create treatment plan', description: 'Creates a new treatment plan for a student' })
-  @ApiResponse({ status: 201, description: 'Treatment plan created successfully' })
+  @ApiOperation({
+    summary: 'Create treatment plan',
+    description: 'Creates a new treatment plan for a student',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Treatment plan created successfully',
+  })
   async create(@Body() createDto: CreateTreatmentPlanDto) {
     return this.treatmentPlanService.create(createDto);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Query treatment plans', description: 'Search and filter treatment plans with pagination' })
-  @ApiResponse({ status: 200, description: 'Treatment plans retrieved successfully' })
+  @ApiOperation({
+    summary: 'Query treatment plans',
+    description: 'Search and filter treatment plans with pagination',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Treatment plans retrieved successfully',
+  })
   async findAll(@Query() filters: TreatmentPlanFiltersDto) {
     return this.treatmentPlanService.findAll(filters);
   }
@@ -52,9 +71,19 @@ export class TreatmentPlanController {
   @Get('student/:studentId')
   @ApiOperation({ summary: 'Get treatment plans for a student' })
   @ApiParam({ name: 'studentId', description: 'Student ID' })
-  @ApiQuery({ name: 'limit', required: false, description: 'Maximum number of results' })
-  @ApiResponse({ status: 200, description: 'Student treatment plans retrieved' })
-  async findByStudent(@Param('studentId') studentId: string, @Query('limit') limit?: number) {
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Maximum number of results',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Student treatment plans retrieved',
+  })
+  async findByStudent(
+    @Param('studentId') studentId: string,
+    @Query('limit') limit?: number,
+  ) {
     return this.treatmentPlanService.findByStudent(studentId, limit);
   }
 
@@ -66,14 +95,15 @@ export class TreatmentPlanController {
     return this.treatmentPlanService.findActiveByStudent(studentId);
   }
 
-
-
   @Patch(':id')
   @ApiOperation({ summary: 'Update treatment plan' })
   @ApiParam({ name: 'id', description: 'Treatment plan ID' })
   @ApiResponse({ status: 200, description: 'Treatment plan updated' })
   @ApiResponse({ status: 404, description: 'Treatment plan not found' })
-  async update(@Param('id') id: string, @Body() updateDto: UpdateTreatmentPlanDto) {
+  async update(
+    @Param('id') id: string,
+    @Body() updateDto: UpdateTreatmentPlanDto,
+  ) {
     return this.treatmentPlanService.update(id, updateDto);
   }
 

@@ -27,23 +27,34 @@ export interface UpdateSupplierDTO {
 }
 
 @Injectable()
-export class SupplierRepository extends BaseRepository<any, SupplierAttributes, CreateSupplierDTO> {
+export class SupplierRepository extends BaseRepository<
+  any,
+  SupplierAttributes,
+  CreateSupplierDTO
+> {
   constructor(
     @InjectModel(Supplier) model: typeof Supplier,
     @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('ICacheManager') cacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'Supplier');
   }
 
   protected async validateCreate(data: CreateSupplierDTO): Promise<void> {}
-  protected async validateUpdate(id: string, data: UpdateSupplierDTO): Promise<void> {}
+  protected async validateUpdate(
+    id: string,
+    data: UpdateSupplierDTO,
+  ): Promise<void> {}
 
   protected async invalidateCaches(entity: any): Promise<void> {
     try {
       const entityData = entity.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, entityData.id));
-      await this.cacheManager.deletePattern(`white-cross:${this.entityName.toLowerCase()}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, entityData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:${this.entityName.toLowerCase()}:*`,
+      );
     } catch (error) {
       this.logger.warn(`Error invalidating ${this.entityName} caches:`, error);
     }
@@ -53,5 +64,3 @@ export class SupplierRepository extends BaseRepository<any, SupplierAttributes, 
     return sanitizeSensitiveData({ ...data });
   }
 }
-
-

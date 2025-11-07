@@ -59,7 +59,11 @@ export class ThreatDetectionService {
 
       return { detected: false };
     } catch (error) {
-      this.logger.error('Error detecting brute force', { error, userId, ipAddress });
+      this.logger.error('Error detecting brute force', {
+        error,
+        userId,
+        ipAddress,
+      });
       return { detected: false };
     }
   }
@@ -75,10 +79,16 @@ export class ThreatDetectionService {
       const sqlPatterns = [
         { pattern: /(\bunion\b.*\bselect\b)/i, name: 'UNION SELECT' },
         { pattern: /(\bor\b.*=.*)/i, name: 'OR condition' },
-        { pattern: /(';|";|--|\/\*|\*\/)/,name: 'SQL comment/terminator' },
-        { pattern: /(\bdrop\b|\bdelete\b|\btruncate\b).*\btable\b/i, name: 'DROP/DELETE TABLE' },
+        { pattern: /(';|";|--|\/\*|\*\/)/, name: 'SQL comment/terminator' },
+        {
+          pattern: /(\bdrop\b|\bdelete\b|\btruncate\b).*\btable\b/i,
+          name: 'DROP/DELETE TABLE',
+        },
         { pattern: /(\bexec\b|\bexecute\b).*\(/i, name: 'EXEC statement' },
-        { pattern: /(\bselect\b.*\bfrom\b.*\bwhere\b)/i, name: 'SELECT statement' },
+        {
+          pattern: /(\bselect\b.*\bfrom\b.*\bwhere\b)/i,
+          name: 'SELECT statement',
+        },
       ];
 
       const matchedPatterns: string[] = [];
@@ -182,7 +192,10 @@ export class ThreatDetectionService {
 
       return { detected: false };
     } catch (error) {
-      this.logger.error('Error detecting privilege escalation', { error, userId });
+      this.logger.error('Error detecting privilege escalation', {
+        error,
+        userId,
+      });
       return { detected: false };
     }
   }
@@ -224,7 +237,10 @@ export class ThreatDetectionService {
 
       return { detected: false };
     } catch (error) {
-      this.logger.error('Error detecting data breach attempt', { error, userId });
+      this.logger.error('Error detecting data breach attempt', {
+        error,
+        userId,
+      });
       return { detected: false };
     }
   }
@@ -273,11 +289,14 @@ export class ThreatDetectionService {
   ): Promise<{ detected: boolean; patterns?: string[] }> {
     try {
       const commandPatterns = [
-        { pattern: /;.*\b(rm|del|format|shutdown)\b/i, name: 'Dangerous command' },
+        {
+          pattern: /;.*\b(rm|del|format|shutdown)\b/i,
+          name: 'Dangerous command',
+        },
         { pattern: /\|.*\b(cat|type|more|less)\b/i, name: 'Command piping' },
         { pattern: /`.*`/, name: 'Command substitution' },
         { pattern: /\$\(.*\)/, name: 'Command substitution' },
-        { pattern: /&&|;;\|/,name: 'Command chaining' },
+        { pattern: /&&|;;\|/, name: 'Command chaining' },
       ];
 
       const matchedPatterns: string[] = [];
@@ -318,7 +337,8 @@ export class ThreatDetectionService {
     threats: Array<{ type: string; detected: boolean; details?: any }>;
     safe: boolean;
   }> {
-    const threats: Array<{ type: string; detected: boolean; details?: any }> = [];
+    const threats: Array<{ type: string; detected: boolean; details?: any }> =
+      [];
 
     // SQL Injection
     const sqlResult = await this.detectSQLInjection(input, context);

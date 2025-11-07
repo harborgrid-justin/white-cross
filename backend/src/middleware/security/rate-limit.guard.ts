@@ -59,40 +59,44 @@ export interface RateLimitInfo {
  * Circuit breaker state for rate limit service
  */
 enum CircuitState {
-  CLOSED = 'CLOSED',    // Normal operation
-  OPEN = 'OPEN',        // Service unavailable, failing fast
-  HALF_OPEN = 'HALF_OPEN',  // Testing if service recovered
+  CLOSED = 'CLOSED', // Normal operation
+  OPEN = 'OPEN', // Service unavailable, failing fast
+  HALF_OPEN = 'HALF_OPEN', // Testing if service recovered
 }
 
 interface CircuitBreakerConfig {
-  failureThreshold: number;    // Number of failures before opening circuit
-  resetTimeout: number;        // Time before attempting recovery (ms)
-  monitoringWindow: number;    // Time window for counting failures (ms)
+  failureThreshold: number; // Number of failures before opening circuit
+  resetTimeout: number; // Time before attempting recovery (ms)
+  monitoringWindow: number; // Time window for counting failures (ms)
 }
 
 export const RATE_LIMIT_CONFIGS = {
   auth: {
     windowMs: 15 * 60 * 1000, // 15 minutes
     maxRequests: 5,
-    message: 'Too many authentication attempts. Please try again in 15 minutes.',
+    message:
+      'Too many authentication attempts. Please try again in 15 minutes.',
     blockDuration: 15 * 60 * 1000,
   } as RateLimitConfig,
   communication: {
     windowMs: 60 * 1000, // 1 minute
     maxRequests: 10,
-    message: 'Message rate limit exceeded. Please wait before sending more messages.',
+    message:
+      'Message rate limit exceeded. Please wait before sending more messages.',
     blockDuration: 5 * 60 * 1000,
   } as RateLimitConfig,
   emergencyAlert: {
     windowMs: 60 * 60 * 1000, // 1 hour
     maxRequests: 3,
-    message: 'Emergency alert rate limit exceeded. Contact system administrator.',
+    message:
+      'Emergency alert rate limit exceeded. Contact system administrator.',
     blockDuration: 60 * 60 * 1000,
   } as RateLimitConfig,
   export: {
     windowMs: 60 * 60 * 1000, // 1 hour
     maxRequests: 10,
-    message: 'Export rate limit exceeded. Please wait before exporting more data.',
+    message:
+      'Export rate limit exceeded. Please wait before exporting more data.',
     blockDuration: 60 * 60 * 1000,
   } as RateLimitConfig,
   api: {
@@ -265,23 +269,31 @@ export class RateLimitGuard implements CanActivate {
 
     // Initialize circuit breaker
     this.circuitBreaker = new CircuitBreaker({
-      failureThreshold: 5,           // 5 failures
-      resetTimeout: 30000,           // 30 seconds before retry
-      monitoringWindow: 60000,       // 1 minute monitoring window
+      failureThreshold: 5, // 5 failures
+      resetTimeout: 30000, // 30 seconds before retry
+      monitoringWindow: 60000, // 1 minute monitoring window
     });
 
     // Start cleanup timer
-    setInterval(() => {
-      this.store.cleanup().then((cleaned) => {
-        if (cleaned > 0) {
-          this.logger.debug(`Cleaned up ${cleaned} expired rate limit records`);
-        }
-      }).catch((error) => {
-        this.logger.error('Rate limit cleanup failed', {
-          error: error instanceof Error ? error.message : 'Unknown error',
-        });
-      });
-    }, 5 * 60 * 1000); // Cleanup every 5 minutes
+    setInterval(
+      () => {
+        this.store
+          .cleanup()
+          .then((cleaned) => {
+            if (cleaned > 0) {
+              this.logger.debug(
+                `Cleaned up ${cleaned} expired rate limit records`,
+              );
+            }
+          })
+          .catch((error) => {
+            this.logger.error('Rate limit cleanup failed', {
+              error: error instanceof Error ? error.message : 'Unknown error',
+            });
+          });
+      },
+      5 * 60 * 1000,
+    ); // Cleanup every 5 minutes
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -312,7 +324,8 @@ export class RateLimitGuard implements CanActivate {
       throw new ServiceUnavailableException({
         statusCode: HttpStatus.SERVICE_UNAVAILABLE,
         error: 'Service Temporarily Unavailable',
-        message: 'Rate limiting service is temporarily unavailable. Please try again later.',
+        message:
+          'Rate limiting service is temporarily unavailable. Please try again later.',
         retryAfter: 30,
       });
     }
@@ -408,7 +421,8 @@ export class RateLimitGuard implements CanActivate {
       throw new ServiceUnavailableException({
         statusCode: HttpStatus.SERVICE_UNAVAILABLE,
         error: 'Rate Limiting Unavailable',
-        message: 'Rate limiting service is temporarily unavailable. Please try again later.',
+        message:
+          'Rate limiting service is temporarily unavailable. Please try again later.',
         retryAfter: 30,
       });
     }

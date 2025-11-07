@@ -31,16 +31,16 @@ export class ComplianceReportingService {
       const phiLogs = await this.auditLogModel.findAll({
         where: {
           createdAt: {
-            [Op.between]: [startDate, endDate]
+            [Op.between]: [startDate, endDate],
           },
-          [Op.and]: [
-            literal(`changes->>'isPHIAccess' = 'true'`)
-          ]
-        }
+          [Op.and]: [literal(`changes->>'isPHIAccess' = 'true'`)],
+        },
       });
 
       const totalAccess = phiLogs.length;
-      const failedAccess = phiLogs.filter((log) => log.changes?.['success'] === false).length;
+      const failedAccess = phiLogs.filter(
+        (log) => log.changes?.['success'] === false,
+      ).length;
 
       // Group by access type
       const accessByType: Record<string, number> = {};
@@ -64,10 +64,18 @@ export class ComplianceReportingService {
         summary: {
           totalAccess,
           failedAccess,
-          successRate: totalAccess > 0 ? ((totalAccess - failedAccess) / totalAccess) * 100 : 0,
+          successRate:
+            totalAccess > 0
+              ? ((totalAccess - failedAccess) / totalAccess) * 100
+              : 0,
         },
-        accessByType: Object.entries(accessByType).map(([type, count]) => ({ type, count })),
-        accessByCategory: Object.entries(accessByCategory).map(([category, count]) => ({ category, count })),
+        accessByType: Object.entries(accessByType).map(([type, count]) => ({
+          type,
+          count,
+        })),
+        accessByCategory: Object.entries(accessByCategory).map(
+          ([category, count]) => ({ category, count }),
+        ),
       };
     } catch (error) {
       this.logger.error('Error generating compliance report:', error);
@@ -87,16 +95,16 @@ export class ComplianceReportingService {
       const phiLogs = await this.auditLogModel.findAll({
         where: {
           createdAt: {
-            [Op.between]: [startDate, endDate]
+            [Op.between]: [startDate, endDate],
           },
-          [Op.and]: [
-            literal(`changes->>'isPHIAccess' = 'true'`)
-          ]
-        }
+          [Op.and]: [literal(`changes->>'isPHIAccess' = 'true'`)],
+        },
       });
 
       const totalAccess = phiLogs.length;
-      const successfulAccess = phiLogs.filter((log) => log.changes?.['success'] !== false).length;
+      const successfulAccess = phiLogs.filter(
+        (log) => log.changes?.['success'] !== false,
+      ).length;
       const failedAccess = totalAccess - successfulAccess;
 
       return {
@@ -104,7 +112,8 @@ export class ComplianceReportingService {
         totalAccess,
         successfulAccess,
         failedAccess,
-        successRate: totalAccess > 0 ? (successfulAccess / totalAccess) * 100 : 0,
+        successRate:
+          totalAccess > 0 ? (successfulAccess / totalAccess) * 100 : 0,
       };
     } catch (error) {
       this.logger.error('Error generating PHI access summary:', error);

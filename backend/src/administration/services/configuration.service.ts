@@ -1,7 +1,10 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
-import { SystemConfig, ConfigCategory } from '../../database/models/system-config.model';
+import {
+  SystemConfig,
+  ConfigCategory,
+} from '../../database/models/system-config.model';
 import { ConfigurationHistory } from '../../database/models/configuration-history.model';
 import { ConfigurationDto } from '../dto/configuration.dto';
 
@@ -29,7 +32,9 @@ export class ConfigurationService {
     try {
       const config = await this.configModel.findOne({ where: { key } });
       if (!config) {
-        throw new NotFoundException(`Configuration with key '${key}' not found`);
+        throw new NotFoundException(
+          `Configuration with key '${key}' not found`,
+        );
       }
       return config;
     } catch (error) {
@@ -92,13 +97,16 @@ export class ConfigurationService {
       }
 
       if (changedBy && config.id) {
-        await this.historyModel.create({
-          configKey: data.key,
-          oldValue,
-          newValue: data.value,
-          changedBy,
-          configurationId: config.id,
-        }, { transaction });
+        await this.historyModel.create(
+          {
+            configKey: data.key,
+            oldValue,
+            newValue: data.value,
+            changedBy,
+            configurationId: config.id,
+          },
+          { transaction },
+        );
       }
 
       await transaction.commit();
@@ -118,7 +126,9 @@ export class ConfigurationService {
     try {
       const config = await this.configModel.findOne({ where: { key } });
       if (!config) {
-        throw new NotFoundException(`Configuration with key '${key}' not found`);
+        throw new NotFoundException(
+          `Configuration with key '${key}' not found`,
+        );
       }
       await config.destroy();
       this.logger.log(`Configuration deleted: ${key}`);

@@ -46,7 +46,9 @@ export function createWsAuthMiddleware(
       const token = extractToken(socket);
 
       if (!token) {
-        logger.warn(`Connection rejected: No token provided (socket: ${socket.id})`);
+        logger.warn(
+          `Connection rejected: No token provided (socket: ${socket.id})`,
+        );
         return next(new Error('Authentication token required'));
       }
 

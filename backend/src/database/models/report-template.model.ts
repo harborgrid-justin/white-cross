@@ -8,7 +8,7 @@ import {
   AllowNull,
   Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
@@ -21,15 +21,15 @@ export enum ReportType {
   COMPLIANCE = 'compliance',
   DASHBOARD = 'dashboard',
   PERFORMANCE = 'performance',
-  CUSTOM = 'custom'
-  }
+  CUSTOM = 'custom',
+}
 
 export enum OutputFormat {
   PDF = 'pdf',
   EXCEL = 'excel',
   CSV = 'csv',
-  JSON = 'json'
-  }
+  JSON = 'json',
+}
 
 export interface ReportTemplateAttributes {
   id: string;
@@ -48,10 +48,10 @@ export interface ReportTemplateAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'report_templates',
@@ -59,19 +59,22 @@ export interface ReportTemplateAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['reportType']
-  },
+      fields: ['reportType'],
+    },
     {
       fields: ['createdAt'],
-      name: 'idx_report_template_created_at'
+      name: 'idx_report_template_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_report_template_updated_at'
-    }
-  ]
-  })
-export class ReportTemplate extends Model<ReportTemplateAttributes> implements ReportTemplateAttributes {
+      name: 'idx_report_template_updated_at',
+    },
+  ],
+})
+export class ReportTemplate
+  extends Model<ReportTemplateAttributes>
+  implements ReportTemplateAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -79,7 +82,7 @@ export class ReportTemplate extends Model<ReportTemplateAttributes> implements R
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   name: string;
 
@@ -90,44 +93,44 @@ export class ReportTemplate extends Model<ReportTemplateAttributes> implements R
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(ReportType)]
+      isIn: [Object.values(ReportType)],
     },
-    allowNull: false
+    allowNull: false,
   })
   reportType: ReportType;
 
   @AllowNull
   @Column({
-    type: DataType.JSONB
+    type: DataType.JSONB,
   })
   queryConfiguration?: Record<string, any>;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(OutputFormat)]
+      isIn: [Object.values(OutputFormat)],
     },
     allowNull: false,
-    defaultValue: OutputFormat.PDF
+    defaultValue: OutputFormat.PDF,
   })
   defaultOutputFormat: OutputFormat;
 
   @AllowNull
   @Column({
-    type: DataType.JSONB
+    type: DataType.JSONB,
   })
   formatOptions?: Record<string, any>;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true
+    defaultValue: true,
   })
   isActive: boolean;
 
   @AllowNull
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   createdBy?: string;
 
@@ -137,14 +140,15 @@ export class ReportTemplate extends Model<ReportTemplateAttributes> implements R
   @Column(DataType.DATE)
   declare updatedAt?: Date;
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: ReportTemplate) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] ReportTemplate ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] ReportTemplate ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

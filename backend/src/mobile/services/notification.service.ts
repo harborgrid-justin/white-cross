@@ -1,10 +1,25 @@
-import { Injectable, NotFoundException, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  Logger,
+  OnModuleInit,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { ConfigService } from '@nestjs/config';
 import { DeviceToken, PushNotification } from '../entities';
-import { RegisterDeviceDto, SendNotificationDto, MobileUpdatePreferencesDto } from '../dto';
-import { NotificationPlatform, NotificationStatus, DeliveryStatus, NotificationPriority, NotificationCategory } from '../enums';
+import {
+  RegisterDeviceDto,
+  SendNotificationDto,
+  MobileUpdatePreferencesDto,
+} from '../dto';
+import {
+  NotificationPlatform,
+  NotificationStatus,
+  DeliveryStatus,
+  NotificationPriority,
+  NotificationCategory,
+} from '../enums';
 
 /**
  * Firebase Admin SDK types (to be imported when firebase-admin is installed)
@@ -182,14 +197,18 @@ export class NotificationService implements OnModuleInit {
       if (!admin) {
         this.logger.warn(
           'firebase-admin not installed. FCM notifications will not be available. ' +
-          'Install with: npm install firebase-admin'
+            'Install with: npm install firebase-admin',
         );
         return;
       }
 
       const projectId = this.configService.get<string>('FIREBASE_PROJECT_ID');
-      const clientEmail = this.configService.get<string>('FIREBASE_CLIENT_EMAIL');
-      const privateKey = this.configService.get<string>('FIREBASE_PRIVATE_KEY')?.replace(/\\n/g, '\n');
+      const clientEmail = this.configService.get<string>(
+        'FIREBASE_CLIENT_EMAIL',
+      );
+      const privateKey = this.configService
+        .get<string>('FIREBASE_PRIVATE_KEY')
+        ?.replace(/\\n/g, '\n');
 
       if (!projectId || !clientEmail || !privateKey) {
         this.logger.warn('Firebase credentials not configured. FCM disabled.');
@@ -235,7 +254,7 @@ export class NotificationService implements OnModuleInit {
       if (!apn) {
         this.logger.warn(
           'apn not installed. APNs notifications will not be available. ' +
-          'Install with: npm install apn'
+            'Install with: npm install apn',
         );
         return;
       }
@@ -243,7 +262,10 @@ export class NotificationService implements OnModuleInit {
       const keyId = this.configService.get<string>('APNS_KEY_ID');
       const teamId = this.configService.get<string>('APNS_TEAM_ID');
       const token = this.configService.get<string>('APNS_TOKEN');
-      const production = this.configService.get<boolean>('APNS_PRODUCTION', false);
+      const production = this.configService.get<boolean>(
+        'APNS_PRODUCTION',
+        false,
+      );
 
       if (!keyId || !teamId || !token) {
         this.logger.warn('APNs credentials not configured. APNs disabled.');
@@ -259,7 +281,9 @@ export class NotificationService implements OnModuleInit {
         production: production,
       });
 
-      this.logger.log(`APNs initialized (${production ? 'production' : 'development'})`);
+      this.logger.log(
+        `APNs initialized (${production ? 'production' : 'development'})`,
+      );
     } catch (error) {
       this.logger.error('Failed to initialize APNs', error);
     }
@@ -329,7 +353,10 @@ export class NotificationService implements OnModuleInit {
   /**
    * Register a device token for push notifications
    */
-  async registerDeviceToken(userId: string, dto: RegisterDeviceDto): Promise<DeviceToken> {
+  async registerDeviceToken(
+    userId: string,
+    dto: RegisterDeviceDto,
+  ): Promise<DeviceToken> {
     try {
       // Deactivate existing tokens for the same device
       await this.deviceTokenModel.update(
@@ -339,7 +366,7 @@ export class NotificationService implements OnModuleInit {
             userId,
             deviceId: dto.deviceId,
           },
-        }
+        },
       );
 
       // Create new device token
@@ -359,7 +386,9 @@ export class NotificationService implements OnModuleInit {
         allowBadge: true,
       });
 
-      this.logger.log(`Device token registered: ${deviceToken.id} for user ${userId}`);
+      this.logger.log(
+        `Device token registered: ${deviceToken.id} for user ${userId}`,
+      );
 
       return deviceToken;
     } catch (error) {
@@ -373,7 +402,7 @@ export class NotificationService implements OnModuleInit {
    */
   async unregisterDeviceToken(userId: string, tokenId: string): Promise<void> {
     const token = await this.deviceTokenModel.findOne({
-      where: { id: tokenId, userId }
+      where: { id: tokenId, userId },
     });
 
     if (!token) {
@@ -382,7 +411,7 @@ export class NotificationService implements OnModuleInit {
 
     await this.deviceTokenModel.update(
       { isActive: false },
-      { where: { id: tokenId } }
+      { where: { id: tokenId } },
     );
 
     this.logger.log(`Device token unregistered: ${tokenId}`);
@@ -396,8 +425,8 @@ export class NotificationService implements OnModuleInit {
       where: {
         userId,
         isActive: true,
-        isValid: true
-      }
+        isValid: true,
+      },
     });
   }
 
@@ -407,10 +436,10 @@ export class NotificationService implements OnModuleInit {
   async updatePreferences(
     userId: string,
     tokenId: string,
-    dto: MobileUpdatePreferencesDto
+    dto: MobileUpdatePreferencesDto,
   ): Promise<DeviceToken> {
     const token = await this.deviceTokenModel.findOne({
-      where: { id: tokenId, userId }
+      where: { id: tokenId, userId },
     });
 
     if (!token) {
@@ -427,7 +456,10 @@ export class NotificationService implements OnModuleInit {
   /**
    * Send push notification to users
    */
-  async sendNotification(userId: string, dto: SendNotificationDto): Promise<PushNotification> {
+  async sendNotification(
+    userId: string,
+    dto: SendNotificationDto,
+  ): Promise<PushNotification> {
     try {
       // Get active device tokens for target users
       const deviceTokens = await this.getActiveTokensForUsers(dto.userIds);
@@ -435,7 +467,7 @@ export class NotificationService implements OnModuleInit {
       // Create notification record
       const notification = await this.notificationModel.create({
         userIds: dto.userIds,
-        deviceTokens: deviceTokens.map(t => t.token),
+        deviceTokens: deviceTokens.map((t) => t.token),
         title: dto.title,
         body: dto.body,
         category: dto.category,
@@ -446,7 +478,9 @@ export class NotificationService implements OnModuleInit {
         sound: dto.sound,
         badge: dto.badge,
         scheduledFor: dto.scheduledFor,
-        status: dto.scheduledFor ? NotificationStatus.SCHEDULED : NotificationStatus.PENDING,
+        status: dto.scheduledFor
+          ? NotificationStatus.SCHEDULED
+          : NotificationStatus.PENDING,
         totalRecipients: deviceTokens.length,
         successfulDeliveries: 0,
         failedDeliveries: 0,
@@ -465,7 +499,9 @@ export class NotificationService implements OnModuleInit {
         await this.deliverNotification(notification.id);
       }
 
-      this.logger.log(`Notification created: ${notification.id} for ${deviceTokens.length} recipients`);
+      this.logger.log(
+        `Notification created: ${notification.id} for ${deviceTokens.length} recipients`,
+      );
 
       return notification;
     } catch (error) {
@@ -480,7 +516,7 @@ export class NotificationService implements OnModuleInit {
   private async deliverNotification(notificationId: string): Promise<void> {
     try {
       const notification = await this.notificationModel.findOne({
-        where: { id: notificationId }
+        where: { id: notificationId },
       });
 
       if (!notification) {
@@ -496,8 +532,8 @@ export class NotificationService implements OnModuleInit {
         where: {
           token: notification.deviceTokens,
           isActive: true,
-          isValid: true
-        }
+          isValid: true,
+        },
       });
 
       // Group by platform
@@ -515,15 +551,21 @@ export class NotificationService implements OnModuleInit {
           if (!token.allowNotifications) continue;
 
           try {
-            const result = await this.sendToPlatform(platform, token, notification);
+            const result = await this.sendToPlatform(
+              platform,
+              token,
+              notification,
+            );
 
             notification.deliveryResults.push({
               platform,
               deviceToken: token.token,
-              status: result.success ? DeliveryStatus.SUCCESS : DeliveryStatus.FAILED,
+              status: result.success
+                ? DeliveryStatus.SUCCESS
+                : DeliveryStatus.FAILED,
               response: result.response,
               error: result.error,
-              deliveredAt: result.success ? new Date() : undefined
+              deliveredAt: result.success ? new Date() : undefined,
             });
 
             if (result.success) {
@@ -545,7 +587,7 @@ export class NotificationService implements OnModuleInit {
               platform,
               deviceToken: token.token,
               status: DeliveryStatus.FAILED,
-              error: String(error)
+              error: String(error),
             });
             notification.failedDeliveries++;
           }
@@ -562,14 +604,16 @@ export class NotificationService implements OnModuleInit {
 
         // Schedule retry if under max retries
         if (notification.retryCount < notification.maxRetries) {
-          notification.nextRetryAt = this.calculateRetryTime(notification.retryCount);
+          notification.nextRetryAt = this.calculateRetryTime(
+            notification.retryCount,
+          );
         }
       }
 
       await notification.save();
 
       this.logger.log(
-        `Notification delivered: ${notificationId} - ${notification.successfulDeliveries} success, ${notification.failedDeliveries} failed`
+        `Notification delivered: ${notificationId} - ${notification.successfulDeliveries} success, ${notification.failedDeliveries} failed`,
       );
     } catch (error) {
       this.logger.error('Error delivering notification', error);
@@ -607,7 +651,10 @@ export class NotificationService implements OnModuleInit {
    * });
    * ```
    */
-  renderTemplate(templateId: string, variables: Record<string, string>): { title: string; body: string } {
+  renderTemplate(
+    templateId: string,
+    variables: Record<string, string>,
+  ): { title: string; body: string } {
     const template = this.getTemplate(templateId);
 
     let title = template.title;
@@ -649,7 +696,7 @@ export class NotificationService implements OnModuleInit {
     templateId: string,
     variables: Record<string, string>,
     userIds: string[],
-    options?: Partial<SendNotificationDto>
+    options?: Partial<SendNotificationDto>,
   ): Promise<PushNotification> {
     const template = this.getTemplate(templateId);
     const { title, body } = this.renderTemplate(templateId, variables);
@@ -677,10 +724,12 @@ export class NotificationService implements OnModuleInit {
   private async sendToPlatform(
     platform: NotificationPlatform,
     token: DeviceToken,
-    notification: PushNotification
+    notification: PushNotification,
   ): Promise<PlatformDeliveryResult> {
     try {
-      this.logger.log(`Sending to ${platform}: ${token.token.substring(0, 10)}...`);
+      this.logger.log(
+        `Sending to ${platform}: ${token.token.substring(0, 10)}...`,
+      );
 
       switch (platform) {
         case NotificationPlatform.FCM:
@@ -716,7 +765,10 @@ export class NotificationService implements OnModuleInit {
    * @param notification - The notification
    * @returns Delivery result
    */
-  private async sendToFCM(token: DeviceToken, notification: PushNotification): Promise<PlatformDeliveryResult> {
+  private async sendToFCM(
+    token: DeviceToken,
+    notification: PushNotification,
+  ): Promise<PlatformDeliveryResult> {
     if (!this.firebaseMessaging) {
       this.logger.warn('Firebase not initialized, skipping FCM delivery');
       return {
@@ -739,7 +791,8 @@ export class NotificationService implements OnModuleInit {
           ttl: notification.ttl ? notification.ttl * 1000 : undefined, // Convert to milliseconds
           collapseKey: notification.collapseKey,
           notification: {
-            sound: notification.sound || (token.allowSound ? 'default' : undefined),
+            sound:
+              notification.sound || (token.allowSound ? 'default' : undefined),
             channelId: this.getNotificationChannel(notification.category),
           },
         },
@@ -762,7 +815,9 @@ export class NotificationService implements OnModuleInit {
         'messaging/registration-token-not-registered',
       ];
 
-      const isInvalidToken = invalidTokenErrors.some(code => error.code === code);
+      const isInvalidToken = invalidTokenErrors.some(
+        (code) => error.code === code,
+      );
 
       return {
         success: false,
@@ -779,7 +834,10 @@ export class NotificationService implements OnModuleInit {
    * @param notification - The notification
    * @returns Delivery result
    */
-  private async sendToAPNs(token: DeviceToken, notification: PushNotification): Promise<PlatformDeliveryResult> {
+  private async sendToAPNs(
+    token: DeviceToken,
+    notification: PushNotification,
+  ): Promise<PlatformDeliveryResult> {
     if (!this.apnsProvider) {
       this.logger.warn('APNs not initialized, skipping APNs delivery');
       return {
@@ -800,7 +858,10 @@ export class NotificationService implements OnModuleInit {
 
       const apnsNotification = new apn.default.Notification();
 
-      apnsNotification.topic = this.configService.get<string>('APNS_BUNDLE_ID', 'com.whitecross.app');
+      apnsNotification.topic = this.configService.get<string>(
+        'APNS_BUNDLE_ID',
+        'com.whitecross.app',
+      );
       apnsNotification.alert = {
         title: notification.title,
         body: notification.body,
@@ -818,14 +879,20 @@ export class NotificationService implements OnModuleInit {
       apnsNotification.priority = this.mapPriorityToAPNs(notification.priority);
 
       if (notification.ttl) {
-        apnsNotification.expiry = Math.floor(Date.now() / 1000) + notification.ttl;
+        apnsNotification.expiry =
+          Math.floor(Date.now() / 1000) + notification.ttl;
       }
 
-      const result = await this.apnsProvider.send(apnsNotification, token.token);
+      const result = await this.apnsProvider.send(
+        apnsNotification,
+        token.token,
+      );
 
       if (result.failed && result.failed.length > 0) {
         const failure = result.failed[0];
-        const isInvalidToken = ['BadDeviceToken', 'Unregistered'].includes(failure.status);
+        const isInvalidToken = ['BadDeviceToken', 'Unregistered'].includes(
+          failure.status,
+        );
 
         return {
           success: false,
@@ -860,7 +927,7 @@ export class NotificationService implements OnModuleInit {
    */
   private async sendToWebPush(
     token: DeviceToken,
-    notification: PushNotification
+    notification: PushNotification,
   ): Promise<PlatformDeliveryResult> {
     try {
       // Web Push implementation would require web-push library
@@ -876,8 +943,12 @@ export class NotificationService implements OnModuleInit {
       }
 
       const vapidPublicKey = this.configService.get<string>('VAPID_PUBLIC_KEY');
-      const vapidPrivateKey = this.configService.get<string>('VAPID_PRIVATE_KEY');
-      const vapidSubject = this.configService.get<string>('VAPID_SUBJECT', 'mailto:admin@whitecross.com');
+      const vapidPrivateKey =
+        this.configService.get<string>('VAPID_PRIVATE_KEY');
+      const vapidSubject = this.configService.get<string>(
+        'VAPID_SUBJECT',
+        'mailto:admin@whitecross.com',
+      );
 
       if (!vapidPublicKey || !vapidPrivateKey) {
         this.logger.warn('VAPID keys not configured');
@@ -887,7 +958,11 @@ export class NotificationService implements OnModuleInit {
         };
       }
 
-      webPush.default.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
+      webPush.default.setVapidDetails(
+        vapidSubject,
+        vapidPublicKey,
+        vapidPrivateKey,
+      );
 
       const payload = JSON.stringify({
         title: notification.title,
@@ -899,7 +974,10 @@ export class NotificationService implements OnModuleInit {
         actions: notification.actions,
       });
 
-      const response = await webPush.default.sendNotification(JSON.parse(token.token), payload);
+      const response = await webPush.default.sendNotification(
+        JSON.parse(token.token),
+        payload,
+      );
 
       this.logger.log('Web Push delivery successful');
 
@@ -924,7 +1002,8 @@ export class NotificationService implements OnModuleInit {
    * Map notification priority to FCM priority
    */
   private mapPriorityToFCM(priority: NotificationPriority): 'high' | 'normal' {
-    return priority === NotificationPriority.CRITICAL || priority === NotificationPriority.HIGH
+    return priority === NotificationPriority.CRITICAL ||
+      priority === NotificationPriority.HIGH
       ? 'high'
       : 'normal';
   }
@@ -972,10 +1051,10 @@ export class NotificationService implements OnModuleInit {
    */
   async trackInteraction(
     notificationId: string,
-    action: 'CLICKED' | 'DISMISSED'
+    action: 'CLICKED' | 'DISMISSED',
   ): Promise<void> {
     const notification = await this.notificationModel.findOne({
-      where: { id: notificationId }
+      where: { id: notificationId },
     });
 
     if (!notification) {
@@ -1001,18 +1080,26 @@ export class NotificationService implements OnModuleInit {
       where: {
         createdAt: {
           [Op.gte]: period.start,
-          [Op.lte]: period.end
-        }
-      }
+          [Op.lte]: period.end,
+        },
+      },
     });
 
     const totalSent = notifications.length;
-    const totalDelivered = notifications.filter(n => n.status === NotificationStatus.DELIVERED).length;
-    const totalFailed = notifications.filter(n => n.status === NotificationStatus.FAILED).length;
-    const totalClicked = notifications.reduce((sum, n) => sum + n.clickedCount, 0);
+    const totalDelivered = notifications.filter(
+      (n) => n.status === NotificationStatus.DELIVERED,
+    ).length;
+    const totalFailed = notifications.filter(
+      (n) => n.status === NotificationStatus.FAILED,
+    ).length;
+    const totalClicked = notifications.reduce(
+      (sum, n) => sum + n.clickedCount,
+      0,
+    );
 
-    const deliveryRate = totalSent > 0 ? (totalDelivered / totalSent * 100) : 0;
-    const clickRate = totalDelivered > 0 ? (totalClicked / totalDelivered * 100) : 0;
+    const deliveryRate = totalSent > 0 ? (totalDelivered / totalSent) * 100 : 0;
+    const clickRate =
+      totalDelivered > 0 ? (totalClicked / totalDelivered) * 100 : 0;
 
     return {
       period,
@@ -1052,13 +1139,15 @@ export class NotificationService implements OnModuleInit {
           status: NotificationStatus.SCHEDULED,
           scheduledFor: {
             [Op.lt]: now,
-          }
+          },
         },
         order: [['scheduledFor', 'ASC']],
         limit: 100, // Process in batches
       });
 
-      this.logger.log(`Processing ${scheduledNotifications.length} scheduled notifications`);
+      this.logger.log(
+        `Processing ${scheduledNotifications.length} scheduled notifications`,
+      );
 
       for (const notification of scheduledNotifications) {
         try {
@@ -1075,7 +1164,10 @@ export class NotificationService implements OnModuleInit {
             await this.deliverNotification(notification.id);
           }
         } catch (error) {
-          this.logger.error(`Failed to deliver scheduled notification ${notification.id}`, error);
+          this.logger.error(
+            `Failed to deliver scheduled notification ${notification.id}`,
+            error,
+          );
         }
       }
 
@@ -1102,19 +1194,22 @@ export class NotificationService implements OnModuleInit {
       // Find failed notifications eligible for retry
       const failedNotifications = await this.notificationModel.findAll({
         where: {
-          status: NotificationStatus.FAILED
+          status: NotificationStatus.FAILED,
         },
         order: [['nextRetryAt', 'ASC']],
         limit: 50, // Process in batches
       });
 
       // Filter notifications that haven't exceeded max retries and are due for retry
-      const eligibleNotifications = failedNotifications.filter(n =>
-        n.retryCount < n.maxRetries &&
-        (!n.nextRetryAt || n.nextRetryAt <= now)
+      const eligibleNotifications = failedNotifications.filter(
+        (n) =>
+          n.retryCount < n.maxRetries &&
+          (!n.nextRetryAt || n.nextRetryAt <= now),
       );
 
-      this.logger.log(`Retrying ${eligibleNotifications.length} failed notifications`);
+      this.logger.log(
+        `Retrying ${eligibleNotifications.length} failed notifications`,
+      );
 
       for (const notification of eligibleNotifications) {
         try {
@@ -1127,7 +1222,10 @@ export class NotificationService implements OnModuleInit {
             await this.deliverNotification(notification.id);
           }
         } catch (error) {
-          this.logger.error(`Failed to retry notification ${notification.id}`, error);
+          this.logger.error(
+            `Failed to retry notification ${notification.id}`,
+            error,
+          );
         }
       }
 
@@ -1156,15 +1254,17 @@ export class NotificationService implements OnModuleInit {
       const deletedCount = await this.notificationModel.destroy({
         where: {
           createdAt: {
-            [Op.lt]: cutoffDate
+            [Op.lt]: cutoffDate,
           },
           status: {
-            [Op.in]: [NotificationStatus.DELIVERED, NotificationStatus.EXPIRED]
-          }
-        }
+            [Op.in]: [NotificationStatus.DELIVERED, NotificationStatus.EXPIRED],
+          },
+        },
       });
 
-      this.logger.log(`Cleaned up ${deletedCount} old notifications (older than ${retentionDays} days)`);
+      this.logger.log(
+        `Cleaned up ${deletedCount} old notifications (older than ${retentionDays} days)`,
+      );
 
       return deletedCount;
     } catch (error) {
@@ -1187,12 +1287,12 @@ export class NotificationService implements OnModuleInit {
       offset?: number;
       status?: NotificationStatus;
       category?: NotificationCategory;
-    }
+    },
   ): Promise<PushNotification[]> {
     const where: any = {
       userIds: {
-        [Op.contains]: [userId]
-      }
+        [Op.contains]: [userId],
+      },
     };
 
     if (options?.status) {
@@ -1220,7 +1320,7 @@ export class NotificationService implements OnModuleInit {
    */
   async getUserNotificationStats(
     userId: string,
-    period?: { start: Date; end: Date }
+    period?: { start: Date; end: Date },
   ): Promise<{
     total: number;
     delivered: number;
@@ -1230,29 +1330,35 @@ export class NotificationService implements OnModuleInit {
   }> {
     const where: any = {
       userIds: {
-        [Op.contains]: [userId]
-      }
+        [Op.contains]: [userId],
+      },
     };
 
     if (period) {
       where.createdAt = {
         [Op.gte]: period.start,
-        [Op.lte]: period.end
+        [Op.lte]: period.end,
       };
     }
 
     const notifications = await this.notificationModel.findAll({
-      where
+      where,
     });
 
     const total = notifications.length;
-    const delivered = notifications.filter(n => n.status === NotificationStatus.DELIVERED).length;
+    const delivered = notifications.filter(
+      (n) => n.status === NotificationStatus.DELIVERED,
+    ).length;
     const clicked = notifications.reduce((sum, n) => sum + n.clickedCount, 0);
-    const dismissed = notifications.reduce((sum, n) => sum + n.dismissedCount, 0);
+    const dismissed = notifications.reduce(
+      (sum, n) => sum + n.dismissedCount,
+      0,
+    );
 
     const byCategory: Record<string, number> = {};
     for (const notification of notifications) {
-      byCategory[notification.category] = (byCategory[notification.category] || 0) + 1;
+      byCategory[notification.category] =
+        (byCategory[notification.category] || 0) + 1;
     }
 
     return {
@@ -1271,18 +1377,20 @@ export class NotificationService implements OnModuleInit {
    * @param userIds - Array of user IDs to get tokens for
    * @returns Active device tokens for the specified users
    */
-  private async getActiveTokensForUsers(userIds: string[]): Promise<DeviceToken[]> {
+  private async getActiveTokensForUsers(
+    userIds: string[],
+  ): Promise<DeviceToken[]> {
     // For multiple users, we need to find tokens where userId is in the array
     // and the token is active, valid, and allows notifications
     return this.deviceTokenModel.findAll({
       where: {
         userId: {
-          [Op.in]: userIds
+          [Op.in]: userIds,
         },
         isActive: true,
         isValid: true,
-        allowNotifications: true
-      }
+        allowNotifications: true,
+      },
     });
   }
 

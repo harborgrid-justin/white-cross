@@ -94,9 +94,10 @@ export class EnterpriseFeaturesController {
   // ============================================
 
   @Post('waitlist')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Add student to waitlist',
-    description: 'Adds a student to the intelligent waitlist system with priority scoring based on medical urgency and appointment type.'
+    description:
+      'Adds a student to the intelligent waitlist system with priority scoring based on medical urgency and appointment type.',
   })
   @ApiBody({ type: AddToWaitlistDto })
   @ApiResponse({
@@ -413,10 +414,7 @@ export class EnterpriseFeaturesController {
   @Put('consent-forms/:formId/sign')
   @ApiOperation({ summary: 'Sign consent form' })
   @ApiResponse({ status: 200, description: 'Form signed successfully' })
-  async signForm(
-    @Param('formId') formId: string,
-    @Body() dto: SignFormDto,
-  ) {
+  async signForm(@Param('formId') formId: string, @Body() dto: SignFormDto) {
     return this.enterpriseFeaturesService.signForm(
       formId,
       dto.signedBy,

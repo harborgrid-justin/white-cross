@@ -1,4 +1,10 @@
-import { Injectable, CanActivate, ExecutionContext, Logger, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  Logger,
+  ForbiddenException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
@@ -29,10 +35,10 @@ export class PermissionsGuard implements CanActivate {
 
     try {
       // Check if route is marked as public
-      const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
-        context.getHandler(),
-        context.getClass(),
-      ]);
+      const isPublic = this.reflector.getAllAndOverride<boolean>(
+        IS_PUBLIC_KEY,
+        [context.getHandler(), context.getClass()],
+      );
 
       if (isPublic) {
         this.logger.debug('Public route - skipping permission check', {
@@ -43,10 +49,10 @@ export class PermissionsGuard implements CanActivate {
       }
 
       // Get required permission from decorator
-      const requiredPermission = this.reflector.getAllAndOverride<{ resource: string; action: string }>(
-        PERMISSIONS_KEY,
-        [context.getHandler(), context.getClass()],
-      );
+      const requiredPermission = this.reflector.getAllAndOverride<{
+        resource: string;
+        action: string;
+      }>(PERMISSIONS_KEY, [context.getHandler(), context.getClass()]);
 
       // If no permission is required, allow access
       if (!requiredPermission) {

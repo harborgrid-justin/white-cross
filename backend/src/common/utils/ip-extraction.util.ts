@@ -39,7 +39,9 @@ export class IpExtractionUtil {
     // Check X-Forwarded-For header (for proxies/load balancers)
     const forwardedFor = request.headers['x-forwarded-for'];
     if (forwardedFor) {
-      const ips = (typeof forwardedFor === 'string' ? forwardedFor : forwardedFor[0])
+      const ips = (
+        typeof forwardedFor === 'string' ? forwardedFor : forwardedFor[0]
+      )
         .split(',')
         .map((ip: string) => ip.trim());
 
@@ -91,7 +93,9 @@ export class IpExtractionUtil {
   } {
     const forwardedFor = request.headers['x-forwarded-for'];
     if (forwardedFor) {
-      const ips = (typeof forwardedFor === 'string' ? forwardedFor : forwardedFor[0])
+      const ips = (
+        typeof forwardedFor === 'string' ? forwardedFor : forwardedFor[0]
+      )
         .split(',')
         .map((ip: string) => ip.trim());
 
@@ -151,12 +155,10 @@ export class IpExtractionUtil {
     const cleanIp = ip.replace(/^::ffff:/, '');
 
     // IPv4 regex
-    const ipv4Regex =
-      /^(\d{1,3}\.){3}\d{1,3}$/;
+    const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
 
     // IPv6 regex (simplified)
-    const ipv6Regex =
-      /^([\da-fA-F]{1,4}:){7}[\da-fA-F]{1,4}$|^::1$|^fe80::/;
+    const ipv6Regex = /^([\da-fA-F]{1,4}:){7}[\da-fA-F]{1,4}$|^::1$|^fe80::/;
 
     return ipv4Regex.test(cleanIp) || ipv6Regex.test(ip);
   }
@@ -222,7 +224,7 @@ export class IpExtractionUtil {
     }
 
     const anonymized = parts.map((part, index) =>
-      index < keepOctets ? part : 'xxx'
+      index < keepOctets ? part : 'xxx',
     );
 
     return anonymized.join('.');

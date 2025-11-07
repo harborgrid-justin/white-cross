@@ -65,7 +65,10 @@ export class GetIncidentsByLocationQueryDto {
   @IsString()
   location?: string;
 
-  @ApiPropertyOptional({ description: 'Include heat map visualization data', default: false })
+  @ApiPropertyOptional({
+    description: 'Include heat map visualization data',
+    default: false,
+  })
   @IsOptional()
   @IsBoolean()
   @Type(() => Boolean)

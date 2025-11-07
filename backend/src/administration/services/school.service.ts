@@ -1,11 +1,23 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { School } from '../entities/school.entity';
 import { District } from '../entities/district.entity';
 import { AuditService } from './audit.service';
-import { CreateSchoolDto, UpdateSchoolDto, SchoolQueryDto } from '../dto/school.dto';
+import {
+  CreateSchoolDto,
+  UpdateSchoolDto,
+  SchoolQueryDto,
+} from '../dto/school.dto';
 import { AuditAction } from '../enums/administration.enums';
-import { PaginatedResponse, PaginationResult } from '../interfaces/administration.interfaces';
+import {
+  PaginatedResponse,
+  PaginationResult,
+} from '../interfaces/administration.interfaces';
 import { QueryCacheService } from '../../database/services/query-cache.service';
 
 @Injectable()
@@ -30,19 +42,26 @@ export class SchoolService {
       }
 
       if (!district.isActive) {
-        throw new BadRequestException('Cannot create school under an inactive district');
+        throw new BadRequestException(
+          'Cannot create school under an inactive district',
+        );
       }
 
       const normalizedCode = data.code.toUpperCase().trim();
       const existing = await this.schoolModel.findOne({
-        where: { code: normalizedCode }
+        where: { code: normalizedCode },
       });
 
       if (existing) {
-        throw new BadRequestException(`School with code '${normalizedCode}' already exists`);
+        throw new BadRequestException(
+          `School with code '${normalizedCode}' already exists`,
+        );
       }
 
-      const school = await this.schoolModel.create({ ...data, code: normalizedCode } as any);
+      const school = await this.schoolModel.create({
+        ...data,
+        code: normalizedCode,
+      } as any);
 
       await this.auditService.createAuditLog(
         AuditAction.CREATE,
@@ -68,7 +87,9 @@ export class SchoolService {
    * Expected performance: 40-60% reduction in database queries for school listings
    * Note: Paginated results are not cached to avoid excessive cache entries
    */
-  async getSchools(queryDto: SchoolQueryDto): Promise<PaginatedResponse<School>> {
+  async getSchools(
+    queryDto: SchoolQueryDto,
+  ): Promise<PaginatedResponse<School>> {
     try {
       const { page = 1, limit = 20, districtId } = queryDto;
       const offset = (page - 1) * limit;
@@ -91,7 +112,7 @@ export class SchoolService {
             ttl: 900, // 15 minutes - school lists may change moderately
             keyPrefix: 'school_district',
             invalidateOn: ['create', 'update', 'destroy'],
-          }
+          },
         );
 
         const pagination: PaginationResult = {
@@ -105,13 +126,14 @@ export class SchoolService {
       }
 
       // For paginated or non-filtered queries, use standard query
-      const { rows: schools, count: total } = await this.schoolModel.findAndCountAll({
-        where: whereClause,
-        offset,
-        limit,
-        include: ['district'],
-        order: [['name', 'ASC']],
-      });
+      const { rows: schools, count: total } =
+        await this.schoolModel.findAndCountAll({
+          where: whereClause,
+          offset,
+          limit,
+          include: ['district'],
+          order: [['name', 'ASC']],
+        });
 
       const pagination: PaginationResult = {
         page,
@@ -146,7 +168,7 @@ export class SchoolService {
           ttl: 1800, // 30 minutes - school data changes infrequently
           keyPrefix: 'school_id',
           invalidateOn: ['update', 'destroy'],
-        }
+        },
       );
 
       if (!schools || schools.length === 0) {

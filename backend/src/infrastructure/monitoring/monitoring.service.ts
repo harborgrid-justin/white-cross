@@ -188,17 +188,19 @@ export class MonitoringService implements OnModuleInit {
       const pool = (this.sequelize.connectionManager as any).pool;
       const poolSize = pool?.size || pool?.max || 10; // Default to 10 if unavailable
       const idleConnections = pool?.available || pool?.idle || 0;
-      const activeConnections = pool?.using || (poolSize - idleConnections);
+      const activeConnections = pool?.using || poolSize - idleConnections;
 
       // Check if connection pool is near capacity
       const poolUsage = poolSize > 0 ? (activeConnections / poolSize) * 100 : 0;
-      const status = poolUsage > 90 ? HealthStatus.DEGRADED : HealthStatus.HEALTHY;
+      const status =
+        poolUsage > 90 ? HealthStatus.DEGRADED : HealthStatus.HEALTHY;
 
       return {
         status,
-        message: status === HealthStatus.HEALTHY
-          ? 'Database connection is healthy'
-          : 'Database connection pool near capacity',
+        message:
+          status === HealthStatus.HEALTHY
+            ? 'Database connection is healthy'
+            : 'Database connection pool near capacity',
         details: {
           connected: true,
           responseTime: `${responseTime}ms`,
@@ -402,15 +404,17 @@ export class MonitoringService implements OnModuleInit {
       });
 
       // Check for excessive failed jobs
-      const status = totalFailed > this.alertConfig.failedJobsThreshold
-        ? HealthStatus.DEGRADED
-        : HealthStatus.HEALTHY;
+      const status =
+        totalFailed > this.alertConfig.failedJobsThreshold
+          ? HealthStatus.DEGRADED
+          : HealthStatus.HEALTHY;
 
       return {
         status,
-        message: status === HealthStatus.HEALTHY
-          ? 'Job queues are operational'
-          : `High number of failed jobs: ${totalFailed}`,
+        message:
+          status === HealthStatus.HEALTHY
+            ? 'Job queues are operational'
+            : `High number of failed jobs: ${totalFailed}`,
         details: {
           queueCount,
           waiting: totalWaiting,
@@ -471,7 +475,8 @@ export class MonitoringService implements OnModuleInit {
 
       if (hasOpenCircuit) {
         status = HealthStatus.UNHEALTHY;
-        message = 'One or more external APIs are unavailable (circuit breaker OPEN)';
+        message =
+          'One or more external APIs are unavailable (circuit breaker OPEN)';
       } else if (hasHalfOpenCircuit) {
         status = HealthStatus.DEGRADED;
         message = 'External APIs recovering (circuit breaker HALF_OPEN)';
@@ -648,9 +653,10 @@ export class MonitoringService implements OnModuleInit {
   async collectPerformanceMetrics(): Promise<PerformanceMetrics> {
     // Calculate request metrics
     const responseTimes = this.requestMetrics.responseTimes.slice(-100);
-    const avgResponseTime = responseTimes.length > 0
-      ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length
-      : 0;
+    const avgResponseTime =
+      responseTimes.length > 0
+        ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length
+        : 0;
 
     const sortedTimes = [...responseTimes].sort((a, b) => a - b);
     const p95Index = Math.floor(sortedTimes.length * 0.95);
@@ -658,14 +664,17 @@ export class MonitoringService implements OnModuleInit {
     const p95ResponseTime = sortedTimes[p95Index] || 0;
     const p99ResponseTime = sortedTimes[p99Index] || 0;
 
-    const successRate = this.requestMetrics.total > 0
-      ? ((this.requestMetrics.total - this.requestMetrics.failed) / this.requestMetrics.total) * 100
-      : 100;
+    const successRate =
+      this.requestMetrics.total > 0
+        ? ((this.requestMetrics.total - this.requestMetrics.failed) /
+            this.requestMetrics.total) *
+          100
+        : 100;
 
     // Calculate requests per second (last 60 seconds)
     const now = Date.now();
     const recentRequests = this.requestMetrics.lastSecondRequests.filter(
-      (timestamp) => now - timestamp < 60000
+      (timestamp) => now - timestamp < 60000,
     );
     const requestsPerSecond = recentRequests.length / 60;
 
@@ -673,13 +682,14 @@ export class MonitoringService implements OnModuleInit {
     const pool = (this.sequelize.connectionManager as any).pool;
     const poolSize = pool?.size || pool?.max || 10;
     const idleConnections = pool?.available || pool?.idle || 0;
-    const activeConnections = pool?.using || (poolSize - idleConnections);
+    const activeConnections = pool?.using || poolSize - idleConnections;
 
     // Calculate average query time
     const queryTimes = this.queryMetrics.queryTimes;
-    const avgQueryTime = queryTimes.length > 0
-      ? queryTimes.reduce((a, b) => a + b, 0) / queryTimes.length
-      : 0;
+    const avgQueryTime =
+      queryTimes.length > 0
+        ? queryTimes.reduce((a, b) => a + b, 0) / queryTimes.length
+        : 0;
 
     // Cache metrics
     const cacheStats = this.cacheService?.getStats() || {
@@ -691,10 +701,11 @@ export class MonitoringService implements OnModuleInit {
     };
 
     // WebSocket metrics
-    const wsConnectedClients = this.websocketService?.getConnectedSocketsCount() || 0;
+    const wsConnectedClients =
+      this.websocketService?.getConnectedSocketsCount() || 0;
 
     // Job queue metrics
-    let queueMetrics = {
+    const queueMetrics = {
       waitingJobs: 0,
       activeJobs: 0,
       completedJobs: 0,
@@ -740,14 +751,22 @@ export class MonitoringService implements OnModuleInit {
       },
       websocket: {
         connectedClients: wsConnectedClients,
-        messagesPerSecond: Math.round((this.wsMetrics.lastMinuteMessages.length / 60) * 100) / 100,
-        totalMessages: this.wsMetrics.messagesSent + this.wsMetrics.messagesReceived,
+        messagesPerSecond:
+          Math.round((this.wsMetrics.lastMinuteMessages.length / 60) * 100) /
+          100,
+        totalMessages:
+          this.wsMetrics.messagesSent + this.wsMetrics.messagesReceived,
       },
       queue: {
         ...queueMetrics,
-        averageProcessingTime: this.jobMetrics.processingTimes.length > 0
-          ? Math.round((this.jobMetrics.processingTimes.reduce((a, b) => a + b, 0) / this.jobMetrics.processingTimes.length) * 100) / 100
-          : 0,
+        averageProcessingTime:
+          this.jobMetrics.processingTimes.length > 0
+            ? Math.round(
+                (this.jobMetrics.processingTimes.reduce((a, b) => a + b, 0) /
+                  this.jobMetrics.processingTimes.length) *
+                  100,
+              ) / 100
+            : 0,
       },
     };
   }
@@ -865,7 +884,10 @@ export class MonitoringService implements OnModuleInit {
     }
 
     // Check response time
-    if (metrics.performance.requests.averageResponseTime > this.alertConfig.responseTimeThreshold) {
+    if (
+      metrics.performance.requests.averageResponseTime >
+      this.alertConfig.responseTimeThreshold
+    ) {
       alerts.push({
         id: `response-time-high-${Date.now()}`,
         severity: AlertSeverity.ERROR,
@@ -874,7 +896,9 @@ export class MonitoringService implements OnModuleInit {
         component: 'application',
         timestamp: new Date().toISOString(),
         acknowledged: false,
-        metadata: { responseTime: metrics.performance.requests.averageResponseTime },
+        metadata: {
+          responseTime: metrics.performance.requests.averageResponseTime,
+        },
       });
     }
 
@@ -894,7 +918,10 @@ export class MonitoringService implements OnModuleInit {
     }
 
     // Check failed jobs
-    if (metrics.performance.queue.failedJobs > this.alertConfig.failedJobsThreshold) {
+    if (
+      metrics.performance.queue.failedJobs >
+      this.alertConfig.failedJobsThreshold
+    ) {
       alerts.push({
         id: `failed-jobs-high-${Date.now()}`,
         severity: AlertSeverity.ERROR,
@@ -929,7 +956,7 @@ export class MonitoringService implements OnModuleInit {
    */
   getActiveAlerts(): Alert[] {
     return Array.from(this.alerts.values()).filter(
-      (alert) => !alert.acknowledged && !alert.resolvedAt
+      (alert) => !alert.acknowledged && !alert.resolvedAt,
     );
   }
 
@@ -966,7 +993,7 @@ export class MonitoringService implements OnModuleInit {
    */
   async getDashboardData(): Promise<DashboardData> {
     const health = await this.performHealthCheck();
-    const metrics = this.lastMetrics || await this.collectMetrics();
+    const metrics = this.lastMetrics || (await this.collectMetrics());
     const alerts = this.getActiveAlerts();
     const recentPerformance = this.getRecentPerformance(50);
 
@@ -1026,7 +1053,9 @@ export class MonitoringService implements OnModuleInit {
     // Filter by time range
     if (params.startTime) {
       const startTime = new Date(params.startTime).getTime();
-      logs = logs.filter((log) => new Date(log.timestamp).getTime() >= startTime);
+      logs = logs.filter(
+        (log) => new Date(log.timestamp).getTime() >= startTime,
+      );
     }
 
     if (params.endTime) {
@@ -1040,7 +1069,7 @@ export class MonitoringService implements OnModuleInit {
       logs = logs.filter(
         (log) =>
           log.message.toLowerCase().includes(search) ||
-          log.context.toLowerCase().includes(search)
+          log.context.toLowerCase().includes(search),
       );
     }
 
@@ -1064,7 +1093,9 @@ export class MonitoringService implements OnModuleInit {
     // Check if query is slow
     if (queryTime > this.queryMetrics.slowQueryThreshold) {
       this.queryMetrics.slowQueries++;
-      this.logger.warn(`Slow query detected: ${queryTime}ms (threshold: ${this.queryMetrics.slowQueryThreshold}ms)`);
+      this.logger.warn(
+        `Slow query detected: ${queryTime}ms (threshold: ${this.queryMetrics.slowQueryThreshold}ms)`,
+      );
     }
 
     // Keep query times bounded (last 1000 queries)
@@ -1090,9 +1121,10 @@ export class MonitoringService implements OnModuleInit {
 
     // Keep bounded to last 60 seconds
     const oneMinuteAgo = Date.now() - 60000;
-    this.wsMetrics.lastMinuteMessages = this.wsMetrics.lastMinuteMessages.filter(
-      (timestamp) => timestamp > oneMinuteAgo
-    );
+    this.wsMetrics.lastMinuteMessages =
+      this.wsMetrics.lastMinuteMessages.filter(
+        (timestamp) => timestamp > oneMinuteAgo,
+      );
   }
 
   /**
@@ -1107,7 +1139,9 @@ export class MonitoringService implements OnModuleInit {
 
     // Log slow jobs (>30 seconds)
     if (processingTime > 30000) {
-      this.logger.warn(`Slow job detected: ${jobType || 'unknown'} took ${processingTime}ms`);
+      this.logger.warn(
+        `Slow job detected: ${jobType || 'unknown'} took ${processingTime}ms`,
+      );
     }
 
     // Keep processing times bounded (last 1000 jobs)
@@ -1124,14 +1158,29 @@ export class MonitoringService implements OnModuleInit {
       enabled: this.configService.get('ALERTS_ENABLED', 'true') === 'true',
       cpuThreshold: this.configService.get('ALERT_CPU_THRESHOLD', 80),
       memoryThreshold: this.configService.get('ALERT_MEMORY_THRESHOLD', 85),
-      responseTimeThreshold: this.configService.get('ALERT_RESPONSE_TIME_THRESHOLD', 5000),
-      errorRateThreshold: this.configService.get('ALERT_ERROR_RATE_THRESHOLD', 5),
-      dbConnectionThreshold: this.configService.get('ALERT_DB_CONNECTION_THRESHOLD', 90),
-      failedJobsThreshold: this.configService.get('ALERT_FAILED_JOBS_THRESHOLD', 100),
+      responseTimeThreshold: this.configService.get(
+        'ALERT_RESPONSE_TIME_THRESHOLD',
+        5000,
+      ),
+      errorRateThreshold: this.configService.get(
+        'ALERT_ERROR_RATE_THRESHOLD',
+        5,
+      ),
+      dbConnectionThreshold: this.configService.get(
+        'ALERT_DB_CONNECTION_THRESHOLD',
+        90,
+      ),
+      failedJobsThreshold: this.configService.get(
+        'ALERT_FAILED_JOBS_THRESHOLD',
+        100,
+      ),
     };
 
     // Load slow query threshold
-    this.queryMetrics.slowQueryThreshold = this.configService.get('SLOW_QUERY_THRESHOLD_MS', 1000);
+    this.queryMetrics.slowQueryThreshold = this.configService.get(
+      'SLOW_QUERY_THRESHOLD_MS',
+      1000,
+    );
 
     this.logger.log('Alert configuration loaded', this.alertConfig);
   }

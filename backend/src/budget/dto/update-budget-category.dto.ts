@@ -7,7 +7,9 @@ import { CreateBudgetCategoryDto } from './create-budget-category.dto';
  * DTO for updating an existing budget category
  * All fields from CreateBudgetCategoryDto are optional (PartialType)
  */
-export class UpdateBudgetCategoryDto extends PartialType(CreateBudgetCategoryDto) {
+export class UpdateBudgetCategoryDto extends PartialType(
+  CreateBudgetCategoryDto,
+) {
   @ApiPropertyOptional({
     description: 'Whether this budget category is currently active',
     example: true,

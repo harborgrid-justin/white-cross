@@ -23,17 +23,26 @@ export class IncidentFiltersDto {
   @IsUUID()
   reportedById?: string;
 
-  @ApiPropertyOptional({ description: 'Incident type filter', enum: IncidentType })
+  @ApiPropertyOptional({
+    description: 'Incident type filter',
+    enum: IncidentType,
+  })
   @IsOptional()
   @IsEnum(IncidentType)
   type?: IncidentType;
 
-  @ApiPropertyOptional({ description: 'Severity filter', enum: IncidentSeverity })
+  @ApiPropertyOptional({
+    description: 'Severity filter',
+    enum: IncidentSeverity,
+  })
   @IsOptional()
   @IsEnum(IncidentSeverity)
   severity?: IncidentSeverity;
 
-  @ApiPropertyOptional({ description: 'Date from filter', example: '2025-01-01' })
+  @ApiPropertyOptional({
+    description: 'Date from filter',
+    example: '2025-01-01',
+  })
   @IsOptional()
   @IsDateString()
   dateFrom?: Date;
@@ -62,7 +71,12 @@ export class IncidentFiltersDto {
   @Min(1)
   page?: number = 1;
 
-  @ApiPropertyOptional({ description: 'Items per page', default: 20, minimum: 1, maximum: 100 })
+  @ApiPropertyOptional({
+    description: 'Items per page',
+    default: 20,
+    minimum: 1,
+    maximum: 100,
+  })
   @IsOptional()
   @Type(() => Number)
   @IsInt()

@@ -49,31 +49,38 @@ export class PerformanceInterceptor implements NestInterceptor {
           heapUsed: endMemory.heapUsed - startMemory.heapUsed,
           heapTotal: endMemory.heapTotal - startMemory.heapTotal,
           external: endMemory.external - startMemory.external,
-          rss: endMemory.rss - startMemory.rss
+          rss: endMemory.rss - startMemory.rss,
         };
 
         this.logger.debug(`Completed ${controllerName}.${methodName}`, {
           duration: `${duration}ms`,
           memoryDelta: {
             heapUsed: `${(memoryDelta.heapUsed / 1024 / 1024).toFixed(2)}MB`,
-            heapTotal: `${(memoryDelta.heapTotal / 1024 / 1024).toFixed(2)}MB`
-          }
+            heapTotal: `${(memoryDelta.heapTotal / 1024 / 1024).toFixed(2)}MB`,
+          },
         });
 
         // Warn on slow methods
         if (duration > 1000) {
-          this.logger.warn(`Slow method detected: ${controllerName}.${methodName}`, {
-            duration: `${duration}ms`
-          });
+          this.logger.warn(
+            `Slow method detected: ${controllerName}.${methodName}`,
+            {
+              duration: `${duration}ms`,
+            },
+          );
         }
 
         // Warn on high memory usage
-        if (memoryDelta.heapUsed > 10 * 1024 * 1024) { // 10MB
-          this.logger.warn(`High memory usage detected: ${controllerName}.${methodName}`, {
-            heapUsed: `${(memoryDelta.heapUsed / 1024 / 1024).toFixed(2)}MB`
-          });
+        if (memoryDelta.heapUsed > 10 * 1024 * 1024) {
+          // 10MB
+          this.logger.warn(
+            `High memory usage detected: ${controllerName}.${methodName}`,
+            {
+              heapUsed: `${(memoryDelta.heapUsed / 1024 / 1024).toFixed(2)}MB`,
+            },
+          );
         }
-      })
+      }),
     );
   }
 }

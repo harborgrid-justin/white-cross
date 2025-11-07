@@ -109,7 +109,9 @@ export class EnhancedWebSocketGateway
     const user = client.user;
 
     if (!user) {
-      this.logger.warn(`Connection rejected: No user data (socket: ${client.id})`);
+      this.logger.warn(
+        `Connection rejected: No user data (socket: ${client.id})`,
+      );
       client.disconnect();
       return;
     }
@@ -126,7 +128,9 @@ export class EnhancedWebSocketGateway
       await client.join(orgRoom);
       await client.join(userRoom);
 
-      this.logger.log(`Socket ${client.id} joined rooms: ${orgRoom}, ${userRoom}`);
+      this.logger.log(
+        `Socket ${client.id} joined rooms: ${orgRoom}, ${userRoom}`,
+      );
 
       // Send connection confirmation
       client.emit('connection:confirmed', {
@@ -198,7 +202,10 @@ export class EnhancedWebSocketGateway
     }
 
     // Rate limiting
-    const allowed = await this.rateLimiter.checkLimit(user.userId, 'message:send');
+    const allowed = await this.rateLimiter.checkLimit(
+      user.userId,
+      'message:send',
+    );
     if (!allowed) {
       throw new Error('Rate limit exceeded');
     }
@@ -236,7 +243,10 @@ export class EnhancedWebSocketGateway
     }
 
     // Rate limiting
-    const allowed = await this.rateLimiter.checkLimit(user.userId, 'message:edit');
+    const allowed = await this.rateLimiter.checkLimit(
+      user.userId,
+      'message:edit',
+    );
     if (!allowed) {
       throw new Error('Rate limit exceeded');
     }
@@ -269,7 +279,10 @@ export class EnhancedWebSocketGateway
     }
 
     // Rate limiting
-    const allowed = await this.rateLimiter.checkLimit(user.userId, 'message:delete');
+    const allowed = await this.rateLimiter.checkLimit(
+      user.userId,
+      'message:delete',
+    );
     if (!allowed) {
       throw new Error('Rate limit exceeded');
     }
@@ -338,7 +351,10 @@ export class EnhancedWebSocketGateway
     }
 
     // Rate limiting (silent failure for typing)
-    const allowed = await this.rateLimiter.checkLimit(user.userId, 'message:typing');
+    const allowed = await this.rateLimiter.checkLimit(
+      user.userId,
+      'message:typing',
+    );
     if (!allowed) {
       return; // Silently ignore
     }

@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import {
   HealthDomainCreateRecordDto,
   HealthDomainUpdateRecordDto,
@@ -29,7 +34,7 @@ import { ValidationService } from '../health-record/validation/validation.servic
  * Main Health Domain Service
  * Orchestrates all health-related operations including records, allergies,
  * vital signs, immunizations, and chronic conditions.
- * 
+ *
  * Delegates to specialized services from health-record module:
  * - VaccinationService: CDC-compliant immunization tracking
  * - AllergyService: Allergy management with severity tracking
@@ -45,25 +50,25 @@ export class HealthDomainService {
   constructor(
     @Inject(forwardRef(() => VaccinationService))
     private readonly vaccinationService: VaccinationService,
-    
+
     @Inject(forwardRef(() => AllergyService))
     private readonly allergyService: AllergyService,
-    
+
     @Inject(forwardRef(() => ChronicConditionService))
     private readonly chronicConditionService: ChronicConditionService,
-    
+
     @Inject(forwardRef(() => VitalsService))
     private readonly vitalsService: VitalsService,
-    
+
     @Inject(forwardRef(() => SearchService))
     private readonly searchService: SearchService,
-    
+
     @Inject(forwardRef(() => StatisticsService))
     private readonly statisticsService: StatisticsService,
-    
+
     @Inject(forwardRef(() => ImportExportService))
     private readonly importExportService: ImportExportService,
-    
+
     @Inject(forwardRef(() => ValidationService))
     private readonly validationService: ValidationService,
   ) {}
@@ -127,7 +132,10 @@ export class HealthDomainService {
     return this.allergyService.create(data, mockUser);
   }
 
-  async updateAllergy(id: string, data: HealthDomainUpdateAllergyDto): Promise<any> {
+  async updateAllergy(
+    id: string,
+    data: HealthDomainUpdateAllergyDto,
+  ): Promise<any> {
     // Delegate to existing AllergyService
     const mockUser = { id: 'system', role: 'admin' };
     return this.allergyService.update(id, data, mockUser);
@@ -148,13 +156,16 @@ export class HealthDomainService {
   ): Promise<PaginatedResponse<any>> {
     // Delegate to existing AllergyService
     const mockUser = { id: 'system', role: 'admin' };
-    const allergies = await this.allergyService.findByStudent(studentId, mockUser);
-    
+    const allergies = await this.allergyService.findByStudent(
+      studentId,
+      mockUser,
+    );
+
     // Apply pagination
     const start = (page - 1) * limit;
     const end = start + limit;
     const paginatedData = allergies.slice(start, end);
-    
+
     return {
       data: paginatedData,
       pagination: {
@@ -209,13 +220,14 @@ export class HealthDomainService {
     limit: number = 20,
   ): Promise<PaginatedResponse<any>> {
     // Delegate to existing VaccinationService
-    const vaccinations = await this.vaccinationService.getVaccinationHistory(studentId);
-    
+    const vaccinations =
+      await this.vaccinationService.getVaccinationHistory(studentId);
+
     // Apply pagination
     const start = (page - 1) * limit;
     const end = start + limit;
     const paginatedData = vaccinations.slice(start, end);
-    
+
     return {
       data: paginatedData,
       pagination: {
@@ -234,11 +246,16 @@ export class HealthDomainService {
 
   async getOverdueImmunizations(query: any = {}): Promise<any[]> {
     const { schoolId, gradeLevel, daysOverdue, vaccineName } = query;
-    
+
     // TODO: Enhance VaccinationService to support filtered overdue queries
     // For now, return empty array with filters logged
-    console.log('Overdue query filters:', { schoolId, gradeLevel, daysOverdue, vaccineName });
-    
+    console.log('Overdue query filters:', {
+      schoolId,
+      gradeLevel,
+      daysOverdue,
+      vaccineName,
+    });
+
     return [];
   }
 
@@ -273,13 +290,14 @@ export class HealthDomainService {
     limit: number = 20,
   ): Promise<PaginatedResponse<any>> {
     // Delegate to existing ChronicConditionService
-    const conditions = await this.chronicConditionService.getChronicConditions(studentId);
-    
+    const conditions =
+      await this.chronicConditionService.getChronicConditions(studentId);
+
     // Apply pagination
     const start = (page - 1) * limit;
     const end = start + limit;
     const paginatedData = conditions.slice(start, end);
-    
+
     return {
       data: paginatedData,
       pagination: {
@@ -318,12 +336,12 @@ export class HealthDomainService {
   ): Promise<PaginatedResponse<any>> {
     // Delegate to existing VitalsService
     const history = await this.vitalsService.getVitalsHistory(studentId, limit);
-    
+
     // Apply pagination
     const start = (page - 1) * limit;
     const end = start + limit;
     const paginatedData = history.slice(start, end);
-    
+
     return {
       data: paginatedData,
       pagination: {
@@ -489,15 +507,15 @@ export class HealthDomainService {
    */
   async getScheduleByAge(query: any): Promise<any> {
     const { age, ageUnit, stateCode } = query;
-    
+
     // TODO: Implement CDC schedule retrieval
     // Convert age to months if needed
     // Load CDC recommended schedule
     // Apply state-specific modifications
     // Return vaccines due at this age
-    
+
     const ageInMonths = ageUnit === 'YEARS' ? age * 12 : age;
-    
+
     return {
       age: ageInMonths,
       ageUnit: 'MONTHS',
@@ -520,13 +538,13 @@ export class HealthDomainService {
    */
   async getCatchUpSchedule(query: any): Promise<any> {
     const { studentId, currentAgeMonths, includeAccelerated } = query;
-    
+
     // TODO: Implement catch-up schedule calculation
     // Get student's vaccination history
     // Compare to CDC recommended schedule
     // Calculate minimum intervals for catch-up
     // Include accelerated schedule if requested
-    
+
     return {
       studentId,
       currentAge: currentAgeMonths,
@@ -553,12 +571,12 @@ export class HealthDomainService {
    */
   async getSchoolEntryRequirements(query: any): Promise<any> {
     const { gradeLevel, stateCode, schoolYear } = query;
-    
+
     // TODO: Implement school entry requirements
     // Load state-specific requirements
     // Filter by grade level
     // Include exemption information
-    
+
     return {
       state: stateCode,
       gradeLevel,
@@ -576,13 +594,15 @@ export class HealthDomainService {
           cvxCode: '20',
           requiredDoses: 5,
           exemptionsAllowed: ['MEDICAL', 'RELIGIOUS'],
-          notes: 'Five doses required, or 4 doses if 4th dose given after age 4',
+          notes:
+            'Five doses required, or 4 doses if 4th dose given after age 4',
         },
       ],
       exemptionPolicies: {
         medical: 'Requires physician signature',
         religious: 'Requires notarized affidavit',
-        philosophical: stateCode === 'CA' ? 'Not allowed' : 'Allowed with counseling',
+        philosophical:
+          stateCode === 'CA' ? 'Not allowed' : 'Allowed with counseling',
       },
     };
   }
@@ -592,13 +612,13 @@ export class HealthDomainService {
    */
   async checkContraindications(query: any): Promise<any> {
     const { studentId, cvxCode, includePrecautions } = query;
-    
+
     // TODO: Implement contraindication checking
     // Get student allergies
     // Check vaccine components
     // Get previous adverse reactions
     // Check chronic conditions
-    
+
     return {
       studentId,
       cvxCode,
@@ -618,12 +638,12 @@ export class HealthDomainService {
    */
   async getVaccinationRates(query: any): Promise<any> {
     const { schoolId, gradeLevel, vaccineName, startDate, endDate } = query;
-    
+
     // TODO: Implement vaccination rates calculation
     // Filter by school/grade/vaccine/date range
     // Calculate coverage percentages
     // Group by requested dimensions
-    
+
     return {
       filters: {
         schoolId: schoolId || 'ALL',
@@ -648,13 +668,21 @@ export class HealthDomainService {
    * Generate state registry export
    */
   async generateStateReport(exportDto: any): Promise<any> {
-    const { stateCode, format, schoolIds, startDate, endDate, compliantOnly, includeExemptions } = exportDto;
-    
+    const {
+      stateCode,
+      format,
+      schoolIds,
+      startDate,
+      endDate,
+      compliantOnly,
+      includeExemptions,
+    } = exportDto;
+
     // TODO: Implement state reporting export
     // Format data according to state requirements
     // Generate HL7, CSV, XML, or JSON
     // Include required fields per state
-    
+
     return {
       state: stateCode,
       format,
@@ -668,12 +696,15 @@ export class HealthDomainService {
   /**
    * Get compliance summary
    */
-  async getComplianceSummary(schoolId?: string, gradeLevel?: string): Promise<any> {
+  async getComplianceSummary(
+    schoolId?: string,
+    gradeLevel?: string,
+  ): Promise<any> {
     // TODO: Implement compliance summary
     // Calculate compliance percentages
     // Group by school and grade
     // Identify non-compliant students
-    
+
     return {
       filters: { schoolId: schoolId || 'ALL', gradeLevel: gradeLevel || 'ALL' },
       summary: {
@@ -692,13 +723,19 @@ export class HealthDomainService {
   /**
    * Get exemption rates
    */
-  async getExemptionRates(schoolId?: string, vaccineName?: string): Promise<any> {
+  async getExemptionRates(
+    schoolId?: string,
+    vaccineName?: string,
+  ): Promise<any> {
     // TODO: Implement exemption rates calculation
     // Filter by school and vaccine
     // Calculate rates by exemption type
-    
+
     return {
-      filters: { schoolId: schoolId || 'ALL', vaccineName: vaccineName || 'ALL' },
+      filters: {
+        schoolId: schoolId || 'ALL',
+        vaccineName: vaccineName || 'ALL',
+      },
       summary: {
         totalExemptions: 0,
         exemptionRate: 0,

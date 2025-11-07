@@ -10,7 +10,7 @@ import {
   Index,
   Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
@@ -23,8 +23,8 @@ export enum DeliveryChannel {
   WEBSOCKET = 'WEBSOCKET',
   EMAIL = 'EMAIL',
   SMS = 'SMS',
-  PUSH_NOTIFICATION = 'PUSH_NOTIFICATION'
-  }
+  PUSH_NOTIFICATION = 'PUSH_NOTIFICATION',
+}
 
 /**
  * Alert Preferences Attributes Interface
@@ -63,10 +63,10 @@ export interface AlertPreferencesAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'alert_preferences',
@@ -75,32 +75,35 @@ export interface AlertPreferencesAttributes {
   indexes: [
     {
       fields: ['userId'],
-      name: 'alert_preferences_user_id_idx'
-  },
+      name: 'alert_preferences_user_id_idx',
+    },
     {
       fields: ['schoolId'],
-      name: 'alert_preferences_school_id_idx'
-  },
+      name: 'alert_preferences_school_id_idx',
+    },
     {
       fields: ['isActive'],
-      name: 'alert_preferences_is_active_idx'
-  },
+      name: 'alert_preferences_is_active_idx',
+    },
     {
       fields: ['userId', 'schoolId'],
       name: 'alert_preferences_user_school_idx',
-      unique: true
+      unique: true,
     },
     {
       fields: ['createdAt'],
-      name: 'idx_alert_preferences_created_at'
+      name: 'idx_alert_preferences_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_alert_preferences_updated_at'
-    }
-  ]
-  })
-export class AlertPreferences extends Model<AlertPreferencesAttributes> implements AlertPreferencesAttributes {
+      name: 'idx_alert_preferences_updated_at',
+    },
+  ],
+})
+export class AlertPreferences
+  extends Model<AlertPreferencesAttributes>
+  implements AlertPreferencesAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -113,11 +116,14 @@ export class AlertPreferences extends Model<AlertPreferencesAttributes> implemen
   @ForeignKey(() => require('./user.model').User)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   userId: string;
 
-  @BelongsTo(() => require('./user.model').User, { foreignKey: 'userId', as: 'user' })
+  @BelongsTo(() => require('./user.model').User, {
+    foreignKey: 'userId',
+    as: 'user',
+  })
   declare user?: any;
 
   /**
@@ -126,20 +132,25 @@ export class AlertPreferences extends Model<AlertPreferencesAttributes> implemen
   @Index
   @ForeignKey(() => require('./school.model').School)
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   schoolId?: string;
 
-  @BelongsTo(() => require('./school.model').School, { foreignKey: 'schoolId', as: 'school' })
+  @BelongsTo(() => require('./school.model').School, {
+    foreignKey: 'schoolId',
+    as: 'school',
+  })
   declare school?: any;
 
   /**
    * Preferred delivery channels
    */
   @Column({
-    type: DataType.ARRAY(DataType.ENUM(...(Object.values(DeliveryChannel) as string[]))),
+    type: DataType.ARRAY(
+      DataType.ENUM(...(Object.values(DeliveryChannel) as string[])),
+    ),
     allowNull: false,
-    defaultValue: [DeliveryChannel.WEBSOCKET, DeliveryChannel.EMAIL]
+    defaultValue: [DeliveryChannel.WEBSOCKET, DeliveryChannel.EMAIL],
   })
   channels: DeliveryChannel[];
 
@@ -147,9 +158,11 @@ export class AlertPreferences extends Model<AlertPreferencesAttributes> implemen
    * Filter by severity levels (only receive these severities)
    */
   @Column({
-    type: DataType.ARRAY(DataType.ENUM(...(Object.values(AlertSeverity) as string[]))),
+    type: DataType.ARRAY(
+      DataType.ENUM(...(Object.values(AlertSeverity) as string[])),
+    ),
     allowNull: false,
-    defaultValue: Object.values(AlertSeverity)
+    defaultValue: Object.values(AlertSeverity),
   })
   severityFilter: AlertSeverity[];
 
@@ -157,9 +170,11 @@ export class AlertPreferences extends Model<AlertPreferencesAttributes> implemen
    * Filter by categories (only receive these categories)
    */
   @Column({
-    type: DataType.ARRAY(DataType.ENUM(...(Object.values(AlertCategory) as string[]))),
+    type: DataType.ARRAY(
+      DataType.ENUM(...(Object.values(AlertCategory) as string[])),
+    ),
     allowNull: false,
-    defaultValue: Object.values(AlertCategory)
+    defaultValue: Object.values(AlertCategory),
   })
   categoryFilter: AlertCategory[];
 
@@ -169,8 +184,8 @@ export class AlertPreferences extends Model<AlertPreferencesAttributes> implemen
   @Column({
     type: DataType.STRING(5),
     validate: {
-      is: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/
-  }
+      is: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
+    },
   })
   quietHoursStart?: string;
 
@@ -180,8 +195,8 @@ export class AlertPreferences extends Model<AlertPreferencesAttributes> implemen
   @Column({
     type: DataType.STRING(5),
     validate: {
-      is: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/
-  }
+      is: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
+    },
   })
   quietHoursEnd?: string;
 
@@ -192,21 +207,21 @@ export class AlertPreferences extends Model<AlertPreferencesAttributes> implemen
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true
+    defaultValue: true,
   })
   isActive: boolean;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW
+    defaultValue: DataType.NOW,
   })
   declare createdAt?: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW
+    defaultValue: DataType.NOW,
   })
   declare updatedAt?: Date;
 
@@ -245,14 +260,15 @@ export class AlertPreferences extends Model<AlertPreferencesAttributes> implemen
     );
   }
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: AlertPreferences) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] AlertPreferences ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] AlertPreferences ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

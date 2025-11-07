@@ -13,12 +13,18 @@ export class PHIAccessFilterDto extends AuditLogFilterDto {
   @IsString()
   studentId?: string;
 
-  @ApiPropertyOptional({ enum: PHIAccessType, description: 'Filter by access type' })
+  @ApiPropertyOptional({
+    enum: PHIAccessType,
+    description: 'Filter by access type',
+  })
   @IsOptional()
   @IsEnum(PHIAccessType)
   accessType?: PHIAccessType;
 
-  @ApiPropertyOptional({ enum: PHIDataCategory, description: 'Filter by data category' })
+  @ApiPropertyOptional({
+    enum: PHIDataCategory,
+    description: 'Filter by data category',
+  })
   @IsOptional()
   @IsEnum(PHIDataCategory)
   dataCategory?: PHIDataCategory;

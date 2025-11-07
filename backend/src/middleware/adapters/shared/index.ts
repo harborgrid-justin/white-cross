@@ -7,5 +7,5 @@ export {
   BaseFrameworkAdapter,
   HealthcareMiddlewareUtils,
   ResponseUtils,
-  RequestValidationUtils
+  RequestValidationUtils,
 } from './base.adapter';

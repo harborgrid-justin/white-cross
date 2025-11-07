@@ -1,4 +1,8 @@
-import { Injectable, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  ExecutionContext,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
@@ -36,7 +40,8 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     const token = this.extractTokenFromHeader(request);
 
     if (token) {
-      const isBlacklisted = await this.tokenBlacklistService.isTokenBlacklisted(token);
+      const isBlacklisted =
+        await this.tokenBlacklistService.isTokenBlacklisted(token);
 
       if (isBlacklisted) {
         throw new UnauthorizedException('Token has been revoked');
@@ -47,13 +52,16 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       if (user && user.id) {
         const tokenPayload = this.decodeToken(token);
         if (tokenPayload && tokenPayload.iat) {
-          const userTokensBlacklisted = await this.tokenBlacklistService.areUserTokensBlacklisted(
-            user.id,
-            tokenPayload.iat
-          );
+          const userTokensBlacklisted =
+            await this.tokenBlacklistService.areUserTokensBlacklisted(
+              user.id,
+              tokenPayload.iat,
+            );
 
           if (userTokensBlacklisted) {
-            throw new UnauthorizedException('Session invalidated. Please login again.');
+            throw new UnauthorizedException(
+              'Session invalidated. Please login again.',
+            );
           }
         }
       }
@@ -62,7 +70,13 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     return true;
   }
 
-  handleRequest<TUser = any>(err: any, user: any, info: any, context: ExecutionContext, status?: any): TUser {
+  handleRequest<TUser = any>(
+    err: any,
+    user: any,
+    info: any,
+    context: ExecutionContext,
+    status?: any,
+  ): TUser {
     // You can throw an exception based on either "info" or "err" arguments
     if (err || !user) {
       throw err || new UnauthorizedException('Authentication required');

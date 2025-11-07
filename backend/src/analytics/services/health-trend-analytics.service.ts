@@ -3,10 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
-import {
-  TimePeriod,
-  TrendDirection,
-} from '../enums';
+import { TimePeriod, TrendDirection } from '../enums';
 import {
   PopulationHealthSummary,
   ChartData,
@@ -60,7 +57,8 @@ export class HealthTrendAnalyticsService {
   ): Promise<PopulationHealthSummary> {
     try {
       const cacheKey = `population-summary:${schoolId}:${period}:${customRange?.start}-${customRange?.end}`;
-      const cached = await this.cacheManager.get<PopulationHealthSummary>(cacheKey);
+      const cached =
+        await this.cacheManager.get<PopulationHealthSummary>(cacheKey);
       if (cached) {
         this.logger.debug(`Cache hit for population summary: ${schoolId}`);
         return cached;
@@ -85,7 +83,7 @@ export class HealthTrendAnalyticsService {
         },
         attributes: ['id'],
       });
-      const studentIds = students.map(s => s.id);
+      const studentIds = students.map((s) => s.id);
 
       // Query health visits in period
       const healthVisits = await this.healthRecordModel.findAll({
@@ -96,29 +94,42 @@ export class HealthTrendAnalyticsService {
       });
 
       const totalHealthVisits = healthVisits.length;
-      const averageVisitsPerStudent = totalStudents > 0
-        ? Number((totalHealthVisits / totalStudents).toFixed(2))
-        : 0;
+      const averageVisitsPerStudent =
+        totalStudents > 0
+          ? Number((totalHealthVisits / totalStudents).toFixed(2))
+          : 0;
 
       // Get previous period for trend comparison
       const previousPeriod = this.getPreviousPeriod(start, end);
       const previousHealthVisits = await this.healthRecordModel.count({
         where: {
           studentId: { [Op.in]: studentIds },
-          recordDate: { [Op.between]: [previousPeriod.start, previousPeriod.end] },
+          recordDate: {
+            [Op.between]: [previousPeriod.start, previousPeriod.end],
+          },
         },
       });
 
-      const visitTrend = this.calculateTrend(previousHealthVisits, totalHealthVisits);
+      const visitTrend = this.calculateTrend(
+        previousHealthVisits,
+        totalHealthVisits,
+      );
 
       // Analyze health conditions
-      const conditionCounts = new Map<string, { current: number; previous: number; students: string[] }>();
+      const conditionCounts = new Map<
+        string,
+        { current: number; previous: number; students: string[] }
+      >();
 
       for (const visit of healthVisits) {
         if (visit.diagnosis) {
           const condition = this.normalizeCondition(visit.diagnosis);
           if (!conditionCounts.has(condition)) {
-            conditionCounts.set(condition, { current: 0, previous: 0, students: [] });
+            conditionCounts.set(condition, {
+              current: 0,
+              previous: 0,
+              students: [],
+            });
           }
           const data = conditionCounts.get(condition)!;
           data.current++;
@@ -130,7 +141,9 @@ export class HealthTrendAnalyticsService {
       const previousVisits = await this.healthRecordModel.findAll({
         where: {
           studentId: { [Op.in]: studentIds },
-          recordDate: { [Op.between]: [previousPeriod.start, previousPeriod.end] },
+          recordDate: {
+            [Op.between]: [previousPeriod.start, previousPeriod.end],
+          },
         },
       });
 
@@ -144,7 +157,9 @@ export class HealthTrendAnalyticsService {
       }
 
       // Build top conditions array
-      const topConditions: HealthConditionTrend[] = Array.from(conditionCounts.entries())
+      const topConditions: HealthConditionTrend[] = Array.from(
+        conditionCounts.entries(),
+      )
         .sort((a, b) => b[1].current - a[1].current)
         .slice(0, 10)
         .map(([condition, data]) => ({
@@ -155,9 +170,15 @@ export class HealthTrendAnalyticsService {
           change: data.current - data.previous,
           trend: this.calculateTrend(data.previous, data.current),
           affectedStudents: [...new Set(data.students)],
-          prevalenceRate: totalStudents > 0
-            ? Number((([...new Set(data.students)].length / totalStudents) * 100).toFixed(1))
-            : 0,
+          prevalenceRate:
+            totalStudents > 0
+              ? Number(
+                  (
+                    ([...new Set(data.students)].length / totalStudents) *
+                    100
+                  ).toFixed(1),
+                )
+              : 0,
           seasonality: this.detectSeasonality(condition, start.getMonth()),
         }));
 
@@ -181,13 +202,18 @@ export class HealthTrendAnalyticsService {
       // Medication administration metrics (placeholder - would integrate with medication module)
       const totalMedicationAdministrations = Math.floor(totalStudents * 4.2); // Average 4.2 per student
       const previousMedications = Math.floor(totalStudents * 3.8);
-      const medicationTrend = this.calculateTrend(previousMedications, totalMedicationAdministrations);
+      const medicationTrend = this.calculateTrend(
+        previousMedications,
+        totalMedicationAdministrations,
+      );
 
       const topMedications: MedicationTrend[] = [
         {
           medicationName: 'Albuterol Inhaler',
           category: 'Respiratory',
-          administrationCount: Math.floor(totalMedicationAdministrations * 0.18),
+          administrationCount: Math.floor(
+            totalMedicationAdministrations * 0.18,
+          ),
           studentCount: Math.floor(totalStudents * 0.12),
           change: 15,
           trend: TrendDirection.INCREASING,
@@ -197,7 +223,9 @@ export class HealthTrendAnalyticsService {
         {
           medicationName: 'Methylphenidate',
           category: 'ADHD',
-          administrationCount: Math.floor(totalMedicationAdministrations * 0.15),
+          administrationCount: Math.floor(
+            totalMedicationAdministrations * 0.15,
+          ),
           studentCount: Math.floor(totalStudents * 0.08),
           change: -3,
           trend: TrendDirection.STABLE,
@@ -214,22 +242,30 @@ export class HealthTrendAnalyticsService {
       });
 
       const totalIncidents = incidents.length;
-      const incidentRate = totalStudents > 0
-        ? Number(((totalIncidents / totalStudents) * 100).toFixed(2))
-        : 0;
+      const incidentRate =
+        totalStudents > 0
+          ? Number(((totalIncidents / totalStudents) * 100).toFixed(2))
+          : 0;
 
       const previousIncidents = await this.incidentReportModel.count({
         where: {
-          occurredAt: { [Op.between]: [previousPeriod.start, previousPeriod.end] },
+          occurredAt: {
+            [Op.between]: [previousPeriod.start, previousPeriod.end],
+          },
         },
       });
 
-      const incidentTrend = this.calculateTrend(previousIncidents, totalIncidents);
+      const incidentTrend = this.calculateTrend(
+        previousIncidents,
+        totalIncidents,
+      );
 
       // Immunization metrics (placeholder - would integrate with vaccination module)
       const immunizationComplianceRate = 94.3 + (Math.random() * 3 - 1.5); // Realistic variance
       const immunizationTrend = TrendDirection.INCREASING;
-      const studentsNeedingVaccines = Math.floor(totalStudents * (1 - immunizationComplianceRate / 100));
+      const studentsNeedingVaccines = Math.floor(
+        totalStudents * (1 - immunizationComplianceRate / 100),
+      );
 
       // Identify high-risk students (multiple chronic conditions or frequent visits)
       const studentVisitCounts = new Map<string, number>();
@@ -240,14 +276,20 @@ export class HealthTrendAnalyticsService {
         );
       }
 
-      const highRiskStudentCount = Array.from(studentVisitCounts.values())
-        .filter(count => count >= 5).length;
-      const highRiskPercentage = totalStudents > 0
-        ? Number(((highRiskStudentCount / totalStudents) * 100).toFixed(1))
-        : 0;
+      const highRiskStudentCount = Array.from(
+        studentVisitCounts.values(),
+      ).filter((count) => count >= 5).length;
+      const highRiskPercentage =
+        totalStudents > 0
+          ? Number(((highRiskStudentCount / totalStudents) * 100).toFixed(1))
+          : 0;
 
       // Generate alerts based on data
-      const alerts = this.generateHealthAlerts(topConditions, totalIncidents, immunizationComplianceRate);
+      const alerts = this.generateHealthAlerts(
+        topConditions,
+        totalIncidents,
+        immunizationComplianceRate,
+      );
 
       const summary: PopulationHealthSummary = {
         period: dateRange,
@@ -264,7 +306,9 @@ export class HealthTrendAnalyticsService {
         totalIncidents,
         incidentRate,
         incidentTrend,
-        immunizationComplianceRate: Number(immunizationComplianceRate.toFixed(1)),
+        immunizationComplianceRate: Number(
+          immunizationComplianceRate.toFixed(1),
+        ),
         immunizationTrend,
         studentsNeedingVaccines,
         highRiskStudentCount,
@@ -275,10 +319,15 @@ export class HealthTrendAnalyticsService {
       // Cache for 5 minutes
       await this.cacheManager.set(cacheKey, summary, 300000);
 
-      this.logger.log(`Population health summary generated for school ${schoolId}`);
+      this.logger.log(
+        `Population health summary generated for school ${schoolId}`,
+      );
       return summary;
     } catch (error) {
-      this.logger.error(`Error generating population summary for school ${schoolId}`, error.stack);
+      this.logger.error(
+        `Error generating population summary for school ${schoolId}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -309,7 +358,11 @@ export class HealthTrendAnalyticsService {
         if (!record.diagnosis) continue;
 
         const condition = this.normalizeCondition(record.diagnosis);
-        if (conditions && conditions.length > 0 && !conditions.includes(condition)) {
+        if (
+          conditions &&
+          conditions.length > 0 &&
+          !conditions.includes(condition)
+        ) {
           continue;
         }
 
@@ -365,7 +418,10 @@ export class HealthTrendAnalyticsService {
   /**
    * Get medication usage trends with statistical analysis
    */
-  async getMedicationTrends(schoolId: string, period: TimePeriod = TimePeriod.LAST_30_DAYS): Promise<ChartData> {
+  async getMedicationTrends(
+    schoolId: string,
+    period: TimePeriod = TimePeriod.LAST_30_DAYS,
+  ): Promise<ChartData> {
     try {
       // In production, this would query medication administration records
       // Placeholder implementation with realistic data structure
@@ -383,7 +439,9 @@ export class HealthTrendAnalyticsService {
         description: `Last ${this.getPeriodDays(period)} days`,
         xAxisLabel: 'Medication',
         yAxisLabel: 'Administrations',
-        datasets: [{ label: 'Administrations', data: medicationData, color: '#06B6D4' }],
+        datasets: [
+          { label: 'Administrations', data: medicationData, color: '#06B6D4' },
+        ],
       };
     } catch (error) {
       this.logger.error('Error getting medication trends', error.stack);
@@ -394,7 +452,10 @@ export class HealthTrendAnalyticsService {
   /**
    * Get incident analytics with detailed breakdown
    */
-  async getIncidentAnalytics(schoolId: string, period: TimePeriod = TimePeriod.LAST_90_DAYS) {
+  async getIncidentAnalytics(
+    schoolId: string,
+    period: TimePeriod = TimePeriod.LAST_90_DAYS,
+  ) {
     try {
       const dateRange = this.getDateRange(period);
       const { start, end } = dateRange;
@@ -428,11 +489,16 @@ export class HealthTrendAnalyticsService {
       const byType: ChartData = {
         chartType: 'PIE',
         title: 'Incidents by Type',
-        datasets: [{
-          label: 'Incidents',
-          data: Array.from(typeMap.entries()).map(([label, value]) => ({ label, value })),
-          color: '#EF4444',
-        }],
+        datasets: [
+          {
+            label: 'Incidents',
+            data: Array.from(typeMap.entries()).map(([label, value]) => ({
+              label,
+              value,
+            })),
+            color: '#EF4444',
+          },
+        ],
       };
 
       const byLocation: ChartData = {
@@ -440,14 +506,16 @@ export class HealthTrendAnalyticsService {
         title: 'Incidents by Location',
         xAxisLabel: 'Location',
         yAxisLabel: 'Count',
-        datasets: [{
-          label: 'Incidents',
-          data: Array.from(locationMap.entries())
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 10)
-            .map(([label, value]) => ({ label, value })),
-          color: '#F59E0B',
-        }],
+        datasets: [
+          {
+            label: 'Incidents',
+            data: Array.from(locationMap.entries())
+              .sort((a, b) => b[1] - a[1])
+              .slice(0, 10)
+              .map(([label, value]) => ({ label, value })),
+            color: '#F59E0B',
+          },
+        ],
       };
 
       const byTimeOfDay: ChartData = {
@@ -455,27 +523,31 @@ export class HealthTrendAnalyticsService {
         title: 'Incidents by Time of Day',
         xAxisLabel: 'Hour',
         yAxisLabel: 'Count',
-        datasets: [{
-          label: 'Incidents',
-          data: Array.from(hourMap.entries())
-            .sort((a, b) => a[0] - b[0])
-            .map(([hour, count]) => ({
-              date: new Date(2000, 0, 1, hour),
-              value: count,
-              label: `${hour}:00`,
-            })),
-          color: '#8B5CF6',
-        }],
+        datasets: [
+          {
+            label: 'Incidents',
+            data: Array.from(hourMap.entries())
+              .sort((a, b) => a[0] - b[0])
+              .map(([hour, count]) => ({
+                date: new Date(2000, 0, 1, hour),
+                value: count,
+                label: `${hour}:00`,
+              })),
+            color: '#8B5CF6',
+          },
+        ],
       };
 
-      const trends: IncidentTrend[] = Array.from(typeMap.entries()).map(([type, count]) => ({
-        incidentType: type,
-        count,
-        severity: this.assessIncidentSeverity(type),
-        trend: TrendDirection.STABLE,
-        commonLocations: this.getCommonLocationsForType(incidents, type),
-        timeOfDayDistribution: this.getTimeDistribution(incidents, type),
-      }));
+      const trends: IncidentTrend[] = Array.from(typeMap.entries()).map(
+        ([type, count]) => ({
+          incidentType: type,
+          count,
+          severity: this.assessIncidentSeverity(type),
+          trend: TrendDirection.STABLE,
+          commonLocations: this.getCommonLocationsForType(incidents, type),
+          timeOfDayDistribution: this.getTimeDistribution(incidents, type),
+        }),
+      );
 
       return {
         byType,
@@ -501,28 +573,32 @@ export class HealthTrendAnalyticsService {
         byVaccine: {
           chartType: 'BAR' as const,
           title: 'Compliance by Vaccine',
-          datasets: [{
-            label: 'Compliance Rate (%)',
-            data: [
-              { label: 'MMR', value: 96.2 },
-              { label: 'DTaP', value: 95.8 },
-              { label: 'Varicella', value: 94.1 },
-              { label: 'HPV', value: 87.3 },
-            ],
-          }],
+          datasets: [
+            {
+              label: 'Compliance Rate (%)',
+              data: [
+                { label: 'MMR', value: 96.2 },
+                { label: 'DTaP', value: 95.8 },
+                { label: 'Varicella', value: 94.1 },
+                { label: 'HPV', value: 87.3 },
+              ],
+            },
+          ],
         },
         byGradeLevel: {
           chartType: 'BAR' as const,
           title: 'Compliance by Grade',
-          datasets: [{
-            label: 'Compliance Rate (%)',
-            data: [
-              { label: 'K', value: 97.5 },
-              { label: '1-5', value: 95.2 },
-              { label: '6-8', value: 92.8 },
-              { label: '9-12', value: 90.3 },
-            ],
-          }],
+          datasets: [
+            {
+              label: 'Compliance Rate (%)',
+              data: [
+                { label: 'K', value: 97.5 },
+                { label: '1-5', value: 95.2 },
+                { label: '6-8', value: 92.8 },
+                { label: '9-12', value: 90.3 },
+              ],
+            },
+          ],
         },
         upcomingDue: 28,
         overdue: 20,
@@ -536,7 +612,10 @@ export class HealthTrendAnalyticsService {
   /**
    * Get absence correlation with health visits
    */
-  async getAbsenceCorrelation(schoolId: string, period: TimePeriod = TimePeriod.LAST_30_DAYS): Promise<ChartData> {
+  async getAbsenceCorrelation(
+    schoolId: string,
+    period: TimePeriod = TimePeriod.LAST_30_DAYS,
+  ): Promise<ChartData> {
     try {
       const dateRange = this.getDateRange(period);
       const { start, end } = dateRange;
@@ -550,7 +629,8 @@ export class HealthTrendAnalyticsService {
         // Simulate correlation with some noise
         const baseRate = 3.5;
         const variance = Math.random() * 2 - 1;
-        const seasonalEffect = Math.sin((date.getMonth() / 12) * Math.PI * 2) * 0.5;
+        const seasonalEffect =
+          Math.sin((date.getMonth() / 12) * Math.PI * 2) * 0.5;
 
         data.push({
           date,
@@ -561,7 +641,8 @@ export class HealthTrendAnalyticsService {
       return {
         chartType: 'AREA',
         title: 'Absence Rate vs Health Visits',
-        description: 'Correlation between student absences and health office visits',
+        description:
+          'Correlation between student absences and health office visits',
         xAxisLabel: 'Date',
         yAxisLabel: 'Percentage',
         datasets: [{ label: 'Absence Rate', data, color: '#EF4444' }],
@@ -588,7 +669,9 @@ export class HealthTrendAnalyticsService {
       const insights: PredictiveInsight[] = [];
 
       // Analyze for potential outbreaks using exponential moving average
-      const illnessCounts = this.aggregateByWeek(recentRecords.filter(r => r.recordType === 'ILLNESS'));
+      const illnessCounts = this.aggregateByWeek(
+        recentRecords.filter((r) => r.recordType === 'ILLNESS'),
+      );
       const trend = this.calculateExponentialMovingAverage(illnessCounts, 0.3);
       const recentTrend = trend.slice(-2);
 
@@ -600,7 +683,10 @@ export class HealthTrendAnalyticsService {
           description: `Illness cases trending ${((recentTrend[1] / recentTrend[0] - 1) * 100).toFixed(0)}% above previous week`,
           prediction: {
             timeframe: 'Next 7-14 days',
-            probability: Math.min(95, Math.round((recentTrend[1] / recentTrend[0]) * 50)),
+            probability: Math.min(
+              95,
+              Math.round((recentTrend[1] / recentTrend[0]) * 50),
+            ),
             impactedCount: Math.round(recentTrend[1] * 1.3),
           },
           recommendations: [
@@ -613,9 +699,10 @@ export class HealthTrendAnalyticsService {
       }
 
       // Check for medication stock shortage risk
-      const medicationRecords = recentRecords.filter(r =>
-        r.treatment?.toLowerCase().includes('medication') ||
-        r.recordType === 'MEDICATION_REVIEW'
+      const medicationRecords = recentRecords.filter(
+        (r) =>
+          r.treatment?.toLowerCase().includes('medication') ||
+          r.recordType === 'MEDICATION_REVIEW',
       );
 
       if (medicationRecords.length > 100) {
@@ -623,7 +710,8 @@ export class HealthTrendAnalyticsService {
           insightType: 'STOCK_SHORTAGE',
           severity: 'MEDIUM',
           title: 'High Medication Demand',
-          description: 'Medication administration rates above normal - monitor inventory',
+          description:
+            'Medication administration rates above normal - monitor inventory',
           prediction: {
             timeframe: 'Next 14-21 days',
             probability: 65,
@@ -637,7 +725,9 @@ export class HealthTrendAnalyticsService {
         });
       }
 
-      this.logger.log(`Generated ${insights.length} predictive insights for school ${schoolId}`);
+      this.logger.log(
+        `Generated ${insights.length} predictive insights for school ${schoolId}`,
+      );
       return insights;
     } catch (error) {
       this.logger.error('Error generating predictive insights', error.stack);
@@ -659,14 +749,15 @@ export class HealthTrendAnalyticsService {
             where: { schoolId, ...def.filter, isActive: true },
           });
 
-          const studentIds = students.map(s => s.id);
+          const studentIds = students.map((s) => s.id);
           const healthVisits = await this.healthRecordModel.count({
             where: {
               studentId: { [Op.in]: studentIds },
             },
           });
 
-          const avgVisits = students.length > 0 ? healthVisits / students.length : 0;
+          const avgVisits =
+            students.length > 0 ? healthVisits / students.length : 0;
 
           return {
             name: def.name,
@@ -697,10 +788,16 @@ export class HealthTrendAnalyticsService {
   /**
    * Get health metrics summary with statistical analysis
    */
-  async getHealthMetrics(schoolId: string, period: TimePeriod): Promise<HealthMetric[]> {
+  async getHealthMetrics(
+    schoolId: string,
+    period: TimePeriod,
+  ): Promise<HealthMetric[]> {
     try {
       const dateRange = this.getDateRange(period);
-      const previousPeriod = this.getPreviousPeriod(dateRange.start, dateRange.end);
+      const previousPeriod = this.getPreviousPeriod(
+        dateRange.start,
+        dateRange.end,
+      );
 
       const currentVisits = await this.healthRecordModel.count({
         where: {
@@ -710,12 +807,15 @@ export class HealthTrendAnalyticsService {
 
       const previousVisits = await this.healthRecordModel.count({
         where: {
-          recordDate: { [Op.between]: [previousPeriod.start, previousPeriod.end] },
+          recordDate: {
+            [Op.between]: [previousPeriod.start, previousPeriod.end],
+          },
         },
       });
 
       const change = currentVisits - previousVisits;
-      const changePercent = previousVisits > 0 ? (change / previousVisits) * 100 : 0;
+      const changePercent =
+        previousVisits > 0 ? (change / previousVisits) * 100 : 0;
 
       return [
         {
@@ -740,7 +840,10 @@ export class HealthTrendAnalyticsService {
   /**
    * Get date range from period enum
    */
-  private getDateRange(period: TimePeriod, customRange?: { start: Date; end: Date }): { start: Date; end: Date } {
+  private getDateRange(
+    period: TimePeriod,
+    customRange?: { start: Date; end: Date },
+  ): { start: Date; end: Date } {
     const end = new Date();
     let start = new Date();
 
@@ -762,7 +865,8 @@ export class HealthTrendAnalyticsService {
         break;
       case TimePeriod.CURRENT_SCHOOL_YEAR:
         const currentYear = end.getFullYear();
-        const schoolYearStart = end.getMonth() >= 8 ? currentYear : currentYear - 1;
+        const schoolYearStart =
+          end.getMonth() >= 8 ? currentYear : currentYear - 1;
         start = new Date(schoolYearStart, 8, 1);
         break;
       case TimePeriod.CUSTOM:
@@ -776,7 +880,10 @@ export class HealthTrendAnalyticsService {
   /**
    * Get previous period for comparison
    */
-  private getPreviousPeriod(start: Date, end: Date): { start: Date; end: Date } {
+  private getPreviousPeriod(
+    start: Date,
+    end: Date,
+  ): { start: Date; end: Date } {
     const duration = end.getTime() - start.getTime();
     return {
       start: new Date(start.getTime() - duration),
@@ -802,14 +909,20 @@ export class HealthTrendAnalyticsService {
   private normalizeCondition(diagnosis: string): string {
     const normalized = diagnosis.toLowerCase().trim();
 
-    if (normalized.includes('allergy') || normalized.includes('allergic')) return 'Seasonal Allergies';
+    if (normalized.includes('allergy') || normalized.includes('allergic'))
+      return 'Seasonal Allergies';
     if (normalized.includes('asthma')) return 'Asthma';
-    if (normalized.includes('flu') || normalized.includes('influenza')) return 'Influenza';
-    if (normalized.includes('cold') || normalized.includes('upper respiratory')) return 'Common Cold';
-    if (normalized.includes('headache') || normalized.includes('migraine')) return 'Headache';
-    if (normalized.includes('stomach') || normalized.includes('gastro')) return 'Stomach Issues';
+    if (normalized.includes('flu') || normalized.includes('influenza'))
+      return 'Influenza';
+    if (normalized.includes('cold') || normalized.includes('upper respiratory'))
+      return 'Common Cold';
+    if (normalized.includes('headache') || normalized.includes('migraine'))
+      return 'Headache';
+    if (normalized.includes('stomach') || normalized.includes('gastro'))
+      return 'Stomach Issues';
     if (normalized.includes('anxiety')) return 'Anxiety';
-    if (normalized.includes('adhd') || normalized.includes('attention')) return 'ADHD';
+    if (normalized.includes('adhd') || normalized.includes('attention'))
+      return 'ADHD';
 
     return diagnosis;
   }
@@ -817,10 +930,13 @@ export class HealthTrendAnalyticsService {
   /**
    * Get common locations for incident type
    */
-  private getCommonLocationsForType(incidents: IncidentReport[], type: string): string[] {
+  private getCommonLocationsForType(
+    incidents: IncidentReport[],
+    type: string,
+  ): string[] {
     return incidents
-      .filter(i => i.type === type)
-      .map(i => i.location || 'Unknown')
+      .filter((i) => i.type === type)
+      .map((i) => i.location || 'Unknown')
       .filter((loc, idx, arr) => arr.indexOf(loc) === idx)
       .slice(0, 3);
   }
@@ -831,8 +947,14 @@ export class HealthTrendAnalyticsService {
   private categorizeCondition(condition: string): string {
     const lower = condition.toLowerCase();
     if (lower.includes('allergy')) return 'Allergy';
-    if (lower.includes('asthma') || lower.includes('respiratory')) return 'Respiratory';
-    if (lower.includes('mental') || lower.includes('anxiety') || lower.includes('adhd')) return 'Mental Health';
+    if (lower.includes('asthma') || lower.includes('respiratory'))
+      return 'Respiratory';
+    if (
+      lower.includes('mental') ||
+      lower.includes('anxiety') ||
+      lower.includes('adhd')
+    )
+      return 'Mental Health';
     if (lower.includes('injury') || lower.includes('fracture')) return 'Injury';
     if (lower.includes('infection')) return 'Infectious Disease';
     return 'General';
@@ -841,8 +963,24 @@ export class HealthTrendAnalyticsService {
   /**
    * Detect seasonal patterns for conditions
    */
-  private detectSeasonality(condition: string, currentMonth: number): { peakMonths: string[]; lowMonths: string[] } | undefined {
-    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  private detectSeasonality(
+    condition: string,
+    currentMonth: number,
+  ): { peakMonths: string[]; lowMonths: string[] } | undefined {
+    const monthNames = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
 
     const lower = condition.toLowerCase();
     if (lower.includes('allergy')) {
@@ -868,14 +1006,27 @@ export class HealthTrendAnalyticsService {
     conditions: HealthConditionTrend[],
     incidents: number,
     immunizationRate: number,
-  ): Array<{ type: string; severity: 'LOW' | 'MEDIUM' | 'HIGH'; message: string; affectedCount: number }> {
-    const alerts: Array<{ type: string; severity: 'LOW' | 'MEDIUM' | 'HIGH'; message: string; affectedCount: number }> = [];
+  ): Array<{
+    type: string;
+    severity: 'LOW' | 'MEDIUM' | 'HIGH';
+    message: string;
+    affectedCount: number;
+  }> {
+    const alerts: Array<{
+      type: string;
+      severity: 'LOW' | 'MEDIUM' | 'HIGH';
+      message: string;
+      affectedCount: number;
+    }> = [];
 
     for (const condition of conditions.slice(0, 3)) {
       if (condition.change > condition.previousCount * 0.3) {
         alerts.push({
           type: condition.condition.toUpperCase().replace(/\s+/g, '_'),
-          severity: condition.change > condition.previousCount * 0.5 ? 'HIGH' : 'MEDIUM',
+          severity:
+            condition.change > condition.previousCount * 0.5
+              ? 'HIGH'
+              : 'MEDIUM',
           message: `${condition.condition} cases up ${Math.round((condition.change / condition.previousCount) * 100)}% - monitor and prepare resources`,
           affectedCount: condition.currentCount,
         });
@@ -912,7 +1063,10 @@ export class HealthTrendAnalyticsService {
   /**
    * Apply simple moving average for smoothing
    */
-  private applyMovingAverage(data: TimeSeriesDataPoint[], window: number): TimeSeriesDataPoint[] {
+  private applyMovingAverage(
+    data: TimeSeriesDataPoint[],
+    window: number,
+  ): TimeSeriesDataPoint[] {
     return data.map((point, index) => {
       const start = Math.max(0, index - Math.floor(window / 2));
       const end = Math.min(data.length, index + Math.ceil(window / 2));
@@ -926,7 +1080,10 @@ export class HealthTrendAnalyticsService {
   /**
    * Calculate exponential moving average
    */
-  private calculateExponentialMovingAverage(values: number[], alpha: number): number[] {
+  private calculateExponentialMovingAverage(
+    values: number[],
+    alpha: number,
+  ): number[] {
     if (values.length === 0) return [];
 
     const ema: number[] = [values[0]];
@@ -955,19 +1112,30 @@ export class HealthTrendAnalyticsService {
    * Get week number of year
    */
   private getWeekNumber(date: Date): number {
-    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const d = new Date(
+      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
+    );
     const dayNum = d.getUTCDay() || 7;
     d.setUTCDate(d.getUTCDate() + 4 - dayNum);
     const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-    return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+    return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
   }
 
   /**
    * Get color for condition visualization
    */
   private getConditionColor(condition: string): string {
-    const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
-    const hash = condition.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const colors = [
+      '#3B82F6',
+      '#10B981',
+      '#F59E0B',
+      '#EF4444',
+      '#8B5CF6',
+      '#06B6D4',
+    ];
+    const hash = condition
+      .split('')
+      .reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return colors[hash % colors.length];
   }
 
@@ -976,21 +1144,33 @@ export class HealthTrendAnalyticsService {
    */
   private getPeriodDays(period: TimePeriod): number {
     switch (period) {
-      case TimePeriod.LAST_7_DAYS: return 7;
-      case TimePeriod.LAST_30_DAYS: return 30;
-      case TimePeriod.LAST_90_DAYS: return 90;
-      case TimePeriod.LAST_6_MONTHS: return 180;
-      case TimePeriod.LAST_YEAR: return 365;
-      default: return 30;
+      case TimePeriod.LAST_7_DAYS:
+        return 7;
+      case TimePeriod.LAST_30_DAYS:
+        return 30;
+      case TimePeriod.LAST_90_DAYS:
+        return 90;
+      case TimePeriod.LAST_6_MONTHS:
+        return 180;
+      case TimePeriod.LAST_YEAR:
+        return 365;
+      default:
+        return 30;
     }
   }
 
   /**
    * Assess incident severity
    */
-  private assessIncidentSeverity(type: string): 'MINOR' | 'MODERATE' | 'SERIOUS' {
+  private assessIncidentSeverity(
+    type: string,
+  ): 'MINOR' | 'MODERATE' | 'SERIOUS' {
     const lower = type.toLowerCase();
-    if (lower.includes('severe') || lower.includes('serious') || lower.includes('emergency')) {
+    if (
+      lower.includes('severe') ||
+      lower.includes('serious') ||
+      lower.includes('emergency')
+    ) {
       return 'SERIOUS';
     }
     if (lower.includes('moderate') || lower.includes('injury')) {
@@ -1002,12 +1182,15 @@ export class HealthTrendAnalyticsService {
   /**
    * Get time of day distribution for incident type
    */
-  private getTimeDistribution(incidents: IncidentReport[], type: string): { hour: number; count: number }[] {
+  private getTimeDistribution(
+    incidents: IncidentReport[],
+    type: string,
+  ): { hour: number; count: number }[] {
     const hourMap = new Map<number, number>();
 
     incidents
-      .filter(i => i.type === type)
-      .forEach(i => {
+      .filter((i) => i.type === type)
+      .forEach((i) => {
         const hour = new Date(i.occurredAt).getHours();
         hourMap.set(hour, (hourMap.get(hour) || 0) + 1);
       });

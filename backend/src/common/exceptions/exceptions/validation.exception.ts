@@ -59,14 +59,20 @@ export class ValidationException extends HttpException {
   /**
    * Create exception for invalid format
    */
-  static invalidFormat(field: string, expectedFormat: string, value?: any): ValidationException {
+  static invalidFormat(
+    field: string,
+    expectedFormat: string,
+    value?: any,
+  ): ValidationException {
     return new ValidationException(
       'Invalid format',
-      [{
-        field,
-        message: `${field} has invalid format. Expected: ${expectedFormat}`,
-        value,
-      }],
+      [
+        {
+          field,
+          message: `${field} has invalid format. Expected: ${expectedFormat}`,
+          value,
+        },
+      ],
       ValidationErrorCodes.INVALID_FORMAT,
     );
   }
@@ -74,13 +80,19 @@ export class ValidationException extends HttpException {
   /**
    * Create exception for invalid type
    */
-  static invalidType(field: string, expectedType: string, actualType: string): ValidationException {
+  static invalidType(
+    field: string,
+    expectedType: string,
+    actualType: string,
+  ): ValidationException {
     return new ValidationException(
       'Invalid type',
-      [{
-        field,
-        message: `${field} must be ${expectedType}, got ${actualType}`,
-      }],
+      [
+        {
+          field,
+          message: `${field} must be ${expectedType}, got ${actualType}`,
+        },
+      ],
       ValidationErrorCodes.INVALID_TYPE,
     );
   }
@@ -88,14 +100,21 @@ export class ValidationException extends HttpException {
   /**
    * Create exception for out of range
    */
-  static outOfRange(field: string, min: number, max: number, value: number): ValidationException {
+  static outOfRange(
+    field: string,
+    min: number,
+    max: number,
+    value: number,
+  ): ValidationException {
     return new ValidationException(
       'Value out of range',
-      [{
-        field,
-        message: `${field} must be between ${min} and ${max}`,
-        value,
-      }],
+      [
+        {
+          field,
+          message: `${field} must be between ${min} and ${max}`,
+          value,
+        },
+      ],
       ValidationErrorCodes.OUT_OF_RANGE,
     );
   }
@@ -131,11 +150,13 @@ export class ValidationException extends HttpException {
   static duplicateEntry(field: string, value?: any): ValidationException {
     return new ValidationException(
       'Duplicate entry',
-      [{
-        field,
-        message: `${field} already exists`,
-        value,
-      }],
+      [
+        {
+          field,
+          message: `${field} already exists`,
+          value,
+        },
+      ],
       ValidationErrorCodes.DUPLICATE_ENTRY,
     );
   }
@@ -144,17 +165,21 @@ export class ValidationException extends HttpException {
    * Create exception from class-validator errors
    */
   static fromClassValidator(errors: any[]): ValidationException {
-    const validationErrors: ValidationErrorDetail[] = errors.flatMap(error => {
-      if (error.constraints) {
-        return Object.entries(error.constraints).map(([constraint, message]): ValidationErrorDetail => ({
-          field: error.property,
-          message: String(message),
-          value: error.value,
-          constraint,
-        }));
-      }
-      return [];
-    });
+    const validationErrors: ValidationErrorDetail[] = errors.flatMap(
+      (error) => {
+        if (error.constraints) {
+          return Object.entries(error.constraints).map(
+            ([constraint, message]): ValidationErrorDetail => ({
+              field: error.property,
+              message: String(message),
+              value: error.value,
+              constraint,
+            }),
+          );
+        }
+        return [];
+      },
+    );
 
     return new ValidationException('Validation failed', validationErrors);
   }

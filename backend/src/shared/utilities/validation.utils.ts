@@ -112,7 +112,8 @@ export const isNotEmpty = (value: any) => !_.isEmpty(value);
  * isUnique(['a', 'b', 'a']);    // false
  * ```
  */
-export const isUnique = <T>(array: T[]) => _.uniq(array).length === array.length;
+export const isUnique = <T>(array: T[]) =>
+  _.uniq(array).length === array.length;
 
 /**
  * @function isValidEmail
@@ -174,7 +175,8 @@ export const isValidPhoneNumber = (phone: string) => {
  * ```
  */
 export const isValidUuid = (uuid: string) => {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   return uuidRegex.test(uuid);
 };
 
@@ -228,7 +230,8 @@ export const isValidDate = (date: any) => {
  */
 export const isStrongPassword = (password: string) => {
   // At least 12 characters, uppercase, lowercase, number, special character
-  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
+  const passwordRegex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
   return password.length >= 12 && passwordRegex.test(password);
 };
 
@@ -240,5 +243,5 @@ export default {
   isValidPhoneNumber,
   isValidUuid,
   isValidDate,
-  isStrongPassword
+  isStrongPassword,
 };

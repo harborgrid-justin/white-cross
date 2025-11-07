@@ -9,7 +9,7 @@ import { DocumentAuditTrail } from './entities/document-audit-trail.entity';
 /**
  * Document Module
  * Provides comprehensive document management with HIPAA compliance
- * 
+ *
  * Features:
  * - Document CRUD operations with validation
  * - File upload and storage integration

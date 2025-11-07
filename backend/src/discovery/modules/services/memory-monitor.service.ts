@@ -17,7 +17,7 @@ export interface MonitoredProvider {
 
 /**
  * Memory Monitor Service
- * 
+ *
  * Uses Discovery Service to monitor memory usage of discovered providers
  * and trigger alerts when thresholds are exceeded
  */
@@ -37,11 +37,13 @@ export class MemoryMonitorService {
   /**
    * Start monitoring memory usage
    */
-  startMonitoring(options: MemoryMonitorOptions = {
-    checkInterval: 30,
-    warningThreshold: 400,
-    criticalThreshold: 500,
-  }): void {
+  startMonitoring(
+    options: MemoryMonitorOptions = {
+      checkInterval: 30,
+      warningThreshold: 400,
+      criticalThreshold: 500,
+    },
+  ): void {
     if (this.monitoringInterval) {
       this.logger.warn('Memory monitoring already started');
       return;
@@ -89,7 +91,7 @@ export class MemoryMonitorService {
   } {
     const current = process.memoryUsage();
     const currentMB = current.heapUsed / 1024 / 1024;
-    
+
     // Calculate trend
     let trend: 'increasing' | 'decreasing' | 'stable' = 'stable';
     if (this.memoryHistory.length >= 5) {
@@ -100,9 +102,11 @@ export class MemoryMonitorService {
     }
 
     // Calculate statistics
-    const averageUsage = this.memoryHistory.length > 0 
-      ? this.memoryHistory.reduce((a, b) => a + b, 0) / this.memoryHistory.length 
-      : currentMB;
+    const averageUsage =
+      this.memoryHistory.length > 0
+        ? this.memoryHistory.reduce((a, b) => a + b, 0) /
+          this.memoryHistory.length
+        : currentMB;
     const peakUsage = Math.max(...this.memoryHistory, currentMB);
 
     // Check for provider alerts
@@ -123,7 +127,7 @@ export class MemoryMonitorService {
   private async checkMemoryUsage(options: MemoryMonitorOptions): Promise<void> {
     const memUsage = process.memoryUsage();
     const heapUsedMB = memUsage.heapUsed / 1024 / 1024;
-    
+
     // Update history
     this.memoryHistory.push(heapUsedMB);
     if (this.memoryHistory.length > this.maxHistorySize) {
@@ -146,7 +150,9 @@ export class MemoryMonitorService {
     }
 
     // Log periodic status
-    this.logger.debug(`Memory usage: ${heapUsedMB.toFixed(2)}MB (heap), ${(memUsage.external / 1024 / 1024).toFixed(2)}MB (external)`);
+    this.logger.debug(
+      `Memory usage: ${heapUsedMB.toFixed(2)}MB (heap), ${(memUsage.external / 1024 / 1024).toFixed(2)}MB (external)`,
+    );
   }
 
   /**
@@ -154,7 +160,7 @@ export class MemoryMonitorService {
    */
   private async handleCriticalMemory(): Promise<void> {
     this.logger.error('Handling critical memory situation');
-    
+
     // Force garbage collection if available
     if (global.gc) {
       global.gc();
@@ -170,7 +176,7 @@ export class MemoryMonitorService {
    */
   private async handleWarningMemory(): Promise<void> {
     this.logger.warn('Handling warning memory situation');
-    
+
     // Suggest garbage collection
     if (global.gc) {
       global.gc();
@@ -189,15 +195,20 @@ export class MemoryMonitorService {
       if (!wrapper.metatype) continue;
 
       // Check for memory-sensitive metadata
-      const memoryMetadata = this.reflector.get('memory-sensitive', wrapper.metatype);
+      const memoryMetadata = this.reflector.get(
+        'memory-sensitive',
+        wrapper.metatype,
+      );
       if (memoryMetadata) {
         const providerName = wrapper.name || 'unknown';
         memoryIntensiveProviders.push(providerName);
-        
+
         // Check if provider has specific memory limits
         const monitoredProvider = this.monitoredProviders.get(providerName);
         if (monitoredProvider?.maxMemory) {
-          this.logger.warn(`Memory-intensive provider detected: ${providerName} (limit: ${monitoredProvider.maxMemory}MB)`);
+          this.logger.warn(
+            `Memory-intensive provider detected: ${providerName} (limit: ${monitoredProvider.maxMemory}MB)`,
+          );
         }
       }
 
@@ -205,12 +216,17 @@ export class MemoryMonitorService {
       const cacheMetadata = this.reflector.get('cacheable', wrapper.metatype);
       if (cacheMetadata?.enabled) {
         const providerName = wrapper.name || 'unknown';
-        this.logger.debug(`Cacheable provider: ${providerName} - consider cache eviction`);
+        this.logger.debug(
+          `Cacheable provider: ${providerName} - consider cache eviction`,
+        );
       }
     }
 
     if (memoryIntensiveProviders.length > 0) {
-      this.logger.error(`Found ${memoryIntensiveProviders.length} memory-intensive providers:`, memoryIntensiveProviders);
+      this.logger.error(
+        `Found ${memoryIntensiveProviders.length} memory-intensive providers:`,
+        memoryIntensiveProviders,
+      );
     }
   }
 
@@ -223,7 +239,9 @@ export class MemoryMonitorService {
 
     for (const [providerName, config] of this.monitoredProviders.entries()) {
       if (config.alertThreshold && currentMemoryMB > config.alertThreshold) {
-        alerts.push(`${providerName}: Memory usage exceeded ${config.alertThreshold}MB`);
+        alerts.push(
+          `${providerName}: Memory usage exceeded ${config.alertThreshold}MB`,
+        );
       }
     }
 
@@ -246,7 +264,7 @@ export class MemoryMonitorService {
     const slope = this.calculateSlope(recent);
     const isIncreasing = slope > 0.1; // More than 0.1 MB increase per check
     const currentMemory = this.memoryHistory[this.memoryHistory.length - 1];
-    const prediction = currentMemory + (slope * 10);
+    const prediction = currentMemory + slope * 10;
 
     return {
       isIncreasing,
@@ -262,17 +280,17 @@ export class MemoryMonitorService {
     const n = data.length;
     const xMean = (n - 1) / 2;
     const yMean = data.reduce((a, b) => a + b, 0) / n;
-    
+
     let numerator = 0;
     let denominator = 0;
-    
+
     for (let i = 0; i < n; i++) {
       const xDiff = i - xMean;
       const yDiff = data[i] - yMean;
       numerator += xDiff * yDiff;
       denominator += xDiff * xDiff;
     }
-    
+
     return denominator === 0 ? 0 : numerator / denominator;
   }
 
@@ -299,11 +317,15 @@ export class MemoryMonitorService {
     }
 
     if (currentMB > 400) {
-      recommendations.push('Memory usage is high - consider scaling or optimization');
+      recommendations.push(
+        'Memory usage is high - consider scaling or optimization',
+      );
     }
 
     if (stats.providerAlerts.length > 0) {
-      recommendations.push(`Address provider alerts: ${stats.providerAlerts.join(', ')}`);
+      recommendations.push(
+        `Address provider alerts: ${stats.providerAlerts.join(', ')}`,
+      );
     }
 
     return {

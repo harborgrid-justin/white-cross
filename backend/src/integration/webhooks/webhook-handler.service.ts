@@ -75,7 +75,9 @@ export class WebhookHandlerService {
     integrationId: string,
     payload: any,
   ): Promise<void> {
-    this.logger.log(`Handling health record updated event for ${integrationId}`);
+    this.logger.log(
+      `Handling health record updated event for ${integrationId}`,
+    );
     // Implementation would update health record
   }
 }

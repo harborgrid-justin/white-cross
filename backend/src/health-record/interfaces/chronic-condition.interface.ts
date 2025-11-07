@@ -14,7 +14,7 @@ export enum ConditionStatus {
   ACTIVE = 'ACTIVE',
   MANAGED = 'MANAGED',
   RESOLVED = 'RESOLVED',
-  MONITORING = 'MONITORING'
+  MONITORING = 'MONITORING',
 }
 
 /**
@@ -24,7 +24,7 @@ export enum ConditionSeverity {
   MILD = 'MILD',
   MODERATE = 'MODERATE',
   SEVERE = 'SEVERE',
-  CRITICAL = 'CRITICAL'
+  CRITICAL = 'CRITICAL',
 }
 
 export interface ChronicCondition {

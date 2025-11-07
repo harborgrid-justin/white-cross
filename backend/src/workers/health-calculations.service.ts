@@ -10,7 +10,12 @@
  * - Statistical aggregations
  */
 
-import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  OnModuleInit,
+  OnModuleDestroy,
+  Logger,
+} from '@nestjs/common';
 import { join } from 'path';
 import { WorkerPoolService } from './worker-pool.service';
 import {
@@ -21,7 +26,7 @@ import {
   Cleanup,
   MemorySensitive,
   ImmediateCleanup,
-  LeakProne
+  LeakProne,
 } from '../discovery/modules/decorators/memory-optimization.decorators';
 
 /**
@@ -80,27 +85,29 @@ export interface StatisticalAggregations {
   maxSize: 8, // Lower than worker pool since this is a wrapper service
   priority: 8,
   validationEnabled: true,
-  autoScale: true
+  autoScale: true,
 })
 @MemoryIntensive({
   enabled: true,
   threshold: 75, // 75MB threshold for health calculations
   priority: 'high',
   cleanupStrategy: 'aggressive',
-  monitoring: true
+  monitoring: true,
 })
 @MemoryMonitoring({
   enabled: true,
   interval: 20000, // 20 seconds for health calculations monitoring
   threshold: 50, // 50MB
-  alerts: true
+  alerts: true,
 })
 @LeakProne({
   monitoring: true,
-  alertThreshold: 100 // 100MB for health calculation memory leaks
+  alertThreshold: 100, // 100MB for health calculation memory leaks
 })
 @Injectable()
-export class HealthCalculationsService implements OnModuleInit, OnModuleDestroy {
+export class HealthCalculationsService
+  implements OnModuleInit, OnModuleDestroy
+{
   private readonly logger = new Logger(HealthCalculationsService.name);
   private workerPool: WorkerPoolService | null = null;
 
@@ -112,17 +119,22 @@ export class HealthCalculationsService implements OnModuleInit, OnModuleDestroy 
     // In development (ts-node), __dirname points to src/workers
     // In production, __dirname points to dist/workers
     let workerScript: string;
-    
+
     // Check if we're in development mode (TypeScript source)
     if (__dirname.includes('src')) {
       // Development mode - use the compiled version from dist
-      workerScript = join(__dirname.replace('src', 'dist'), 'healthCalculations.worker.js');
+      workerScript = join(
+        __dirname.replace('src', 'dist'),
+        'healthCalculations.worker.js',
+      );
     } else {
       // Production mode - already in dist
       workerScript = join(__dirname, 'healthCalculations.worker.js');
     }
 
-    this.logger.log(`Initializing health calculations worker pool with script: ${workerScript}`);
+    this.logger.log(
+      `Initializing health calculations worker pool with script: ${workerScript}`,
+    );
 
     this.workerPool = new WorkerPoolService(workerScript, {
       poolSize: undefined, // Use default (CPU cores - 1)
@@ -216,7 +228,9 @@ export class HealthCalculationsService implements OnModuleInit, OnModuleDestroy 
    * ```
    */
   @MemorySensitive(50) // 50MB threshold for trend analysis
-  async analyzeVitalTrends(vitals: VitalDataPoint[]): Promise<VitalTrendAnalysis> {
+  async analyzeVitalTrends(
+    vitals: VitalDataPoint[],
+  ): Promise<VitalTrendAnalysis> {
     const pool = this.getPool();
     return pool.executeTask<VitalTrendAnalysis>('vital_trends', vitals);
   }
@@ -236,7 +250,9 @@ export class HealthCalculationsService implements OnModuleInit, OnModuleDestroy 
    * ```
    */
   @MemorySensitive(60) // 60MB threshold for statistical calculations
-  async calculateAggregations(values: number[]): Promise<StatisticalAggregations> {
+  async calculateAggregations(
+    values: number[],
+  ): Promise<StatisticalAggregations> {
     const pool = this.getPool();
     return pool.executeTask<StatisticalAggregations>('aggregations', values);
   }

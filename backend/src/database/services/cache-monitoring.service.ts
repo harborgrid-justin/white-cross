@@ -38,9 +38,7 @@ export class CacheMonitoringService {
   // Track service-level statistics
   private serviceStats = new Map<string, ServiceCacheStats>();
 
-  constructor(
-    private readonly queryCacheService: QueryCacheService
-  ) {}
+  constructor(private readonly queryCacheService: QueryCacheService) {}
 
   /**
    * Get comprehensive cache health report
@@ -53,7 +51,10 @@ export class CacheMonitoringService {
     const overallHitRate = stats.hitRate;
 
     // Generate recommendations
-    const recommendations = this.generateRecommendations(stats, serviceBreakdown);
+    const recommendations = this.generateRecommendations(
+      stats,
+      serviceBreakdown,
+    );
 
     // Assign performance grade
     const performanceGrade = this.calculatePerformanceGrade(overallHitRate);
@@ -64,7 +65,7 @@ export class CacheMonitoringService {
       recommendedActions: recommendations,
       serviceBreakdown,
       timestamp: new Date().toISOString(),
-      performanceGrade
+      performanceGrade,
     };
   }
 
@@ -79,7 +80,7 @@ export class CacheMonitoringService {
       cacheEfficiency: this.calculateCacheEfficiency(stats),
       memoryUsage: this.estimateMemoryUsage(stats.localCacheSize),
       recommendations: this.generateRecommendations(stats, []),
-      formattedReport: this.queryCacheService.getFormattedStats()
+      formattedReport: this.queryCacheService.getFormattedStats(),
     };
   }
 
@@ -89,7 +90,7 @@ export class CacheMonitoringService {
   recordServiceQuery(
     serviceName: string,
     wasCached: boolean,
-    responseTime: number
+    responseTime: number,
   ): void {
     const existing = this.serviceStats.get(serviceName) || {
       serviceName,
@@ -97,7 +98,7 @@ export class CacheMonitoringService {
       cachedQueries: 0,
       hitRate: 0,
       averageResponseTime: 0,
-      lastUpdate: new Date().toISOString()
+      lastUpdate: new Date().toISOString(),
     };
 
     existing.totalQueries++;
@@ -107,7 +108,8 @@ export class CacheMonitoringService {
 
     existing.hitRate = existing.cachedQueries / existing.totalQueries;
     existing.averageResponseTime =
-      (existing.averageResponseTime * (existing.totalQueries - 1) + responseTime) /
+      (existing.averageResponseTime * (existing.totalQueries - 1) +
+        responseTime) /
       existing.totalQueries;
     existing.lastUpdate = new Date().toISOString();
 
@@ -123,7 +125,8 @@ export class CacheMonitoringService {
     // Weighted score based on multiple factors
     const hitRateScore = stats.hitRate * 60; // 60% weight on hit rate
     const utilizationScore = Math.min(stats.localCacheSize / 1000, 1) * 20; // 20% weight on cache utilization
-    const operationalScore = (stats.sets / (stats.sets + stats.deletes + 1)) * 20; // 20% weight on cache stability
+    const operationalScore =
+      (stats.sets / (stats.sets + stats.deletes + 1)) * 20; // 20% weight on cache stability
 
     return Math.round(hitRateScore + utilizationScore + operationalScore);
   }
@@ -136,43 +139,47 @@ export class CacheMonitoringService {
     const estimatedBytes = cacheSize * 1024;
 
     if (estimatedBytes < 1024) return `${estimatedBytes} B`;
-    if (estimatedBytes < 1024 * 1024) return `${(estimatedBytes / 1024).toFixed(2)} KB`;
+    if (estimatedBytes < 1024 * 1024)
+      return `${(estimatedBytes / 1024).toFixed(2)} KB`;
     return `${(estimatedBytes / (1024 * 1024)).toFixed(2)} MB`;
   }
 
   /**
    * Generate performance recommendations
    */
-  private generateRecommendations(stats: any, serviceBreakdown: ServiceCacheStats[]): string[] {
+  private generateRecommendations(
+    stats: any,
+    serviceBreakdown: ServiceCacheStats[],
+  ): string[] {
     const recommendations: string[] = [];
 
     // Hit rate recommendations
     if (stats.hitRate < 0.4) {
       recommendations.push(
-        'CRITICAL: Cache hit rate below 40%. Consider increasing TTL values or reviewing cache key strategies.'
+        'CRITICAL: Cache hit rate below 40%. Consider increasing TTL values or reviewing cache key strategies.',
       );
     } else if (stats.hitRate < 0.6) {
       recommendations.push(
-        'WARNING: Cache hit rate below 60%. Review frequently accessed queries and increase cache coverage.'
+        'WARNING: Cache hit rate below 60%. Review frequently accessed queries and increase cache coverage.',
       );
     } else if (stats.hitRate >= 0.8) {
       recommendations.push(
-        'EXCELLENT: Cache hit rate above 80%. Current caching strategy is highly effective.'
+        'EXCELLENT: Cache hit rate above 80%. Current caching strategy is highly effective.',
       );
     }
 
     // Cache size recommendations
     if (stats.localCacheSize > 900) {
       recommendations.push(
-        'WARNING: Cache approaching maximum size (90%). Consider implementing cache eviction policies or increasing cache limits.'
+        'WARNING: Cache approaching maximum size (90%). Consider implementing cache eviction policies or increasing cache limits.',
       );
     }
 
     // Service-specific recommendations
-    serviceBreakdown.forEach(service => {
+    serviceBreakdown.forEach((service) => {
       if (service.hitRate < 0.3 && service.totalQueries > 10) {
         recommendations.push(
-          `Consider increasing cache TTL for ${service.serviceName} (current hit rate: ${(service.hitRate * 100).toFixed(1)}%)`
+          `Consider increasing cache TTL for ${service.serviceName} (current hit rate: ${(service.hitRate * 100).toFixed(1)}%)`,
         );
       }
     });
@@ -180,12 +187,14 @@ export class CacheMonitoringService {
     // Redis recommendation
     if (!stats.redisAvailable && stats.localCacheSize > 500) {
       recommendations.push(
-        'OPTIMIZATION: Consider enabling Redis for distributed caching and improved scalability.'
+        'OPTIMIZATION: Consider enabling Redis for distributed caching and improved scalability.',
       );
     }
 
     if (recommendations.length === 0) {
-      recommendations.push('Cache performance is optimal. No immediate actions required.');
+      recommendations.push(
+        'Cache performance is optimal. No immediate actions required.',
+      );
     }
 
     return recommendations;
@@ -194,7 +203,9 @@ export class CacheMonitoringService {
   /**
    * Calculate performance grade
    */
-  private calculatePerformanceGrade(hitRate: number): 'A' | 'B' | 'C' | 'D' | 'F' {
+  private calculatePerformanceGrade(
+    hitRate: number,
+  ): 'A' | 'B' | 'C' | 'D' | 'F' {
     if (hitRate >= 0.8) return 'A';
     if (hitRate >= 0.6) return 'B';
     if (hitRate >= 0.4) return 'C';
@@ -232,7 +243,7 @@ export class CacheMonitoringService {
    */
   getUnderperformingServices(threshold: number = 0.4): ServiceCacheStats[] {
     return Array.from(this.serviceStats.values())
-      .filter(s => s.hitRate < threshold && s.totalQueries > 10)
+      .filter((s) => s.hitRate < threshold && s.totalQueries > 10)
       .sort((a, b) => a.hitRate - b.hitRate);
   }
 }

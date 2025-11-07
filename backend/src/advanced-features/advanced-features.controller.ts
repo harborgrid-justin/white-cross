@@ -44,7 +44,8 @@ export class AdvancedFeaturesController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Record health screening',
-    description: 'Records a health screening (vision, hearing, scoliosis, etc.) for a student with comprehensive results tracking.',
+    description:
+      'Records a health screening (vision, hearing, scoliosis, etc.) for a student with comprehensive results tracking.',
   })
   @ApiResponse({
     status: 201,
@@ -56,9 +57,9 @@ export class AdvancedFeaturesController {
         studentId: { type: 'string', format: 'uuid' },
         screeningType: { type: 'string', example: 'VISION' },
         results: { type: 'object' },
-        createdAt: { type: 'string', format: 'date-time' }
-      }
-    }
+        createdAt: { type: 'string', format: 'date-time' },
+      },
+    },
   })
   @ApiResponse({
     status: 400,
@@ -79,7 +80,8 @@ export class AdvancedFeaturesController {
   @Get('screenings/student/:studentId')
   @ApiOperation({
     summary: 'Get screening history',
-    description: 'Retrieves complete screening history for a specific student including all screening types and results.',
+    description:
+      'Retrieves complete screening history for a specific student including all screening types and results.',
   })
   @ApiParam({
     name: 'studentId',
@@ -112,10 +114,10 @@ export class AdvancedFeaturesController {
           screeningType: { type: 'string' },
           results: { type: 'object' },
           screenerName: { type: 'string' },
-          createdAt: { type: 'string', format: 'date-time' }
-        }
-      }
-    }
+          createdAt: { type: 'string', format: 'date-time' },
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 401,
@@ -137,7 +139,8 @@ export class AdvancedFeaturesController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Record growth measurement',
-    description: 'Records height, weight, and BMI measurements for student growth tracking.',
+    description:
+      'Records height, weight, and BMI measurements for student growth tracking.',
   })
   @ApiResponse({
     status: 201,
@@ -154,7 +157,8 @@ export class AdvancedFeaturesController {
   @Get('growth/trend/:studentId')
   @ApiOperation({
     summary: 'Analyze growth trend',
-    description: 'Analyzes growth trends for a student and generates recommendations.',
+    description:
+      'Analyzes growth trends for a student and generates recommendations.',
   })
   @ApiParam({
     name: 'studentId',
@@ -179,7 +183,8 @@ export class AdvancedFeaturesController {
   @Get('immunization/forecast/:studentId')
   @ApiOperation({
     summary: 'Get immunization forecast',
-    description: 'Generates immunization forecast showing upcoming, overdue, and completed immunizations.',
+    description:
+      'Generates immunization forecast showing upcoming, overdue, and completed immunizations.',
   })
   @ApiParam({
     name: 'studentId',
@@ -205,7 +210,8 @@ export class AdvancedFeaturesController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Send emergency notification',
-    description: 'Sends emergency notification via multiple channels (SMS, email, push, in-app).',
+    description:
+      'Sends emergency notification via multiple channels (SMS, email, push, in-app).',
   })
   @ApiResponse({
     status: 201,
@@ -226,7 +232,8 @@ export class AdvancedFeaturesController {
   @Get('emergency/history')
   @ApiOperation({
     summary: 'Get emergency notification history',
-    description: 'Retrieves emergency notification history, optionally filtered by student.',
+    description:
+      'Retrieves emergency notification history, optionally filtered by student.',
   })
   @ApiQuery({
     name: 'studentId',
@@ -257,7 +264,8 @@ export class AdvancedFeaturesController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Scan barcode',
-    description: 'Scans and identifies a barcode (student, medication, nurse, inventory, equipment).',
+    description:
+      'Scans and identifies a barcode (student, medication, nurse, inventory, equipment).',
   })
   @ApiResponse({
     status: 200,

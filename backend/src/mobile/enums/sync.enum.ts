@@ -6,7 +6,7 @@ export enum SyncActionType {
   CREATE = 'CREATE',
   UPDATE = 'UPDATE',
   DELETE = 'DELETE',
-  READ = 'READ'
+  READ = 'READ',
 }
 
 export enum SyncEntityType {
@@ -18,13 +18,13 @@ export enum SyncEntityType {
   APPOINTMENT = 'APPOINTMENT',
   SCREENING = 'SCREENING',
   ALLERGY = 'ALLERGY',
-  CHRONIC_CONDITION = 'CHRONIC_CONDITION'
+  CHRONIC_CONDITION = 'CHRONIC_CONDITION',
 }
 
 export enum SyncPriority {
   HIGH = 'HIGH',
   NORMAL = 'NORMAL',
-  LOW = 'LOW'
+  LOW = 'LOW',
 }
 
 export enum ConflictResolution {
@@ -32,11 +32,11 @@ export enum ConflictResolution {
   SERVER_WINS = 'SERVER_WINS',
   NEWEST_WINS = 'NEWEST_WINS',
   MERGE = 'MERGE',
-  MANUAL = 'MANUAL'
+  MANUAL = 'MANUAL',
 }
 
 export enum SyncStatus {
   PENDING = 'PENDING',
   RESOLVED = 'RESOLVED',
-  DEFERRED = 'DEFERRED'
+  DEFERRED = 'DEFERRED',
 }

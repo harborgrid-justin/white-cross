@@ -20,7 +20,12 @@
  *
  * @class WsThrottleGuard
  */
-import { Injectable, CanActivate, ExecutionContext, SetMetadata } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  SetMetadata,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { WsException } from '@nestjs/websockets';
 import { RateLimiterService } from '../services/rate-limiter.service';
@@ -54,7 +59,10 @@ export class WsThrottleGuard implements CanActivate {
    * @returns True if allowed, throws WsException if rate limited
    */
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const throttleConfig = this.reflector.get(THROTTLE_KEY, context.getHandler());
+    const throttleConfig = this.reflector.get(
+      THROTTLE_KEY,
+      context.getHandler(),
+    );
 
     // No throttle config = allow
     if (!throttleConfig) {
@@ -62,7 +70,7 @@ export class WsThrottleGuard implements CanActivate {
     }
 
     const client = context.switchToWs().getClient();
-    const user = (client as any).user;
+    const user = client.user;
 
     if (!user) {
       throw new WsException('Authentication required');

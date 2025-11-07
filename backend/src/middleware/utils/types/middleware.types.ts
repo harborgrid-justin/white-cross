@@ -82,7 +82,7 @@ export interface IMiddleware {
     request: IRequest,
     response: IResponse,
     next: INextFunction,
-    context: MiddlewareContext
+    context: MiddlewareContext,
   ): Promise<void> | void;
 }
 
@@ -107,7 +107,7 @@ export enum UserRole {
   STUDENT = 'student',
   SCHOOL_NURSE = 'school_nurse',
   ADMINISTRATOR = 'administrator',
-  SYSTEM_ADMIN = 'system_admin'
+  SYSTEM_ADMIN = 'system_admin',
 }
 
 /**
@@ -136,7 +136,7 @@ export enum Permission {
   SYSTEM_ADMINISTRATION = 'system_administration',
   AUDIT_LOGS = 'audit_logs',
   EMERGENCY_ACCESS = 'emergency_access',
-  BREAK_GLASS_ACCESS = 'break_glass_access'
+  BREAK_GLASS_ACCESS = 'break_glass_access',
 }
 
 /**
@@ -165,11 +165,14 @@ export interface HealthcareRequest extends Request {
  * Extended Express response with healthcare methods
  */
 export interface HealthcareResponse extends Response {
-  sendHipaaCompliant(data: any, options?: {
-    logAccess?: boolean;
-    patientId?: string;
-    dataType?: string;
-  }): Response;
+  sendHipaaCompliant(
+    data: any,
+    options?: {
+      logAccess?: boolean;
+      patientId?: string;
+      dataType?: string;
+    },
+  ): Response;
   sanitizeResponse(data: any): any;
 }
 

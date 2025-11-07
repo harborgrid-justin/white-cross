@@ -10,10 +10,10 @@ export const VALID_RELATIONSHIPS = [
   'AUNT_UNCLE',
   'FAMILY_FRIEND',
   'NEIGHBOR',
-  'OTHER'
+  'OTHER',
 ] as const;
 
 /**
  * Type definition for relationship types
  */
-export type RelationshipType = typeof VALID_RELATIONSHIPS[number];
+export type RelationshipType = (typeof VALID_RELATIONSHIPS)[number];

@@ -15,7 +15,11 @@ export class SendBulkMessageDto {
   @IsString({ each: true })
   recipients: string[];
 
-  @ApiProperty({ enum: ['sms', 'email', 'push'], isArray: true, description: 'Delivery channels' })
+  @ApiProperty({
+    enum: ['sms', 'email', 'push'],
+    isArray: true,
+    description: 'Delivery channels',
+  })
   @IsArray()
   @IsEnum(['sms', 'email', 'push'], { each: true })
   channels: ('sms' | 'email' | 'push')[];

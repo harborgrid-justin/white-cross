@@ -15,7 +15,7 @@ import {
   AllowNull,
   Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 
@@ -28,7 +28,7 @@ export enum TrainingCategory {
   EMERGENCY_PROCEDURES = 'EMERGENCY_PROCEDURES',
   SYSTEM_TRAINING = 'SYSTEM_TRAINING',
   SAFETY_PROTOCOLS = 'SAFETY_PROTOCOLS',
-  DATA_SECURITY = 'DATA_SECURITY'
+  DATA_SECURITY = 'DATA_SECURITY',
 }
 
 /**
@@ -72,10 +72,10 @@ export interface CreateTrainingModuleAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'training_modules',
@@ -87,15 +87,18 @@ export interface CreateTrainingModuleAttributes {
     { fields: ['order'] },
     {
       fields: ['createdAt'],
-      name: 'idx_training_module_created_at'
+      name: 'idx_training_module_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_training_module_updated_at'
-    }
-  ]
+      name: 'idx_training_module_updated_at',
+    },
+  ],
 })
-export class TrainingModule extends Model<TrainingModuleAttributes, CreateTrainingModuleAttributes> {
+export class TrainingModule extends Model<
+  TrainingModuleAttributes,
+  CreateTrainingModuleAttributes
+> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
@@ -105,7 +108,7 @@ export class TrainingModule extends Model<TrainingModuleAttributes, CreateTraini
   @Column({
     type: DataType.STRING(255),
     allowNull: false,
-    comment: 'Title of the training module'
+    comment: 'Title of the training module',
   })
   title: string;
 
@@ -113,7 +116,7 @@ export class TrainingModule extends Model<TrainingModuleAttributes, CreateTraini
   @Column({
     type: DataType.TEXT,
     allowNull: true,
-    comment: 'Description of the training module'
+    comment: 'Description of the training module',
   })
   description?: string;
 
@@ -121,7 +124,7 @@ export class TrainingModule extends Model<TrainingModuleAttributes, CreateTraini
   @Column({
     type: DataType.TEXT,
     allowNull: false,
-    comment: 'Content/body of the training module'
+    comment: 'Content/body of the training module',
   })
   content: string;
 
@@ -129,7 +132,7 @@ export class TrainingModule extends Model<TrainingModuleAttributes, CreateTraini
   @Column({
     type: DataType.INTEGER,
     allowNull: true,
-    comment: 'Estimated duration in minutes'
+    comment: 'Estimated duration in minutes',
   })
   duration?: number;
 
@@ -137,10 +140,10 @@ export class TrainingModule extends Model<TrainingModuleAttributes, CreateTraini
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(TrainingCategory)]
+      isIn: [Object.values(TrainingCategory)],
     },
     allowNull: false,
-    comment: 'Category of the training module'
+    comment: 'Category of the training module',
   })
   @Index
   category: TrainingCategory;
@@ -150,7 +153,7 @@ export class TrainingModule extends Model<TrainingModuleAttributes, CreateTraini
     type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: false,
-    comment: 'Whether completion of this module is required'
+    comment: 'Whether completion of this module is required',
   })
   @Index
   isRequired?: boolean;
@@ -160,7 +163,7 @@ export class TrainingModule extends Model<TrainingModuleAttributes, CreateTraini
     type: DataType.INTEGER,
     allowNull: false,
     defaultValue: 0,
-    comment: 'Display order of the training module'
+    comment: 'Display order of the training module',
   })
   @Index
   order?: number;
@@ -169,7 +172,7 @@ export class TrainingModule extends Model<TrainingModuleAttributes, CreateTraini
   @Column({
     type: DataType.ARRAY(DataType.STRING(255)),
     allowNull: true,
-    comment: 'Array of attachment file paths'
+    comment: 'Array of attachment file paths',
   })
   attachments?: string[];
 
@@ -178,7 +181,7 @@ export class TrainingModule extends Model<TrainingModuleAttributes, CreateTraini
     type: DataType.INTEGER,
     allowNull: false,
     defaultValue: 0,
-    comment: 'Number of times this module has been completed'
+    comment: 'Number of times this module has been completed',
   })
   completionCount?: number;
 
@@ -186,7 +189,7 @@ export class TrainingModule extends Model<TrainingModuleAttributes, CreateTraini
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    comment: 'Timestamp when the training module was created'
+    comment: 'Timestamp when the training module was created',
   })
   declare createdAt?: Date;
 
@@ -194,10 +197,9 @@ export class TrainingModule extends Model<TrainingModuleAttributes, CreateTraini
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    comment: 'Timestamp when the training module was last updated'
+    comment: 'Timestamp when the training module was last updated',
   })
   declare updatedAt?: Date;
-
 
   // Hooks for HIPAA compliance
   @BeforeCreate
@@ -205,7 +207,9 @@ export class TrainingModule extends Model<TrainingModuleAttributes, CreateTraini
   static async auditPHIAccess(instance: TrainingModule) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] TrainingModule ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] TrainingModule ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

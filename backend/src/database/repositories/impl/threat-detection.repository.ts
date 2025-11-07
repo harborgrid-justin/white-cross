@@ -27,23 +27,36 @@ export interface UpdateThreatDetectionDTO {
 }
 
 @Injectable()
-export class ThreatDetectionRepository extends BaseRepository<any, ThreatDetectionAttributes, CreateThreatDetectionDTO> {
+export class ThreatDetectionRepository extends BaseRepository<
+  any,
+  ThreatDetectionAttributes,
+  CreateThreatDetectionDTO
+> {
   constructor(
     @InjectModel(ThreatDetection) model: typeof ThreatDetection,
     @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('ICacheManager') cacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'ThreatDetection');
   }
 
-  protected async validateCreate(data: CreateThreatDetectionDTO): Promise<void> {}
-  protected async validateUpdate(id: string, data: UpdateThreatDetectionDTO): Promise<void> {}
+  protected async validateCreate(
+    data: CreateThreatDetectionDTO,
+  ): Promise<void> {}
+  protected async validateUpdate(
+    id: string,
+    data: UpdateThreatDetectionDTO,
+  ): Promise<void> {}
 
   protected async invalidateCaches(entity: any): Promise<void> {
     try {
       const entityData = entity.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, entityData.id));
-      await this.cacheManager.deletePattern(`white-cross:${this.entityName.toLowerCase()}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, entityData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:${this.entityName.toLowerCase()}:*`,
+      );
     } catch (error) {
       this.logger.warn(`Error invalidating ${this.entityName} caches:`, error);
     }
@@ -53,5 +66,3 @@ export class ThreatDetectionRepository extends BaseRepository<any, ThreatDetecti
     return sanitizeSensitiveData({ ...data });
   }
 }
-
-

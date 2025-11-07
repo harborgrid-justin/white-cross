@@ -1,11 +1,20 @@
-import { Injectable, Logger, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, fn, col, literal } from 'sequelize';
 import { DrugCatalog } from '../entities/drug-catalog.entity';
 import { DrugInteraction } from '../entities/drug-interaction.entity';
 import { StudentDrugAllergy } from '../entities/student-drug-allergy.entity';
 import { InteractionSeverity } from '../enums/interaction-severity.enum';
-import { InteractionResult, RiskLevel } from '../interfaces/interaction-result.interface';
+import {
+  InteractionResult,
+  RiskLevel,
+} from '../interfaces/interaction-result.interface';
 import { AddDrugDto } from '../dto/drug/add-drug.dto';
 import { UpdateDrugDto } from '../dto/drug/update-drug.dto';
 import { AddInteractionDto } from '../dto/drug/add-interaction.dto';
@@ -44,8 +53,8 @@ export class DrugInteractionService {
         isActive: true,
         [Op.or]: [
           { genericName: { [Op.iLike]: `%${query}%` } },
-          literal(`'${query}' = ANY(brand_names)`)
-        ]
+          literal(`'${query}' = ANY(brand_names)`),
+        ],
       },
       limit,
     });
@@ -77,7 +86,9 @@ export class DrugInteractionService {
   /**
    * Check drug interactions
    */
-  async checkInteractions(data: InteractionCheckDto): Promise<InteractionResult> {
+  async checkInteractions(
+    data: InteractionCheckDto,
+  ): Promise<InteractionResult> {
     this.logger.log(`Checking interactions for ${data.drugIds.length} drugs`);
 
     const result: InteractionResult = {
@@ -110,11 +121,11 @@ export class DrugInteractionService {
             [Op.or]: [
               { drug1Id: drug1.id, drug2Id: drug2.id },
               { drug1Id: drug2.id, drug2Id: drug1.id },
-            ]
+            ],
           },
           include: [
             { model: DrugCatalog, as: 'drug1' },
-            { model: DrugCatalog, as: 'drug2' }
+            { model: DrugCatalog, as: 'drug2' },
           ],
         });
 
@@ -172,7 +183,9 @@ export class DrugInteractionService {
     // Determine overall risk level
     result.riskLevel = this.calculateRiskLevel(result);
 
-    this.logger.log(`Interaction check complete: ${result.riskLevel} risk level`);
+    this.logger.log(
+      `Interaction check complete: ${result.riskLevel} risk level`,
+    );
     return result;
   }
 
@@ -244,7 +257,9 @@ export class DrugInteractionService {
    * Add a drug interaction
    */
   async addInteraction(data: AddInteractionDto): Promise<DrugInteraction> {
-    this.logger.log(`Adding interaction between drugs ${data.drug1Id} and ${data.drug2Id}`);
+    this.logger.log(
+      `Adding interaction between drugs ${data.drug1Id} and ${data.drug2Id}`,
+    );
 
     // Validate drugs exist
     const drug1 = await this.getDrugById(data.drug1Id);
@@ -260,7 +275,7 @@ export class DrugInteractionService {
         [Op.or]: [
           { drug1Id: data.drug1Id, drug2Id: data.drug2Id },
           { drug1Id: data.drug2Id, drug2Id: data.drug1Id },
-        ]
+        ],
       },
     });
 
@@ -274,7 +289,10 @@ export class DrugInteractionService {
   /**
    * Update drug interaction
    */
-  async updateInteraction(id: string, updates: UpdateInteractionDto): Promise<DrugInteraction> {
+  async updateInteraction(
+    id: string,
+    updates: UpdateInteractionDto,
+  ): Promise<DrugInteraction> {
     const interaction = await this.drugInteractionModel.findByPk(id);
 
     if (!interaction) {
@@ -319,7 +337,9 @@ export class DrugInteractionService {
     });
 
     if (existing) {
-      throw new ConflictException('Allergy already recorded for this student and drug');
+      throw new ConflictException(
+        'Allergy already recorded for this student and drug',
+      );
     }
 
     return this.studentDrugAllergyModel.create(data as any);
@@ -328,7 +348,10 @@ export class DrugInteractionService {
   /**
    * Update student drug allergy
    */
-  async updateAllergy(id: string, updates: ClinicalUpdateAllergyDto): Promise<StudentDrugAllergy> {
+  async updateAllergy(
+    id: string,
+    updates: ClinicalUpdateAllergyDto,
+  ): Promise<StudentDrugAllergy> {
     const allergy = await this.studentDrugAllergyModel.findByPk(id);
 
     if (!allergy) {
@@ -378,7 +401,7 @@ export class DrugInteractionService {
       },
       include: [
         { model: DrugCatalog, as: 'drug1' },
-        { model: DrugCatalog, as: 'drug2' }
+        { model: DrugCatalog, as: 'drug2' },
       ],
     });
 
@@ -457,7 +480,9 @@ export class DrugInteractionService {
           });
           if (existing) {
             result.failed++;
-            result.errors.push(`Drug with RxNorm code ${drug.rxnormCode} already exists`);
+            result.errors.push(
+              `Drug with RxNorm code ${drug.rxnormCode} already exists`,
+            );
             continue;
           }
         }
@@ -466,11 +491,15 @@ export class DrugInteractionService {
         result.imported++;
       } catch (error) {
         result.failed++;
-        result.errors.push(`Failed to import ${drug.genericName}: ${error.message}`);
+        result.errors.push(
+          `Failed to import ${drug.genericName}: ${error.message}`,
+        );
       }
     }
 
-    this.logger.log(`Bulk import complete: ${result.imported} imported, ${result.failed} failed`);
+    this.logger.log(
+      `Bulk import complete: ${result.imported} imported, ${result.failed} failed`,
+    );
     return result;
   }
 
@@ -483,20 +512,26 @@ export class DrugInteractionService {
     bySeverity: Record<string, number>;
     topInteractingDrugs: Array<{ drug: DrugCatalog; interactionCount: number }>;
   }> {
-    const totalDrugs = await this.drugCatalogModel.count({ where: { isActive: true } });
+    const totalDrugs = await this.drugCatalogModel.count({
+      where: { isActive: true },
+    });
     const interactions = await this.drugInteractionModel.findAll({
       include: [
         { model: DrugCatalog, as: 'drug1' },
-        { model: DrugCatalog, as: 'drug2' }
+        { model: DrugCatalog, as: 'drug2' },
       ],
     });
 
     const bySeverity: Record<string, number> = {};
-    const drugInteractionCounts: Map<string, { drug: DrugCatalog; count: number }> = new Map();
+    const drugInteractionCounts: Map<
+      string,
+      { drug: DrugCatalog; count: number }
+    > = new Map();
 
     for (const interaction of interactions) {
       // Count by severity
-      bySeverity[interaction.severity] = (bySeverity[interaction.severity] || 0) + 1;
+      bySeverity[interaction.severity] =
+        (bySeverity[interaction.severity] || 0) + 1;
 
       // Count interactions per drug
       for (const drug of [interaction.drug1, interaction.drug2]) {

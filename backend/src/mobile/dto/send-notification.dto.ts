@@ -1,4 +1,13 @@
-import { IsString, IsArray, IsEnum, IsOptional, IsObject, IsNumber, IsBoolean, ValidateNested } from 'class-validator';
+import {
+  IsString,
+  IsArray,
+  IsEnum,
+  IsOptional,
+  IsObject,
+  IsNumber,
+  IsBoolean,
+  ValidateNested,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { NotificationCategory, NotificationPriority } from '../enums';
@@ -40,7 +49,7 @@ export class SendNotificationDto {
 
   @ApiProperty({
     description: 'Notification category',
-    enum: NotificationCategory
+    enum: NotificationCategory,
   })
   @IsEnum(NotificationCategory)
   category: NotificationCategory;
@@ -49,7 +58,7 @@ export class SendNotificationDto {
     description: 'Notification priority',
     enum: NotificationPriority,
     required: false,
-    default: NotificationPriority.NORMAL
+    default: NotificationPriority.NORMAL,
   })
   @IsEnum(NotificationPriority)
   @IsOptional()
@@ -60,7 +69,11 @@ export class SendNotificationDto {
   @IsOptional()
   data?: Record<string, string>;
 
-  @ApiProperty({ description: 'Notification actions', required: false, type: [NotificationActionDto] })
+  @ApiProperty({
+    description: 'Notification actions',
+    required: false,
+    type: [NotificationActionDto],
+  })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => NotificationActionDto)

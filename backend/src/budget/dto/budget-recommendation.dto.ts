@@ -21,13 +21,13 @@ export class BudgetRecommendationDto {
 
   @ApiProperty({
     description: 'Currently allocated amount for this category in dollars',
-    example: 50000.00,
+    example: 50000.0,
   })
   currentAllocated: number;
 
   @ApiProperty({
     description: 'Amount spent so far in dollars',
-    example: 47500.00,
+    example: 47500.0,
   })
   currentSpent: number;
 
@@ -46,13 +46,14 @@ export class BudgetRecommendationDto {
 
   @ApiProperty({
     description: 'Suggested budget amount for next fiscal year in dollars',
-    example: 60000.00,
+    example: 60000.0,
   })
   suggestedAmount: number;
 
   @ApiProperty({
     description: 'Explanation for the recommendation',
-    example: 'Category consistently operates near capacity with 95% utilization. Suggest 20% increase to prevent budget overruns.',
+    example:
+      'Category consistently operates near capacity with 95% utilization. Suggest 20% increase to prevent budget overruns.',
   })
   reason: string;
 }

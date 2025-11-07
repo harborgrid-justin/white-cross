@@ -69,7 +69,9 @@ import { WsExceptionFilter } from './filters/ws-exception.filter';
   pingTimeout: 60000,
   pingInterval: 25000,
 })
-export class WebSocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class WebSocketGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer()
   server: Server;
 
@@ -99,7 +101,9 @@ export class WebSocketGateway implements OnGatewayConnection, OnGatewayDisconnec
       const token = this.extractToken(client);
 
       if (!token) {
-        this.logger.warn(`Connection rejected: No authentication token provided`);
+        this.logger.warn(
+          `Connection rejected: No authentication token provided`,
+        );
         client.disconnect();
         return;
       }
@@ -115,7 +119,9 @@ export class WebSocketGateway implements OnGatewayConnection, OnGatewayDisconnec
         return;
       }
 
-      this.logger.log(`WebSocket connected: ${client.id} (user: ${user.userId})`);
+      this.logger.log(
+        `WebSocket connected: ${client.id} (user: ${user.userId})`,
+      );
 
       // Join organization room for multi-tenant isolation
       const orgRoom = `org:${user.organizationId}`;
@@ -124,7 +130,9 @@ export class WebSocketGateway implements OnGatewayConnection, OnGatewayDisconnec
       await client.join(orgRoom);
       await client.join(userRoom);
 
-      this.logger.log(`Socket ${client.id} joined rooms: ${orgRoom}, ${userRoom}`);
+      this.logger.log(
+        `Socket ${client.id} joined rooms: ${orgRoom}, ${userRoom}`,
+      );
 
       // Send connection confirmation
       const confirmation = new ConnectionConfirmedDto({
@@ -243,10 +251,14 @@ export class WebSocketGateway implements OnGatewayConnection, OnGatewayDisconnec
       return;
     }
 
-    this.logger.log(`Notification ${notificationId} marked as read by user ${user.userId}`);
+    this.logger.log(
+      `Notification ${notificationId} marked as read by user ${user.userId}`,
+    );
 
     // Broadcast to other user sessions that notification was read
-    client.to(`user:${user.userId}`).emit('notification:read', { notificationId });
+    client
+      .to(`user:${user.userId}`)
+      .emit('notification:read', { notificationId });
   }
 
   /**
@@ -269,7 +281,10 @@ export class WebSocketGateway implements OnGatewayConnection, OnGatewayDisconnec
     }
 
     // Rate limiting check
-    const allowed = await this.rateLimiter.checkLimit(user.userId, 'message:send');
+    const allowed = await this.rateLimiter.checkLimit(
+      user.userId,
+      'message:send',
+    );
     if (!allowed) {
       client.emit('error', {
         type: 'RATE_LIMIT_EXCEEDED',
@@ -344,7 +359,10 @@ export class WebSocketGateway implements OnGatewayConnection, OnGatewayDisconnec
     }
 
     // Rate limiting check
-    const allowed = await this.rateLimiter.checkLimit(user.userId, 'message:edit');
+    const allowed = await this.rateLimiter.checkLimit(
+      user.userId,
+      'message:edit',
+    );
     if (!allowed) {
       client.emit('error', {
         type: 'RATE_LIMIT_EXCEEDED',
@@ -407,7 +425,10 @@ export class WebSocketGateway implements OnGatewayConnection, OnGatewayDisconnec
     }
 
     // Rate limiting check
-    const allowed = await this.rateLimiter.checkLimit(user.userId, 'message:delete');
+    const allowed = await this.rateLimiter.checkLimit(
+      user.userId,
+      'message:delete',
+    );
     if (!allowed) {
       client.emit('error', {
         type: 'RATE_LIMIT_EXCEEDED',
@@ -493,9 +514,14 @@ export class WebSocketGateway implements OnGatewayConnection, OnGatewayDisconnec
 
       // Notify the sender
       const senderRoom = `user:${deliveryDto.senderId}`;
-      this.server.to(senderRoom).emit('message:delivered', deliveryDto.toPayload());
+      this.server
+        .to(senderRoom)
+        .emit('message:delivered', deliveryDto.toPayload());
     } catch (error) {
-      this.logger.error(`Delivery confirmation error for user ${user.userId}:`, error);
+      this.logger.error(
+        `Delivery confirmation error for user ${user.userId}:`,
+        error,
+      );
     }
   }
 
@@ -566,7 +592,10 @@ export class WebSocketGateway implements OnGatewayConnection, OnGatewayDisconnec
     }
 
     // Rate limiting check
-    const allowed = await this.rateLimiter.checkLimit(user.userId, 'message:typing');
+    const allowed = await this.rateLimiter.checkLimit(
+      user.userId,
+      'message:typing',
+    );
     if (!allowed) {
       // Silently ignore rate-limited typing indicators
       return;
@@ -592,7 +621,10 @@ export class WebSocketGateway implements OnGatewayConnection, OnGatewayDisconnec
       const room = `conversation:${typingDto.conversationId}`;
       client.to(room).emit('message:typing', typingDto.toPayload());
     } catch (error) {
-      this.logger.error(`Typing indicator error for user ${user.userId}:`, error);
+      this.logger.error(
+        `Typing indicator error for user ${user.userId}:`,
+        error,
+      );
     }
   }
 
@@ -616,7 +648,10 @@ export class WebSocketGateway implements OnGatewayConnection, OnGatewayDisconnec
     }
 
     // Rate limiting check
-    const allowed = await this.rateLimiter.checkLimit(user.userId, 'conversation:join');
+    const allowed = await this.rateLimiter.checkLimit(
+      user.userId,
+      'conversation:join',
+    );
     if (!allowed) {
       client.emit('error', {
         type: 'RATE_LIMIT_EXCEEDED',
@@ -661,7 +696,10 @@ export class WebSocketGateway implements OnGatewayConnection, OnGatewayDisconnec
         timestamp: conversationDto.timestamp,
       });
     } catch (error) {
-      this.logger.error(`Conversation join error for user ${user.userId}:`, error);
+      this.logger.error(
+        `Conversation join error for user ${user.userId}:`,
+        error,
+      );
       client.emit('error', {
         type: 'CONVERSATION_JOIN_FAILED',
         message: error.message || 'Failed to join conversation',
@@ -722,7 +760,10 @@ export class WebSocketGateway implements OnGatewayConnection, OnGatewayDisconnec
         timestamp: conversationDto.timestamp,
       });
     } catch (error) {
-      this.logger.error(`Conversation leave error for user ${user.userId}:`, error);
+      this.logger.error(
+        `Conversation leave error for user ${user.userId}:`,
+        error,
+      );
       client.emit('error', {
         type: 'CONVERSATION_LEAVE_FAILED',
         message: error.message || 'Failed to leave conversation',
@@ -760,7 +801,10 @@ export class WebSocketGateway implements OnGatewayConnection, OnGatewayDisconnec
 
       this.logger.debug(`User ${user.userId} presence updated to ${status}`);
     } catch (error) {
-      this.logger.error(`Presence update error for user ${user.userId}:`, error);
+      this.logger.error(
+        `Presence update error for user ${user.userId}:`,
+        error,
+      );
     }
   }
 
@@ -788,7 +832,10 @@ export class WebSocketGateway implements OnGatewayConnection, OnGatewayDisconnec
    * @param userId - The user ID
    * @param status - The presence status
    */
-  private updatePresence(userId: string, status: 'online' | 'offline' | 'away'): void {
+  private updatePresence(
+    userId: string,
+    status: 'online' | 'offline' | 'away',
+  ): void {
     this.presenceMap.set(userId, {
       status,
       lastSeen: new Date().toISOString(),

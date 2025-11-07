@@ -9,7 +9,7 @@ import {
   BeforeCreate,
   CreatedAt,
   Scopes,
-  BeforeUpdate
+  BeforeUpdate,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
@@ -18,7 +18,7 @@ export enum TrendDirection {
   INCREASING = 'INCREASING',
   DECREASING = 'DECREASING',
   STABLE = 'STABLE',
-  FLUCTUATING = 'FLUCTUATING'
+  FLUCTUATING = 'FLUCTUATING',
 }
 
 export interface HealthMetricSnapshotAttributes {
@@ -36,32 +36,35 @@ export interface HealthMetricSnapshotAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'health_metric_snapshots',
   timestamps: false, // Only createdAt, no updatedAt
   indexes: [
     {
-      fields: ['schoolId', 'snapshotDate']
+      fields: ['schoolId', 'snapshotDate'],
     },
     {
-      fields: ['metricName', 'snapshotDate']
+      fields: ['metricName', 'snapshotDate'],
     },
     {
       fields: ['createdAt'],
-      name: 'idx_health_metric_snapshot_created_at'
+      name: 'idx_health_metric_snapshot_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_health_metric_snapshot_updated_at'
-    }
-  ]
+      name: 'idx_health_metric_snapshot_updated_at',
+    },
+  ],
 })
-export class HealthMetricSnapshot extends Model<HealthMetricSnapshotAttributes> implements HealthMetricSnapshotAttributes {
+export class HealthMetricSnapshot
+  extends Model<HealthMetricSnapshotAttributes>
+  implements HealthMetricSnapshotAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -69,39 +72,39 @@ export class HealthMetricSnapshot extends Model<HealthMetricSnapshotAttributes> 
 
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   schoolId: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   metricName: string;
 
   @Column({
     type: DataType.DECIMAL(10, 2),
-    allowNull: false
+    allowNull: false,
   })
   value: number;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   unit: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   category: string;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(TrendDirection)]
-    }
+      isIn: [Object.values(TrendDirection)],
+    },
   })
   trend?: TrendDirection;
 
@@ -110,17 +113,16 @@ export class HealthMetricSnapshot extends Model<HealthMetricSnapshotAttributes> 
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   snapshotDate: Date;
 
   @CreatedAt
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   declare createdAt: Date;
-
 
   // Hooks for HIPAA compliance
   @BeforeCreate
@@ -128,7 +130,9 @@ export class HealthMetricSnapshot extends Model<HealthMetricSnapshotAttributes> 
   static async auditPHIAccess(instance: HealthMetricSnapshot) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] HealthMetricSnapshot ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] HealthMetricSnapshot ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

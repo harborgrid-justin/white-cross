@@ -10,11 +10,10 @@ import {
   HasMany,
   BeforeCreate,
   Scopes,
-  BeforeUpdate
+  BeforeUpdate,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
-
 
 export enum PurchaseOrderStatus {
   PENDING = 'PENDING',
@@ -22,7 +21,7 @@ export enum PurchaseOrderStatus {
   ORDERED = 'ORDERED',
   PARTIALLY_RECEIVED = 'PARTIALLY_RECEIVED',
   RECEIVED = 'RECEIVED',
-  CANCELLED = 'CANCELLED'
+  CANCELLED = 'CANCELLED',
 }
 
 export interface PurchaseOrderAttributes {
@@ -43,10 +42,10 @@ export interface PurchaseOrderAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'purchase_orders',
@@ -55,28 +54,31 @@ export interface PurchaseOrderAttributes {
   indexes: [
     {
       fields: ['orderNumber'],
-      unique: true
+      unique: true,
     },
     {
-      fields: ['vendorId']
+      fields: ['vendorId'],
     },
     {
-      fields: ['status']
+      fields: ['status'],
     },
     {
-      fields: ['orderDate']
+      fields: ['orderDate'],
     },
     {
       fields: ['createdAt'],
-      name: 'idx_purchase_order_created_at'
+      name: 'idx_purchase_order_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_purchase_order_updated_at'
-    }
-  ]
+      name: 'idx_purchase_order_updated_at',
+    },
+  ],
 })
-export class PurchaseOrder extends Model<PurchaseOrderAttributes> implements PurchaseOrderAttributes {
+export class PurchaseOrder
+  extends Model<PurchaseOrderAttributes>
+  implements PurchaseOrderAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -85,20 +87,20 @@ export class PurchaseOrder extends Model<PurchaseOrderAttributes> implements Pur
   @Column({
     type: DataType.STRING(255),
     allowNull: false,
-    unique: true
+    unique: true,
   })
   orderNumber: string;
 
   @ForeignKey(() => require('./vendor.model').Vendor)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   vendorId: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   orderDate: Date;
 
@@ -110,25 +112,25 @@ export class PurchaseOrder extends Model<PurchaseOrderAttributes> implements Pur
 
   @Column({
     type: DataType.DECIMAL(12, 2),
-    allowNull: false
+    allowNull: false,
   })
   subtotal: number;
 
   @Column({
     type: DataType.DECIMAL(12, 2),
-    allowNull: false
+    allowNull: false,
   })
   tax: number;
 
   @Column({
     type: DataType.DECIMAL(12, 2),
-    allowNull: false
+    allowNull: false,
   })
   shipping: number;
 
   @Column({
     type: DataType.DECIMAL(12, 2),
-    allowNull: false
+    allowNull: false,
   })
   total: number;
 
@@ -136,9 +138,9 @@ export class PurchaseOrder extends Model<PurchaseOrderAttributes> implements Pur
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(PurchaseOrderStatus)]
+      isIn: [Object.values(PurchaseOrderStatus)],
     },
-    allowNull: false
+    allowNull: false,
   })
   status: PurchaseOrderStatus;
 
@@ -158,14 +160,15 @@ export class PurchaseOrder extends Model<PurchaseOrderAttributes> implements Pur
   @HasMany(() => require('./purchase-order-item.model').PurchaseOrderItem)
   declare items?: any[];
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: PurchaseOrder) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] PurchaseOrder ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] PurchaseOrder ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

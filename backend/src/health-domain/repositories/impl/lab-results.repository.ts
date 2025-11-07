@@ -7,13 +7,16 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Transaction } from 'sequelize';
-import { BaseRepository, RepositoryError } from '../../../database/repositories/base/base.repository';
+import {
+  BaseRepository,
+  RepositoryError,
+} from '../../../database/repositories/base/base.repository';
 import {
   ILabResultsRepository,
   LabResultsAttributes,
   CreateLabResultsDTO,
   UpdateLabResultsDTO,
-  LabResultTrend
+  LabResultTrend,
 } from '../interfaces/lab-results.repository.interface';
 import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
@@ -29,7 +32,7 @@ export class LabResultsRepository
   constructor(
     @InjectModel(LabResults) model: typeof LabResults,
     auditLogger: IAuditLogger,
-    cacheManager: ICacheManager
+    cacheManager: ICacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'LabResults');
   }
@@ -39,16 +42,17 @@ export class LabResultsRepository
    */
   async findByStudent(
     studentId: string,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): Promise<LabResultsAttributes[]> {
     try {
       const cacheKey = this.cacheKeyBuilder.summary(
         this.entityName,
         studentId,
-        'by-student'
+        'by-student',
       );
 
-      const cached = await this.cacheManager.get<LabResultsAttributes[]>(cacheKey);
+      const cached =
+        await this.cacheManager.get<LabResultsAttributes[]>(cacheKey);
       if (cached) {
         this.logger.debug(`Cache hit for lab results by student: ${studentId}`);
         return cached;
@@ -56,7 +60,10 @@ export class LabResultsRepository
 
       const results = await this.model.findAll({
         where: { studentId },
-        order: [['resultDate', 'DESC'], ['orderedDate', 'DESC']]
+        order: [
+          ['resultDate', 'DESC'],
+          ['orderedDate', 'DESC'],
+        ],
       });
 
       const entities = results.map((r: any) => this.mapToEntity(r));
@@ -69,7 +76,7 @@ export class LabResultsRepository
         'Failed to find lab results by student',
         'FIND_BY_STUDENT_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
@@ -79,13 +86,13 @@ export class LabResultsRepository
    */
   async findByTestType(
     testType: string,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): Promise<LabResultsAttributes[]> {
     try {
       const results = await this.model.findAll({
         where: { testType },
         order: [['resultDate', 'DESC']],
-        limit: options?.limit || 100
+        limit: options?.limit || 100,
       });
 
       return results.map((r: any) => this.mapToEntity(r));
@@ -95,7 +102,7 @@ export class LabResultsRepository
         'Failed to find lab results by test type',
         'FIND_BY_TEST_TYPE_ERROR',
         500,
-        { testType, error: (error as Error).message }
+        { testType, error: (error as Error).message },
       );
     }
   }
@@ -106,17 +113,17 @@ export class LabResultsRepository
   async findByDateRange(
     studentId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<LabResultsAttributes[]> {
     try {
       const results = await this.model.findAll({
         where: {
           studentId,
           resultDate: {
-            [Op.between]: [startDate, endDate]
-          }
+            [Op.between]: [startDate, endDate],
+          },
         },
-        order: [['resultDate', 'DESC']]
+        order: [['resultDate', 'DESC']],
       });
 
       return results.map((r: any) => this.mapToEntity(r));
@@ -126,7 +133,7 @@ export class LabResultsRepository
         'Failed to find lab results by date range',
         'FIND_BY_DATE_RANGE_ERROR',
         500,
-        { studentId, startDate, endDate, error: (error as Error).message }
+        { studentId, startDate, endDate, error: (error as Error).message },
       );
     }
   }
@@ -136,12 +143,12 @@ export class LabResultsRepository
    */
   async findAbnormalResults(
     studentId?: string,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): Promise<LabResultsAttributes[]> {
     try {
       const whereClause: any = {
         isAbnormal: true,
-        status: 'completed'
+        status: 'completed',
       };
 
       if (studentId) {
@@ -151,7 +158,7 @@ export class LabResultsRepository
       const results = await this.model.findAll({
         where: whereClause,
         order: [['resultDate', 'DESC']],
-        limit: options?.limit || 100
+        limit: options?.limit || 100,
       });
 
       return results.map((r: any) => this.mapToEntity(r));
@@ -161,7 +168,7 @@ export class LabResultsRepository
         'Failed to find abnormal lab results',
         'FIND_ABNORMAL_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
@@ -170,18 +177,18 @@ export class LabResultsRepository
    * Find lab results awaiting review
    */
   async findPendingResults(
-    options?: QueryOptions
+    options?: QueryOptions,
   ): Promise<LabResultsAttributes[]> {
     try {
       const results = await this.model.findAll({
         where: {
           status: {
-            [Op.in]: ['pending', 'completed']
+            [Op.in]: ['pending', 'completed'],
           },
-          reviewedBy: null
+          reviewedBy: null,
         },
         order: [['orderedDate', 'ASC']],
-        limit: options?.limit || 50
+        limit: options?.limit || 50,
       });
 
       return results.map((r: any) => this.mapToEntity(r));
@@ -191,7 +198,7 @@ export class LabResultsRepository
         'Failed to find pending lab results',
         'FIND_PENDING_ERROR',
         500,
-        { error: (error as Error).message }
+        { error: (error as Error).message },
       );
     }
   }
@@ -202,7 +209,7 @@ export class LabResultsRepository
   async getResultTrends(
     studentId: string,
     testType: string,
-    months: number = 12
+    months: number = 12,
   ): Promise<LabResultTrend> {
     try {
       const startDate = new Date();
@@ -211,7 +218,7 @@ export class LabResultsRepository
       const cacheKey = this.cacheKeyBuilder.summary(
         this.entityName,
         `${studentId}:${testType}:${months}`,
-        'trends'
+        'trends',
       );
 
       const cached = await this.cacheManager.get<LabResultTrend>(cacheKey);
@@ -224,14 +231,14 @@ export class LabResultsRepository
           studentId,
           testType,
           resultDate: {
-            [Op.gte]: startDate
+            [Op.gte]: startDate,
           },
           status: 'completed',
           resultValue: {
-            [Op.ne]: null
-          }
+            [Op.ne]: null,
+          },
         },
-        order: [['resultDate', 'ASC']]
+        order: [['resultDate', 'ASC']],
       });
 
       if (results.length === 0) {
@@ -239,15 +246,16 @@ export class LabResultsRepository
           'No results found for trend analysis',
           'NO_RESULTS_ERROR',
           404,
-          { studentId, testType, months }
+          { studentId, testType, months },
         );
       }
 
       const entities = results.map((r: any) => this.mapToEntity(r));
 
       // Calculate trend
-      const values = entities.map(e => e.resultValue as number);
-      const averageValue = values.reduce((sum, val) => sum + val, 0) / values.length;
+      const values = entities.map((e) => e.resultValue as number);
+      const averageValue =
+        values.reduce((sum, val) => sum + val, 0) / values.length;
 
       let trend: 'increasing' | 'decreasing' | 'stable' = 'stable';
 
@@ -255,8 +263,10 @@ export class LabResultsRepository
         const firstHalf = values.slice(0, Math.floor(values.length / 2));
         const secondHalf = values.slice(Math.floor(values.length / 2));
 
-        const firstAvg = firstHalf.reduce((sum, val) => sum + val, 0) / firstHalf.length;
-        const secondAvg = secondHalf.reduce((sum, val) => sum + val, 0) / secondHalf.length;
+        const firstAvg =
+          firstHalf.reduce((sum, val) => sum + val, 0) / firstHalf.length;
+        const secondAvg =
+          secondHalf.reduce((sum, val) => sum + val, 0) / secondHalf.length;
 
         const percentChange = ((secondAvg - firstAvg) / firstAvg) * 100;
 
@@ -270,14 +280,14 @@ export class LabResultsRepository
       const trendData: LabResultTrend = {
         testName: entities[0].testName,
         testType,
-        results: entities.map(e => ({
+        results: entities.map((e) => ({
           date: e.resultDate as Date,
           value: e.resultValue as number,
           unit: e.resultUnit || '',
-          isAbnormal: e.isAbnormal
+          isAbnormal: e.isAbnormal,
         })),
         trend,
-        averageValue: Math.round(averageValue * 100) / 100
+        averageValue: Math.round(averageValue * 100) / 100,
       };
 
       await this.cacheManager.set(cacheKey, trendData, 3600);
@@ -294,7 +304,7 @@ export class LabResultsRepository
         'Failed to get result trends',
         'TRENDS_ERROR',
         500,
-        { studentId, testType, months, error: (error as Error).message }
+        { studentId, testType, months, error: (error as Error).message },
       );
     }
   }
@@ -304,16 +314,16 @@ export class LabResultsRepository
    */
   async compareResults(
     studentId: string,
-    testType: string
+    testType: string,
   ): Promise<LabResultsAttributes[]> {
     try {
       const results = await this.model.findAll({
         where: {
           studentId,
           testType,
-          status: 'completed'
+          status: 'completed',
         },
-        order: [['resultDate', 'ASC']]
+        order: [['resultDate', 'ASC']],
       });
 
       return results.map((r: any) => this.mapToEntity(r));
@@ -323,7 +333,7 @@ export class LabResultsRepository
         'Failed to compare lab results',
         'COMPARE_ERROR',
         500,
-        { studentId, testType, error: (error as Error).message }
+        { studentId, testType, error: (error as Error).message },
       );
     }
   }
@@ -337,7 +347,7 @@ export class LabResultsRepository
         'Student ID is required',
         'VALIDATION_ERROR',
         400,
-        { field: 'studentId' }
+        { field: 'studentId' },
       );
     }
 
@@ -346,7 +356,7 @@ export class LabResultsRepository
         'Test type and test name are required',
         'VALIDATION_ERROR',
         400,
-        { fields: ['testType', 'testName'] }
+        { fields: ['testType', 'testName'] },
       );
     }
 
@@ -355,19 +365,17 @@ export class LabResultsRepository
         'Ordered date is required',
         'VALIDATION_ERROR',
         400,
-        { field: 'orderedDate' }
+        { field: 'orderedDate' },
       );
     }
 
     // Validate status
     const validStatuses = ['pending', 'completed', 'reviewed', 'cancelled'];
     if (data.status && !validStatuses.includes(data.status.toLowerCase())) {
-      throw new RepositoryError(
-        'Invalid status',
-        'VALIDATION_ERROR',
-        400,
-        { status: data.status, validStatuses }
-      );
+      throw new RepositoryError('Invalid status', 'VALIDATION_ERROR', 400, {
+        status: data.status,
+        validStatuses,
+      });
     }
 
     // Validate date sequence
@@ -376,7 +384,7 @@ export class LabResultsRepository
         'Collection date cannot be before ordered date',
         'VALIDATION_ERROR',
         400,
-        { orderedDate: data.orderedDate, collectionDate: data.collectionDate }
+        { orderedDate: data.orderedDate, collectionDate: data.collectionDate },
       );
     }
 
@@ -386,7 +394,7 @@ export class LabResultsRepository
           'Result date cannot be before collection date',
           'VALIDATION_ERROR',
           400,
-          { collectionDate: data.collectionDate, resultDate: data.resultDate }
+          { collectionDate: data.collectionDate, resultDate: data.resultDate },
         );
       }
 
@@ -395,7 +403,7 @@ export class LabResultsRepository
           'Result date cannot be before ordered date',
           'VALIDATION_ERROR',
           400,
-          { orderedDate: data.orderedDate, resultDate: data.resultDate }
+          { orderedDate: data.orderedDate, resultDate: data.resultDate },
         );
       }
     }
@@ -406,18 +414,16 @@ export class LabResultsRepository
    */
   protected async validateUpdate(
     id: string,
-    data: UpdateLabResultsDTO
+    data: UpdateLabResultsDTO,
   ): Promise<void> {
     // Validate status if provided
     if (data.status) {
       const validStatuses = ['pending', 'completed', 'reviewed', 'cancelled'];
       if (!validStatuses.includes(data.status.toLowerCase())) {
-        throw new RepositoryError(
-          'Invalid status',
-          'VALIDATION_ERROR',
-          400,
-          { status: data.status, validStatuses }
-        );
+        throw new RepositoryError('Invalid status', 'VALIDATION_ERROR', 400, {
+          status: data.status,
+          validStatuses,
+        });
       }
     }
 
@@ -427,7 +433,7 @@ export class LabResultsRepository
         'Reviewer is required when marking as reviewed',
         'VALIDATION_ERROR',
         400,
-        { status: data.status }
+        { status: data.status },
       );
     }
   }
@@ -441,7 +447,7 @@ export class LabResultsRepository
 
       // Invalidate entity cache
       await this.cacheManager.delete(
-        this.cacheKeyBuilder.entity(this.entityName, labData.id)
+        this.cacheKeyBuilder.entity(this.entityName, labData.id),
       );
 
       // Invalidate student-specific caches
@@ -450,39 +456,39 @@ export class LabResultsRepository
           this.cacheKeyBuilder.summary(
             this.entityName,
             labData.studentId,
-            'by-student'
-          )
+            'by-student',
+          ),
         );
 
         // Invalidate all student lab result patterns
         await this.cacheManager.deletePattern(
-          `white-cross:labresults:student:${labData.studentId}:*`
+          `white-cross:labresults:student:${labData.studentId}:*`,
         );
 
         // Invalidate trend caches
         await this.cacheManager.deletePattern(
-          `white-cross:labresults:${labData.studentId}:*:trends`
+          `white-cross:labresults:${labData.studentId}:*:trends`,
         );
       }
 
       // Invalidate test type caches
       if (labData.testType) {
         await this.cacheManager.deletePattern(
-          `white-cross:labresults:type:${labData.testType}:*`
+          `white-cross:labresults:type:${labData.testType}:*`,
         );
       }
 
       // Invalidate abnormal results cache if applicable
       if (labData.isAbnormal) {
         await this.cacheManager.deletePattern(
-          `white-cross:labresults:abnormal:*`
+          `white-cross:labresults:abnormal:*`,
         );
       }
 
       // Invalidate pending results cache
       if (labData.status === 'pending' || labData.status === 'completed') {
         await this.cacheManager.deletePattern(
-          `white-cross:labresults:pending:*`
+          `white-cross:labresults:pending:*`,
         );
       }
     } catch (error) {

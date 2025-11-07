@@ -20,7 +20,7 @@ export interface CacheEntry {
 
 /**
  * Memory-Optimized Cache Service
- * 
+ *
  * Uses Discovery Service patterns to:
  * - Automatically manage cache for discovered providers
  * - Implement intelligent memory management
@@ -43,7 +43,10 @@ export class MemoryOptimizedCacheService {
   /**
    * Register a cacheable provider discovered by Discovery Service
    */
-  async registerCacheableProvider(providerName: string, config: CacheProviderConfig): Promise<void> {
+  async registerCacheableProvider(
+    providerName: string,
+    config: CacheProviderConfig,
+  ): Promise<void> {
     this.providerConfigs.set(providerName, config);
     this.logger.log(`Registered cacheable provider: ${providerName}`, {
       ttl: config.ttl,
@@ -55,7 +58,12 @@ export class MemoryOptimizedCacheService {
   /**
    * Set cache entry with automatic compression and memory tracking
    */
-  async set(key: string, data: any, providerName?: string, customTtl?: number): Promise<void> {
+  async set(
+    key: string,
+    data: any,
+    providerName?: string,
+    customTtl?: number,
+  ): Promise<void> {
     const provider = providerName || 'default';
     const config = this.providerConfigs.get(provider) || {
       ttl: 300,
@@ -66,16 +74,18 @@ export class MemoryOptimizedCacheService {
 
     // Calculate data size
     const dataSize = this.calculateSize(data);
-    
+
     // Check if compression is needed and beneficial
     let finalData = data;
     let compressed = false;
-    
+
     if (config.compressionEnabled && dataSize > this.compressionThreshold) {
       try {
         finalData = await this.compressData(data);
         compressed = true;
-        this.logger.debug(`Compressed cache entry ${key}: ${dataSize} -> ${this.calculateSize(finalData)} bytes`);
+        this.logger.debug(
+          `Compressed cache entry ${key}: ${dataSize} -> ${this.calculateSize(finalData)} bytes`,
+        );
       } catch (error) {
         this.logger.warn(`Failed to compress cache entry ${key}:`, error);
       }
@@ -92,7 +102,10 @@ export class MemoryOptimizedCacheService {
     };
 
     // Check memory limits before adding
-    if (this.memoryUsage + entry.size > this.options.maxMemoryThreshold * 1024 * 1024) {
+    if (
+      this.memoryUsage + entry.size >
+      this.options.maxMemoryThreshold * 1024 * 1024
+    ) {
       await this.evictLeastValuable(entry.size);
     }
 
@@ -180,8 +193,9 @@ export class MemoryOptimizedCacheService {
     let totalUncompressedSize = 0;
 
     for (const [key, entry] of this.cache.entries()) {
-      providerBreakdown[entry.provider] = (providerBreakdown[entry.provider] || 0) + 1;
-      
+      providerBreakdown[entry.provider] =
+        (providerBreakdown[entry.provider] || 0) + 1;
+
       if (entry.compressed) {
         compressedEntries++;
         totalCompressedSize += entry.size;
@@ -195,7 +209,10 @@ export class MemoryOptimizedCacheService {
       memoryUsage: this.memoryUsage,
       hitRate: 0, // This would need to be tracked separately
       providerBreakdown,
-      compressionRatio: totalUncompressedSize > 0 ? totalUncompressedSize / totalCompressedSize : 1,
+      compressionRatio:
+        totalUncompressedSize > 0
+          ? totalUncompressedSize / totalCompressedSize
+          : 1,
     };
   }
 
@@ -204,31 +221,37 @@ export class MemoryOptimizedCacheService {
    */
   private async evictLeastValuable(requiredSpace: number): Promise<void> {
     const entries = Array.from(this.cache.entries());
-    
+
     // Sort by value (considering access frequency, recency, and priority)
     entries.sort(([keyA, entryA], [keyB, entryB]) => {
       const configA = this.providerConfigs.get(entryA.provider);
       const configB = this.providerConfigs.get(entryB.provider);
-      
-      const priorityScoreA = this.getPriorityScore(configA?.priority || 'normal');
-      const priorityScoreB = this.getPriorityScore(configB?.priority || 'normal');
-      
+
+      const priorityScoreA = this.getPriorityScore(
+        configA?.priority || 'normal',
+      );
+      const priorityScoreB = this.getPriorityScore(
+        configB?.priority || 'normal',
+      );
+
       const valueA = this.calculateEntryValue(entryA, priorityScoreA);
       const valueB = this.calculateEntryValue(entryB, priorityScoreB);
-      
+
       return valueA - valueB; // Lower value = more likely to evict
     });
 
     let freedSpace = 0;
     const now = Date.now();
-    
+
     for (const [key, entry] of entries) {
       if (freedSpace >= requiredSpace) break;
-      
+
       this.delete(key);
       freedSpace += entry.size;
-      
-      this.logger.debug(`Evicted cache entry ${key} (${entry.size} bytes, provider: ${entry.provider})`);
+
+      this.logger.debug(
+        `Evicted cache entry ${key} (${entry.size} bytes, provider: ${entry.provider})`,
+      );
     }
 
     this.logger.log(`Evicted ${freedSpace} bytes to free memory`);
@@ -237,17 +260,20 @@ export class MemoryOptimizedCacheService {
   /**
    * Calculate entry value for eviction decisions
    */
-  private calculateEntryValue(entry: CacheEntry, priorityScore: number): number {
+  private calculateEntryValue(
+    entry: CacheEntry,
+    priorityScore: number,
+  ): number {
     const now = Date.now();
     const age = now - entry.timestamp;
     const timeSinceLastAccess = now - entry.lastAccessed;
-    
+
     // Higher frequency = higher value
     const frequencyScore = entry.accessCount / Math.max(age / 1000, 1);
-    
+
     // More recent access = higher value
     const recencyScore = 1 / Math.max(timeSinceLastAccess / 1000, 1);
-    
+
     // Combine all factors
     return frequencyScore * recencyScore * priorityScore;
   }
@@ -257,10 +283,14 @@ export class MemoryOptimizedCacheService {
    */
   private getPriorityScore(priority: string): number {
     switch (priority) {
-      case 'high': return 3;
-      case 'normal': return 2;
-      case 'low': return 1;
-      default: return 2;
+      case 'high':
+        return 3;
+      case 'normal':
+        return 2;
+      case 'low':
+        return 1;
+      default:
+        return 2;
     }
   }
 

@@ -25,7 +25,12 @@ import { JobType } from '../enums/job-type.enum';
 import { MedicationReminderData } from '../interfaces/job-data.interface';
 import { CacheService } from '../../../shared/cache/cache.service';
 import { EmailService } from '../../email/email.service';
-import { MessageDelivery, RecipientType, DeliveryStatus, DeliveryChannelType } from '../../../database/models/message-delivery.model';
+import {
+  MessageDelivery,
+  RecipientType,
+  DeliveryStatus,
+  DeliveryChannelType,
+} from '../../../database/models/message-delivery.model';
 import { MessageType } from '../../../database/models/message-template.model';
 
 interface MedicationReminder {
@@ -458,11 +463,7 @@ export class MedicationReminderProcessor {
         for (const contact of contacts) {
           if (contact.email) {
             try {
-              await this.sendEmailReminder(
-                contact,
-                studentReminders,
-                jobId,
-              );
+              await this.sendEmailReminder(contact, studentReminders, jobId);
               sent++;
             } catch (error) {
               this.logger.error(
@@ -630,13 +631,16 @@ export class MedicationReminderProcessor {
   private groupRemindersByStudent(
     reminders: MedicationReminder[],
   ): Record<string, MedicationReminder[]> {
-    return reminders.reduce((acc, reminder) => {
-      if (!acc[reminder.studentId]) {
-        acc[reminder.studentId] = [];
-      }
-      acc[reminder.studentId].push(reminder);
-      return acc;
-    }, {} as Record<string, MedicationReminder[]>);
+    return reminders.reduce(
+      (acc, reminder) => {
+        if (!acc[reminder.studentId]) {
+          acc[reminder.studentId] = [];
+        }
+        acc[reminder.studentId].push(reminder);
+        return acc;
+      },
+      {} as Record<string, MedicationReminder[]>,
+    );
   }
 
   /**
@@ -724,9 +728,7 @@ export class MedicationReminderProcessor {
    *
    * @param organizationId - Organization ID
    */
-  async invalidateOrganizationReminders(
-    organizationId: string,
-  ): Promise<void> {
+  async invalidateOrganizationReminders(organizationId: string): Promise<void> {
     const tag = `org:${organizationId}`;
     const count = this.cacheService.invalidateByTag(tag);
     this.logger.debug(
@@ -772,9 +774,7 @@ export class MedicationReminderProcessor {
       );
 
       // Group by student and retry
-      const studentIds = new Set(
-        failedDeliveries.map((d) => d.recipientId),
-      );
+      const studentIds = new Set(failedDeliveries.map((d) => d.recipientId));
 
       let retried = 0;
       for (const studentId of studentIds) {

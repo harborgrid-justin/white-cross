@@ -9,7 +9,7 @@ import {
   Index,
   Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
@@ -27,7 +27,7 @@ export interface ConflictVersion {
 export enum SyncStatus {
   PENDING = 'PENDING',
   RESOLVED = 'RESOLVED',
-  DEFERRED = 'DEFERRED'
+  DEFERRED = 'DEFERRED',
 }
 
 export interface SyncConflictAttributes {
@@ -48,32 +48,35 @@ export interface SyncConflictAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'sync_conflicts',
   timestamps: false,
   indexes: [
     {
-      fields: ['status']
-  },
+      fields: ['status'],
+    },
     {
-      fields: ['entityType']
-  },
+      fields: ['entityType'],
+    },
     {
       fields: ['createdAt'],
-      name: 'idx_sync_conflict_created_at'
+      name: 'idx_sync_conflict_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_sync_conflict_updated_at'
-    }
-  ]
-  })
-export class SyncConflict extends Model<SyncConflictAttributes> implements SyncConflictAttributes {
+      name: 'idx_sync_conflict_updated_at',
+    },
+  ],
+})
+export class SyncConflict
+  extends Model<SyncConflictAttributes>
+  implements SyncConflictAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -81,35 +84,35 @@ export class SyncConflict extends Model<SyncConflictAttributes> implements SyncC
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   queueItemId: string;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(SyncEntityType)]
+      isIn: [Object.values(SyncEntityType)],
     },
-    allowNull: false
+    allowNull: false,
   })
   @Index
   entityType: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   entityId: string;
 
   @Column({
     type: DataType.JSON,
-    allowNull: false
+    allowNull: false,
   })
   clientVersion: ConflictVersion;
 
   @Column({
     type: DataType.JSON,
-    allowNull: false
+    allowNull: false,
   })
   serverVersion: ConflictVersion;
 
@@ -117,46 +120,45 @@ export class SyncConflict extends Model<SyncConflictAttributes> implements SyncC
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(ConflictResolution)]
-    }
+      isIn: [Object.values(ConflictResolution)],
+    },
   })
   resolution?: ConflictResolution;
 
   @AllowNull
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   resolvedAt?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   resolvedBy?: string;
 
   @AllowNull
   @Column({
-    type: DataType.JSON
+    type: DataType.JSON,
   })
   mergedData?: any;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(SyncStatus)]
+      isIn: [Object.values(SyncStatus)],
     },
     allowNull: false,
-    defaultValue: SyncStatus.PENDING
+    defaultValue: SyncStatus.PENDING,
   })
   @Index
   status: SyncStatus;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   declare createdAt?: Date;
-
 
   // Hooks for HIPAA compliance
   @BeforeCreate
@@ -164,7 +166,9 @@ export class SyncConflict extends Model<SyncConflictAttributes> implements SyncC
   static async auditPHIAccess(instance: SyncConflict) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] SyncConflict ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] SyncConflict ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

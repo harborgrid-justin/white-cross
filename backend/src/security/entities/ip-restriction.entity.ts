@@ -16,10 +16,7 @@ import { IpRestrictionType } from '../enums';
 @Table({
   tableName: 'ip_restrictions',
   timestamps: true,
-  indexes: [
-    { fields: ['type', 'isActive'] },
-    { fields: ['ipAddress'] },
-  ],
+  indexes: [{ fields: ['type', 'isActive'] }, { fields: ['ipAddress'] }],
 })
 export class IpRestrictionEntity extends Model {
   @PrimaryKey

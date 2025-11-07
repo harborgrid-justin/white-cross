@@ -24,12 +24,7 @@ import { ConfigurationService } from './services/configuration.service';
 import { ConfigurationController } from './configuration.controller';
 
 @Module({
-  imports: [
-    SequelizeModule.forFeature([
-      SystemConfig,
-      ConfigurationHistory,
-    ]),
-  ],
+  imports: [SequelizeModule.forFeature([SystemConfig, ConfigurationHistory])],
   controllers: [ConfigurationController],
   providers: [ConfigurationService],
   exports: [ConfigurationService],

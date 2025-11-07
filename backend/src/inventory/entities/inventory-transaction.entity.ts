@@ -4,4 +4,7 @@
  */
 
 // Re-export the Sequelize model
-export { InventoryTransaction, InventoryTransactionType } from '../../database/models/inventory-transaction.model';
+export {
+  InventoryTransaction,
+  InventoryTransactionType,
+} from '../../database/models/inventory-transaction.model';

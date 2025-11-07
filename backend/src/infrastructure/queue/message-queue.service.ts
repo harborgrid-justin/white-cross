@@ -4,7 +4,12 @@
  * @description Service for managing message-related queues with Bull and Redis
  */
 
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import type { Queue, Job } from 'bull';
 import { QueueName, JobPriority } from './enums';
@@ -257,9 +262,7 @@ export class MessageQueueService implements OnModuleInit, OnModuleDestroy {
       this.buildJobOptions(QueueName.MESSAGE_CLEANUP, options),
     );
 
-    this.logger.log(
-      `Cleanup job added: ${job.id} (type: ${data.cleanupType})`,
-    );
+    this.logger.log(`Cleanup job added: ${job.id} (type: ${data.cleanupType})`);
 
     return job;
   }
@@ -279,24 +282,30 @@ export class MessageQueueService implements OnModuleInit, OnModuleDestroy {
     return {
       priority: options?.priority || JobPriority.NORMAL,
       delay: options?.delay || 0,
-      attempts: options?.attempts || (priorityOptions as any)?.attempts || config.maxAttempts,
+      attempts:
+        options?.attempts ||
+        (priorityOptions as any)?.attempts ||
+        config.maxAttempts,
       timeout: options?.timeout || config.timeout,
-      backoff: options?.backoff || (priorityOptions as any)?.backoff || {
-        type: config.backoffType,
-        delay: config.backoffDelay,
-      },
-      removeOnComplete: options?.removeOnComplete !== undefined
-        ? options.removeOnComplete
-        : {
-            count: config.removeOnCompleteCount,
-            age: config.removeOnCompleteAge,
-          },
-      removeOnFail: options?.removeOnFail !== undefined
-        ? options.removeOnFail
-        : {
-            count: config.removeOnFailCount,
-            age: config.removeOnFailAge,
-          },
+      backoff: options?.backoff ||
+        (priorityOptions as any)?.backoff || {
+          type: config.backoffType,
+          delay: config.backoffDelay,
+        },
+      removeOnComplete:
+        options?.removeOnComplete !== undefined
+          ? options.removeOnComplete
+          : {
+              count: config.removeOnCompleteCount,
+              age: config.removeOnCompleteAge,
+            },
+      removeOnFail:
+        options?.removeOnFail !== undefined
+          ? options.removeOnFail
+          : {
+              count: config.removeOnFailCount,
+              age: config.removeOnFailAge,
+            },
       repeat: options?.repeat,
     };
   }
@@ -307,14 +316,15 @@ export class MessageQueueService implements OnModuleInit, OnModuleDestroy {
   async getQueueStats(queueName: QueueName): Promise<QueueStats> {
     const queue = this.getQueue(queueName);
 
-    const [waiting, active, completed, failed, delayed, paused] = await Promise.all([
-      queue.getWaitingCount(),
-      queue.getActiveCount(),
-      queue.getCompletedCount(),
-      queue.getFailedCount(),
-      queue.getDelayedCount(),
-      queue.getPausedCount(),
-    ]);
+    const [waiting, active, completed, failed, delayed, paused] =
+      await Promise.all([
+        queue.getWaitingCount(),
+        queue.getActiveCount(),
+        queue.getCompletedCount(),
+        queue.getFailedCount(),
+        queue.getDelayedCount(),
+        queue.getPausedCount(),
+      ]);
 
     return {
       name: queueName,

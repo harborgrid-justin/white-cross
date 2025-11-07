@@ -11,8 +11,8 @@ import {
   BelongsTo,
   BeforeCreate,
   BeforeUpdate,
-  Scopes
-  } from 'sequelize-typescript';
+  Scopes,
+} from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 import { Op } from 'sequelize';
 
@@ -44,60 +44,60 @@ export interface ClinicalNoteAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
+    order: [['createdAt', 'DESC']],
   },
   byStudent: (studentId: string) => ({
     where: { studentId },
-    order: [['createdAt', 'DESC']]
+    order: [['createdAt', 'DESC']],
   }),
   byType: (type: NoteType) => ({
     where: { type },
-    order: [['createdAt', 'DESC']]
+    order: [['createdAt', 'DESC']],
   }),
   byAuthor: (createdBy: string) => ({
     where: { createdBy },
-    order: [['createdAt', 'DESC']]
+    order: [['createdAt', 'DESC']],
   }),
   confidential: {
     where: {
-      isConfidential: true
+      isConfidential: true,
     },
-    order: [['createdAt', 'DESC']]
+    order: [['createdAt', 'DESC']],
   },
   unsigned: {
     where: {
-      isSigned: false
+      isSigned: false,
     },
-    order: [['createdAt', 'ASC']]
+    order: [['createdAt', 'ASC']],
   },
   signed: {
     where: {
-      isSigned: true
+      isSigned: true,
     },
-    order: [['signedAt', 'DESC']]
+    order: [['signedAt', 'DESC']],
   },
   amended: {
     where: {
-      amended: true
+      amended: true,
     },
-    order: [['updatedAt', 'DESC']]
+    order: [['updatedAt', 'DESC']],
   },
   recent: {
     where: {
       createdAt: {
-        [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-      }
+        [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+      },
     },
-    order: [['createdAt', 'DESC']]
+    order: [['createdAt', 'DESC']],
   },
   soapNotes: {
     where: {
-      type: NoteType.SOAP
+      type: NoteType.SOAP,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'clinical_notes',
@@ -106,25 +106,28 @@ export interface ClinicalNoteAttributes {
   paranoid: true,
   indexes: [
     {
-      fields: ['studentId', 'type']
-  },
+      fields: ['studentId', 'type'],
+    },
     {
-      fields: ['visitId']
-  },
+      fields: ['visitId'],
+    },
     {
-      fields: ['createdBy']
-  },
+      fields: ['createdBy'],
+    },
     {
       fields: ['createdAt'],
-      name: 'idx_clinical_note_created_at'
+      name: 'idx_clinical_note_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_clinical_note_updated_at'
-    }
-  ]
-  })
-export class ClinicalNote extends Model<ClinicalNoteAttributes> implements ClinicalNoteAttributes {
+      name: 'idx_clinical_note_updated_at',
+    },
+  ],
+})
+export class ClinicalNote
+  extends Model<ClinicalNoteAttributes>
+  implements ClinicalNoteAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -136,10 +139,10 @@ export class ClinicalNote extends Model<ClinicalNoteAttributes> implements Clini
     allowNull: false,
     references: {
       model: 'students',
-      key: 'id'
+      key: 'id',
     },
     onUpdate: 'CASCADE',
-    onDelete: 'CASCADE'
+    onDelete: 'CASCADE',
   })
   @Index
   studentId: string;
@@ -147,26 +150,35 @@ export class ClinicalNote extends Model<ClinicalNoteAttributes> implements Clini
   @AllowNull
   @ForeignKey(() => require('./clinic-visit.model').ClinicVisit)
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   visitId?: string;
 
-  @BelongsTo(() => require('./clinic-visit.model').ClinicVisit, { foreignKey: 'visitId', as: 'visit' })
+  @BelongsTo(() => require('./clinic-visit.model').ClinicVisit, {
+    foreignKey: 'visitId',
+    as: 'visit',
+  })
   declare visit?: any;
 
-  @BelongsTo(() => require('./student.model').Student, { foreignKey: 'studentId', as: 'student' })
+  @BelongsTo(() => require('./student.model').Student, {
+    foreignKey: 'studentId',
+    as: 'student',
+  })
   declare student?: any;
 
-  @BelongsTo(() => require('./user.model').User, { foreignKey: 'createdBy', as: 'author' })
+  @BelongsTo(() => require('./user.model').User, {
+    foreignKey: 'createdBy',
+    as: 'author',
+  })
   declare author?: any;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(NoteType)]
+      isIn: [Object.values(NoteType)],
     },
     allowNull: false,
-    defaultValue: NoteType.GENERAL
+    defaultValue: NoteType.GENERAL,
   })
   type: NoteType;
 
@@ -176,87 +188,87 @@ export class ClinicalNote extends Model<ClinicalNoteAttributes> implements Clini
     allowNull: false,
     references: {
       model: 'users',
-      key: 'id'
+      key: 'id',
     },
     onUpdate: 'CASCADE',
-    onDelete: 'RESTRICT'
+    onDelete: 'RESTRICT',
   })
   @Index
   createdBy: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   title: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false
+    allowNull: false,
   })
   content: string;
 
   // SOAP note components (optional, used when type is SOAP)
   @AllowNull
   @Column({
-    type: DataType.TEXT
+    type: DataType.TEXT,
   })
   subjective?: string;
 
   @AllowNull
   @Column({
-    type: DataType.TEXT
+    type: DataType.TEXT,
   })
   objective?: string;
 
   @AllowNull
   @Column({
-    type: DataType.TEXT
+    type: DataType.TEXT,
   })
   assessment?: string;
 
   @AllowNull
   @Column({
-    type: DataType.TEXT
+    type: DataType.TEXT,
   })
   plan?: string;
 
   @AllowNull
   @Column({
-    type: DataType.JSON
+    type: DataType.JSON,
   })
   tags?: string[];
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false
+    defaultValue: false,
   })
   isConfidential: boolean;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false
+    defaultValue: false,
   })
   isSigned: boolean;
 
   @AllowNull
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   signedAt?: Date;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false
+    defaultValue: false,
   })
   amended: boolean;
 
   @AllowNull
   @Column({
-    type: DataType.TEXT
+    type: DataType.TEXT,
   })
   amendmentReason?: string;
 
@@ -272,8 +284,12 @@ export class ClinicalNote extends Model<ClinicalNoteAttributes> implements Clini
   static async auditPHIAccess(instance: ClinicalNote) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] ClinicalNote ${instance.id} modified for student ${instance.studentId} at ${new Date().toISOString()}`);
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}, Author: ${instance.createdBy}`);
+      console.log(
+        `[AUDIT] ClinicalNote ${instance.id} modified for student ${instance.studentId} at ${new Date().toISOString()}`,
+      );
+      console.log(
+        `[AUDIT] Changed fields: ${changedFields.join(', ')}, Author: ${instance.createdBy}`,
+      );
       // TODO: Integrate with AuditLog service for persistent audit trail
     }
   }
@@ -282,16 +298,30 @@ export class ClinicalNote extends Model<ClinicalNoteAttributes> implements Clini
   @BeforeUpdate
   static async validateSOAPNote(instance: ClinicalNote) {
     if (instance.type === NoteType.SOAP) {
-      if (instance.isSigned && (!instance.subjective || !instance.objective || !instance.assessment || !instance.plan)) {
-        throw new Error('SOAP note must have all four components (S.O.A.P) before signing');
+      if (
+        instance.isSigned &&
+        (!instance.subjective ||
+          !instance.objective ||
+          !instance.assessment ||
+          !instance.plan)
+      ) {
+        throw new Error(
+          'SOAP note must have all four components (S.O.A.P) before signing',
+        );
       }
     }
   }
 
   @BeforeUpdate
   static async validateAmendment(instance: ClinicalNote) {
-    if (instance.changed('amended') && instance.amended && !instance.amendmentReason) {
-      throw new Error('amendmentReason is required when marking note as amended');
+    if (
+      instance.changed('amended') &&
+      instance.amended &&
+      !instance.amendmentReason
+    ) {
+      throw new Error(
+        'amendmentReason is required when marking note as amended',
+      );
     }
   }
 
@@ -314,7 +344,12 @@ export class ClinicalNote extends Model<ClinicalNoteAttributes> implements Clini
    */
   isSOAPComplete(): boolean {
     if (!this.isSOAPNote()) return false;
-    return !!(this.subjective && this.objective && this.assessment && this.plan);
+    return !!(
+      this.subjective &&
+      this.objective &&
+      this.assessment &&
+      this.plan
+    );
   }
 
   /**

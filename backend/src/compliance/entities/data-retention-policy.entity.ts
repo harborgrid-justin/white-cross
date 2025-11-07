@@ -7,5 +7,5 @@
 export {
   DataRetentionPolicy,
   DataRetentionCategory,
-  RetentionStatus
+  RetentionStatus,
 } from '../../database/models/data-retention-policy.model';

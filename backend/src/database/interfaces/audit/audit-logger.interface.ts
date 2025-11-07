@@ -17,13 +17,18 @@ export interface IAuditLogger {
     entityId: string,
     context: ExecutionContext,
     data: Record<string, unknown>,
-    transaction?: any
+    transaction?: any,
   ): Promise<void>;
 
   /**
    * Logs read/access of an entity
    */
-  logRead(entityType: string, entityId: string, context: ExecutionContext, transaction?: any): Promise<void>;
+  logRead(
+    entityType: string,
+    entityId: string,
+    context: ExecutionContext,
+    transaction?: any,
+  ): Promise<void>;
 
   /**
    * Logs entity updates with before/after values
@@ -33,7 +38,7 @@ export interface IAuditLogger {
     entityId: string,
     context: ExecutionContext,
     changes: Record<string, { before: unknown; after: unknown }>,
-    transaction?: any
+    transaction?: any,
   ): Promise<void>;
 
   /**
@@ -44,7 +49,7 @@ export interface IAuditLogger {
     entityId: string,
     context: ExecutionContext,
     data: Record<string, unknown>,
-    transaction?: any
+    transaction?: any,
   ): Promise<void>;
 
   /**
@@ -55,23 +60,35 @@ export interface IAuditLogger {
     entityType: string,
     context: ExecutionContext,
     metadata: Record<string, unknown>,
-    transaction?: any
+    transaction?: any,
   ): Promise<void>;
 
   /**
    * Logs data export operations for compliance tracking
    */
-  logExport(entityType: string, context: ExecutionContext, metadata: Record<string, unknown>): Promise<void>;
+  logExport(
+    entityType: string,
+    context: ExecutionContext,
+    metadata: Record<string, unknown>,
+  ): Promise<void>;
 
   /**
    * Logs database transaction operations
    */
-  logTransaction(operation: string, context: ExecutionContext, metadata: Record<string, unknown>): Promise<void>;
+  logTransaction(
+    operation: string,
+    context: ExecutionContext,
+    metadata: Record<string, unknown>,
+  ): Promise<void>;
 
   /**
    * Logs cache access operations for PHI tracking
    */
-  logCacheAccess(operation: string, cacheKey: string, metadata?: Record<string, unknown>): Promise<void>;
+  logCacheAccess(
+    operation: string,
+    cacheKey: string,
+    metadata?: Record<string, unknown>,
+  ): Promise<void>;
 
   /**
    * Logs PHI access for HIPAA compliance
@@ -89,7 +106,7 @@ export interface IAuditLogger {
       userAgent?: string;
       metadata?: Record<string, unknown>;
     },
-    transaction?: any
+    transaction?: any,
   ): Promise<void>;
 }
 
@@ -103,7 +120,10 @@ export interface AuditLogEntry {
   userId: string | null;
   ipAddress: string | null;
   userAgent: string | null;
-  changes: Record<string, unknown> | Record<string, { before: unknown; after: unknown }> | null;
+  changes:
+    | Record<string, unknown>
+    | Record<string, { before: unknown; after: unknown }>
+    | null;
   createdAt: Date;
 }
 
@@ -115,14 +135,21 @@ export function sanitizeSensitiveData(data: unknown): unknown {
     return data;
   }
 
-  const sanitized: Record<string, unknown> | unknown[] = Array.isArray(data) ? [] : {};
+  const sanitized: Record<string, unknown> | unknown[] = Array.isArray(data)
+    ? []
+    : {};
 
   for (const key in data as Record<string, unknown>) {
     const value = (data as Record<string, unknown>)[key];
-    if (SENSITIVE_FIELDS.some((field) => key.toLowerCase().includes(field.toLowerCase()))) {
+    if (
+      SENSITIVE_FIELDS.some((field) =>
+        key.toLowerCase().includes(field.toLowerCase()),
+      )
+    ) {
       (sanitized as Record<string, unknown>)[key] = '[REDACTED]';
     } else if (typeof value === 'object' && value !== null) {
-      (sanitized as Record<string, unknown>)[key] = sanitizeSensitiveData(value);
+      (sanitized as Record<string, unknown>)[key] =
+        sanitizeSensitiveData(value);
     } else {
       (sanitized as Record<string, unknown>)[key] = value;
     }

@@ -63,7 +63,8 @@ export class MedicationConflictResponseDto {
 
   @ApiProperty({
     description: 'Additional warnings or notes',
-    example: 'Patient has life-threatening allergy to penicillin. Amoxicillin is a penicillin derivative.',
+    example:
+      'Patient has life-threatening allergy to penicillin. Amoxicillin is a penicillin derivative.',
     required: false,
   })
   warning?: string;

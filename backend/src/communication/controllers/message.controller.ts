@@ -76,10 +76,36 @@ export class MessageController {
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
   @ApiQuery({ name: 'senderId', required: false, type: String })
-  @ApiQuery({ name: 'category', required: false, enum: ['EMERGENCY', 'HEALTH_UPDATE', 'APPOINTMENT_REMINDER', 'MEDICATION_REMINDER', 'GENERAL', 'INCIDENT_NOTIFICATION', 'COMPLIANCE'] })
-  @ApiQuery({ name: 'priority', required: false, enum: ['LOW', 'MEDIUM', 'HIGH', 'URGENT'] })
-  @ApiQuery({ name: 'dateFrom', required: false, type: String, example: '2025-10-01' })
-  @ApiQuery({ name: 'dateTo', required: false, type: String, example: '2025-10-31' })
+  @ApiQuery({
+    name: 'category',
+    required: false,
+    enum: [
+      'EMERGENCY',
+      'HEALTH_UPDATE',
+      'APPOINTMENT_REMINDER',
+      'MEDICATION_REMINDER',
+      'GENERAL',
+      'INCIDENT_NOTIFICATION',
+      'COMPLIANCE',
+    ],
+  })
+  @ApiQuery({
+    name: 'priority',
+    required: false,
+    enum: ['LOW', 'MEDIUM', 'HIGH', 'URGENT'],
+  })
+  @ApiQuery({
+    name: 'dateFrom',
+    required: false,
+    type: String,
+    example: '2025-10-01',
+  })
+  @ApiQuery({
+    name: 'dateTo',
+    required: false,
+    type: String,
+    example: '2025-10-31',
+  })
   @ApiResponse({
     status: 200,
     description: 'Messages retrieved successfully',
@@ -114,11 +140,13 @@ export class MessageController {
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
   ) {
-    return this.messageService.getMessages(
-      page,
-      limit,
-      { senderId, category, priority, dateFrom, dateTo }
-    );
+    return this.messageService.getMessages(page, limit, {
+      senderId,
+      category,
+      priority,
+      dateFrom,
+      dateTo,
+    });
   }
 
   @Get('inbox')
@@ -247,7 +275,10 @@ export class MessageController {
         },
         channels: {
           type: 'array',
-          items: { type: 'string', enum: ['EMAIL', 'SMS', 'PUSH_NOTIFICATION', 'VOICE'] },
+          items: {
+            type: 'string',
+            enum: ['EMAIL', 'SMS', 'PUSH_NOTIFICATION', 'VOICE'],
+          },
           example: ['EMAIL'],
         },
       },
@@ -280,7 +311,10 @@ export class MessageController {
     description: 'Message deleted successfully',
   })
   @ApiResponse({ status: 400, description: 'Cannot delete sent messages' })
-  @ApiResponse({ status: 403, description: 'Not authorized to delete this message' })
+  @ApiResponse({
+    status: 403,
+    description: 'Not authorized to delete this message',
+  })
   @ApiResponse({ status: 404, description: 'Message not found' })
   async deleteMessage(@Param('id') id: string, @Req() req: any) {
     const userId = req.user?.id;

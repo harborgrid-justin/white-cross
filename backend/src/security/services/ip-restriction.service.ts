@@ -4,10 +4,7 @@ import { Model } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { IpRestrictionEntity } from '../entities';
 import { IpRestrictionType } from '../enums';
-import {
-  IPCheckResult,
-  IPRestrictionRule,
-} from '../interfaces';
+import { IPCheckResult, IPRestrictionRule } from '../interfaces';
 import { SecurityCreateIpRestrictionDto, UpdateIpRestrictionDto } from '../dto';
 
 /**
@@ -271,7 +268,11 @@ export class IpRestrictionService {
     }
 
     if (rule.ipRange) {
-      return this.matchesIPRange(ipAddress, rule.ipRange.start, rule.ipRange.end);
+      return this.matchesIPRange(
+        ipAddress,
+        rule.ipRange.start,
+        rule.ipRange.end,
+      );
     }
 
     return false;
@@ -343,9 +344,8 @@ export class IpRestrictionService {
    */
   private ipToNumber(ip: string): number {
     return (
-      ip
-        .split('.')
-        .reduce((acc, octet) => (acc << 8) + parseInt(octet), 0) >>> 0
+      ip.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet), 0) >>>
+      0
     );
   }
 
@@ -418,7 +418,7 @@ export class IpRestrictionService {
     try {
       await this.ipRestrictionModel.update(
         { isActive: false },
-        { where: { id: ruleId } }
+        { where: { id: ruleId } },
       );
       this.logger.log('IP restriction removed', { ruleId });
       return true;

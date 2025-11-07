@@ -10,7 +10,7 @@ import {
   Index,
   Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
@@ -24,8 +24,8 @@ export enum AlertSeverity {
   MEDIUM = 'MEDIUM',
   HIGH = 'HIGH',
   CRITICAL = 'CRITICAL',
-  EMERGENCY = 'EMERGENCY'
-  }
+  EMERGENCY = 'EMERGENCY',
+}
 
 /**
  * Alert Categories
@@ -36,15 +36,21 @@ export enum AlertCategory {
   COMPLIANCE = 'COMPLIANCE',
   SYSTEM = 'SYSTEM',
   MEDICATION = 'MEDICATION',
-  APPOINTMENT = 'APPOINTMENT'
-  }
+  APPOINTMENT = 'APPOINTMENT',
+}
 
 /**
  * Trigger Condition Interface
  */
 export interface TriggerCondition {
   field: string;
-  operator: 'equals' | 'not_equals' | 'greater_than' | 'less_than' | 'contains' | 'regex';
+  operator:
+    | 'equals'
+    | 'not_equals'
+    | 'greater_than'
+    | 'less_than'
+    | 'contains'
+    | 'regex';
   value: any;
   dataType?: 'string' | 'number' | 'boolean' | 'date';
 }
@@ -118,10 +124,10 @@ export interface AlertRuleAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'alert_rules',
@@ -130,43 +136,46 @@ export interface AlertRuleAttributes {
   indexes: [
     {
       fields: ['category'],
-      name: 'alert_rules_category_idx'
-  },
+      name: 'alert_rules_category_idx',
+    },
     {
       fields: ['severity'],
-      name: 'alert_rules_severity_idx'
-  },
+      name: 'alert_rules_severity_idx',
+    },
     {
       fields: ['isActive'],
-      name: 'alert_rules_is_active_idx'
-  },
+      name: 'alert_rules_is_active_idx',
+    },
     {
       fields: ['priority'],
-      name: 'alert_rules_priority_idx'
-  },
+      name: 'alert_rules_priority_idx',
+    },
     {
       fields: ['schoolId'],
-      name: 'alert_rules_school_id_idx'
-  },
+      name: 'alert_rules_school_id_idx',
+    },
     {
       fields: ['districtId'],
-      name: 'alert_rules_district_id_idx'
-  },
+      name: 'alert_rules_district_id_idx',
+    },
     {
       fields: ['category', 'isActive', 'priority'],
-      name: 'alert_rules_active_category_priority_idx'
+      name: 'alert_rules_active_category_priority_idx',
     },
     {
       fields: ['createdAt'],
-      name: 'idx_alert_rule_created_at'
+      name: 'idx_alert_rule_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_alert_rule_updated_at'
-    }
-  ]
-  })
-export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAttributes {
+      name: 'idx_alert_rule_updated_at',
+    },
+  ],
+})
+export class AlertRule
+  extends Model<AlertRuleAttributes>
+  implements AlertRuleAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -178,7 +187,7 @@ export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAt
   @Column({
     type: DataType.STRING(200),
     allowNull: false,
-    unique: true
+    unique: true,
   })
   name: string;
 
@@ -194,9 +203,9 @@ export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAt
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(AlertCategory)]
+      isIn: [Object.values(AlertCategory)],
     },
-    allowNull: false
+    allowNull: false,
   })
   category: AlertCategory;
 
@@ -206,9 +215,9 @@ export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAt
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(AlertSeverity)]
+      isIn: [Object.values(AlertSeverity)],
     },
-    allowNull: false
+    allowNull: false,
   })
   severity: AlertSeverity;
 
@@ -218,7 +227,7 @@ export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAt
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true
+    defaultValue: true,
   })
   isActive: boolean;
 
@@ -228,7 +237,7 @@ export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAt
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 0
+    defaultValue: 0,
   })
   priority: number;
 
@@ -237,7 +246,7 @@ export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAt
    */
   @Column({
     type: DataType.JSONB,
-    allowNull: false
+    allowNull: false,
   })
   triggerConditions: TriggerCondition[];
 
@@ -247,7 +256,7 @@ export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAt
   @Column({
     type: DataType.JSONB,
     allowNull: false,
-    defaultValue: []
+    defaultValue: [],
   })
   notificationChannels: NotificationChannel[];
 
@@ -255,7 +264,7 @@ export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAt
    * Roles that should receive this alert
    */
   @Column({
-    type: DataType.ARRAY(DataType.STRING(255))
+    type: DataType.ARRAY(DataType.STRING(255)),
   })
   targetRoles?: string[];
 
@@ -263,7 +272,7 @@ export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAt
    * Specific users that should receive this alert
    */
   @Column({
-    type: DataType.ARRAY(DataType.UUID)
+    type: DataType.ARRAY(DataType.UUID),
   })
   targetUsers?: string[];
 
@@ -271,7 +280,7 @@ export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAt
    * School this rule applies to (null = all schools)
    */
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   schoolId?: string;
 
@@ -279,7 +288,7 @@ export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAt
    * District this rule applies to (null = all districts)
    */
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   districtId?: string;
 
@@ -287,7 +296,7 @@ export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAt
    * Auto-escalate if not acknowledged within this many minutes
    */
   @Column({
-    type: DataType.INTEGER
+    type: DataType.INTEGER,
   })
   autoEscalateAfter?: number;
 
@@ -295,7 +304,7 @@ export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAt
    * Cooldown period in minutes before triggering again
    */
   @Column({
-    type: DataType.INTEGER
+    type: DataType.INTEGER,
   })
   cooldownPeriod?: number;
 
@@ -305,7 +314,7 @@ export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAt
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false
+    defaultValue: false,
   })
   requiresAcknowledgment: boolean;
 
@@ -313,7 +322,7 @@ export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAt
    * Alert expires after this many minutes
    */
   @Column({
-    type: DataType.INTEGER
+    type: DataType.INTEGER,
   })
   expiresAfter?: number;
 
@@ -327,7 +336,7 @@ export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAt
    * User who created this rule
    */
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   createdBy?: string;
 
@@ -335,7 +344,7 @@ export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAt
    * User who last updated this rule
    */
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   updatedBy?: string;
 
@@ -343,7 +352,7 @@ export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAt
    * Last time this rule was triggered
    */
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   lastTriggered?: Date;
 
@@ -352,17 +361,17 @@ export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAt
    */
   @Column({
     type: DataType.INTEGER,
-    defaultValue: 0
+    defaultValue: 0,
   })
   triggerCount?: number;
 
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   declare createdAt?: Date;
 
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   declare updatedAt?: Date;
 
@@ -385,7 +394,7 @@ export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAt
    */
   evaluateConditions(data: Record<string, any>): boolean {
     // All conditions must be met (AND logic)
-    return this.triggerConditions.every(condition => {
+    return this.triggerConditions.every((condition) => {
       const fieldValue = data[condition.field];
 
       switch (condition.operator) {
@@ -411,7 +420,7 @@ export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAt
    * Get enabled notification channels
    */
   getEnabledChannels(): NotificationChannel[] {
-    return this.notificationChannels.filter(channel => channel.enabled);
+    return this.notificationChannels.filter((channel) => channel.enabled);
   }
 
   /**
@@ -423,14 +432,15 @@ export class AlertRule extends Model<AlertRuleAttributes> implements AlertRuleAt
     await this.save();
   }
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: AlertRule) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] AlertRule ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] AlertRule ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

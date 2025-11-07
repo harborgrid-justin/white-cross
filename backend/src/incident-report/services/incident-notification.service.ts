@@ -86,7 +86,11 @@ export class IncidentNotificationService {
         });
 
         // For high-severity incidents, notify all contacts; otherwise, stop after primary
-        if (report.severity !== 'CRITICAL' && report.severity !== 'HIGH' && contact.priority === ContactPriority.PRIMARY) {
+        if (
+          report.severity !== 'CRITICAL' &&
+          report.severity !== 'HIGH' &&
+          contact.priority === ContactPriority.PRIMARY
+        ) {
           break;
         }
       }

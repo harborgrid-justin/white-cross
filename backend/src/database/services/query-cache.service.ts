@@ -10,7 +10,12 @@
  * - HIPAA-compliant caching (no PHI in cache keys)
  */
 
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 import { Model, ModelCtor } from 'sequelize-typescript';
 import * as crypto from 'crypto';
@@ -48,7 +53,7 @@ export class QueryCacheService implements OnModuleInit, OnModuleDestroy {
     deletes: 0,
     hitRate: 0,
     localCacheSize: 0,
-    redisAvailable: false
+    redisAvailable: false,
   };
 
   // Default configuration
@@ -62,10 +67,7 @@ export class QueryCacheService implements OnModuleInit, OnModuleDestroy {
   // Model invalidation hooks storage
   private modelHooks = new Map<string, Set<string>>();
 
-  constructor(
-    // Redis client would be injected here when implemented
-    // @Inject('REDIS_CLIENT') private readonly redis?: any
-  ) {}
+  constructor() {} // @Inject('REDIS_CLIENT') private readonly redis?: any // Redis client would be injected here when implemented
 
   async onModuleInit(): Promise<void> {
     this.logger.log('Initializing Query Cache Service');
@@ -109,14 +111,14 @@ export class QueryCacheService implements OnModuleInit, OnModuleDestroy {
   async findWithCache<T extends Model>(
     model: ModelCtor<T>,
     findOptions: any,
-    cacheOptions: CacheOptions = {}
+    cacheOptions: CacheOptions = {},
   ): Promise<T[]> {
     const {
       ttl = this.DEFAULT_TTL,
       keyPrefix = 'query',
       invalidateOn = ['create', 'update', 'destroy'],
       useLocalCache = true,
-      useRedisCache = false
+      useRedisCache = false,
     } = cacheOptions;
 
     // Generate cache key
@@ -165,14 +167,14 @@ export class QueryCacheService implements OnModuleInit, OnModuleDestroy {
   async findOneWithCache<T extends Model>(
     model: ModelCtor<T>,
     findOptions: any,
-    cacheOptions: CacheOptions = {}
+    cacheOptions: CacheOptions = {},
   ): Promise<T | null> {
     const {
       ttl = this.DEFAULT_TTL,
       keyPrefix = 'query_one',
       invalidateOn = ['create', 'update', 'destroy'],
       useLocalCache = true,
-      useRedisCache = false
+      useRedisCache = false,
     } = cacheOptions;
 
     const cacheKey = this.generateCacheKey(keyPrefix, model.name, findOptions);
@@ -236,7 +238,7 @@ export class QueryCacheService implements OnModuleInit, OnModuleDestroy {
 
     this.localCache.set(key, {
       data,
-      expires: Date.now() + (ttl * 1000)
+      expires: Date.now() + ttl * 1000,
     });
 
     this.stats.localCacheSize = this.localCache.size;
@@ -249,7 +251,7 @@ export class QueryCacheService implements OnModuleInit, OnModuleDestroy {
     key: string,
     data: any,
     ttl: number = this.DEFAULT_TTL,
-    options: { useLocalCache?: boolean; useRedisCache?: boolean } = {}
+    options: { useLocalCache?: boolean; useRedisCache?: boolean } = {},
   ): Promise<void> {
     const { useLocalCache = true, useRedisCache = false } = options;
 
@@ -291,7 +293,9 @@ export class QueryCacheService implements OnModuleInit, OnModuleDestroy {
     // }
 
     if (deletedCount > 0) {
-      this.logger.debug(`Invalidated ${deletedCount} cache entries matching pattern: ${pattern}`);
+      this.logger.debug(
+        `Invalidated ${deletedCount} cache entries matching pattern: ${pattern}`,
+      );
     }
 
     return deletedCount;
@@ -303,7 +307,7 @@ export class QueryCacheService implements OnModuleInit, OnModuleDestroy {
   private setupInvalidationHooks<T extends Model>(
     model: ModelCtor<T>,
     keyPrefix: string,
-    operations: string[]
+    operations: string[],
   ): void {
     const modelName = model.name;
     const hookKey = `${modelName}:${keyPrefix}`;
@@ -315,7 +319,7 @@ export class QueryCacheService implements OnModuleInit, OnModuleDestroy {
 
     const registeredHooks = new Set<string>();
 
-    operations.forEach(operation => {
+    operations.forEach((operation) => {
       const hookName = `after${this.capitalize(operation)}`;
 
       // Register hook
@@ -398,7 +402,7 @@ export class QueryCacheService implements OnModuleInit, OnModuleDestroy {
   getStats(): CacheStats {
     return {
       ...this.stats,
-      localCacheSize: this.localCache.size
+      localCacheSize: this.localCache.size,
     };
   }
 
@@ -437,7 +441,7 @@ export class QueryCacheService implements OnModuleInit, OnModuleDestroy {
       deletes: 0,
       hitRate: 0,
       localCacheSize: this.localCache.size,
-      redisAvailable: false
+      redisAvailable: false,
     };
   }
 

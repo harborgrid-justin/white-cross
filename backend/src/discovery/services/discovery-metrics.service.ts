@@ -1,12 +1,19 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MetricsSnapshot, MetricLabels, HistogramEntry } from '../interfaces/metrics.interface';
+import {
+  MetricsSnapshot,
+  MetricLabels,
+  HistogramEntry,
+} from '../interfaces/metrics.interface';
 
 @Injectable()
 export class DiscoveryMetricsService {
   private readonly logger = new Logger(DiscoveryMetricsService.name);
   private counters = new Map<string, Map<string, number>>();
   private histograms = new Map<string, Array<HistogramEntry>>();
-  private gauges = new Map<string, { value: number; labels: Record<string, string>; timestamp: number }>();
+  private gauges = new Map<
+    string,
+    { value: number; labels: Record<string, string>; timestamp: number }
+  >();
   private readonly maxHistogramEntries = 1000;
 
   /**
@@ -14,11 +21,11 @@ export class DiscoveryMetricsService {
    */
   incrementCounter(name: string, labels: Record<string, string> = {}) {
     const labelKey = this.createLabelKey(labels);
-    
+
     if (!this.counters.has(name)) {
       this.counters.set(name, new Map());
     }
-    
+
     const counter = this.counters.get(name)!;
     const currentValue = counter.get(labelKey) || 0;
     counter.set(labelKey, currentValue + 1);
@@ -27,18 +34,22 @@ export class DiscoveryMetricsService {
   /**
    * Record a histogram value (for timing, sizes, etc.)
    */
-  recordHistogram(name: string, value: number, labels: Record<string, string> = {}) {
+  recordHistogram(
+    name: string,
+    value: number,
+    labels: Record<string, string> = {},
+  ) {
     if (!this.histograms.has(name)) {
       this.histograms.set(name, []);
     }
-    
+
     const histogram = this.histograms.get(name)!;
     histogram.push({
       value,
       labels,
       timestamp: Date.now(),
     });
-    
+
     // Keep only the most recent entries to prevent memory leaks
     if (histogram.length > this.maxHistogramEntries) {
       histogram.splice(0, histogram.length - this.maxHistogramEntries);
@@ -48,7 +59,11 @@ export class DiscoveryMetricsService {
   /**
    * Set a gauge value (for current state measurements)
    */
-  recordGauge(name: string, value: number, labels: Record<string, string> = {}) {
+  recordGauge(
+    name: string,
+    value: number,
+    labels: Record<string, string> = {},
+  ) {
     this.gauges.set(name, {
       value,
       labels,
@@ -71,16 +86,24 @@ export class DiscoveryMetricsService {
   /**
    * Calculate average response times from histogram data
    */
-  calculateAverageResponseTimes(timeWindowMs: number = 300000): Record<string, number> { // 5 minutes default
+  calculateAverageResponseTimes(
+    timeWindowMs: number = 300000,
+  ): Record<string, number> {
+    // 5 minutes default
     const averages: Record<string, number> = {};
     const cutoff = Date.now() - timeWindowMs;
 
     for (const [name, entries] of this.histograms.entries()) {
       if (name.includes('duration')) {
-        const recentEntries = entries.filter(entry => entry.timestamp > cutoff);
-        
+        const recentEntries = entries.filter(
+          (entry) => entry.timestamp > cutoff,
+        );
+
         if (recentEntries.length > 0) {
-          const sum = recentEntries.reduce((total, entry) => total + entry.value, 0);
+          const sum = recentEntries.reduce(
+            (total, entry) => total + entry.value,
+            0,
+          );
           averages[name] = sum / recentEntries.length;
         }
       }
@@ -94,21 +117,27 @@ export class DiscoveryMetricsService {
    */
   calculateErrorRates(timeWindowMs: number = 300000): Record<string, number> {
     const errorRates: Record<string, number> = {};
-    
+
     // This would need to be enhanced based on how errors are tracked
     // For now, return basic error rate calculation
     const errorCounter = this.counters.get('discovery_errors_total');
     const requestCounter = this.counters.get('discovery_requests_total');
-    
+
     if (errorCounter && requestCounter) {
-      const totalErrors = Array.from(errorCounter.values()).reduce((sum, count) => sum + count, 0);
-      const totalRequests = Array.from(requestCounter.values()).reduce((sum, count) => sum + count, 0);
-      
+      const totalErrors = Array.from(errorCounter.values()).reduce(
+        (sum, count) => sum + count,
+        0,
+      );
+      const totalRequests = Array.from(requestCounter.values()).reduce(
+        (sum, count) => sum + count,
+        0,
+      );
+
       if (totalRequests > 0) {
         errorRates['overall'] = (totalErrors / totalRequests) * 100;
       }
     }
-    
+
     return errorRates;
   }
 
@@ -123,7 +152,7 @@ export class DiscoveryMetricsService {
     for (const [name, counterMap] of this.counters.entries()) {
       prometheusOutput += `# HELP ${name} Counter metric\n`;
       prometheusOutput += `# TYPE ${name} counter\n`;
-      
+
       for (const [labelKey, value] of counterMap.entries()) {
         const labels = this.parseLabelKey(labelKey);
         const labelString = this.formatPrometheusLabels(labels);
@@ -135,7 +164,7 @@ export class DiscoveryMetricsService {
     for (const [name, gauge] of this.gauges.entries()) {
       prometheusOutput += `# HELP ${name} Gauge metric\n`;
       prometheusOutput += `# TYPE ${name} gauge\n`;
-      
+
       const labelString = this.formatPrometheusLabels(gauge.labels);
       prometheusOutput += `${name}${labelString} ${gauge.value} ${gauge.timestamp}\n`;
     }
@@ -143,20 +172,20 @@ export class DiscoveryMetricsService {
     // Export histograms (simplified as summaries for now)
     for (const [name, entries] of this.histograms.entries()) {
       if (entries.length === 0) continue;
-      
+
       prometheusOutput += `# HELP ${name} Histogram metric\n`;
       prometheusOutput += `# TYPE ${name} histogram\n`;
-      
+
       // Calculate percentiles
-      const values = entries.map(e => e.value).sort((a, b) => a - b);
+      const values = entries.map((e) => e.value).sort((a, b) => a - b);
       const percentiles = [0.5, 0.95, 0.99];
-      
+
       for (const p of percentiles) {
         const index = Math.floor(values.length * p);
         const value = values[index] || 0;
         prometheusOutput += `${name}{quantile="${p}"} ${value} ${timestamp}\n`;
       }
-      
+
       // Count and sum
       prometheusOutput += `${name}_count ${values.length} ${timestamp}\n`;
       prometheusOutput += `${name}_sum ${values.reduce((sum, v) => sum + v, 0)} ${timestamp}\n`;
@@ -184,8 +213,10 @@ export class DiscoveryMetricsService {
     gauges: number;
     totalHistogramEntries: number;
   } {
-    const totalHistogramEntries = Array.from(this.histograms.values())
-      .reduce((total, entries) => total + entries.length, 0);
+    const totalHistogramEntries = Array.from(this.histograms.values()).reduce(
+      (total, entries) => total + entries.length,
+      0,
+    );
 
     return {
       counters: this.counters.size,
@@ -211,17 +242,17 @@ export class DiscoveryMetricsService {
     const labelPairs = Object.entries(labels)
       .map(([key, value]) => `${key}="${value}"`)
       .join(',');
-    
+
     return labelPairs ? `{${labelPairs}}` : '';
   }
 
   private serializeCounters(): Record<string, Record<string, number>> {
     const result: Record<string, Record<string, number>> = {};
-    
+
     for (const [name, counterMap] of this.counters.entries()) {
       result[name] = Object.fromEntries(counterMap.entries());
     }
-    
+
     return result;
   }
 
@@ -229,7 +260,10 @@ export class DiscoveryMetricsService {
     return Object.fromEntries(this.histograms.entries());
   }
 
-  private serializeGauges(): Record<string, { value: number; labels: Record<string, string>; timestamp: number }> {
+  private serializeGauges(): Record<
+    string,
+    { value: number; labels: Record<string, string>; timestamp: number }
+  > {
     return Object.fromEntries(this.gauges.entries());
   }
 }

@@ -26,7 +26,8 @@ export class CreateUserDto {
   email: string;
 
   @ApiProperty({
-    description: 'User password (min 8 characters, max 128 characters, must include uppercase, lowercase, number, and special character)',
+    description:
+      'User password (min 8 characters, max 128 characters, must include uppercase, lowercase, number, and special character)',
     example: 'SecurePass123!',
     minLength: 8,
     maxLength: 128,

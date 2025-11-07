@@ -26,23 +26,36 @@ export interface UpdateEmergencyContactDTO {
 }
 
 @Injectable()
-export class EmergencyContactRepository extends BaseRepository<any, EmergencyContactAttributes, CreateEmergencyContactDTO> {
+export class EmergencyContactRepository extends BaseRepository<
+  any,
+  EmergencyContactAttributes,
+  CreateEmergencyContactDTO
+> {
   constructor(
-    @InjectModel(('' as any)) model: any,
+    @InjectModel('' as any) model: any,
     @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('ICacheManager') cacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'EmergencyContact');
   }
 
-  protected async validateCreate(data: CreateEmergencyContactDTO): Promise<void> {}
-  protected async validateUpdate(id: string, data: UpdateEmergencyContactDTO): Promise<void> {}
+  protected async validateCreate(
+    data: CreateEmergencyContactDTO,
+  ): Promise<void> {}
+  protected async validateUpdate(
+    id: string,
+    data: UpdateEmergencyContactDTO,
+  ): Promise<void> {}
 
   protected async invalidateCaches(entity: any): Promise<void> {
     try {
       const entityData = entity.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, entityData.id));
-      await this.cacheManager.deletePattern(`white-cross:${this.entityName.toLowerCase()}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, entityData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:${this.entityName.toLowerCase()}:*`,
+      );
     } catch (error) {
       this.logger.warn(`Error invalidating ${this.entityName} caches:`, error);
     }
@@ -52,5 +65,3 @@ export class EmergencyContactRepository extends BaseRepository<any, EmergencyCon
     return sanitizeSensitiveData({ ...data });
   }
 }
-
-

@@ -1,5 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
+import axios, {
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosResponse,
+  AxiosError,
+} from 'axios';
 import axiosRetry from 'axios-retry';
 import { CircuitBreakerService } from '../services/circuit-breaker.service';
 import { RateLimiterService } from '../services/rate-limiter.service';
@@ -119,12 +124,9 @@ export class EnhancedBaseApiClient {
     await this.rateLimiter.checkLimit(this.serviceName);
 
     // Execute with circuit breaker protection
-    return this.circuitBreaker.execute(
-      this.serviceName,
-      async () => {
-        return this.client.request<T>(config);
-      },
-    );
+    return this.circuitBreaker.execute(this.serviceName, async () => {
+      return this.client.request<T>(config);
+    });
   }
 
   /**

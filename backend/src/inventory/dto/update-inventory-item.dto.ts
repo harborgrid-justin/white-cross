@@ -1,4 +1,12 @@
-import { IsString, IsNumber, IsOptional, IsInt, IsBoolean, Min, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsInt,
+  IsBoolean,
+  Min,
+  MaxLength,
+} from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateInventoryItemDto {

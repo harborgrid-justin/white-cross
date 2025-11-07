@@ -56,16 +56,20 @@ import {
     NestGraphQLModule.forRootAsync<ApolloDriverConfig>({
       driver: ApolloDriver,
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService, moduleRef: ModuleRef) => {
+      useFactory: async (
+        configService: ConfigService,
+        moduleRef: ModuleRef,
+      ) => {
         const isProduction = configService.get('NODE_ENV') === 'production';
         const isDocker = configService.get('DOCKER') === 'true';
 
         return {
           // Auto-generate schema from TypeScript classes
           // In production or Docker, generate in memory only
-          autoSchemaFile: isProduction || isDocker
-            ? true
-            : join(process.cwd(), 'src/schema.gql'),
+          autoSchemaFile:
+            isProduction || isDocker
+              ? true
+              : join(process.cwd(), 'src/schema.gql'),
 
           // Sort schema alphabetically for consistency
           sortSchema: true,
@@ -78,27 +82,31 @@ import {
 
           // CORS configuration
           cors: {
-            origin: configService.get('security.cors.origin') || 'http://localhost:5173',
+            origin:
+              configService.get('security.cors.origin') ||
+              'http://localhost:5173',
             credentials: true,
           },
 
           // Context builder - extracts request for authentication and creates DataLoaders
           context: ({ req, res }: { req: Request; res: Response }) => {
-          // Get DataLoaderFactory from the request scope
-          // Each GraphQL request gets its own DataLoaderFactory instance
-          // This ensures proper caching scope and prevents data leakage between requests
-          const dataLoaderFactory = moduleRef.get(DataLoaderFactory, { strict: false });
+            // Get DataLoaderFactory from the request scope
+            // Each GraphQL request gets its own DataLoaderFactory instance
+            // This ensures proper caching scope and prevents data leakage between requests
+            const dataLoaderFactory = moduleRef.get(DataLoaderFactory, {
+              strict: false,
+            });
 
-          // Create all DataLoaders for this request
-          const loaders = dataLoaderFactory.createLoaders();
+            // Create all DataLoaders for this request
+            const loaders = dataLoaderFactory.createLoaders();
 
-          return {
-            req,
-            res,
-            // Add DataLoaders to context so resolvers can access them
-            loaders,
-          };
-        },
+            return {
+              req,
+              res,
+              // Add DataLoaders to context so resolvers can access them
+              loaders,
+            };
+          },
 
           // Custom scalars
           resolvers: {
@@ -113,7 +121,10 @@ import {
                 const { connectionParams, extra } = context;
 
                 // Authenticate WebSocket connection
-                const token = connectionParams?.authorization?.replace('Bearer ', '');
+                const token = connectionParams?.authorization?.replace(
+                  'Bearer ',
+                  '',
+                );
                 if (!token) {
                   console.warn('WebSocket connection attempted without token');
                   throw new Error('Missing authentication token');
@@ -131,25 +142,25 @@ import {
 
           // Error formatting with PHI sanitization (HIPAA compliance)
           formatError: (error) => {
-          // Check if error contains PHI for audit logging
-          const hasPHI = containsPHI(error.message);
-          if (hasPHI) {
-            console.warn(
-              'SECURITY ALERT: GraphQL error contained PHI and was sanitized',
-              {
-                timestamp: new Date().toISOString(),
-                errorCode: error.extensions?.code,
-                path: error.path,
-              }
-            );
-          }
+            // Check if error contains PHI for audit logging
+            const hasPHI = containsPHI(error.message);
+            if (hasPHI) {
+              console.warn(
+                'SECURITY ALERT: GraphQL error contained PHI and was sanitized',
+                {
+                  timestamp: new Date().toISOString(),
+                  errorCode: error.extensions?.code,
+                  path: error.path,
+                },
+              );
+            }
 
-          // Log errors server-side (before sanitization for debugging)
-          console.error('GraphQL Error:', {
-            message: error.message,
-            code: error.extensions?.code,
-            path: error.path,
-          });
+            // Log errors server-side (before sanitization for debugging)
+            console.error('GraphQL Error:', {
+              message: error.message,
+              code: error.extensions?.code,
+              path: error.path,
+            });
 
             // Sanitize error to remove any PHI
             const sanitizedError = sanitizeGraphQLError(error);
@@ -158,7 +169,8 @@ import {
             return {
               message: sanitizedError.message,
               extensions: {
-                code: sanitizedError.extensions?.code || 'INTERNAL_SERVER_ERROR',
+                code:
+                  sanitizedError.extensions?.code || 'INTERNAL_SERVER_ERROR',
                 ...(!isProduction && {
                   stacktrace: sanitizedError.extensions?.stacktrace,
                 }),

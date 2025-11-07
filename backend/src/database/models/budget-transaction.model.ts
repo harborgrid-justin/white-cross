@@ -11,7 +11,7 @@ import {
   UpdatedAt,
   Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 
@@ -30,28 +30,28 @@ import { Op } from 'sequelize';
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'budget_transactions',
   timestamps: true,
   underscored: false,
   createdAt: 'created_at',
-  updatedAt: 'updated_at'
-  ,
+  updatedAt: 'updated_at',
   indexes: [
     {
       fields: ['createdAt'],
-      name: 'idx_budget_transaction_created_at'
+      name: 'idx_budget_transaction_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_budget_transaction_updated_at'
-    }
-  ]})
+      name: 'idx_budget_transaction_updated_at',
+    },
+  ],
+})
 export class BudgetTransaction extends Model<BudgetTransaction> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -61,62 +61,64 @@ export class BudgetTransaction extends Model<BudgetTransaction> {
   @ForeignKey(() => require('./budget-category.model').BudgetCategory)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   categoryId: string;
 
   @Column({
     type: DataType.DECIMAL(10, 2),
-    allowNull: false
+    allowNull: false,
   })
   amount: number;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false
+    allowNull: false,
   })
   description: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   transactionDate: Date;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: true
+    allowNull: true,
   })
   referenceId: string | null;
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: true
+    allowNull: true,
   })
   referenceType: string | null;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: true
+    allowNull: true,
   })
   notes: string | null;
 
   @CreatedAt
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   declare createdAt: Date;
 
   @UpdatedAt
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   declare updatedAt: Date;
 
   // Relationships
-  @BelongsTo(() => require('./budget-category.model').BudgetCategory, { foreignKey: 'category_id', as: 'category' })
+  @BelongsTo(() => require('./budget-category.model').BudgetCategory, {
+    foreignKey: 'category_id',
+    as: 'category',
+  })
   declare category: any;
-
 
   // Hooks for HIPAA compliance
   @BeforeCreate
@@ -124,7 +126,9 @@ export class BudgetTransaction extends Model<BudgetTransaction> {
   static async auditPHIAccess(instance: BudgetTransaction) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] BudgetTransaction ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] BudgetTransaction ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

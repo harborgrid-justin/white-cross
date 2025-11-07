@@ -9,7 +9,12 @@
  * - Metrics export for monitoring systems
  */
 
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 
@@ -49,12 +54,10 @@ export class ConnectionMonitorService implements OnModuleInit, OnModuleDestroy {
     isHealthy: true,
     lastCheckTime: new Date(),
     consecutiveFailures: 0,
-    issues: []
+    issues: [],
   };
 
-  constructor(
-    @InjectConnection() private readonly sequelize: Sequelize
-  ) {}
+  constructor(@InjectConnection() private readonly sequelize: Sequelize) {}
 
   async onModuleInit(): Promise<void> {
     this.logger.log('Initializing Connection Pool Monitor');
@@ -130,7 +133,7 @@ export class ConnectionMonitorService implements OnModuleInit, OnModuleDestroy {
         total,
         max,
         utilizationPercent,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       return this.currentMetrics;
@@ -155,15 +158,15 @@ export class ConnectionMonitorService implements OnModuleInit, OnModuleDestroy {
       this.logger.error(
         `CRITICAL: Connection pool utilization at ${utilizationPercent.toFixed(1)}% (${active}/${max} connections)`,
         {
-          metrics: this.currentMetrics
-        }
+          metrics: this.currentMetrics,
+        },
       );
     } else if (utilizationPercent >= this.HIGH_UTILIZATION_THRESHOLD * 100) {
       this.logger.warn(
         `HIGH: Connection pool utilization at ${utilizationPercent.toFixed(1)}% (${active}/${max} connections)`,
         {
-          metrics: this.currentMetrics
-        }
+          metrics: this.currentMetrics,
+        },
       );
     }
 
@@ -172,8 +175,8 @@ export class ConnectionMonitorService implements OnModuleInit, OnModuleDestroy {
       this.logger.warn(
         `Connection pool wait queue is high: ${waiting} requests waiting`,
         {
-          metrics: this.currentMetrics
-        }
+          metrics: this.currentMetrics,
+        },
       );
     }
 
@@ -182,7 +185,7 @@ export class ConnectionMonitorService implements OnModuleInit, OnModuleDestroy {
       active,
       idle: this.currentMetrics.idle,
       waiting,
-      utilization: `${utilizationPercent.toFixed(1)}%`
+      utilization: `${utilizationPercent.toFixed(1)}%`,
     });
   }
 
@@ -208,19 +211,24 @@ export class ConnectionMonitorService implements OnModuleInit, OnModuleDestroy {
 
       this.logger.error(
         `Database health check failed (${this.healthStatus.consecutiveFailures} consecutive failures)`,
-        error
+        error,
       );
 
       // Mark as unhealthy after 3 consecutive failures
       if (this.healthStatus.consecutiveFailures >= 3) {
         this.healthStatus.isHealthy = false;
-        this.logger.error('Database marked as UNHEALTHY after 3 consecutive failures');
+        this.logger.error(
+          'Database marked as UNHEALTHY after 3 consecutive failures',
+        );
       }
     }
 
     // Check metrics for additional issues
     if (this.currentMetrics) {
-      if (this.currentMetrics.utilizationPercent >= this.CRITICAL_UTILIZATION_THRESHOLD * 100) {
+      if (
+        this.currentMetrics.utilizationPercent >=
+        this.CRITICAL_UTILIZATION_THRESHOLD * 100
+      ) {
         issues.push('Connection pool near exhaustion');
       }
       if (this.currentMetrics.waiting > this.HIGH_WAIT_THRESHOLD) {
@@ -256,7 +264,8 @@ export class ConnectionMonitorService implements OnModuleInit, OnModuleDestroy {
       return '';
     }
 
-    const { active, idle, waiting, total, max, utilizationPercent } = this.currentMetrics;
+    const { active, idle, waiting, total, max, utilizationPercent } =
+      this.currentMetrics;
 
     return `
 # HELP db_pool_active_connections Number of active database connections
@@ -304,7 +313,7 @@ db_health_consecutive_failures ${this.healthStatus.consecutiveFailures}
       total: 0,
       max: 0,
       utilizationPercent: 0,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
   }
 

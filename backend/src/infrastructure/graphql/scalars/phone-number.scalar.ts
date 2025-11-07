@@ -84,7 +84,7 @@ export class PhoneNumberScalar implements CustomScalar<string, string> {
       return phoneNumber.format('E.164');
     } catch (error) {
       throw new Error(
-        `Invalid phone number format: ${value}. Expected format: +1 (555) 123-4567 or +15551234567`
+        `Invalid phone number format: ${value}. Expected format: +1 (555) 123-4567 or +15551234567`,
       );
     }
   }

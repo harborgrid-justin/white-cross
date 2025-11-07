@@ -7,7 +7,7 @@ import {
   Default,
   Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
@@ -26,10 +26,10 @@ export interface SyncStateAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'sync_states',
@@ -38,19 +38,22 @@ export interface SyncStateAttributes {
   indexes: [
     {
       fields: ['entityType', 'entityId'],
-      unique: true
+      unique: true,
     },
     {
       fields: ['createdAt'],
-      name: 'idx_sync_state_created_at'
+      name: 'idx_sync_state_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_sync_state_updated_at'
-    }
-  ]
+      name: 'idx_sync_state_updated_at',
+    },
+  ],
 })
-export class SyncState extends Model<SyncStateAttributes> implements SyncStateAttributes {
+export class SyncState
+  extends Model<SyncStateAttributes>
+  implements SyncStateAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -58,25 +61,25 @@ export class SyncState extends Model<SyncStateAttributes> implements SyncStateAt
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: false
+    allowNull: false,
   })
   entityType: string;
 
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   entityId: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   lastSyncAt: Date;
 
   @Column({
     type: DataType.STRING(50),
-    allowNull: false
+    allowNull: false,
   })
   syncStatus: string;
 
@@ -89,14 +92,15 @@ export class SyncState extends Model<SyncStateAttributes> implements SyncStateAt
   @Column(DataType.DATE)
   declare updatedAt?: Date;
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: SyncState) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] SyncState ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] SyncState ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

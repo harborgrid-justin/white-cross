@@ -256,7 +256,11 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
  * // Manage permission implies all actions
  * hasPermission(UserRole.NURSE, 'medications', 'update'); // true (has 'manage')
  */
-export function hasPermission(userRole: UserRole, resource: string, action: string): boolean {
+export function hasPermission(
+  userRole: UserRole,
+  resource: string,
+  action: string,
+): boolean {
   const permissions = ROLE_PERMISSIONS[userRole] || [];
 
   // Check for wildcard permission (admin)
@@ -266,7 +270,8 @@ export function hasPermission(userRole: UserRole, resource: string, action: stri
 
   // Check for specific permission
   return permissions.some(
-    (p) => p.resource === resource && (p.action === action || p.action === 'manage')
+    (p) =>
+      p.resource === resource && (p.action === action || p.action === 'manage'),
   );
 }
 
@@ -344,7 +349,10 @@ export function hasPermission(userRole: UserRole, resource: string, action: stri
  *   }
  * }
  */
-export function requirePermission(resource: string, action: 'create' | 'read' | 'update' | 'delete' | 'manage') {
+export function requirePermission(
+  resource: string,
+  action: 'create' | 'read' | 'update' | 'delete' | 'manage',
+) {
   return (request: Request, h: ResponseToolkit) => {
     const credentials = request.auth.credentials as any;
     const user = credentials?.user || credentials;
@@ -424,7 +432,7 @@ export function requirePermission(resource: string, action: 'create' | 'read' | 
 export async function canAccessStudent(
   userId: string,
   userRole: UserRole,
-  studentId: string
+  studentId: string,
 ): Promise<boolean> {
   // Admins and District Admins can access all students
   if (userRole === UserRole.ADMIN || userRole === UserRole.DISTRICT_ADMIN) {
@@ -546,7 +554,8 @@ export function requireStudentAccess() {
   return async (request: Request, h: ResponseToolkit) => {
     const credentials = request.auth.credentials as any;
     const user = credentials?.user || credentials;
-    const studentId = request.params.studentId || (request.payload as any)?.studentId;
+    const studentId =
+      request.params.studentId || (request.payload as any)?.studentId;
 
     if (!user) {
       throw Boom.unauthorized('Authentication required');
@@ -556,7 +565,11 @@ export function requireStudentAccess() {
       throw Boom.badRequest('Student ID required');
     }
 
-    const hasAccess = await canAccessStudent(user.id, user.role as UserRole, studentId);
+    const hasAccess = await canAccessStudent(
+      user.id,
+      user.role as UserRole,
+      studentId,
+    );
 
     if (!hasAccess) {
       throw Boom.forbidden('You do not have access to this student');

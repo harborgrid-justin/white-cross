@@ -1,13 +1,25 @@
-import { IsEnum, IsOptional, IsBoolean, IsString, IsArray } from 'class-validator';
+import {
+  IsEnum,
+  IsOptional,
+  IsBoolean,
+  IsString,
+  IsArray,
+} from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { ConfigCategory, ConfigScope } from '../../administration/enums/administration.enums';
+import {
+  ConfigCategory,
+  ConfigScope,
+} from '../../administration/enums/administration.enums';
 import { Transform } from 'class-transformer';
 
 /**
  * DTO for filtering configurations
  */
 export class FilterConfigurationDto {
-  @ApiPropertyOptional({ enum: ConfigCategory, description: 'Filter by category' })
+  @ApiPropertyOptional({
+    enum: ConfigCategory,
+    description: 'Filter by category',
+  })
   @IsOptional()
   @IsEnum(ConfigCategory)
   category?: ConfigCategory;
@@ -31,7 +43,7 @@ export class FilterConfigurationDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  @Transform(({ value }) => Array.isArray(value) ? value : [value])
+  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
   tags?: string[];
 
   @ApiPropertyOptional({ description: 'Filter by public visibility' })

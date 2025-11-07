@@ -55,7 +55,8 @@ export class AnalyticsService {
     return {
       module: 'Analytics',
       version: '1.0.0',
-      description: 'Comprehensive health metrics, analytics, and reporting for school healthcare operations',
+      description:
+        'Comprehensive health metrics, analytics, and reporting for school healthcare operations',
       endpoints: 17,
       categories: [
         {
@@ -113,7 +114,9 @@ export class AnalyticsService {
     try {
       const start = query.startDate;
       const end = query.endDate;
-      const daysDiff = Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+      const daysDiff = Math.floor(
+        (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
+      );
 
       // Determine time period based on date range
       let period: TimePeriod = TimePeriod.LAST_30_DAYS;
@@ -124,10 +127,17 @@ export class AnalyticsService {
       else period = TimePeriod.LAST_YEAR;
 
       const schoolId = query.schoolId || query.districtId || 'default-school';
-      const metrics = await this.healthTrendService.getHealthMetrics(schoolId, period);
+      const metrics = await this.healthTrendService.getHealthMetrics(
+        schoolId,
+        period,
+      );
 
       // Calculate comparison data if requested
-      let comparisonData: { periodLabel: string; startDate: Date; endDate: Date } | null = null;
+      let comparisonData: {
+        periodLabel: string;
+        startDate: Date;
+        endDate: Date;
+      } | null = null;
       if (query.compareWithPrevious) {
         const previousStart = new Date(start);
         previousStart.setDate(previousStart.getDate() - daysDiff);
@@ -189,7 +199,8 @@ export class AnalyticsService {
         period,
       );
 
-      const medicationTrends = await this.healthTrendService.getMedicationTrends(schoolId, period);
+      const medicationTrends =
+        await this.healthTrendService.getMedicationTrends(schoolId, period);
 
       return {
         healthConditionTrends: conditionTrends,
@@ -208,9 +219,13 @@ export class AnalyticsService {
    * Get student-specific health trends
    * Integrates with health records, medication logs, and appointments for comprehensive metrics
    */
-  async getStudentHealthMetrics(studentId: string, query: GetStudentHealthMetricsQueryDto) {
+  async getStudentHealthMetrics(
+    studentId: string,
+    query: GetStudentHealthMetricsQueryDto,
+  ) {
     try {
-      const startDate = query.startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const startDate =
+        query.startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
       const endDate = query.endDate || new Date();
 
       // Query health records for the student
@@ -251,15 +266,22 @@ export class AnalyticsService {
 
       // Calculate medication adherence
       const scheduledMedications = medicationLogs.length;
-      const administeredMedications = medicationLogs.filter((log: any) => log.status === 'ADMINISTERED').length;
-      const adherenceRate = scheduledMedications > 0
-        ? Math.round((administeredMedications / scheduledMedications) * 100)
-        : 100;
+      const administeredMedications = medicationLogs.filter(
+        (log: any) => log.status === 'ADMINISTERED',
+      ).length;
+      const adherenceRate =
+        scheduledMedications > 0
+          ? Math.round((administeredMedications / scheduledMedications) * 100)
+          : 100;
 
       // Extract vital signs from health records
       const vitalSignsRecords = healthRecords
-        .filter(record => record.recordType === 'VITAL_SIGNS_CHECK' && record.metadata?.vitalSigns)
-        .map(record => ({
+        .filter(
+          (record) =>
+            record.recordType === 'VITAL_SIGNS_CHECK' &&
+            record.metadata?.vitalSigns,
+        )
+        .map((record) => ({
           date: record.recordDate,
           ...(record.metadata?.vitalSigns || {}),
         }));
@@ -273,7 +295,7 @@ export class AnalyticsService {
 
       const trends = {
         vitalSigns: vitalSignsRecords,
-        healthVisits: healthRecords.map(record => ({
+        healthVisits: healthRecords.map((record) => ({
           id: record.id,
           type: record.recordType,
           title: record.title,
@@ -289,9 +311,15 @@ export class AnalyticsService {
         },
         appointments: {
           total: appointments.length,
-          completed: appointments.filter((apt: any) => apt.status === 'COMPLETED').length,
-          upcoming: appointments.filter((apt: any) => apt.status === 'SCHEDULED').length,
-          cancelled: appointments.filter((apt: any) => apt.status === 'CANCELLED').length,
+          completed: appointments.filter(
+            (apt: any) => apt.status === 'COMPLETED',
+          ).length,
+          upcoming: appointments.filter(
+            (apt: any) => apt.status === 'SCHEDULED',
+          ).length,
+          cancelled: appointments.filter(
+            (apt: any) => apt.status === 'CANCELLED',
+          ).length,
         },
       };
 
@@ -319,17 +347,23 @@ export class AnalyticsService {
       const start = query.startDate;
       const end = query.endDate;
 
-      const summary = await this.healthTrendService.getPopulationSummary(schoolId, TimePeriod.CUSTOM, {
-        start,
-        end,
-      });
-
-      const immunizationData = await this.healthTrendService.getImmunizationDashboard(schoolId);
-
-      const incidentAnalytics = await this.healthTrendService.getIncidentAnalytics(
+      const summary = await this.healthTrendService.getPopulationSummary(
         schoolId,
-        TimePeriod.LAST_90_DAYS,
+        TimePeriod.CUSTOM,
+        {
+          start,
+          end,
+        },
       );
+
+      const immunizationData =
+        await this.healthTrendService.getImmunizationDashboard(schoolId);
+
+      const incidentAnalytics =
+        await this.healthTrendService.getIncidentAnalytics(
+          schoolId,
+          TimePeriod.LAST_90_DAYS,
+        );
 
       return {
         schoolId,
@@ -352,10 +386,11 @@ export class AnalyticsService {
   async getIncidentTrends(query: GetIncidentTrendsQueryDto) {
     try {
       const schoolId = query.schoolId || 'default-school';
-      const incidentAnalytics = await this.healthTrendService.getIncidentAnalytics(
-        schoolId,
-        TimePeriod.LAST_90_DAYS,
-      );
+      const incidentAnalytics =
+        await this.healthTrendService.getIncidentAnalytics(
+          schoolId,
+          TimePeriod.LAST_90_DAYS,
+        );
 
       return {
         trends: incidentAnalytics.trends,
@@ -383,10 +418,11 @@ export class AnalyticsService {
   async getIncidentsByLocation(query: GetIncidentsByLocationQueryDto) {
     try {
       const schoolId = query.schoolId || 'default-school';
-      const incidentAnalytics = await this.healthTrendService.getIncidentAnalytics(
-        schoolId,
-        TimePeriod.LAST_90_DAYS,
-      );
+      const incidentAnalytics =
+        await this.healthTrendService.getIncidentAnalytics(
+          schoolId,
+          TimePeriod.LAST_90_DAYS,
+        );
 
       return {
         byLocation: incidentAnalytics.byLocation,
@@ -409,10 +445,11 @@ export class AnalyticsService {
   async getMedicationUsage(query: GetMedicationUsageQueryDto) {
     try {
       const schoolId = query.schoolId || 'default-school';
-      const medicationTrends = await this.healthTrendService.getMedicationTrends(
-        schoolId,
-        TimePeriod.LAST_30_DAYS,
-      );
+      const medicationTrends =
+        await this.healthTrendService.getMedicationTrends(
+          schoolId,
+          TimePeriod.LAST_30_DAYS,
+        );
 
       const summary = await this.healthTrendService.getPopulationSummary(
         schoolId,
@@ -644,7 +681,10 @@ export class AnalyticsService {
       const upcomingMedications = await this.medicationLogModel.findAll({
         where: {
           scheduledAt: {
-            [Op.between]: [new Date(), new Date(Date.now() + 4 * 60 * 60 * 1000)], // Next 4 hours
+            [Op.between]: [
+              new Date(),
+              new Date(Date.now() + 4 * 60 * 60 * 1000),
+            ], // Next 4 hours
           },
           status: 'PENDING',
         },
@@ -657,11 +697,12 @@ export class AnalyticsService {
         activeAppointments: todayAppointments.length,
         criticalAlerts: criticalIncidents.length,
         pendingMedications: upcomingMedications.length,
-        status: criticalIncidents.length > 5 ? 'ATTENTION_REQUIRED' : 'OPERATIONAL',
+        status:
+          criticalIncidents.length > 5 ? 'ATTENTION_REQUIRED' : 'OPERATIONAL',
       };
 
       const alerts = query.includeAlerts
-        ? criticalIncidents.map(incident => ({
+        ? criticalIncidents.map((incident) => ({
             id: incident.id,
             type: incident.type,
             severity: incident.severity,
@@ -680,7 +721,7 @@ export class AnalyticsService {
               time: med.scheduledAt,
               priority: 'HIGH',
             })),
-            ...todayAppointments.slice(0, 10).map(apt => ({
+            ...todayAppointments.slice(0, 10).map((apt) => ({
               type: 'Appointment',
               studentId: apt.studentId,
               appointmentType: apt.type,
@@ -732,7 +773,10 @@ export class AnalyticsService {
           break;
       }
 
-      const summary = await this.healthTrendService.getPopulationSummary(schoolId, period);
+      const summary = await this.healthTrendService.getPopulationSummary(
+        schoolId,
+        period,
+      );
 
       const complianceMetrics = query.includeComplianceMetrics
         ? {
@@ -743,7 +787,8 @@ export class AnalyticsService {
           }
         : null;
 
-      const insights = await this.healthTrendService.getPredictiveInsights(schoolId);
+      const insights =
+        await this.healthTrendService.getPredictiveInsights(schoolId);
 
       return {
         summary,
@@ -765,7 +810,8 @@ export class AnalyticsService {
   async getPlatformSummary(query: GetPlatformSummaryQueryDto) {
     try {
       const targetSchoolId =
-        (query.schoolIds && query.schoolIds.length > 0 && query.schoolIds[0]) || 'default-school';
+        (query.schoolIds && query.schoolIds.length > 0 && query.schoolIds[0]) ||
+        'default-school';
 
       const summary = await this.healthTrendService.getPopulationSummary(
         targetSchoolId,
@@ -778,7 +824,8 @@ export class AnalyticsService {
         totalDistricts: query.districtId ? 1 : 0,
         healthMetrics: {
           totalHealthVisits: summary.totalHealthVisits,
-          totalMedicationAdministrations: summary.totalMedicationAdministrations,
+          totalMedicationAdministrations:
+            summary.totalMedicationAdministrations,
           totalIncidents: summary.totalIncidents,
           immunizationCompliance: summary.immunizationComplianceRate,
         },
@@ -804,7 +851,10 @@ export class AnalyticsService {
   /**
    * Generate custom report
    */
-  async generateCustomReport(dto: AnalyticsGenerateCustomReportDto, userId: string) {
+  async generateCustomReport(
+    dto: AnalyticsGenerateCustomReportDto,
+    userId: string,
+  ) {
     try {
       const start = dto.startDate;
       const end = dto.endDate;
@@ -815,23 +865,28 @@ export class AnalyticsService {
 
       switch (dto.reportType) {
         case 'IMMUNIZATION_REPORT':
-          report = await this.reportGeneratorService.generateImmunizationReport({
-            schoolId,
-            periodStart: start,
-            periodEnd: end,
-            format: format as any,
-            generatedBy: userId,
-          });
+          report = await this.reportGeneratorService.generateImmunizationReport(
+            {
+              schoolId,
+              periodStart: start,
+              periodEnd: end,
+              format: format as any,
+              generatedBy: userId,
+            },
+          );
           break;
 
         case 'COMPLIANCE_STATUS':
-          report = await this.reportGeneratorService.generateControlledSubstanceReport({
-            schoolId,
-            periodStart: start,
-            periodEnd: end,
-            format: format as any,
-            generatedBy: userId,
-          });
+          report =
+            await this.reportGeneratorService.generateControlledSubstanceReport(
+              {
+                schoolId,
+                periodStart: start,
+                periodEnd: end,
+                format: format as any,
+                generatedBy: userId,
+              },
+            );
           break;
 
         case 'STUDENT_HEALTH_SUMMARY':
@@ -871,7 +926,8 @@ export class AnalyticsService {
           format,
           generatedAt: new Date(),
           status: 'COMPLETED',
-          downloadUrl: report.fileUrl || `/api/v1/analytics/reports/${report.id}`,
+          downloadUrl:
+            report.fileUrl || `/api/v1/analytics/reports/${report.id}`,
           recipients: dto.recipients,
           schedule: dto.schedule,
         },

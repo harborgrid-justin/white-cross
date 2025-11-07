@@ -57,7 +57,15 @@ export class SanitizePipe implements PipeTransform {
   }) {
     this.allowHtml = options?.allowHtml ?? false;
     this.allowedTags = options?.allowedTags ?? [
-      'p', 'br', 'strong', 'em', 'u', 'a', 'ul', 'ol', 'li',
+      'p',
+      'br',
+      'strong',
+      'em',
+      'u',
+      'a',
+      'ul',
+      'ol',
+      'li',
     ];
   }
 
@@ -110,7 +118,7 @@ export class SanitizePipe implements PipeTransform {
       return sanitizeHtml(value, {
         allowedTags: this.allowedTags,
         allowedAttributes: {
-          'a': ['href', 'title'],
+          a: ['href', 'title'],
         },
         allowedSchemes: ['http', 'https', 'mailto'],
       });

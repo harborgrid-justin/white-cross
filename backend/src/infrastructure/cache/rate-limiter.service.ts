@@ -48,10 +48,7 @@ export class RateLimiterService {
    * @param context - Context object (e.g., request, user)
    * @returns Rate limit status
    */
-  async checkLimit(
-    configName: string,
-    context: any,
-  ): Promise<RateLimitStatus> {
+  async checkLimit(configName: string, context: any): Promise<RateLimitStatus> {
     const config = this.configs.get(configName);
     if (!config) {
       this.logger.warn(`Rate limit config not found: ${configName}`);
@@ -64,7 +61,10 @@ export class RateLimiterService {
     }
 
     // Generate rate limit key
-    const key = this.buildRateLimitKey(configName, config.keyGenerator(context));
+    const key = this.buildRateLimitKey(
+      configName,
+      config.keyGenerator(context),
+    );
     this.stats.totalRequests++;
     this.stats.uniqueKeys.add(key);
 

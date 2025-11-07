@@ -20,7 +20,9 @@ export class AuditQueryDto {
   @IsUUID()
   userId?: string;
 
-  @ApiPropertyOptional({ description: 'Filter by entity type (e.g., District, School)' })
+  @ApiPropertyOptional({
+    description: 'Filter by entity type (e.g., District, School)',
+  })
   @IsOptional()
   @IsString()
   entityType?: string;
@@ -30,7 +32,10 @@ export class AuditQueryDto {
   @IsUUID()
   entityId?: string;
 
-  @ApiPropertyOptional({ description: 'Filter by action type', enum: AuditAction })
+  @ApiPropertyOptional({
+    description: 'Filter by action type',
+    enum: AuditAction,
+  })
   @IsOptional()
   @IsEnum(AuditAction)
   action?: AuditAction;

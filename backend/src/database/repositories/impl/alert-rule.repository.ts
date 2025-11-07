@@ -14,7 +14,7 @@ import {
   AlertSeverity,
   AlertCategory,
   TriggerCondition,
-  NotificationChannel
+  NotificationChannel,
 } from '../../models/alert-rule.model';
 
 export interface AlertRuleAttributes {
@@ -87,12 +87,16 @@ export interface UpdateAlertRuleDTO {
 }
 
 @Injectable()
-export class AlertRuleRepository extends BaseRepository<AlertRule, AlertRuleAttributes, CreateAlertRuleDTO> {
+export class AlertRuleRepository extends BaseRepository<
+  AlertRule,
+  AlertRuleAttributes,
+  CreateAlertRuleDTO
+> {
   constructor(
     @InjectModel(AlertRule)
     private readonly alertRuleModel: typeof AlertRule,
     @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('ICacheManager') cacheManager,
   ) {
     super(alertRuleModel, auditLogger, cacheManager, 'AlertRule');
   }
@@ -103,37 +107,67 @@ export class AlertRuleRepository extends BaseRepository<AlertRule, AlertRuleAttr
   protected async validateCreate(data: CreateAlertRuleDTO): Promise<void> {
     // Validate required fields
     if (!data.name) {
-      throw new RepositoryError('Alert rule name is required', 'VALIDATION_ERROR');
+      throw new RepositoryError(
+        'Alert rule name is required',
+        'VALIDATION_ERROR',
+      );
     }
 
     if (!data.category) {
-      throw new RepositoryError('Alert category is required', 'VALIDATION_ERROR');
+      throw new RepositoryError(
+        'Alert category is required',
+        'VALIDATION_ERROR',
+      );
     }
 
     if (!data.severity) {
-      throw new RepositoryError('Alert severity is required', 'VALIDATION_ERROR');
+      throw new RepositoryError(
+        'Alert severity is required',
+        'VALIDATION_ERROR',
+      );
     }
 
     // Validate trigger conditions
-    if (!Array.isArray(data.triggerConditions) || data.triggerConditions.length === 0) {
-      throw new RepositoryError('At least one trigger condition is required', 'VALIDATION_ERROR');
+    if (
+      !Array.isArray(data.triggerConditions) ||
+      data.triggerConditions.length === 0
+    ) {
+      throw new RepositoryError(
+        'At least one trigger condition is required',
+        'VALIDATION_ERROR',
+      );
     }
 
     // Validate each trigger condition
     for (const condition of data.triggerConditions) {
       if (!condition.field || !condition.operator) {
-        throw new RepositoryError('Trigger condition must have field and operator', 'VALIDATION_ERROR');
+        throw new RepositoryError(
+          'Trigger condition must have field and operator',
+          'VALIDATION_ERROR',
+        );
       }
     }
 
     // Validate notification channels
-    if (!Array.isArray(data.notificationChannels) || data.notificationChannels.length === 0) {
-      throw new RepositoryError('At least one notification channel is required', 'VALIDATION_ERROR');
+    if (
+      !Array.isArray(data.notificationChannels) ||
+      data.notificationChannels.length === 0
+    ) {
+      throw new RepositoryError(
+        'At least one notification channel is required',
+        'VALIDATION_ERROR',
+      );
     }
 
     // Validate priority range
-    if (data.priority !== undefined && (data.priority < 0 || data.priority > 100)) {
-      throw new RepositoryError('Priority must be between 0 and 100', 'VALIDATION_ERROR');
+    if (
+      data.priority !== undefined &&
+      (data.priority < 0 || data.priority > 100)
+    ) {
+      throw new RepositoryError(
+        'Priority must be between 0 and 100',
+        'VALIDATION_ERROR',
+      );
     }
 
     // Check for duplicate name
@@ -144,7 +178,7 @@ export class AlertRuleRepository extends BaseRepository<AlertRule, AlertRuleAttr
     if (existing) {
       throw new RepositoryError(
         `Alert rule with name '${data.name}' already exists`,
-        'DUPLICATE_RECORD'
+        'DUPLICATE_RECORD',
       );
     }
   }
@@ -152,29 +186,53 @@ export class AlertRuleRepository extends BaseRepository<AlertRule, AlertRuleAttr
   /**
    * Validate alert rule update
    */
-  protected async validateUpdate(id: string, data: UpdateAlertRuleDTO): Promise<void> {
+  protected async validateUpdate(
+    id: string,
+    data: UpdateAlertRuleDTO,
+  ): Promise<void> {
     // Validate priority range if being updated
-    if (data.priority !== undefined && (data.priority < 0 || data.priority > 100)) {
-      throw new RepositoryError('Priority must be between 0 and 100', 'VALIDATION_ERROR');
+    if (
+      data.priority !== undefined &&
+      (data.priority < 0 || data.priority > 100)
+    ) {
+      throw new RepositoryError(
+        'Priority must be between 0 and 100',
+        'VALIDATION_ERROR',
+      );
     }
 
     // Validate trigger conditions if being updated
     if (data.triggerConditions !== undefined) {
-      if (!Array.isArray(data.triggerConditions) || data.triggerConditions.length === 0) {
-        throw new RepositoryError('At least one trigger condition is required', 'VALIDATION_ERROR');
+      if (
+        !Array.isArray(data.triggerConditions) ||
+        data.triggerConditions.length === 0
+      ) {
+        throw new RepositoryError(
+          'At least one trigger condition is required',
+          'VALIDATION_ERROR',
+        );
       }
 
       for (const condition of data.triggerConditions) {
         if (!condition.field || !condition.operator) {
-          throw new RepositoryError('Trigger condition must have field and operator', 'VALIDATION_ERROR');
+          throw new RepositoryError(
+            'Trigger condition must have field and operator',
+            'VALIDATION_ERROR',
+          );
         }
       }
     }
 
     // Validate notification channels if being updated
     if (data.notificationChannels !== undefined) {
-      if (!Array.isArray(data.notificationChannels) || data.notificationChannels.length === 0) {
-        throw new RepositoryError('At least one notification channel is required', 'VALIDATION_ERROR');
+      if (
+        !Array.isArray(data.notificationChannels) ||
+        data.notificationChannels.length === 0
+      ) {
+        throw new RepositoryError(
+          'At least one notification channel is required',
+          'VALIDATION_ERROR',
+        );
       }
     }
 
@@ -187,7 +245,7 @@ export class AlertRuleRepository extends BaseRepository<AlertRule, AlertRuleAttr
       if (existing && existing.id !== id) {
         throw new RepositoryError(
           `Alert rule with name '${data.name}' already exists`,
-          'DUPLICATE_RECORD'
+          'DUPLICATE_RECORD',
         );
       }
     }
@@ -201,28 +259,40 @@ export class AlertRuleRepository extends BaseRepository<AlertRule, AlertRuleAttr
       const entityData = entity.get ? entity.get() : entity;
 
       // Invalidate specific rule cache
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, entityData.id));
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, entityData.id),
+      );
 
       // Invalidate category cache
-      await this.cacheManager.delete(`white-cross:alert-rules:category:${entityData.category}`);
+      await this.cacheManager.delete(
+        `white-cross:alert-rules:category:${entityData.category}`,
+      );
 
       // Invalidate severity cache
-      await this.cacheManager.delete(`white-cross:alert-rules:severity:${entityData.severity}`);
+      await this.cacheManager.delete(
+        `white-cross:alert-rules:severity:${entityData.severity}`,
+      );
 
       // Invalidate active rules cache
       await this.cacheManager.delete(`white-cross:alert-rules:active`);
 
       // Invalidate school/district caches
       if (entityData.schoolId) {
-        await this.cacheManager.delete(`white-cross:alert-rules:school:${entityData.schoolId}`);
+        await this.cacheManager.delete(
+          `white-cross:alert-rules:school:${entityData.schoolId}`,
+        );
       }
 
       if (entityData.districtId) {
-        await this.cacheManager.delete(`white-cross:alert-rules:district:${entityData.districtId}`);
+        await this.cacheManager.delete(
+          `white-cross:alert-rules:district:${entityData.districtId}`,
+        );
       }
 
       // Invalidate all alert rules pattern
-      await this.cacheManager.deletePattern(`white-cross:${this.entityName.toLowerCase()}:*`);
+      await this.cacheManager.deletePattern(
+        `white-cross:${this.entityName.toLowerCase()}:*`,
+      );
     } catch (error) {
       this.logger.warn(`Error invalidating ${this.entityName} caches:`, error);
     }
@@ -251,7 +321,7 @@ export class AlertRuleRepository extends BaseRepository<AlertRule, AlertRuleAttr
     const rules = await this.alertRuleModel.findAll({
       where: {
         category,
-        isActive: true
+        isActive: true,
       },
       order: [['priority', 'DESC']],
     });
@@ -278,7 +348,7 @@ export class AlertRuleRepository extends BaseRepository<AlertRule, AlertRuleAttr
     const rules = await this.alertRuleModel.findAll({
       where: {
         severity,
-        isActive: true
+        isActive: true,
       },
       order: [['priority', 'DESC']],
     });
@@ -304,7 +374,10 @@ export class AlertRuleRepository extends BaseRepository<AlertRule, AlertRuleAttr
     // Query database
     const rules = await this.alertRuleModel.findAll({
       where: { isActive: true },
-      order: [['priority', 'DESC'], ['category', 'ASC']],
+      order: [
+        ['priority', 'DESC'],
+        ['category', 'ASC'],
+      ],
     });
 
     // Cache results
@@ -313,4 +386,3 @@ export class AlertRuleRepository extends BaseRepository<AlertRule, AlertRuleAttr
     return rules;
   }
 }
-

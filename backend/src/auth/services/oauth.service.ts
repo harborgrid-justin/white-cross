@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException, Logger, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  Logger,
+  BadRequestException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/sequelize';
 import { JwtService } from '@nestjs/jwt';
@@ -33,11 +38,15 @@ export class OAuthService {
     if (!user) {
       // Create new user from OAuth profile
       user = await this.createUserFromOAuthProfile(profile);
-      this.logger.log(`New user created via ${profile.provider} OAuth: ${profile.email}`);
+      this.logger.log(
+        `New user created via ${profile.provider} OAuth: ${profile.email}`,
+      );
     } else {
       // Update existing user's last login
       await user.resetFailedLoginAttempts();
-      this.logger.log(`Existing user logged in via ${profile.provider} OAuth: ${profile.email}`);
+      this.logger.log(
+        `Existing user logged in via ${profile.provider} OAuth: ${profile.email}`,
+      );
     }
 
     // Check if account is active
@@ -48,7 +57,7 @@ export class OAuthService {
     // Check if account is locked
     if (user.isAccountLocked()) {
       throw new UnauthorizedException(
-        'Account is temporarily locked. Please try again later.'
+        'Account is temporarily locked. Please try again later.',
       );
     }
 
@@ -120,7 +129,9 @@ export class OAuthService {
         provider: 'microsoft',
       };
     } catch (error) {
-      this.logger.error(`Microsoft token verification failed: ${error.message}`);
+      this.logger.error(
+        `Microsoft token verification failed: ${error.message}`,
+      );
       throw new UnauthorizedException('Invalid Microsoft authentication');
     }
   }
@@ -128,15 +139,21 @@ export class OAuthService {
   /**
    * Create user from OAuth profile
    */
-  private async createUserFromOAuthProfile(profile: OAuthProfile): Promise<User> {
+  private async createUserFromOAuthProfile(
+    profile: OAuthProfile,
+  ): Promise<User> {
     // Generate random password for OAuth users
     const randomPassword = this.generateRandomPassword();
 
     const user = await this.userModel.create({
       email: profile.email,
       password: randomPassword,
-      firstName: profile.firstName || profile.displayName?.split(' ')[0] || 'User',
-      lastName: profile.lastName || profile.displayName?.split(' ').slice(1).join(' ') || '',
+      firstName:
+        profile.firstName || profile.displayName?.split(' ')[0] || 'User',
+      lastName:
+        profile.lastName ||
+        profile.displayName?.split(' ').slice(1).join(' ') ||
+        '',
       role: UserRole.NURSE, // Default role, can be changed by admin
       isEmailVerified: true, // OAuth emails are pre-verified
       oauthProvider: profile.provider,
@@ -150,16 +167,19 @@ export class OAuthService {
   /**
    * Generate access and refresh tokens
    */
-  private async generateTokens(user: User): Promise<{ accessToken: string; refreshToken: string }> {
+  private async generateTokens(
+    user: User,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
     const jwtSecret = this.configService.get<string>('JWT_SECRET');
-    const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET') || jwtSecret;
+    const refreshSecret =
+      this.configService.get<string>('JWT_REFRESH_SECRET') || jwtSecret;
 
     if (!jwtSecret) {
       throw new Error('JWT_SECRET not configured');
     }
 
     const payload: JwtPayload = {
-      sub: user.id!,
+      sub: user.id,
       email: user.email,
       role: user.role,
       type: 'access',
@@ -171,7 +191,7 @@ export class OAuthService {
     });
 
     const refreshPayload: JwtPayload = {
-      sub: user.id!,
+      sub: user.id,
       email: user.email,
       role: user.role,
       type: 'refresh',
@@ -208,7 +228,8 @@ export class OAuthService {
   private generateRandomPassword(): string {
     const crypto = require('crypto');
     const length = 32;
-    const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@$!%*?&';
+    const charset =
+      'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@$!%*?&';
     let password = '';
 
     // Ensure at least one of each required character type
@@ -223,6 +244,9 @@ export class OAuthService {
     }
 
     // Shuffle the password
-    return password.split('').sort(() => Math.random() - 0.5).join('');
+    return password
+      .split('')
+      .sort(() => Math.random() - 0.5)
+      .join('');
   }
 }

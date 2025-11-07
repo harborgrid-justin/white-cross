@@ -27,23 +27,34 @@ export interface UpdateWebhookDTO {
 }
 
 @Injectable()
-export class WebhookRepository extends BaseRepository<any, WebhookAttributes, CreateWebhookDTO> {
+export class WebhookRepository extends BaseRepository<
+  any,
+  WebhookAttributes,
+  CreateWebhookDTO
+> {
   constructor(
     @InjectModel(Webhook) model: typeof Webhook,
     @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('ICacheManager') cacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'Webhook');
   }
 
   protected async validateCreate(data: CreateWebhookDTO): Promise<void> {}
-  protected async validateUpdate(id: string, data: UpdateWebhookDTO): Promise<void> {}
+  protected async validateUpdate(
+    id: string,
+    data: UpdateWebhookDTO,
+  ): Promise<void> {}
 
   protected async invalidateCaches(entity: any): Promise<void> {
     try {
       const entityData = entity.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, entityData.id));
-      await this.cacheManager.deletePattern(`white-cross:${this.entityName.toLowerCase()}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, entityData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:${this.entityName.toLowerCase()}:*`,
+      );
     } catch (error) {
       this.logger.warn(`Error invalidating ${this.entityName} caches:`, error);
     }

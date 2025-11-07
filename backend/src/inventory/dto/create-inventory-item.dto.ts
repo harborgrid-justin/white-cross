@@ -1,4 +1,11 @@
-import { IsString, IsNumber, IsOptional, IsInt, Min, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsInt,
+  Min,
+  MaxLength,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateInventoryItemDto {
@@ -23,7 +30,10 @@ export class CreateInventoryItemDto {
   @MaxLength(100)
   sku?: string;
 
-  @ApiPropertyOptional({ description: 'Supplier name', example: 'MedSupply Inc.' })
+  @ApiPropertyOptional({
+    description: 'Supplier name',
+    example: 'MedSupply Inc.',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(255)
@@ -40,12 +50,18 @@ export class CreateInventoryItemDto {
   @Min(0)
   reorderLevel: number;
 
-  @ApiProperty({ description: 'Reorder quantity (amount to order)', example: 200 })
+  @ApiProperty({
+    description: 'Reorder quantity (amount to order)',
+    example: 200,
+  })
   @IsInt()
   @Min(1)
   reorderQuantity: number;
 
-  @ApiPropertyOptional({ description: 'Storage location', example: 'Nurse Office - Cabinet A' })
+  @ApiPropertyOptional({
+    description: 'Storage location',
+    example: 'Nurse Office - Cabinet A',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(255)

@@ -77,7 +77,7 @@ export const PERFORMANCE_CONFIGS = {
     enableMemoryTracking: true,
     enableDetailedLogging: true,
     sampleRate: 1.0,
-    maxMetricsHistory: 10000
+    maxMetricsHistory: 10000,
   } as PerformanceConfig,
 
   // Development settings
@@ -87,7 +87,7 @@ export const PERFORMANCE_CONFIGS = {
     enableMemoryTracking: false,
     enableDetailedLogging: false,
     sampleRate: 0.1,
-    maxMetricsHistory: 1000
+    maxMetricsHistory: 1000,
   } as PerformanceConfig,
 
   // High-performance production
@@ -97,8 +97,8 @@ export const PERFORMANCE_CONFIGS = {
     enableMemoryTracking: true,
     enableDetailedLogging: false,
     sampleRate: 0.5,
-    maxMetricsHistory: 50000
-  } as PerformanceConfig
+    maxMetricsHistory: 50000,
+  } as PerformanceConfig,
 };
 
 /**
@@ -117,9 +117,12 @@ export class PerformanceMiddleware implements NestMiddleware {
     this.config = PERFORMANCE_CONFIGS.healthcare;
 
     // Start periodic cleanup
-    this.cleanupInterval = setInterval(() => {
-      this.cleanupOldMetrics();
-    }, 5 * 60 * 1000); // Every 5 minutes
+    this.cleanupInterval = setInterval(
+      () => {
+        this.cleanupOldMetrics();
+      },
+      5 * 60 * 1000,
+    ); // Every 5 minutes
   }
 
   /**
@@ -130,7 +133,7 @@ export class PerformanceMiddleware implements NestMiddleware {
       req.method,
       req.path,
       req.get('user-agent'),
-      (req as any).user?.userId
+      (req as any).user?.userId,
     );
 
     // Store requestId for later
@@ -139,11 +142,7 @@ export class PerformanceMiddleware implements NestMiddleware {
     // Hook into response to capture end metrics
     const originalEnd = res.end;
     res.end = ((...args: any[]) => {
-      this.endRequest(
-        requestId,
-        res.statusCode,
-        undefined
-      );
+      this.endRequest(requestId, res.statusCode, undefined);
 
       return originalEnd.apply(res, args);
     }) as any;
@@ -158,7 +157,7 @@ export class PerformanceMiddleware implements NestMiddleware {
     method: string,
     path: string,
     userAgent?: string,
-    userId?: string
+    userId?: string,
   ): string {
     const requestId = this.generateRequestId();
 
@@ -173,7 +172,7 @@ export class PerformanceMiddleware implements NestMiddleware {
       path,
       startTime: Date.now(),
       userAgent,
-      userId
+      userId,
     };
 
     if (this.config.enableMemoryTracking) {
@@ -188,7 +187,7 @@ export class PerformanceMiddleware implements NestMiddleware {
         requestId,
         method,
         path,
-        userId
+        userId,
       });
     }
 
@@ -201,9 +200,9 @@ export class PerformanceMiddleware implements NestMiddleware {
   endRequest(
     requestId: string,
     statusCode: number,
-    error?: string
+    error?: string,
   ): PerformanceMetrics | null {
-    const metrics = this.metrics.find(m => m.requestId === requestId);
+    const metrics = this.metrics.find((m) => m.requestId === requestId);
     if (!metrics) {
       return null; // Not tracked (sampling)
     }
@@ -226,7 +225,7 @@ export class PerformanceMiddleware implements NestMiddleware {
         duration,
         statusCode,
         userId: metrics.userId,
-        error
+        error,
       });
     } else if (duration >= this.config.slowRequestThreshold) {
       this.logger.warn('Slow request detected', {
@@ -235,7 +234,7 @@ export class PerformanceMiddleware implements NestMiddleware {
         path: metrics.path,
         duration,
         statusCode,
-        userId: metrics.userId
+        userId: metrics.userId,
       });
     }
 
@@ -246,7 +245,7 @@ export class PerformanceMiddleware implements NestMiddleware {
         path: metrics.path,
         duration,
         statusCode,
-        userId: metrics.userId
+        userId: metrics.userId,
       });
     }
 
@@ -260,12 +259,14 @@ export class PerformanceMiddleware implements NestMiddleware {
     const now = Date.now();
     const windowStart = timeWindow ? now - timeWindow : 0;
 
-    const relevantMetrics = this.metrics.filter(m =>
-      m.endTime && m.endTime >= windowStart
+    const relevantMetrics = this.metrics.filter(
+      (m) => m.endTime && m.endTime >= windowStart,
     );
 
     const totalRequests = relevantMetrics.length;
-    const completedRequests = relevantMetrics.filter(m => m.duration !== undefined);
+    const completedRequests = relevantMetrics.filter(
+      (m) => m.duration !== undefined,
+    );
 
     if (completedRequests.length === 0) {
       return {
@@ -274,28 +275,29 @@ export class PerformanceMiddleware implements NestMiddleware {
         slowRequests: 0,
         criticalRequests: 0,
         errorRate: 0,
-        throughput: 0
+        throughput: 0,
       };
     }
 
-    const durations = completedRequests.map(m => m.duration!);
-    const averageResponseTime = durations.reduce((sum, d) => sum + d, 0) / durations.length;
+    const durations = completedRequests.map((m) => m.duration!);
+    const averageResponseTime =
+      durations.reduce((sum, d) => sum + d, 0) / durations.length;
 
-    const slowRequests = completedRequests.filter(m =>
-      m.duration! >= this.config.slowRequestThreshold
+    const slowRequests = completedRequests.filter(
+      (m) => m.duration! >= this.config.slowRequestThreshold,
     ).length;
 
-    const criticalRequests = completedRequests.filter(m =>
-      m.duration! >= this.config.criticalRequestThreshold
+    const criticalRequests = completedRequests.filter(
+      (m) => m.duration! >= this.config.criticalRequestThreshold,
     ).length;
 
-    const errorRequests = completedRequests.filter(m =>
-      m.statusCode && (m.statusCode >= 400 || m.error)
+    const errorRequests = completedRequests.filter(
+      (m) => m.statusCode && (m.statusCode >= 400 || m.error),
     ).length;
 
     const errorRate = errorRequests / completedRequests.length;
 
-    const timeSpan = timeWindow || (now - this.startTime);
+    const timeSpan = timeWindow || now - this.startTime;
     const throughput = (totalRequests / timeSpan) * 1000; // requests per second
 
     return {
@@ -304,7 +306,7 @@ export class PerformanceMiddleware implements NestMiddleware {
       slowRequests,
       criticalRequests,
       errorRate,
-      throughput
+      throughput,
     };
   }
 
@@ -313,14 +315,14 @@ export class PerformanceMiddleware implements NestMiddleware {
    */
   getPathMetrics(pathPattern: string): PerformanceMetrics[] {
     const regex = new RegExp(pathPattern);
-    return this.metrics.filter(m => regex.test(m.path));
+    return this.metrics.filter((m) => regex.test(m.path));
   }
 
   /**
    * Get metrics for specific user
    */
   getUserMetrics(userId: string): PerformanceMetrics[] {
-    return this.metrics.filter(m => m.userId === userId);
+    return this.metrics.filter((m) => m.userId === userId);
   }
 
   /**
@@ -328,7 +330,7 @@ export class PerformanceMiddleware implements NestMiddleware {
    */
   getSlowestRequests(limit = 10): PerformanceMetrics[] {
     return this.metrics
-      .filter(m => m.duration !== undefined)
+      .filter((m) => m.duration !== undefined)
       .sort((a, b) => (b.duration || 0) - (a.duration || 0))
       .slice(0, limit);
   }
@@ -338,7 +340,7 @@ export class PerformanceMiddleware implements NestMiddleware {
    */
   getErrorRequests(limit = 10): PerformanceMetrics[] {
     return this.metrics
-      .filter(m => m.error || (m.statusCode && m.statusCode >= 400))
+      .filter((m) => m.error || (m.statusCode && m.statusCode >= 400))
       .slice(-limit);
   }
 
@@ -364,7 +366,7 @@ export class PerformanceMiddleware implements NestMiddleware {
     return {
       summary: this.getPerformanceSummary(),
       metrics: [...this.metrics],
-      config: { ...this.config }
+      config: { ...this.config },
     };
   }
 
@@ -383,24 +385,31 @@ export class PerformanceMiddleware implements NestMiddleware {
     // Check average response time
     if (summary.averageResponseTime > this.config.criticalRequestThreshold) {
       issues.push('Average response time is critically high');
-      recommendations.push('Investigate database queries and external API calls');
+      recommendations.push(
+        'Investigate database queries and external API calls',
+      );
     } else if (summary.averageResponseTime > this.config.slowRequestThreshold) {
       issues.push('Average response time is elevated');
-      recommendations.push('Monitor system resources and optimize slow endpoints');
+      recommendations.push(
+        'Monitor system resources and optimize slow endpoints',
+      );
     }
 
     // Check error rate
-    if (summary.errorRate > 0.1) { // 10%
+    if (summary.errorRate > 0.1) {
+      // 10%
       issues.push('High error rate detected');
       recommendations.push('Check application logs for recurring errors');
     }
 
     // Check slow request percentage
-    const slowRequestPercentage = summary.totalRequests > 0
-      ? summary.slowRequests / summary.totalRequests
-      : 0;
+    const slowRequestPercentage =
+      summary.totalRequests > 0
+        ? summary.slowRequests / summary.totalRequests
+        : 0;
 
-    if (slowRequestPercentage > 0.2) { // 20%
+    if (slowRequestPercentage > 0.2) {
+      // 20%
       issues.push('High percentage of slow requests');
       recommendations.push('Optimize frequently used endpoints');
     }
@@ -408,7 +417,10 @@ export class PerformanceMiddleware implements NestMiddleware {
     // Determine overall status
     let status: 'healthy' | 'degraded' | 'critical' = 'healthy';
 
-    if (summary.errorRate > 0.2 || summary.averageResponseTime > this.config.criticalRequestThreshold) {
+    if (
+      summary.errorRate > 0.2 ||
+      summary.averageResponseTime > this.config.criticalRequestThreshold
+    ) {
       status = 'critical';
     } else if (issues.length > 0) {
       status = 'degraded';
@@ -432,7 +444,9 @@ export class PerformanceMiddleware implements NestMiddleware {
       this.metrics.splice(0, excess);
 
       if (this.config.enableDetailedLogging) {
-        this.logger.debug('Cleaned up old performance metrics', { removed: excess });
+        this.logger.debug('Cleaned up old performance metrics', {
+          removed: excess,
+        });
       }
     }
   }
@@ -450,7 +464,9 @@ export class PerformanceMiddleware implements NestMiddleware {
 /**
  * Factory functions
  */
-export function createPerformanceMiddleware(config?: PerformanceConfig): PerformanceMiddleware {
+export function createPerformanceMiddleware(
+  config?: PerformanceConfig,
+): PerformanceMiddleware {
   const middleware = new PerformanceMiddleware();
   if (config) {
     (middleware as any).config = config;

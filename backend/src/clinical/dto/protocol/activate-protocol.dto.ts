@@ -10,12 +10,17 @@ export class ActivateProtocolDto {
   @IsUUID()
   approvedBy: string;
 
-  @ApiProperty({ description: 'Approval date', example: '2025-10-28T10:00:00Z' })
+  @ApiProperty({
+    description: 'Approval date',
+    example: '2025-10-28T10:00:00Z',
+  })
   @Type(() => Date)
   @IsDate()
   approvedDate: Date;
 
-  @ApiPropertyOptional({ description: 'Effective date (defaults to approval date if not provided)' })
+  @ApiPropertyOptional({
+    description: 'Effective date (defaults to approval date if not provided)',
+  })
   @Type(() => Date)
   @IsDate()
   @IsOptional()

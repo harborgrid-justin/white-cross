@@ -1,4 +1,19 @@
-import { Table, Column, Model, DataType, PrimaryKey, Default, CreatedAt, UpdatedAt, Index, ForeignKey, BelongsTo, Scopes, BeforeCreate, BeforeUpdate } from 'sequelize-typescript';
+import {
+  Table,
+  Column,
+  Model,
+  DataType,
+  PrimaryKey,
+  Default,
+  CreatedAt,
+  UpdatedAt,
+  Index,
+  ForeignKey,
+  BelongsTo,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate,
+} from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 import { Op } from 'sequelize';
 import type { Student } from './student.model';
@@ -69,39 +84,39 @@ export interface EmergencyContactCreationAttributes
 @Scopes(() => ({
   active: {
     where: {
-      isActive: true
-    }
+      isActive: true,
+    },
   },
   byStudent: (studentId: string) => ({
-    where: { studentId }
+    where: { studentId },
   }),
   primary: {
     where: {
       priority: ContactPriority.PRIMARY,
-      isActive: true
-    }
+      isActive: true,
+    },
   },
   verified: {
     where: {
       verificationStatus: VerificationStatus.VERIFIED,
-      isActive: true
-    }
+      isActive: true,
+    },
   },
   canPickup: {
     where: {
       canPickupStudent: true,
       isActive: true,
-      verificationStatus: VerificationStatus.VERIFIED
-    }
+      verificationStatus: VerificationStatus.VERIFIED,
+    },
   },
   unverified: {
     where: {
       verificationStatus: {
-        [Op.in]: [VerificationStatus.UNVERIFIED, VerificationStatus.PENDING]
+        [Op.in]: [VerificationStatus.UNVERIFIED, VerificationStatus.PENDING],
       },
-      isActive: true
-    }
-  }
+      isActive: true,
+    },
+  },
 }))
 @Table({
   tableName: 'emergency_contacts',
@@ -113,19 +128,28 @@ export interface EmergencyContactCreationAttributes
     { name: 'idx_emergency_contacts_student_id', fields: ['studentId'] },
     { name: 'idx_emergency_contacts_is_active', fields: ['isActive'] },
     { name: 'idx_emergency_contacts_priority', fields: ['priority'] },
-    { name: 'idx_emergency_contacts_verification_status', fields: ['verificationStatus'] },
-    { name: 'idx_emergency_contacts_student_priority', fields: ['studentId', 'priority', 'isActive'] },
+    {
+      name: 'idx_emergency_contacts_verification_status',
+      fields: ['verificationStatus'],
+    },
+    {
+      name: 'idx_emergency_contacts_student_priority',
+      fields: ['studentId', 'priority', 'isActive'],
+    },
     {
       fields: ['createdAt'],
-      name: 'idx_emergency_contact_created_at'
+      name: 'idx_emergency_contact_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_emergency_contact_updated_at'
-    }
-  ]
-  })
-export class EmergencyContact extends Model<EmergencyContactAttributes, EmergencyContactCreationAttributes> {
+      name: 'idx_emergency_contact_updated_at',
+    },
+  ],
+})
+export class EmergencyContact extends Model<
+  EmergencyContactAttributes,
+  EmergencyContactCreationAttributes
+> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
@@ -135,25 +159,25 @@ export class EmergencyContact extends Model<EmergencyContactAttributes, Emergenc
   @Column({
     type: DataType.UUID,
     allowNull: false,
-    comment: 'Foreign key to students table - emergency contact owner'
+    comment: 'Foreign key to students table - emergency contact owner',
   })
   studentId: string;
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: false
+    allowNull: false,
   })
   firstName: string;
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: false
+    allowNull: false,
   })
   lastName: string;
 
   @Column({
     type: DataType.STRING(50),
-    allowNull: false
+    allowNull: false,
   })
   relationship: string;
 
@@ -163,9 +187,9 @@ export class EmergencyContact extends Model<EmergencyContactAttributes, Emergenc
     validate: {
       is: {
         args: /^\+?[1-9]\d{1,14}$/,
-        msg: 'Phone number must be in E.164 format or standard US format'
-      }
-    }
+        msg: 'Phone number must be in E.164 format or standard US format',
+      },
+    },
   })
   phoneNumber: string;
 
@@ -174,95 +198,98 @@ export class EmergencyContact extends Model<EmergencyContactAttributes, Emergenc
     allowNull: true,
     validate: {
       isEmail: {
-        msg: 'Must be a valid email address'
-      }
-    }
+        msg: 'Must be a valid email address',
+      },
+    },
   })
   email: string | null;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: true
+    allowNull: true,
   })
   address: string | null;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(ContactPriority)]
+      isIn: [Object.values(ContactPriority)],
     },
     allowNull: false,
-    defaultValue: ContactPriority.PRIMARY
+    defaultValue: ContactPriority.PRIMARY,
   })
   priority: ContactPriority;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true
+    defaultValue: true,
   })
   isActive: boolean;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(PreferredContactMethod)]
+      isIn: [Object.values(PreferredContactMethod)],
     },
     allowNull: true,
-    defaultValue: PreferredContactMethod.ANY
+    defaultValue: PreferredContactMethod.ANY,
   })
   preferredContactMethod: PreferredContactMethod | null;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(VerificationStatus)]
+      isIn: [Object.values(VerificationStatus)],
     },
     allowNull: true,
-    defaultValue: VerificationStatus.UNVERIFIED
+    defaultValue: VerificationStatus.UNVERIFIED,
   })
   verificationStatus: VerificationStatus | null;
 
   @Column({
     type: DataType.DATE,
-    allowNull: true
+    allowNull: true,
   })
   lastVerifiedAt: Date | null;
 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
-    comment: 'JSON array of notification channels (sms, email, voice)'
+    comment: 'JSON array of notification channels (sms, email, voice)',
   })
   notificationChannels: string | null;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: true,
-    defaultValue: false
+    defaultValue: false,
   })
   canPickupStudent: boolean | null;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: true
+    allowNull: true,
   })
   notes: string | null;
 
   @CreatedAt
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   declare createdAt: Date;
 
   @UpdatedAt
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   declare updatedAt: Date;
 
   // Relationships
-  @BelongsTo(() => require('./student.model').Student, { foreignKey: 'studentId', as: 'student' })
+  @BelongsTo(() => require('./student.model').Student, {
+    foreignKey: 'studentId',
+    as: 'student',
+  })
   declare student?: Student;
 
   /**
@@ -298,17 +325,24 @@ export class EmergencyContact extends Model<EmergencyContactAttributes, Emergenc
     }
   }
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: EmergencyContact) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      const phiFields = ['firstName', 'lastName', 'phoneNumber', 'email', 'address'];
+      const phiFields = [
+        'firstName',
+        'lastName',
+        'phoneNumber',
+        'email',
+        'address',
+      ];
 
       // Import the helper function dynamically to avoid circular dependencies
-      const { logModelPHIFieldChanges } = await import('../services/model-audit-helper.service.js');
+      const { logModelPHIFieldChanges } = await import(
+        '../services/model-audit-helper.service.js'
+      );
 
       // Get the transaction if available
       const transaction = (instance as any).sequelize?.transaction || undefined;

@@ -58,7 +58,11 @@ export class CircularDependencyDetector {
     const normalizedTo = path.resolve(toFile);
 
     // Check if toFile already depends on fromFile (direct or indirect)
-    return this.hasTransitiveDependency(normalizedTo, normalizedFrom, new Set());
+    return this.hasTransitiveDependency(
+      normalizedTo,
+      normalizedFrom,
+      new Set(),
+    );
   }
 
   /**
@@ -73,14 +77,14 @@ export class CircularDependencyDetector {
       '2. Consider using interfaces/types in separate files',
       '3. Move shared types to a common types file',
       '4. Use barrel exports (index.ts) with careful ordering',
-      '5. Consider using the factory pattern for complex dependencies'
+      '5. Consider using the factory pattern for complex dependencies',
     );
 
     const analysis = this.analysisCache.get(file);
     if (analysis?.riskLevel === 'HIGH') {
       recommendations.push(
         '6. HIGH RISK: Consider refactoring this file to reduce dependencies',
-        '7. Move business logic to service layer with proper dependency injection'
+        '7. Move business logic to service layer with proper dependency injection',
       );
     }
 
@@ -130,7 +134,7 @@ export class CircularDependencyDetector {
   private hasTransitiveDependency(
     fromFile: string,
     targetFile: string,
-    visited: Set<string>
+    visited: Set<string>,
   ): boolean {
     if (visited.has(fromFile)) {
       return false; // Avoid infinite recursion
@@ -138,7 +142,7 @@ export class CircularDependencyDetector {
 
     visited.add(fromFile);
     const dependencies = this.dependencyGraph.get(fromFile);
-    
+
     if (!dependencies) {
       return false;
     }
@@ -168,7 +172,7 @@ export class CircularDependencyDetector {
 
     const dependencies = Array.from(this.dependencyGraph.get(filePath) || []);
     const circularDeps = this.findCircularDependencies(filePath);
-    
+
     let riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' = 'LOW';
     if (circularDeps.length > 0) {
       riskLevel = 'HIGH';
@@ -181,7 +185,7 @@ export class CircularDependencyDetector {
       imports: dependencies,
       exports: this.extractExports(filePath),
       circularDependencies: circularDeps,
-      riskLevel
+      riskLevel,
     };
 
     this.analysisCache.set(filePath, analysis);
@@ -217,8 +221,9 @@ export class CircularDependencyDetector {
       const exports: string[] = [];
 
       // Match export statements
-      const exportRegex = /export\s+(?:(?:default|const|let|var|function|class|interface|type|enum)\s+)?(\w+)/g;
-      
+      const exportRegex =
+        /export\s+(?:(?:default|const|let|var|function|class|interface|type|enum)\s+)?(\w+)/g;
+
       let match;
       while ((match = exportRegex.exec(content)) !== null) {
         exports.push(match[1]);
@@ -236,21 +241,24 @@ export class CircularDependencyDetector {
    */
   private getAllTypeScriptFiles(dir: string): string[] {
     const files: string[] = [];
-    
+
     function traverse(currentDir: string) {
       const entries = fs.readdirSync(currentDir, { withFileTypes: true });
-      
+
       for (const entry of entries) {
         const fullPath = path.join(currentDir, entry.name);
-        
+
         if (entry.isDirectory()) {
           traverse(fullPath);
-        } else if (entry.name.endsWith('.ts') && !entry.name.endsWith('.d.ts')) {
+        } else if (
+          entry.name.endsWith('.ts') &&
+          !entry.name.endsWith('.d.ts')
+        ) {
           files.push(fullPath);
         }
       }
     }
-    
+
     traverse(dir);
     return files;
   }
@@ -274,14 +282,16 @@ export class SequelizeAssociationHelper {
       as: string;
       onDelete?: 'CASCADE' | 'SET NULL' | 'RESTRICT';
       onUpdate?: 'CASCADE' | 'SET NULL' | 'RESTRICT';
-    }
+    },
   ) {
     // Delay association creation to prevent circular dependency issues
     setTimeout(() => {
       try {
         const targetModel = targetModelFn();
         sourceModel.belongsTo(targetModel, options);
-        this.logger.debug(`Created BelongsTo association: ${sourceModel.name} -> ${targetModel.name}`);
+        this.logger.debug(
+          `Created BelongsTo association: ${sourceModel.name} -> ${targetModel.name}`,
+        );
       } catch (error) {
         this.logger.error(`Failed to create BelongsTo association: ${error}`);
       }
@@ -299,13 +309,15 @@ export class SequelizeAssociationHelper {
       as: string;
       onDelete?: 'CASCADE' | 'SET NULL' | 'RESTRICT';
       onUpdate?: 'CASCADE' | 'SET NULL' | 'RESTRICT';
-    }
+    },
   ) {
     setTimeout(() => {
       try {
         const targetModel = targetModelFn();
         sourceModel.hasMany(targetModel, options);
-        this.logger.debug(`Created HasMany association: ${sourceModel.name} -> ${targetModel.name}[]`);
+        this.logger.debug(
+          `Created HasMany association: ${sourceModel.name} -> ${targetModel.name}[]`,
+        );
       } catch (error) {
         this.logger.error(`Failed to create HasMany association: ${error}`);
       }
@@ -324,11 +336,13 @@ export class ImportGuard {
    */
   static guard<T>(moduleName: string, importFn: () => T): T {
     if (this.importStack.has(moduleName)) {
-      throw new Error(`Circular dependency detected: ${moduleName} is already being imported`);
+      throw new Error(
+        `Circular dependency detected: ${moduleName} is already being imported`,
+      );
     }
 
     this.importStack.add(moduleName);
-    
+
     try {
       const result = importFn();
       this.importStack.delete(moduleName);

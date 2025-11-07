@@ -1,6 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ViolationRepository } from '../repositories/violation.repository';
-import { CreateViolationDto, UpdateViolationDto, CreateRemediationDto, UpdateRemediationDto, QueryViolationDto } from '../dto/violation.dto';
+import {
+  CreateViolationDto,
+  UpdateViolationDto,
+  CreateRemediationDto,
+  UpdateRemediationDto,
+  QueryViolationDto,
+} from '../dto/violation.dto';
 import { ViolationStatus } from '../../database/models/compliance-violation.model';
 import { RemediationStatus } from '../../database/models/remediation-action.model';
 
@@ -10,7 +16,11 @@ export class ViolationService {
 
   async listViolations(query: QueryViolationDto) {
     const { page = 1, limit = 20, ...filters } = query;
-    const { data, total } = await this.violationRepository.findAllViolations(filters, page, limit);
+    const { data, total } = await this.violationRepository.findAllViolations(
+      filters,
+      page,
+      limit,
+    );
     return {
       data,
       pagination: {

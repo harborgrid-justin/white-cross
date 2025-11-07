@@ -46,11 +46,7 @@ export class AttendanceReportsService {
         ORDER BY count DESC
         LIMIT $${startDate && endDate ? 3 : startDate || endDate ? 2 : 1}`,
         {
-          bind: [
-            startDate,
-            endDate,
-            limit,
-          ].filter(v => v !== undefined),
+          bind: [startDate, endDate, limit].filter((v) => v !== undefined),
           type: QueryTypes.SELECT,
         },
       );
@@ -59,7 +55,13 @@ export class AttendanceReportsService {
       const healthVisitsWithStudents = await Promise.all(
         healthVisitsRaw.map(async (record: any) => {
           const student = await this.studentModel.findByPk(record.studentId, {
-            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade'],
+            attributes: [
+              'id',
+              'firstName',
+              'lastName',
+              'studentNumber',
+              'grade',
+            ],
           });
           return {
             studentId: record.studentId,
@@ -83,11 +85,7 @@ export class AttendanceReportsService {
         ORDER BY count DESC
         LIMIT $${startDate && endDate ? 3 : startDate || endDate ? 2 : 1}`,
         {
-          bind: [
-            startDate,
-            endDate,
-            limit,
-          ].filter(v => v !== undefined),
+          bind: [startDate, endDate, limit].filter((v) => v !== undefined),
           type: QueryTypes.SELECT,
         },
       );
@@ -96,7 +94,13 @@ export class AttendanceReportsService {
       const incidentVisitsWithStudents = await Promise.all(
         incidentVisitsRaw.map(async (record: any) => {
           const student = await this.studentModel.findByPk(record.studentId, {
-            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade'],
+            attributes: [
+              'id',
+              'firstName',
+              'lastName',
+              'studentNumber',
+              'grade',
+            ],
           });
           return {
             studentId: record.studentId,
@@ -125,11 +129,7 @@ export class AttendanceReportsService {
         ORDER BY count DESC
         LIMIT $${startDate && endDate ? 3 : startDate || endDate ? 2 : 1}`,
         {
-          bind: [
-            startDate,
-            endDate,
-            limit,
-          ].filter(v => v !== undefined),
+          bind: [startDate, endDate, limit].filter((v) => v !== undefined),
           type: QueryTypes.SELECT,
         },
       );
@@ -138,7 +138,13 @@ export class AttendanceReportsService {
       const appointmentFrequencyWithStudents = await Promise.all(
         appointmentFrequencyRaw.map(async (record: any) => {
           const student = await this.studentModel.findByPk(record.studentId, {
-            attributes: ['id', 'firstName', 'lastName', 'studentNumber', 'grade'],
+            attributes: [
+              'id',
+              'firstName',
+              'lastName',
+              'studentNumber',
+              'grade',
+            ],
           });
           return {
             studentId: record.studentId,

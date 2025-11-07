@@ -137,7 +137,10 @@ export class MessageEventDto {
     }
 
     // Validate content is present for send and edit operations
-    if ((partial.type === 'send' || partial.type === 'edit') && !partial.content) {
+    if (
+      (partial.type === 'send' || partial.type === 'edit') &&
+      !partial.content
+    ) {
       throw new Error('content is required for send and edit operations');
     }
 

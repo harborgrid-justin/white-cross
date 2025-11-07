@@ -107,7 +107,10 @@ export class SecurityHeadersMiddleware implements NestMiddleware {
 
   constructor() {
     const env = process.env.NODE_ENV || 'development';
-    this.config = env === 'development' ? this.getDevelopmentConfig() : DEFAULT_SECURITY_CONFIG;
+    this.config =
+      env === 'development'
+        ? this.getDevelopmentConfig()
+        : DEFAULT_SECURITY_CONFIG;
     this.validateConfig();
   }
 
@@ -165,7 +168,9 @@ export class SecurityHeadersMiddleware implements NestMiddleware {
     if (this.config.contentSecurityPolicy?.directives) {
       const directives = this.config.contentSecurityPolicy.directives;
       if (directives['default-src'] && directives['default-src'].length === 0) {
-        this.logger.warn('CSP default-src is empty, this may block all resources');
+        this.logger.warn(
+          'CSP default-src is empty, this may block all resources',
+        );
       }
     }
   }
@@ -174,20 +179,27 @@ export class SecurityHeadersMiddleware implements NestMiddleware {
     return crypto.randomBytes(16).toString('base64');
   }
 
-  private buildCSPHeader(directives: Record<string, string[]>, nonce?: string): string {
+  private buildCSPHeader(
+    directives: Record<string, string[]>,
+    nonce?: string,
+  ): string {
     const processedDirectives = { ...directives };
 
     if (nonce) {
       if (processedDirectives['script-src']) {
         processedDirectives['script-src'] = [
-          ...processedDirectives['script-src'].filter((src) => src !== "'unsafe-inline'"),
+          ...processedDirectives['script-src'].filter(
+            (src) => src !== "'unsafe-inline'",
+          ),
           `'nonce-${nonce}'`,
         ];
       }
 
       if (processedDirectives['style-src']) {
         processedDirectives['style-src'] = [
-          ...processedDirectives['style-src'].filter((src) => src !== "'unsafe-inline'"),
+          ...processedDirectives['style-src'].filter(
+            (src) => src !== "'unsafe-inline'",
+          ),
           `'nonce-${nonce}'`,
         ];
       }
@@ -198,7 +210,9 @@ export class SecurityHeadersMiddleware implements NestMiddleware {
       .join('; ');
   }
 
-  private buildPermissionsPolicyHeader(permissions: Record<string, string[]>): string {
+  private buildPermissionsPolicyHeader(
+    permissions: Record<string, string[]>,
+  ): string {
     return Object.entries(permissions)
       .map(([feature, allowlist]) => {
         if (allowlist.length === 0) {
@@ -220,7 +234,8 @@ export class SecurityHeadersMiddleware implements NestMiddleware {
     try {
       // Content-Security-Policy
       if (this.config.contentSecurityPolicy?.directives) {
-        const nonce = this.config.contentSecurityPolicy.nonce || this.generateNonce();
+        const nonce =
+          this.config.contentSecurityPolicy.nonce || this.generateNonce();
         const cspHeader = this.buildCSPHeader(
           this.config.contentSecurityPolicy.directives,
           nonce,
@@ -311,9 +326,11 @@ export class SecurityHeadersMiddleware implements NestMiddleware {
     const result = this.applyHeaders(existingHeaders);
 
     if (result.applied) {
-      result.headers['Content-Disposition'] = `attachment; filename="${encodeURIComponent(filename)}"`;
+      result.headers['Content-Disposition'] =
+        `attachment; filename="${encodeURIComponent(filename)}"`;
       result.headers['Content-Type'] = contentType;
-      result.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, private';
+      result.headers['Cache-Control'] =
+        'no-store, no-cache, must-revalidate, private';
       result.headers['Pragma'] = 'no-cache';
       result.headers['Expires'] = '0';
     }

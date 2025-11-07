@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { WitnessStatement } from '../../database/models/witness-statement.model';
 import { IncidentReport } from '../../database/models/incident-report.model';
@@ -45,7 +41,9 @@ export class IncidentWitnessService {
         verified: false,
       } as any);
 
-      this.logger.log(`Witness statement added to incident ${incidentReportId}`);
+      this.logger.log(
+        `Witness statement added to incident ${incidentReportId}`,
+      );
       return savedStatement;
     } catch (error) {
       this.logger.error('Error adding witness statement:', error);
@@ -73,7 +71,9 @@ export class IncidentWitnessService {
 
       const updatedStatement = await statement.save();
 
-      this.logger.log(`Witness statement ${statementId} verified by ${verifiedBy}`);
+      this.logger.log(
+        `Witness statement ${statementId} verified by ${verifiedBy}`,
+      );
       return updatedStatement;
     } catch (error) {
       this.logger.error('Error verifying witness statement:', error);
@@ -84,7 +84,9 @@ export class IncidentWitnessService {
   /**
    * Get witness statements for an incident
    */
-  async getWitnessStatements(incidentReportId: string): Promise<WitnessStatement[]> {
+  async getWitnessStatements(
+    incidentReportId: string,
+  ): Promise<WitnessStatement[]> {
     try {
       const statements = await this.witnessStatementModel.findAll({
         where: { incidentReportId },

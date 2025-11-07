@@ -9,7 +9,7 @@ import {
   BelongsTo,
   BeforeCreate,
   BeforeUpdate,
-  Scopes
+  Scopes,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 import { Op } from 'sequelize';
@@ -42,36 +42,36 @@ export interface VitalSignsAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['measurementDate', 'DESC']]
+    order: [['measurementDate', 'DESC']],
   },
   byStudent: (studentId: string) => ({
     where: { studentId },
-    order: [['measurementDate', 'DESC']]
+    order: [['measurementDate', 'DESC']],
   }),
   abnormal: {
     where: {
-      isAbnormal: true
+      isAbnormal: true,
     },
-    order: [['measurementDate', 'DESC']]
+    order: [['measurementDate', 'DESC']],
   },
   recent: {
     where: {
       measurementDate: {
-        [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-      }
+        [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+      },
     },
-    order: [['measurementDate', 'DESC']]
+    order: [['measurementDate', 'DESC']],
   },
   withFlag: (flag: string) => ({
     where: {
       abnormalFlags: {
-        [Op.contains]: [flag]
-      }
+        [Op.contains]: [flag],
+      },
     },
-    order: [['measurementDate', 'DESC']]
-  })
+    order: [['measurementDate', 'DESC']],
+  }),
 }))
 @Table({
   tableName: 'vital_signs',
@@ -80,25 +80,28 @@ export interface VitalSignsAttributes {
   paranoid: true,
   indexes: [
     {
-      fields: ['studentId']
+      fields: ['studentId'],
     },
     {
-      fields: ['measurementDate']
+      fields: ['measurementDate'],
     },
     {
-      fields: ['isAbnormal']
+      fields: ['isAbnormal'],
     },
     {
       fields: ['createdAt'],
-      name: 'idx_vital_signs_created_at'
+      name: 'idx_vital_signs_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_vital_signs_updated_at'
-    }
-  ]
+      name: 'idx_vital_signs_updated_at',
+    },
+  ],
 })
-export class VitalSigns extends Model<VitalSignsAttributes> implements VitalSignsAttributes {
+export class VitalSigns
+  extends Model<VitalSignsAttributes>
+  implements VitalSignsAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -110,16 +113,16 @@ export class VitalSigns extends Model<VitalSignsAttributes> implements VitalSign
     allowNull: false,
     references: {
       model: 'students',
-      key: 'id'
+      key: 'id',
     },
     onUpdate: 'CASCADE',
-    onDelete: 'CASCADE'
+    onDelete: 'CASCADE',
   })
   studentId: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   measurementDate: Date;
 
@@ -166,8 +169,8 @@ export class VitalSigns extends Model<VitalSignsAttributes> implements VitalSign
     type: DataType.INTEGER,
     validate: {
       min: 0,
-      max: 10
-    }
+      max: 10,
+    },
   })
   pain?: number;
 
@@ -191,7 +194,10 @@ export class VitalSigns extends Model<VitalSignsAttributes> implements VitalSign
   declare updatedAt?: Date;
 
   // Associations
-  @BelongsTo(() => require('./student.model').Student, { foreignKey: 'studentId', as: 'student' })
+  @BelongsTo(() => require('./student.model').Student, {
+    foreignKey: 'studentId',
+    as: 'student',
+  })
   declare student?: any;
 
   // Hooks for HIPAA compliance
@@ -200,7 +206,9 @@ export class VitalSigns extends Model<VitalSignsAttributes> implements VitalSign
   static async auditPHIAccess(instance: VitalSigns) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] VitalSigns ${instance.id} modified for student ${instance.studentId} at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] VitalSigns ${instance.id} modified for student ${instance.studentId} at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }
@@ -208,7 +216,12 @@ export class VitalSigns extends Model<VitalSignsAttributes> implements VitalSign
 
   @BeforeCreate
   static async calculateBMI(instance: VitalSigns) {
-    if (instance.height && instance.weight && instance.heightUnit && instance.weightUnit) {
+    if (
+      instance.height &&
+      instance.weight &&
+      instance.heightUnit &&
+      instance.weightUnit
+    ) {
       // Convert to metric for BMI calculation
       let heightM = instance.height;
       let weightKg = instance.weight;
@@ -253,10 +266,16 @@ export class VitalSigns extends Model<VitalSignsAttributes> implements VitalSign
 
     // Blood pressure checks
     if (instance.bloodPressureSystolic && instance.bloodPressureDiastolic) {
-      if (instance.bloodPressureSystolic < 90 || instance.bloodPressureSystolic > 140) {
+      if (
+        instance.bloodPressureSystolic < 90 ||
+        instance.bloodPressureSystolic > 140
+      ) {
         abnormalFlags.push('bloodPressure');
       }
-      if (instance.bloodPressureDiastolic < 60 || instance.bloodPressureDiastolic > 90) {
+      if (
+        instance.bloodPressureDiastolic < 60 ||
+        instance.bloodPressureDiastolic > 90
+      ) {
         abnormalFlags.push('bloodPressure');
       }
     }

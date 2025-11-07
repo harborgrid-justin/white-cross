@@ -10,16 +10,15 @@ import {
   Index,
   Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
-
 
 export enum MessageType {
   EMAIL = 'EMAIL',
   SMS = 'SMS',
   PUSH_NOTIFICATION = 'PUSH_NOTIFICATION',
-  VOICE = 'VOICE'
+  VOICE = 'VOICE',
 }
 
 export enum MessageCategory {
@@ -27,7 +26,7 @@ export enum MessageCategory {
   MEDICATION = 'MEDICATION',
   EMERGENCY = 'EMERGENCY',
   NOTIFICATION = 'NOTIFICATION',
-  REMINDER = 'REMINDER'
+  REMINDER = 'REMINDER',
 }
 
 export interface MessageTemplateAttributes {
@@ -47,10 +46,10 @@ export interface MessageTemplateAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'message_templates',
@@ -60,13 +59,14 @@ export interface MessageTemplateAttributes {
   indexes: [
     {
       fields: ['createdAt'],
-      name: 'idx_message_template_created_at'
+      name: 'idx_message_template_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_message_template_updated_at'
-    }
-  ]})
+      name: 'idx_message_template_updated_at',
+    },
+  ],
+})
 export class MessageTemplate extends Model<MessageTemplateAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -75,19 +75,19 @@ export class MessageTemplate extends Model<MessageTemplateAttributes> {
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: false
+    allowNull: false,
   })
   name: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: true
+    allowNull: true,
   })
   subject?: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false
+    allowNull: false,
   })
   content: string;
 
@@ -95,9 +95,9 @@ export class MessageTemplate extends Model<MessageTemplateAttributes> {
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(MessageType)]
+      isIn: [Object.values(MessageType)],
     },
-    allowNull: false
+    allowNull: false,
   })
   type: MessageType;
 
@@ -105,16 +105,16 @@ export class MessageTemplate extends Model<MessageTemplateAttributes> {
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(MessageCategory)]
+      isIn: [Object.values(MessageCategory)],
     },
-    allowNull: false
+    allowNull: false,
   })
   declare category: any;
 
   @Column({
     type: DataType.ARRAY(DataType.STRING(255)),
     allowNull: false,
-    defaultValue: []
+    defaultValue: [],
   })
   variables: string[];
 
@@ -122,7 +122,7 @@ export class MessageTemplate extends Model<MessageTemplateAttributes> {
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true
+    defaultValue: true,
   })
   isActive: boolean;
 
@@ -130,27 +130,29 @@ export class MessageTemplate extends Model<MessageTemplateAttributes> {
   @ForeignKey(() => require('./user.model').User)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   createdById: string;
 
-  @BelongsTo(() => require('./user.model').User, { foreignKey: 'createdById', as: 'createdBy' })
+  @BelongsTo(() => require('./user.model').User, {
+    foreignKey: 'createdById',
+    as: 'createdBy',
+  })
   declare createdBy?: any;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW
+    defaultValue: DataType.NOW,
   })
   declare createdAt?: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW
+    defaultValue: DataType.NOW,
   })
   declare updatedAt?: Date;
-
 
   // Hooks for HIPAA compliance
   @BeforeCreate
@@ -158,7 +160,9 @@ export class MessageTemplate extends Model<MessageTemplateAttributes> {
   static async auditPHIAccess(instance: MessageTemplate) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] MessageTemplate ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] MessageTemplate ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

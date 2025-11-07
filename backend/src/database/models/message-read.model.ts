@@ -10,7 +10,7 @@ import {
   Index,
   Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
 } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 import { Message } from './message.model';
@@ -54,10 +54,10 @@ export interface MessageReadCreationAttributes
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'message_reads',
@@ -67,19 +67,22 @@ export interface MessageReadCreationAttributes
     {
       unique: true,
       fields: ['messageId', 'userId'],
-      name: 'message_reads_message_user_unique'
+      name: 'message_reads_message_user_unique',
     },
     {
       fields: ['createdAt'],
-      name: 'idx_message_read_created_at'
+      name: 'idx_message_read_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_message_read_updated_at'
-    }
-  ]
+      name: 'idx_message_read_updated_at',
+    },
+  ],
 })
-export class MessageRead extends Model<MessageReadAttributes, MessageReadCreationAttributes> {
+export class MessageRead extends Model<
+  MessageReadAttributes,
+  MessageReadCreationAttributes
+> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
@@ -90,7 +93,7 @@ export class MessageRead extends Model<MessageReadAttributes, MessageReadCreatio
   @Column({
     type: DataType.UUID,
     allowNull: false,
-    comment: 'Message that was read'
+    comment: 'Message that was read',
   })
   declare messageId: string;
 
@@ -102,10 +105,10 @@ export class MessageRead extends Model<MessageReadAttributes, MessageReadCreatio
     comment: 'User who read the message',
     references: {
       model: 'users',
-      key: 'id'
+      key: 'id',
     },
     onUpdate: 'CASCADE',
-    onDelete: 'CASCADE'
+    onDelete: 'CASCADE',
   })
   declare userId: string;
 
@@ -114,30 +117,32 @@ export class MessageRead extends Model<MessageReadAttributes, MessageReadCreatio
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    comment: 'Timestamp when message was read'
+    comment: 'Timestamp when message was read',
   })
   declare readAt: Date;
 
   @BelongsTo(() => Message, { foreignKey: 'messageId', as: 'message' })
   declare message?: Message;
 
-  @BelongsTo(() => require('./user.model').User, { foreignKey: 'userId', as: 'user' })
+  @BelongsTo(() => require('./user.model').User, {
+    foreignKey: 'userId',
+    as: 'user',
+  })
   declare user?: any;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW
+    defaultValue: DataType.NOW,
   })
   declare createdAt: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW
+    defaultValue: DataType.NOW,
   })
   declare updatedAt: Date;
-
 
   // Hooks for HIPAA compliance
   @BeforeCreate
@@ -145,7 +150,9 @@ export class MessageRead extends Model<MessageReadAttributes, MessageReadCreatio
   static async auditPHIAccess(instance: MessageRead) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] MessageRead ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] MessageRead ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

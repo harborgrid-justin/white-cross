@@ -51,13 +51,15 @@ export interface UpdateMedicationDTO {
 }
 
 @Injectable()
-export class MedicationRepository
-  extends BaseRepository<any, MedicationAttributes, CreateMedicationDTO>
-{
+export class MedicationRepository extends BaseRepository<
+  any,
+  MedicationAttributes,
+  CreateMedicationDTO
+> {
   constructor(
-    @InjectModel(('' as any)) model: any,
+    @InjectModel('' as any) model: any,
     @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('ICacheManager') cacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'Medication');
   }
@@ -66,7 +68,7 @@ export class MedicationRepository
     try {
       const medications = await this.model.findAll({
         where: { studentId },
-        order: [['startDate', 'DESC']]
+        order: [['startDate', 'DESC']],
       });
       return medications.map((m: any) => this.mapToEntity(m));
     } catch (error) {
@@ -75,23 +77,22 @@ export class MedicationRepository
         'Failed to find medications by student',
         'FIND_BY_STUDENT_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
 
-  async findActiveMedications(studentId: string): Promise<MedicationAttributes[]> {
+  async findActiveMedications(
+    studentId: string,
+  ): Promise<MedicationAttributes[]> {
     try {
       const medications = await this.model.findAll({
         where: {
           studentId,
           isActive: true,
-          [Op.or]: [
-            { endDate: null },
-            { endDate: { [Op.gte]: new Date() } }
-          ]
+          [Op.or]: [{ endDate: null }, { endDate: { [Op.gte]: new Date() } }],
         },
-        order: [['medicationName', 'ASC']]
+        order: [['medicationName', 'ASC']],
       });
       return medications.map((m: any) => this.mapToEntity(m));
     } catch (error) {
@@ -100,19 +101,21 @@ export class MedicationRepository
         'Failed to find active medications',
         'FIND_ACTIVE_MEDICATIONS_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
 
-  async findByMedicationName(medicationName: string): Promise<MedicationAttributes[]> {
+  async findByMedicationName(
+    medicationName: string,
+  ): Promise<MedicationAttributes[]> {
     try {
       const medications = await this.model.findAll({
         where: {
           medicationName: { [Op.iLike]: `%${medicationName}%` },
-          isActive: true
+          isActive: true,
         },
-        order: [['studentId', 'ASC']]
+        order: [['studentId', 'ASC']],
       });
       return medications.map((m: any) => this.mapToEntity(m));
     } catch (error) {
@@ -121,7 +124,7 @@ export class MedicationRepository
         'Failed to find medications by name',
         'FIND_BY_NAME_ERROR',
         500,
-        { medicationName, error: (error as Error).message }
+        { medicationName, error: (error as Error).message },
       );
     }
   }
@@ -130,15 +133,22 @@ export class MedicationRepository
     // Validation logic
   }
 
-  protected async validateUpdate(id: string, data: UpdateMedicationDTO): Promise<void> {
+  protected async validateUpdate(
+    id: string,
+    data: UpdateMedicationDTO,
+  ): Promise<void> {
     // Validation logic
   }
 
   protected async invalidateCaches(medication: any): Promise<void> {
     try {
       const medicationData = medication.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, medicationData.id));
-      await this.cacheManager.deletePattern(`white-cross:medication:student:${medicationData.studentId}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, medicationData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:medication:student:${medicationData.studentId}:*`,
+      );
     } catch (error) {
       this.logger.warn('Error invalidating medication caches:', error);
     }
@@ -148,5 +158,3 @@ export class MedicationRepository
     return sanitizeSensitiveData({ ...data });
   }
 }
-
-

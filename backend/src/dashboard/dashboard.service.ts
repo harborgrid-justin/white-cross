@@ -8,7 +8,11 @@
  * These models should be registered in the DatabaseModule through Sequelize's model registry.
  */
 
-import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize, Op, fn, col } from 'sequelize';
 import {
@@ -67,9 +71,7 @@ export class DashboardService {
     timestamp: 0,
   };
 
-  constructor(
-    @InjectConnection() private readonly sequelize: Sequelize,
-  ) {}
+  constructor(@InjectConnection() private readonly sequelize: Sequelize) {}
 
   /**
    * Get Sequelize models dynamically
@@ -95,7 +97,10 @@ export class DashboardService {
     try {
       // Check cache first for performance optimization
       const now = Date.now();
-      if (this.statsCache.data && (now - this.statsCache.timestamp) < DashboardService.CACHE_TTL) {
+      if (
+        this.statsCache.data &&
+        now - this.statsCache.timestamp < DashboardService.CACHE_TTL
+      ) {
         this.logger.debug('Returning cached dashboard stats');
         return this.statsCache.data;
       }
@@ -124,10 +129,7 @@ export class DashboardService {
           where: {
             isActive: true,
             startDate: { [Op.lte]: today },
-            [Op.or]: [
-              { endDate: null },
-              { endDate: { [Op.gte]: today } },
-            ],
+            [Op.or]: [{ endDate: null }, { endDate: { [Op.gte]: today } }],
           },
         }),
 
@@ -138,7 +140,10 @@ export class DashboardService {
               [Op.lt]: tomorrow,
             },
             status: {
-              [Op.in]: [AppointmentStatus.SCHEDULED, AppointmentStatus.IN_PROGRESS],
+              [Op.in]: [
+                AppointmentStatus.SCHEDULED,
+                AppointmentStatus.IN_PROGRESS,
+              ],
             },
           },
         }),
@@ -152,10 +157,7 @@ export class DashboardService {
           where: {
             isActive: true,
             startDate: { [Op.lte]: today },
-            [Op.or]: [
-              { endDate: null },
-              { endDate: { [Op.gte]: today } },
-            ],
+            [Op.or]: [{ endDate: null }, { endDate: { [Op.gte]: today } }],
           },
         }),
 
@@ -165,7 +167,10 @@ export class DashboardService {
             attributes: ['id'],
             where: {
               severity: {
-                [Op.in]: [AllergySeverity.SEVERE, AllergySeverity.LIFE_THREATENING],
+                [Op.in]: [
+                  AllergySeverity.SEVERE,
+                  AllergySeverity.LIFE_THREATENING,
+                ],
               },
               active: true,
             },
@@ -245,22 +250,42 @@ export class DashboardService {
       });
 
       // Calculate percentage changes for trend analysis
-      const studentChange = studentsLastMonth > 0
-        ? ((totalStudents - studentsLastMonth) / studentsLastMonth * 100).toFixed(1)
-        : '0';
+      const studentChange =
+        studentsLastMonth > 0
+          ? (
+              ((totalStudents - studentsLastMonth) / studentsLastMonth) *
+              100
+            ).toFixed(1)
+          : '0';
 
-      const medicationChange = medicationsLastMonth > 0
-        ? ((activeMedications - medicationsLastMonth) / medicationsLastMonth * 100).toFixed(1)
-        : '0';
+      const medicationChange =
+        medicationsLastMonth > 0
+          ? (
+              ((activeMedications - medicationsLastMonth) /
+                medicationsLastMonth) *
+              100
+            ).toFixed(1)
+          : '0';
 
-      const appointmentChange = appointmentsLastMonth > 0
-        ? ((todaysAppointments - appointmentsLastMonth) / appointmentsLastMonth * 100).toFixed(1)
-        : '0';
+      const appointmentChange =
+        appointmentsLastMonth > 0
+          ? (
+              ((todaysAppointments - appointmentsLastMonth) /
+                appointmentsLastMonth) *
+              100
+            ).toFixed(1)
+          : '0';
 
       // Helper function to determine trend type
-      const getTrendType = (change: string): 'positive' | 'negative' | 'neutral' => {
+      const getTrendType = (
+        change: string,
+      ): 'positive' | 'negative' | 'neutral' => {
         const numChange = Number(change);
-        return numChange > 0 ? 'positive' : numChange < 0 ? 'negative' : 'neutral';
+        return numChange > 0
+          ? 'positive'
+          : numChange < 0
+            ? 'negative'
+            : 'neutral';
       };
 
       const recentActivityCount = await this.getRecentActivitiesCount();
@@ -300,13 +325,16 @@ export class DashboardService {
       return stats;
     } catch (error) {
       this.logger.error('Error fetching dashboard stats:', error);
-      throw new InternalServerErrorException('Failed to fetch dashboard statistics');
+      throw new InternalServerErrorException(
+        'Failed to fetch dashboard statistics',
+      );
     }
   }
 
   /**
    * Get recent activities across all modules for dashboard feed
    *
+   * PERFORMANCE OPTIMIZATION: Parallel execution of all queries
    * Aggregates recent activity from:
    * - Medication administration logs
    * - Incident reports
@@ -324,15 +352,48 @@ export class DashboardService {
       const IncidentReport = this.getModel('IncidentReport');
       const Appointment = this.getModel('Appointment');
 
-      // Get recent medication administration logs
-      const recentMeds = await MedicationLog.findAll({
-        limit: 3,
-        order: [['timeGiven', 'DESC']],
-        include: [
-          {
-            model: StudentMedication,
-            as: 'studentMedication',
-            required: true,
+      const now = new Date();
+
+      // PERFORMANCE: Execute all queries in parallel
+      const [recentMeds, recentIncidents, upcomingAppointments] =
+        await Promise.all([
+          // Get recent medication administration logs
+          MedicationLog.findAll({
+            limit: 3,
+            order: [['timeGiven', 'DESC']],
+            include: [
+              {
+                model: StudentMedication,
+                as: 'studentMedication',
+                required: true,
+                include: [
+                  {
+                    model: Student,
+                    as: 'student',
+                    attributes: ['id', 'firstName', 'lastName'],
+                    required: true,
+                  },
+                  {
+                    model: Medication,
+                    as: 'medication',
+                    attributes: ['id', 'name'],
+                    required: true,
+                  },
+                ],
+              },
+              {
+                model: User,
+                as: 'nurse',
+                attributes: ['id', 'firstName', 'lastName'],
+                required: false,
+              },
+            ],
+          }),
+
+          // Get recent incident reports
+          IncidentReport.findAll({
+            limit: 2,
+            order: [['createdAt', 'DESC']],
             include: [
               {
                 model: Student,
@@ -340,26 +401,36 @@ export class DashboardService {
                 attributes: ['id', 'firstName', 'lastName'],
                 required: true,
               },
+            ],
+          }),
+
+          // Get upcoming appointments
+          Appointment.findAll({
+            limit: 2,
+            where: {
+              scheduledAt: { [Op.gte]: now },
+              status: AppointmentStatus.SCHEDULED,
+            },
+            order: [['scheduledAt', 'ASC']],
+            include: [
               {
-                model: Medication,
-                as: 'medication',
-                attributes: ['id', 'name'],
+                model: Student,
+                as: 'student',
+                attributes: ['id', 'firstName', 'lastName'],
                 required: true,
               },
             ],
-          },
-          {
-            model: User,
-            as: 'nurse',
-            attributes: ['id', 'firstName', 'lastName'],
-            required: false,
-          },
-        ],
-      });
+          }),
+        ]);
 
+      // Process all results in parallel
       recentMeds.forEach((med: any) => {
         const studentMedication = med.studentMedication;
-        if (studentMedication && studentMedication.student && studentMedication.medication) {
+        if (
+          studentMedication &&
+          studentMedication.student &&
+          studentMedication.medication
+        ) {
           activities.push({
             id: med.id,
             type: 'medication',
@@ -370,26 +441,10 @@ export class DashboardService {
         }
       });
 
-      // Get recent incident reports
-      const recentIncidents = await IncidentReport.findAll({
-        limit: 2,
-        order: [['createdAt', 'DESC']],
-        include: [
-          {
-            model: Student,
-            as: 'student',
-            attributes: ['id', 'firstName', 'lastName'],
-            required: true,
-          },
-        ],
-      });
-
       recentIncidents.forEach((incident: any) => {
         const student = incident.student;
         if (student) {
-          const typeFormatted = incident.type
-            .toLowerCase()
-            .replace(/_/g, ' ');
+          const typeFormatted = incident.type.toLowerCase().replace(/_/g, ' ');
 
           activities.push({
             id: incident.id,
@@ -401,31 +456,10 @@ export class DashboardService {
         }
       });
 
-      // Get upcoming appointments
-      const now = new Date();
-      const upcomingAppointments = await Appointment.findAll({
-        limit: 2,
-        where: {
-          scheduledAt: { [Op.gte]: now },
-          status: AppointmentStatus.SCHEDULED,
-        },
-        order: [['scheduledAt', 'ASC']],
-        include: [
-          {
-            model: Student,
-            as: 'student',
-            attributes: ['id', 'firstName', 'lastName'],
-            required: true,
-          },
-        ],
-      });
-
       upcomingAppointments.forEach((apt: any) => {
         const student = apt.student;
         if (student) {
-          const typeFormatted = apt.type
-            .toLowerCase()
-            .replace(/_/g, ' ');
+          const typeFormatted = apt.type.toLowerCase().replace(/_/g, ' ');
 
           activities.push({
             id: apt.id,
@@ -441,7 +475,9 @@ export class DashboardService {
       return activities.slice(0, limit);
     } catch (error) {
       this.logger.error('Error fetching recent activities:', error);
-      throw new InternalServerErrorException('Failed to fetch recent activities');
+      throw new InternalServerErrorException(
+        'Failed to fetch recent activities',
+      );
     }
   }
 
@@ -451,7 +487,9 @@ export class DashboardService {
    * Retrieves scheduled appointments sorted by time, with priority levels
    * determined by appointment type.
    */
-  async getUpcomingAppointments(limit: number = 5): Promise<UpcomingAppointmentDto[]> {
+  async getUpcomingAppointments(
+    limit: number = 5,
+  ): Promise<UpcomingAppointmentDto[]> {
     try {
       const now = new Date();
       const Appointment = this.getModel('Appointment');
@@ -462,7 +500,10 @@ export class DashboardService {
         where: {
           scheduledAt: { [Op.gte]: now },
           status: {
-            [Op.in]: [AppointmentStatus.SCHEDULED, AppointmentStatus.IN_PROGRESS],
+            [Op.in]: [
+              AppointmentStatus.SCHEDULED,
+              AppointmentStatus.IN_PROGRESS,
+            ],
           },
         },
         order: [['scheduledAt', 'ASC']],
@@ -481,7 +522,10 @@ export class DashboardService {
 
         // Determine priority based on appointment type
         let priority: 'high' | 'medium' | 'low' = 'medium';
-        if (apt.type === AppointmentType.MEDICATION_ADMINISTRATION || apt.type === AppointmentType.EMERGENCY) {
+        if (
+          apt.type === AppointmentType.MEDICATION_ADMINISTRATION ||
+          apt.type === AppointmentType.EMERGENCY
+        ) {
           priority = 'high';
         } else if (apt.type === AppointmentType.ROUTINE_CHECKUP) {
           priority = 'low';
@@ -502,7 +546,9 @@ export class DashboardService {
 
         return {
           id: apt.id,
-          student: student ? `${student.firstName} ${student.lastName}` : 'Unknown',
+          student: student
+            ? `${student.firstName} ${student.lastName}`
+            : 'Unknown',
           studentId: student ? student.id : '',
           time: timeStr,
           type: typeFormatted,
@@ -511,7 +557,9 @@ export class DashboardService {
       });
     } catch (error) {
       this.logger.error('Error fetching upcoming appointments:', error);
-      throw new InternalServerErrorException('Failed to fetch upcoming appointments');
+      throw new InternalServerErrorException(
+        'Failed to fetch upcoming appointments',
+      );
     }
   }
 
@@ -524,11 +572,16 @@ export class DashboardService {
    * - Incident report frequency
    * - Appointment scheduling patterns
    */
-  async getChartData(period: 'week' | 'month' | 'year' = 'week'): Promise<DashboardChartDataDto> {
+  async getChartData(
+    period: 'week' | 'month' | 'year' = 'week',
+  ): Promise<DashboardChartDataDto> {
     try {
       const now = new Date();
-      let startDate = new Date();
-      let dateFormat: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+      const startDate = new Date();
+      let dateFormat: Intl.DateTimeFormatOptions = {
+        month: 'short',
+        day: 'numeric',
+      };
 
       // Calculate start date based on period
       if (period === 'week') {
@@ -546,72 +599,71 @@ export class DashboardService {
       const Appointment = this.getModel('Appointment');
 
       // Parallel execution of all chart data queries
-      const [
-        enrollmentData,
-        medicationData,
-        incidentData,
-        appointmentData,
-      ] = await Promise.all([
-        // Enrollment trend - group by creation date
-        Student.findAll({
-          attributes: [
-            [fn('DATE', col('createdAt')), 'date'],
-            [fn('COUNT', col('id')), 'count'],
-          ],
-          where: {
-            createdAt: { [Op.gte]: startDate },
-          },
-          group: [fn('DATE', col('createdAt'))],
-          order: [[fn('DATE', col('createdAt')), 'ASC']],
-          raw: true,
-        }),
+      const [enrollmentData, medicationData, incidentData, appointmentData] =
+        await Promise.all([
+          // Enrollment trend - group by creation date
+          Student.findAll({
+            attributes: [
+              [fn('DATE', col('createdAt')), 'date'],
+              [fn('COUNT', col('id')), 'count'],
+            ],
+            where: {
+              createdAt: { [Op.gte]: startDate },
+            },
+            group: [fn('DATE', col('createdAt'))],
+            order: [[fn('DATE', col('createdAt')), 'ASC']],
+            raw: true,
+          }),
 
-        // Medication administration - group by administration time
-        MedicationLog.findAll({
-          attributes: [
-            [fn('DATE', col('timeGiven')), 'date'],
-            [fn('COUNT', col('id')), 'count'],
-          ],
-          where: {
-            timeGiven: { [Op.gte]: startDate },
-          },
-          group: [fn('DATE', col('timeGiven'))],
-          order: [[fn('DATE', col('timeGiven')), 'ASC']],
-          raw: true,
-        }),
+          // Medication administration - group by administration time
+          MedicationLog.findAll({
+            attributes: [
+              [fn('DATE', col('timeGiven')), 'date'],
+              [fn('COUNT', col('id')), 'count'],
+            ],
+            where: {
+              timeGiven: { [Op.gte]: startDate },
+            },
+            group: [fn('DATE', col('timeGiven'))],
+            order: [[fn('DATE', col('timeGiven')), 'ASC']],
+            raw: true,
+          }),
 
-        // Incident frequency - group by occurrence date
-        IncidentReport.findAll({
-          attributes: [
-            [fn('DATE', col('occurredAt')), 'date'],
-            [fn('COUNT', col('id')), 'count'],
-          ],
-          where: {
-            occurredAt: { [Op.gte]: startDate },
-          },
-          group: [fn('DATE', col('occurredAt'))],
-          order: [[fn('DATE', col('occurredAt')), 'ASC']],
-          raw: true,
-        }),
+          // Incident frequency - group by occurrence date
+          IncidentReport.findAll({
+            attributes: [
+              [fn('DATE', col('occurredAt')), 'date'],
+              [fn('COUNT', col('id')), 'count'],
+            ],
+            where: {
+              occurredAt: { [Op.gte]: startDate },
+            },
+            group: [fn('DATE', col('occurredAt'))],
+            order: [[fn('DATE', col('occurredAt')), 'ASC']],
+            raw: true,
+          }),
 
-        // Appointment trends - group by scheduled date
-        Appointment.findAll({
-          attributes: [
-            [fn('DATE', col('scheduledAt')), 'date'],
-            [fn('COUNT', col('id')), 'count'],
-          ],
-          where: {
-            scheduledAt: { [Op.gte]: startDate },
-          },
-          group: [fn('DATE', col('scheduledAt'))],
-          order: [[fn('DATE', col('scheduledAt')), 'ASC']],
-          raw: true,
-        }),
-      ]);
+          // Appointment trends - group by scheduled date
+          Appointment.findAll({
+            attributes: [
+              [fn('DATE', col('scheduledAt')), 'date'],
+              [fn('COUNT', col('id')), 'count'],
+            ],
+            where: {
+              scheduledAt: { [Op.gte]: startDate },
+            },
+            group: [fn('DATE', col('scheduledAt'))],
+            order: [[fn('DATE', col('scheduledAt')), 'ASC']],
+            raw: true,
+          }),
+        ]);
 
       return {
         enrollmentTrend: this.formatChartData(enrollmentData, dateFormat),
-        medicationAdministration: this.formatChartData(medicationData, dateFormat),
+        medicationAdministration: this.formatChartData(
+          medicationData,
+          dateFormat,
+        ),
         incidentFrequency: this.formatChartData(incidentData, dateFormat),
         appointmentTrends: this.formatChartData(appointmentData, dateFormat),
       };
@@ -626,15 +678,22 @@ export class DashboardService {
    *
    * Filters all dashboard data by school or district context.
    */
-  async getDashboardStatsByScope(schoolId?: string, districtId?: string): Promise<DashboardStatsDto> {
+  async getDashboardStatsByScope(
+    schoolId?: string,
+    districtId?: string,
+  ): Promise<DashboardStatsDto> {
     try {
       // This method can be extended to filter by school/district
       // For now, returns general stats
-      this.logger.log(`Getting dashboard stats for scope - School: ${schoolId}, District: ${districtId}`);
+      this.logger.log(
+        `Getting dashboard stats for scope - School: ${schoolId}, District: ${districtId}`,
+      );
       return this.getDashboardStats();
     } catch (error) {
       this.logger.error('Error fetching scoped dashboard stats:', error);
-      throw new InternalServerErrorException('Failed to fetch scoped dashboard statistics');
+      throw new InternalServerErrorException(
+        'Failed to fetch scoped dashboard statistics',
+      );
     }
   }
 

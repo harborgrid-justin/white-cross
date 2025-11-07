@@ -5,7 +5,13 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsOptional, IsObject, IsNumber } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+  IsObject,
+  IsNumber,
+} from 'class-validator';
 import { SmsPriority } from './send-sms.dto';
 
 /**

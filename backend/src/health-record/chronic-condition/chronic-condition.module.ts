@@ -6,9 +6,7 @@ import { ChronicCondition } from '../../database/models/chronic-condition.model'
 import { Student } from '../../database/models/student.model';
 
 @Module({
-  imports: [
-    SequelizeModule.forFeature([ChronicCondition, Student]),
-  ],
+  imports: [SequelizeModule.forFeature([ChronicCondition, Student])],
   controllers: [ChronicConditionController],
   providers: [ChronicConditionService],
   exports: [ChronicConditionService],

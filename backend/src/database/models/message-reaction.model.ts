@@ -10,7 +10,7 @@ import {
   Index,
   Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
 } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 import { Message } from './message.model';
@@ -29,7 +29,10 @@ export interface MessageReactionAttributes {
 }
 
 export interface MessageReactionCreationAttributes
-  extends Optional<MessageReactionAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
+  extends Optional<
+    MessageReactionAttributes,
+    'id' | 'createdAt' | 'updatedAt'
+  > {}
 
 /**
  * MessageReaction Model
@@ -56,10 +59,10 @@ export interface MessageReactionCreationAttributes
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'message_reactions',
@@ -69,19 +72,22 @@ export interface MessageReactionCreationAttributes
     {
       unique: true,
       fields: ['messageId', 'userId', 'emoji'],
-      name: 'message_reactions_message_user_emoji_unique'
+      name: 'message_reactions_message_user_emoji_unique',
     },
     {
       fields: ['createdAt'],
-      name: 'idx_message_reaction_created_at'
+      name: 'idx_message_reaction_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_message_reaction_updated_at'
-    }
-  ]
+      name: 'idx_message_reaction_updated_at',
+    },
+  ],
 })
-export class MessageReaction extends Model<MessageReactionAttributes, MessageReactionCreationAttributes> {
+export class MessageReaction extends Model<
+  MessageReactionAttributes,
+  MessageReactionCreationAttributes
+> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
@@ -92,7 +98,7 @@ export class MessageReaction extends Model<MessageReactionAttributes, MessageRea
   @Column({
     type: DataType.UUID,
     allowNull: false,
-    comment: 'Message being reacted to'
+    comment: 'Message being reacted to',
   })
   declare messageId: string;
 
@@ -104,40 +110,42 @@ export class MessageReaction extends Model<MessageReactionAttributes, MessageRea
     comment: 'User who added the reaction',
     references: {
       model: 'users',
-      key: 'id'
+      key: 'id',
     },
     onUpdate: 'CASCADE',
-    onDelete: 'CASCADE'
+    onDelete: 'CASCADE',
   })
   declare userId: string;
 
   @Column({
     type: DataType.STRING(20),
     allowNull: false,
-    comment: 'Emoji character or code'
+    comment: 'Emoji character or code',
   })
   declare emoji: string;
 
   @BelongsTo(() => Message, { foreignKey: 'messageId', as: 'message' })
   declare message?: Message;
 
-  @BelongsTo(() => require('./user.model').User, { foreignKey: 'userId', as: 'user' })
+  @BelongsTo(() => require('./user.model').User, {
+    foreignKey: 'userId',
+    as: 'user',
+  })
   declare user?: any;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW
+    defaultValue: DataType.NOW,
   })
   declare createdAt: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW
+    defaultValue: DataType.NOW,
   })
   declare updatedAt: Date;
-
 
   // Hooks for HIPAA compliance
   @BeforeCreate
@@ -145,7 +153,9 @@ export class MessageReaction extends Model<MessageReactionAttributes, MessageRea
   static async auditPHIAccess(instance: MessageReaction) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] MessageReaction ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] MessageReaction ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

@@ -92,7 +92,8 @@ import { MessageDelivery } from '../../database/models/message-delivery.model';
           },
           timeout: QUEUE_CONFIGS[QueueName.MESSAGE_DELIVERY].timeout,
           removeOnComplete: {
-            count: QUEUE_CONFIGS[QueueName.MESSAGE_DELIVERY].removeOnCompleteCount,
+            count:
+              QUEUE_CONFIGS[QueueName.MESSAGE_DELIVERY].removeOnCompleteCount,
             age: QUEUE_CONFIGS[QueueName.MESSAGE_DELIVERY].removeOnCompleteAge,
           },
           removeOnFail: {
@@ -111,11 +112,15 @@ import { MessageDelivery } from '../../database/models/message-delivery.model';
           },
           timeout: QUEUE_CONFIGS[QueueName.MESSAGE_NOTIFICATION].timeout,
           removeOnComplete: {
-            count: QUEUE_CONFIGS[QueueName.MESSAGE_NOTIFICATION].removeOnCompleteCount,
-            age: QUEUE_CONFIGS[QueueName.MESSAGE_NOTIFICATION].removeOnCompleteAge,
+            count:
+              QUEUE_CONFIGS[QueueName.MESSAGE_NOTIFICATION]
+                .removeOnCompleteCount,
+            age: QUEUE_CONFIGS[QueueName.MESSAGE_NOTIFICATION]
+              .removeOnCompleteAge,
           },
           removeOnFail: {
-            count: QUEUE_CONFIGS[QueueName.MESSAGE_NOTIFICATION].removeOnFailCount,
+            count:
+              QUEUE_CONFIGS[QueueName.MESSAGE_NOTIFICATION].removeOnFailCount,
             age: QUEUE_CONFIGS[QueueName.MESSAGE_NOTIFICATION].removeOnFailAge,
           },
         },
@@ -130,7 +135,8 @@ import { MessageDelivery } from '../../database/models/message-delivery.model';
           },
           timeout: QUEUE_CONFIGS[QueueName.MESSAGE_INDEXING].timeout,
           removeOnComplete: {
-            count: QUEUE_CONFIGS[QueueName.MESSAGE_INDEXING].removeOnCompleteCount,
+            count:
+              QUEUE_CONFIGS[QueueName.MESSAGE_INDEXING].removeOnCompleteCount,
             age: QUEUE_CONFIGS[QueueName.MESSAGE_INDEXING].removeOnCompleteAge,
           },
           removeOnFail: {
@@ -149,11 +155,14 @@ import { MessageDelivery } from '../../database/models/message-delivery.model';
           },
           timeout: QUEUE_CONFIGS[QueueName.MESSAGE_ENCRYPTION].timeout,
           removeOnComplete: {
-            count: QUEUE_CONFIGS[QueueName.MESSAGE_ENCRYPTION].removeOnCompleteCount,
-            age: QUEUE_CONFIGS[QueueName.MESSAGE_ENCRYPTION].removeOnCompleteAge,
+            count:
+              QUEUE_CONFIGS[QueueName.MESSAGE_ENCRYPTION].removeOnCompleteCount,
+            age: QUEUE_CONFIGS[QueueName.MESSAGE_ENCRYPTION]
+              .removeOnCompleteAge,
           },
           removeOnFail: {
-            count: QUEUE_CONFIGS[QueueName.MESSAGE_ENCRYPTION].removeOnFailCount,
+            count:
+              QUEUE_CONFIGS[QueueName.MESSAGE_ENCRYPTION].removeOnFailCount,
             age: QUEUE_CONFIGS[QueueName.MESSAGE_ENCRYPTION].removeOnFailAge,
           },
         },
@@ -168,11 +177,15 @@ import { MessageDelivery } from '../../database/models/message-delivery.model';
           },
           timeout: QUEUE_CONFIGS[QueueName.BATCH_MESSAGE_SENDING].timeout,
           removeOnComplete: {
-            count: QUEUE_CONFIGS[QueueName.BATCH_MESSAGE_SENDING].removeOnCompleteCount,
-            age: QUEUE_CONFIGS[QueueName.BATCH_MESSAGE_SENDING].removeOnCompleteAge,
+            count:
+              QUEUE_CONFIGS[QueueName.BATCH_MESSAGE_SENDING]
+                .removeOnCompleteCount,
+            age: QUEUE_CONFIGS[QueueName.BATCH_MESSAGE_SENDING]
+              .removeOnCompleteAge,
           },
           removeOnFail: {
-            count: QUEUE_CONFIGS[QueueName.BATCH_MESSAGE_SENDING].removeOnFailCount,
+            count:
+              QUEUE_CONFIGS[QueueName.BATCH_MESSAGE_SENDING].removeOnFailCount,
             age: QUEUE_CONFIGS[QueueName.BATCH_MESSAGE_SENDING].removeOnFailAge,
           },
         },
@@ -187,7 +200,8 @@ import { MessageDelivery } from '../../database/models/message-delivery.model';
           },
           timeout: QUEUE_CONFIGS[QueueName.MESSAGE_CLEANUP].timeout,
           removeOnComplete: {
-            count: QUEUE_CONFIGS[QueueName.MESSAGE_CLEANUP].removeOnCompleteCount,
+            count:
+              QUEUE_CONFIGS[QueueName.MESSAGE_CLEANUP].removeOnCompleteCount,
             age: QUEUE_CONFIGS[QueueName.MESSAGE_CLEANUP].removeOnCompleteAge,
           },
           removeOnFail: {

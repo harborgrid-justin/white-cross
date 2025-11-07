@@ -57,14 +57,14 @@ import { UserManagementService } from './services/user-management.service';
     SettingsService,
     SystemHealthService,
     TrainingService,
-    UserManagementService
+    UserManagementService,
   ],
   exports: [
     AuditService,
     ConfigurationService,
     DistrictService,
     SchoolService,
-    LicenseService
+    LicenseService,
   ],
 })
 export class AdministrationModule {}

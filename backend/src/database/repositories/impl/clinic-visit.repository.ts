@@ -54,13 +54,15 @@ export interface UpdateClinicVisitDTO {
 }
 
 @Injectable()
-export class ClinicVisitRepository
-  extends BaseRepository<any, ClinicVisitAttributes, CreateClinicVisitDTO>
-{
+export class ClinicVisitRepository extends BaseRepository<
+  any,
+  ClinicVisitAttributes,
+  CreateClinicVisitDTO
+> {
   constructor(
-    @InjectModel(('' as any)) model: any,
+    @InjectModel('' as any) model: any,
     @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('ICacheManager') cacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'ClinicVisit');
   }
@@ -69,7 +71,7 @@ export class ClinicVisitRepository
     try {
       const visits = await this.model.findAll({
         where: { studentId },
-        order: [['visitDate', 'DESC']]
+        order: [['visitDate', 'DESC']],
       });
       return visits.map((v: any) => this.mapToEntity(v));
     } catch (error) {
@@ -78,7 +80,7 @@ export class ClinicVisitRepository
         'Failed to find clinic visits by student',
         'FIND_BY_STUDENT_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
@@ -87,7 +89,7 @@ export class ClinicVisitRepository
     try {
       const visits = await this.model.findAll({
         where: { providerId },
-        order: [['visitDate', 'DESC']]
+        order: [['visitDate', 'DESC']],
       });
       return visits.map((v: any) => this.mapToEntity(v));
     } catch (error) {
@@ -96,7 +98,7 @@ export class ClinicVisitRepository
         'Failed to find clinic visits by provider',
         'FIND_BY_PROVIDER_ERROR',
         500,
-        { providerId, error: (error as Error).message }
+        { providerId, error: (error as Error).message },
       );
     }
   }
@@ -105,7 +107,7 @@ export class ClinicVisitRepository
     try {
       const visits = await this.model.findAll({
         where: { followUpRequired: true },
-        order: [['followUpDate', 'ASC']]
+        order: [['followUpDate', 'ASC']],
       });
       return visits.map((v: any) => this.mapToEntity(v));
     } catch (error) {
@@ -114,7 +116,7 @@ export class ClinicVisitRepository
         'Failed to find visits requiring follow-up',
         'FIND_FOLLOW_UP_REQUIRED_ERROR',
         500,
-        { error: (error as Error).message }
+        { error: (error as Error).message },
       );
     }
   }
@@ -123,15 +125,22 @@ export class ClinicVisitRepository
     // Validation logic
   }
 
-  protected async validateUpdate(id: string, data: UpdateClinicVisitDTO): Promise<void> {
+  protected async validateUpdate(
+    id: string,
+    data: UpdateClinicVisitDTO,
+  ): Promise<void> {
     // Validation logic
   }
 
   protected async invalidateCaches(visit: any): Promise<void> {
     try {
       const visitData = visit.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, visitData.id));
-      await this.cacheManager.deletePattern(`white-cross:clinic-visit:student:${visitData.studentId}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, visitData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:clinic-visit:student:${visitData.studentId}:*`,
+      );
     } catch (error) {
       this.logger.warn('Error invalidating clinic visit caches:', error);
     }
@@ -142,7 +151,7 @@ export class ClinicVisitRepository
       ...data,
       diagnosis: '[PHI]',
       treatment: '[PHI]',
-      notes: '[PHI]'
+      notes: '[PHI]',
     });
   }
 }

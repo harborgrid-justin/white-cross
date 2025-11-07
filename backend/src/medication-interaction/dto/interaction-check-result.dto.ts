@@ -1,4 +1,11 @@
-import { IsBoolean, IsArray, IsNumber, Min, Max, ValidateNested } from 'class-validator';
+import {
+  IsBoolean,
+  IsArray,
+  IsNumber,
+  Min,
+  Max,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { DrugInteractionDto } from './drug-interaction.dto';

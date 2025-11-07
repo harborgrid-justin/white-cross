@@ -53,13 +53,15 @@ export interface UpdateLabResultDTO {
 }
 
 @Injectable()
-export class LabResultRepository
-  extends BaseRepository<any, LabResultAttributes, CreateLabResultDTO>
-{
+export class LabResultRepository extends BaseRepository<
+  any,
+  LabResultAttributes,
+  CreateLabResultDTO
+> {
   constructor(
-    @InjectModel(('' as any)) model: any,
+    @InjectModel('' as any) model: any,
     @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('ICacheManager') cacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'LabResult');
   }
@@ -68,7 +70,7 @@ export class LabResultRepository
     try {
       const results = await this.model.findAll({
         where: { studentId },
-        order: [['testDate', 'DESC']]
+        order: [['testDate', 'DESC']],
       });
       return results.map((r: any) => this.mapToEntity(r));
     } catch (error) {
@@ -77,7 +79,7 @@ export class LabResultRepository
         'Failed to find lab results by student',
         'FIND_BY_STUDENT_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
@@ -86,7 +88,7 @@ export class LabResultRepository
     try {
       const results = await this.model.findAll({
         where: { studentId, isAbnormal: true },
-        order: [['testDate', 'DESC']]
+        order: [['testDate', 'DESC']],
       });
       return results.map((r: any) => this.mapToEntity(r));
     } catch (error) {
@@ -95,16 +97,19 @@ export class LabResultRepository
         'Failed to find abnormal lab results',
         'FIND_ABNORMAL_RESULTS_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
 
-  async findByTestName(studentId: string, testName: string): Promise<LabResultAttributes[]> {
+  async findByTestName(
+    studentId: string,
+    testName: string,
+  ): Promise<LabResultAttributes[]> {
     try {
       const results = await this.model.findAll({
         where: { studentId, testName },
-        order: [['testDate', 'DESC']]
+        order: [['testDate', 'DESC']],
       });
       return results.map((r: any) => this.mapToEntity(r));
     } catch (error) {
@@ -113,7 +118,7 @@ export class LabResultRepository
         'Failed to find lab results by test name',
         'FIND_BY_TEST_NAME_ERROR',
         500,
-        { studentId, testName, error: (error as Error).message }
+        { studentId, testName, error: (error as Error).message },
       );
     }
   }
@@ -122,15 +127,22 @@ export class LabResultRepository
     // Validation logic
   }
 
-  protected async validateUpdate(id: string, data: UpdateLabResultDTO): Promise<void> {
+  protected async validateUpdate(
+    id: string,
+    data: UpdateLabResultDTO,
+  ): Promise<void> {
     // Validation logic
   }
 
   protected async invalidateCaches(labResult: any): Promise<void> {
     try {
       const labResultData = labResult.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, labResultData.id));
-      await this.cacheManager.deletePattern(`white-cross:lab-result:student:${labResultData.studentId}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, labResultData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:lab-result:student:${labResultData.studentId}:*`,
+      );
     } catch (error) {
       this.logger.warn('Error invalidating lab result caches:', error);
     }
@@ -140,9 +152,7 @@ export class LabResultRepository
     return sanitizeSensitiveData({
       ...data,
       resultValue: '[PHI]',
-      notes: '[PHI]'
+      notes: '[PHI]',
     });
   }
 }
-
-

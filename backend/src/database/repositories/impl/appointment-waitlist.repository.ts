@@ -4,7 +4,7 @@ import { AppointmentWaitlist } from '../../models/appointment-waitlist.model';
 
 /**
  * AppointmentWaitlist Repository Implementation
- * 
+ *
  * Provides data access operations for appointment waitlist entries.
  * Handles CRUD operations and business logic related to appointment waiting lists.
  */
@@ -41,7 +41,7 @@ export class AppointmentWaitlistRepository {
    */
   async update(id: string, data: any): Promise<AppointmentWaitlist | null> {
     const [affectedCount] = await this.appointmentWaitlistModel.update(data, {
-      where: { id }
+      where: { id },
     });
 
     if (affectedCount === 0) {
@@ -56,7 +56,7 @@ export class AppointmentWaitlistRepository {
    */
   async delete(id: string): Promise<boolean> {
     const affectedCount = await this.appointmentWaitlistModel.destroy({
-      where: { id }
+      where: { id },
     });
 
     return affectedCount > 0;
@@ -68,7 +68,10 @@ export class AppointmentWaitlistRepository {
   async findByStudentId(studentId: string): Promise<AppointmentWaitlist[]> {
     return this.appointmentWaitlistModel.findAll({
       where: { studentId },
-      order: [['priority', 'ASC'], ['createdAt', 'ASC']],
+      order: [
+        ['priority', 'ASC'],
+        ['createdAt', 'ASC'],
+      ],
     });
   }
 }

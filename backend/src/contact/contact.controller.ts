@@ -15,7 +15,7 @@ import {
   HttpCode,
   HttpStatus,
   ValidationPipe,
-  ParseUUIDPipe
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -23,7 +23,7 @@ import {
   ApiResponse,
   ApiParam,
   ApiQuery,
-  ApiBearerAuth
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { ContactService } from './services/contact.service';
 import { EmergencyContactService } from './services/emergency-contact.service';
@@ -34,7 +34,7 @@ import {
   ContactCreateEmergencyDto,
   ContactUpdateEmergencyDto,
   ContactVerifyDto,
-  EmergencyContactQueryDto
+  EmergencyContactQueryDto,
 } from './dto';
 import { ContactType } from './enums';
 
@@ -44,7 +44,7 @@ import { ContactType } from './enums';
 export class ContactController {
   constructor(
     private readonly contactService: ContactService,
-    private readonly emergencyContactService: EmergencyContactService
+    private readonly emergencyContactService: EmergencyContactService,
   ) {}
 
   // ========== General Contact Endpoints ==========
@@ -59,18 +59,26 @@ export class ContactController {
   @Get('search')
   @ApiOperation({ summary: 'Search contacts by name, email, or organization' })
   @ApiQuery({ name: 'q', required: true, description: 'Search query' })
-  @ApiQuery({ name: 'limit', required: false, description: 'Result limit', type: Number })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Result limit',
+    type: Number,
+  })
   @ApiResponse({ status: 200, description: 'Returns matching contacts' })
   async searchContacts(
     @Query('q') query: string,
-    @Query('limit') limit?: number
+    @Query('limit') limit?: number,
   ) {
     return this.contactService.searchContacts(query, limit);
   }
 
   @Get('stats')
   @ApiOperation({ summary: 'Get contact statistics' })
-  @ApiResponse({ status: 200, description: 'Returns contact statistics by type' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns contact statistics by type',
+  })
   async getContactStats() {
     return this.contactService.getContactStats();
   }
@@ -82,7 +90,7 @@ export class ContactController {
   @ApiResponse({ status: 200, description: 'Returns contacts for relation' })
   async getContactsByRelation(
     @Param('relationId', ParseUUIDPipe) relationId: string,
-    @Query('type') type?: ContactType
+    @Query('type') type?: ContactType,
   ) {
     return this.contactService.getContactsByRelation(relationId, type);
   }
@@ -114,7 +122,7 @@ export class ContactController {
   @ApiResponse({ status: 409, description: 'Duplicate contact email' })
   async updateContact(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body(ValidationPipe) dto: UpdateContactDto
+    @Body(ValidationPipe) dto: UpdateContactDto,
   ) {
     return this.contactService.updateContact(id, dto);
   }
@@ -135,7 +143,7 @@ export class ContactController {
   @ApiResponse({ status: 200, description: 'Contact activated successfully' })
   async reactivateContact(
     @Param('id', ParseUUIDPipe) id: string,
-    @Query('updatedBy') updatedBy?: string
+    @Query('updatedBy') updatedBy?: string,
   ) {
     return this.contactService.reactivateContact(id, updatedBy);
   }
@@ -147,7 +155,7 @@ export class ContactController {
   @ApiResponse({ status: 200, description: 'Contact deactivated successfully' })
   async deactivateContact(
     @Param('id', ParseUUIDPipe) id: string,
-    @Query('updatedBy') updatedBy?: string
+    @Query('updatedBy') updatedBy?: string,
   ) {
     return this.contactService.deactivateContact(id, updatedBy);
   }
@@ -156,17 +164,25 @@ export class ContactController {
 
   @Get('emergency/list')
   @ApiOperation({ summary: 'Get all emergency contacts with filters' })
-  @ApiResponse({ status: 200, description: 'Returns paginated emergency contacts' })
-  async getAllEmergencyContacts(@Query(ValidationPipe) query: EmergencyContactQueryDto) {
+  @ApiResponse({
+    status: 200,
+    description: 'Returns paginated emergency contacts',
+  })
+  async getAllEmergencyContacts(
+    @Query(ValidationPipe) query: EmergencyContactQueryDto,
+  ) {
     return this.emergencyContactService.findAll(query);
   }
 
   @Get('emergency/student/:studentId')
   @ApiOperation({ summary: 'Get all emergency contacts for a student' })
   @ApiParam({ name: 'studentId', description: 'Student UUID' })
-  @ApiResponse({ status: 200, description: 'Returns student emergency contacts' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns student emergency contacts',
+  })
   async getEmergencyContactsByStudent(
-    @Param('studentId', ParseUUIDPipe) studentId: string
+    @Param('studentId', ParseUUIDPipe) studentId: string,
   ) {
     return this.emergencyContactService.findAllByStudent(studentId);
   }
@@ -176,7 +192,7 @@ export class ContactController {
   @ApiParam({ name: 'studentId', description: 'Student UUID' })
   @ApiResponse({ status: 200, description: 'Returns primary contacts' })
   async getPrimaryEmergencyContacts(
-    @Param('studentId', ParseUUIDPipe) studentId: string
+    @Param('studentId', ParseUUIDPipe) studentId: string,
   ) {
     return this.emergencyContactService.getPrimaryContacts(studentId);
   }
@@ -184,9 +200,12 @@ export class ContactController {
   @Get('emergency/student/:studentId/authorized-pickup')
   @ApiOperation({ summary: 'Get authorized pickup contacts for a student' })
   @ApiParam({ name: 'studentId', description: 'Student UUID' })
-  @ApiResponse({ status: 200, description: 'Returns authorized pickup contacts' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns authorized pickup contacts',
+  })
   async getAuthorizedPickupContacts(
-    @Param('studentId', ParseUUIDPipe) studentId: string
+    @Param('studentId', ParseUUIDPipe) studentId: string,
   ) {
     return this.emergencyContactService.getAuthorizedPickupContacts(studentId);
   }
@@ -194,9 +213,12 @@ export class ContactController {
   @Get('emergency/student/:studentId/notification-routing')
   @ApiOperation({ summary: 'Get notification routing for a student' })
   @ApiParam({ name: 'studentId', description: 'Student UUID' })
-  @ApiResponse({ status: 200, description: 'Returns notification routing by priority' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns notification routing by priority',
+  })
   async getNotificationRouting(
-    @Param('studentId', ParseUUIDPipe) studentId: string
+    @Param('studentId', ParseUUIDPipe) studentId: string,
   ) {
     return this.emergencyContactService.getNotificationRouting(studentId);
   }
@@ -212,21 +234,29 @@ export class ContactController {
 
   @Post('emergency')
   @ApiOperation({ summary: 'Create new emergency contact' })
-  @ApiResponse({ status: 201, description: 'Emergency contact created successfully' })
+  @ApiResponse({
+    status: 201,
+    description: 'Emergency contact created successfully',
+  })
   @ApiResponse({ status: 400, description: 'Invalid input data' })
   @HttpCode(HttpStatus.CREATED)
-  async createEmergencyContact(@Body(ValidationPipe) dto: ContactCreateEmergencyDto) {
+  async createEmergencyContact(
+    @Body(ValidationPipe) dto: ContactCreateEmergencyDto,
+  ) {
     return this.emergencyContactService.create(dto);
   }
 
   @Put('emergency/:id')
   @ApiOperation({ summary: 'Update emergency contact' })
   @ApiParam({ name: 'id', description: 'Emergency contact UUID' })
-  @ApiResponse({ status: 200, description: 'Emergency contact updated successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Emergency contact updated successfully',
+  })
   @ApiResponse({ status: 404, description: 'Emergency contact not found' })
   async updateEmergencyContact(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body(ValidationPipe) dto: ContactUpdateEmergencyDto
+    @Body(ValidationPipe) dto: ContactUpdateEmergencyDto,
   ) {
     return this.emergencyContactService.update(id, dto);
   }
@@ -234,8 +264,14 @@ export class ContactController {
   @Delete('emergency/:id')
   @ApiOperation({ summary: 'Delete emergency contact' })
   @ApiParam({ name: 'id', description: 'Emergency contact UUID' })
-  @ApiResponse({ status: 200, description: 'Emergency contact deleted successfully' })
-  @ApiResponse({ status: 400, description: 'Cannot delete last primary contact' })
+  @ApiResponse({
+    status: 200,
+    description: 'Emergency contact deleted successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Cannot delete last primary contact',
+  })
   @ApiResponse({ status: 404, description: 'Emergency contact not found' })
   async deleteEmergencyContact(@Param('id', ParseUUIDPipe) id: string) {
     return this.emergencyContactService.remove(id);
@@ -244,11 +280,14 @@ export class ContactController {
   @Post('emergency/:id/verify')
   @ApiOperation({ summary: 'Verify emergency contact' })
   @ApiParam({ name: 'id', description: 'Emergency contact UUID' })
-  @ApiResponse({ status: 200, description: 'Emergency contact verified successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Emergency contact verified successfully',
+  })
   @ApiResponse({ status: 404, description: 'Emergency contact not found' })
   async verifyEmergencyContact(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body(ValidationPipe) dto: ContactVerifyDto
+    @Body(ValidationPipe) dto: ContactVerifyDto,
   ) {
     return this.emergencyContactService.verifyContact(id, dto);
   }

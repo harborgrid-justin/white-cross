@@ -38,14 +38,21 @@ export class ReorderAutomationService {
   async analyzeInventory(): Promise<ReorderRecommendation[]> {
     try {
       const recommendations: ReorderRecommendation[] = [];
-      const items = await this.inventoryItemModel.findAll({ where: { isActive: true } });
+      const items = await this.inventoryItemModel.findAll({
+        where: { isActive: true },
+      });
 
       for (const item of items) {
-        const currentStock = await this.stockManagementService.getCurrentStock(item.id);
+        const currentStock = await this.stockManagementService.getCurrentStock(
+          item.id,
+        );
 
         // Check if reorder is needed
         if (currentStock <= item.reorderLevel) {
-          const priority = this.determinePriority(currentStock, item.reorderLevel);
+          const priority = this.determinePriority(
+            currentStock,
+            item.reorderLevel,
+          );
           const recommendedOrderQuantity = Math.max(
             item.reorderQuantity,
             item.reorderLevel * 2 - currentStock,
@@ -83,7 +90,10 @@ export class ReorderAutomationService {
   /**
    * Determine reorder priority based on stock level
    */
-  private determinePriority(currentStock: number, reorderLevel: number): ReorderPriority {
+  private determinePriority(
+    currentStock: number,
+    reorderLevel: number,
+  ): ReorderPriority {
     if (currentStock === 0) {
       return ReorderPriority.CRITICAL;
     } else if (currentStock < reorderLevel / 2) {

@@ -43,7 +43,8 @@ export class MedicationInteractionController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Check student medication interactions',
-    description: 'Analyzes all current medications for a student to detect potential drug-drug interactions',
+    description:
+      'Analyzes all current medications for a student to detect potential drug-drug interactions',
   })
   @ApiParam({
     name: 'studentId',
@@ -67,7 +68,9 @@ export class MedicationInteractionController {
   async checkStudentMedications(
     @Param('studentId') studentId: string,
   ): Promise<InteractionCheckResultDto> {
-    this.logger.log(`Checking medication interactions for student ${studentId}`);
+    this.logger.log(
+      `Checking medication interactions for student ${studentId}`,
+    );
     return this.medicationInteractionService.checkStudentMedications(studentId);
   }
 

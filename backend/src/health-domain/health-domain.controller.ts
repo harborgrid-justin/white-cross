@@ -10,7 +10,14 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { HealthDomainService } from './health-domain.service';
 import {
   HealthDomainCreateRecordDto,
@@ -54,7 +61,10 @@ export class HealthDomainController {
 
   @Post('records')
   @ApiOperation({ summary: 'Create a new health record' })
-  @ApiResponse({ status: 201, description: 'Health record created successfully' })
+  @ApiResponse({
+    status: 201,
+    description: 'Health record created successfully',
+  })
   async createHealthRecord(@Body() createDto: HealthDomainCreateRecordDto) {
     return this.healthDomainService.createHealthRecord(createDto);
   }
@@ -62,7 +72,10 @@ export class HealthDomainController {
   @Get('records/:id')
   @ApiOperation({ summary: 'Get health record by ID' })
   @ApiParam({ name: 'id', description: 'Health record ID' })
-  @ApiResponse({ status: 200, description: 'Health record retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Health record retrieved successfully',
+  })
   async getHealthRecord(@Param('id') id: string) {
     return this.healthDomainService.getHealthRecord(id);
   }
@@ -70,7 +83,10 @@ export class HealthDomainController {
   @Put('records/:id')
   @ApiOperation({ summary: 'Update health record' })
   @ApiParam({ name: 'id', description: 'Health record ID' })
-  @ApiResponse({ status: 200, description: 'Health record updated successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Health record updated successfully',
+  })
   async updateHealthRecord(
     @Param('id') id: string,
     @Body() updateDto: HealthDomainUpdateRecordDto,
@@ -82,7 +98,10 @@ export class HealthDomainController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete health record' })
   @ApiParam({ name: 'id', description: 'Health record ID' })
-  @ApiResponse({ status: 204, description: 'Health record deleted successfully' })
+  @ApiResponse({
+    status: 204,
+    description: 'Health record deleted successfully',
+  })
   async deleteHealthRecord(@Param('id') id: string) {
     await this.healthDomainService.deleteHealthRecord(id);
   }
@@ -90,7 +109,10 @@ export class HealthDomainController {
   @Get('records/student/:studentId')
   @ApiOperation({ summary: 'Get health records for a student' })
   @ApiParam({ name: 'studentId', description: 'Student ID' })
-  @ApiResponse({ status: 200, description: 'Health records retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Health records retrieved successfully',
+  })
   async getStudentHealthRecords(
     @Param('studentId') studentId: string,
     @Query() filters: HealthRecordFiltersDto,
@@ -107,7 +129,10 @@ export class HealthDomainController {
   @Get('records/search')
   @ApiOperation({ summary: 'Search health records' })
   @ApiQuery({ name: 'query', description: 'Search query' })
-  @ApiResponse({ status: 200, description: 'Search results retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Search results retrieved successfully',
+  })
   async searchHealthRecords(
     @Query('query') query: string,
     @Query() filters: HealthRecordFiltersDto,
@@ -135,7 +160,10 @@ export class HealthDomainController {
 
   @Post('allergies')
   @ApiOperation({ summary: 'Create a new allergy record' })
-  @ApiResponse({ status: 201, description: 'Allergy record created successfully' })
+  @ApiResponse({
+    status: 201,
+    description: 'Allergy record created successfully',
+  })
   async createAllergy(@Body() createDto: HealthDomainCreateAllergyDto) {
     return this.healthDomainService.createAllergy(createDto);
   }
@@ -143,7 +171,10 @@ export class HealthDomainController {
   @Put('allergies/:id')
   @ApiOperation({ summary: 'Update allergy record' })
   @ApiParam({ name: 'id', description: 'Allergy ID' })
-  @ApiResponse({ status: 200, description: 'Allergy record updated successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Allergy record updated successfully',
+  })
   async updateAllergy(
     @Param('id') id: string,
     @Body() updateDto: HealthDomainUpdateAllergyDto,
@@ -155,7 +186,10 @@ export class HealthDomainController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete allergy record' })
   @ApiParam({ name: 'id', description: 'Allergy ID' })
-  @ApiResponse({ status: 204, description: 'Allergy record deleted successfully' })
+  @ApiResponse({
+    status: 204,
+    description: 'Allergy record deleted successfully',
+  })
   async deleteAllergy(@Param('id') id: string) {
     await this.healthDomainService.deleteAllergy(id);
   }
@@ -179,7 +213,10 @@ export class HealthDomainController {
 
   @Get('allergies/critical')
   @ApiOperation({ summary: 'Get critical allergies across all students' })
-  @ApiResponse({ status: 200, description: 'Critical allergies retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Critical allergies retrieved successfully',
+  })
   async getCriticalAllergies() {
     return this.healthDomainService.getCriticalAllergies();
   }
@@ -201,7 +238,10 @@ export class HealthDomainController {
 
   @Post('immunizations')
   @ApiOperation({ summary: 'Create a new immunization record' })
-  @ApiResponse({ status: 201, description: 'Immunization record created successfully' })
+  @ApiResponse({
+    status: 201,
+    description: 'Immunization record created successfully',
+  })
   async createImmunization(@Body() createDto: CreateImmunizationDto) {
     return this.healthDomainService.createImmunization(createDto);
   }
@@ -209,7 +249,10 @@ export class HealthDomainController {
   @Put('immunizations/:id')
   @ApiOperation({ summary: 'Update immunization record' })
   @ApiParam({ name: 'id', description: 'Immunization ID' })
-  @ApiResponse({ status: 200, description: 'Immunization record updated successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Immunization record updated successfully',
+  })
   async updateImmunization(
     @Param('id') id: string,
     @Body() updateDto: UpdateImmunizationDto,
@@ -221,7 +264,10 @@ export class HealthDomainController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete immunization record' })
   @ApiParam({ name: 'id', description: 'Immunization ID' })
-  @ApiResponse({ status: 204, description: 'Immunization record deleted successfully' })
+  @ApiResponse({
+    status: 204,
+    description: 'Immunization record deleted successfully',
+  })
   async deleteImmunization(@Param('id') id: string) {
     await this.healthDomainService.deleteImmunization(id);
   }
@@ -229,7 +275,10 @@ export class HealthDomainController {
   @Get('immunizations/student/:studentId')
   @ApiOperation({ summary: 'Get immunizations for a student' })
   @ApiParam({ name: 'studentId', description: 'Student ID' })
-  @ApiResponse({ status: 200, description: 'Immunizations retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Immunizations retrieved successfully',
+  })
   async getStudentImmunizations(
     @Param('studentId') studentId: string,
     @Query() filters: VaccinationFiltersDto,
@@ -246,15 +295,23 @@ export class HealthDomainController {
   @Get('immunizations/compliance/:studentId')
   @ApiOperation({ summary: 'Get immunization compliance report for a student' })
   @ApiParam({ name: 'studentId', description: 'Student ID' })
-  @ApiResponse({ status: 200, description: 'Compliance report retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Compliance report retrieved successfully',
+  })
   async getImmunizationCompliance(@Param('studentId') studentId: string) {
     return this.healthDomainService.getImmunizationCompliance(studentId);
   }
 
   @Get('immunizations/overdue')
   @ApiOperation({ summary: 'Get overdue immunizations across all students' })
-  @ApiResponse({ status: 200, description: 'Overdue immunizations retrieved successfully' })
-  async getOverdueImmunizations(@Query() queryDto: OverdueVaccinationsQueryDto) {
+  @ApiResponse({
+    status: 200,
+    description: 'Overdue immunizations retrieved successfully',
+  })
+  async getOverdueImmunizations(
+    @Query() queryDto: OverdueVaccinationsQueryDto,
+  ) {
     return this.healthDomainService.getOverdueImmunizations(queryDto);
   }
 
@@ -276,12 +333,19 @@ export class HealthDomainController {
 
   @Get('immunizations/exemptions')
   @ApiOperation({ summary: 'List vaccine exemptions with filters' })
-  @ApiResponse({ status: 200, description: 'Exemptions retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Exemptions retrieved successfully',
+  })
   async getExemptions(
     @Query() filterDto: ExemptionFilterDto,
     @Query() pagination: PaginationDto,
   ) {
-    return this.healthDomainService.getExemptions(filterDto, pagination.page, pagination.limit);
+    return this.healthDomainService.getExemptions(
+      filterDto,
+      pagination.page,
+      pagination.limit,
+    );
   }
 
   @Get('immunizations/exemptions/:id')
@@ -301,7 +365,10 @@ export class HealthDomainController {
   @ApiParam({ name: 'id', description: 'Exemption UUID' })
   @ApiResponse({ status: 200, description: 'Exemption updated successfully' })
   @ApiResponse({ status: 404, description: 'Exemption not found' })
-  async updateExemption(@Param('id') id: string, @Body() updateDto: UpdateExemptionDto) {
+  async updateExemption(
+    @Param('id') id: string,
+    @Body() updateDto: UpdateExemptionDto,
+  ) {
     return this.healthDomainService.updateExemption(id, updateDto);
   }
 
@@ -317,7 +384,10 @@ export class HealthDomainController {
   @Get('immunizations/exemptions/student/:studentId')
   @ApiOperation({ summary: 'Get all exemptions for a student' })
   @ApiParam({ name: 'studentId', description: 'Student UUID' })
-  @ApiResponse({ status: 200, description: 'Student exemptions retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Student exemptions retrieved successfully',
+  })
   async getStudentExemptions(@Param('studentId') studentId: string) {
     return this.healthDomainService.getStudentExemptions(studentId);
   }
@@ -329,7 +399,8 @@ export class HealthDomainController {
   @Get('immunizations/schedules/age')
   @ApiOperation({
     summary: 'Get vaccination schedule by age',
-    description: 'Returns CDC-recommended vaccination schedule for specific age',
+    description:
+      'Returns CDC-recommended vaccination schedule for specific age',
   })
   @ApiResponse({ status: 200, description: 'Schedule retrieved successfully' })
   async getScheduleByAge(@Query() queryDto: GetScheduleByAgeDto) {
@@ -339,9 +410,13 @@ export class HealthDomainController {
   @Get('immunizations/schedules/catch-up')
   @ApiOperation({
     summary: 'Get catch-up vaccination schedule',
-    description: 'Calculates catch-up schedule for students who are behind on vaccinations',
+    description:
+      'Calculates catch-up schedule for students who are behind on vaccinations',
   })
-  @ApiResponse({ status: 200, description: 'Catch-up schedule retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Catch-up schedule retrieved successfully',
+  })
   async getCatchUpSchedule(@Query() queryDto: GetCatchUpScheduleDto) {
     return this.healthDomainService.getCatchUpSchedule(queryDto);
   }
@@ -349,19 +424,29 @@ export class HealthDomainController {
   @Get('immunizations/schedules/school-entry')
   @ApiOperation({
     summary: 'Get school entry requirements',
-    description: 'Returns state-specific vaccination requirements for school entry by grade level',
+    description:
+      'Returns state-specific vaccination requirements for school entry by grade level',
   })
-  @ApiResponse({ status: 200, description: 'School entry requirements retrieved successfully' })
-  async getSchoolEntryRequirements(@Query() queryDto: SchoolEntryRequirementsDto) {
+  @ApiResponse({
+    status: 200,
+    description: 'School entry requirements retrieved successfully',
+  })
+  async getSchoolEntryRequirements(
+    @Query() queryDto: SchoolEntryRequirementsDto,
+  ) {
     return this.healthDomainService.getSchoolEntryRequirements(queryDto);
   }
 
   @Post('immunizations/schedules/check-contraindications')
   @ApiOperation({
     summary: 'Check contraindications for vaccine',
-    description: 'Checks student allergies and conditions for vaccine contraindications',
+    description:
+      'Checks student allergies and conditions for vaccine contraindications',
   })
-  @ApiResponse({ status: 200, description: 'Contraindications check completed' })
+  @ApiResponse({
+    status: 200,
+    description: 'Contraindications check completed',
+  })
   async checkContraindications(@Body() queryDto: CheckContraindicationsDto) {
     return this.healthDomainService.checkContraindications(queryDto);
   }
@@ -373,9 +458,13 @@ export class HealthDomainController {
   @Get('immunizations/reports/vaccination-rates')
   @ApiOperation({
     summary: 'Get vaccination rates report',
-    description: 'Generates vaccination coverage rates by school, grade, or vaccine type',
+    description:
+      'Generates vaccination coverage rates by school, grade, or vaccine type',
   })
-  @ApiResponse({ status: 200, description: 'Vaccination rates retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Vaccination rates retrieved successfully',
+  })
   async getVaccinationRates(@Query() queryDto: VaccinationRatesQueryDto) {
     return this.healthDomainService.getVaccinationRates(queryDto);
   }
@@ -383,9 +472,13 @@ export class HealthDomainController {
   @Post('immunizations/reports/state-export')
   @ApiOperation({
     summary: 'Generate state registry export',
-    description: 'Exports vaccination data in state-required format (HL7, CSV, etc.) for registry submission',
+    description:
+      'Exports vaccination data in state-required format (HL7, CSV, etc.) for registry submission',
   })
-  @ApiResponse({ status: 200, description: 'State report generated successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'State report generated successfully',
+  })
   async generateStateReport(@Body() exportDto: StateReportingExportDto) {
     return this.healthDomainService.generateStateReport(exportDto);
   }
@@ -395,7 +488,10 @@ export class HealthDomainController {
     summary: 'Get compliance summary report',
     description: 'Returns overall compliance statistics across schools/grades',
   })
-  @ApiResponse({ status: 200, description: 'Compliance summary retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Compliance summary retrieved successfully',
+  })
   async getComplianceSummary(
     @Query('schoolId') schoolId?: string,
     @Query('gradeLevel') gradeLevel?: string,
@@ -408,7 +504,10 @@ export class HealthDomainController {
     summary: 'Get exemption rates report',
     description: 'Returns exemption statistics by type, school, and vaccine',
   })
-  @ApiResponse({ status: 200, description: 'Exemption rates retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Exemption rates retrieved successfully',
+  })
   async getExemptionRates(
     @Query('schoolId') schoolId?: string,
     @Query('vaccineName') vaccineName?: string,
@@ -422,15 +521,23 @@ export class HealthDomainController {
 
   @Post('chronic-conditions')
   @ApiOperation({ summary: 'Create a new chronic condition record' })
-  @ApiResponse({ status: 201, description: 'Chronic condition record created successfully' })
-  async createChronicCondition(@Body() createDto: HealthDomainCreateChronicConditionDto) {
+  @ApiResponse({
+    status: 201,
+    description: 'Chronic condition record created successfully',
+  })
+  async createChronicCondition(
+    @Body() createDto: HealthDomainCreateChronicConditionDto,
+  ) {
     return this.healthDomainService.createChronicCondition(createDto);
   }
 
   @Put('chronic-conditions/:id')
   @ApiOperation({ summary: 'Update chronic condition record' })
   @ApiParam({ name: 'id', description: 'Chronic condition ID' })
-  @ApiResponse({ status: 200, description: 'Chronic condition record updated successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Chronic condition record updated successfully',
+  })
   async updateChronicCondition(
     @Param('id') id: string,
     @Body() updateDto: HealthDomainUpdateChronicConditionDto,
@@ -442,7 +549,10 @@ export class HealthDomainController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete chronic condition record' })
   @ApiParam({ name: 'id', description: 'Chronic condition ID' })
-  @ApiResponse({ status: 204, description: 'Chronic condition record deleted successfully' })
+  @ApiResponse({
+    status: 204,
+    description: 'Chronic condition record deleted successfully',
+  })
   async deleteChronicCondition(@Param('id') id: string) {
     await this.healthDomainService.deleteChronicCondition(id);
   }
@@ -450,7 +560,10 @@ export class HealthDomainController {
   @Get('chronic-conditions/student/:studentId')
   @ApiOperation({ summary: 'Get chronic conditions for a student' })
   @ApiParam({ name: 'studentId', description: 'Student ID' })
-  @ApiResponse({ status: 200, description: 'Chronic conditions retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Chronic conditions retrieved successfully',
+  })
   async getStudentChronicConditions(
     @Param('studentId') studentId: string,
     @Query() filters: ChronicConditionFiltersDto,
@@ -470,7 +583,10 @@ export class HealthDomainController {
 
   @Post('vital-signs')
   @ApiOperation({ summary: 'Record vital signs' })
-  @ApiResponse({ status: 201, description: 'Vital signs recorded successfully' })
+  @ApiResponse({
+    status: 201,
+    description: 'Vital signs recorded successfully',
+  })
   async recordVitalSigns(
     @Body('studentId') studentId: string,
     @Body('vitals') vitals: Record<string, unknown>,
@@ -482,7 +598,10 @@ export class HealthDomainController {
   @Get('vital-signs/latest/:studentId')
   @ApiOperation({ summary: 'Get latest vital signs for a student' })
   @ApiParam({ name: 'studentId', description: 'Student ID' })
-  @ApiResponse({ status: 200, description: 'Latest vital signs retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Latest vital signs retrieved successfully',
+  })
   async getLatestVitalSigns(@Param('studentId') studentId: string) {
     return this.healthDomainService.getLatestVitalSigns(studentId);
   }
@@ -490,7 +609,10 @@ export class HealthDomainController {
   @Get('vital-signs/student/:studentId')
   @ApiOperation({ summary: 'Get vital signs history for a student' })
   @ApiParam({ name: 'studentId', description: 'Student ID' })
-  @ApiResponse({ status: 200, description: 'Vital signs history retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Vital signs history retrieved successfully',
+  })
   async getVitalSignsHistory(
     @Param('studentId') studentId: string,
     @Query() pagination: PaginationDto,
@@ -505,7 +627,10 @@ export class HealthDomainController {
   @Get('vital-signs/growth/:studentId')
   @ApiOperation({ summary: 'Get growth chart data for a student' })
   @ApiParam({ name: 'studentId', description: 'Student ID' })
-  @ApiResponse({ status: 200, description: 'Growth data retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Growth data retrieved successfully',
+  })
   async getGrowthData(@Param('studentId') studentId: string) {
     return this.healthDomainService.getGrowthData(studentId);
   }
@@ -525,15 +650,25 @@ export class HealthDomainController {
   @Get('analytics/summary/:studentId')
   @ApiOperation({ summary: 'Get health summary for a student' })
   @ApiParam({ name: 'studentId', description: 'Student ID' })
-  @ApiResponse({ status: 200, description: 'Health summary retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Health summary retrieved successfully',
+  })
   async getHealthSummary(@Param('studentId') studentId: string) {
     return this.healthDomainService.getHealthSummary(studentId);
   }
 
   @Get('analytics/statistics')
   @ApiOperation({ summary: 'Get health statistics' })
-  @ApiQuery({ name: 'studentId', required: false, description: 'Optional student ID' })
-  @ApiResponse({ status: 200, description: 'Health statistics retrieved successfully' })
+  @ApiQuery({
+    name: 'studentId',
+    required: false,
+    description: 'Optional student ID',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Health statistics retrieved successfully',
+  })
   async getHealthStatistics(@Query('studentId') studentId?: string) {
     return this.healthDomainService.getHealthStatistics(studentId);
   }

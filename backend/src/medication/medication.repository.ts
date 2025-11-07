@@ -1,7 +1,10 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { StudentMedication, StudentMedicationAttributes } from '../database/models/student-medication.model';
+import {
+  StudentMedication,
+  StudentMedicationAttributes,
+} from '../database/models/student-medication.model';
 import { Student } from '../database/models/student.model';
 import { Medication } from '../database/models/medication.model';
 import { ListMedicationsQueryDto } from './dto';
@@ -68,7 +71,14 @@ export class MedicationRepository {
         model: Medication,
         as: 'medication',
         required: false, // LEFT JOIN to include records even if medication is null
-        attributes: ['id', 'name', 'genericName', 'brandName', 'category', 'form'], // Only needed fields
+        attributes: [
+          'id',
+          'name',
+          'genericName',
+          'brandName',
+          'category',
+          'form',
+        ], // Only needed fields
         // OPTIMIZATION: Search filtering happens at JOIN level, not in application
         where: query.search
           ? {
@@ -100,17 +110,18 @@ export class MedicationRepository {
 
     // OPTIMIZATION: Use distinct: true for accurate count with JOINs
     // Without this, count may be inflated when using includes
-    const { rows: medications, count: total } = await this.studentMedicationModel.findAndCountAll({
-      where,
-      offset: ((query.page || 1) - 1) * (query.limit || 20),
-      limit: query.limit || 20,
-      order: [['createdAt', 'DESC']],
-      include,
-      distinct: true, // Ensures accurate count with JOINs
-      // OPTIMIZATION: Use subQuery: false for better performance with pagination
-      // This generates a more efficient SQL query with JOINs instead of subqueries
-      subQuery: false,
-    });
+    const { rows: medications, count: total } =
+      await this.studentMedicationModel.findAndCountAll({
+        where,
+        offset: ((query.page || 1) - 1) * (query.limit || 20),
+        limit: query.limit || 20,
+        order: [['createdAt', 'DESC']],
+        include,
+        distinct: true, // Ensures accurate count with JOINs
+        // OPTIMIZATION: Use subQuery: false for better performance with pagination
+        // This generates a more efficient SQL query with JOINs instead of subqueries
+        subQuery: false,
+      });
 
     return { medications, total };
   }
@@ -136,7 +147,7 @@ export class MedicationRepository {
         ttl: 1800, // 30 minutes - medication records are relatively stable
         keyPrefix: 'medication_id',
         invalidateOn: ['update', 'destroy'],
-      }
+      },
     );
 
     return medications.length > 0 ? medications[0] : null;
@@ -150,15 +161,14 @@ export class MedicationRepository {
     page: number = 1,
     limit: number = 20,
   ): Promise<{ medications: StudentMedication[]; total: number }> {
-    const { rows: medications, count: total } = await this.studentMedicationModel.findAndCountAll({
-      where: { studentId },
-      offset: (page - 1) * limit,
-      limit,
-      order: [['createdAt', 'DESC']],
-      include: [
-        { model: Medication, as: 'medication' },
-      ],
-    });
+    const { rows: medications, count: total } =
+      await this.studentMedicationModel.findAndCountAll({
+        where: { studentId },
+        offset: (page - 1) * limit,
+        limit,
+        order: [['createdAt', 'DESC']],
+        include: [{ model: Medication, as: 'medication' }],
+      });
 
     return { medications, total };
   }
@@ -197,7 +207,7 @@ export class MedicationRepository {
     }
 
     await medication.update(data);
-    return medication.reload({ 
+    return medication.reload({
       include: [
         { model: Medication, as: 'medication' },
         { model: Student, as: 'student' },
@@ -223,7 +233,7 @@ export class MedicationRepository {
     // Note: In a real implementation, you'd store deactivation reason and type
 
     await medication.save();
-    return medication.reload({ 
+    return medication.reload({
       include: [
         { model: Medication, as: 'medication' },
         { model: Student, as: 'student' },
@@ -244,7 +254,7 @@ export class MedicationRepository {
     medication.endDate = undefined;
 
     await medication.save();
-    return medication.reload({ 
+    return medication.reload({
       include: [
         { model: Medication, as: 'medication' },
         { model: Student, as: 'student' },
@@ -276,13 +286,21 @@ export class MedicationRepository {
       {
         where: { isActive: true },
         order: [['name', 'ASC']],
-        attributes: ['id', 'name', 'genericName', 'type', 'manufacturer', 'dosageForm', 'strength'],
+        attributes: [
+          'id',
+          'name',
+          'genericName',
+          'type',
+          'manufacturer',
+          'dosageForm',
+          'strength',
+        ],
       },
       {
         ttl: 3600, // 1 hour - medication catalog changes infrequently
         keyPrefix: 'medication_catalog',
         invalidateOn: ['create', 'update', 'destroy'],
-      }
+      },
     );
   }
 
@@ -294,7 +312,7 @@ export class MedicationRepository {
     try {
       const medications = await this.studentMedicationModel.findAll({
         where: {
-          id: { [Op.in]: ids }
+          id: { [Op.in]: ids },
         },
         include: [
           { model: Medication, as: 'medication' },
@@ -303,10 +321,10 @@ export class MedicationRepository {
       });
 
       // Create a map for O(1) lookup
-      const medicationMap = new Map(medications.map(m => [m.id, m]));
+      const medicationMap = new Map(medications.map((m) => [m.id, m]));
 
       // Return in same order as requested IDs, null for missing
-      return ids.map(id => medicationMap.get(id) || null);
+      return ids.map((id) => medicationMap.get(id) || null);
     } catch (error) {
       this.logger.error(`Failed to batch fetch medications: ${error.message}`);
       throw new Error('Failed to batch fetch medications');
@@ -322,17 +340,15 @@ export class MedicationRepository {
       const medications = await this.studentMedicationModel.findAll({
         where: {
           studentId: { [Op.in]: studentIds },
-          isActive: true
+          isActive: true,
         },
-        include: [
-          { model: Medication, as: 'medication' },
-        ],
-        order: [['createdAt', 'DESC']]
+        include: [{ model: Medication, as: 'medication' }],
+        order: [['createdAt', 'DESC']],
       });
 
       // Group medications by student ID
       const medicationsByStudent = new Map<string, StudentMedication[]>();
-      medications.forEach(medication => {
+      medications.forEach((medication) => {
         const studentId = medication.studentId;
         if (studentId) {
           if (!medicationsByStudent.has(studentId)) {
@@ -343,9 +359,11 @@ export class MedicationRepository {
       });
 
       // Return medications array for each student, empty array for missing
-      return studentIds.map(id => medicationsByStudent.get(id) || []);
+      return studentIds.map((id) => medicationsByStudent.get(id) || []);
     } catch (error) {
-      this.logger.error(`Failed to batch fetch medications by student IDs: ${error.message}`);
+      this.logger.error(
+        `Failed to batch fetch medications by student IDs: ${error.message}`,
+      );
       throw new Error('Failed to batch fetch medications by student IDs');
     }
   }

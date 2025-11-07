@@ -38,7 +38,12 @@ export class BackupService {
     return backup;
   }
 
-  async getBackupLogs(query: BackupQueryDto): Promise<{ data: BackupLog[]; total: number; page: number; limit: number }> {
+  async getBackupLogs(query: BackupQueryDto): Promise<{
+    data: BackupLog[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
     const { page = 1, limit = 20 } = query;
     const startIndex = (page - 1) * limit;
     const endIndex = startIndex + limit;
@@ -53,7 +58,7 @@ export class BackupService {
   }
 
   async getBackupById(id: string): Promise<BackupLog> {
-    const backup = this.backups.find(b => b.id === id);
+    const backup = this.backups.find((b) => b.id === id);
     if (!backup) {
       throw new NotFoundException(`Backup with ID ${id} not found`);
     }

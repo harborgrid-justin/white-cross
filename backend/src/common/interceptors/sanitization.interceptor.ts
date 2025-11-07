@@ -41,7 +41,7 @@ export class SanitizationInterceptor implements NestInterceptor {
     // Query parameters are typically handled by validation pipes instead
 
     return next.handle().pipe(
-      map(data => {
+      map((data) => {
         // Optionally sanitize response data
         // (Usually not needed as output encoding is handled by framework)
         return data;
@@ -58,7 +58,7 @@ export class SanitizationInterceptor implements NestInterceptor {
     }
 
     if (Array.isArray(obj)) {
-      return obj.map(item => this.sanitizeObject(item));
+      return obj.map((item) => this.sanitizeObject(item));
     }
 
     const sanitized: any = {};

@@ -1,5 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import type { IApiClient, ApiClientConfig, ApiResponse } from '../interfaces/api-client.interface';
+import type {
+  IApiClient,
+  ApiClientConfig,
+  ApiResponse,
+} from '../interfaces/api-client.interface';
 
 @Injectable()
 export class BaseApiClient implements IApiClient {

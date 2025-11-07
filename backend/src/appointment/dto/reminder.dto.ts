@@ -63,8 +63,10 @@ export class CreateReminderDto {
   scheduleTime: Date;
 
   @ApiPropertyOptional({
-    description: 'Custom reminder message (optional - default message will be used if not provided)',
-    example: 'Reminder: You have an appointment tomorrow at 10:30 AM with Nurse Johnson.',
+    description:
+      'Custom reminder message (optional - default message will be used if not provided)',
+    example:
+      'Reminder: You have an appointment tomorrow at 10:30 AM with Nurse Johnson.',
     maxLength: 500,
   })
   @IsOptional()

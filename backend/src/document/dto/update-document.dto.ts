@@ -70,7 +70,8 @@ export class UpdateDocumentDto {
   retentionDate?: Date;
 
   @ApiPropertyOptional({
-    description: 'Updated access control level (cannot downgrade PHI documents to PUBLIC)',
+    description:
+      'Updated access control level (cannot downgrade PHI documents to PUBLIC)',
     enum: DocumentAccessLevel,
     example: DocumentAccessLevel.STAFF_ONLY,
   })

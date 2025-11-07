@@ -172,7 +172,7 @@ export interface PaginationMetadata {
 export function createPaginationMetadata(
   page: number,
   limit: number,
-  total: number
+  total: number,
 ): PaginationMetadata {
   const pages = Math.ceil(total / limit);
 
@@ -182,7 +182,7 @@ export function createPaginationMetadata(
     total,
     pages,
     hasNext: page < pages,
-    hasPrevious: page > 1
+    hasPrevious: page > 1,
   };
 }
 
@@ -202,7 +202,7 @@ export class QueryBuilder<T> {
 
   constructor() {
     this.criteria = {
-      where: {}
+      where: {},
     };
     this.options = {};
   }
@@ -218,7 +218,11 @@ export class QueryBuilder<T> {
   }
 
   paginate(page: number, limit: number): this {
-    this.criteria.pagination = { page, limit, skip: calculateSkip(page, limit) };
+    this.criteria.pagination = {
+      page,
+      limit,
+      skip: calculateSkip(page, limit),
+    };
     return this;
   }
 
@@ -241,7 +245,7 @@ export class QueryBuilder<T> {
   build(): { criteria: QueryCriteria<T>; options: QueryOptions } {
     return {
       criteria: this.criteria,
-      options: this.options
+      options: this.options,
     };
   }
 }

@@ -15,7 +15,10 @@ export type {
   ReportGenerationData,
   DataExportData,
   NotificationBatchData,
-  CleanupTaskData
+  CleanupTaskData,
 } from './interfaces/job-data.interface';
 export type { JobProcessor } from './interfaces/job-processor.interface';
-export { MedicationReminderProcessor, InventoryMaintenanceProcessor } from './processors';
+export {
+  MedicationReminderProcessor,
+  InventoryMaintenanceProcessor,
+} from './processors';

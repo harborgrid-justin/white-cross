@@ -4,22 +4,31 @@
  */
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
+import { Redis } from 'ioredis';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { IpRestrictionGuard } from './access-control/guards/ip-restriction.guard';
+import { CsrfGuard } from './middleware/security/csrf.guard';
 import { HealthRecordModule } from './health-record/health-record.module';
 import { UserModule } from './user/user.module';
+import { ResponseTransformInterceptor } from './common/interceptors/response-transform.interceptor';
 import {
   appConfig,
   databaseConfig,
   authConfig,
   securityConfig,
   redisConfig,
+  awsConfig,
+  cacheConfig,
+  queueConfig,
   validationSchema,
   AppConfigService,
+  loadConditionalModules,
+  FeatureFlags,
 } from './config';
 
 import { AnalyticsModule } from './analytics/analytics.module';
@@ -86,18 +95,19 @@ import { SentryModule } from './infrastructure/monitoring/sentry.module';
       isGlobal: true,
       cache: true,
       expandVariables: true,
-      envFilePath: [
-        `.env.${process.env.NODE_ENV}.local`,
-        `.env.${process.env.NODE_ENV}`,
-        '.env.local',
-        '.env',
-      ],
+      envFilePath: ((): string[] => {
+        const env = process.env.NODE_ENV || 'development';
+        return [`.env.${env}.local`, `.env.${env}`, '.env.local', '.env'];
+      })(),
       load: [
         appConfig,
         databaseConfig,
         authConfig,
         securityConfig,
         redisConfig,
+        awsConfig,
+        cacheConfig,
+        queueConfig,
       ],
       validationSchema,
       validationOptions: {
@@ -107,23 +117,49 @@ import { SentryModule } from './infrastructure/monitoring/sentry.module';
     }),
 
     // Rate limiting module (CRITICAL SECURITY)
-    ThrottlerModule.forRoot([
-      {
-        name: 'short',
-        ttl: 1000, // 1 second
-        limit: process.env.NODE_ENV === 'development' ? 100 : 10, // More permissive in dev
+    // Redis-backed distributed rate limiting for horizontal scaling
+    // Uses ConfigService for environment-aware throttle limits
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [AppConfigService],
+      useFactory: (config: AppConfigService) => {
+        // Create Redis client for throttler storage
+        const redisClient = new Redis({
+          host: config.redisHost,
+          port: config.redisPort,
+          password: config.redisPassword,
+          username: config.redisUsername,
+          db: 0, // Use default database for throttler
+          keyPrefix: 'throttler:',
+          retryStrategy: (times: number) => {
+            const delay = Math.min(times * 50, 2000);
+            return delay;
+          },
+          maxRetriesPerRequest: 3,
+        });
+
+        return {
+          throttlers: [
+            {
+              name: 'short',
+              ttl: config.throttleShort.ttl,
+              limit: config.throttleShort.limit,
+            },
+            {
+              name: 'medium',
+              ttl: config.throttleMedium.ttl,
+              limit: config.throttleMedium.limit,
+            },
+            {
+              name: 'long',
+              ttl: config.throttleLong.ttl,
+              limit: config.throttleLong.limit,
+            },
+          ],
+          storage: new ThrottlerStorageRedisService(redisClient),
+        };
       },
-      {
-        name: 'medium',
-        ttl: 10000, // 10 seconds
-        limit: process.env.NODE_ENV === 'development' ? 500 : 50, // More permissive in dev
-      },
-      {
-        name: 'long',
-        ttl: 60000, // 1 minute
-        limit: process.env.NODE_ENV === 'development' ? 1000 : 100, // More permissive in dev
-      },
-    ]),
+    }),
 
     // Database connection (Sequelize)
     DatabaseModule,
@@ -153,9 +189,6 @@ import { SentryModule } from './infrastructure/monitoring/sentry.module';
     UserModule,
     HealthRecordModule,
 
-    // Analytics module (conditionally loaded based on feature flag)
-    ...(process.env.ENABLE_ANALYTICS !== 'false' ? [AnalyticsModule] : []),
-
     ChronicConditionModule,
 
     // AllergyModule, // Already converted to Sequelize
@@ -183,9 +216,6 @@ import { SentryModule } from './infrastructure/monitoring/sentry.module';
     // Integration clients module (external API integrations with circuit breaker and rate limiting)
     IntegrationsModule,
 
-    // Report module (conditionally loaded based on feature flag)
-    ...(process.env.ENABLE_REPORTING !== 'false' ? [ReportModule] : []),
-
     MobileModule,
 
     PdfModule,
@@ -204,20 +234,11 @@ import { SentryModule } from './infrastructure/monitoring/sentry.module';
 
     SharedModule,
 
-    // Dashboard module (conditionally loaded based on feature flag)
-    ...(process.env.ENABLE_DASHBOARD !== 'false' ? [DashboardModule] : []),
-
-    // Advanced features module (conditionally loaded based on feature flag)
-    ...(process.env.ENABLE_ADVANCED_FEATURES !== 'false' ? [AdvancedFeaturesModule] : []),
-
     EmergencyBroadcastModule,
 
     HealthRiskAssessmentModule,
 
     GradeTransitionModule,
-
-    // Enterprise features module (conditionally loaded based on feature flag)
-    ...(process.env.ENABLE_ENTERPRISE !== 'false' ? [EnterpriseFeaturesModule] : []),
 
     HealthMetricsModule,
 
@@ -232,13 +253,45 @@ import { SentryModule } from './infrastructure/monitoring/sentry.module';
     StudentModule,
     AppointmentModule,
 
-    // Discovery module (for runtime introspection and metadata discovery)
-    // Only loaded in development mode with feature flag
-    ...(process.env.NODE_ENV === 'development' && process.env.ENABLE_DISCOVERY === 'true' ? [DiscoveryExampleModule] : []),
-
-    // Commands module (for CLI commands like seeding)
-    // Only loaded in CLI mode
-    ...(process.env.CLI_MODE === 'true' ? [CommandsModule] : []),
+    // Conditionally loaded modules based on feature flags
+    // Uses centralized FeatureFlags helper to avoid direct process.env access
+    ...loadConditionalModules([
+      {
+        module: AnalyticsModule,
+        condition: FeatureFlags.isAnalyticsEnabled,
+        description: 'Analytics Module',
+      },
+      {
+        module: ReportModule,
+        condition: FeatureFlags.isReportingEnabled,
+        description: 'Report Module',
+      },
+      {
+        module: DashboardModule,
+        condition: FeatureFlags.isDashboardEnabled,
+        description: 'Dashboard Module',
+      },
+      {
+        module: AdvancedFeaturesModule,
+        condition: FeatureFlags.isAdvancedFeaturesEnabled,
+        description: 'Advanced Features Module',
+      },
+      {
+        module: EnterpriseFeaturesModule,
+        condition: FeatureFlags.isEnterpriseEnabled,
+        description: 'Enterprise Features Module',
+      },
+      {
+        module: DiscoveryExampleModule,
+        condition: FeatureFlags.isDiscoveryEnabled,
+        description: 'Discovery Module (development only)',
+      },
+      {
+        module: CommandsModule,
+        condition: FeatureFlags.isCliModeEnabled,
+        description: 'Commands Module (CLI mode)',
+      },
+    ]),
   ],
   controllers: [],
   providers: [
@@ -246,7 +299,18 @@ import { SentryModule } from './infrastructure/monitoring/sentry.module';
     AppConfigService,
 
     /**
-     * CRITICAL FIX: Corrected Global Guard Ordering
+     * GLOBAL INTERCEPTORS
+     *
+     * Response Transform Interceptor - Wraps all responses in standard envelope format
+     * Ensures consistent API response structure across all endpoints
+     */
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ResponseTransformInterceptor,
+    },
+
+    /**
+     * CRITICAL FIX: Corrected Global Guard Ordering + CSRF Protection
      *
      * Guards are executed in the order they are registered.
      * Proper security layering requires:
@@ -254,7 +318,7 @@ import { SentryModule } from './infrastructure/monitoring/sentry.module';
      * 1. ThrottlerGuard (FIRST) - Rate limiting to prevent brute force attacks
      *    - Runs before expensive JWT validation
      *    - Prevents authentication endpoint abuse
-     *    - Low overhead: O(1) in-memory lookup
+     *    - Redis-backed for distributed rate limiting across multiple servers
      *
      * 2. IpRestrictionGuard (SECOND) - IP-based access control
      *    - Blocks known malicious IPs early
@@ -266,6 +330,12 @@ import { SentryModule } from './infrastructure/monitoring/sentry.module';
      *    - Only runs for requests that pass rate limiting and IP checks
      *    - Adds user context to request
      *
+     * 4. CsrfGuard (FOURTH) - CSRF token validation
+     *    - Protects against Cross-Site Request Forgery attacks
+     *    - Validates CSRF tokens on state-changing requests (POST, PUT, DELETE, PATCH)
+     *    - Runs after authentication so user context is available
+     *    - Skips for API-only endpoints and public routes
+     *
      * Old (WRONG) Order:
      * - JwtAuthGuard (expensive operation)
      * - ThrottlerGuard (rate limiting)
@@ -276,11 +346,11 @@ import { SentryModule } from './infrastructure/monitoring/sentry.module';
      * - Token blacklist lookups for every attack attempt
      *
      * New (CORRECT) Order:
-     * - ThrottlerGuard → IpRestrictionGuard → JwtAuthGuard
+     * - ThrottlerGuard → IpRestrictionGuard → JwtAuthGuard → CsrfGuard
      */
 
     // 1. RATE LIMITING - Prevent brute force attacks (RUNS FIRST)
-    // More permissive in development
+    // Redis-backed distributed rate limiting for horizontal scaling
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
@@ -296,6 +366,12 @@ import { SentryModule } from './infrastructure/monitoring/sentry.module';
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
+    },
+
+    // 4. CSRF PROTECTION - Prevent Cross-Site Request Forgery (RUNS FOURTH)
+    {
+      provide: APP_GUARD,
+      useClass: CsrfGuard,
     },
   ],
   exports: [

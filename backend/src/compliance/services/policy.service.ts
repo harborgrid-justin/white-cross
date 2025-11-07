@@ -1,6 +1,14 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PolicyRepository } from '../repositories/policy.repository';
-import { CreatePolicyDto, UpdatePolicyDto, QueryPolicyDto } from '../dto/policy.dto';
+import {
+  CreatePolicyDto,
+  UpdatePolicyDto,
+  QueryPolicyDto,
+} from '../dto/policy.dto';
 import { PolicyStatus } from '../../database/models/policy-document.model';
 
 @Injectable()
@@ -32,7 +40,11 @@ export class PolicyService {
     await this.getPolicyById(id); // Verify exists
     const updateData: any = { ...dto };
 
-    if (dto.status === PolicyStatus.ACTIVE && dto.approvedBy && !updateData.approvedAt) {
+    if (
+      dto.status === PolicyStatus.ACTIVE &&
+      dto.approvedBy &&
+      !updateData.approvedAt
+    ) {
       updateData.approvedAt = new Date();
     }
     if (dto.reviewDate) {
@@ -55,7 +67,10 @@ export class PolicyService {
     }
 
     // Check if already acknowledged
-    const existing = await this.policyRepository.findAcknowledgment(policyId, userId);
+    const existing = await this.policyRepository.findAcknowledgment(
+      policyId,
+      userId,
+    );
     if (existing) {
       throw new BadRequestException('Policy already acknowledged by this user');
     }

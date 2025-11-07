@@ -4,6 +4,4 @@
  */
 
 // Re-export the Sequelize model
-export {
-  StudentMedication
-} from '../../database/models/student-medication.model';
+export { StudentMedication } from '../../database/models/student-medication.model';

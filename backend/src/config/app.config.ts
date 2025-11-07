@@ -39,6 +39,26 @@ export interface AppConfig {
     aiSearch: boolean;
     analytics: boolean;
     websocket: boolean;
+    reporting: boolean;
+    dashboard: boolean;
+    advancedFeatures: boolean;
+    enterprise: boolean;
+    discovery: boolean;
+    cliMode: boolean;
+  };
+  throttle: {
+    short: {
+      ttl: number;
+      limit: number;
+    };
+    medium: {
+      ttl: number;
+      limit: number;
+    };
+    long: {
+      ttl: number;
+      limit: number;
+    };
   };
 }
 
@@ -77,8 +97,29 @@ export default registerAs('app', (): AppConfig => {
     },
     features: {
       aiSearch: process.env.FEATURES_ENABLE_AI_SEARCH === 'true',
-      analytics: process.env.FEATURES_ENABLE_ANALYTICS !== 'false',
+      analytics: process.env.ENABLE_ANALYTICS !== 'false',
       websocket: process.env.FEATURES_ENABLE_WEBSOCKET !== 'false',
+      reporting: process.env.ENABLE_REPORTING !== 'false',
+      dashboard: process.env.ENABLE_DASHBOARD !== 'false',
+      advancedFeatures: process.env.ENABLE_ADVANCED_FEATURES !== 'false',
+      enterprise: process.env.ENABLE_ENTERPRISE !== 'false',
+      discovery:
+        nodeEnv === 'development' && process.env.ENABLE_DISCOVERY === 'true',
+      cliMode: process.env.CLI_MODE === 'true',
+    },
+    throttle: {
+      short: {
+        ttl: 1000, // 1 second
+        limit: nodeEnv === 'development' ? 100 : 10,
+      },
+      medium: {
+        ttl: 10000, // 10 seconds
+        limit: nodeEnv === 'development' ? 500 : 50,
+      },
+      long: {
+        ttl: 60000, // 1 minute
+        limit: nodeEnv === 'development' ? 1000 : 100,
+      },
     },
   };
 });

@@ -44,10 +44,6 @@ import { IntegrationController } from './integration.controller';
     RateLimiterService,
   ],
   controllers: [IntegrationController],
-  exports: [
-    IntegrationService,
-    CircuitBreakerService,
-    RateLimiterService,
-  ],
+  exports: [IntegrationService, CircuitBreakerService, RateLimiterService],
 })
 export class IntegrationModule {}

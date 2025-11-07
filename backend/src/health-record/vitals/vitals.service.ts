@@ -5,7 +5,12 @@
  * HIPAA Compliance: All vital signs data is PHI and requires audit logging
  */
 
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, fn, col, literal } from 'sequelize';
 import { VitalSigns } from '../../database/models/vital-signs.model';
@@ -24,24 +29,30 @@ export class VitalsService {
 
   async recordVitals(data: any): Promise<VitalSigns> {
     this.logger.log(`Recording vitals for student ${data.studentId}`);
-    
+
     // Verify student exists
     const student = await this.studentModel.findByPk(data.studentId);
     if (!student) {
-      throw new BadRequestException(`Student with ID ${data.studentId} not found`);
+      throw new BadRequestException(
+        `Student with ID ${data.studentId} not found`,
+      );
     }
-    
+
     // Calculate BMI if height and weight provided
     let bmi: number | null = null;
     let isAbnormal = false;
     const abnormalFlags: string[] = [];
-    
+
     if (data.height && data.weight) {
       // BMI = weight(kg) / (height(m))^2
-      const heightInMeters = data.heightUnit === 'cm' ? data.height / 100 : data.height;
-      const weightInKg = data.weightUnit === 'lbs' ? data.weight * 0.453592 : data.weight;
-      bmi = parseFloat((weightInKg / (heightInMeters * heightInMeters)).toFixed(2));
-      
+      const heightInMeters =
+        data.heightUnit === 'cm' ? data.height / 100 : data.height;
+      const weightInKg =
+        data.weightUnit === 'lbs' ? data.weight * 0.453592 : data.weight;
+      bmi = parseFloat(
+        (weightInKg / (heightInMeters * heightInMeters)).toFixed(2),
+      );
+
       // Check BMI range (simplified pediatric ranges)
       if (bmi < 14 || bmi > 30) {
         isAbnormal = true;
@@ -51,7 +62,10 @@ export class VitalsService {
 
     // Check blood pressure
     if (data.bloodPressureSystolic && data.bloodPressureDiastolic) {
-      if (data.bloodPressureSystolic > 130 || data.bloodPressureDiastolic > 90) {
+      if (
+        data.bloodPressureSystolic > 130 ||
+        data.bloodPressureDiastolic > 90
+      ) {
         isAbnormal = true;
         abnormalFlags.push('HIGH_BLOOD_PRESSURE');
       }
@@ -67,7 +81,10 @@ export class VitalsService {
 
     // Check temperature
     if (data.temperature) {
-      const temp = data.temperatureUnit === 'F' ? (data.temperature - 32) * 5/9 : data.temperature;
+      const temp =
+        data.temperatureUnit === 'F'
+          ? ((data.temperature - 32) * 5) / 9
+          : data.temperature;
       if (temp > 38 || temp < 35) {
         isAbnormal = true;
         abnormalFlags.push('ABNORMAL_TEMPERATURE');
@@ -86,37 +103,44 @@ export class VitalsService {
       isAbnormal,
       abnormalFlags,
     });
-    
-    this.logger.log(`PHI Created: Vital signs recorded for student ${data.studentId}`);
+
+    this.logger.log(
+      `PHI Created: Vital signs recorded for student ${data.studentId}`,
+    );
     return vital;
   }
 
-  async getVitalsHistory(studentId: string, limit?: number): Promise<VitalSigns[]> {
-    this.logger.log(`Getting vitals history for student ${studentId}, limit: ${limit || 'all'}`);
-    
+  async getVitalsHistory(
+    studentId: string,
+    limit?: number,
+  ): Promise<VitalSigns[]> {
+    this.logger.log(
+      `Getting vitals history for student ${studentId}, limit: ${limit || 'all'}`,
+    );
+
     // Verify student exists
     const student = await this.studentModel.findByPk(studentId);
     if (!student) {
       throw new NotFoundException(`Student with ID ${studentId} not found`);
     }
-    
+
     const queryOptions: any = {
       where: { studentId },
       order: [['measurementDate', 'DESC']],
     };
-    
+
     if (limit) {
       queryOptions.limit = limit;
     }
-    
+
     return await this.vitalSignsModel.findAll(queryOptions);
   }
 
   async detectAnomalies(studentId: string): Promise<any> {
     this.logger.log(`Detecting vital sign anomalies for student ${studentId}`);
-    
+
     const history = await this.getVitalsHistory(studentId, 10); // Last 10 measurements
-    
+
     if (history.length === 0) {
       return { anomalies: [], warnings: [] };
     }
@@ -125,24 +149,28 @@ export class VitalsService {
     const warnings: any[] = [];
 
     // Check for abnormal readings in recent measurements
-    const recentAbnormal = history.filter(v => v.isAbnormal);
+    const recentAbnormal = history.filter((v) => v.isAbnormal);
     if (recentAbnormal.length > 0) {
       anomalies.push({
         type: 'RECENT_ABNORMAL_READINGS',
         count: recentAbnormal.length,
         message: `${recentAbnormal.length} recent measurements show abnormalities`,
         severity: 'HIGH',
-        flags: [...new Set(recentAbnormal.flatMap(v => v.abnormalFlags))],
+        flags: [...new Set(recentAbnormal.flatMap((v) => v.abnormalFlags))],
       });
     }
 
     // Check for trends (simplified)
     if (history.length >= 3) {
       const recent = history.slice(0, 3);
-      const tempReadings = recent.filter(v => v.temperature !== null && v.temperature !== undefined);
+      const tempReadings = recent.filter(
+        (v) => v.temperature !== null && v.temperature !== undefined,
+      );
       if (tempReadings.length > 0) {
-        const avgTemp = tempReadings.reduce((sum, v) => sum + (v.temperature || 0), 0) / tempReadings.length;
-        
+        const avgTemp =
+          tempReadings.reduce((sum, v) => sum + (v.temperature || 0), 0) /
+          tempReadings.length;
+
         if (avgTemp > 37.5) {
           warnings.push({
             type: 'ELEVATED_TEMPERATURE_TREND',
@@ -162,7 +190,7 @@ export class VitalsService {
    */
   async getLatest(studentId: string): Promise<VitalSigns | null> {
     this.logger.log(`Getting latest vitals for student ${studentId}`);
-    
+
     const history = await this.getVitalsHistory(studentId, 1);
     return history[0] || null;
   }
@@ -172,18 +200,20 @@ export class VitalsService {
    */
   async getGrowthChart(studentId: string): Promise<any> {
     this.logger.log(`Getting growth chart data for student ${studentId}`);
-    
+
     const vitals = await this.vitalSignsModel.findAll({
-      where: { 
+      where: {
         studentId,
       },
       order: [['measurementDate', 'ASC']],
     });
-    
+
     // Filter for records with height or weight
-    const growthVitals = vitals.filter(v => v.height !== null || v.weight !== null);
-    
-    const growthData = growthVitals.map(v => ({
+    const growthVitals = vitals.filter(
+      (v) => v.height !== null || v.weight !== null,
+    );
+
+    const growthData = growthVitals.map((v) => ({
       date: v.measurementDate,
       height: v.height,
       heightUnit: v.heightUnit,
@@ -202,13 +232,19 @@ export class VitalsService {
   /**
    * Calculate BMI percentile for age (simplified)
    */
-  calculateBMIPercentile(bmi: number, ageInMonths: number, gender: 'M' | 'F'): any {
+  calculateBMIPercentile(
+    bmi: number,
+    ageInMonths: number,
+    gender: 'M' | 'F',
+  ): any {
     // This is a simplified version - real implementation would use CDC growth charts
-    this.logger.log(`Calculating BMI percentile for BMI ${bmi}, age ${ageInMonths} months, gender ${gender}`);
-    
+    this.logger.log(
+      `Calculating BMI percentile for BMI ${bmi}, age ${ageInMonths} months, gender ${gender}`,
+    );
+
     // Rough approximations for demonstration
     let percentile = 50; // Default to 50th percentile
-    
+
     if (bmi < 16) percentile = 5;
     else if (bmi < 17) percentile = 10;
     else if (bmi < 18.5) percentile = 25;
@@ -237,9 +273,15 @@ export class VitalsService {
   /**
    * Get vital signs trends
    */
-  async getTrends(studentId: string, metric: string, days: number = 30): Promise<any> {
-    this.logger.log(`Getting ${metric} trends for student ${studentId} over ${days} days`);
-    
+  async getTrends(
+    studentId: string,
+    metric: string,
+    days: number = 30,
+  ): Promise<any> {
+    this.logger.log(
+      `Getting ${metric} trends for student ${studentId} over ${days} days`,
+    );
+
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - days);
 
@@ -256,15 +298,16 @@ export class VitalsService {
       order: [['measurementDate', 'ASC']],
     });
 
-    const values = vitals.map(v => v[metric]).filter(v => v !== null);
-    const average = values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : 0;
+    const values = vitals.map((v) => v[metric]).filter((v) => v !== null);
+    const average =
+      values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : 0;
     const min = values.length > 0 ? Math.min(...values) : 0;
     const max = values.length > 0 ? Math.max(...values) : 0;
 
     return {
       metric,
       period: `${days} days`,
-      dataPoints: vitals.map(v => ({
+      dataPoints: vitals.map((v) => ({
         date: v.measurementDate,
         value: v[metric],
       })),
@@ -280,9 +323,14 @@ export class VitalsService {
   /**
    * Get abnormal vital signs for review
    */
-  async getAbnormalVitals(studentId?: string, days: number = 7): Promise<VitalSigns[]> {
-    this.logger.log(`Getting abnormal vitals${studentId ? ` for student ${studentId}` : ''} over ${days} days`);
-    
+  async getAbnormalVitals(
+    studentId?: string,
+    days: number = 7,
+  ): Promise<VitalSigns[]> {
+    this.logger.log(
+      `Getting abnormal vitals${studentId ? ` for student ${studentId}` : ''} over ${days} days`,
+    );
+
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - days);
 
@@ -292,7 +340,7 @@ export class VitalsService {
         [Op.gte]: cutoffDate,
       },
     };
-    
+
     if (studentId) {
       whereClause.studentId = studentId;
     }
@@ -314,7 +362,7 @@ export class VitalsService {
    */
   async getVitalsSummary(studentId: string): Promise<any> {
     this.logger.log(`Getting vitals summary for student ${studentId}`);
-    
+
     const vitals = await this.vitalSignsModel.findAll({
       where: { studentId },
       order: [['measurementDate', 'DESC']],
@@ -337,21 +385,51 @@ export class VitalsService {
     }
 
     // Calculate averages manually
-    const tempReadings = vitals.filter(v => v.temperature !== null).map(v => v.temperature!);
-    const heartRateReadings = vitals.filter(v => v.heartRate !== null).map(v => v.heartRate!);
-    const systolicReadings = vitals.filter(v => v.bloodPressureSystolic !== null).map(v => v.bloodPressureSystolic!);
-    const diastolicReadings = vitals.filter(v => v.bloodPressureDiastolic !== null).map(v => v.bloodPressureDiastolic!);
-    const oxygenReadings = vitals.filter(v => v.oxygenSaturation !== null).map(v => v.oxygenSaturation!);
-    const bmiReadings = vitals.filter(v => v.bmi !== null).map(v => v.bmi!);
+    const tempReadings = vitals
+      .filter((v) => v.temperature !== null)
+      .map((v) => v.temperature!);
+    const heartRateReadings = vitals
+      .filter((v) => v.heartRate !== null)
+      .map((v) => v.heartRate!);
+    const systolicReadings = vitals
+      .filter((v) => v.bloodPressureSystolic !== null)
+      .map((v) => v.bloodPressureSystolic!);
+    const diastolicReadings = vitals
+      .filter((v) => v.bloodPressureDiastolic !== null)
+      .map((v) => v.bloodPressureDiastolic!);
+    const oxygenReadings = vitals
+      .filter((v) => v.oxygenSaturation !== null)
+      .map((v) => v.oxygenSaturation!);
+    const bmiReadings = vitals.filter((v) => v.bmi !== null).map((v) => v.bmi!);
 
-    const avgTemp = tempReadings.length > 0 ? tempReadings.reduce((a, b) => a + b, 0) / tempReadings.length : null;
-    const avgHeartRate = heartRateReadings.length > 0 ? heartRateReadings.reduce((a, b) => a + b, 0) / heartRateReadings.length : null;
-    const avgSystolic = systolicReadings.length > 0 ? systolicReadings.reduce((a, b) => a + b, 0) / systolicReadings.length : null;
-    const avgDiastolic = diastolicReadings.length > 0 ? diastolicReadings.reduce((a, b) => a + b, 0) / diastolicReadings.length : null;
-    const avgOxygen = oxygenReadings.length > 0 ? oxygenReadings.reduce((a, b) => a + b, 0) / oxygenReadings.length : null;
-    const avgBMI = bmiReadings.length > 0 ? bmiReadings.reduce((a, b) => a + b, 0) / bmiReadings.length : null;
+    const avgTemp =
+      tempReadings.length > 0
+        ? tempReadings.reduce((a, b) => a + b, 0) / tempReadings.length
+        : null;
+    const avgHeartRate =
+      heartRateReadings.length > 0
+        ? heartRateReadings.reduce((a, b) => a + b, 0) /
+          heartRateReadings.length
+        : null;
+    const avgSystolic =
+      systolicReadings.length > 0
+        ? systolicReadings.reduce((a, b) => a + b, 0) / systolicReadings.length
+        : null;
+    const avgDiastolic =
+      diastolicReadings.length > 0
+        ? diastolicReadings.reduce((a, b) => a + b, 0) /
+          diastolicReadings.length
+        : null;
+    const avgOxygen =
+      oxygenReadings.length > 0
+        ? oxygenReadings.reduce((a, b) => a + b, 0) / oxygenReadings.length
+        : null;
+    const avgBMI =
+      bmiReadings.length > 0
+        ? bmiReadings.reduce((a, b) => a + b, 0) / bmiReadings.length
+        : null;
 
-    const abnormalCount = vitals.filter(v => v.isAbnormal).length;
+    const abnormalCount = vitals.filter((v) => v.isAbnormal).length;
 
     return {
       studentId,
@@ -359,9 +437,10 @@ export class VitalsService {
       averageVitals: {
         temperature: avgTemp ? parseFloat(avgTemp.toFixed(1)) : null,
         heartRate: avgHeartRate ? Math.round(avgHeartRate) : null,
-        bloodPressure: avgSystolic && avgDiastolic 
-          ? `${Math.round(avgSystolic)}/${Math.round(avgDiastolic)}`
-          : null,
+        bloodPressure:
+          avgSystolic && avgDiastolic
+            ? `${Math.round(avgSystolic)}/${Math.round(avgDiastolic)}`
+            : null,
         oxygenSaturation: avgOxygen ? Math.round(avgOxygen) : null,
         bmi: avgBMI ? parseFloat(avgBMI.toFixed(1)) : null,
       },

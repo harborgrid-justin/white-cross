@@ -7,10 +7,7 @@ import { Student } from '../../database/models/student.model';
 import { AuthModule } from '../../auth/auth.module';
 
 @Module({
-  imports: [
-    SequelizeModule.forFeature([Allergy, Student]),
-    AuthModule,
-  ],
+  imports: [SequelizeModule.forFeature([Allergy, Student]), AuthModule],
   controllers: [AllergyController],
   providers: [AllergyService],
   exports: [AllergyService],

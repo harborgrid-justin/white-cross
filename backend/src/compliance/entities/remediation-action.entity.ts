@@ -7,5 +7,5 @@
 export {
   RemediationAction,
   RemediationPriority,
-  RemediationStatus
+  RemediationStatus,
 } from '../../database/models/remediation-action.model';

@@ -17,7 +17,10 @@ export class TreatmentPlanFiltersDto {
   @IsOptional()
   visitId?: string;
 
-  @ApiPropertyOptional({ description: 'Filter by status', enum: TreatmentStatus })
+  @ApiPropertyOptional({
+    description: 'Filter by status',
+    enum: TreatmentStatus,
+  })
   @IsEnum(TreatmentStatus)
   @IsOptional()
   status?: TreatmentStatus;
@@ -27,7 +30,12 @@ export class TreatmentPlanFiltersDto {
   @IsOptional()
   createdBy?: string;
 
-  @ApiPropertyOptional({ description: 'Number of results to return', minimum: 1, maximum: 100, default: 20 })
+  @ApiPropertyOptional({
+    description: 'Number of results to return',
+    minimum: 1,
+    maximum: 100,
+    default: 20,
+  })
   @Type(() => Number)
   @IsInt()
   @Min(1)
@@ -35,7 +43,11 @@ export class TreatmentPlanFiltersDto {
   @IsOptional()
   limit?: number = 20;
 
-  @ApiPropertyOptional({ description: 'Number of results to skip', minimum: 0, default: 0 })
+  @ApiPropertyOptional({
+    description: 'Number of results to skip',
+    minimum: 0,
+    default: 0,
+  })
   @Type(() => Number)
   @IsInt()
   @Min(0)

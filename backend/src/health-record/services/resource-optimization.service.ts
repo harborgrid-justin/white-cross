@@ -2,9 +2,9 @@
  * @fileoverview Resource Usage Optimization and Monitoring Service
  * @module health-record/services
  * @description Advanced resource usage optimization with predictive scaling and monitoring
- * 
+ *
  * HIPAA CRITICAL - This service optimizes PHI processing resources while maintaining compliance
- * 
+ *
  * @compliance HIPAA Privacy Rule §164.308, HIPAA Security Rule §164.312
  */
 
@@ -83,7 +83,7 @@ export enum ResourceOptimizationType {
   QUERY_OPTIMIZATION = 'QUERY_OPTIMIZATION',
   BATCH_PROCESSING = 'BATCH_PROCESSING',
   COMPRESSION = 'COMPRESSION',
-  PREFETCHING = 'PREFETCHING'
+  PREFETCHING = 'PREFETCHING',
 }
 
 export interface ResourceAlert {
@@ -116,7 +116,7 @@ export enum ResourceAlertType {
   NETWORK_LATENCY_HIGH = 'NETWORK_LATENCY_HIGH',
   DISK_SPACE_LOW = 'DISK_SPACE_LOW',
   PHI_PROCESSING_OVERLOAD = 'PHI_PROCESSING_OVERLOAD',
-  COMPLIANCE_RISK_DETECTED = 'COMPLIANCE_RISK_DETECTED'
+  COMPLIANCE_RISK_DETECTED = 'COMPLIANCE_RISK_DETECTED',
 }
 
 export interface PredictiveScalingModel {
@@ -163,7 +163,7 @@ export interface ResourceOptimizationPlan {
 
 /**
  * Resource Usage Optimization and Monitoring Service
- * 
+ *
  * Provides comprehensive resource optimization and monitoring:
  * - Real-time resource usage monitoring
  * - Memory leak detection and prevention
@@ -177,17 +177,23 @@ export interface ResourceOptimizationPlan {
 @Injectable()
 export class ResourceOptimizationService implements OnModuleDestroy {
   private readonly logger = new Logger(ResourceOptimizationService.name);
-  
+
   // Resource monitoring
   private readonly resourceHistory: ResourceMetrics[] = [];
   private readonly maxHistorySize = 2880; // 24 hours at 30-second intervals
   private readonly alerts = new Map<string, ResourceAlert>();
-  
+
   // Optimization tracking
-  private readonly recommendations = new Map<string, OptimizationRecommendation>();
-  private readonly optimizationPlans = new Map<string, ResourceOptimizationPlan>();
+  private readonly recommendations = new Map<
+    string,
+    OptimizationRecommendation
+  >();
+  private readonly optimizationPlans = new Map<
+    string,
+    ResourceOptimizationPlan
+  >();
   private readonly predictiveModels = new Map<string, PredictiveScalingModel>();
-  
+
   // Thresholds and configuration
   private readonly thresholds = {
     memory: {
@@ -213,12 +219,12 @@ export class ResourceOptimizationService implements OnModuleDestroy {
       latencyCritical: 1000, // 1000ms latency
     },
   };
-  
+
   // Optimization state
   private optimizationEnabled = true;
   private autoScalingEnabled = true;
   private complianceMode = true;
-  
+
   constructor(
     private readonly metricsService: HealthRecordMetricsService,
     private readonly phiLogger: PHIAccessLogger,
@@ -235,16 +241,16 @@ export class ResourceOptimizationService implements OnModuleDestroy {
    */
   private initializeService(): void {
     this.logger.log('Initializing Resource Optimization Service');
-    
+
     // Start resource monitoring
     this.startResourceMonitoring();
-    
+
     // Initialize optimization recommendations
     this.generateInitialRecommendations();
-    
+
     // Setup event listeners
     this.setupEventListeners();
-    
+
     this.logger.log('Resource Optimization Service initialized successfully');
   }
 
@@ -260,15 +266,23 @@ export class ResourceOptimizationService implements OnModuleDestroy {
    */
   getResourceHistory(hours: number = 24): ResourceMetrics[] {
     const cutoffTime = new Date(Date.now() - hours * 60 * 60 * 1000);
-    return this.resourceHistory.filter(metric => metric.timestamp >= cutoffTime);
+    return this.resourceHistory.filter(
+      (metric) => metric.timestamp >= cutoffTime,
+    );
   }
 
   /**
    * Get active optimization recommendations
    */
-  getOptimizationRecommendations(limit: number = 50): OptimizationRecommendation[] {
+  getOptimizationRecommendations(
+    limit: number = 50,
+  ): OptimizationRecommendation[] {
     return Array.from(this.recommendations.values())
-      .sort((a, b) => this.getPriorityWeight(b.priority) - this.getPriorityWeight(a.priority))
+      .sort(
+        (a, b) =>
+          this.getPriorityWeight(b.priority) -
+          this.getPriorityWeight(a.priority),
+      )
       .slice(0, limit);
   }
 
@@ -277,8 +291,12 @@ export class ResourceOptimizationService implements OnModuleDestroy {
    */
   getActiveAlerts(): ResourceAlert[] {
     return Array.from(this.alerts.values())
-      .filter(alert => !alert.acknowledged && !alert.resolvedAt)
-      .sort((a, b) => this.getSeverityWeight(b.severity) - this.getSeverityWeight(a.severity));
+      .filter((alert) => !alert.acknowledged && !alert.resolvedAt)
+      .sort(
+        (a, b) =>
+          this.getSeverityWeight(b.severity) -
+          this.getSeverityWeight(a.severity),
+      );
   }
 
   /**
@@ -288,19 +306,19 @@ export class ResourceOptimizationService implements OnModuleDestroy {
     name: string,
     description: string,
     targetResources: string[],
-    selectedRecommendations: string[]
+    selectedRecommendations: string[],
   ): string {
     const planId = this.generatePlanId();
     const recommendations = selectedRecommendations
-      .map(id => this.recommendations.get(id))
-      .filter(rec => rec !== undefined) as OptimizationRecommendation[];
-    
+      .map((id) => this.recommendations.get(id))
+      .filter((rec) => rec !== undefined);
+
     // Calculate estimated benefits
     const estimatedBenefit = this.calculateCombinedBenefits(recommendations);
-    
+
     // Create implementation phases
     const phases = this.createImplementationPhases(recommendations);
-    
+
     const plan: ResourceOptimizationPlan = {
       planId,
       name,
@@ -312,14 +330,14 @@ export class ResourceOptimizationService implements OnModuleDestroy {
         validated: false,
       },
     };
-    
+
     // Validate compliance impact
     if (this.complianceMode) {
       plan.complianceValidation = this.validateComplianceImpact(plan);
     }
-    
+
     this.optimizationPlans.set(planId, plan);
-    
+
     this.logger.log(`Created optimization plan: ${name} (${planId})`);
     return planId;
   }
@@ -340,30 +358,33 @@ export class ResourceOptimizationService implements OnModuleDestroy {
     if (!recommendation) {
       return { success: false, message: 'Recommendation not found' };
     }
-    
+
     this.logger.log(`Executing optimization: ${recommendation.title}`);
-    
+
     // Capture baseline metrics
     const beforeMetrics = this.collectResourceMetrics();
-    
+
     try {
       // Execute optimization based on type
       const result = await this.executeOptimizationByType(recommendation);
-      
+
       if (result.success) {
         // Wait for metrics to stabilize
         await this.delay(5000);
-        
+
         // Capture after metrics
         const afterMetrics = this.collectResourceMetrics();
-        const improvement = this.calculateImprovement(beforeMetrics, afterMetrics);
-        
+        const improvement = this.calculateImprovement(
+          beforeMetrics,
+          afterMetrics,
+        );
+
         // Record success
         this.recordOptimizationSuccess(recommendation, improvement);
-        
+
         // Remove executed recommendation
         this.recommendations.delete(recommendationId);
-        
+
         return {
           success: true,
           message: `Optimization completed successfully: ${recommendation.title}`,
@@ -381,7 +402,7 @@ export class ResourceOptimizationService implements OnModuleDestroy {
       const errorMessage = `Optimization failed: ${error.message}`;
       this.logger.error(errorMessage, error.stack);
       this.recordOptimizationFailure(recommendation, errorMessage);
-      
+
       return { success: false, message: errorMessage };
     }
   }
@@ -398,13 +419,16 @@ export class ResourceOptimizationService implements OnModuleDestroy {
     confidence: number;
   }> {
     const recommendations: any[] = [];
-    
+
     for (const model of this.predictiveModels.values()) {
       const latestPrediction = model.predictions[model.predictions.length - 1];
       if (latestPrediction && latestPrediction.confidence > 0.7) {
         const currentMetrics = this.collectResourceMetrics();
-        const currentUsage = this.getCurrentUsageForResource(model.resourceType, currentMetrics);
-        
+        const currentUsage = this.getCurrentUsageForResource(
+          model.resourceType,
+          currentMetrics,
+        );
+
         recommendations.push({
           resourceType: model.resourceType,
           currentUsage,
@@ -412,14 +436,14 @@ export class ResourceOptimizationService implements OnModuleDestroy {
           timeToThreshold: this.calculateTimeToThreshold(
             currentUsage,
             latestPrediction.predictedUsage,
-            model.resourceType
+            model.resourceType,
           ),
           recommendedAction: latestPrediction.recommendedAction,
           confidence: latestPrediction.confidence,
         });
       }
     }
-    
+
     return recommendations.sort((a, b) => b.confidence - a.confidence);
   }
 
@@ -433,39 +457,43 @@ export class ResourceOptimizationService implements OnModuleDestroy {
   }> {
     const beforeMemory = process.memoryUsage();
     const optimizationsApplied: string[] = [];
-    
+
     try {
       // Force garbage collection if available
       if (global.gc) {
         global.gc();
         optimizationsApplied.push('Forced garbage collection');
       }
-      
+
       // Clear expired cache entries
       const cacheMetrics = this.cacheService.getCacheMetrics();
-      if (cacheMetrics.overall.totalMemoryUsage > 10 * 1024 * 1024) { // > 10MB
-        await this.cacheService.invalidate('*:expired:*', 'memory optimization');
+      if (cacheMetrics.overall.totalMemoryUsage > 10 * 1024 * 1024) {
+        // > 10MB
+        await this.cacheService.invalidate(
+          '*:expired:*',
+          'memory optimization',
+        );
         optimizationsApplied.push('Cleared expired cache entries');
       }
-      
+
       // Clear old query metrics
       await this.queryAnalyzer.storePerformanceAnalysisSnapshot();
       optimizationsApplied.push('Cleaned query performance history');
-      
+
       // Clear old resource history
       if (this.resourceHistory.length > this.maxHistorySize) {
         const toRemove = this.resourceHistory.length - this.maxHistorySize;
         this.resourceHistory.splice(0, toRemove);
         optimizationsApplied.push(`Cleaned ${toRemove} old resource metrics`);
       }
-      
+
       const afterMemory = process.memoryUsage();
       const memoryFreed = beforeMemory.heapUsed - afterMemory.heapUsed;
-      
+
       this.logger.log(
-        `Memory optimization completed: freed ${(memoryFreed / 1024 / 1024).toFixed(2)}MB`
+        `Memory optimization completed: freed ${(memoryFreed / 1024 / 1024).toFixed(2)}MB`,
       );
-      
+
       return {
         success: true,
         memoryFreed: Math.max(0, memoryFreed),
@@ -511,16 +539,19 @@ export class ResourceOptimizationService implements OnModuleDestroy {
     const currentMetrics = this.collectResourceMetrics();
     const activeAlerts = this.getActiveAlerts();
     const recommendations = this.getOptimizationRecommendations(10);
-    
+
     // Calculate overall health
-    const overallHealth = this.calculateOverallHealth(currentMetrics, activeAlerts);
-    
+    const overallHealth = this.calculateOverallHealth(
+      currentMetrics,
+      activeAlerts,
+    );
+
     // Calculate trends
     const trends = this.calculateResourceTrends();
-    
+
     // Generate predictive insights
     const predictiveInsights = this.generatePredictiveInsights();
-    
+
     return {
       summary: {
         overallHealth,
@@ -550,21 +581,21 @@ export class ResourceOptimizationService implements OnModuleDestroy {
   @Cron('*/30 * * * * *') // Every 30 seconds
   async performResourceMonitoring(): Promise<void> {
     const metrics = this.collectResourceMetrics();
-    
+
     // Store metrics
     this.resourceHistory.push(metrics);
-    
+
     // Trim history if too large
     if (this.resourceHistory.length > this.maxHistorySize) {
       this.resourceHistory.shift();
     }
-    
+
     // Check for alerts
     await this.checkForAlerts(metrics);
-    
+
     // Update predictive models
     await this.updatePredictiveModels(metrics);
-    
+
     // Record metrics
     this.recordResourceMetrics(metrics);
   }
@@ -575,15 +606,18 @@ export class ResourceOptimizationService implements OnModuleDestroy {
   @Cron('*/5 * * * *') // Every 5 minutes
   async generateOptimizationRecommendations(): Promise<void> {
     if (!this.optimizationEnabled) return;
-    
+
     this.logger.debug('Generating optimization recommendations');
-    
+
     const currentMetrics = this.collectResourceMetrics();
     const recentHistory = this.getResourceHistory(1); // Last hour
-    
+
     // Generate recommendations based on current state
-    const newRecommendations = await this.analyzeForOptimizations(currentMetrics, recentHistory);
-    
+    const newRecommendations = await this.analyzeForOptimizations(
+      currentMetrics,
+      recentHistory,
+    );
+
     // Add new recommendations
     let addedCount = 0;
     for (const recommendation of newRecommendations) {
@@ -592,13 +626,13 @@ export class ResourceOptimizationService implements OnModuleDestroy {
         addedCount++;
       }
     }
-    
+
     // Clean up old/completed recommendations
     const cleanedCount = this.cleanupCompletedRecommendations();
-    
+
     if (addedCount > 0 || cleanedCount > 0) {
       this.logger.log(
-        `Optimization recommendations updated: +${addedCount} new, -${cleanedCount} completed`
+        `Optimization recommendations updated: +${addedCount} new, -${cleanedCount} completed`,
       );
     }
   }
@@ -609,33 +643,41 @@ export class ResourceOptimizationService implements OnModuleDestroy {
   @Cron(CronExpression.EVERY_HOUR)
   async performAutomatedOptimization(): Promise<void> {
     if (!this.optimizationEnabled) return;
-    
+
     this.logger.debug('Performing automated optimization');
-    
+
     // Find safe automated optimizations
     const safeOptimizations = Array.from(this.recommendations.values())
-      .filter(rec => 
-        rec.riskLevel === 'LOW' && 
-        rec.priority === 'HIGH' &&
-        !rec.complianceImpact
+      .filter(
+        (rec) =>
+          rec.riskLevel === 'LOW' &&
+          rec.priority === 'HIGH' &&
+          !rec.complianceImpact,
       )
       .slice(0, 3); // Limit to 3 per hour
-    
+
     let executedCount = 0;
     for (const optimization of safeOptimizations) {
       try {
         const result = await this.executeOptimization(optimization.id);
         if (result.success) {
           executedCount++;
-          this.logger.log(`Automated optimization executed: ${optimization.title}`);
+          this.logger.log(
+            `Automated optimization executed: ${optimization.title}`,
+          );
         }
       } catch (error) {
-        this.logger.error(`Automated optimization failed: ${optimization.title}:`, error);
+        this.logger.error(
+          `Automated optimization failed: ${optimization.title}:`,
+          error,
+        );
       }
     }
-    
+
     if (executedCount > 0) {
-      this.logger.log(`Automated optimization completed: ${executedCount} optimizations executed`);
+      this.logger.log(
+        `Automated optimization completed: ${executedCount} optimizations executed`,
+      );
     }
   }
 
@@ -645,24 +687,24 @@ export class ResourceOptimizationService implements OnModuleDestroy {
   @Cron(CronExpression.EVERY_6_HOURS)
   async performMaintenanceCleanup(): Promise<void> {
     this.logger.debug('Performing maintenance cleanup');
-    
+
     // Clean up old alerts
     const alertsCleaned = this.cleanupOldAlerts();
-    
+
     // Clean up old recommendations
     const recommendationsCleaned = this.cleanupOldRecommendations();
-    
+
     // Optimize internal data structures
     const memoryOptimizationResult = await this.performMemoryOptimization();
-    
+
     // Update predictive models
     const modelsUpdated = await this.retrainPredictiveModels();
-    
+
     this.logger.log(
       `Maintenance cleanup completed: ${alertsCleaned} alerts, ` +
-      `${recommendationsCleaned} recommendations, ` +
-      `${(memoryOptimizationResult.memoryFreed / 1024 / 1024).toFixed(2)}MB freed, ` +
-      `${modelsUpdated} models updated`
+        `${recommendationsCleaned} recommendations, ` +
+        `${(memoryOptimizationResult.memoryFreed / 1024 / 1024).toFixed(2)}MB freed, ` +
+        `${modelsUpdated} models updated`,
     );
   }
 
@@ -674,7 +716,7 @@ export class ResourceOptimizationService implements OnModuleDestroy {
   private collectResourceMetrics(): ResourceMetrics {
     const memoryUsage = process.memoryUsage();
     const cpuUsage = process.cpuUsage();
-    
+
     return {
       timestamp: new Date(),
       memory: {
@@ -717,74 +759,86 @@ export class ResourceOptimizationService implements OnModuleDestroy {
    */
   private async checkForAlerts(metrics: ResourceMetrics): Promise<void> {
     const alerts: ResourceAlert[] = [];
-    
+
     // Memory alerts
     if (metrics.memory.utilization > this.thresholds.memory.critical) {
-      alerts.push(this.createAlert(
-        ResourceAlertType.HIGH_MEMORY_USAGE,
-        'CRITICAL',
-        'Critical Memory Usage',
-        `Memory usage at ${metrics.memory.utilization.toFixed(1)}% (threshold: ${this.thresholds.memory.critical}%)`,
-        this.thresholds.memory.critical,
-        metrics.memory.utilization
-      ));
+      alerts.push(
+        this.createAlert(
+          ResourceAlertType.HIGH_MEMORY_USAGE,
+          'CRITICAL',
+          'Critical Memory Usage',
+          `Memory usage at ${metrics.memory.utilization.toFixed(1)}% (threshold: ${this.thresholds.memory.critical}%)`,
+          this.thresholds.memory.critical,
+          metrics.memory.utilization,
+        ),
+      );
     } else if (metrics.memory.utilization > this.thresholds.memory.warning) {
-      alerts.push(this.createAlert(
-        ResourceAlertType.HIGH_MEMORY_USAGE,
-        'WARNING',
-        'High Memory Usage',
-        `Memory usage at ${metrics.memory.utilization.toFixed(1)}% (threshold: ${this.thresholds.memory.warning}%)`,
-        this.thresholds.memory.warning,
-        metrics.memory.utilization
-      ));
+      alerts.push(
+        this.createAlert(
+          ResourceAlertType.HIGH_MEMORY_USAGE,
+          'WARNING',
+          'High Memory Usage',
+          `Memory usage at ${metrics.memory.utilization.toFixed(1)}% (threshold: ${this.thresholds.memory.warning}%)`,
+          this.thresholds.memory.warning,
+          metrics.memory.utilization,
+        ),
+      );
     }
-    
+
     // CPU alerts
     if (metrics.cpu.usage > this.thresholds.cpu.critical) {
-      alerts.push(this.createAlert(
-        ResourceAlertType.HIGH_CPU_USAGE,
-        'CRITICAL',
-        'Critical CPU Usage',
-        `CPU usage at ${metrics.cpu.usage.toFixed(1)}% (threshold: ${this.thresholds.cpu.critical}%)`,
-        this.thresholds.cpu.critical,
-        metrics.cpu.usage
-      ));
+      alerts.push(
+        this.createAlert(
+          ResourceAlertType.HIGH_CPU_USAGE,
+          'CRITICAL',
+          'Critical CPU Usage',
+          `CPU usage at ${metrics.cpu.usage.toFixed(1)}% (threshold: ${this.thresholds.cpu.critical}%)`,
+          this.thresholds.cpu.critical,
+          metrics.cpu.usage,
+        ),
+      );
     } else if (metrics.cpu.usage > this.thresholds.cpu.warning) {
-      alerts.push(this.createAlert(
-        ResourceAlertType.HIGH_CPU_USAGE,
-        'WARNING',
-        'High CPU Usage',
-        `CPU usage at ${metrics.cpu.usage.toFixed(1)}% (threshold: ${this.thresholds.cpu.warning}%)`,
-        this.thresholds.cpu.warning,
-        metrics.cpu.usage
-      ));
+      alerts.push(
+        this.createAlert(
+          ResourceAlertType.HIGH_CPU_USAGE,
+          'WARNING',
+          'High CPU Usage',
+          `CPU usage at ${metrics.cpu.usage.toFixed(1)}% (threshold: ${this.thresholds.cpu.warning}%)`,
+          this.thresholds.cpu.warning,
+          metrics.cpu.usage,
+        ),
+      );
     }
-    
+
     // Database alerts
     const dbUtilization = (metrics.database.activeConnections / 100) * 100; // Assuming max 100
     if (dbUtilization > this.thresholds.database.connectionCritical) {
-      alerts.push(this.createAlert(
-        ResourceAlertType.DATABASE_CONNECTION_POOL_EXHAUSTED,
-        'CRITICAL',
-        'Database Connection Pool Critical',
-        `Database connections at ${dbUtilization.toFixed(1)}% capacity`,
-        this.thresholds.database.connectionCritical,
-        dbUtilization
-      ));
+      alerts.push(
+        this.createAlert(
+          ResourceAlertType.DATABASE_CONNECTION_POOL_EXHAUSTED,
+          'CRITICAL',
+          'Database Connection Pool Critical',
+          `Database connections at ${dbUtilization.toFixed(1)}% capacity`,
+          this.thresholds.database.connectionCritical,
+          dbUtilization,
+        ),
+      );
     }
-    
+
     // Cache alerts
     if (metrics.cache.hitRate < this.thresholds.cache.hitRateCritical) {
-      alerts.push(this.createAlert(
-        ResourceAlertType.CACHE_HIT_RATE_LOW,
-        'CRITICAL',
-        'Critical Cache Hit Rate',
-        `Cache hit rate at ${metrics.cache.hitRate.toFixed(1)}% (threshold: ${this.thresholds.cache.hitRateCritical}%)`,
-        this.thresholds.cache.hitRateCritical,
-        metrics.cache.hitRate
-      ));
+      alerts.push(
+        this.createAlert(
+          ResourceAlertType.CACHE_HIT_RATE_LOW,
+          'CRITICAL',
+          'Critical Cache Hit Rate',
+          `Cache hit rate at ${metrics.cache.hitRate.toFixed(1)}% (threshold: ${this.thresholds.cache.hitRateCritical}%)`,
+          this.thresholds.cache.hitRateCritical,
+          metrics.cache.hitRate,
+        ),
+      );
     }
-    
+
     // Store new alerts
     for (const alert of alerts) {
       if (!this.alerts.has(alert.id)) {
@@ -803,7 +857,7 @@ export class ResourceOptimizationService implements OnModuleDestroy {
     title: string,
     message: string,
     threshold: number,
-    currentValue: number
+    currentValue: number,
   ): ResourceAlert {
     return {
       id: this.generateAlertId(alertType),
@@ -829,13 +883,13 @@ export class ResourceOptimizationService implements OnModuleDestroy {
    */
   private async handleNewAlert(alert: ResourceAlert): Promise<void> {
     this.logger.warn(`Resource alert: ${alert.title} - ${alert.message}`);
-    
+
     // Emit event for external monitoring
     this.eventEmitter.emit('resource.alert', {
       alert,
       timestamp: new Date(),
     });
-    
+
     // Log security incident for compliance-impacting alerts
     if (alert.metadata.complianceImpact) {
       this.phiLogger.logSecurityIncident({
@@ -848,7 +902,7 @@ export class ResourceOptimizationService implements OnModuleDestroy {
         ipAddress: 'internal',
       });
     }
-    
+
     // Attempt auto-recovery for critical alerts
     if (alert.severity === 'CRITICAL' && this.optimizationEnabled) {
       await this.attemptAutoRecovery(alert);
@@ -860,7 +914,7 @@ export class ResourceOptimizationService implements OnModuleDestroy {
    */
   private async attemptAutoRecovery(alert: ResourceAlert): Promise<void> {
     this.logger.log(`Attempting auto-recovery for alert: ${alert.alertType}`);
-    
+
     try {
       switch (alert.alertType) {
         case ResourceAlertType.HIGH_MEMORY_USAGE:
@@ -873,95 +927,235 @@ export class ResourceOptimizationService implements OnModuleDestroy {
           // Could implement connection pool cleanup
           break;
       }
-      
+
       alert.metadata.autoRecoveryAttempted = true;
       this.logger.log(`Auto-recovery attempted for alert: ${alert.alertType}`);
     } catch (error) {
-      this.logger.error(`Auto-recovery failed for alert ${alert.alertType}:`, error);
+      this.logger.error(
+        `Auto-recovery failed for alert ${alert.alertType}:`,
+        error,
+      );
     }
   }
 
   // Additional helper methods...
-  private startResourceMonitoring(): void { /* TODO */ }
-  private generateInitialRecommendations(): void { /* TODO */ }
-  private setupEventListeners(): void { /* TODO */ }
-  private setupPredictiveModels(): void { /* TODO */ }
+  private startResourceMonitoring(): void {
+    /* TODO */
+  }
+  private generateInitialRecommendations(): void {
+    /* TODO */
+  }
+  private setupEventListeners(): void {
+    /* TODO */
+  }
+  private setupPredictiveModels(): void {
+    /* TODO */
+  }
   private getPriorityWeight(priority: string): number {
     switch (priority) {
-      case 'CRITICAL': return 4;
-      case 'HIGH': return 3;
-      case 'MEDIUM': return 2;
-      case 'LOW': return 1;
-      default: return 0;
+      case 'CRITICAL':
+        return 4;
+      case 'HIGH':
+        return 3;
+      case 'MEDIUM':
+        return 2;
+      case 'LOW':
+        return 1;
+      default:
+        return 0;
     }
   }
   private getSeverityWeight(severity: string): number {
     switch (severity) {
-      case 'CRITICAL': return 4;
-      case 'ERROR': return 3;
-      case 'WARNING': return 2;
-      case 'INFO': return 1;
-      default: return 0;
+      case 'CRITICAL':
+        return 4;
+      case 'ERROR':
+        return 3;
+      case 'WARNING':
+        return 2;
+      case 'INFO':
+        return 1;
+      default:
+        return 0;
     }
   }
-  private generatePlanId(): string { return Date.now().toString(36) + Math.random().toString(36).substring(2); }
-  private calculateCombinedBenefits(recommendations: OptimizationRecommendation[]): any { return {}; }
-  private createImplementationPhases(recommendations: OptimizationRecommendation[]): any[] { return []; }
-  private validateComplianceImpact(plan: ResourceOptimizationPlan): any { return { validated: true }; }
-  private async executeOptimizationByType(recommendation: OptimizationRecommendation): Promise<any> { return { success: true }; }
-  private delay(ms: number): Promise<void> { return new Promise(resolve => setTimeout(resolve, ms)); }
-  private calculateImprovement(before: ResourceMetrics, after: ResourceMetrics): Record<string, number> { return {}; }
-  private recordOptimizationSuccess(recommendation: OptimizationRecommendation, improvement: any): void { /* TODO */ }
-  private recordOptimizationFailure(recommendation: OptimizationRecommendation, error: string): void { /* TODO */ }
-  private getCurrentUsageForResource(resourceType: string, metrics: ResourceMetrics): number { return 0; }
-  private calculateTimeToThreshold(current: number, predicted: number, resourceType: string): number { return 0; }
-  private calculateOverallHealth(metrics: ResourceMetrics, alerts: ResourceAlert[]): 'HEALTHY' | 'WARNING' | 'CRITICAL' {
-    if (alerts.some(a => a.severity === 'CRITICAL')) return 'CRITICAL';
-    if (alerts.some(a => a.severity === 'WARNING' || a.severity === 'ERROR')) return 'WARNING';
+  private generatePlanId(): string {
+    return Date.now().toString(36) + Math.random().toString(36).substring(2);
+  }
+  private calculateCombinedBenefits(
+    recommendations: OptimizationRecommendation[],
+  ): any {
+    return {};
+  }
+  private createImplementationPhases(
+    recommendations: OptimizationRecommendation[],
+  ): any[] {
+    return [];
+  }
+  private validateComplianceImpact(plan: ResourceOptimizationPlan): any {
+    return { validated: true };
+  }
+  private async executeOptimizationByType(
+    recommendation: OptimizationRecommendation,
+  ): Promise<any> {
+    return { success: true };
+  }
+  private delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+  private calculateImprovement(
+    before: ResourceMetrics,
+    after: ResourceMetrics,
+  ): Record<string, number> {
+    return {};
+  }
+  private recordOptimizationSuccess(
+    recommendation: OptimizationRecommendation,
+    improvement: any,
+  ): void {
+    /* TODO */
+  }
+  private recordOptimizationFailure(
+    recommendation: OptimizationRecommendation,
+    error: string,
+  ): void {
+    /* TODO */
+  }
+  private getCurrentUsageForResource(
+    resourceType: string,
+    metrics: ResourceMetrics,
+  ): number {
+    return 0;
+  }
+  private calculateTimeToThreshold(
+    current: number,
+    predicted: number,
+    resourceType: string,
+  ): number {
+    return 0;
+  }
+  private calculateOverallHealth(
+    metrics: ResourceMetrics,
+    alerts: ResourceAlert[],
+  ): 'HEALTHY' | 'WARNING' | 'CRITICAL' {
+    if (alerts.some((a) => a.severity === 'CRITICAL')) return 'CRITICAL';
+    if (alerts.some((a) => a.severity === 'WARNING' || a.severity === 'ERROR'))
+      return 'WARNING';
     return 'HEALTHY';
   }
-  private calculateResourceTrends(): any { return {}; }
-  private generatePredictiveInsights(): any[] { return []; }
-  private async updatePredictiveModels(metrics: ResourceMetrics): Promise<void> { /* TODO */ }
-  private recordResourceMetrics(metrics: ResourceMetrics): void { /* TODO */ }
-  private async analyzeForOptimizations(current: ResourceMetrics, history: ResourceMetrics[]): Promise<OptimizationRecommendation[]> { return []; }
-  private cleanupCompletedRecommendations(): number { return 0; }
-  private cleanupOldAlerts(): number { return 0; }
-  private cleanupOldRecommendations(): number { return 0; }
-  private async retrainPredictiveModels(): Promise<number> { return 0; }
-  private calculateCPUUsage(cpuUsage: any): number { return 0; }
-  private getLoadAverage(): number[] { return [0, 0, 0]; }
-  private getProcessCount(): number { return 1; }
-  private getNetworkBytesIn(): number { return 0; }
-  private getNetworkBytesOut(): number { return 0; }
-  private getActiveConnections(): number { return 0; }
-  private getNetworkLatency(): number { return 0; }
-  private getDatabaseActiveConnections(): number { return 5; }
-  private getDatabaseIdleConnections(): number { return 15; }
-  private getDatabaseQueryQueue(): number { return 0; }
-  private getSlowQueryCount(): number { return 0; }
-  private getDatabaseLockWaitTime(): number { return 0; }
-  private getCacheHitRate(): number { return this.cacheService.getCacheMetrics().overall.hitRate * 100; }
-  private getCacheMemoryUsage(): number { return this.cacheService.getCacheMetrics().overall.totalMemoryUsage; }
-  private getCacheEvictionRate(): number { return 0; }
-  private getCacheResponseTime(): number { return this.cacheService.getCacheMetrics().overall.averageResponseTime; }
-  private generateAlertId(alertType: ResourceAlertType): string { return `${alertType}_${Date.now()}`; }
-  private calculateTrend(alertType: ResourceAlertType, currentValue: number): 'INCREASING' | 'DECREASING' | 'STABLE' { return 'STABLE'; }
+  private calculateResourceTrends(): any {
+    return {};
+  }
+  private generatePredictiveInsights(): any[] {
+    return [];
+  }
+  private async updatePredictiveModels(
+    metrics: ResourceMetrics,
+  ): Promise<void> {
+    /* TODO */
+  }
+  private recordResourceMetrics(metrics: ResourceMetrics): void {
+    /* TODO */
+  }
+  private async analyzeForOptimizations(
+    current: ResourceMetrics,
+    history: ResourceMetrics[],
+  ): Promise<OptimizationRecommendation[]> {
+    return [];
+  }
+  private cleanupCompletedRecommendations(): number {
+    return 0;
+  }
+  private cleanupOldAlerts(): number {
+    return 0;
+  }
+  private cleanupOldRecommendations(): number {
+    return 0;
+  }
+  private async retrainPredictiveModels(): Promise<number> {
+    return 0;
+  }
+  private calculateCPUUsage(cpuUsage: any): number {
+    return 0;
+  }
+  private getLoadAverage(): number[] {
+    return [0, 0, 0];
+  }
+  private getProcessCount(): number {
+    return 1;
+  }
+  private getNetworkBytesIn(): number {
+    return 0;
+  }
+  private getNetworkBytesOut(): number {
+    return 0;
+  }
+  private getActiveConnections(): number {
+    return 0;
+  }
+  private getNetworkLatency(): number {
+    return 0;
+  }
+  private getDatabaseActiveConnections(): number {
+    return 5;
+  }
+  private getDatabaseIdleConnections(): number {
+    return 15;
+  }
+  private getDatabaseQueryQueue(): number {
+    return 0;
+  }
+  private getSlowQueryCount(): number {
+    return 0;
+  }
+  private getDatabaseLockWaitTime(): number {
+    return 0;
+  }
+  private getCacheHitRate(): number {
+    return this.cacheService.getCacheMetrics().overall.hitRate * 100;
+  }
+  private getCacheMemoryUsage(): number {
+    return this.cacheService.getCacheMetrics().overall.totalMemoryUsage;
+  }
+  private getCacheEvictionRate(): number {
+    return 0;
+  }
+  private getCacheResponseTime(): number {
+    return this.cacheService.getCacheMetrics().overall.averageResponseTime;
+  }
+  private generateAlertId(alertType: ResourceAlertType): string {
+    return `${alertType}_${Date.now()}`;
+  }
+  private calculateTrend(
+    alertType: ResourceAlertType,
+    currentValue: number,
+  ): 'INCREASING' | 'DECREASING' | 'STABLE' {
+    return 'STABLE';
+  }
   private assessComplianceImpact(alertType: ResourceAlertType): boolean {
-    return alertType === ResourceAlertType.PHI_PROCESSING_OVERLOAD || 
-           alertType === ResourceAlertType.COMPLIANCE_RISK_DETECTED;
+    return (
+      alertType === ResourceAlertType.PHI_PROCESSING_OVERLOAD ||
+      alertType === ResourceAlertType.COMPLIANCE_RISK_DETECTED
+    );
   }
 
   /**
    * Map alert severity to incident severity
    */
-  private mapAlertSeverityToIncidentSeverity(alertSeverity: 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL'): 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' {
+  private mapAlertSeverityToIncidentSeverity(
+    alertSeverity: 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL',
+  ): 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' {
     switch (alertSeverity) {
-      case 'INFO': return 'LOW';
-      case 'WARNING': return 'MEDIUM';
-      case 'ERROR': return 'HIGH';
-      case 'CRITICAL': return 'CRITICAL';
-      default: return 'MEDIUM';
+      case 'INFO':
+        return 'LOW';
+      case 'WARNING':
+        return 'MEDIUM';
+      case 'ERROR':
+        return 'HIGH';
+      case 'CRITICAL':
+        return 'CRITICAL';
+      default:
+        return 'MEDIUM';
     }
   }
 
@@ -974,7 +1168,7 @@ export class ResourceOptimizationService implements OnModuleDestroy {
     this.recommendations.clear();
     this.optimizationPlans.clear();
     this.predictiveModels.clear();
-    
+
     this.logger.log('Resource Optimization Service destroyed');
   }
 }

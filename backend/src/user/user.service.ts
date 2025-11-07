@@ -66,22 +66,23 @@ export class UserService {
         whereClause.isActive = isActive;
       }
 
-      const { rows: users, count: total } = await this.userModel.findAndCountAll({
-        where: whereClause,
-        offset,
-        limit,
-        attributes: {
-          exclude: [
-            'password',
-            'passwordResetToken',
-            'passwordResetExpires',
-            'emailVerificationToken',
-            'emailVerificationExpires',
-            'twoFactorSecret',
-          ],
-        },
-        order: [['createdAt', 'DESC']],
-      });
+      const { rows: users, count: total } =
+        await this.userModel.findAndCountAll({
+          where: whereClause,
+          offset,
+          limit,
+          attributes: {
+            exclude: [
+              'password',
+              'passwordResetToken',
+              'passwordResetExpires',
+              'emailVerificationToken',
+              'emailVerificationExpires',
+              'twoFactorSecret',
+            ],
+          },
+          order: [['createdAt', 'DESC']],
+        });
 
       // Convert to safe objects
       const safeUsers = users.map((user) => user.toSafeObject());
@@ -119,7 +120,7 @@ export class UserService {
           ttl: 300, // 5 minutes - user data changes moderately
           keyPrefix: 'user_id',
           invalidateOn: ['update', 'destroy'],
-        }
+        },
       );
 
       if (!users || users.length === 0) {
@@ -402,7 +403,7 @@ export class UserService {
           ttl: 600, // 10 minutes - role lists are relatively stable
           keyPrefix: 'user_role',
           invalidateOn: ['create', 'update', 'destroy'],
-        }
+        },
       );
 
       return users.map((user) => user.toSafeObject());

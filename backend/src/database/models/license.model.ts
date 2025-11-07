@@ -17,7 +17,7 @@ import {
   AllowNull,
   Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 
@@ -28,7 +28,7 @@ export enum LicenseType {
   TRIAL = 'TRIAL',
   BASIC = 'BASIC',
   PROFESSIONAL = 'PROFESSIONAL',
-  ENTERPRISE = 'ENTERPRISE'
+  ENTERPRISE = 'ENTERPRISE',
 }
 
 /**
@@ -38,7 +38,7 @@ export enum LicenseStatus {
   ACTIVE = 'ACTIVE',
   EXPIRED = 'EXPIRED',
   SUSPENDED = 'SUSPENDED',
-  CANCELLED = 'CANCELLED'
+  CANCELLED = 'CANCELLED',
 }
 
 /**
@@ -90,10 +90,10 @@ export interface CreateLicenseAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'licenses',
@@ -105,13 +105,13 @@ export interface CreateLicenseAttributes {
     { fields: ['districtId'] },
     {
       fields: ['createdAt'],
-      name: 'idx_license_created_at'
+      name: 'idx_license_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_license_updated_at'
-    }
-  ]
+      name: 'idx_license_updated_at',
+    },
+  ],
 })
 export class License extends Model<LicenseAttributes, CreateLicenseAttributes> {
   @PrimaryKey
@@ -124,7 +124,7 @@ export class License extends Model<LicenseAttributes, CreateLicenseAttributes> {
     type: DataType.STRING(100),
     allowNull: false,
     unique: true,
-    comment: 'Unique license key'
+    comment: 'Unique license key',
   })
   @Index
   licenseKey: string;
@@ -133,11 +133,11 @@ export class License extends Model<LicenseAttributes, CreateLicenseAttributes> {
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(LicenseType)]
+      isIn: [Object.values(LicenseType)],
     },
     allowNull: false,
     defaultValue: LicenseType.TRIAL,
-    comment: 'Type of license'
+    comment: 'Type of license',
   })
   type: LicenseType;
 
@@ -145,11 +145,11 @@ export class License extends Model<LicenseAttributes, CreateLicenseAttributes> {
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(LicenseStatus)]
+      isIn: [Object.values(LicenseStatus)],
     },
     allowNull: false,
     defaultValue: LicenseStatus.ACTIVE,
-    comment: 'Current status of the license'
+    comment: 'Current status of the license',
   })
   @Index
   status: LicenseStatus;
@@ -158,7 +158,7 @@ export class License extends Model<LicenseAttributes, CreateLicenseAttributes> {
   @Column({
     type: DataType.INTEGER,
     allowNull: true,
-    comment: 'Maximum number of users allowed'
+    comment: 'Maximum number of users allowed',
   })
   maxUsers?: number;
 
@@ -166,7 +166,7 @@ export class License extends Model<LicenseAttributes, CreateLicenseAttributes> {
   @Column({
     type: DataType.INTEGER,
     allowNull: true,
-    comment: 'Maximum number of schools allowed'
+    comment: 'Maximum number of schools allowed',
   })
   maxSchools?: number;
 
@@ -174,7 +174,7 @@ export class License extends Model<LicenseAttributes, CreateLicenseAttributes> {
   @Column({
     type: DataType.ARRAY(DataType.STRING(255)),
     allowNull: false,
-    comment: 'Array of enabled features'
+    comment: 'Array of enabled features',
   })
   features: string[];
 
@@ -182,7 +182,7 @@ export class License extends Model<LicenseAttributes, CreateLicenseAttributes> {
   @Column({
     type: DataType.STRING(255),
     allowNull: true,
-    comment: 'Name of the person/organization the license was issued to'
+    comment: 'Name of the person/organization the license was issued to',
   })
   issuedTo?: string;
 
@@ -191,7 +191,7 @@ export class License extends Model<LicenseAttributes, CreateLicenseAttributes> {
   @Column({
     type: DataType.UUID,
     allowNull: true,
-    comment: 'ID of the district this license is assigned to'
+    comment: 'ID of the district this license is assigned to',
   })
   @Index
   districtId?: string;
@@ -200,7 +200,7 @@ export class License extends Model<LicenseAttributes, CreateLicenseAttributes> {
   @Column({
     type: DataType.TEXT,
     allowNull: true,
-    comment: 'Additional notes about the license'
+    comment: 'Additional notes about the license',
   })
   notes?: string;
 
@@ -208,7 +208,7 @@ export class License extends Model<LicenseAttributes, CreateLicenseAttributes> {
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    comment: 'Date when the license was issued'
+    comment: 'Date when the license was issued',
   })
   issuedAt: Date;
 
@@ -216,7 +216,7 @@ export class License extends Model<LicenseAttributes, CreateLicenseAttributes> {
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    comment: 'Date when the license was activated'
+    comment: 'Date when the license was activated',
   })
   activatedAt?: Date;
 
@@ -224,7 +224,7 @@ export class License extends Model<LicenseAttributes, CreateLicenseAttributes> {
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    comment: 'Date when the license expires'
+    comment: 'Date when the license expires',
   })
   expiresAt?: Date;
 
@@ -232,7 +232,7 @@ export class License extends Model<LicenseAttributes, CreateLicenseAttributes> {
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    comment: 'Date when the license was deactivated'
+    comment: 'Date when the license was deactivated',
   })
   deactivatedAt?: Date;
 
@@ -240,7 +240,7 @@ export class License extends Model<LicenseAttributes, CreateLicenseAttributes> {
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    comment: 'Timestamp when the license was created'
+    comment: 'Timestamp when the license was created',
   })
   declare createdAt?: Date;
 
@@ -248,17 +248,16 @@ export class License extends Model<LicenseAttributes, CreateLicenseAttributes> {
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    comment: 'Timestamp when the license was last updated'
+    comment: 'Timestamp when the license was last updated',
   })
   declare updatedAt?: Date;
 
   // Relationships
   @BelongsTo(() => require('./district.model').District, {
     foreignKey: 'districtId',
-    as: 'district'
+    as: 'district',
   })
   declare district?: any;
-
 
   // Hooks for HIPAA compliance
   @BeforeCreate
@@ -266,7 +265,9 @@ export class License extends Model<LicenseAttributes, CreateLicenseAttributes> {
   static async auditPHIAccess(instance: License) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] License ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] License ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

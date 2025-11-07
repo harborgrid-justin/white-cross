@@ -4,6 +4,4 @@
  */
 
 // Re-export the Sequelize model
-export {
-  SyncQueueItem
-} from '../../database/models/sync-queue-item.model';
+export { SyncQueueItem } from '../../database/models/sync-queue-item.model';

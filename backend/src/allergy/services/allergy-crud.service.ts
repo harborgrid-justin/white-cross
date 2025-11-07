@@ -44,7 +44,9 @@ export class AllergyCrudService {
    */
   async createAllergy(createAllergyDto: CreateAllergyDto): Promise<Allergy> {
     // Validate student exists
-    const student = await this.studentModel.findByPk(createAllergyDto.studentId);
+    const student = await this.studentModel.findByPk(
+      createAllergyDto.studentId,
+    );
 
     if (!student) {
       throw new NotFoundException(
@@ -82,9 +84,9 @@ export class AllergyCrudService {
     );
 
     // Reload with relations
-    return await this.allergyModel.findByPk(savedAllergy.id, {
+    return (await this.allergyModel.findByPk(savedAllergy.id, {
       include: [{ model: Student, as: 'student' }],
-    }) as Allergy;
+    })) as Allergy;
   }
 
   /**
@@ -157,7 +159,9 @@ export class AllergyCrudService {
       include: [{ model: Student, as: 'student' }],
     });
     if (!result) {
-      throw new NotFoundException(`Allergy with ID ${updatedAllergy.id} not found after update`);
+      throw new NotFoundException(
+        `Allergy with ID ${updatedAllergy.id} not found after update`,
+      );
     }
     return result;
   }

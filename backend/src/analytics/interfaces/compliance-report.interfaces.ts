@@ -1,4 +1,9 @@
-import { ReportType, ReportFormat, ReportStatus, ComplianceStatus } from '../enums';
+import {
+  ReportType,
+  ReportFormat,
+  ReportStatus,
+  ComplianceStatus,
+} from '../enums';
 
 /**
  * Report Chart Data (specific to compliance reports)

@@ -53,7 +53,10 @@ export class IncidentCoreService {
 
     if (filterParams.dateFrom && filterParams.dateTo) {
       where.occurredAt = {
-        [Op.between]: [new Date(filterParams.dateFrom), new Date(filterParams.dateTo)],
+        [Op.between]: [
+          new Date(filterParams.dateFrom),
+          new Date(filterParams.dateTo),
+        ],
       };
     } else if (filterParams.dateFrom) {
       where.occurredAt = {
@@ -73,29 +76,36 @@ export class IncidentCoreService {
       where.followUpRequired = filterParams.followUpRequired;
     }
 
-    const { rows: reports, count: total } = await this.incidentReportModel.findAndCountAll({
-      where,
-      offset,
-      limit,
-      order: [['occurredAt', 'DESC']],
-      // OPTIMIZATION: Eager load related entities to prevent N+1 queries
-      // Before: 1 query + N queries for student + N queries for reporter = 1 + 2N queries
-      // After: 1 query with JOINs = 1 query total
-      include: [
-        {
-          association: 'student',
-          attributes: ['id', 'studentNumber', 'firstName', 'lastName', 'grade'],
-          required: false, // LEFT JOIN to handle orphaned records
-        },
-        {
-          association: 'reporter',
-          attributes: ['id', 'firstName', 'lastName', 'email', 'role'],
-          required: false, // LEFT JOIN to handle orphaned records
-        },
-      ],
-      // Prevent duplicate counts when using includes
-      distinct: true,
-    });
+    const { rows: reports, count: total } =
+      await this.incidentReportModel.findAndCountAll({
+        where,
+        offset,
+        limit,
+        order: [['occurredAt', 'DESC']],
+        // OPTIMIZATION: Eager load related entities to prevent N+1 queries
+        // Before: 1 query + N queries for student + N queries for reporter = 1 + 2N queries
+        // After: 1 query with JOINs = 1 query total
+        include: [
+          {
+            association: 'student',
+            attributes: [
+              'id',
+              'studentNumber',
+              'firstName',
+              'lastName',
+              'grade',
+            ],
+            required: false, // LEFT JOIN to handle orphaned records
+          },
+          {
+            association: 'reporter',
+            attributes: ['id', 'firstName', 'lastName', 'email', 'role'],
+            required: false, // LEFT JOIN to handle orphaned records
+          },
+        ],
+        // Prevent duplicate counts when using includes
+        distinct: true,
+      });
 
     return {
       reports,
@@ -118,7 +128,14 @@ export class IncidentCoreService {
       include: [
         {
           association: 'student',
-          attributes: ['id', 'studentNumber', 'firstName', 'lastName', 'grade', 'dateOfBirth'],
+          attributes: [
+            'id',
+            'studentNumber',
+            'firstName',
+            'lastName',
+            'grade',
+            'dateOfBirth',
+          ],
           required: false,
         },
         {
@@ -139,7 +156,9 @@ export class IncidentCoreService {
   /**
    * Create new incident report with comprehensive validation
    */
-  async createIncidentReport(dto: CreateIncidentReportDto): Promise<IncidentReport> {
+  async createIncidentReport(
+    dto: CreateIncidentReportDto,
+  ): Promise<IncidentReport> {
     try {
       // Validate incident data
       await this.validationService.validateIncidentReportData(dto);
@@ -153,7 +172,9 @@ export class IncidentCoreService {
 
       // Auto-notify for high/critical incidents
       if (
-        [IncidentSeverity.HIGH, IncidentSeverity.CRITICAL].includes(dto.severity)
+        [IncidentSeverity.HIGH, IncidentSeverity.CRITICAL].includes(
+          dto.severity,
+        )
       ) {
         // Asynchronously notify emergency contacts (don't block the response)
         this.notificationService
@@ -247,7 +268,9 @@ export class IncidentCoreService {
 
       const updatedReport = await report.save();
 
-      this.logger.log(`Follow-up notes added for incident ${id} by ${completedBy}`);
+      this.logger.log(
+        `Follow-up notes added for incident ${id} by ${completedBy}`,
+      );
       return updatedReport;
     } catch (error) {
       this.logger.error('Error adding follow-up notes:', error);
@@ -306,9 +329,15 @@ export class IncidentCoreService {
 
       // Add evidence based on type
       if (evidenceType === 'photo') {
-        report.evidencePhotos = [...(report.evidencePhotos || []), ...evidenceUrls];
+        report.evidencePhotos = [
+          ...(report.evidencePhotos || []),
+          ...evidenceUrls,
+        ];
       } else if (evidenceType === 'video') {
-        report.evidenceVideos = [...(report.evidenceVideos || []), ...evidenceUrls];
+        report.evidenceVideos = [
+          ...(report.evidenceVideos || []),
+          ...evidenceUrls,
+        ];
       } else if (evidenceType === 'attachment') {
         report.attachments = [...(report.attachments || []), ...evidenceUrls];
       }
@@ -341,7 +370,9 @@ export class IncidentCoreService {
 
       const updatedReport = await report.save();
 
-      this.logger.log(`Insurance claim updated for incident ${id}: ${claimNumber}`);
+      this.logger.log(
+        `Insurance claim updated for incident ${id}: ${claimNumber}`,
+      );
       return updatedReport;
     } catch (error) {
       this.logger.error('Error updating insurance claim:', error);
@@ -363,7 +394,9 @@ export class IncidentCoreService {
 
       const updatedReport = await report.save();
 
-      this.logger.log(`Compliance status updated for incident ${id}: ${status}`);
+      this.logger.log(
+        `Compliance status updated for incident ${id}: ${status}`,
+      );
       return updatedReport;
     } catch (error) {
       this.logger.error('Error updating compliance status:', error);

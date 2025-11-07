@@ -1,4 +1,15 @@
-import { IsString, IsUUID, IsOptional, IsDateString, IsArray, ValidateNested, IsNumber, IsInt, Min, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsUUID,
+  IsOptional,
+  IsDateString,
+  IsArray,
+  ValidateNested,
+  IsNumber,
+  IsInt,
+  Min,
+  MaxLength,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -28,11 +39,17 @@ export class CreatePurchaseOrderDto {
   @IsUUID()
   vendorId: string;
 
-  @ApiProperty({ description: 'Order date (ISO 8601)', example: '2024-10-28T00:00:00Z' })
+  @ApiProperty({
+    description: 'Order date (ISO 8601)',
+    example: '2024-10-28T00:00:00Z',
+  })
   @IsDateString()
   orderDate: string;
 
-  @ApiPropertyOptional({ description: 'Expected delivery date (ISO 8601)', example: '2024-11-15T00:00:00Z' })
+  @ApiPropertyOptional({
+    description: 'Expected delivery date (ISO 8601)',
+    example: '2024-11-15T00:00:00Z',
+  })
   @IsOptional()
   @IsDateString()
   expectedDate?: string;
@@ -42,7 +59,10 @@ export class CreatePurchaseOrderDto {
   @IsString()
   notes?: string;
 
-  @ApiProperty({ description: 'Order line items', type: [PurchaseOrderItemDto] })
+  @ApiProperty({
+    description: 'Order line items',
+    type: [PurchaseOrderItemDto],
+  })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => PurchaseOrderItemDto)

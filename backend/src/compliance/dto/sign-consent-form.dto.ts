@@ -4,7 +4,14 @@
  */
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, MinLength, MaxLength, IsOptional, IsIP } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  MinLength,
+  MaxLength,
+  IsOptional,
+  IsIP,
+} from 'class-validator';
 
 export class SignConsentFormDto {
   @ApiProperty({
@@ -29,7 +36,9 @@ export class SignConsentFormDto {
     minLength: 2,
   })
   @IsString()
-  @MinLength(2, { message: 'Signatory name must be at least 2 characters for legal validity' })
+  @MinLength(2, {
+    message: 'Signatory name must be at least 2 characters for legal validity',
+  })
   @IsNotEmpty()
   signedBy: string;
 

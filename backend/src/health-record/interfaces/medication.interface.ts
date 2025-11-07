@@ -15,7 +15,7 @@ export enum DEASchedule {
   II = 'II',
   III = 'III',
   IV = 'IV',
-  V = 'V'
+  V = 'V',
 }
 
 /**
@@ -30,7 +30,7 @@ export enum DosageForm {
   INHALER = 'INHALER',
   PATCH = 'PATCH',
   SUPPOSITORY = 'SUPPOSITORY',
-  OTHER = 'OTHER'
+  OTHER = 'OTHER',
 }
 
 export interface Medication {

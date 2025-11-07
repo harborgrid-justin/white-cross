@@ -14,7 +14,11 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IntegrationType } from '../entities/integration-config.entity';
 
 export class CreateIntegrationDto {
-  @ApiProperty({ description: 'Integration name', minLength: 2, maxLength: 100 })
+  @ApiProperty({
+    description: 'Integration name',
+    minLength: 2,
+    maxLength: 100,
+  })
   @IsString()
   @MinLength(2)
   @MaxLength(100)

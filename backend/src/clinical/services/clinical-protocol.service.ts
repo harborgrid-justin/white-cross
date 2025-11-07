@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, literal } from 'sequelize';
 import { ClinicalProtocol } from '../entities/clinical-protocol.entity';
@@ -27,7 +32,9 @@ export class ClinicalProtocolService {
     return protocol;
   }
 
-  async findAll(filters: ProtocolFiltersDto): Promise<{ protocols: ClinicalProtocol[]; total: number }> {
+  async findAll(
+    filters: ProtocolFiltersDto,
+  ): Promise<{ protocols: ClinicalProtocol[]; total: number }> {
     const whereClause: any = {};
 
     if (filters.status) whereClause.status = filters.status;
@@ -36,12 +43,13 @@ export class ClinicalProtocolService {
     if (filters.tag) whereClause.tags = { [Op.contains]: [filters.tag] };
     if (filters.activeOnly) whereClause.status = ProtocolStatus.ACTIVE;
 
-    const { rows: protocols, count: total } = await this.protocolModel.findAndCountAll({
-      where: whereClause,
-      offset: filters.offset || 0,
-      limit: filters.limit || 20,
-      order: [['name', 'ASC']],
-    });
+    const { rows: protocols, count: total } =
+      await this.protocolModel.findAndCountAll({
+        where: whereClause,
+        offset: filters.offset || 0,
+        limit: filters.limit || 20,
+        order: [['name', 'ASC']],
+      });
 
     return { protocols, total };
   }
@@ -53,14 +61,20 @@ export class ClinicalProtocolService {
     });
   }
 
-  async update(id: string, updateDto: UpdateProtocolDto): Promise<ClinicalProtocol> {
+  async update(
+    id: string,
+    updateDto: UpdateProtocolDto,
+  ): Promise<ClinicalProtocol> {
     const protocol = await this.findOne(id);
     Object.assign(protocol, updateDto);
     await protocol.save();
     return protocol;
   }
 
-  async activate(id: string, activateDto: ActivateProtocolDto): Promise<ClinicalProtocol> {
+  async activate(
+    id: string,
+    activateDto: ActivateProtocolDto,
+  ): Promise<ClinicalProtocol> {
     const protocol = await this.findOne(id);
     if (protocol.status === ProtocolStatus.ACTIVE) {
       throw new BadRequestException('Protocol is already active');
@@ -69,7 +83,8 @@ export class ClinicalProtocolService {
     protocol.status = ProtocolStatus.ACTIVE;
     protocol.approvedBy = activateDto.approvedBy;
     protocol.approvedDate = activateDto.approvedDate;
-    protocol.effectiveDate = activateDto.effectiveDate || activateDto.approvedDate;
+    protocol.effectiveDate =
+      activateDto.effectiveDate || activateDto.approvedDate;
 
     await protocol.save();
     return protocol;

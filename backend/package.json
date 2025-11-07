@@ -42,6 +42,7 @@
     "@as-integrations/express5": "^1.1.2",
     "@hapi/boom": "^10.0.1",
     "@hapi/hapi": "^21.4.3",
+    "@nest-lab/throttler-storage-redis": "^1.1.0",
     "@nestjs/apollo": "^13.2.1",
     "@nestjs/axios": "^4.0.1",
     "@nestjs/bull": "^11.0.4",
@@ -83,6 +84,7 @@
     "cache-manager-redis-store": "^3.0.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
+    "compression": "^1.8.1",
     "dataloader": "^2.2.3",
     "email-validator": "^2.0.4",
     "firebase-admin": "^13.5.0",
@@ -92,6 +94,7 @@
     "graphql-scalars": "^1.25.0",
     "handlebars": "^4.7.8",
     "helmet": "^8.1.0",
+    "ioredis": "^5.8.2",
     "joi": "^18.0.1",
     "jspdf": "^3.0.3",
     "jspdf-autotable": "^5.0.2",
@@ -134,6 +137,7 @@
     "@types/bcrypt": "^6.0.0",
     "@types/body-parser": "^1.19.6",
     "@types/caseless": "^0.12.5",
+    "@types/compression": "^1.8.1",
     "@types/estree": "^1.0.8",
     "@types/express": "^5.0.5",
     "@types/http-errors": "^2.0.5",
@@ -172,22 +176,5 @@
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.3"
-  },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
-    },
-    "collectCoverageFrom": [
-      "**/*.(t|j)s"
-    ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
   }
 }

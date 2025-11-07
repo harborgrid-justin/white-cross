@@ -7,7 +7,7 @@ import {
   Default,
   Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
@@ -27,10 +27,10 @@ export interface WebhookAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'webhooks',
@@ -39,14 +39,18 @@ export interface WebhookAttributes {
   indexes: [
     {
       fields: ['createdAt'],
-      name: 'idx_webhook_created_at'
+      name: 'idx_webhook_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_webhook_updated_at'
-    }
-  ]})
-export class Webhook extends Model<WebhookAttributes> implements WebhookAttributes {
+      name: 'idx_webhook_updated_at',
+    },
+  ],
+})
+export class Webhook
+  extends Model<WebhookAttributes>
+  implements WebhookAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -54,13 +58,13 @@ export class Webhook extends Model<WebhookAttributes> implements WebhookAttribut
 
   @Column({
     type: DataType.STRING(500),
-    allowNull: false
+    allowNull: false,
   })
   url: string;
 
   @Column({
     type: DataType.JSON,
-    allowNull: false
+    allowNull: false,
   })
   events: string[];
 
@@ -76,7 +80,7 @@ export class Webhook extends Model<WebhookAttributes> implements WebhookAttribut
 
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   createdBy: string;
 
@@ -86,14 +90,15 @@ export class Webhook extends Model<WebhookAttributes> implements WebhookAttribut
   @Column(DataType.DATE)
   declare updatedAt?: Date;
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: Webhook) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] Webhook ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] Webhook ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

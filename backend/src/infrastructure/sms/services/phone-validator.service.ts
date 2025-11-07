@@ -53,7 +53,9 @@ export class PhoneValidatorService {
       }
 
       // Check if valid using quick validation
-      const country = defaultCountry ? (defaultCountry.toUpperCase() as CountryCode) : undefined;
+      const country = defaultCountry
+        ? (defaultCountry.toUpperCase() as CountryCode)
+        : undefined;
       const isValid = isValidPhoneNumber(cleanedNumber, country);
 
       if (!isValid) {
@@ -82,11 +84,15 @@ export class PhoneValidatorService {
         type: this.mapPhoneNumberType(parsedNumber),
       };
 
-      this.logger.debug(`Validated phone number: ${result.e164Format} (${result.countryCode})`);
+      this.logger.debug(
+        `Validated phone number: ${result.e164Format} (${result.countryCode})`,
+      );
 
       return result;
     } catch (error) {
-      this.logger.warn(`Phone validation error for ${phoneNumber}: ${error.message}`);
+      this.logger.warn(
+        `Phone validation error for ${phoneNumber}: ${error.message}`,
+      );
       return {
         isValid: false,
         error: error.message || 'Phone number validation failed',
@@ -107,7 +113,10 @@ export class PhoneValidatorService {
    * // Returns: '+15551234567'
    * ```
    */
-  async normalizeToE164(phoneNumber: string, defaultCountry?: string): Promise<string | null> {
+  async normalizeToE164(
+    phoneNumber: string,
+    defaultCountry?: string,
+  ): Promise<string | null> {
     const result = await this.validatePhoneNumber(phoneNumber, defaultCountry);
     return result.isValid ? result.e164Format! : null;
   }
@@ -158,9 +167,15 @@ export class PhoneValidatorService {
    * @param defaultCountry - Default country code
    * @returns True if mobile, false otherwise
    */
-  async isMobileNumber(phoneNumber: string, defaultCountry?: string): Promise<boolean> {
+  async isMobileNumber(
+    phoneNumber: string,
+    defaultCountry?: string,
+  ): Promise<boolean> {
     const type = await this.getNumberType(phoneNumber, defaultCountry);
-    return type === PhoneNumberType.MOBILE || type === PhoneNumberType.FIXED_LINE_OR_MOBILE;
+    return (
+      type === PhoneNumberType.MOBILE ||
+      type === PhoneNumberType.FIXED_LINE_OR_MOBILE
+    );
   }
 
   /**
@@ -175,11 +190,15 @@ export class PhoneValidatorService {
     defaultCountry?: string,
   ): Promise<PhoneNumberValidationResult[]> {
     const results = await Promise.all(
-      phoneNumbers.map((number) => this.validatePhoneNumber(number, defaultCountry)),
+      phoneNumbers.map((number) =>
+        this.validatePhoneNumber(number, defaultCountry),
+      ),
     );
 
     const validCount = results.filter((r) => r.isValid).length;
-    this.logger.log(`Batch validation: ${validCount}/${phoneNumbers.length} valid numbers`);
+    this.logger.log(
+      `Batch validation: ${validCount}/${phoneNumbers.length} valid numbers`,
+    );
 
     return results;
   }
@@ -198,7 +217,9 @@ export class PhoneValidatorService {
     defaultCountry?: string,
   ): Promise<string | null> {
     try {
-      const country = defaultCountry ? (defaultCountry.toUpperCase() as CountryCode) : undefined;
+      const country = defaultCountry
+        ? (defaultCountry.toUpperCase() as CountryCode)
+        : undefined;
       const parsedNumber = parsePhoneNumber(phoneNumber, country);
 
       if (!parsedNumber) {

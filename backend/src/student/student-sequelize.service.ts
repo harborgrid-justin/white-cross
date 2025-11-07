@@ -163,7 +163,9 @@ export class StudentService {
    * Find all students with filtering and pagination
    * OPTIMIZED: Added eager loading for nurse and school relations to prevent N+1 queries
    */
-  async findAll(filterDto: StudentFilterDto = {}): Promise<PaginatedResponse<Student>> {
+  async findAll(
+    filterDto: StudentFilterDto = {},
+  ): Promise<PaginatedResponse<Student>> {
     try {
       const {
         search,
@@ -204,29 +206,33 @@ export class StudentService {
 
       const offset = (page - 1) * limit;
 
-      const { rows: data, count: total } = await this.studentModel.findAndCountAll({
-        where,
-        limit,
-        offset,
-        order: [['lastName', 'ASC'], ['firstName', 'ASC']],
-        // OPTIMIZATION: Eager load related entities to prevent N+1 queries
-        // Before: 1 query + N queries for nurse + N queries for school = 1 + 2N queries
-        // After: 1 query with JOINs = 1 query total
-        include: [
-          {
-            association: 'nurse',
-            attributes: ['id', 'firstName', 'lastName', 'email', 'role'],
-            required: false, // LEFT JOIN to include students without assigned nurse
-          },
-          {
-            association: 'school',
-            attributes: ['id', 'name', 'districtId'],
-            required: false, // LEFT JOIN to include students without assigned school
-          },
-        ],
-        // Prevent duplicate counts when using includes
-        distinct: true,
-      });
+      const { rows: data, count: total } =
+        await this.studentModel.findAndCountAll({
+          where,
+          limit,
+          offset,
+          order: [
+            ['lastName', 'ASC'],
+            ['firstName', 'ASC'],
+          ],
+          // OPTIMIZATION: Eager load related entities to prevent N+1 queries
+          // Before: 1 query + N queries for nurse + N queries for school = 1 + 2N queries
+          // After: 1 query with JOINs = 1 query total
+          include: [
+            {
+              association: 'nurse',
+              attributes: ['id', 'firstName', 'lastName', 'email', 'role'],
+              required: false, // LEFT JOIN to include students without assigned nurse
+            },
+            {
+              association: 'school',
+              attributes: ['id', 'name', 'districtId'],
+              required: false, // LEFT JOIN to include students without assigned school
+            },
+          ],
+          // Prevent duplicate counts when using includes
+          distinct: true,
+        });
 
       const pages = Math.ceil(total / limit);
 
@@ -274,15 +280,15 @@ export class StudentService {
     try {
       const students = await this.studentModel.findAll({
         where: {
-          id: { [Op.in]: ids }
-        }
+          id: { [Op.in]: ids },
+        },
       });
 
       // Create a map for O(1) lookup
-      const studentMap = new Map(students.map(s => [s.id, s]));
+      const studentMap = new Map(students.map((s) => [s.id, s]));
 
       // Return in same order as requested IDs, null for missing
-      return ids.map(id => studentMap.get(id) || null);
+      return ids.map((id) => studentMap.get(id) || null);
     } catch (error) {
       this.logger.error(`Failed to batch fetch students: ${error.message}`);
       throw new BadRequestException('Failed to batch fetch students');
@@ -319,12 +325,18 @@ export class StudentService {
   /**
    * Update a student
    */
-  async update(id: string, updateStudentDto: UpdateStudentDto): Promise<Student> {
+  async update(
+    id: string,
+    updateStudentDto: UpdateStudentDto,
+  ): Promise<Student> {
     try {
       const student = await this.findOne(id);
 
       // Check for duplicate student number if updating
-      if (updateStudentDto.studentNumber && updateStudentDto.studentNumber !== student.studentNumber) {
+      if (
+        updateStudentDto.studentNumber &&
+        updateStudentDto.studentNumber !== student.studentNumber
+      ) {
         const existingByNumber = await this.studentModel.findOne({
           where: {
             studentNumber: updateStudentDto.studentNumber,
@@ -340,7 +352,10 @@ export class StudentService {
       }
 
       // Check for duplicate medical record number if updating
-      if (updateStudentDto.medicalRecordNum && updateStudentDto.medicalRecordNum !== student.medicalRecordNum) {
+      if (
+        updateStudentDto.medicalRecordNum &&
+        updateStudentDto.medicalRecordNum !== student.medicalRecordNum
+      ) {
         const existingByMedical = await this.studentModel.findOne({
           where: {
             medicalRecordNum: updateStudentDto.medicalRecordNum,
@@ -361,7 +376,10 @@ export class StudentService {
       return student;
     } catch (error) {
       this.logger.error(`Failed to update student ${id}: ${error.message}`);
-      if (error instanceof NotFoundException || error instanceof ConflictException) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof ConflictException
+      ) {
         throw error;
       }
       throw new BadRequestException('Failed to update student');
@@ -417,10 +435,15 @@ export class StudentService {
           grade,
           isActive: true,
         },
-        order: [['lastName', 'ASC'], ['firstName', 'ASC']],
+        order: [
+          ['lastName', 'ASC'],
+          ['firstName', 'ASC'],
+        ],
       });
     } catch (error) {
-      this.logger.error(`Failed to fetch students by grade ${grade}: ${error.message}`);
+      this.logger.error(
+        `Failed to fetch students by grade ${grade}: ${error.message}`,
+      );
       throw new BadRequestException('Failed to fetch students by grade');
     }
   }
@@ -435,10 +458,15 @@ export class StudentService {
           nurseId,
           isActive: true,
         },
-        order: [['lastName', 'ASC'], ['firstName', 'ASC']],
+        order: [
+          ['lastName', 'ASC'],
+          ['firstName', 'ASC'],
+        ],
       });
     } catch (error) {
-      this.logger.error(`Failed to fetch students by nurse ${nurseId}: ${error.message}`);
+      this.logger.error(
+        `Failed to fetch students by nurse ${nurseId}: ${error.message}`,
+      );
       throw new BadRequestException('Failed to fetch students by nurse');
     }
   }
@@ -457,7 +485,10 @@ export class StudentService {
           ],
           isActive: true,
         },
-        order: [['lastName', 'ASC'], ['firstName', 'ASC']],
+        order: [
+          ['lastName', 'ASC'],
+          ['firstName', 'ASC'],
+        ],
         limit: 50,
       });
     } catch (error) {
@@ -535,7 +566,9 @@ export class StudentService {
 
       await student.update({ isActive: true });
 
-      this.logger.log(`Student reactivated: ${student.id} (${student.studentNumber})`);
+      this.logger.log(
+        `Student reactivated: ${student.id} (${student.studentNumber})`,
+      );
 
       return student;
     } catch (error) {
@@ -555,7 +588,10 @@ export class StudentService {
    * @param transferDto - Transfer details (nurseId, grade, reason)
    * @returns Updated student record
    */
-  async transfer(id: string, transferDto: TransferStudentDto): Promise<Student> {
+  async transfer(
+    id: string,
+    transferDto: TransferStudentDto,
+  ): Promise<Student> {
     try {
       const student = await this.findOne(id);
 
@@ -572,7 +608,9 @@ export class StudentService {
       }
 
       if (Object.keys(updates).length === 0) {
-        throw new BadRequestException('No transfer updates provided (nurseId or grade required)');
+        throw new BadRequestException(
+          'No transfer updates provided (nurseId or grade required)',
+        );
       }
 
       await student.update(updates);
@@ -584,7 +622,10 @@ export class StudentService {
       return student;
     } catch (error) {
       this.logger.error(`Failed to transfer student ${id}: ${error.message}`);
-      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
         throw error;
       }
       throw new BadRequestException('Failed to transfer student');
@@ -617,7 +658,9 @@ export class StudentService {
         if (isActive !== undefined) updates.isActive = isActive;
 
         if (Object.keys(updates).length === 0) {
-          throw new BadRequestException('No update fields provided (nurseId, grade, or isActive required)');
+          throw new BadRequestException(
+            'No update fields provided (nurseId, grade, or isActive required)',
+          );
         }
 
         // OPTIMIZATION: Single bulk update operation instead of N individual updates
@@ -655,14 +698,22 @@ export class StudentService {
     try {
       const results = await this.studentModel.findAll({
         attributes: [
-          [this.studentModel.sequelize!.fn('DISTINCT', this.studentModel.sequelize!.col('grade')), 'grade'],
+          [
+            this.studentModel.sequelize!.fn(
+              'DISTINCT',
+              this.studentModel.sequelize!.col('grade'),
+            ),
+            'grade',
+          ],
         ],
         where: { isActive: true },
         order: [['grade', 'ASC']],
         raw: true,
       });
 
-      const grades = results.map((r: any) => r.grade).filter((g: any) => g !== null);
+      const grades = results
+        .map((r: any) => r.grade)
+        .filter((g: any) => g !== null);
 
       this.logger.log(`Retrieved ${grades.length} unique grades`);
 
@@ -702,14 +753,21 @@ export class StudentService {
           'gender',
           'photo',
         ],
-        order: [['lastName', 'ASC'], ['firstName', 'ASC']],
+        order: [
+          ['lastName', 'ASC'],
+          ['firstName', 'ASC'],
+        ],
       });
 
-      this.logger.log(`Retrieved ${students.length} students assigned to nurse ${nurseId}`);
+      this.logger.log(
+        `Retrieved ${students.length} students assigned to nurse ${nurseId}`,
+      );
 
       return students;
     } catch (error) {
-      this.logger.error(`Failed to fetch assigned students for nurse ${nurseId}: ${error.message}`);
+      this.logger.error(
+        `Failed to fetch assigned students for nurse ${nurseId}: ${error.message}`,
+      );
       if (error instanceof BadRequestException) {
         throw error;
       }
@@ -752,7 +810,9 @@ export class StudentService {
 
       return statistics;
     } catch (error) {
-      this.logger.error(`Failed to get statistics for student ${studentId}: ${error.message}`);
+      this.logger.error(
+        `Failed to get statistics for student ${studentId}: ${error.message}`,
+      );
       if (error instanceof NotFoundException) {
         throw error;
       }
@@ -790,7 +850,9 @@ export class StudentService {
 
       return exportData;
     } catch (error) {
-      this.logger.error(`Failed to export data for student ${studentId}: ${error.message}`);
+      this.logger.error(
+        `Failed to export data for student ${studentId}: ${error.message}`,
+      );
       if (error instanceof NotFoundException) {
         throw error;
       }
@@ -807,7 +869,8 @@ export class StudentService {
    * @returns true if valid UUID v4, false otherwise
    */
   private isValidUUID(id: string): boolean {
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     return uuidRegex.test(id);
   }
 }

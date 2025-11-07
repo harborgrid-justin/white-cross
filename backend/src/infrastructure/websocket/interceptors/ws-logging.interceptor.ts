@@ -47,16 +47,13 @@ export class WsLoggingInterceptor implements NestInterceptor {
     const organizationId = user?.organizationId || 'unknown';
 
     // Log incoming event
-    this.logger.debug(
-      `[${pattern}] ← Received from socket ${client.id}`,
-      {
-        pattern,
-        userId,
-        organizationId,
-        socketId: client.id,
-        dataKeys: this.getDataKeys(data),
-      },
-    );
+    this.logger.debug(`[${pattern}] ← Received from socket ${client.id}`, {
+      pattern,
+      userId,
+      organizationId,
+      socketId: client.id,
+      dataKeys: this.getDataKeys(data),
+    });
 
     const startTime = Date.now();
 

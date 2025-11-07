@@ -11,5 +11,5 @@ export enum JobType {
   REPORT_GENERATION = 'report-generation',
   DATA_EXPORT = 'data-export',
   NOTIFICATION_BATCH = 'notification-batch',
-  CLEANUP_TASK = 'cleanup-task'
+  CLEANUP_TASK = 'cleanup-task',
 }

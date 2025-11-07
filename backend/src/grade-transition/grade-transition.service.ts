@@ -19,7 +19,7 @@ export class GradeTransitionService {
    */
   private readonly GRADE_PROGRESSION: Record<string, string> = {
     'Pre-K': 'K',
-    'K': '1',
+    K: '1',
     '1': '2',
     '2': '3',
     '3': '4',

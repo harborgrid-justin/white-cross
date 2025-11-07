@@ -68,11 +68,25 @@ export class IsICD10Constraint implements ValidatorConstraintInterface {
     // Check for invalid category codes
     // U codes are for special purposes (COVID-19, etc.)
     // Some letters are not used in standard ICD-10
-    const restrictedCategories = ['U00', 'U01', 'U02', 'U03', 'U04', 'U05', 'U06', 'U08', 'U09'];
+    const restrictedCategories = [
+      'U00',
+      'U01',
+      'U02',
+      'U03',
+      'U04',
+      'U05',
+      'U06',
+      'U08',
+      'U09',
+    ];
     const category = code.substring(0, 3);
 
     // Allow U07 (COVID-19) and other valid U codes
-    if (firstChar === 'U' && !code.startsWith('U07') && restrictedCategories.includes(category)) {
+    if (
+      firstChar === 'U' &&
+      !code.startsWith('U07') &&
+      restrictedCategories.includes(category)
+    ) {
       return false;
     }
 
@@ -104,7 +118,7 @@ export function IsICD10(
   options?: ICD10ValidationOptions,
   validationOptions?: ValidationOptions,
 ) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'isICD10',
       target: object.constructor,

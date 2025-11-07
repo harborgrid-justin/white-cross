@@ -1,4 +1,10 @@
-import { IsString, IsOptional, IsDate, IsBoolean, IsNumber } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsDate,
+  IsBoolean,
+  IsNumber,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
@@ -65,13 +71,20 @@ export class GetNoShowRateQueryDto {
   @IsString()
   appointmentType?: string;
 
-  @ApiPropertyOptional({ description: 'Include reasons for no-shows', default: true })
+  @ApiPropertyOptional({
+    description: 'Include reasons for no-shows',
+    default: true,
+  })
   @IsOptional()
   @IsBoolean()
   @Type(() => Boolean)
   includeReasons?: boolean;
 
-  @ApiPropertyOptional({ description: 'Compare with target no-show rate', minimum: 0, maximum: 100 })
+  @ApiPropertyOptional({
+    description: 'Compare with target no-show rate',
+    minimum: 0,
+    maximum: 100,
+  })
   @IsOptional()
   @IsNumber()
   @Type(() => Number)

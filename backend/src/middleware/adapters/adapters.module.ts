@@ -20,16 +20,16 @@
 import { Module } from '@nestjs/common';
 import {
   ExpressMiddlewareAdapter,
-  ExpressMiddlewareUtils
+  ExpressMiddlewareUtils,
 } from './express/express.adapter';
 import {
   HapiMiddlewareAdapter,
-  HapiMiddlewareUtils
+  HapiMiddlewareUtils,
 } from './hapi/hapi.adapter';
 import {
   HealthcareMiddlewareUtils,
   ResponseUtils,
-  RequestValidationUtils
+  RequestValidationUtils,
 } from './shared/base.adapter';
 
 /**
@@ -80,7 +80,7 @@ import {
     // Shared Utilities
     HealthcareMiddlewareUtils,
     ResponseUtils,
-    RequestValidationUtils
+    RequestValidationUtils,
   ],
   exports: [
     // Export all providers for use in other modules
@@ -90,7 +90,7 @@ import {
     HapiMiddlewareUtils,
     HealthcareMiddlewareUtils,
     ResponseUtils,
-    RequestValidationUtils
-  ]
+    RequestValidationUtils,
+  ],
 })
 export class AdaptersModule {}

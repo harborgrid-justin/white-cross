@@ -11,23 +11,36 @@ import {
   IsUUID,
   Length,
   Matches,
-  IsObject
+  IsObject,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ContactType } from '../enums';
 
 export class CreateContactDto {
-  @ApiProperty({ example: 'John', description: 'First name', minLength: 1, maxLength: 100 })
+  @ApiProperty({
+    example: 'John',
+    description: 'First name',
+    minLength: 1,
+    maxLength: 100,
+  })
   @IsString()
   @Length(1, 100)
   firstName: string;
 
-  @ApiProperty({ example: 'Doe', description: 'Last name', minLength: 1, maxLength: 100 })
+  @ApiProperty({
+    example: 'Doe',
+    description: 'Last name',
+    minLength: 1,
+    maxLength: 100,
+  })
   @IsString()
   @Length(1, 100)
   lastName: string;
 
-  @ApiPropertyOptional({ example: 'john.doe@example.com', description: 'Email address' })
+  @ApiPropertyOptional({
+    example: 'john.doe@example.com',
+    description: 'Email address',
+  })
   @IsOptional()
   @IsEmail()
   @Length(0, 255)
@@ -38,31 +51,40 @@ export class CreateContactDto {
   @IsString()
   @Length(10, 20)
   @Matches(/^[\d\s\-\+\(\)]+$/, {
-    message: 'Invalid phone number format'
+    message: 'Invalid phone number format',
   })
   phone?: string;
 
   @ApiProperty({
     enum: ContactType,
     example: ContactType.Guardian,
-    description: 'Contact type'
+    description: 'Contact type',
   })
   @IsEnum(ContactType)
   type: ContactType;
 
-  @ApiPropertyOptional({ example: 'Acme Healthcare', description: 'Organization name' })
+  @ApiPropertyOptional({
+    example: 'Acme Healthcare',
+    description: 'Organization name',
+  })
   @IsOptional()
   @IsString()
   @Length(0, 200)
   organization?: string;
 
-  @ApiPropertyOptional({ example: 'Director', description: 'Job title or role' })
+  @ApiPropertyOptional({
+    example: 'Director',
+    description: 'Job title or role',
+  })
   @IsOptional()
   @IsString()
   @Length(0, 100)
   title?: string;
 
-  @ApiPropertyOptional({ example: '123 Main St', description: 'Physical address' })
+  @ApiPropertyOptional({
+    example: '123 Main St',
+    description: 'Physical address',
+  })
   @IsOptional()
   @IsString()
   @Length(0, 255)
@@ -88,13 +110,16 @@ export class CreateContactDto {
 
   @ApiPropertyOptional({
     example: '123e4567-e89b-12d3-a456-426614174000',
-    description: 'UUID of related student or user'
+    description: 'UUID of related student or user',
   })
   @IsOptional()
   @IsUUID()
   relationTo?: string;
 
-  @ApiPropertyOptional({ example: 'parent', description: 'Type of relationship' })
+  @ApiPropertyOptional({
+    example: 'parent',
+    description: 'Type of relationship',
+  })
   @IsOptional()
   @IsString()
   @Length(0, 50)
@@ -102,25 +127,32 @@ export class CreateContactDto {
 
   @ApiPropertyOptional({
     example: { emergencyProtocol: 'call-911' },
-    description: 'Custom healthcare-specific fields'
+    description: 'Custom healthcare-specific fields',
   })
   @IsOptional()
   @IsObject()
   customFields?: Record<string, any>;
 
-  @ApiPropertyOptional({ example: true, description: 'Active status', default: true })
+  @ApiPropertyOptional({
+    example: true,
+    description: 'Active status',
+    default: true,
+  })
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
 
-  @ApiPropertyOptional({ example: 'Prefers morning calls', description: 'Additional notes' })
+  @ApiPropertyOptional({
+    example: 'Prefers morning calls',
+    description: 'Additional notes',
+  })
   @IsOptional()
   @IsString()
   notes?: string;
 
   @ApiPropertyOptional({
     example: '123e4567-e89b-12d3-a456-426614174000',
-    description: 'User ID who creates this contact'
+    description: 'User ID who creates this contact',
   })
   @IsOptional()
   @IsUUID()

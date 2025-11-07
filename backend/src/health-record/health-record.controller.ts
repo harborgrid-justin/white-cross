@@ -19,6 +19,7 @@ import {
   UseInterceptors,
   UseGuards,
   Req,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -29,6 +30,8 @@ import {
   ApiBearerAuth,
   ApiBody,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { HealthRecordService } from './health-record.service';
 import { HealthRecordCreateDto } from './dto/create-health-record.dto';
 import { HealthRecordUpdateDto } from './dto/update-health-record.dto';
@@ -51,9 +54,9 @@ import type { HealthRecordRequest } from './interfaces/health-record-types';
  */
 @ApiTags('health-record')
 @Controller('health-record')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, HealthRecordRateLimitGuard)
 @UseInterceptors(HealthRecordAuditInterceptor, HealthRecordCacheInterceptor)
-@UseGuards(HealthRecordRateLimitGuard)
-// @ApiBearerAuth() // Uncomment when authentication is implemented
 export class HealthRecordController {
   constructor(
     private readonly healthRecordService: HealthRecordService,
@@ -133,7 +136,7 @@ export class HealthRecordController {
     @Req() req?: HealthRecordRequest,
   ) {
     const filters: any = {};
-    
+
     if (type) filters.type = type;
     if (studentId) filters.studentId = studentId;
     if (provider) filters.provider = provider;
@@ -254,7 +257,7 @@ export class HealthRecordController {
     @Req() req: HealthRecordRequest,
   ) {
     const record = await this.healthRecordService.getHealthRecordById(id);
-    
+
     return {
       data: record,
       meta: {
@@ -374,9 +377,11 @@ export class HealthRecordController {
    * Get PHI access statistics for compliance monitoring
    */
   @Get('compliance/phi-access-stats')
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   @ApiOperation({
     summary: 'Get PHI access statistics',
-    description: 'Retrieves PHI access statistics for HIPAA compliance monitoring.',
+    description:
+      'Retrieves PHI access statistics for HIPAA compliance monitoring.',
   })
   @ApiQuery({
     name: 'startDate',
@@ -416,9 +421,11 @@ export class HealthRecordController {
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
   ) {
-    const start = startDate ? new Date(startDate) : new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const start = startDate
+      ? new Date(startDate)
+      : new Date(Date.now() - 24 * 60 * 60 * 1000);
     const end = endDate ? new Date(endDate) : new Date();
-    
+
     return this.phiAccessLogger.getPHIAccessStatistics(start, end);
   }
 
@@ -468,7 +475,7 @@ export class HealthRecordController {
         operation,
       });
     }
-    
+
     return this.phiAccessLogger.getRecentPHIAccessLogs(limit || 100);
   }
 
@@ -478,7 +485,8 @@ export class HealthRecordController {
   @Get('compliance/security-incidents')
   @ApiOperation({
     summary: 'Get security incidents',
-    description: 'Retrieves security incidents related to PHI access for compliance review.',
+    description:
+      'Retrieves security incidents related to PHI access for compliance review.',
   })
   @ApiQuery({
     name: 'limit',
@@ -498,9 +506,11 @@ export class HealthRecordController {
    * Generate comprehensive compliance report
    */
   @Get('compliance/report')
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @ApiOperation({
     summary: 'Generate compliance report',
-    description: 'Generates comprehensive HIPAA compliance report with PHI access details.',
+    description:
+      'Generates comprehensive HIPAA compliance report with PHI access details.',
   })
   @ApiQuery({
     name: 'startDate',
@@ -527,14 +537,14 @@ export class HealthRecordController {
     @Query('endDate') endDate: string,
   ) {
     if (!startDate || !endDate) {
-      throw new Error('Start date and end date are required');
+      throw new BadRequestException('Start date and end date are required');
     }
 
     const start = new Date(startDate);
     const end = new Date(endDate);
 
     if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-      throw new Error('Invalid date format');
+      throw new BadRequestException('Invalid date format');
     }
 
     return this.phiAccessLogger.generateComplianceReport(start, end);
@@ -586,7 +596,8 @@ export class HealthRecordController {
   @Get('metrics/prometheus')
   @ApiOperation({
     summary: 'Get Prometheus metrics',
-    description: 'Retrieves Prometheus-formatted metrics for external monitoring systems.',
+    description:
+      'Retrieves Prometheus-formatted metrics for external monitoring systems.',
   })
   @ApiResponse({
     status: 200,
@@ -610,7 +621,8 @@ export class HealthRecordController {
   @Get('compliance/dashboard')
   @ApiOperation({
     summary: 'Get compliance dashboard data',
-    description: 'Retrieves comprehensive compliance dashboard data for monitoring interface.',
+    description:
+      'Retrieves comprehensive compliance dashboard data for monitoring interface.',
   })
   @ApiResponse({
     status: 200,
@@ -626,7 +638,7 @@ export class HealthRecordController {
     ] = await Promise.all([
       this.phiAccessLogger.getPHIAccessStatistics(
         new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours
-        new Date()
+        new Date(),
       ),
       this.phiAccessLogger.getSecurityIncidents(10),
       this.metricsService.getHealthRecordMetricsSnapshot(),

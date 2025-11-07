@@ -26,23 +26,36 @@ export interface UpdateGradeTransitionDTO {
 }
 
 @Injectable()
-export class GradeTransitionRepository extends BaseRepository<any, GradeTransitionAttributes, CreateGradeTransitionDTO> {
+export class GradeTransitionRepository extends BaseRepository<
+  any,
+  GradeTransitionAttributes,
+  CreateGradeTransitionDTO
+> {
   constructor(
-    @InjectModel(('' as any)) model: any,
+    @InjectModel('' as any) model: any,
     @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('ICacheManager') cacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'GradeTransition');
   }
 
-  protected async validateCreate(data: CreateGradeTransitionDTO): Promise<void> {}
-  protected async validateUpdate(id: string, data: UpdateGradeTransitionDTO): Promise<void> {}
+  protected async validateCreate(
+    data: CreateGradeTransitionDTO,
+  ): Promise<void> {}
+  protected async validateUpdate(
+    id: string,
+    data: UpdateGradeTransitionDTO,
+  ): Promise<void> {}
 
   protected async invalidateCaches(entity: any): Promise<void> {
     try {
       const entityData = entity.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, entityData.id));
-      await this.cacheManager.deletePattern(`white-cross:${this.entityName.toLowerCase()}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, entityData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:${this.entityName.toLowerCase()}:*`,
+      );
     } catch (error) {
       this.logger.warn(`Error invalidating ${this.entityName} caches:`, error);
     }
@@ -52,5 +65,3 @@ export class GradeTransitionRepository extends BaseRepository<any, GradeTransiti
     return sanitizeSensitiveData({ ...data });
   }
 }
-
-

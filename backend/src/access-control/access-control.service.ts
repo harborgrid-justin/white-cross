@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException, BadRequestException, Logger, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  Logger,
+  Inject,
+} from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize, Op } from 'sequelize';
 import { AuditService } from '../database/services/audit.service';
@@ -10,9 +16,20 @@ import { UpdateRoleDto } from './dto/update-role.dto';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { LogLoginAttemptDto } from './dto/log-login-attempt.dto';
-import { AccessControlCreateIpRestrictionDto, IpRestrictionType } from './dto/create-ip-restriction.dto';
-import { AccessControlCreateIncidentDto, SecurityIncidentType, IncidentSeverity } from './dto/create-security-incident.dto';
-import { UserPermissionsResult, SecurityStatistics, IpRestrictionCheckResult } from './interfaces';
+import {
+  AccessControlCreateIpRestrictionDto,
+  IpRestrictionType,
+} from './dto/create-ip-restriction.dto';
+import {
+  AccessControlCreateIncidentDto,
+  SecurityIncidentType,
+  IncidentSeverity,
+} from './dto/create-security-incident.dto';
+import {
+  UserPermissionsResult,
+  SecurityStatistics,
+  IpRestrictionCheckResult,
+} from './interfaces';
 
 /**
  * NOTE: This service requires the following Sequelize models to be available:
@@ -161,7 +178,9 @@ export class AccessControlService {
       });
 
       if (existingRole) {
-        throw new BadRequestException(`Role with name '${data.name}' already exists`);
+        throw new BadRequestException(
+          `Role with name '${data.name}' already exists`,
+        );
       }
 
       // Create role
@@ -210,7 +229,9 @@ export class AccessControlService {
         role,
       );
 
-      this.logger.log(`Created role: ${role.id} (${role.name}) by user ${auditUserId || 'SYSTEM'}`);
+      this.logger.log(
+        `Created role: ${role.id} (${role.name}) by user ${auditUserId || 'SYSTEM'}`,
+      );
       return role;
     } catch (error) {
       await transaction.rollback();
@@ -222,7 +243,11 @@ export class AccessControlService {
   /**
    * Update role with validation and audit logging
    */
-  async updateRole(id: string, data: UpdateRoleDto, auditUserId?: string): Promise<any> {
+  async updateRole(
+    id: string,
+    data: UpdateRoleDto,
+    auditUserId?: string,
+  ): Promise<any> {
     const transaction = await this.sequelize.transaction();
 
     try {
@@ -260,14 +285,17 @@ export class AccessControlService {
         });
 
         if (existingRole) {
-          throw new BadRequestException(`Role with name '${trimmedName}' already exists`);
+          throw new BadRequestException(
+            `Role with name '${trimmedName}' already exists`,
+          );
         }
       }
 
       // Prepare update data
       const updateData: any = {};
       if (data.name) updateData.name = data.name.trim();
-      if (data.description !== undefined) updateData.description = data.description?.trim();
+      if (data.description !== undefined)
+        updateData.description = data.description?.trim();
 
       await role.update(updateData, { transaction });
 
@@ -298,8 +326,14 @@ export class AccessControlService {
       if (data.name && data.name !== originalValues.name) {
         changes.name = { before: originalValues.name, after: data.name };
       }
-      if (data.description !== undefined && data.description !== originalValues.description) {
-        changes.description = { before: originalValues.description, after: data.description };
+      if (
+        data.description !== undefined &&
+        data.description !== originalValues.description
+      ) {
+        changes.description = {
+          before: originalValues.description,
+          after: data.description,
+        };
       }
 
       await this.auditService.logUpdate(
@@ -328,7 +362,10 @@ export class AccessControlService {
   /**
    * Delete role with validation and audit logging
    */
-  async deleteRole(id: string, auditUserId?: string): Promise<{ success: boolean }> {
+  async deleteRole(
+    id: string,
+    auditUserId?: string,
+  ): Promise<{ success: boolean }> {
     const transaction = await this.sequelize.transaction();
 
     try {
@@ -394,7 +431,9 @@ export class AccessControlService {
         roleData,
       );
 
-      this.logger.log(`Deleted role: ${id} (${roleData.name}) by user ${auditUserId || 'SYSTEM'}`);
+      this.logger.log(
+        `Deleted role: ${id} (${roleData.name}) by user ${auditUserId || 'SYSTEM'}`,
+      );
       return { success: true };
     } catch (error) {
       await transaction.rollback();
@@ -479,7 +518,9 @@ export class AccessControlService {
 
       // Prevent modification of system role permissions
       if (role.isSystem) {
-        throw new BadRequestException('Cannot modify permissions of system roles');
+        throw new BadRequestException(
+          'Cannot modify permissions of system roles',
+        );
       }
 
       // Check if assignment already exists
@@ -551,7 +592,11 @@ export class AccessControlService {
   /**
    * Remove permission from role with audit logging
    */
-  async removePermissionFromRole(roleId: string, permissionId: string, auditUserId?: string): Promise<{ success: boolean }> {
+  async removePermissionFromRole(
+    roleId: string,
+    permissionId: string,
+    auditUserId?: string,
+  ): Promise<{ success: boolean }> {
     const transaction = await this.sequelize.transaction();
 
     try {
@@ -599,7 +644,9 @@ export class AccessControlService {
         );
       }
 
-      this.logger.log(`Removed permission ${permissionId} from role ${roleId} by user ${auditUserId || 'SYSTEM'}`);
+      this.logger.log(
+        `Removed permission ${permissionId} from role ${roleId} by user ${auditUserId || 'SYSTEM'}`,
+      );
       return { success: true };
     } catch (error) {
       await transaction.rollback();
@@ -658,7 +705,8 @@ export class AccessControlService {
 
       // Privilege escalation prevention
       if (!bypassPrivilegeCheck && auditUserId) {
-        const assigningUserPermissions = await this.getUserPermissions(auditUserId);
+        const assigningUserPermissions =
+          await this.getUserPermissions(auditUserId);
 
         // Check if assigning user has permission to manage users
         const canManageUsers = assigningUserPermissions.permissions.some(
@@ -666,7 +714,9 @@ export class AccessControlService {
         );
 
         if (!canManageUsers) {
-          throw new BadRequestException('You do not have permission to assign roles to users');
+          throw new BadRequestException(
+            'You do not have permission to assign roles to users',
+          );
         }
 
         // Prevent assigning higher-privilege roles
@@ -778,7 +828,8 @@ export class AccessControlService {
           affectedResources: [`user:${userId}`, `role:${roleId}`],
           detectedBy: auditUserId || 'SYSTEM',
           status: SecurityIncidentStatus.CLOSED,
-          resolution: 'Role assignment completed successfully. Review for compliance.',
+          resolution:
+            'Role assignment completed successfully. Review for compliance.',
         });
       }
 
@@ -796,7 +847,10 @@ export class AccessControlService {
   /**
    * Remove role from user with cache invalidation
    */
-  async removeRoleFromUser(userId: string, roleId: string): Promise<{ success: boolean }> {
+  async removeRoleFromUser(
+    userId: string,
+    roleId: string,
+  ): Promise<{ success: boolean }> {
     try {
       const UserRoleAssignment = this.getModel('UserRoleAssignment');
       const deletedCount = await UserRoleAssignment.destroy({
@@ -824,7 +878,10 @@ export class AccessControlService {
   /**
    * Get user roles and permissions with caching and audit logging
    */
-  async getUserPermissions(userId: string, bypassCache: boolean = false): Promise<UserPermissionsResult> {
+  async getUserPermissions(
+    userId: string,
+    bypassCache: boolean = false,
+  ): Promise<UserPermissionsResult> {
     try {
       // Check cache first
       if (!bypassCache) {
@@ -886,20 +943,18 @@ export class AccessControlService {
       this.cacheService.setUserPermissions(userId, result);
 
       // Audit logging for permission retrieval
-      await this.auditService.logRead(
-        'UserPermissions',
-        userId,
-        {
-          userId: userId,
-          userName: 'User',
-          userRole: 'USER' as any,
-          ipAddress: null,
-          userAgent: null,
-          timestamp: new Date(),
-        } as any,
-      );
+      await this.auditService.logRead('UserPermissions', userId, {
+        userId: userId,
+        userName: 'User',
+        userRole: 'USER' as any,
+        ipAddress: null,
+        userAgent: null,
+        timestamp: new Date(),
+      } as any);
 
-      this.logger.log(`Retrieved ${permissions.length} permissions for user ${userId}`);
+      this.logger.log(
+        `Retrieved ${permissions.length} permissions for user ${userId}`,
+      );
       return result;
     } catch (error) {
       this.logger.error(`Error getting user permissions for ${userId}:`, error);
@@ -910,7 +965,11 @@ export class AccessControlService {
   /**
    * Check if user has a specific permission with audit logging
    */
-  async checkPermission(userId: string, resource: string, action: string): Promise<boolean> {
+  async checkPermission(
+    userId: string,
+    resource: string,
+    action: string,
+  ): Promise<boolean> {
     try {
       const userPermissions = await this.getUserPermissions(userId);
 
@@ -919,20 +978,18 @@ export class AccessControlService {
       );
 
       // Audit logging for permission checks
-      await this.auditService.logRead(
-        'Permission',
-        `${resource}:${action}`,
-        {
-          userId: userId,
-          userName: 'User',
-          userRole: 'USER' as any,
-          ipAddress: null,
-          userAgent: null,
-          timestamp: new Date(),
-        } as any,
-      );
+      await this.auditService.logRead('Permission', `${resource}:${action}`, {
+        userId: userId,
+        userName: 'User',
+        userRole: 'USER' as any,
+        ipAddress: null,
+        userAgent: null,
+        timestamp: new Date(),
+      } as any);
 
-      this.logger.log(`Permission check for user ${userId} on ${resource}.${action}: ${hasPermission}`);
+      this.logger.log(
+        `Permission check for user ${userId} on ${resource}.${action}: ${hasPermission}`,
+      );
       return hasPermission;
     } catch (error) {
       this.logger.error('Error checking permission:', error);
@@ -983,7 +1040,9 @@ export class AccessControlService {
         order: [['createdAt', 'DESC']],
       });
 
-      this.logger.log(`Retrieved ${sessions.length} active sessions for user ${userId}`);
+      this.logger.log(
+        `Retrieved ${sessions.length} active sessions for user ${userId}`,
+      );
       return sessions;
     } catch (error) {
       this.logger.error(`Error getting sessions for user ${userId}:`, error);
@@ -994,7 +1053,10 @@ export class AccessControlService {
   /**
    * Update session activity timestamp with audit logging
    */
-  async updateSessionActivity(token: string, ipAddress?: string): Promise<void> {
+  async updateSessionActivity(
+    token: string,
+    ipAddress?: string,
+  ): Promise<void> {
     try {
       const Session = this.getModel('Session');
       const session = await Session.findOne({
@@ -1107,7 +1169,9 @@ export class AccessControlService {
         failureReason: data.failureReason,
       });
 
-      this.logger.log(`Logged login attempt for ${data.email}: ${data.success ? 'success' : 'failure'}`);
+      this.logger.log(
+        `Logged login attempt for ${data.email}: ${data.success ? 'success' : 'failure'}`,
+      );
       return attempt;
     } catch (error) {
       this.logger.error('Error logging login attempt:', error);
@@ -1119,7 +1183,10 @@ export class AccessControlService {
   /**
    * Get failed login attempts within a time window
    */
-  async getFailedLoginAttempts(email: string, minutes: number = 15): Promise<any[]> {
+  async getFailedLoginAttempts(
+    email: string,
+    minutes: number = 15,
+  ): Promise<any[]> {
     try {
       const LoginAttempt = this.getModel('LoginAttempt');
       const since = new Date(Date.now() - minutes * 60 * 1000);
@@ -1135,7 +1202,9 @@ export class AccessControlService {
         order: [['createdAt', 'DESC']],
       });
 
-      this.logger.log(`Retrieved ${attempts.length} failed login attempts for ${email}`);
+      this.logger.log(
+        `Retrieved ${attempts.length} failed login attempts for ${email}`,
+      );
       return attempts;
     } catch (error) {
       this.logger.error('Error getting failed login attempts:', error);
@@ -1169,7 +1238,9 @@ export class AccessControlService {
   /**
    * Add IP restriction
    */
-  async addIpRestriction(data: AccessControlCreateIpRestrictionDto): Promise<any> {
+  async addIpRestriction(
+    data: AccessControlCreateIpRestrictionDto,
+  ): Promise<any> {
     try {
       const IpRestriction = this.getModel('IpRestriction');
 
@@ -1182,7 +1253,9 @@ export class AccessControlService {
       });
 
       if (existingRestriction) {
-        throw new BadRequestException('IP restriction already exists for this address');
+        throw new BadRequestException(
+          'IP restriction already exists for this address',
+        );
       }
 
       const restriction = await IpRestriction.create({
@@ -1228,13 +1301,18 @@ export class AccessControlService {
   /**
    * Check if IP is restricted with audit logging
    */
-  async checkIpRestriction(ipAddress: string, userId?: string): Promise<IpRestrictionCheckResult> {
+  async checkIpRestriction(
+    ipAddress: string,
+    userId?: string,
+  ): Promise<IpRestrictionCheckResult> {
     try {
       const IpRestriction = this.getModel('IpRestriction');
 
       // If IpRestriction model doesn't exist, skip IP restriction check
       if (!IpRestriction) {
-        this.logger.warn('IpRestriction model not found, skipping IP restriction check');
+        this.logger.warn(
+          'IpRestriction model not found, skipping IP restriction check',
+        );
         return {
           isRestricted: false,
           reason: undefined,
@@ -1248,22 +1326,20 @@ export class AccessControlService {
         },
       });
 
-      const isRestricted = restriction ? restriction.type === IpRestrictionType.BLACKLIST : false;
+      const isRestricted = restriction
+        ? restriction.type === IpRestrictionType.BLACKLIST
+        : false;
 
       // Audit logging for IP restriction checks
       if (restriction) {
-        await this.auditService.logRead(
-          'IpRestriction',
-          restriction.id,
-          {
-            userId: userId || null,
-            userName: userId ? 'User' : 'Anonymous',
-            userRole: userId ? 'USER' : 'ANONYMOUS' as any,
-            ipAddress: ipAddress,
-            userAgent: null,
-            timestamp: new Date(),
-          } as any,
-        );
+        await this.auditService.logRead('IpRestriction', restriction.id, {
+          userId: userId || null,
+          userName: userId ? 'User' : 'Anonymous',
+          userRole: userId ? 'USER' : ('ANONYMOUS' as any),
+          ipAddress: ipAddress,
+          userAgent: null,
+          timestamp: new Date(),
+        } as any);
       }
 
       if (!restriction) {
@@ -1288,7 +1364,9 @@ export class AccessControlService {
   /**
    * Create a security incident
    */
-  async createSecurityIncident(data: AccessControlCreateIncidentDto): Promise<any> {
+  async createSecurityIncident(
+    data: AccessControlCreateIncidentDto,
+  ): Promise<any> {
     try {
       const SecurityIncident = this.getModel('SecurityIncident');
       const incident = await SecurityIncident.create({
@@ -1300,7 +1378,9 @@ export class AccessControlService {
         status: SecurityIncidentStatus.OPEN,
       });
 
-      this.logger.warn(`Security incident created: ${incident.id} - ${data.type}`);
+      this.logger.warn(
+        `Security incident created: ${incident.id} - ${data.type}`,
+      );
       return incident;
     } catch (error) {
       this.logger.error('Error creating security incident:', error);
@@ -1335,7 +1415,10 @@ export class AccessControlService {
       }
 
       // Automatically set resolvedAt when status changes to RESOLVED
-      if (data.status === SecurityIncidentStatus.RESOLVED && !incident.resolvedAt) {
+      if (
+        data.status === SecurityIncidentStatus.RESOLVED &&
+        !incident.resolvedAt
+      ) {
         updateData.resolvedAt = new Date();
       }
 
@@ -1374,12 +1457,13 @@ export class AccessControlService {
         whereClause.status = filters.status;
       }
 
-      const { rows: incidents, count: total } = await SecurityIncident.findAndCountAll({
-        where: whereClause,
-        offset,
-        limit,
-        order: [['createdAt', 'DESC']],
-      });
+      const { rows: incidents, count: total } =
+        await SecurityIncident.findAndCountAll({
+          where: whereClause,
+          offset,
+          limit,
+          order: [['createdAt', 'DESC']],
+        });
 
       this.logger.log(`Retrieved ${incidents.length} security incidents`);
 
@@ -1502,7 +1586,8 @@ export class AccessControlService {
       const nurseRole = await Role.create(
         {
           name: 'Nurse',
-          description: 'School nurse with full access to student health management',
+          description:
+            'School nurse with full access to student health management',
           isSystem: true,
         },
         { transaction },
@@ -1519,7 +1604,9 @@ export class AccessControlService {
 
       // Assign permissions to nurse role
       const nursePermissions = permissions.filter((p: any) =>
-        ['students', 'medications', 'health_records', 'reports'].includes(p.resource),
+        ['students', 'medications', 'health_records', 'reports'].includes(
+          p.resource,
+        ),
       );
 
       for (const permission of nursePermissions) {
@@ -1561,19 +1648,55 @@ export class AccessControlService {
     const permissionsData: CreatePermissionDto[] = [
       // Student permissions
       { resource: 'students', action: 'read', description: 'View students' },
-      { resource: 'students', action: 'create', description: 'Create students' },
-      { resource: 'students', action: 'update', description: 'Update students' },
-      { resource: 'students', action: 'delete', description: 'Delete students' },
+      {
+        resource: 'students',
+        action: 'create',
+        description: 'Create students',
+      },
+      {
+        resource: 'students',
+        action: 'update',
+        description: 'Update students',
+      },
+      {
+        resource: 'students',
+        action: 'delete',
+        description: 'Delete students',
+      },
 
       // Medication permissions
-      { resource: 'medications', action: 'read', description: 'View medications' },
-      { resource: 'medications', action: 'administer', description: 'Administer medications' },
-      { resource: 'medications', action: 'manage', description: 'Manage medication inventory' },
+      {
+        resource: 'medications',
+        action: 'read',
+        description: 'View medications',
+      },
+      {
+        resource: 'medications',
+        action: 'administer',
+        description: 'Administer medications',
+      },
+      {
+        resource: 'medications',
+        action: 'manage',
+        description: 'Manage medication inventory',
+      },
 
       // Health records permissions
-      { resource: 'health_records', action: 'read', description: 'View health records' },
-      { resource: 'health_records', action: 'create', description: 'Create health records' },
-      { resource: 'health_records', action: 'update', description: 'Update health records' },
+      {
+        resource: 'health_records',
+        action: 'read',
+        description: 'View health records',
+      },
+      {
+        resource: 'health_records',
+        action: 'create',
+        description: 'Create health records',
+      },
+      {
+        resource: 'health_records',
+        action: 'update',
+        description: 'Update health records',
+      },
 
       // Reports permissions
       { resource: 'reports', action: 'read', description: 'View reports' },
@@ -1581,8 +1704,16 @@ export class AccessControlService {
 
       // Admin permissions
       { resource: 'users', action: 'manage', description: 'Manage users' },
-      { resource: 'system', action: 'configure', description: 'Configure system' },
-      { resource: 'security', action: 'manage', description: 'Manage security settings' },
+      {
+        resource: 'system',
+        action: 'configure',
+        description: 'Configure system',
+      },
+      {
+        resource: 'security',
+        action: 'manage',
+        description: 'Manage security settings',
+      },
     ];
 
     const permissions: any[] = [];

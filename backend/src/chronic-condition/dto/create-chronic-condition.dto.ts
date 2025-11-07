@@ -102,8 +102,10 @@ export class ChronicConditionCreateDto {
   notes?: string;
 
   @ApiPropertyOptional({
-    description: 'Comprehensive care plan documentation (maximum 10000 characters)',
-    example: 'Blood glucose monitoring 4x daily, insulin administration protocol...',
+    description:
+      'Comprehensive care plan documentation (maximum 10000 characters)',
+    example:
+      'Blood glucose monitoring 4x daily, insulin administration protocol...',
     maxLength: 10000,
   })
   @IsOptional()
@@ -112,14 +114,18 @@ export class ChronicConditionCreateDto {
   carePlan?: string;
 
   @ApiPropertyOptional({
-    description: 'List of prescribed medications for this condition (each max 200 characters)',
+    description:
+      'List of prescribed medications for this condition (each max 200 characters)',
     example: ['Insulin - Humalog', 'Insulin - Lantus'],
     type: [String],
   })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  @MaxLength(200, { each: true, message: 'Each medication cannot exceed 200 characters' })
+  @MaxLength(200, {
+    each: true,
+    message: 'Each medication cannot exceed 200 characters',
+  })
   medications?: string[];
 
   @ApiPropertyOptional({
@@ -130,29 +136,43 @@ export class ChronicConditionCreateDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  @MaxLength(200, { each: true, message: 'Each restriction cannot exceed 200 characters' })
+  @MaxLength(200, {
+    each: true,
+    message: 'Each restriction cannot exceed 200 characters',
+  })
   restrictions?: string[];
 
   @ApiPropertyOptional({
-    description: 'Known triggers that worsen the condition (each max 200 characters)',
+    description:
+      'Known triggers that worsen the condition (each max 200 characters)',
     example: ['Illness', 'Stress', 'Irregular meals'],
     type: [String],
   })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  @MaxLength(200, { each: true, message: 'Each trigger cannot exceed 200 characters' })
+  @MaxLength(200, {
+    each: true,
+    message: 'Each trigger cannot exceed 200 characters',
+  })
   triggers?: string[];
 
   @ApiPropertyOptional({
     description: 'Required school accommodations (each max 200 characters)',
-    example: ['Blood sugar checks during class', 'Snacks allowed', 'Extra restroom breaks'],
+    example: [
+      'Blood sugar checks during class',
+      'Snacks allowed',
+      'Extra restroom breaks',
+    ],
     type: [String],
   })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  @MaxLength(200, { each: true, message: 'Each accommodation cannot exceed 200 characters' })
+  @MaxLength(200, {
+    each: true,
+    message: 'Each accommodation cannot exceed 200 characters',
+  })
   accommodations?: string[];
 
   @ApiPropertyOptional({
@@ -162,7 +182,9 @@ export class ChronicConditionCreateDto {
   })
   @IsOptional()
   @IsString()
-  @MaxLength(2000, { message: 'Emergency protocol cannot exceed 2000 characters' })
+  @MaxLength(2000, {
+    message: 'Emergency protocol cannot exceed 2000 characters',
+  })
   emergencyProtocol?: string;
 
   @ApiPropertyOptional({
@@ -182,7 +204,8 @@ export class ChronicConditionCreateDto {
   nextReviewDate?: string;
 
   @ApiPropertyOptional({
-    description: 'Whether condition requires IEP (Individualized Education Program)',
+    description:
+      'Whether condition requires IEP (Individualized Education Program)',
     example: true,
   })
   @IsOptional()

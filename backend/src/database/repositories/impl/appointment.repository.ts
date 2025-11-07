@@ -27,23 +27,34 @@ export interface UpdateAppointmentDTO {
 }
 
 @Injectable()
-export class AppointmentRepository extends BaseRepository<any, AppointmentAttributes, CreateAppointmentDTO> {
+export class AppointmentRepository extends BaseRepository<
+  any,
+  AppointmentAttributes,
+  CreateAppointmentDTO
+> {
   constructor(
     @InjectModel(Appointment) model: typeof Appointment,
     @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('ICacheManager') cacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'Appointment');
   }
 
   protected async validateCreate(data: CreateAppointmentDTO): Promise<void> {}
-  protected async validateUpdate(id: string, data: UpdateAppointmentDTO): Promise<void> {}
+  protected async validateUpdate(
+    id: string,
+    data: UpdateAppointmentDTO,
+  ): Promise<void> {}
 
   protected async invalidateCaches(entity: any): Promise<void> {
     try {
       const entityData = entity.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, entityData.id));
-      await this.cacheManager.deletePattern(`white-cross:${this.entityName.toLowerCase()}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, entityData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:${this.entityName.toLowerCase()}:*`,
+      );
     } catch (error) {
       this.logger.warn(`Error invalidating ${this.entityName} caches:`, error);
     }
@@ -53,5 +64,3 @@ export class AppointmentRepository extends BaseRepository<any, AppointmentAttrib
     return sanitizeSensitiveData({ ...data });
   }
 }
-
-

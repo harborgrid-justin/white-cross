@@ -1,4 +1,10 @@
-import { Module, DynamicModule, OnApplicationBootstrap, OnApplicationShutdown, Injectable } from '@nestjs/common';
+import {
+  Module,
+  DynamicModule,
+  OnApplicationBootstrap,
+  OnApplicationShutdown,
+  Injectable,
+} from '@nestjs/common';
 import { DiscoveryModule, DiscoveryService, Reflector } from '@nestjs/core';
 import { SmartGarbageCollectionService } from './services/smart-garbage-collection.service';
 import { MemoryLeakDetectionService } from './services/memory-leak-detection.service';
@@ -17,7 +23,9 @@ export interface SmartGarbageCollectionOptions {
 }
 
 @Injectable()
-class SmartGarbageCollectionModuleService implements OnApplicationBootstrap, OnApplicationShutdown {
+class SmartGarbageCollectionModuleService
+  implements OnApplicationBootstrap, OnApplicationShutdown
+{
   private gcMonitoringInterval?: NodeJS.Timeout;
   private leakDetectionInterval?: NodeJS.Timeout;
   private optimizationInterval?: NodeJS.Timeout;
@@ -33,7 +41,7 @@ class SmartGarbageCollectionModuleService implements OnApplicationBootstrap, OnA
   async onApplicationBootstrap() {
     await this.discoverMemoryIntensiveProviders();
     this.gcService.startMonitoring();
-    
+
     // Monitor GC and memory every 15 seconds
     this.gcMonitoringInterval = setInterval(async () => {
       await this.monitorGarbageCollection();
@@ -60,19 +68,22 @@ class SmartGarbageCollectionModuleService implements OnApplicationBootstrap, OnA
     if (this.optimizationInterval) {
       clearInterval(this.optimizationInterval);
     }
-    
+
     this.gcService.stopMonitoring();
     await this.gcService.performFinalCleanup();
   }
 
   private async discoverMemoryIntensiveProviders() {
     const providers = this.discoveryService.getProviders();
-    
+
     for (const wrapper of providers) {
       if (!wrapper.metatype) continue;
-      
+
       // Check for garbage-collection metadata
-      const gcMetadata = this.reflector.get('garbage-collection', wrapper.metatype);
+      const gcMetadata = this.reflector.get(
+        'garbage-collection',
+        wrapper.metatype,
+      );
       if (gcMetadata?.enabled) {
         this.gcService.registerMemoryIntensiveProvider(
           wrapper.name || wrapper.token?.toString() || 'unknown',
@@ -81,25 +92,31 @@ class SmartGarbageCollectionModuleService implements OnApplicationBootstrap, OnA
             cleanupStrategy: gcMetadata.strategy || 'standard',
             memoryThreshold: gcMetadata.threshold || 50, // MB
             customCleanup: gcMetadata.customCleanup,
-          }
+          },
         );
       }
 
       // Check for memory-leak-prone providers
-      const leakProneMetadata = this.reflector.get('leak-prone', wrapper.metatype);
+      const leakProneMetadata = this.reflector.get(
+        'leak-prone',
+        wrapper.metatype,
+      );
       if (leakProneMetadata) {
         this.leakDetectionService.addMonitoredProvider(
           wrapper.name || 'unknown',
-          leakProneMetadata
+          leakProneMetadata,
         );
       }
 
       // Check for heavy-computation providers
-      const computationMetadata = this.reflector.get('heavy-computation', wrapper.metatype);
+      const computationMetadata = this.reflector.get(
+        'heavy-computation',
+        wrapper.metatype,
+      );
       if (computationMetadata) {
         this.gcService.registerComputationIntensiveProvider(
           wrapper.name || 'unknown',
-          computationMetadata
+          computationMetadata,
         );
       }
     }
@@ -108,14 +125,16 @@ class SmartGarbageCollectionModuleService implements OnApplicationBootstrap, OnA
   private async monitorGarbageCollection() {
     const memoryUsage = process.memoryUsage();
     const heapUsedMB = memoryUsage.heapUsed / 1024 / 1024;
-    
+
     // Trigger GC based on thresholds
-    if (heapUsedMB > 450) { // Aggressive GC threshold
+    if (heapUsedMB > 450) {
+      // Aggressive GC threshold
       await this.gcService.performAggressiveGarbageCollection();
-    } else if (heapUsedMB > 350) { // Standard GC threshold
+    } else if (heapUsedMB > 350) {
+      // Standard GC threshold
       await this.gcService.performSmartGarbageCollection();
     }
-    
+
     // Update GC statistics
     this.gcService.updateGcMetrics(memoryUsage);
   }
@@ -123,7 +142,7 @@ class SmartGarbageCollectionModuleService implements OnApplicationBootstrap, OnA
 
 /**
  * Smart Garbage Collection Module
- * 
+ *
  * Uses Discovery Service to:
  * 1. Automatically discover memory-intensive providers
  * 2. Implement intelligent garbage collection strategies

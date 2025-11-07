@@ -9,7 +9,7 @@ export interface EvictionStrategy {
 
 /**
  * Cache Eviction Service
- * 
+ *
  * Uses Discovery Service to implement intelligent cache eviction
  * based on provider metadata and system conditions
  */
@@ -30,15 +30,19 @@ export class CacheEvictionService {
    */
   async performSmartEviction(currentMemoryMB: number): Promise<number> {
     const memoryPressure = this.calculateMemoryPressure(currentMemoryMB);
-    
-    this.logger.log(`Performing smart eviction (pressure: ${memoryPressure.toFixed(2)})`);
-    
+
+    this.logger.log(
+      `Performing smart eviction (pressure: ${memoryPressure.toFixed(2)})`,
+    );
+
     let totalFreed = 0;
-    
+
     // Execute strategies in priority order
-    for (const strategy of this.strategies.sort((a, b) => b.priority - a.priority)) {
+    for (const strategy of this.strategies.sort(
+      (a, b) => b.priority - a.priority,
+    )) {
       if (memoryPressure < 0.7) break; // Stop if pressure is manageable
-      
+
       try {
         const freed = await strategy.execute(memoryPressure);
         totalFreed += freed;
@@ -47,7 +51,7 @@ export class CacheEvictionService {
         this.logger.error(`Eviction strategy ${strategy.name} failed:`, error);
       }
     }
-    
+
     this.logger.log(`Smart eviction complete: ${totalFreed} bytes freed`);
     return totalFreed;
   }
@@ -83,7 +87,9 @@ export class CacheEvictionService {
     });
   }
 
-  private async evictByProviderPriority(memoryPressure: number): Promise<number> {
+  private async evictByProviderPriority(
+    memoryPressure: number,
+  ): Promise<number> {
     // Use Discovery Service to find low-priority providers
     const providers = this.discoveryService.getProviders();
     let freedBytes = 0;
@@ -95,7 +101,9 @@ export class CacheEvictionService {
       if (cacheMetadata?.priority === 'low') {
         // Evict cache entries for low-priority providers
         // This would integrate with the actual cache service
-        this.logger.debug(`Evicting cache for low-priority provider: ${wrapper.name}`);
+        this.logger.debug(
+          `Evicting cache for low-priority provider: ${wrapper.name}`,
+        );
         freedBytes += 1024; // Placeholder
       }
     }

@@ -1,4 +1,10 @@
-import { Module, DynamicModule, OnApplicationBootstrap, OnApplicationShutdown, Injectable } from '@nestjs/common';
+import {
+  Module,
+  DynamicModule,
+  OnApplicationBootstrap,
+  OnApplicationShutdown,
+  Injectable,
+} from '@nestjs/common';
 import { DiscoveryModule, DiscoveryService, Reflector } from '@nestjs/core';
 import { DynamicResourcePoolService } from './services/dynamic-resource-pool.service';
 import { ResourceMonitorService } from './services/resource-monitor.service';
@@ -17,7 +23,9 @@ export interface DynamicResourcePoolOptions {
 }
 
 @Injectable()
-class DynamicResourcePoolModuleService implements OnApplicationBootstrap, OnApplicationShutdown {
+class DynamicResourcePoolModuleService
+  implements OnApplicationBootstrap, OnApplicationShutdown
+{
   private monitoringInterval?: NodeJS.Timeout;
   private optimizationInterval?: NodeJS.Timeout;
 
@@ -32,7 +40,7 @@ class DynamicResourcePoolModuleService implements OnApplicationBootstrap, OnAppl
   async onApplicationBootstrap() {
     await this.discoverResourceProviders();
     this.monitorService.startMonitoring();
-    
+
     // Monitor resource usage every 10 seconds
     this.monitoringInterval = setInterval(async () => {
       await this.monitorResourceUsage();
@@ -51,19 +59,22 @@ class DynamicResourcePoolModuleService implements OnApplicationBootstrap, OnAppl
     if (this.optimizationInterval) {
       clearInterval(this.optimizationInterval);
     }
-    
+
     this.monitorService.stopMonitoring();
     await this.poolService.shutdown();
   }
 
   private async discoverResourceProviders() {
     const providers = this.discoveryService.getProviders();
-    
+
     for (const wrapper of providers) {
       if (!wrapper.metatype) continue;
-      
+
       // Check for resource-pool metadata
-      const poolMetadata = this.reflector.get('resource-pool', wrapper.metatype);
+      const poolMetadata = this.reflector.get(
+        'resource-pool',
+        wrapper.metatype,
+      );
       if (poolMetadata?.enabled) {
         await this.poolService.createPool(
           wrapper.name || wrapper.token?.toString() || 'unknown',
@@ -73,14 +84,17 @@ class DynamicResourcePoolModuleService implements OnApplicationBootstrap, OnAppl
             resourceType: poolMetadata.type || 'connection',
             factory: poolMetadata.factory,
             validation: poolMetadata.validation,
-          }
+          },
         );
       }
 
       // Check for database providers
       const dbMetadata = this.reflector.get('database', wrapper.metatype);
       if (dbMetadata) {
-        await this.poolService.registerDatabaseProvider(wrapper.name || 'unknown', dbMetadata);
+        await this.poolService.registerDatabaseProvider(
+          wrapper.name || 'unknown',
+          dbMetadata,
+        );
       }
     }
   }
@@ -88,12 +102,13 @@ class DynamicResourcePoolModuleService implements OnApplicationBootstrap, OnAppl
   private async monitorResourceUsage() {
     const stats = this.monitorService.getResourceStats();
     const memoryUsage = process.memoryUsage();
-    
+
     // Check if memory usage is approaching limits
-    if (memoryUsage.heapUsed / 1024 / 1024 > 400) { // 400MB
+    if (memoryUsage.heapUsed / 1024 / 1024 > 400) {
+      // 400MB
       await this.poolService.scaleDownPools('memory-pressure');
     }
-    
+
     // Check for idle resources that can be freed
     await this.poolService.cleanupIdleResources();
   }
@@ -101,7 +116,7 @@ class DynamicResourcePoolModuleService implements OnApplicationBootstrap, OnAppl
 
 /**
  * Dynamic Resource Pool Module
- * 
+ *
  * Uses Discovery Service to:
  * 1. Automatically discover resource-intensive providers
  * 2. Create and manage connection/resource pools

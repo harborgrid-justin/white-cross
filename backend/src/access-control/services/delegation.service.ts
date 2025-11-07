@@ -1,5 +1,13 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
-import { PermissionDelegation, DelegationCheckResult } from '../interfaces/permission-delegation.interface';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
+import {
+  PermissionDelegation,
+  DelegationCheckResult,
+} from '../interfaces/permission-delegation.interface';
 
 /**
  * Permission Delegation Service
@@ -42,7 +50,9 @@ export class DelegationService {
     }
 
     if (permissions.length === 0) {
-      throw new BadRequestException('Must specify at least one permission to delegate');
+      throw new BadRequestException(
+        'Must specify at least one permission to delegate',
+      );
     }
 
     if (new Date(expiresAt) <= new Date()) {
@@ -63,7 +73,9 @@ export class DelegationService {
     };
 
     this.delegations.set(id, delegation);
-    this.logger.log(`Created delegation: ${fromUserId} -> ${toUserId} (${permissions.length} permissions)`);
+    this.logger.log(
+      `Created delegation: ${fromUserId} -> ${toUserId} (${permissions.length} permissions)`,
+    );
 
     return delegation;
   }
@@ -71,7 +83,11 @@ export class DelegationService {
   /**
    * Revoke a delegation
    */
-  async revokeDelegation(delegationId: string, revokedBy: string, reason?: string): Promise<PermissionDelegation> {
+  async revokeDelegation(
+    delegationId: string,
+    revokedBy: string,
+    reason?: string,
+  ): Promise<PermissionDelegation> {
     const delegation = this.delegations.get(delegationId);
 
     if (!delegation) {
@@ -99,7 +115,10 @@ export class DelegationService {
   /**
    * Get all delegations for a user (received or given)
    */
-  async getUserDelegations(userId: string, type: 'received' | 'given' | 'all' = 'all'): Promise<PermissionDelegation[]> {
+  async getUserDelegations(
+    userId: string,
+    type: 'received' | 'given' | 'all' = 'all',
+  ): Promise<PermissionDelegation[]> {
     const allDelegations = Array.from(this.delegations.values());
 
     let filtered = allDelegations;
@@ -109,16 +128,23 @@ export class DelegationService {
     } else if (type === 'given') {
       filtered = allDelegations.filter((d) => d.fromUserId === userId);
     } else {
-      filtered = allDelegations.filter((d) => d.toUserId === userId || d.fromUserId === userId);
+      filtered = allDelegations.filter(
+        (d) => d.toUserId === userId || d.fromUserId === userId,
+      );
     }
 
-    return filtered.filter((d) => d.isActive && new Date(d.expiresAt) > new Date());
+    return filtered.filter(
+      (d) => d.isActive && new Date(d.expiresAt) > new Date(),
+    );
   }
 
   /**
    * Check if user has delegated permission
    */
-  async checkDelegation(userId: string, permissionId: string): Promise<DelegationCheckResult> {
+  async checkDelegation(
+    userId: string,
+    permissionId: string,
+  ): Promise<DelegationCheckResult> {
     const userDelegations = await this.getUserDelegations(userId, 'received');
 
     for (const delegation of userDelegations) {
@@ -185,8 +211,11 @@ export class DelegationService {
    */
   private startCleanupInterval(): void {
     // Run cleanup every 5 minutes
-    setInterval(() => {
-      this.cleanupExpired();
-    }, 5 * 60 * 1000);
+    setInterval(
+      () => {
+        this.cleanupExpired();
+      },
+      5 * 60 * 1000,
+    );
   }
 }

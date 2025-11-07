@@ -2,13 +2,13 @@
  * @fileoverview Type Guards - Runtime Type Checking Utilities
  * @module shared/types/guards
  * @description Berty-inspired runtime type validation with type guards
- * 
+ *
  * Provides type-safe runtime validation for:
  * - API request/response validation
- * - Database model validation  
+ * - Database model validation
  * - External data validation
  * - Type narrowing for TypeScript
- * 
+ *
  * @author White-Cross Platform Team
  * @version 1.0.0
  * @since 2025-10-23
@@ -84,7 +84,8 @@ export function isNonEmptyArray<T>(value: unknown): value is [T, ...T[]] {
 
 export function isUUID(value: unknown): value is string {
   if (!isString(value)) return false;
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   return uuidRegex.test(value);
 }
 
@@ -125,28 +126,28 @@ export function isValidDate(value: unknown): value is Date | string {
 
 export function hasProperty<K extends PropertyKey>(
   obj: unknown,
-  key: K
+  key: K,
 ): obj is Record<K, unknown> {
   return isObject(obj) && key in obj;
 }
 
 export function hasProperties<K extends PropertyKey>(
   obj: unknown,
-  keys: K[]
+  keys: K[],
 ): obj is Record<K, unknown> {
-  return isObject(obj) && keys.every(key => key in obj);
+  return isObject(obj) && keys.every((key) => key in obj);
 }
 
 export function hasStringProperty<K extends PropertyKey>(
   obj: unknown,
-  key: K
+  key: K,
 ): obj is Record<K, string> {
   return hasProperty(obj, key) && isString(obj[key]);
 }
 
 export function hasNumberProperty<K extends PropertyKey>(
   obj: unknown,
-  key: K
+  key: K,
 ): obj is Record<K, number> {
   return hasProperty(obj, key) && isNumber(obj[key]);
 }
@@ -270,7 +271,7 @@ export interface PaginatedResponse<T> {
 
 export function isPaginatedResponse<T>(
   obj: unknown,
-  itemGuard: (item: unknown) => item is T
+  itemGuard: (item: unknown) => item is T,
 ): obj is PaginatedResponse<T> {
   return (
     isObject(obj) &&
@@ -303,49 +304,77 @@ export function isApiError(obj: unknown): obj is ApiError {
  * Validation helpers
  */
 
-export function assertString(value: unknown, name: string): asserts value is string {
+export function assertString(
+  value: unknown,
+  name: string,
+): asserts value is string {
   if (!isString(value)) {
     throw new TypeError(`Expected ${name} to be a string, got ${typeof value}`);
   }
 }
 
-export function assertNumber(value: unknown, name: string): asserts value is number {
+export function assertNumber(
+  value: unknown,
+  name: string,
+): asserts value is number {
   if (!isNumber(value)) {
     throw new TypeError(`Expected ${name} to be a number, got ${typeof value}`);
   }
 }
 
-export function assertBoolean(value: unknown, name: string): asserts value is boolean {
+export function assertBoolean(
+  value: unknown,
+  name: string,
+): asserts value is boolean {
   if (!isBoolean(value)) {
-    throw new TypeError(`Expected ${name} to be a boolean, got ${typeof value}`);
+    throw new TypeError(
+      `Expected ${name} to be a boolean, got ${typeof value}`,
+    );
   }
 }
 
-export function assertObject(value: unknown, name: string): asserts value is Record<string, unknown> {
+export function assertObject(
+  value: unknown,
+  name: string,
+): asserts value is Record<string, unknown> {
   if (!isObject(value)) {
-    throw new TypeError(`Expected ${name} to be an object, got ${typeof value}`);
+    throw new TypeError(
+      `Expected ${name} to be an object, got ${typeof value}`,
+    );
   }
 }
 
-export function assertArray(value: unknown, name: string): asserts value is unknown[] {
+export function assertArray(
+  value: unknown,
+  name: string,
+): asserts value is unknown[] {
   if (!isArray(value)) {
     throw new TypeError(`Expected ${name} to be an array, got ${typeof value}`);
   }
 }
 
-export function assertNonNull<T>(value: T | null | undefined, name: string): asserts value is T {
+export function assertNonNull<T>(
+  value: T | null | undefined,
+  name: string,
+): asserts value is T {
   if (isNullOrUndefined(value)) {
     throw new TypeError(`Expected ${name} to be non-null, got ${value}`);
   }
 }
 
-export function assertUUID(value: unknown, name: string): asserts value is string {
+export function assertUUID(
+  value: unknown,
+  name: string,
+): asserts value is string {
   if (!isUUID(value)) {
     throw new TypeError(`Expected ${name} to be a valid UUID, got ${value}`);
   }
 }
 
-export function assertEmail(value: unknown, name: string): asserts value is string {
+export function assertEmail(
+  value: unknown,
+  name: string,
+): asserts value is string {
   if (!isEmail(value)) {
     throw new TypeError(`Expected ${name} to be a valid email, got ${value}`);
   }
@@ -363,15 +392,25 @@ export function isOneOf<T>(value: unknown, options: T[]): value is T {
   return options.includes(value as T);
 }
 
-export function isInRange(value: unknown, min: number, max: number): value is number {
+export function isInRange(
+  value: unknown,
+  min: number,
+  max: number,
+): value is number {
   return isNumber(value) && value >= min && value <= max;
 }
 
-export function isMinLength(value: unknown, minLength: number): value is string {
+export function isMinLength(
+  value: unknown,
+  minLength: number,
+): value is string {
   return isString(value) && value.length >= minLength;
 }
 
-export function isMaxLength(value: unknown, maxLength: number): value is string {
+export function isMaxLength(
+  value: unknown,
+  maxLength: number,
+): value is string {
   return isString(value) && value.length <= maxLength;
 }
 
@@ -445,7 +484,7 @@ export default {
   isFunction,
   isDate,
   isError,
-  
+
   // Advanced
   isStringArray,
   isNumberArray,
@@ -456,24 +495,24 @@ export default {
   isPhoneNumber,
   isISO8601,
   isValidDate,
-  
+
   // Object shape
   hasProperty,
   hasProperties,
   hasStringProperty,
   hasNumberProperty,
-  
+
   // Healthcare-specific
   isStudent,
   isMedication,
   isMedicationLog,
   isContact,
   isHealthRecord,
-  
+
   // API
   isPaginatedResponse,
   isApiError,
-  
+
   // Assertions
   assertString,
   assertNumber,
@@ -483,7 +522,7 @@ export default {
   assertNonNull,
   assertUUID,
   assertEmail,
-  
+
   // Utility
   isDefined,
   isOneOf,
@@ -491,7 +530,7 @@ export default {
   isMinLength,
   isMaxLength,
   matches,
-  
+
   // Branded types
   brandStudentId,
   brandMedicationId,

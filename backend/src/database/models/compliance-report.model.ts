@@ -11,7 +11,7 @@ import {
   HasMany,
   Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
@@ -24,7 +24,7 @@ export enum ComplianceReportType {
   BREACH = 'BREACH',
   RISK_ASSESSMENT = 'RISK_ASSESSMENT',
   TRAINING = 'TRAINING',
-  AUDIT = 'AUDIT'
+  AUDIT = 'AUDIT',
 }
 
 export enum ComplianceStatus {
@@ -32,7 +32,7 @@ export enum ComplianceStatus {
   IN_PROGRESS = 'IN_PROGRESS',
   COMPLIANT = 'COMPLIANT',
   NON_COMPLIANT = 'NON_COMPLIANT',
-  NEEDS_REVIEW = 'NEEDS_REVIEW'
+  NEEDS_REVIEW = 'NEEDS_REVIEW',
 }
 
 export interface ComplianceReportAttributes {
@@ -57,10 +57,10 @@ export interface ComplianceReportAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'compliance_reports',
@@ -68,31 +68,34 @@ export interface ComplianceReportAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['reportType']
-  },
+      fields: ['reportType'],
+    },
     {
-      fields: ['status']
-  },
+      fields: ['status'],
+    },
     {
-      fields: ['period']
-  },
+      fields: ['period'],
+    },
     {
-      fields: ['dueDate']
-  },
+      fields: ['dueDate'],
+    },
     {
-      fields: ['createdById']
-  },
+      fields: ['createdById'],
+    },
     {
       fields: ['createdAt'],
-      name: 'idx_compliance_report_created_at'
+      name: 'idx_compliance_report_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_compliance_report_updated_at'
-    }
-  ]
-  })
-export class ComplianceReport extends Model<ComplianceReportAttributes> implements ComplianceReportAttributes {
+      name: 'idx_compliance_report_updated_at',
+    },
+  ],
+})
+export class ComplianceReport
+  extends Model<ComplianceReportAttributes>
+  implements ComplianceReportAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -101,15 +104,15 @@ export class ComplianceReport extends Model<ComplianceReportAttributes> implemen
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(ComplianceReportType)]
+      isIn: [Object.values(ComplianceReportType)],
     },
-    allowNull: false
+    allowNull: false,
   })
   reportType: ComplianceReportType;
 
   @Column({
     type: DataType.STRING(200),
-    allowNull: false
+    allowNull: false,
   })
   title: string;
 
@@ -120,16 +123,16 @@ export class ComplianceReport extends Model<ComplianceReportAttributes> implemen
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(ComplianceStatus)]
+      isIn: [Object.values(ComplianceStatus)],
     },
     allowNull: false,
-    defaultValue: ComplianceStatus.PENDING
+    defaultValue: ComplianceStatus.PENDING,
   })
   status: ComplianceStatus;
 
   @Column({
     type: DataType.STRING(50),
-    allowNull: false
+    allowNull: false,
   })
   period: string;
 
@@ -163,7 +166,7 @@ export class ComplianceReport extends Model<ComplianceReportAttributes> implemen
 
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   createdById: string;
 
@@ -174,9 +177,10 @@ export class ComplianceReport extends Model<ComplianceReportAttributes> implemen
   declare updatedAt?: Date;
 
   // Relationships
-  @HasMany(() => require('./compliance-checklist-item.model').ComplianceChecklistItem)
+  @HasMany(
+    () => require('./compliance-checklist-item.model').ComplianceChecklistItem,
+  )
   declare checklistItems?: any[];
-
 
   // Hooks for HIPAA compliance
   @BeforeCreate
@@ -184,7 +188,9 @@ export class ComplianceReport extends Model<ComplianceReportAttributes> implemen
   static async auditPHIAccess(instance: ComplianceReport) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] ComplianceReport ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] ComplianceReport ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

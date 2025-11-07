@@ -30,17 +30,32 @@ export class EmailRateLimiterService {
   private cleanupIntervalId: NodeJS.Timeout;
 
   constructor(private readonly configService: ConfigService) {
-    this.enabled = this.configService.get<boolean>('EMAIL_RATE_LIMIT_ENABLED', true);
+    this.enabled = this.configService.get<boolean>(
+      'EMAIL_RATE_LIMIT_ENABLED',
+      true,
+    );
 
     this.globalConfig = {
-      maxEmails: this.configService.get<number>('EMAIL_RATE_LIMIT_GLOBAL_MAX', 100),
-      windowMs: this.configService.get<number>('EMAIL_RATE_LIMIT_GLOBAL_WINDOW', 3600000), // 1 hour
+      maxEmails: this.configService.get<number>(
+        'EMAIL_RATE_LIMIT_GLOBAL_MAX',
+        100,
+      ),
+      windowMs: this.configService.get<number>(
+        'EMAIL_RATE_LIMIT_GLOBAL_WINDOW',
+        3600000,
+      ), // 1 hour
       scope: 'global',
     };
 
     this.perRecipientConfig = {
-      maxEmails: this.configService.get<number>('EMAIL_RATE_LIMIT_RECIPIENT_MAX', 10),
-      windowMs: this.configService.get<number>('EMAIL_RATE_LIMIT_RECIPIENT_WINDOW', 3600000), // 1 hour
+      maxEmails: this.configService.get<number>(
+        'EMAIL_RATE_LIMIT_RECIPIENT_MAX',
+        10,
+      ),
+      windowMs: this.configService.get<number>(
+        'EMAIL_RATE_LIMIT_RECIPIENT_WINDOW',
+        3600000,
+      ), // 1 hour
       scope: 'recipient',
     };
 
@@ -78,7 +93,9 @@ export class EmailRateLimiterService {
       };
     }
 
-    const recipientArray = Array.isArray(recipients) ? recipients : [recipients];
+    const recipientArray = Array.isArray(recipients)
+      ? recipients
+      : [recipients];
 
     // Check global rate limit
     const globalStatus = this.checkGlobalLimit(recipientArray.length);
@@ -106,10 +123,16 @@ export class EmailRateLimiterService {
       return;
     }
 
-    const recipientArray = Array.isArray(recipients) ? recipients : [recipients];
+    const recipientArray = Array.isArray(recipients)
+      ? recipients
+      : [recipients];
 
     // Record global
-    this.incrementCounter('global', recipientArray.length, this.globalConfig.windowMs);
+    this.incrementCounter(
+      'global',
+      recipientArray.length,
+      this.globalConfig.windowMs,
+    );
 
     // Record per-recipient
     for (const recipient of recipientArray) {
@@ -220,7 +243,9 @@ export class EmailRateLimiterService {
     }
 
     if (cleanedCount > 0) {
-      this.logger.debug(`Cleaned up ${cleanedCount} expired rate limit entries`);
+      this.logger.debug(
+        `Cleaned up ${cleanedCount} expired rate limit entries`,
+      );
     }
   }
 
@@ -229,7 +254,10 @@ export class EmailRateLimiterService {
    * @param identifier - Rate limit identifier (e.g., 'global' or email address)
    */
   resetLimit(identifier: string): void {
-    const key = identifier === 'global' ? 'global' : `recipient:${identifier.toLowerCase()}`;
+    const key =
+      identifier === 'global'
+        ? 'global'
+        : `recipient:${identifier.toLowerCase()}`;
     this.store.delete(key);
     this.logger.debug(`Reset rate limit for: ${identifier}`);
   }
@@ -248,9 +276,14 @@ export class EmailRateLimiterService {
    * @param scope - Scope (global or recipient)
    * @returns Current rate limit status
    */
-  getStatus(identifier: string, scope: 'global' | 'recipient' = 'recipient'): RateLimitStatus {
-    const key = scope === 'global' ? 'global' : `recipient:${identifier.toLowerCase()}`;
-    const config = scope === 'global' ? this.globalConfig : this.perRecipientConfig;
+  getStatus(
+    identifier: string,
+    scope: 'global' | 'recipient' = 'recipient',
+  ): RateLimitStatus {
+    const key =
+      scope === 'global' ? 'global' : `recipient:${identifier.toLowerCase()}`;
+    const config =
+      scope === 'global' ? this.globalConfig : this.perRecipientConfig;
     const entry = this.store.get(key);
 
     if (!entry || entry.resetAt.getTime() <= Date.now()) {
@@ -316,8 +349,12 @@ export class EmailRateLimiterService {
     while (!status.allowed) {
       const waitTime = status.resetAt.getTime() - Date.now();
       if (waitTime > 0) {
-        this.logger.debug(`Rate limit exceeded, waiting ${waitTime}ms for: ${status.identifier}`);
-        await new Promise((resolve) => setTimeout(resolve, Math.min(waitTime, 60000))); // Max 1 minute wait
+        this.logger.debug(
+          `Rate limit exceeded, waiting ${waitTime}ms for: ${status.identifier}`,
+        );
+        await new Promise((resolve) =>
+          setTimeout(resolve, Math.min(waitTime, 60000)),
+        ); // Max 1 minute wait
       }
 
       status = this.checkLimit(recipients);

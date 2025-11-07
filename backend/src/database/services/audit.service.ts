@@ -9,8 +9,16 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op, QueryTypes } from 'sequelize';
 import { IAuditLogger } from '../interfaces/audit/audit-logger.interface';
 import { ExecutionContext } from '../types';
-import { AuditAction, isPHIEntity, SENSITIVE_FIELDS } from '../types/database.enums';
-import { AuditLog, ComplianceType, AuditSeverity } from '../models/audit-log.model';
+import {
+  AuditAction,
+  isPHIEntity,
+  SENSITIVE_FIELDS,
+} from '../types/database.enums';
+import {
+  AuditLog,
+  ComplianceType,
+  AuditSeverity,
+} from '../models/audit-log.model';
 
 /**
  * Interface for audit log query filters
@@ -66,7 +74,11 @@ export interface ComplianceReport {
   failedAccess: number;
   criticalEvents: number;
   topAccessedEntities: Array<{ entityType: string; count: number }>;
-  userActivity: Array<{ userId: string; userName: string; accessCount: number }>;
+  userActivity: Array<{
+    userId: string;
+    userName: string;
+    accessCount: number;
+  }>;
 }
 
 /**
@@ -245,7 +257,9 @@ export class AuditService implements IAuditLogger {
       newValues: null,
       metadata,
       success: true,
-      severity: isPHIEntity(entityType) ? AuditSeverity.HIGH : AuditSeverity.MEDIUM,
+      severity: isPHIEntity(entityType)
+        ? AuditSeverity.HIGH
+        : AuditSeverity.MEDIUM,
     });
   }
 
@@ -286,13 +300,14 @@ export class AuditService implements IAuditLogger {
       operation === 'READ'
         ? AuditAction.CACHE_READ
         : operation === 'WRITE'
-        ? AuditAction.CACHE_WRITE
-        : AuditAction.CACHE_DELETE;
+          ? AuditAction.CACHE_WRITE
+          : AuditAction.CACHE_DELETE;
 
     // Only log cache operations for PHI data
-    const isPHICache = cacheKey.toLowerCase().includes('health') ||
-                       cacheKey.toLowerCase().includes('student') ||
-                       cacheKey.toLowerCase().includes('medication');
+    const isPHICache =
+      cacheKey.toLowerCase().includes('health') ||
+      cacheKey.toLowerCase().includes('student') ||
+      cacheKey.toLowerCase().includes('medication');
 
     if (isPHICache) {
       try {
@@ -333,7 +348,12 @@ export class AuditService implements IAuditLogger {
    * Log authentication events (login, logout, password change)
    */
   async logAuthEvent(
-    action: 'LOGIN' | 'LOGOUT' | 'PASSWORD_CHANGE' | 'MFA_ENABLED' | 'MFA_DISABLED',
+    action:
+      | 'LOGIN'
+      | 'LOGOUT'
+      | 'PASSWORD_CHANGE'
+      | 'MFA_ENABLED'
+      | 'MFA_DISABLED',
     userId: string,
     context: ExecutionContext,
     success: boolean = true,
@@ -438,7 +458,9 @@ export class AuditService implements IAuditLogger {
       entityType: options.entityType,
       entityId: options.entityId,
       context,
-      changes: options.changedFields ? { changedFields: options.changedFields } : null,
+      changes: options.changedFields
+        ? { changedFields: options.changedFields }
+        : null,
       previousValues: null,
       newValues: null,
       metadata: {
@@ -533,12 +555,13 @@ export class AuditService implements IAuditLogger {
     }
 
     try {
-      const { rows: logs, count: total } = await this.auditLogModel.findAndCountAll({
-        where,
-        offset,
-        limit,
-        order: [[sortBy, sortOrder]],
-      });
+      const { rows: logs, count: total } =
+        await this.auditLogModel.findAndCountAll({
+          where,
+          offset,
+          limit,
+          order: [[sortBy, sortOrder]],
+        });
 
       return {
         logs,
@@ -547,7 +570,10 @@ export class AuditService implements IAuditLogger {
         pages: Math.ceil(total / limit),
       };
     } catch (error) {
-      this.logger.error(`Failed to query audit logs: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to query audit logs: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -714,7 +740,10 @@ export class AuditService implements IAuditLogger {
         byComplianceType,
       };
     } catch (error) {
-      this.logger.error(`Failed to get audit statistics: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to get audit statistics: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -740,19 +769,31 @@ export class AuditService implements IAuditLogger {
         },
       };
 
-      const [totalAccess, phiAccess, failedAccess, criticalEvents] = await Promise.all([
-        this.auditLogModel.count({ where }),
-        this.auditLogModel.count({ where: { ...where, isPHI: true } }),
-        this.auditLogModel.count({ where: { ...where, success: false } }),
-        this.auditLogModel.count({
-          where: { ...where, severity: AuditSeverity.CRITICAL },
-        }),
-      ]);
+      const [totalAccess, phiAccess, failedAccess, criticalEvents] =
+        await Promise.all([
+          this.auditLogModel.count({ where }),
+          this.auditLogModel.count({ where: { ...where, isPHI: true } }),
+          this.auditLogModel.count({ where: { ...where, success: false } }),
+          this.auditLogModel.count({
+            where: { ...where, severity: AuditSeverity.CRITICAL },
+          }),
+        ]);
 
       // Get unique users
       const uniqueUsersResult = await this.auditLogModel.findAll({
         where: { ...where, userId: { [Op.ne]: null } },
-        attributes: [[this.auditLogModel.sequelize!.fn('COUNT', this.auditLogModel.sequelize!.fn('DISTINCT', this.auditLogModel.sequelize!.col('userId'))), 'count']],
+        attributes: [
+          [
+            this.auditLogModel.sequelize!.fn(
+              'COUNT',
+              this.auditLogModel.sequelize!.fn(
+                'DISTINCT',
+                this.auditLogModel.sequelize!.col('userId'),
+              ),
+            ),
+            'count',
+          ],
+        ],
         raw: true,
       });
       const uniqueUsers = parseInt((uniqueUsersResult[0] as any).count, 10);
@@ -805,7 +846,10 @@ export class AuditService implements IAuditLogger {
         })),
       };
     } catch (error) {
-      this.logger.error(`Failed to generate compliance report: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to generate compliance report: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -813,15 +857,29 @@ export class AuditService implements IAuditLogger {
   /**
    * Get HIPAA compliance report
    */
-  async getHIPAAReport(startDate: Date, endDate: Date): Promise<ComplianceReport> {
-    return this.generateComplianceReport(ComplianceType.HIPAA, startDate, endDate);
+  async getHIPAAReport(
+    startDate: Date,
+    endDate: Date,
+  ): Promise<ComplianceReport> {
+    return this.generateComplianceReport(
+      ComplianceType.HIPAA,
+      startDate,
+      endDate,
+    );
   }
 
   /**
    * Get FERPA compliance report
    */
-  async getFERPAReport(startDate: Date, endDate: Date): Promise<ComplianceReport> {
-    return this.generateComplianceReport(ComplianceType.FERPA, startDate, endDate);
+  async getFERPAReport(
+    startDate: Date,
+    endDate: Date,
+  ): Promise<ComplianceReport> {
+    return this.generateComplianceReport(
+      ComplianceType.FERPA,
+      startDate,
+      endDate,
+    );
   }
 
   // ============================================================================
@@ -891,8 +949,12 @@ export class AuditService implements IAuditLogger {
               log.complianceType,
               log.severity,
               log.success,
-              log.errorMessage ? `"${log.errorMessage.replace(/"/g, '""')}"` : '',
-              log.changes ? `"${JSON.stringify(log.changes).replace(/"/g, '""')}"` : '',
+              log.errorMessage
+                ? `"${log.errorMessage.replace(/"/g, '""')}"`
+                : '',
+              log.changes
+                ? `"${JSON.stringify(log.changes).replace(/"/g, '""')}"`
+                : '',
             ]
           : [
               log.id,
@@ -911,7 +973,10 @@ export class AuditService implements IAuditLogger {
 
       return csv;
     } catch (error) {
-      this.logger.error(`Failed to export audit logs to CSV: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to export audit logs to CSV: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -925,7 +990,9 @@ export class AuditService implements IAuditLogger {
   ): Promise<string> {
     try {
       const result = await this.queryAuditLogs(filters, { limit: 10000 });
-      const logs = result.logs.map((log) => log.toExportObject(includeFullDetails));
+      const logs = result.logs.map((log) =>
+        log.toExportObject(includeFullDetails),
+      );
 
       return JSON.stringify(
         {
@@ -938,7 +1005,10 @@ export class AuditService implements IAuditLogger {
         2,
       );
     } catch (error) {
-      this.logger.error(`Failed to export audit logs to JSON: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to export audit logs to JSON: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -995,7 +1065,8 @@ export class AuditService implements IAuditLogger {
       });
       details['GENERAL_expired'] = generalExpired.length;
 
-      const totalToDelete = hipaaExpired.length + ferpaExpired.length + generalExpired.length;
+      const totalToDelete =
+        hipaaExpired.length + ferpaExpired.length + generalExpired.length;
       const totalLogs = await this.auditLogModel.count();
       const retained = totalLogs - totalToDelete;
 
@@ -1035,7 +1106,10 @@ export class AuditService implements IAuditLogger {
         details,
       };
     } catch (error) {
-      this.logger.error(`Failed to execute retention policy: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to execute retention policy: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -1086,14 +1160,19 @@ export class AuditService implements IAuditLogger {
       const complianceType = this.determineComplianceType(entityType, isPHI);
 
       // Determine severity if not provided
-      const auditSeverity = severity || this.determineSeverity(action, entityType, success);
+      const auditSeverity =
+        severity || this.determineSeverity(action, entityType, success);
 
       // Sanitize sensitive data
-      const sanitizedChanges = changes ? this.sanitizeSensitiveData(changes) : null;
+      const sanitizedChanges = changes
+        ? this.sanitizeSensitiveData(changes)
+        : null;
       const sanitizedPreviousValues = previousValues
         ? this.sanitizeSensitiveData(previousValues)
         : null;
-      const sanitizedNewValues = newValues ? this.sanitizeSensitiveData(newValues) : null;
+      const sanitizedNewValues = newValues
+        ? this.sanitizeSensitiveData(newValues)
+        : null;
 
       // Create options for the audit log entry
       const createOptions: any = {
@@ -1120,7 +1199,9 @@ export class AuditService implements IAuditLogger {
 
       // If transaction is provided, use it for atomicity
       if (transaction) {
-        await (this.auditLogModel as any).create(createOptions, { transaction });
+        await (this.auditLogModel as any).create(createOptions, {
+          transaction,
+        });
       } else {
         await (this.auditLogModel as any).create(createOptions);
       }
@@ -1129,7 +1210,10 @@ export class AuditService implements IAuditLogger {
         `AUDIT [${action}] ${entityType}:${entityId || 'bulk'} by ${context.userId || 'SYSTEM'} - ${success ? 'SUCCESS' : 'FAILED'}${transaction ? ' [IN TRANSACTION]' : ''}`,
       );
     } catch (error) {
-      this.logger.error(`Failed to create audit entry: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to create audit entry: ${error.message}`,
+        error.stack,
+      );
       // Don't throw - audit failures shouldn't break operations
     }
   }
@@ -1137,12 +1221,20 @@ export class AuditService implements IAuditLogger {
   /**
    * Determine compliance type based on entity type
    */
-  private determineComplianceType(entityType: string, isPHI: boolean): ComplianceType {
+  private determineComplianceType(
+    entityType: string,
+    isPHI: boolean,
+  ): ComplianceType {
     if (isPHI) {
       return ComplianceType.HIPAA;
     }
 
-    const ferpaEntities = ['Student', 'AcademicRecord', 'GradeTransition', 'Attendance'];
+    const ferpaEntities = [
+      'Student',
+      'AcademicRecord',
+      'GradeTransition',
+      'Attendance',
+    ];
     if (ferpaEntities.includes(entityType)) {
       return ComplianceType.FERPA;
     }

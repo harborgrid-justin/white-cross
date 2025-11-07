@@ -4,6 +4,4 @@
  */
 
 // Re-export the Sequelize model
-export {
-  FollowUpAction
-} from '../../database/models/follow-up-action.model';
+export { FollowUpAction } from '../../database/models/follow-up-action.model';

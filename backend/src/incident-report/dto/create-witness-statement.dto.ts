@@ -1,9 +1,4 @@
-import {
-  IsString,
-  IsEnum,
-  IsOptional,
-  MinLength,
-} from 'class-validator';
+import { IsString, IsEnum, IsOptional, MinLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { WitnessType } from '../enums';
 
@@ -34,9 +29,13 @@ export class CreateWitnessStatementDto {
 
   @ApiProperty({
     description: 'Witness statement (minimum 20 characters)',
-    example: 'I saw the student fall from the playground equipment at approximately 10:30 AM',
+    example:
+      'I saw the student fall from the playground equipment at approximately 10:30 AM',
   })
   @IsString()
-  @MinLength(20, { message: 'Witness statement must be at least 20 characters for proper documentation' })
+  @MinLength(20, {
+    message:
+      'Witness statement must be at least 20 characters for proper documentation',
+  })
   statement: string;
 }

@@ -6,10 +6,18 @@
  * HIPAA Compliance: All screening data is PHI and requires audit logging
  */
 
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { HealthScreening, HealthScreeningAttributes } from '../../database/models/health-screening.model';
+import {
+  HealthScreening,
+  HealthScreeningAttributes,
+} from '../../database/models/health-screening.model';
 
 @Injectable()
 export class ScreeningService {
@@ -21,17 +29,23 @@ export class ScreeningService {
   /**
    * GAP-SCREEN-001: Get all screenings for a student
    */
-  async getStudentScreenings(studentId: string): Promise<HealthScreeningAttributes[]> {
+  async getStudentScreenings(
+    studentId: string,
+  ): Promise<HealthScreeningAttributes[]> {
     this.logger.log(`Getting screenings for student ${studentId}`);
 
     const studentScreenings = Array.from(this.screenings.values()).filter(
       (s) => s.studentId === studentId,
     );
 
-    this.logger.log(`PHI Access: Retrieved ${studentScreenings.length} screenings for student ${studentId}`);
+    this.logger.log(
+      `PHI Access: Retrieved ${studentScreenings.length} screenings for student ${studentId}`,
+    );
 
     return studentScreenings.sort(
-      (a, b) => new Date(b.screeningDate).getTime() - new Date(a.screeningDate).getTime(),
+      (a, b) =>
+        new Date(b.screeningDate).getTime() -
+        new Date(a.screeningDate).getTime(),
     );
   }
 
@@ -55,7 +69,8 @@ export class ScreeningService {
         results.createdIds.push(screening.id!);
       } catch (error) {
         results.errorCount++;
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorMessage =
+          error instanceof Error ? error.message : 'Unknown error';
         results.errors.push(
           `Failed to create screening for student ${screeningData.studentId}: ${errorMessage}`,
         );
@@ -90,7 +105,9 @@ export class ScreeningService {
       },
     ];
 
-    this.logger.log(`PHI Access: Retrieved ${overdueScreenings.length} overdue screenings`);
+    this.logger.log(
+      `PHI Access: Retrieved ${overdueScreenings.length} overdue screenings`,
+    );
 
     return overdueScreenings;
   }
@@ -149,7 +166,8 @@ export class ScreeningService {
       gradeLevel: gradeLevel || 'All grades',
       schedules: filteredSchedules,
       lastUpdated: '2024-01-01',
-      notes: 'State requirements may vary. Consult state health department for specific guidelines.',
+      notes:
+        'State requirements may vary. Consult state health department for specific guidelines.',
     };
   }
 
@@ -172,7 +190,8 @@ export class ScreeningService {
       reason: referralData.reason,
       urgency: referralData.urgency || 'ROUTINE',
       parentNotified: referralData.parentNotified || false,
-      notificationDate: referralData.notificationDate || new Date().toISOString(),
+      notificationDate:
+        referralData.notificationDate || new Date().toISOString(),
       status: 'PENDING',
       createdAt: new Date(),
     };

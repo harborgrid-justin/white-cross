@@ -4,7 +4,16 @@
  */
 
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsEnum, IsOptional, IsUUID, IsInt, Min, Max, IsArray } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsOptional,
+  IsUUID,
+  IsInt,
+  Min,
+  Max,
+  IsArray,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { DocumentCategory, DocumentStatus } from '../enums';
 
@@ -70,7 +79,8 @@ export class FilterDocumentsDto {
   uploadedBy?: string;
 
   @ApiPropertyOptional({
-    description: 'Full-text search term (searches title, description, filename)',
+    description:
+      'Full-text search term (searches title, description, filename)',
     example: 'physical examination',
   })
   @IsOptional()

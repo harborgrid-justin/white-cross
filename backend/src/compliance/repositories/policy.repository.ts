@@ -1,7 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { PolicyDocument, PolicyDocumentAttributes } from '../../database/models/policy-document.model';
-import { PolicyAcknowledgment, PolicyAcknowledgmentAttributes } from '../../database/models/policy-acknowledgment.model';
+import {
+  PolicyDocument,
+  PolicyDocumentAttributes,
+} from '../../database/models/policy-document.model';
+import {
+  PolicyAcknowledgment,
+  PolicyAcknowledgmentAttributes,
+} from '../../database/models/policy-acknowledgment.model';
 
 @Injectable()
 export class PolicyRepository {
@@ -34,12 +40,16 @@ export class PolicyRepository {
     });
   }
 
-  async createPolicy(data: Omit<PolicyDocumentAttributes, 'id' | 'createdAt' | 'updatedAt'>) {
+  async createPolicy(
+    data: Omit<PolicyDocumentAttributes, 'id' | 'createdAt' | 'updatedAt'>,
+  ) {
     return this.policyModel.create(data);
   }
 
   async updatePolicy(id: string, data: Partial<PolicyDocumentAttributes>) {
-    const [affectedCount] = await this.policyModel.update(data, { where: { id } });
+    const [affectedCount] = await this.policyModel.update(data, {
+      where: { id },
+    });
     if (affectedCount > 0) {
       return this.findPolicyById(id);
     }

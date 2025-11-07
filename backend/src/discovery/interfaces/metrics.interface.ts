@@ -1,7 +1,13 @@
 export interface MetricsSnapshot {
   counters: Record<string, Record<string, number>>;
-  histograms: Record<string, Array<{ value: number; labels: Record<string, string>; timestamp: number }>>;
-  gauges: Record<string, { value: number; labels: Record<string, string>; timestamp: number }>;
+  histograms: Record<
+    string,
+    Array<{ value: number; labels: Record<string, string>; timestamp: number }>
+  >;
+  gauges: Record<
+    string,
+    { value: number; labels: Record<string, string>; timestamp: number }
+  >;
   timestamp: number;
 }
 

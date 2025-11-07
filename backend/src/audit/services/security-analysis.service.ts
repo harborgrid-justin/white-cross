@@ -31,13 +31,13 @@ export class SecurityAnalysisService {
       const failedLogins = await this.auditLogModel.findAll({
         where: {
           createdAt: {
-            [Op.between]: [startDate, endDate]
+            [Op.between]: [startDate, endDate],
           },
           action: 'LOGIN',
           [Op.and]: [
             literal(`changes->>'success' = 'false'`),
-            { ipAddress: { [Op.ne]: null } }
-          ]
+            { ipAddress: { [Op.ne]: null } },
+          ],
         },
         order: [['createdAt', 'DESC']],
       });
@@ -61,7 +61,12 @@ export class SecurityAnalysisService {
         period: { start: startDate, end: endDate },
         totalFailedLogins: failedLogins.length,
         suspiciousIPs,
-        riskLevel: suspiciousIPs.length > 0 ? 'HIGH' : failedLogins.length > 20 ? 'MEDIUM' : 'LOW',
+        riskLevel:
+          suspiciousIPs.length > 0
+            ? 'HIGH'
+            : failedLogins.length > 20
+              ? 'MEDIUM'
+              : 'LOW',
       };
     } catch (error) {
       this.logger.error('Error detecting suspicious logins:', error);
@@ -78,7 +83,10 @@ export class SecurityAnalysisService {
    */
   async generateSecurityReport(startDate: Date, endDate: Date): Promise<any> {
     try {
-      const suspiciousLogins = await this.detectSuspiciousLogins(startDate, endDate);
+      const suspiciousLogins = await this.detectSuspiciousLogins(
+        startDate,
+        endDate,
+      );
 
       let overallRiskScore = 0;
       if (suspiciousLogins.riskLevel === 'HIGH') overallRiskScore += 3;
@@ -86,7 +94,13 @@ export class SecurityAnalysisService {
       else if (suspiciousLogins.riskLevel === 'LOW') overallRiskScore += 1;
 
       const riskLevel =
-        overallRiskScore >= 10 ? 'CRITICAL' : overallRiskScore >= 6 ? 'HIGH' : overallRiskScore >= 3 ? 'MEDIUM' : 'LOW';
+        overallRiskScore >= 10
+          ? 'CRITICAL'
+          : overallRiskScore >= 6
+            ? 'HIGH'
+            : overallRiskScore >= 3
+              ? 'MEDIUM'
+              : 'LOW';
 
       return {
         period: { start: startDate, end: endDate },

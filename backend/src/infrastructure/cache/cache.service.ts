@@ -15,7 +15,12 @@
  * - Graceful degradation on Redis failure
  */
 
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import Redis from 'ioredis';
 import * as zlib from 'zlib';
@@ -40,7 +45,7 @@ import {
   MemoryMonitoring,
   Cleanup,
   MemorySensitive,
-  ImmediateCleanup
+  ImmediateCleanup,
 } from '../../discovery/modules/decorators/memory-optimization.decorators';
 
 const gzip = promisify(zlib.gzip);
@@ -69,14 +74,14 @@ interface L1Entry<T = any> {
   gcInterval: 300000, // 5 minutes
   priority: 'critical',
   leakDetectionEnabled: true,
-  preventiveGC: true
+  preventiveGC: true,
 })
 @MemoryIntensive({
   enabled: true,
   threshold: 200, // 200MB
   priority: 'high',
   cleanupStrategy: 'aggressive',
-  monitoring: true
+  monitoring: true,
 })
 @ResourcePool({
   enabled: true,
@@ -85,13 +90,13 @@ interface L1Entry<T = any> {
   maxSize: 20,
   priority: 9,
   validationEnabled: true,
-  autoScale: true
+  autoScale: true,
 })
 @MemoryMonitoring({
   enabled: true,
   interval: 30000, // 30 seconds
   threshold: 150, // 150MB
-  alerts: true
+  alerts: true,
 })
 @Injectable()
 export class CacheService implements OnModuleInit, OnModuleDestroy {
@@ -186,7 +191,9 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
             return null;
           }
           const delay = Math.min(times * config.retryDelay, 10000);
-          this.logger.warn(`Retrying Redis connection in ${delay}ms (attempt ${times})`);
+          this.logger.warn(
+            `Retrying Redis connection in ${delay}ms (attempt ${times})`,
+          );
           return delay;
         },
         maxRetriesPerRequest: 3,
@@ -218,7 +225,9 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
 
       this.redis.on('reconnecting', () => {
         this.reconnectAttempts++;
-        this.logger.log(`Redis reconnecting (attempt ${this.reconnectAttempts})`);
+        this.logger.log(
+          `Redis reconnecting (attempt ${this.reconnectAttempts})`,
+        );
       });
 
       await this.redis.ping();
@@ -313,11 +322,14 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
       } catch (redisError) {
         // Graceful degradation: log warning but continue with L1 cache
         if (!this.redis) {
-          this.logger.warn(`Redis unavailable, using L1 cache only for key: ${fullKey}`, {
-            key: fullKey,
-            cacheMode: 'L1-only',
-            redisStatus: 'disconnected',
-          });
+          this.logger.warn(
+            `Redis unavailable, using L1 cache only for key: ${fullKey}`,
+            {
+              key: fullKey,
+              cacheMode: 'L1-only',
+              redisStatus: 'disconnected',
+            },
+          );
           this.isHealthy = false;
         } else {
           // Redis exists but operation failed - log error
@@ -377,14 +389,19 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
         try {
           await this.redis.del(fullKey);
         } catch (redisError) {
-          this.logger.warn(`Redis delete failed for key ${fullKey}, L1 cache cleared`, {
-            error: redisError.message,
-            key: fullKey,
-            l1Deleted: true,
-          });
+          this.logger.warn(
+            `Redis delete failed for key ${fullKey}, L1 cache cleared`,
+            {
+              error: redisError.message,
+              key: fullKey,
+              l1Deleted: true,
+            },
+          );
         }
       } else {
-        this.logger.debug(`Redis unavailable, deleted from L1 cache only: ${fullKey}`);
+        this.logger.debug(
+          `Redis unavailable, deleted from L1 cache only: ${fullKey}`,
+        );
       }
 
       // Remove from tag index
@@ -468,7 +485,9 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
           break;
 
         default:
-          this.logger.warn(`Unknown invalidation pattern type: ${pattern.type}`);
+          this.logger.warn(
+            `Unknown invalidation pattern type: ${pattern.type}`,
+          );
       }
 
       this.emitEvent(CacheEvent.INVALIDATE, pattern.value, {
@@ -642,12 +661,15 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
 
     try {
       if (!this.redis) {
-        const error = new Error(`Redis not connected - cannot increment key: ${fullKey}`);
+        const error = new Error(
+          `Redis not connected - cannot increment key: ${fullKey}`,
+        );
         this.logger.warn(error.message, {
           key: fullKey,
           amount,
           redisStatus: 'disconnected',
-          recommendation: 'Check Redis connection configuration and ensure Redis server is running',
+          recommendation:
+            'Check Redis connection configuration and ensure Redis server is running',
         });
         this.stats.errors++;
         this.lastError = error;
@@ -691,12 +713,15 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
 
     try {
       if (!this.redis) {
-        const error = new Error(`Redis not connected - cannot decrement key: ${fullKey}`);
+        const error = new Error(
+          `Redis not connected - cannot decrement key: ${fullKey}`,
+        );
         this.logger.warn(error.message, {
           key: fullKey,
           amount,
           redisStatus: 'disconnected',
-          recommendation: 'Check Redis connection configuration and ensure Redis server is running',
+          recommendation:
+            'Check Redis connection configuration and ensure Redis server is running',
         });
         this.stats.errors++;
         this.lastError = error;
@@ -751,7 +776,8 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
           : 0,
       avgSetLatency:
         this.stats.sets > 0
-          ? Math.round((this.stats.setTotalLatency / this.stats.sets) * 100) / 100
+          ? Math.round((this.stats.setTotalLatency / this.stats.sets) * 100) /
+            100
           : 0,
       totalOperations: totalOps + this.stats.sets + this.stats.deletes,
       failedOperations: this.stats.errors,
@@ -794,12 +820,11 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
       }
     }
 
-    const l1Status =
-      !this.cacheConfig.isL1CacheEnabled()
-        ? 'disabled'
-        : this.l1Cache.size >= this.cacheConfig.getConfig().l1MaxSize
-          ? 'full'
-          : 'ok';
+    const l1Status = !this.cacheConfig.isL1CacheEnabled()
+      ? 'disabled'
+      : this.l1Cache.size >= this.cacheConfig.getConfig().l1MaxSize
+        ? 'full'
+        : 'ok';
 
     let status: 'healthy' | 'degraded' | 'unhealthy';
     if (redisConnected && l1Status !== 'full') {
@@ -918,12 +943,15 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
     options: CacheOptions,
   ): Promise<void> {
     if (!this.redis) {
-      const error = new Error(`Redis not connected - cannot set key in L2 cache: ${key}`);
+      const error = new Error(
+        `Redis not connected - cannot set key in L2 cache: ${key}`,
+      );
       this.logger.warn(error.message, {
         key,
         redisStatus: 'disconnected',
         fallback: 'L1 cache only',
-        recommendation: 'Check Redis connection configuration and ensure Redis server is running',
+        recommendation:
+          'Check Redis connection configuration and ensure Redis server is running',
       });
       this.stats.errors++;
       this.lastError = error;

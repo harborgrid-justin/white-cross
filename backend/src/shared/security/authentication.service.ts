@@ -435,13 +435,13 @@ export class AuthenticationService {
       const payload: TokenPayload = {
         userId: user.userId,
         email: user.email,
-        role: user.role
+        role: user.role,
       };
 
       const options: jsonwebtoken.SignOptions = {
         expiresIn: this.config.maxAgeSec,
         audience: this.config.jwtAudience,
-        issuer: this.config.jwtIssuer
+        issuer: this.config.jwtIssuer,
       };
 
       return jsonwebtoken.sign(payload, this.config.jwtSecret, options);
@@ -501,10 +501,14 @@ export class AuthenticationService {
       const options: jsonwebtoken.VerifyOptions = {
         audience: this.config.jwtAudience,
         issuer: this.config.jwtIssuer,
-        clockTolerance: this.config.timeSkewSec || 30
+        clockTolerance: this.config.timeSkewSec || 30,
       };
 
-      const decoded = jsonwebtoken.verify(token, this.config.jwtSecret, options) as TokenPayload;
+      const decoded = jsonwebtoken.verify(
+        token,
+        this.config.jwtSecret,
+        options,
+      ) as TokenPayload;
       return decoded;
     } catch (error) {
       if (error instanceof jsonwebtoken.TokenExpiredError) {
@@ -570,7 +574,7 @@ export class AuthenticationService {
       if (!user) {
         logger.warn('JWT validation failed: User not found', {
           userId: decoded.userId,
-          email: decoded.email
+          email: decoded.email,
         });
         throw new Error('User not found');
       }
@@ -578,7 +582,7 @@ export class AuthenticationService {
       if (!user.isActive) {
         logger.warn('JWT validation failed: User inactive', {
           userId: decoded.userId,
-          email: decoded.email
+          email: decoded.email,
         });
         throw new Error('User account is inactive');
       }
@@ -590,7 +594,7 @@ export class AuthenticationService {
           tokenEmail: decoded.email,
           userEmail: user.email,
           tokenRole: decoded.role,
-          userRole: user.role
+          userRole: user.role,
         });
         throw new Error('Token claims do not match user data');
       }
@@ -598,14 +602,14 @@ export class AuthenticationService {
       logger.debug('JWT validation successful', {
         userId: user.userId,
         email: user.email,
-        role: user.role
+        role: user.role,
       });
 
       return user;
     } catch (error) {
       logger.error('User validation error', {
         error: error instanceof Error ? error.message : 'Unknown error',
-        userId: decoded.userId
+        userId: decoded.userId,
       });
       throw error;
     }
@@ -664,7 +668,9 @@ export class AuthenticationService {
    *
    * @see {@link AuthenticationResult} for result structure
    */
-  async authenticate(authHeader: string | undefined): Promise<AuthenticationResult> {
+  async authenticate(
+    authHeader: string | undefined,
+  ): Promise<AuthenticationResult> {
     try {
       // Extract token
       const token = this.extractToken(authHeader);
@@ -672,7 +678,7 @@ export class AuthenticationService {
       if (!token) {
         return {
           success: false,
-          error: 'No authentication token provided'
+          error: 'No authentication token provided',
         };
       }
 
@@ -685,12 +691,12 @@ export class AuthenticationService {
       return {
         success: true,
         user,
-        token
+        token,
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Authentication failed'
+        error: error instanceof Error ? error.message : 'Authentication failed',
       };
     }
   }
@@ -777,7 +783,9 @@ export class AuthenticationService {
  * @see {@link AuthenticationService} for full service documentation
  * @see {@link AuthenticationConfig} for configuration options
  */
-export function createAuthenticationService(config: AuthenticationConfig): AuthenticationService {
+export function createAuthenticationService(
+  config: AuthenticationConfig,
+): AuthenticationService {
   return new AuthenticationService(config);
 }
 
@@ -798,5 +806,5 @@ export function createAuthenticationService(config: AuthenticationConfig): Authe
  */
 export default {
   AuthenticationService,
-  createAuthenticationService
+  createAuthenticationService,
 };

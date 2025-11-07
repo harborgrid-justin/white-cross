@@ -21,11 +21,16 @@ export class ComplianceViolationRepository {
     return this.complianceViolationModel.findByPk(id);
   }
 
-  async create(data: Partial<ComplianceViolation>): Promise<ComplianceViolation> {
+  async create(
+    data: Partial<ComplianceViolation>,
+  ): Promise<ComplianceViolation> {
     return this.complianceViolationModel.create(data as any);
   }
 
-  async update(id: string, data: Partial<ComplianceViolation>): Promise<[number]> {
+  async update(
+    id: string,
+    data: Partial<ComplianceViolation>,
+  ): Promise<[number]> {
     return this.complianceViolationModel.update(data as any, {
       where: { id },
     });

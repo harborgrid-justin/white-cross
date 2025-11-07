@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  Inject,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Document } from './entities/document.entity';
 import { DocumentSignature } from './entities/document-signature.entity';
@@ -34,7 +39,7 @@ export class DocumentService {
     if (filters.status) whereClause.status = filters.status;
     if (filters.studentId) whereClause.studentId = filters.studentId;
     if (filters.uploadedBy) whereClause.uploadedBy = filters.uploadedBy;
-    
+
     if (filters.searchTerm) {
       whereClause[Op.or] = [
         { title: { [Op.iLike]: `%${filters.searchTerm}%` } },
@@ -42,22 +47,23 @@ export class DocumentService {
         { fileName: { [Op.iLike]: `%${filters.searchTerm}%` } },
       ];
     }
-    
+
     if (filters.tags && filters.tags.length > 0) {
       whereClause.tags = { [Op.overlap]: filters.tags };
     }
 
-    const { rows: documents, count: total } = await this.documentModel.findAndCountAll({
-      where: whereClause,
-      offset,
-      limit,
-      include: [
-        { model: Document, as: 'versions', limit: 5, separate: true },
-        { model: DocumentSignature, as: 'signatures' },
-      ],
-      order: [['createdAt', 'DESC']],
-      distinct: true,
-    });
+    const { rows: documents, count: total } =
+      await this.documentModel.findAndCountAll({
+        where: whereClause,
+        offset,
+        limit,
+        include: [
+          { model: Document, as: 'versions', limit: 5, separate: true },
+          { model: DocumentSignature, as: 'signatures' },
+        ],
+        order: [['createdAt', 'DESC']],
+        distinct: true,
+      });
 
     return {
       documents,
@@ -101,7 +107,7 @@ export class DocumentService {
           description: createDto.description?.trim(),
           fileType: createDto.fileType.toLowerCase().trim(),
           fileName: createDto.fileName.trim(),
-          tags: createDto.tags?.map(tag => tag.trim()) || [],
+          tags: createDto.tags?.map((tag) => tag.trim()) || [],
           isTemplate: createDto.isTemplate || false,
           status: 'DRAFT',
           version: 1,
@@ -125,7 +131,10 @@ export class DocumentService {
     } catch (error) {
       await transaction.rollback();
       // HIPAA-compliant error handling - never expose PHI
-      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
         throw error;
       }
       throw new Error('Failed to create document. Please try again.');
@@ -135,7 +144,11 @@ export class DocumentService {
   /**
    * Update an existing document
    */
-  async updateDocument(id: string, updateDto: UpdateDocumentDto, updatedBy: string) {
+  async updateDocument(
+    id: string,
+    updateDto: UpdateDocumentDto,
+    updatedBy: string,
+  ) {
     const transaction = await this.sequelize.transaction({
       isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE,
     });
@@ -148,15 +161,24 @@ export class DocumentService {
 
       const updateData: any = {};
       if (updateDto.title) updateData.title = updateDto.title.trim();
-      if (updateDto.description !== undefined) updateData.description = updateDto.description?.trim();
+      if (updateDto.description !== undefined)
+        updateData.description = updateDto.description?.trim();
       if (updateDto.status) updateData.status = updateDto.status;
-      if (updateDto.tags) updateData.tags = updateDto.tags.map(tag => tag.trim());
-      if (updateDto.retentionDate) updateData.retentionDate = updateDto.retentionDate;
+      if (updateDto.tags)
+        updateData.tags = updateDto.tags.map((tag) => tag.trim());
+      if (updateDto.retentionDate)
+        updateData.retentionDate = updateDto.retentionDate;
       if (updateDto.accessLevel) updateData.accessLevel = updateDto.accessLevel;
 
       await document.update(updateData, { transaction });
 
-      await this.addAuditTrail(id, 'UPDATED', updatedBy, updateDto, transaction);
+      await this.addAuditTrail(
+        id,
+        'UPDATED',
+        updatedBy,
+        updateDto,
+        transaction,
+      );
 
       await transaction.commit();
 
@@ -164,7 +186,10 @@ export class DocumentService {
     } catch (error) {
       await transaction.rollback();
       // HIPAA-compliant error handling - never expose PHI
-      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
         throw error;
       }
       throw new Error('Failed to update document. Please try again.');
@@ -185,7 +210,13 @@ export class DocumentService {
         throw new NotFoundException(`Document with ID ${id} not found`);
       }
 
-      await this.addAuditTrail(id, 'DELETED', deletedBy, undefined, transaction);
+      await this.addAuditTrail(
+        id,
+        'DELETED',
+        deletedBy,
+        undefined,
+        transaction,
+      );
       await document.destroy({ transaction });
       await transaction.commit();
 
@@ -193,7 +224,10 @@ export class DocumentService {
     } catch (error) {
       await transaction.rollback();
       // HIPAA-compliant error handling - never expose PHI
-      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
         throw error;
       }
       throw new Error('Failed to delete document. Please try again.');
@@ -211,7 +245,9 @@ export class DocumentService {
     try {
       const document = await this.documentModel.findByPk(signDto.documentId);
       if (!document) {
-        throw new NotFoundException(`Document with ID ${signDto.documentId} not found`);
+        throw new NotFoundException(
+          `Document with ID ${signDto.documentId} not found`,
+        );
       }
 
       const signature = await this.signatureModel.create(
@@ -247,11 +283,17 @@ export class DocumentService {
   /**
    * Download a document (tracks access)
    */
-  async downloadDocument(documentId: string, downloadedBy: string, ipAddress?: string) {
+  async downloadDocument(
+    documentId: string,
+    downloadedBy: string,
+    ipAddress?: string,
+  ) {
     const transaction = await this.sequelize.transaction();
 
     try {
-      const document = await this.documentModel.findByPk(documentId, { transaction });
+      const document = await this.documentModel.findByPk(documentId, {
+        transaction,
+      });
       if (!document) {
         throw new NotFoundException(`Document with ID ${documentId} not found`);
       }

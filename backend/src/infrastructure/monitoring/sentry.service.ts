@@ -49,12 +49,17 @@ export class SentryService implements OnModuleInit {
    */
   private initialize(): void {
     const dsn = this.configService.get<string>('SENTRY_DSN');
-    const environment = this.configService.get<string>('NODE_ENV', 'development');
+    const environment = this.configService.get<string>(
+      'NODE_ENV',
+      'development',
+    );
     const release = this.configService.get<string>('APP_VERSION', '1.0.0');
 
     // Only initialize if DSN is configured and not in test environment
     if (!dsn || environment === 'test') {
-      this.logger.warn('Sentry not initialized: DSN not configured or test environment');
+      this.logger.warn(
+        'Sentry not initialized: DSN not configured or test environment',
+      );
       return;
     }
 
@@ -276,7 +281,7 @@ export class SentryService implements OnModuleInit {
       // Sanitize headers
       if (event.request.headers) {
         const sensitiveHeaders = ['authorization', 'cookie', 'x-api-key'];
-        sensitiveHeaders.forEach(header => {
+        sensitiveHeaders.forEach((header) => {
           if (event.request?.headers?.[header]) {
             event.request.headers[header] = '[REDACTED]';
           }
@@ -285,7 +290,9 @@ export class SentryService implements OnModuleInit {
 
       // Sanitize query parameters
       if (event.request.query_string) {
-        event.request.query_string = this.sanitizeQueryString(event.request.query_string);
+        event.request.query_string = this.sanitizeQueryString(
+          event.request.query_string,
+        );
       }
 
       // Sanitize request body
@@ -296,7 +303,9 @@ export class SentryService implements OnModuleInit {
 
     // Sanitize breadcrumbs
     if (event.breadcrumbs) {
-      event.breadcrumbs = event.breadcrumbs.map(breadcrumb => this.sanitizeBreadcrumb(breadcrumb));
+      event.breadcrumbs = event.breadcrumbs.map((breadcrumb) =>
+        this.sanitizeBreadcrumb(breadcrumb),
+      );
     }
 
     // Sanitize extra data
@@ -312,7 +321,10 @@ export class SentryService implements OnModuleInit {
    */
   private sanitizeBreadcrumb(breadcrumb: Sentry.Breadcrumb): Sentry.Breadcrumb {
     if (breadcrumb.data) {
-      breadcrumb.data = this.sanitizeValue(breadcrumb.data) as Record<string, any>;
+      breadcrumb.data = this.sanitizeValue(breadcrumb.data) as Record<
+        string,
+        any
+      >;
     }
     return breadcrumb;
   }
@@ -320,12 +332,14 @@ export class SentryService implements OnModuleInit {
   /**
    * Sanitize query string to remove sensitive parameters
    */
-  private sanitizeQueryString(queryString: string | Record<string, string> | [string, string][]): string {
+  private sanitizeQueryString(
+    queryString: string | Record<string, string> | [string, string][],
+  ): string {
     if (typeof queryString === 'string') {
       const sensitiveParams = ['token', 'password', 'ssn', 'dob', 'mrn'];
       let sanitized = queryString;
 
-      sensitiveParams.forEach(param => {
+      sensitiveParams.forEach((param) => {
         const regex = new RegExp(`(${param}=)[^&]*`, 'gi');
         sanitized = sanitized.replace(regex, `$1[REDACTED]`);
       });
@@ -333,23 +347,27 @@ export class SentryService implements OnModuleInit {
       return sanitized;
     } else if (Array.isArray(queryString)) {
       // Handle array format
-      return queryString.map(([key, value]) => {
-        const sensitiveParams = ['token', 'password', 'ssn', 'dob', 'mrn'];
-        if (sensitiveParams.includes(key.toLowerCase())) {
-          return `${key}=[REDACTED]`;
-        }
-        return `${key}=${value}`;
-      }).join('&');
+      return queryString
+        .map(([key, value]) => {
+          const sensitiveParams = ['token', 'password', 'ssn', 'dob', 'mrn'];
+          if (sensitiveParams.includes(key.toLowerCase())) {
+            return `${key}=[REDACTED]`;
+          }
+          return `${key}=${value}`;
+        })
+        .join('&');
     } else {
       // Handle object format
       const params = Object.entries(queryString);
-      return params.map(([key, value]) => {
-        const sensitiveParams = ['token', 'password', 'ssn', 'dob', 'mrn'];
-        if (sensitiveParams.includes(key.toLowerCase())) {
-          return `${key}=[REDACTED]`;
-        }
-        return `${key}=${value}`;
-      }).join('&');
+      return params
+        .map(([key, value]) => {
+          const sensitiveParams = ['token', 'password', 'ssn', 'dob', 'mrn'];
+          if (sensitiveParams.includes(key.toLowerCase())) {
+            return `${key}=[REDACTED]`;
+          }
+          return `${key}=${value}`;
+        })
+        .join('&');
     }
   }
 
@@ -364,7 +382,7 @@ export class SentryService implements OnModuleInit {
     }
 
     if (Array.isArray(value)) {
-      return value.map(item => this.sanitizeValue(item));
+      return value.map((item) => this.sanitizeValue(item));
     }
 
     if (typeof value === 'object') {
@@ -390,7 +408,7 @@ export class SentryService implements OnModuleInit {
 
       for (const [key, val] of Object.entries(value)) {
         const keyLower = key.toLowerCase();
-        if (sensitiveFields.some(field => keyLower.includes(field))) {
+        if (sensitiveFields.some((field) => keyLower.includes(field))) {
           sanitized[key] = '[REDACTED]';
         } else {
           sanitized[key] = this.sanitizeValue(val);
@@ -410,7 +428,10 @@ export class SentryService implements OnModuleInit {
     let sanitized = str;
 
     // Redact email addresses
-    sanitized = sanitized.replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, '[EMAIL]');
+    sanitized = sanitized.replace(
+      /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g,
+      '[EMAIL]',
+    );
 
     // Redact phone numbers
     sanitized = sanitized.replace(/\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/g, '[PHONE]');

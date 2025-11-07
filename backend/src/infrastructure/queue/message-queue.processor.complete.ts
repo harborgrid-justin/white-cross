@@ -11,9 +11,15 @@
  * - External services for notifications
  */
 
-import { Processor, Process, OnQueueActive, OnQueueCompleted, OnQueueFailed } from '@nestjs/bull';
+import {
+  Processor,
+  Process,
+  OnQueueActive,
+  OnQueueCompleted,
+  OnQueueFailed,
+} from '@nestjs/bull';
 import { Logger, Inject, forwardRef } from '@nestjs/common';
-import type { Job } from 'bull'; 
+import type { Job } from 'bull';
 import type { JobResult, JobProgress } from './interfaces';
 import { InjectModel } from '@nestjs/sequelize';
 import { QueueName } from './enums';
@@ -60,11 +66,16 @@ export class MessageDeliveryProcessor {
   @Process('send-message')
   async processSendMessage(job: Job<SendMessageJobDto>): Promise<JobResult> {
     const startTime = Date.now();
-    this.logger.log(`Processing send message job ${job.id} for message ${job.data.messageId}`);
+    this.logger.log(
+      `Processing send message job ${job.id} for message ${job.data.messageId}`,
+    );
 
     try {
       // Update progress: Validating message
-      await job.progress({ percentage: 10, step: 'Validating message' } as JobProgress);
+      await job.progress({
+        percentage: 10,
+        step: 'Validating message',
+      } as JobProgress);
 
       // Step 1: Retrieve message from database
       const message = await this.messageModel.findByPk(job.data.messageId);
@@ -74,7 +85,10 @@ export class MessageDeliveryProcessor {
       }
 
       // Step 2: Check if encryption is required
-      await job.progress({ percentage: 30, step: 'Checking encryption' } as JobProgress);
+      await job.progress({
+        percentage: 30,
+        step: 'Checking encryption',
+      } as JobProgress);
 
       let messageContent = message.content;
       if (job.data.requiresEncryption) {
@@ -83,19 +97,26 @@ export class MessageDeliveryProcessor {
           {
             conversationId: job.data.conversationId,
             aad: `${job.data.senderId}:${job.data.conversationId}`,
-          }
+          },
         );
 
         if (encryptionResult.success) {
           messageContent = encryptionResult.data;
-          this.logger.log(`Message ${job.data.messageId} encrypted successfully`);
+          this.logger.log(
+            `Message ${job.data.messageId} encrypted successfully`,
+          );
         } else {
-          this.logger.warn(`Encryption failed for message ${job.data.messageId}, sending unencrypted`);
+          this.logger.warn(
+            `Encryption failed for message ${job.data.messageId}, sending unencrypted`,
+          );
         }
       }
 
       // Step 3: Broadcast message via WebSocket
-      await job.progress({ percentage: 60, step: 'Broadcasting message' } as JobProgress);
+      await job.progress({
+        percentage: 60,
+        step: 'Broadcasting message',
+      } as JobProgress);
 
       await this.websocketService.sendMessageToConversation(
         job.data.conversationId,
@@ -119,11 +140,14 @@ export class MessageDeliveryProcessor {
             timestamp: new Date().toISOString(),
           }),
           metadata: job.data.metadata || {},
-        }
+        },
       );
 
       // Step 4: Create delivery record
-      await job.progress({ percentage: 80, step: 'Recording delivery' } as JobProgress);
+      await job.progress({
+        percentage: 80,
+        step: 'Recording delivery',
+      } as JobProgress);
 
       await this.messageDeliveryModel.create({
         messageId: job.data.messageId,
@@ -137,7 +161,10 @@ export class MessageDeliveryProcessor {
       // Step 5: Update message status - remove sentAt since it's not in Message model
       await message.update({});
 
-      await job.progress({ percentage: 100, step: 'Message sent' } as JobProgress);
+      await job.progress({
+        percentage: 100,
+        step: 'Message sent',
+      } as JobProgress);
 
       const processingTime = Date.now() - startTime;
       this.logger.log(
@@ -175,7 +202,9 @@ export class MessageDeliveryProcessor {
           failureReason: error.message,
         });
       } catch (dbError) {
-        this.logger.error(`Failed to record delivery failure: ${dbError.message}`);
+        this.logger.error(
+          `Failed to record delivery failure: ${dbError.message}`,
+        );
       }
 
       return {
@@ -237,7 +266,7 @@ export class MessageDeliveryProcessor {
       // Step 2: Broadcast delivery confirmation via WebSocket
       await this.websocketService.broadcastMessageDelivery(
         job.data.messageId,
-        job.data.status as any
+        job.data.status as any,
       );
 
       // Step 3: Update message if this is a read receipt - remove status update since Message model doesn't have status
@@ -331,7 +360,10 @@ export class MessageNotificationProcessor {
     );
 
     try {
-      await job.progress({ percentage: 20, step: 'Preparing notification' } as JobProgress);
+      await job.progress({
+        percentage: 20,
+        step: 'Preparing notification',
+      } as JobProgress);
 
       // Route to appropriate notification handler
       switch (job.data.type) {
@@ -351,7 +383,10 @@ export class MessageNotificationProcessor {
           throw new Error(`Unsupported notification type: ${job.data.type}`);
       }
 
-      await job.progress({ percentage: 100, step: 'Notification sent' } as JobProgress);
+      await job.progress({
+        percentage: 100,
+        step: 'Notification sent',
+      } as JobProgress);
 
       const processingTime = Date.now() - startTime;
       this.logger.log(
@@ -373,7 +408,10 @@ export class MessageNotificationProcessor {
       };
     } catch (error) {
       const processingTime = Date.now() - startTime;
-      this.logger.error(`Failed to send notification: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to send notification: ${error.message}`,
+        error.stack,
+      );
 
       return {
         success: false,
@@ -390,10 +428,15 @@ export class MessageNotificationProcessor {
     }
   }
 
-  private async sendPushNotification(job: Job<NotificationJobDto>): Promise<void> {
+  private async sendPushNotification(
+    job: Job<NotificationJobDto>,
+  ): Promise<void> {
     // TODO: Integrate with Firebase Cloud Messaging or APNs
     // For now, log the notification
-    await job.progress({ percentage: 50, step: 'Sending push notification' } as JobProgress);
+    await job.progress({
+      percentage: 50,
+      step: 'Sending push notification',
+    } as JobProgress);
 
     this.logger.log(`[PUSH NOTIFICATION] To: ${job.data.recipientId}`);
     this.logger.log(`[PUSH NOTIFICATION] Title: ${job.data.title}`);
@@ -403,10 +446,15 @@ export class MessageNotificationProcessor {
     await this.delay(100);
   }
 
-  private async sendEmailNotification(job: Job<NotificationJobDto>): Promise<void> {
+  private async sendEmailNotification(
+    job: Job<NotificationJobDto>,
+  ): Promise<void> {
     // TODO: Integrate with email service (NodeMailer/SendGrid)
     // For now, log the notification
-    await job.progress({ percentage: 50, step: 'Sending email notification' } as JobProgress);
+    await job.progress({
+      percentage: 50,
+      step: 'Sending email notification',
+    } as JobProgress);
 
     this.logger.log(`[EMAIL NOTIFICATION] To: ${job.data.recipientId}`);
     this.logger.log(`[EMAIL NOTIFICATION] Subject: ${job.data.title}`);
@@ -416,10 +464,15 @@ export class MessageNotificationProcessor {
     await this.delay(150);
   }
 
-  private async sendSmsNotification(job: Job<NotificationJobDto>): Promise<void> {
+  private async sendSmsNotification(
+    job: Job<NotificationJobDto>,
+  ): Promise<void> {
     // TODO: Integrate with SMS service (Twilio)
     // For now, log the notification
-    await job.progress({ percentage: 50, step: 'Sending SMS notification' } as JobProgress);
+    await job.progress({
+      percentage: 50,
+      step: 'Sending SMS notification',
+    } as JobProgress);
 
     this.logger.log(`[SMS NOTIFICATION] To: ${job.data.recipientId}`);
     this.logger.log(`[SMS NOTIFICATION] Message: ${job.data.message}`);
@@ -428,13 +481,20 @@ export class MessageNotificationProcessor {
     await this.delay(120);
   }
 
-  private async sendInAppNotification(job: Job<NotificationJobDto>): Promise<void> {
+  private async sendInAppNotification(
+    job: Job<NotificationJobDto>,
+  ): Promise<void> {
     // Store notification in database for in-app display
-    await job.progress({ percentage: 50, step: 'Storing in-app notification' } as JobProgress);
+    await job.progress({
+      percentage: 50,
+      step: 'Storing in-app notification',
+    } as JobProgress);
 
     // TODO: Create Notification model and store in database
     this.logger.log(`[IN-APP NOTIFICATION] To: ${job.data.recipientId}`);
-    this.logger.log(`[IN-APP NOTIFICATION] ${job.data.title}: ${job.data.message}`);
+    this.logger.log(
+      `[IN-APP NOTIFICATION] ${job.data.title}: ${job.data.message}`,
+    );
 
     await this.delay(50);
   }
@@ -486,7 +546,10 @@ export class MessageEncryptionProcessor {
     );
 
     try {
-      await job.progress({ percentage: 25, step: `Starting ${job.data.operation}` } as JobProgress);
+      await job.progress({
+        percentage: 25,
+        step: `Starting ${job.data.operation}`,
+      } as JobProgress);
 
       const message = await this.messageModel.findByPk(job.data.messageId);
       if (!message) {
@@ -507,7 +570,10 @@ export class MessageEncryptionProcessor {
         result = await this.decryptContent(job.data.content, message);
       }
 
-      await job.progress({ percentage: 100, step: `${job.data.operation} completed` } as JobProgress);
+      await job.progress({
+        percentage: 100,
+        step: `${job.data.operation} completed`,
+      } as JobProgress);
 
       const processingTime = Date.now() - startTime;
       this.logger.log(
@@ -549,7 +615,10 @@ export class MessageEncryptionProcessor {
     }
   }
 
-  private async encryptContent(content: string, message: Message): Promise<string> {
+  private async encryptContent(
+    content: string,
+    message: Message,
+  ): Promise<string> {
     const encryptionResult = await this.encryptionService.encrypt(content, {
       conversationId: message.conversationId,
       aad: `${message.senderId}:${message.conversationId}`,
@@ -562,7 +631,10 @@ export class MessageEncryptionProcessor {
     return encryptionResult.data;
   }
 
-  private async decryptContent(encryptedContent: string, message: Message): Promise<string> {
+  private async decryptContent(
+    encryptedContent: string,
+    message: Message,
+  ): Promise<string> {
     if (!message.encryptionMetadata) {
       throw new Error('Message encryption metadata not found');
     }
@@ -572,7 +644,7 @@ export class MessageEncryptionProcessor {
       message.encryptionMetadata as any,
       {
         conversationId: message.conversationId,
-      }
+      },
     );
 
     if (!decryptionResult.success) {
@@ -623,7 +695,10 @@ export class MessageIndexingProcessor {
     );
 
     try {
-      await job.progress({ percentage: 30, step: `${job.data.operation} index` } as JobProgress);
+      await job.progress({
+        percentage: 30,
+        step: `${job.data.operation} index`,
+      } as JobProgress);
 
       switch (job.data.operation) {
         case 'index':
@@ -637,7 +712,10 @@ export class MessageIndexingProcessor {
           break;
       }
 
-      await job.progress({ percentage: 100, step: 'Indexing completed' } as JobProgress);
+      await job.progress({
+        percentage: 100,
+        step: 'Indexing completed',
+      } as JobProgress);
 
       const processingTime = Date.now() - startTime;
       this.logger.log(
@@ -735,7 +813,9 @@ export class BatchMessageProcessor {
   async processBatchMessage(job: Job<BatchMessageJobDto>): Promise<JobResult> {
     const startTime = Date.now();
     const totalRecipients = job.data.recipientIds.length;
-    this.logger.log(`Processing batch message job ${job.id} for ${totalRecipients} recipients`);
+    this.logger.log(
+      `Processing batch message job ${job.id} for ${totalRecipients} recipients`,
+    );
 
     try {
       const chunkSize = job.data.chunkSize || 10;
@@ -822,7 +902,8 @@ export class BatchMessageProcessor {
           const message = await this.messageModel.create({
             senderId: jobData.senderId,
             recipientId,
-            conversationId: jobData.conversationIds?.[0] || `batch-${jobData.batchId}`,
+            conversationId:
+              jobData.conversationIds?.[0] || `batch-${jobData.batchId}`,
             content: jobData.content,
             type: 'TEXT',
             status: 'PENDING',
@@ -832,37 +913,38 @@ export class BatchMessageProcessor {
           } as any);
 
           // Broadcast via WebSocket
-          await this.websocketService.sendMessageToUsers(
-            [recipientId],
-            {
+          await this.websocketService.sendMessageToUsers([recipientId], {
+            messageId: message.id,
+            senderId: jobData.senderId,
+            content: jobData.content,
+            conversationId:
+              message.conversationId || `batch-${jobData.batchId}`,
+            timestamp: new Date().toISOString(),
+            recipientIds: [recipientId],
+            organizationId: 'default',
+            type: 'send',
+            validateSender: () => true,
+            validateOrganization: () => true,
+            isDirectMessage: () => false,
+            toPayload: () => ({
               messageId: message.id,
               senderId: jobData.senderId,
               content: jobData.content,
-              conversationId: message.conversationId || `batch-${jobData.batchId}`,
+              conversationId:
+                message.conversationId || `batch-${jobData.batchId}`,
               timestamp: new Date().toISOString(),
-              recipientIds: [recipientId],
-              organizationId: 'default',
-              type: 'send',
-              validateSender: () => true,
-              validateOrganization: () => true,
-              isDirectMessage: () => false,
-              toPayload: () => ({
-                messageId: message.id,
-                senderId: jobData.senderId,
-                content: jobData.content,
-                conversationId: message.conversationId || `batch-${jobData.batchId}`,
-                timestamp: new Date().toISOString(),
-              }),
-              metadata: {},
-            }
-          );
+            }),
+            metadata: {},
+          });
 
           success++;
         } catch (error) {
-          this.logger.error(`Failed to send to ${recipientId}: ${error.message}`);
+          this.logger.error(
+            `Failed to send to ${recipientId}: ${error.message}`,
+          );
           failure++;
         }
-      })
+      }),
     );
 
     return { success, failure };
@@ -906,7 +988,9 @@ export class MessageCleanupProcessor {
    * Removes old messages based on retention policy
    */
   @Process('cleanup-messages')
-  async processMessageCleanup(job: Job<MessageCleanupJobDto>): Promise<JobResult> {
+  async processMessageCleanup(
+    job: Job<MessageCleanupJobDto>,
+  ): Promise<JobResult> {
     const startTime = Date.now();
     this.logger.log(`Processing message cleanup: ${job.data.cleanupType}`);
 
@@ -915,13 +999,21 @@ export class MessageCleanupProcessor {
 
       switch (job.data.cleanupType) {
         case CleanupType.OLD_MESSAGES:
-          deletedCount = await this.cleanupOldMessages(job.data.retentionDays || 30, job.data.batchSize || 100);
+          deletedCount = await this.cleanupOldMessages(
+            job.data.retentionDays || 30,
+            job.data.batchSize || 100,
+          );
           break;
         case CleanupType.DELETED_CONVERSATIONS:
-          deletedCount = await this.cleanupDeletedConversations(job.data.batchSize || 100);
+          deletedCount = await this.cleanupDeletedConversations(
+            job.data.batchSize || 100,
+          );
           break;
         case CleanupType.EXPIRED_ATTACHMENTS:
-          deletedCount = await this.cleanupExpiredAttachments(job.data.retentionDays || 7, job.data.batchSize || 100);
+          deletedCount = await this.cleanupExpiredAttachments(
+            job.data.retentionDays || 7,
+            job.data.batchSize || 100,
+          );
           break;
         default:
           throw new Error(`Unknown cleanup type: ${job.data.cleanupType}`);
@@ -964,7 +1056,10 @@ export class MessageCleanupProcessor {
     }
   }
 
-  private async cleanupOldMessages(retentionDays: number, batchSize: number): Promise<number> {
+  private async cleanupOldMessages(
+    retentionDays: number,
+    batchSize: number,
+  ): Promise<number> {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
 
@@ -977,15 +1072,19 @@ export class MessageCleanupProcessor {
           deletedAt: { [Op.is]: null as any },
         },
         limit: batchSize,
-      }
+      },
     );
 
     const deletedCount = result[0];
-    this.logger.log(`Soft deleted ${deletedCount} messages older than ${retentionDays} days`);
+    this.logger.log(
+      `Soft deleted ${deletedCount} messages older than ${retentionDays} days`,
+    );
     return deletedCount;
   }
 
-  private async cleanupDeletedConversations(batchSize: number): Promise<number> {
+  private async cleanupDeletedConversations(
+    batchSize: number,
+  ): Promise<number> {
     // Find messages from deleted conversations
     const orphanedMessages = await this.messageModel.findAll({
       where: {
@@ -998,11 +1097,16 @@ export class MessageCleanupProcessor {
       await message.destroy({ force: true });
     }
 
-    this.logger.log(`Deleted ${orphanedMessages.length} messages from deleted conversations`);
+    this.logger.log(
+      `Deleted ${orphanedMessages.length} messages from deleted conversations`,
+    );
     return orphanedMessages.length;
   }
 
-  private async cleanupExpiredAttachments(retentionDays: number, batchSize: number): Promise<number> {
+  private async cleanupExpiredAttachments(
+    retentionDays: number,
+    batchSize: number,
+  ): Promise<number> {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
 
@@ -1013,7 +1117,9 @@ export class MessageCleanupProcessor {
     // 3. Updating message records to remove attachment references
 
     // For now, simulate attachment cleanup
-    this.logger.log(`Cleaned up expired attachments older than ${retentionDays} days`);
+    this.logger.log(
+      `Cleaned up expired attachments older than ${retentionDays} days`,
+    );
     return 0; // Placeholder
   }
 

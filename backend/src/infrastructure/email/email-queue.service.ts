@@ -35,8 +35,14 @@ export class EmailQueueService implements OnModuleInit {
     @InjectQueue(EMAIL_QUEUE_NAME) private readonly emailQueue: Queue,
     private readonly configService: ConfigService,
   ) {
-    this.maxRetries = this.configService.get<number>('EMAIL_QUEUE_MAX_RETRIES', 3);
-    this.backoffDelay = this.configService.get<number>('EMAIL_QUEUE_BACKOFF_DELAY', 5000);
+    this.maxRetries = this.configService.get<number>(
+      'EMAIL_QUEUE_MAX_RETRIES',
+      3,
+    );
+    this.backoffDelay = this.configService.get<number>(
+      'EMAIL_QUEUE_BACKOFF_DELAY',
+      5000,
+    );
   }
 
   /**
@@ -92,7 +98,9 @@ export class EmailQueueService implements OnModuleInit {
       },
     });
 
-    this.logger.log(`Email job added to queue: ${job.id} (priority: ${priority})`);
+    this.logger.log(
+      `Email job added to queue: ${job.id} (priority: ${priority})`,
+    );
     return job.id || '';
   }
 
@@ -102,11 +110,15 @@ export class EmailQueueService implements OnModuleInit {
    * @returns Job result
    */
   @Process('send-email')
-  async processSendEmail(job: Job<EmailQueueJobData>): Promise<EmailQueueJobResult> {
+  async processSendEmail(
+    job: Job<EmailQueueJobData>,
+  ): Promise<EmailQueueJobResult> {
     const { id, emailData, retryCount } = job.data;
     const attemptNumber = job.attemptsMade;
 
-    this.logger.log(`Processing email job: ${id} (attempt ${attemptNumber}/${job.opts.attempts})`);
+    this.logger.log(
+      `Processing email job: ${id} (attempt ${attemptNumber}/${job.opts.attempts})`,
+    );
 
     try {
       // The actual email sending will be delegated to EmailService
@@ -328,7 +340,10 @@ export class EmailQueueService implements OnModuleInit {
    * @param error - Error that caused the failure
    * @private
    */
-  private async moveToDeadLetterQueue(job: Job<EmailQueueJobData>, error: Error): Promise<void> {
+  private async moveToDeadLetterQueue(
+    job: Job<EmailQueueJobData>,
+    error: Error,
+  ): Promise<void> {
     // Log to dead letter queue (in production, this could write to a database or separate queue)
     this.logger.error(
       `Dead letter queue: Job ${job.id} failed permanently`,
@@ -376,7 +391,10 @@ export class EmailQueueService implements OnModuleInit {
    * Health check for the queue
    * @returns Health status
    */
-  async healthCheck(): Promise<{ healthy: boolean; stats: Record<string, number> }> {
+  async healthCheck(): Promise<{
+    healthy: boolean;
+    stats: Record<string, number>;
+  }> {
     try {
       const stats = await this.getQueueStats();
       const healthy = stats.active >= 0; // Basic check - queue is responding

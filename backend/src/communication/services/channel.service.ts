@@ -6,12 +6,18 @@ import { ChannelSendData, ChannelSendResult } from '../interfaces';
 export class ChannelService {
   private readonly logger = new Logger(ChannelService.name);
 
-  async sendViaChannel(channel: MessageType, data: ChannelSendData): Promise<ChannelSendResult> {
+  async sendViaChannel(
+    channel: MessageType,
+    data: ChannelSendData,
+  ): Promise<ChannelSendResult> {
     this.logger.log('Sending via channel: ' + channel);
     return { externalId: 'external-id-' + Date.now() };
   }
 
-  async translateMessage(content: string, targetLanguage: string): Promise<string> {
+  async translateMessage(
+    content: string,
+    targetLanguage: string,
+  ): Promise<string> {
     return content;
   }
 }

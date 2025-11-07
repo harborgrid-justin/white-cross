@@ -11,7 +11,7 @@ import {
   Scopes,
   BeforeUpdate,
   UpdatedAt,
-  CreatedAt
+  CreatedAt,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
@@ -20,7 +20,7 @@ import {
   EmergencyPriority,
   BroadcastAudience,
   BroadcastStatus,
-  CommunicationChannel
+  CommunicationChannel,
 } from '../../emergency-broadcast/emergency-broadcast.enums';
 
 export interface EmergencyBroadcastAttributes {
@@ -53,10 +53,10 @@ export interface EmergencyBroadcastAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'emergency_broadcasts',
@@ -64,34 +64,37 @@ export interface EmergencyBroadcastAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['type']
+      fields: ['type'],
     },
     {
-      fields: ['priority']
+      fields: ['priority'],
     },
     {
-      fields: ['status']
+      fields: ['status'],
     },
     {
-      fields: ['schoolId']
+      fields: ['schoolId'],
     },
     {
-      fields: ['sentAt']
+      fields: ['sentAt'],
     },
     {
-      fields: ['expiresAt']
+      fields: ['expiresAt'],
     },
     {
       fields: ['createdAt'],
-      name: 'idx_emergency_broadcast_created_at'
+      name: 'idx_emergency_broadcast_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_emergency_broadcast_updated_at'
-    }
-  ]
+      name: 'idx_emergency_broadcast_updated_at',
+    },
+  ],
 })
-export class EmergencyBroadcast extends Model<EmergencyBroadcastAttributes> implements EmergencyBroadcastAttributes {
+export class EmergencyBroadcast
+  extends Model<EmergencyBroadcastAttributes>
+  implements EmergencyBroadcastAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -100,37 +103,37 @@ export class EmergencyBroadcast extends Model<EmergencyBroadcastAttributes> impl
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(EmergencyType)]
+      isIn: [Object.values(EmergencyType)],
     },
-    allowNull: false
+    allowNull: false,
   })
   type: EmergencyType;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(EmergencyPriority)]
+      isIn: [Object.values(EmergencyPriority)],
     },
-    allowNull: false
+    allowNull: false,
   })
   priority: EmergencyPriority;
 
   @Column({
     type: DataType.STRING(200),
-    allowNull: false
+    allowNull: false,
   })
   title: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false
+    allowNull: false,
   })
   message: string;
 
   @Column({
     type: DataType.JSON,
     allowNull: false,
-    defaultValue: []
+    defaultValue: [],
   })
   audience: BroadcastAudience[];
 
@@ -149,13 +152,13 @@ export class EmergencyBroadcast extends Model<EmergencyBroadcastAttributes> impl
   @Column({
     type: DataType.JSON,
     allowNull: false,
-    defaultValue: []
+    defaultValue: [],
   })
   channels: CommunicationChannel[];
 
   @Column({
     type: DataType.BOOLEAN,
-    defaultValue: false
+    defaultValue: false,
   })
   requiresAcknowledgment?: boolean;
 
@@ -164,53 +167,53 @@ export class EmergencyBroadcast extends Model<EmergencyBroadcastAttributes> impl
 
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   sentBy: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   sentAt: Date;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(BroadcastStatus)]
+      isIn: [Object.values(BroadcastStatus)],
     },
     allowNull: false,
-    defaultValue: BroadcastStatus.DRAFT
+    defaultValue: BroadcastStatus.DRAFT,
   })
   status: BroadcastStatus;
 
   @Column({
     type: DataType.INTEGER,
-    defaultValue: 0
+    defaultValue: 0,
   })
   totalRecipients?: number;
 
   @Column({
     type: DataType.INTEGER,
-    defaultValue: 0
+    defaultValue: 0,
   })
   deliveredCount?: number;
 
   @Column({
     type: DataType.INTEGER,
-    defaultValue: 0
+    defaultValue: 0,
   })
   failedCount?: number;
 
   @Column({
     type: DataType.INTEGER,
-    defaultValue: 0
+    defaultValue: 0,
   })
   acknowledgedCount?: number;
 
   @Column({
     type: DataType.BOOLEAN,
-    defaultValue: false
+    defaultValue: false,
   })
   followUpRequired?: boolean;
 
@@ -223,14 +226,15 @@ export class EmergencyBroadcast extends Model<EmergencyBroadcastAttributes> impl
   @Column(DataType.DATE)
   declare updatedAt?: Date;
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: EmergencyBroadcast) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] EmergencyBroadcast ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] EmergencyBroadcast ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

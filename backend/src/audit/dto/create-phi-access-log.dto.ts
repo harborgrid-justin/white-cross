@@ -16,7 +16,10 @@ export class CreatePHIAccessLogDto extends CreateAuditLogDto {
   @IsEnum(PHIAccessType)
   accessType: PHIAccessType;
 
-  @ApiProperty({ enum: PHIDataCategory, description: 'Category of PHI data accessed' })
+  @ApiProperty({
+    enum: PHIDataCategory,
+    description: 'Category of PHI data accessed',
+  })
   @IsEnum(PHIDataCategory)
   dataCategory: PHIDataCategory;
 }

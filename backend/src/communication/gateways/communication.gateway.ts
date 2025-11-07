@@ -47,14 +47,18 @@ export class CommunicationGateway
    * Handles new client connections
    */
   handleConnection(client: Socket): void {
-    this.logger.log(`Client connected to communication namespace: ${client.id}`);
+    this.logger.log(
+      `Client connected to communication namespace: ${client.id}`,
+    );
   }
 
   /**
    * Handles client disconnections
    */
   handleDisconnect(client: Socket): void {
-    this.logger.log(`Client disconnected from communication namespace: ${client.id}`);
+    this.logger.log(
+      `Client disconnected from communication namespace: ${client.id}`,
+    );
   }
 
   @UseGuards(WsJwtAuthGuard)
@@ -63,12 +67,16 @@ export class CommunicationGateway
     @MessageBody() data: { messageId: string },
     @ConnectedSocket() client: Socket,
   ) {
-    this.logger.log(`Client ${client.id} subscribed to delivery updates for message ${data.messageId}`);
+    this.logger.log(
+      `Client ${client.id} subscribed to delivery updates for message ${data.messageId}`,
+    );
     client.join('message-' + data.messageId);
     return { success: true };
   }
 
   emitDeliveryStatusUpdate(messageId: string, status: any) {
-    this.server.to('message-' + messageId).emit('delivery-status-update', status);
+    this.server
+      .to('message-' + messageId)
+      .emit('delivery-status-update', status);
   }
 }

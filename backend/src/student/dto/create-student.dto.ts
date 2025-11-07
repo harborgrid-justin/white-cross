@@ -29,35 +29,43 @@ import { Gender } from '../entities/student.entity';
  */
 export class CreateStudentDto {
   @ApiProperty({
-    description: 'Unique student identifier (4-20 alphanumeric characters with optional hyphens)',
+    description:
+      'Unique student identifier (4-20 alphanumeric characters with optional hyphens)',
     example: 'STU-2024-001',
     minLength: 4,
     maxLength: 20,
   })
   @IsNotEmpty({ message: 'Student number is required' })
   @IsString()
-  @Length(4, 20, { message: 'Student number must be between 4 and 20 characters' })
+  @Length(4, 20, {
+    message: 'Student number must be between 4 and 20 characters',
+  })
   @Matches(/^[A-Z0-9-]+$/i, {
     message: 'Student number must be alphanumeric with optional hyphens',
   })
   studentNumber: string;
 
   @ApiProperty({
-    description: 'Student first name (1-100 characters, letters/spaces/hyphens/apostrophes only)',
+    description:
+      'Student first name (1-100 characters, letters/spaces/hyphens/apostrophes only)',
     example: 'Emma',
     minLength: 1,
     maxLength: 100,
   })
   @IsNotEmpty({ message: 'First name is required' })
   @IsString()
-  @Length(1, 100, { message: 'First name must be between 1 and 100 characters' })
+  @Length(1, 100, {
+    message: 'First name must be between 1 and 100 characters',
+  })
   @Matches(/^[a-zA-Z\s'-]+$/, {
-    message: 'First name can only contain letters, spaces, hyphens, and apostrophes',
+    message:
+      'First name can only contain letters, spaces, hyphens, and apostrophes',
   })
   firstName: string;
 
   @ApiProperty({
-    description: 'Student last name (1-100 characters, letters/spaces/hyphens/apostrophes only)',
+    description:
+      'Student last name (1-100 characters, letters/spaces/hyphens/apostrophes only)',
     example: 'Wilson',
     minLength: 1,
     maxLength: 100,
@@ -66,7 +74,8 @@ export class CreateStudentDto {
   @IsString()
   @Length(1, 100, { message: 'Last name must be between 1 and 100 characters' })
   @Matches(/^[a-zA-Z\s'-]+$/, {
-    message: 'Last name can only contain letters, spaces, hyphens, and apostrophes',
+    message:
+      'Last name can only contain letters, spaces, hyphens, and apostrophes',
   })
   lastName: string;
 
@@ -98,7 +107,9 @@ export class CreateStudentDto {
     example: Gender.FEMALE,
   })
   @IsNotEmpty({ message: 'Gender is required' })
-  @IsEnum(Gender, { message: 'Gender must be MALE, FEMALE, OTHER, or PREFER_NOT_TO_SAY' })
+  @IsEnum(Gender, {
+    message: 'Gender must be MALE, FEMALE, OTHER, or PREFER_NOT_TO_SAY',
+  })
   gender: Gender;
 
   @ApiProperty({
@@ -114,7 +125,8 @@ export class CreateStudentDto {
   photo?: string;
 
   @ApiProperty({
-    description: 'Medical record number (5-20 alphanumeric characters with optional hyphens)',
+    description:
+      'Medical record number (5-20 alphanumeric characters with optional hyphens)',
     example: 'MRN-12345',
     required: false,
     minLength: 5,
@@ -122,7 +134,9 @@ export class CreateStudentDto {
   })
   @IsOptional()
   @IsString()
-  @Length(5, 20, { message: 'Medical record number must be between 5 and 20 characters' })
+  @Length(5, 20, {
+    message: 'Medical record number must be between 5 and 20 characters',
+  })
   @Matches(/^[A-Z0-9-]+$/i, {
     message: 'Medical record number must be alphanumeric with optional hyphens',
   })

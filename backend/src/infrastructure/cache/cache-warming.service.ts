@@ -169,10 +169,7 @@ export class CacheWarmingService implements OnModuleInit {
           });
           warmed++;
         } catch (error) {
-          this.logger.error(
-            `Failed to warm cache key ${entry.key}:`,
-            error,
-          );
+          this.logger.error(`Failed to warm cache key ${entry.key}:`, error);
         }
       }
 

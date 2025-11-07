@@ -1,11 +1,27 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { License } from '../entities/license.entity';
 import { District } from '../entities/district.entity';
 import { AuditService } from './audit.service';
-import { CreateLicenseDto, UpdateLicenseDto, LicenseQueryDto } from '../dto/license.dto';
-import { AuditAction, LicenseType, LicenseStatus } from '../enums/administration.enums';
-import { PaginatedResponse, PaginationResult } from '../interfaces/administration.interfaces';
+import {
+  CreateLicenseDto,
+  UpdateLicenseDto,
+  LicenseQueryDto,
+} from '../dto/license.dto';
+import {
+  AuditAction,
+  LicenseType,
+  LicenseStatus,
+} from '../enums/administration.enums';
+import {
+  PaginatedResponse,
+  PaginationResult,
+} from '../interfaces/administration.interfaces';
 
 @Injectable()
 export class LicenseService {
@@ -30,7 +46,7 @@ export class LicenseService {
 
       const normalizedKey = data.licenseKey.toUpperCase().trim();
       const existing = await this.licenseModel.findOne({
-        where: { licenseKey: normalizedKey }
+        where: { licenseKey: normalizedKey },
       });
 
       if (existing) {
@@ -66,18 +82,26 @@ export class LicenseService {
   private validateLicenseType(data: CreateLicenseDto): void {
     if (data.type === LicenseType.TRIAL) {
       if (!data.maxUsers || data.maxUsers > 10) {
-        throw new BadRequestException('Trial license cannot have more than 10 users');
+        throw new BadRequestException(
+          'Trial license cannot have more than 10 users',
+        );
       }
       if (!data.maxSchools || data.maxSchools > 2) {
-        throw new BadRequestException('Trial license cannot have more than 2 schools');
+        throw new BadRequestException(
+          'Trial license cannot have more than 2 schools',
+        );
       }
       if (!data.expiresAt) {
-        throw new BadRequestException('Trial license must have an expiration date');
+        throw new BadRequestException(
+          'Trial license must have an expiration date',
+        );
       }
     }
   }
 
-  async getLicenses(queryDto: LicenseQueryDto): Promise<PaginatedResponse<License>> {
+  async getLicenses(
+    queryDto: LicenseQueryDto,
+  ): Promise<PaginatedResponse<License>> {
     try {
       const { page = 1, limit = 20, status } = queryDto;
       const offset = (page - 1) * limit;
@@ -87,13 +111,14 @@ export class LicenseService {
         whereClause.status = status;
       }
 
-      const { rows: licenses, count: total } = await this.licenseModel.findAndCountAll({
-        where: whereClause,
-        offset,
-        limit,
-        include: ['district'],
-        order: [['createdAt', 'DESC']],
-      });
+      const { rows: licenses, count: total } =
+        await this.licenseModel.findAndCountAll({
+          where: whereClause,
+          offset,
+          limit,
+          include: ['district'],
+          order: [['createdAt', 'DESC']],
+        });
 
       const pagination: PaginationResult = {
         page,

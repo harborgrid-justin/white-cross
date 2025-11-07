@@ -23,7 +23,7 @@
 
 /**
  * Medication calculation and management utilities
- * 
+ *
  * These utilities provide standardized medication management functions
  * for dosage calculations, scheduling, and safety validations.
  */
@@ -45,22 +45,22 @@ export interface MedicationInfo {
 
 /**
  * Calculate dosage schedule based on frequency and date range
- * 
+ *
  * @param frequency - Dosage frequency (e.g., "BID", "TID", "QID", "Q6H")
  * @param startDate - Start date for the medication
  * @param endDate - Optional end date for the medication
  * @returns DosageSchedule object with calculated times
  */
 export function calculateDosageSchedule(
-  frequency: string, 
-  startDate: Date, 
-  endDate?: Date
+  frequency: string,
+  startDate: Date,
+  endDate?: Date,
 ): DosageSchedule {
   const schedule: DosageSchedule = {
     times: [],
     frequency,
     intervalHours: 24,
-    dailyCount: 1
+    dailyCount: 1,
   };
 
   // Parse frequency to determine interval and daily count
@@ -116,7 +116,7 @@ export function calculateDosageSchedule(
 
   for (let i = 0; i < schedule.dailyCount; i++) {
     const time = new Date(baseTime);
-    time.setHours(baseTime.getHours() + (i * schedule.intervalHours));
+    time.setHours(baseTime.getHours() + i * schedule.intervalHours);
     schedule.times.push(time);
   }
 
@@ -125,12 +125,15 @@ export function calculateDosageSchedule(
 
 /**
  * Validate dosage amount against medication safety parameters
- * 
+ *
  * @param dosage - Dosage string (e.g., "5mg", "1 tablet")
  * @param medication - Medication information object
  * @returns boolean indicating if dosage is valid
  */
-export function validateDosageAmount(dosage: string, medication: MedicationInfo): boolean {
+export function validateDosageAmount(
+  dosage: string,
+  medication: MedicationInfo,
+): boolean {
   if (!dosage || !medication) {
     return false;
   }
@@ -158,21 +161,23 @@ export function validateDosageAmount(dosage: string, medication: MedicationInfo)
     case 'tablet':
     case 'capsule':
       // Tablets/capsules should typically be whole numbers or common fractions
-      return amount === Math.floor(amount) || 
-             amount === 0.5 || 
-             amount === 0.25 || 
-             amount === 0.75;
-    
+      return (
+        amount === Math.floor(amount) ||
+        amount === 0.5 ||
+        amount === 0.25 ||
+        amount === 0.75
+      );
+
     case 'liquid':
     case 'suspension':
     case 'solution':
       // Liquids can have decimal amounts
       return amount <= 50; // Reasonable upper limit for liquid doses in mL
-    
+
     case 'injection':
       // Injections typically have smaller volumes
       return amount <= 10;
-    
+
     default:
       return true; // Allow other forms without specific validation
   }
@@ -180,28 +185,35 @@ export function validateDosageAmount(dosage: string, medication: MedicationInfo)
 
 /**
  * Check if medication is expiring within buffer period
- * 
+ *
  * @param expirationDate - Expiration date of the medication
  * @param bufferDays - Number of days before expiration to alert (default: 30)
  * @returns boolean indicating if medication is expiring soon
  */
-export function calculateMedicationExpiry(expirationDate: Date, bufferDays: number = 30): boolean {
+export function calculateMedicationExpiry(
+  expirationDate: Date,
+  bufferDays: number = 30,
+): boolean {
   const now = new Date();
   const bufferTime = bufferDays * 24 * 60 * 60 * 1000; // Convert days to milliseconds
   const alertDate = new Date(expirationDate.getTime() - bufferTime);
-  
+
   return now >= alertDate;
 }
 
 /**
  * Format medication name consistently across the application
- * 
+ *
  * @param name - Medication name
  * @param strength - Medication strength (e.g., "5mg", "250mg/5ml")
  * @param form - Dosage form (e.g., "tablet", "liquid")
  * @returns Formatted medication name string
  */
-export function formatMedicationName(name: string, strength: string, form: string): string {
+export function formatMedicationName(
+  name: string,
+  strength: string,
+  form: string,
+): string {
   if (!name) {
     return '';
   }
@@ -222,35 +234,38 @@ export function formatMedicationName(name: string, strength: string, form: strin
 
 /**
  * Calculate next dose time based on frequency and last dose
- * 
+ *
  * @param lastDoseTime - Time of the last dose
  * @param frequency - Dosage frequency
  * @returns Date of next scheduled dose
  */
-export function calculateNextDoseTime(lastDoseTime: Date, frequency: string): Date {
+export function calculateNextDoseTime(
+  lastDoseTime: Date,
+  frequency: string,
+): Date {
   const schedule = calculateDosageSchedule(frequency, lastDoseTime);
   const nextDose = new Date(lastDoseTime);
   nextDose.setHours(nextDose.getHours() + schedule.intervalHours);
-  
+
   return nextDose;
 }
 
 /**
  * Check if it's time for the next dose
- * 
+ *
  * @param lastDoseTime - Time of the last dose
  * @param frequency - Dosage frequency
  * @param bufferMinutes - Buffer time in minutes to allow early dosing (default: 15)
  * @returns boolean indicating if next dose is due
  */
 export function isDoseTimeReached(
-  lastDoseTime: Date, 
-  frequency: string, 
-  bufferMinutes: number = 15
+  lastDoseTime: Date,
+  frequency: string,
+  bufferMinutes: number = 15,
 ): boolean {
   const nextDoseTime = calculateNextDoseTime(lastDoseTime, frequency);
   const now = new Date();
   const bufferTime = bufferMinutes * 60 * 1000; // Convert minutes to milliseconds
-  
+
   return now >= new Date(nextDoseTime.getTime() - bufferTime);
 }

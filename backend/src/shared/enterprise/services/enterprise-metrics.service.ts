@@ -20,17 +20,23 @@ export class EnterpriseMetricsService {
   private startTime = Date.now();
 
   constructor(private readonly moduleName: string) {
-    this.logger.log(`Enterprise metrics service initialized for module: ${moduleName}`);
+    this.logger.log(
+      `Enterprise metrics service initialized for module: ${moduleName}`,
+    );
   }
 
   /**
    * Increment a counter metric
    */
-  incrementCounter(name: string, value: number = 1, labels?: Record<string, string>): void {
+  incrementCounter(
+    name: string,
+    value: number = 1,
+    labels?: Record<string, string>,
+  ): void {
     try {
       const key = this.getMetricKey(name);
       const existing = this.counters.get(key);
-      
+
       if (existing) {
         existing.value += value;
         existing.labels = { ...existing.labels, ...labels };
@@ -49,7 +55,11 @@ export class EnterpriseMetricsService {
   /**
    * Set a gauge metric value
    */
-  recordGauge(name: string, value: number, labels?: Record<string, string>): void {
+  recordGauge(
+    name: string,
+    value: number,
+    labels?: Record<string, string>,
+  ): void {
     try {
       const key = this.getMetricKey(name);
       this.gauges.set(key, {
@@ -65,11 +75,15 @@ export class EnterpriseMetricsService {
   /**
    * Record a histogram metric value
    */
-  recordHistogram(name: string, value: number, labels?: Record<string, string>): void {
+  recordHistogram(
+    name: string,
+    value: number,
+    labels?: Record<string, string>,
+  ): void {
     try {
       const key = this.getMetricKey(name);
       const existing = this.histograms.get(key);
-      
+
       if (existing) {
         existing.count++;
         existing.sum += value;
@@ -104,16 +118,25 @@ export class EnterpriseMetricsService {
       this.incrementCounter('security_failed_logins', metrics.failedLogins);
     }
     if (metrics.suspiciousActivities !== undefined) {
-      this.incrementCounter('security_suspicious_activities', metrics.suspiciousActivities);
+      this.incrementCounter(
+        'security_suspicious_activities',
+        metrics.suspiciousActivities,
+      );
     }
     if (metrics.blockedRequests !== undefined) {
-      this.incrementCounter('security_blocked_requests', metrics.blockedRequests);
+      this.incrementCounter(
+        'security_blocked_requests',
+        metrics.blockedRequests,
+      );
     }
     if (metrics.sessionCount !== undefined) {
       this.recordGauge('security_active_sessions', metrics.sessionCount);
     }
     if (metrics.averageSessionDuration !== undefined) {
-      this.recordGauge('security_avg_session_duration', metrics.averageSessionDuration);
+      this.recordGauge(
+        'security_avg_session_duration',
+        metrics.averageSessionDuration,
+      );
     }
   }
 
@@ -125,7 +148,10 @@ export class EnterpriseMetricsService {
       this.incrementCounter('performance_requests', metrics.requestCount);
     }
     if (metrics.averageResponseTime !== undefined) {
-      this.recordHistogram('performance_response_time', metrics.averageResponseTime);
+      this.recordHistogram(
+        'performance_response_time',
+        metrics.averageResponseTime,
+      );
     }
     if (metrics.errorRate !== undefined) {
       this.recordGauge('performance_error_rate', metrics.errorRate);
@@ -134,7 +160,10 @@ export class EnterpriseMetricsService {
       this.recordGauge('performance_cache_hit_rate', metrics.cacheHitRate);
     }
     if (metrics.databaseQueryTime !== undefined) {
-      this.recordHistogram('performance_db_query_time', metrics.databaseQueryTime);
+      this.recordHistogram(
+        'performance_db_query_time',
+        metrics.databaseQueryTime,
+      );
     }
     if (metrics.memoryUsage !== undefined) {
       this.recordGauge('performance_memory_usage', metrics.memoryUsage);
@@ -149,16 +178,28 @@ export class EnterpriseMetricsService {
       this.incrementCounter('compliance_phi_accesses', metrics.phiAccesses);
     }
     if (metrics.auditLogEntries !== undefined) {
-      this.incrementCounter('compliance_audit_entries', metrics.auditLogEntries);
+      this.incrementCounter(
+        'compliance_audit_entries',
+        metrics.auditLogEntries,
+      );
     }
     if (metrics.dataRetentionViolations !== undefined) {
-      this.incrementCounter('compliance_retention_violations', metrics.dataRetentionViolations);
+      this.incrementCounter(
+        'compliance_retention_violations',
+        metrics.dataRetentionViolations,
+      );
     }
     if (metrics.encryptionFailures !== undefined) {
-      this.incrementCounter('compliance_encryption_failures', metrics.encryptionFailures);
+      this.incrementCounter(
+        'compliance_encryption_failures',
+        metrics.encryptionFailures,
+      );
     }
     if (metrics.accessViolations !== undefined) {
-      this.incrementCounter('compliance_access_violations', metrics.accessViolations);
+      this.incrementCounter(
+        'compliance_access_violations',
+        metrics.accessViolations,
+      );
     }
   }
 
@@ -183,16 +224,20 @@ export class EnterpriseMetricsService {
 
     // Add module uptime
     const uptime = Math.round((Date.now() - this.startTime) / 1000);
-    lines.push(`# HELP ${this.moduleName}_uptime_seconds Module uptime in seconds`);
+    lines.push(
+      `# HELP ${this.moduleName}_uptime_seconds Module uptime in seconds`,
+    );
     lines.push(`# TYPE ${this.moduleName}_uptime_seconds gauge`);
     lines.push(`${this.moduleName}_uptime_seconds ${uptime} ${timestamp}`);
 
     // Add counters
     for (const [name, counter] of this.counters.entries()) {
       const metricName = `${name}_total`;
-      lines.push(`# HELP ${metricName} ${counter.description || 'Counter metric'}`);
+      lines.push(
+        `# HELP ${metricName} ${counter.description || 'Counter metric'}`,
+      );
       lines.push(`# TYPE ${metricName} counter`);
-      
+
       const labels = this.formatLabels(counter.labels);
       lines.push(`${metricName}${labels} ${counter.value} ${timestamp}`);
     }
@@ -201,16 +246,18 @@ export class EnterpriseMetricsService {
     for (const [name, gauge] of this.gauges.entries()) {
       lines.push(`# HELP ${name} ${gauge.description || 'Gauge metric'}`);
       lines.push(`# TYPE ${name} gauge`);
-      
+
       const labels = this.formatLabels(gauge.labels);
       lines.push(`${name}${labels} ${gauge.value} ${timestamp}`);
     }
 
     // Add histograms
     for (const [name, histogram] of this.histograms.entries()) {
-      lines.push(`# HELP ${name} ${histogram.description || 'Histogram metric'}`);
+      lines.push(
+        `# HELP ${name} ${histogram.description || 'Histogram metric'}`,
+      );
       lines.push(`# TYPE ${name} histogram`);
-      
+
       const labels = this.formatLabels(histogram.labels);
       lines.push(`${name}_count${labels} ${histogram.count} ${timestamp}`);
       lines.push(`${name}_sum${labels} ${histogram.sum} ${timestamp}`);
@@ -227,16 +274,24 @@ export class EnterpriseMetricsService {
     const uptime = Math.round((Date.now() - this.startTime) / 1000);
     const errors: string[] = [];
     const warnings: string[] = [];
-    
+
     // Check for high error rates
-    const errorRateGauge = this.gauges.get(this.getMetricKey('performance_error_rate'));
-    if (errorRateGauge && errorRateGauge.value > 0.1) { // 10% error rate
-      errors.push(`High error rate: ${(errorRateGauge.value * 100).toFixed(2)}%`);
+    const errorRateGauge = this.gauges.get(
+      this.getMetricKey('performance_error_rate'),
+    );
+    if (errorRateGauge && errorRateGauge.value > 0.1) {
+      // 10% error rate
+      errors.push(
+        `High error rate: ${(errorRateGauge.value * 100).toFixed(2)}%`,
+      );
     }
 
     // Check memory usage
-    const memoryGauge = this.gauges.get(this.getMetricKey('performance_memory_usage'));
-    if (memoryGauge && memoryGauge.value > 1000) { // 1GB threshold
+    const memoryGauge = this.gauges.get(
+      this.getMetricKey('performance_memory_usage'),
+    );
+    if (memoryGauge && memoryGauge.value > 1000) {
+      // 1GB threshold
       warnings.push(`High memory usage: ${memoryGauge.value}MB`);
     }
 
@@ -322,7 +377,7 @@ export class EnterpriseMetricsService {
     const labelPairs = Object.entries(labels)
       .map(([key, value]) => `${key}="${value}"`)
       .join(',');
-    
+
     return `{${labelPairs}}`;
   }
 
@@ -336,7 +391,8 @@ export class EnterpriseMetricsService {
       suspiciousActivities: this.getCounter('security_suspicious_activities'),
       blockedRequests: this.getCounter('security_blocked_requests'),
       sessionCount: this.getGauge('security_active_sessions') || 0,
-      averageSessionDuration: this.getGauge('security_avg_session_duration') || 0,
+      averageSessionDuration:
+        this.getGauge('security_avg_session_duration') || 0,
     };
   }
 
@@ -350,7 +406,8 @@ export class EnterpriseMetricsService {
       averageResponseTime: responseTimeHist?.avg || 0,
       errorRate: this.getGauge('performance_error_rate') || 0,
       cacheHitRate: this.getGauge('performance_cache_hit_rate') || 0,
-      databaseQueryTime: this.getHistogram('performance_db_query_time')?.avg || 0,
+      databaseQueryTime:
+        this.getHistogram('performance_db_query_time')?.avg || 0,
       memoryUsage: this.getGauge('performance_memory_usage') || 0,
     };
   }
@@ -362,7 +419,9 @@ export class EnterpriseMetricsService {
     return {
       phiAccesses: this.getCounter('compliance_phi_accesses'),
       auditLogEntries: this.getCounter('compliance_audit_entries'),
-      dataRetentionViolations: this.getCounter('compliance_retention_violations'),
+      dataRetentionViolations: this.getCounter(
+        'compliance_retention_violations',
+      ),
       encryptionFailures: this.getCounter('compliance_encryption_failures'),
       accessViolations: this.getCounter('compliance_access_violations'),
     };
@@ -372,6 +431,8 @@ export class EnterpriseMetricsService {
    * Cleanup on service destruction
    */
   onModuleDestroy(): void {
-    this.logger.log(`Enterprise metrics service destroyed for module: ${this.moduleName}`);
+    this.logger.log(
+      `Enterprise metrics service destroyed for module: ${this.moduleName}`,
+    );
   }
 }

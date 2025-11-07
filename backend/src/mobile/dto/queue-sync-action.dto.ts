@@ -1,4 +1,10 @@
-import { IsString, IsEnum, IsNotEmpty, IsOptional, IsObject } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsObject,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { SyncActionType, SyncEntityType, SyncPriority } from '../enums';
 
@@ -13,14 +19,14 @@ export class QueueSyncActionDto {
 
   @ApiProperty({
     description: 'Sync action type',
-    enum: SyncActionType
+    enum: SyncActionType,
   })
   @IsEnum(SyncActionType)
   actionType: SyncActionType;
 
   @ApiProperty({
     description: 'Entity type being synced',
-    enum: SyncEntityType
+    enum: SyncEntityType,
   })
   @IsEnum(SyncEntityType)
   entityType: SyncEntityType;
@@ -38,7 +44,7 @@ export class QueueSyncActionDto {
     description: 'Sync priority',
     enum: SyncPriority,
     required: false,
-    default: SyncPriority.NORMAL
+    default: SyncPriority.NORMAL,
   })
   @IsEnum(SyncPriority)
   @IsOptional()

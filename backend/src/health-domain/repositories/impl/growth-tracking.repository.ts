@@ -7,14 +7,17 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Transaction } from 'sequelize';
-import { BaseRepository, RepositoryError } from '../../../database/repositories/base/base.repository';
+import {
+  BaseRepository,
+  RepositoryError,
+} from '../../../database/repositories/base/base.repository';
 import {
   IGrowthTrackingRepository,
   GrowthTrackingAttributes,
   CreateGrowthTrackingDTO,
   UpdateGrowthTrackingDTO,
   GrowthPercentiles,
-  GrowthTrend
+  GrowthTrend,
 } from '../interfaces/growth-tracking.repository.interface';
 import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
@@ -30,7 +33,7 @@ export class GrowthTrackingRepository
   constructor(
     @InjectModel(GrowthTracking) model: typeof GrowthTracking,
     auditLogger: IAuditLogger,
-    cacheManager: ICacheManager
+    cacheManager: ICacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'GrowthTracking');
   }
@@ -40,25 +43,28 @@ export class GrowthTrackingRepository
    */
   async findByStudent(
     studentId: string,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): Promise<GrowthTrackingAttributes[]> {
     try {
       const cacheKey = this.cacheKeyBuilder.summary(
         this.entityName,
         studentId,
-        'by-student'
+        'by-student',
       );
 
-      const cached = await this.cacheManager.get<GrowthTrackingAttributes[]>(cacheKey);
+      const cached =
+        await this.cacheManager.get<GrowthTrackingAttributes[]>(cacheKey);
       if (cached) {
-        this.logger.debug(`Cache hit for growth records by student: ${studentId}`);
+        this.logger.debug(
+          `Cache hit for growth records by student: ${studentId}`,
+        );
         return cached;
       }
 
       const records = await this.model.findAll({
         where: { studentId },
         order: [['measurementDate', 'DESC']],
-        limit: options?.limit || 100
+        limit: options?.limit || 100,
       });
 
       const entities = records.map((r: any) => this.mapToEntity(r));
@@ -71,7 +77,7 @@ export class GrowthTrackingRepository
         'Failed to find growth records by student',
         'FIND_BY_STUDENT_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
@@ -80,16 +86,17 @@ export class GrowthTrackingRepository
    * Find latest growth record for a student
    */
   async findLatestByStudent(
-    studentId: string
+    studentId: string,
   ): Promise<GrowthTrackingAttributes | null> {
     try {
       const cacheKey = this.cacheKeyBuilder.summary(
         this.entityName,
         studentId,
-        'latest'
+        'latest',
       );
 
-      const cached = await this.cacheManager.get<GrowthTrackingAttributes>(cacheKey);
+      const cached =
+        await this.cacheManager.get<GrowthTrackingAttributes>(cacheKey);
       if (cached) {
         this.logger.debug(`Cache hit for latest growth record: ${studentId}`);
         return cached;
@@ -97,7 +104,7 @@ export class GrowthTrackingRepository
 
       const record = await this.model.findOne({
         where: { studentId },
-        order: [['measurementDate', 'DESC']]
+        order: [['measurementDate', 'DESC']],
       });
 
       if (!record) {
@@ -114,7 +121,7 @@ export class GrowthTrackingRepository
         'Failed to find latest growth record',
         'FIND_LATEST_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
@@ -125,17 +132,17 @@ export class GrowthTrackingRepository
   async findByDateRange(
     studentId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<GrowthTrackingAttributes[]> {
     try {
       const records = await this.model.findAll({
         where: {
           studentId,
           measurementDate: {
-            [Op.between]: [startDate, endDate]
-          }
+            [Op.between]: [startDate, endDate],
+          },
         },
-        order: [['measurementDate', 'ASC']]
+        order: [['measurementDate', 'ASC']],
       });
 
       return records.map((r: any) => this.mapToEntity(r));
@@ -145,7 +152,7 @@ export class GrowthTrackingRepository
         'Failed to find growth records by date range',
         'FIND_BY_DATE_RANGE_ERROR',
         500,
-        { studentId, startDate, endDate, error: (error as Error).message }
+        { studentId, startDate, endDate, error: (error as Error).message },
       );
     }
   }
@@ -157,7 +164,7 @@ export class GrowthTrackingRepository
     height: number,
     heightUnit: string,
     weight: number,
-    weightUnit: string
+    weightUnit: string,
   ): number {
     try {
       // Convert to metric (kg and cm)
@@ -183,7 +190,13 @@ export class GrowthTrackingRepository
         'Failed to calculate BMI',
         'BMI_CALCULATION_ERROR',
         500,
-        { height, heightUnit, weight, weightUnit, error: (error as Error).message }
+        {
+          height,
+          heightUnit,
+          weight,
+          weightUnit,
+          error: (error as Error).message,
+        },
       );
     }
   }
@@ -191,9 +204,7 @@ export class GrowthTrackingRepository
   /**
    * Get growth percentiles for a student based on latest measurement
    */
-  async getGrowthPercentiles(
-    studentId: string
-  ): Promise<GrowthPercentiles> {
+  async getGrowthPercentiles(studentId: string): Promise<GrowthPercentiles> {
     try {
       const latest = await this.findLatestByStudent(studentId);
 
@@ -202,7 +213,7 @@ export class GrowthTrackingRepository
           'No growth records found for student',
           'NO_RECORDS_ERROR',
           404,
-          { studentId }
+          { studentId },
         );
       }
 
@@ -210,7 +221,7 @@ export class GrowthTrackingRepository
         bmi: latest.bmiPercentile,
         height: latest.heightPercentile,
         weight: latest.weightPercentile,
-        headCircumference: latest.headCircumferencePercentile
+        headCircumference: latest.headCircumferencePercentile,
       };
     } catch (error) {
       this.logger.error('Error getting growth percentiles:', error);
@@ -223,7 +234,7 @@ export class GrowthTrackingRepository
         'Failed to get growth percentiles',
         'PERCENTILES_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
@@ -233,7 +244,7 @@ export class GrowthTrackingRepository
    */
   async getGrowthTrend(
     studentId: string,
-    months: number = 12
+    months: number = 12,
   ): Promise<GrowthTrend> {
     try {
       const startDate = new Date();
@@ -242,7 +253,7 @@ export class GrowthTrackingRepository
       const measurements = await this.findByDateRange(
         studentId,
         startDate,
-        new Date()
+        new Date(),
       );
 
       if (measurements.length < 2) {
@@ -250,7 +261,7 @@ export class GrowthTrackingRepository
           'Insufficient data for trend analysis',
           'INSUFFICIENT_DATA',
           400,
-          { studentId, measurements: measurements.length }
+          { studentId, measurements: measurements.length },
         );
       }
 
@@ -260,30 +271,35 @@ export class GrowthTrackingRepository
 
       const monthsDiff = this.getMonthsDifference(
         firstMeasurement.measurementDate,
-        lastMeasurement.measurementDate
+        lastMeasurement.measurementDate,
       );
 
-      const heightGrowthRate = monthsDiff > 0
-        ? (lastMeasurement.height - firstMeasurement.height) / monthsDiff
-        : 0;
+      const heightGrowthRate =
+        monthsDiff > 0
+          ? (lastMeasurement.height - firstMeasurement.height) / monthsDiff
+          : 0;
 
-      const weightGrowthRate = monthsDiff > 0
-        ? (lastMeasurement.weight - firstMeasurement.weight) / monthsDiff
-        : 0;
+      const weightGrowthRate =
+        monthsDiff > 0
+          ? (lastMeasurement.weight - firstMeasurement.weight) / monthsDiff
+          : 0;
 
       // Project next measurement (simple linear projection)
-      const projectedNextMeasurement = monthsDiff > 0 ? {
-        height: lastMeasurement.height + (heightGrowthRate * 3), // 3 months ahead
-        weight: lastMeasurement.weight + (weightGrowthRate * 3),
-        bmi: 0 // Will be calculated based on projected values
-      } : undefined;
+      const projectedNextMeasurement =
+        monthsDiff > 0
+          ? {
+              height: lastMeasurement.height + heightGrowthRate * 3, // 3 months ahead
+              weight: lastMeasurement.weight + weightGrowthRate * 3,
+              bmi: 0, // Will be calculated based on projected values
+            }
+          : undefined;
 
       if (projectedNextMeasurement) {
         projectedNextMeasurement.bmi = this.calculateBMI(
           projectedNextMeasurement.height,
           lastMeasurement.heightUnit,
           projectedNextMeasurement.weight,
-          lastMeasurement.weightUnit
+          lastMeasurement.weightUnit,
         );
       }
 
@@ -292,9 +308,9 @@ export class GrowthTrackingRepository
         measurements,
         averageGrowthRate: {
           height: Math.round(heightGrowthRate * 100) / 100,
-          weight: Math.round(weightGrowthRate * 100) / 100
+          weight: Math.round(weightGrowthRate * 100) / 100,
         },
-        projectedNextMeasurement
+        projectedNextMeasurement,
       };
     } catch (error) {
       this.logger.error('Error getting growth trend:', error);
@@ -307,7 +323,7 @@ export class GrowthTrackingRepository
         'Failed to get growth trend',
         'TREND_ERROR',
         500,
-        { studentId, months, error: (error as Error).message }
+        { studentId, months, error: (error as Error).message },
       );
     }
   }
@@ -318,17 +334,17 @@ export class GrowthTrackingRepository
   async findByAgeRange(
     minAge: number,
     maxAge: number,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): Promise<GrowthTrackingAttributes[]> {
     try {
       const records = await this.model.findAll({
         where: {
           ageInMonths: {
-            [Op.between]: [minAge, maxAge]
-          }
+            [Op.between]: [minAge, maxAge],
+          },
         },
         order: [['measurementDate', 'DESC']],
-        limit: options?.limit || 200
+        limit: options?.limit || 200,
       });
 
       return records.map((r: any) => this.mapToEntity(r));
@@ -338,7 +354,7 @@ export class GrowthTrackingRepository
         'Failed to find growth records by age range',
         'FIND_BY_AGE_ERROR',
         500,
-        { minAge, maxAge, error: (error as Error).message }
+        { minAge, maxAge, error: (error as Error).message },
       );
     }
   }
@@ -360,7 +376,7 @@ export class GrowthTrackingRepository
         'Student ID is required',
         'VALIDATION_ERROR',
         400,
-        { field: 'studentId' }
+        { field: 'studentId' },
       );
     }
 
@@ -369,7 +385,7 @@ export class GrowthTrackingRepository
         'Measurement date is required',
         'VALIDATION_ERROR',
         400,
-        { field: 'measurementDate' }
+        { field: 'measurementDate' },
       );
     }
 
@@ -378,7 +394,7 @@ export class GrowthTrackingRepository
         'Height and weight are required',
         'VALIDATION_ERROR',
         400,
-        { fields: ['height', 'weight'] }
+        { fields: ['height', 'weight'] },
       );
     }
 
@@ -388,7 +404,7 @@ export class GrowthTrackingRepository
         'Height value out of valid range',
         'VALIDATION_ERROR',
         400,
-        { height: data.height, range: '0-300cm or 0-120 inches' }
+        { height: data.height, range: '0-300cm or 0-120 inches' },
       );
     }
 
@@ -397,7 +413,7 @@ export class GrowthTrackingRepository
         'Weight value out of valid range',
         'VALIDATION_ERROR',
         400,
-        { weight: data.weight, range: '0-500kg or 0-1100 lbs' }
+        { weight: data.weight, range: '0-500kg or 0-1100 lbs' },
       );
     }
   }
@@ -407,14 +423,14 @@ export class GrowthTrackingRepository
    */
   protected async validateUpdate(
     id: string,
-    data: UpdateGrowthTrackingDTO
+    data: UpdateGrowthTrackingDTO,
   ): Promise<void> {
     if (data.height !== undefined && (data.height <= 0 || data.height > 300)) {
       throw new RepositoryError(
         'Height value out of valid range',
         'VALIDATION_ERROR',
         400,
-        { height: data.height, range: '0-300cm or 0-120 inches' }
+        { height: data.height, range: '0-300cm or 0-120 inches' },
       );
     }
 
@@ -423,7 +439,7 @@ export class GrowthTrackingRepository
         'Weight value out of valid range',
         'VALIDATION_ERROR',
         400,
-        { weight: data.weight, range: '0-500kg or 0-1100 lbs' }
+        { weight: data.weight, range: '0-500kg or 0-1100 lbs' },
       );
     }
   }
@@ -437,7 +453,7 @@ export class GrowthTrackingRepository
 
       // Invalidate entity cache
       await this.cacheManager.delete(
-        this.cacheKeyBuilder.entity(this.entityName, growthData.id)
+        this.cacheKeyBuilder.entity(this.entityName, growthData.id),
       );
 
       // Invalidate student-specific caches
@@ -446,28 +462,26 @@ export class GrowthTrackingRepository
           this.cacheKeyBuilder.summary(
             this.entityName,
             growthData.studentId,
-            'by-student'
-          )
+            'by-student',
+          ),
         );
 
         await this.cacheManager.delete(
           this.cacheKeyBuilder.summary(
             this.entityName,
             growthData.studentId,
-            'latest'
-          )
+            'latest',
+          ),
         );
 
         // Invalidate all student growth patterns
         await this.cacheManager.deletePattern(
-          `white-cross:growthtracking:student:${growthData.studentId}:*`
+          `white-cross:growthtracking:student:${growthData.studentId}:*`,
         );
       }
 
       // Invalidate age range caches
-      await this.cacheManager.deletePattern(
-        `white-cross:growthtracking:age:*`
-      );
+      await this.cacheManager.deletePattern(`white-cross:growthtracking:age:*`);
     } catch (error) {
       this.logger.warn('Error invalidating growth tracking caches:', error);
     }

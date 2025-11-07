@@ -40,7 +40,7 @@ export class AuditInterceptor implements NestInterceptor {
     const startTime = Date.now();
 
     // Extract user and request info
-    const user = (request as any).user;
+    const user = request.user;
     const ipAddress = this.getClientIP(request);
     const userAgent = request.get('user-agent');
 
@@ -49,7 +49,7 @@ export class AuditInterceptor implements NestInterceptor {
       userId: user?.userId,
       method: request.method,
       path: request.path,
-      ipAddress
+      ipAddress,
     });
 
     return next.handle().pipe(
@@ -68,14 +68,14 @@ export class AuditInterceptor implements NestInterceptor {
             user.role,
             ipAddress,
             `${controllerName}.${methodName}`,
-            undefined
+            undefined,
           );
         }
 
         this.logger.debug(`Completed ${controllerName}.${methodName}`, {
           duration,
           userId: user?.userId,
-          success: true
+          success: true,
         });
       }),
       catchError(async (error) => {
@@ -98,20 +98,20 @@ export class AuditInterceptor implements NestInterceptor {
               details: {
                 method: request.method,
                 duration,
-                errorStack: error.stack
-              }
-            }
+                errorStack: error.stack,
+              },
+            },
           );
         }
 
         this.logger.error(`Failed ${controllerName}.${methodName}`, {
           duration,
           userId: user?.userId,
-          error: error.message
+          error: error.message,
         });
 
         throw error;
-      })
+      }),
     );
   }
 
@@ -124,7 +124,7 @@ export class AuditInterceptor implements NestInterceptor {
       'HealthRecordController',
       'MedicationController',
       'ImmunizationController',
-      'AllergyController'
+      'AllergyController',
     ];
 
     const phiMethods = [
@@ -134,28 +134,34 @@ export class AuditInterceptor implements NestInterceptor {
       'deletePatient',
       'getHealthRecord',
       'getMedications',
-      'getImmunizations'
+      'getImmunizations',
     ];
 
-    return phiControllers.some(c => controllerName.includes(c)) ||
-           phiMethods.some(m => methodName.includes(m));
+    return (
+      phiControllers.some((c) => controllerName.includes(c)) ||
+      phiMethods.some((m) => methodName.includes(m))
+    );
   }
 
   /**
    * Extract student/patient ID from request
    */
   private extractStudentId(request: any): string {
-    return request.params?.studentId ||
-           request.params?.patientId ||
-           request.params?.id ||
-           request.query?.studentId ||
-           'unknown';
+    return (
+      request.params?.studentId ||
+      request.params?.patientId ||
+      request.params?.id ||
+      request.query?.studentId ||
+      'unknown'
+    );
   }
 
   /**
    * Get operation type from HTTP method
    */
-  private getOperationType(method: string): 'VIEW' | 'EDIT' | 'CREATE' | 'DELETE' | 'EXPORT' {
+  private getOperationType(
+    method: string,
+  ): 'VIEW' | 'EDIT' | 'CREATE' | 'DELETE' | 'EXPORT' {
     switch (method.toUpperCase()) {
       case 'GET':
         return 'VIEW';

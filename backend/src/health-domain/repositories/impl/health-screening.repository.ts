@@ -7,12 +7,15 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Transaction } from 'sequelize';
-import { BaseRepository, RepositoryError } from '../../../database/repositories/base/base.repository';
+import {
+  BaseRepository,
+  RepositoryError,
+} from '../../../database/repositories/base/base.repository';
 import {
   IHealthScreeningRepository,
   HealthScreeningAttributes,
   CreateHealthScreeningDTO,
-  UpdateHealthScreeningDTO
+  UpdateHealthScreeningDTO,
 } from '../interfaces/health-screening.repository.interface';
 import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
@@ -22,13 +25,17 @@ import { HealthScreening } from '../../../database/models/health-screening.model
 
 @Injectable()
 export class HealthScreeningRepository
-  extends BaseRepository<any, HealthScreeningAttributes, CreateHealthScreeningDTO>
+  extends BaseRepository<
+    any,
+    HealthScreeningAttributes,
+    CreateHealthScreeningDTO
+  >
   implements IHealthScreeningRepository
 {
   constructor(
     @InjectModel(HealthScreening) model: typeof HealthScreening,
     auditLogger: IAuditLogger,
-    cacheManager: ICacheManager
+    cacheManager: ICacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'HealthScreening');
   }
@@ -38,16 +45,17 @@ export class HealthScreeningRepository
    */
   async findByStudent(
     studentId: string,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): Promise<HealthScreeningAttributes[]> {
     try {
       const cacheKey = this.cacheKeyBuilder.summary(
         this.entityName,
         studentId,
-        'by-student'
+        'by-student',
       );
 
-      const cached = await this.cacheManager.get<HealthScreeningAttributes[]>(cacheKey);
+      const cached =
+        await this.cacheManager.get<HealthScreeningAttributes[]>(cacheKey);
       if (cached) {
         this.logger.debug(`Cache hit for screenings by student: ${studentId}`);
         return cached;
@@ -55,7 +63,7 @@ export class HealthScreeningRepository
 
       const screenings = await this.model.findAll({
         where: { studentId },
-        order: [['screeningDate', 'DESC']]
+        order: [['screeningDate', 'DESC']],
       });
 
       const entities = screenings.map((s: any) => this.mapToEntity(s));
@@ -68,7 +76,7 @@ export class HealthScreeningRepository
         'Failed to find screenings by student',
         'FIND_BY_STUDENT_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
@@ -78,13 +86,13 @@ export class HealthScreeningRepository
    */
   async findByScreeningType(
     screeningType: string,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): Promise<HealthScreeningAttributes[]> {
     try {
       const screenings = await this.model.findAll({
         where: { screeningType },
         order: [['screeningDate', 'DESC']],
-        limit: options?.limit || 100
+        limit: options?.limit || 100,
       });
 
       return screenings.map((s: any) => this.mapToEntity(s));
@@ -94,7 +102,7 @@ export class HealthScreeningRepository
         'Failed to find screenings by type',
         'FIND_BY_TYPE_ERROR',
         500,
-        { screeningType, error: (error as Error).message }
+        { screeningType, error: (error as Error).message },
       );
     }
   }
@@ -104,19 +112,19 @@ export class HealthScreeningRepository
    */
   async findDueScreenings(
     date: Date,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): Promise<HealthScreeningAttributes[]> {
     try {
       const screenings = await this.model.findAll({
         where: {
           nextScheduledDate: {
-            [Op.lte]: date
+            [Op.lte]: date,
           },
           followUpRequired: true,
-          followUpCompleted: false
+          followUpCompleted: false,
         },
         order: [['nextScheduledDate', 'ASC']],
-        limit: options?.limit || 100
+        limit: options?.limit || 100,
       });
 
       return screenings.map((s: any) => this.mapToEntity(s));
@@ -126,7 +134,7 @@ export class HealthScreeningRepository
         'Failed to find due screenings',
         'FIND_DUE_ERROR',
         500,
-        { date, error: (error as Error).message }
+        { date, error: (error as Error).message },
       );
     }
   }
@@ -137,17 +145,17 @@ export class HealthScreeningRepository
   async findByDateRange(
     startDate: Date,
     endDate: Date,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): Promise<HealthScreeningAttributes[]> {
     try {
       const screenings = await this.model.findAll({
         where: {
           screeningDate: {
-            [Op.between]: [startDate, endDate]
-          }
+            [Op.between]: [startDate, endDate],
+          },
         },
         order: [['screeningDate', 'DESC']],
-        limit: options?.limit || 500
+        limit: options?.limit || 500,
       });
 
       return screenings.map((s: any) => this.mapToEntity(s));
@@ -157,7 +165,7 @@ export class HealthScreeningRepository
         'Failed to find screenings by date range',
         'FIND_BY_DATE_RANGE_ERROR',
         500,
-        { startDate, endDate, error: (error as Error).message }
+        { startDate, endDate, error: (error as Error).message },
       );
     }
   }
@@ -167,11 +175,11 @@ export class HealthScreeningRepository
    */
   async findAbnormalResults(
     screeningType?: string,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): Promise<HealthScreeningAttributes[]> {
     try {
       const whereClause: any = {
-        isAbnormal: true
+        isAbnormal: true,
       };
 
       if (screeningType) {
@@ -181,7 +189,7 @@ export class HealthScreeningRepository
       const screenings = await this.model.findAll({
         where: whereClause,
         order: [['screeningDate', 'DESC']],
-        limit: options?.limit || 100
+        limit: options?.limit || 100,
       });
 
       return screenings.map((s: any) => this.mapToEntity(s));
@@ -191,7 +199,7 @@ export class HealthScreeningRepository
         'Failed to find abnormal screenings',
         'FIND_ABNORMAL_ERROR',
         500,
-        { screeningType, error: (error as Error).message }
+        { screeningType, error: (error as Error).message },
       );
     }
   }
@@ -200,16 +208,17 @@ export class HealthScreeningRepository
    * Get screening schedule for a student
    */
   async getScreeningSchedule(
-    studentId: string
+    studentId: string,
   ): Promise<HealthScreeningAttributes[]> {
     try {
       const cacheKey = this.cacheKeyBuilder.summary(
         this.entityName,
         studentId,
-        'schedule'
+        'schedule',
       );
 
-      const cached = await this.cacheManager.get<HealthScreeningAttributes[]>(cacheKey);
+      const cached =
+        await this.cacheManager.get<HealthScreeningAttributes[]>(cacheKey);
       if (cached) {
         return cached;
       }
@@ -219,10 +228,10 @@ export class HealthScreeningRepository
         where: {
           studentId,
           nextScheduledDate: {
-            [Op.gte]: new Date()
-          }
+            [Op.gte]: new Date(),
+          },
         },
-        order: [['nextScheduledDate', 'ASC']]
+        order: [['nextScheduledDate', 'ASC']],
       });
 
       const entities = screenings.map((s: any) => this.mapToEntity(s));
@@ -235,7 +244,7 @@ export class HealthScreeningRepository
         'Failed to get screening schedule',
         'SCHEDULE_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
@@ -243,13 +252,15 @@ export class HealthScreeningRepository
   /**
    * Validate screening data before creation
    */
-  protected async validateCreate(data: CreateHealthScreeningDTO): Promise<void> {
+  protected async validateCreate(
+    data: CreateHealthScreeningDTO,
+  ): Promise<void> {
     if (!data.studentId) {
       throw new RepositoryError(
         'Student ID is required',
         'VALIDATION_ERROR',
         400,
-        { field: 'studentId' }
+        { field: 'studentId' },
       );
     }
 
@@ -258,7 +269,7 @@ export class HealthScreeningRepository
         'Screening type is required',
         'VALIDATION_ERROR',
         400,
-        { field: 'screeningType' }
+        { field: 'screeningType' },
       );
     }
 
@@ -267,18 +278,25 @@ export class HealthScreeningRepository
         'Screening date is required',
         'VALIDATION_ERROR',
         400,
-        { field: 'screeningDate' }
+        { field: 'screeningDate' },
       );
     }
 
     // Validate screening type
-    const validTypes = ['vision', 'hearing', 'dental', 'scoliosis', 'bmi', 'general'];
+    const validTypes = [
+      'vision',
+      'hearing',
+      'dental',
+      'scoliosis',
+      'bmi',
+      'general',
+    ];
     if (!validTypes.includes(data.screeningType.toLowerCase())) {
       throw new RepositoryError(
         'Invalid screening type',
         'VALIDATION_ERROR',
         400,
-        { screeningType: data.screeningType, validTypes }
+        { screeningType: data.screeningType, validTypes },
       );
     }
 
@@ -289,7 +307,7 @@ export class HealthScreeningRepository
         'Invalid screening result',
         'VALIDATION_ERROR',
         400,
-        { result: data.result, validResults }
+        { result: data.result, validResults },
       );
     }
   }
@@ -299,17 +317,24 @@ export class HealthScreeningRepository
    */
   protected async validateUpdate(
     id: string,
-    data: UpdateHealthScreeningDTO
+    data: UpdateHealthScreeningDTO,
   ): Promise<void> {
     // Validate screening type if provided
     if (data.screeningType) {
-      const validTypes = ['vision', 'hearing', 'dental', 'scoliosis', 'bmi', 'general'];
+      const validTypes = [
+        'vision',
+        'hearing',
+        'dental',
+        'scoliosis',
+        'bmi',
+        'general',
+      ];
       if (!validTypes.includes(data.screeningType.toLowerCase())) {
         throw new RepositoryError(
           'Invalid screening type',
           'VALIDATION_ERROR',
           400,
-          { screeningType: data.screeningType, validTypes }
+          { screeningType: data.screeningType, validTypes },
         );
       }
     }
@@ -322,7 +347,7 @@ export class HealthScreeningRepository
           'Invalid screening result',
           'VALIDATION_ERROR',
           400,
-          { result: data.result, validResults }
+          { result: data.result, validResults },
         );
       }
     }
@@ -337,7 +362,7 @@ export class HealthScreeningRepository
 
       // Invalidate entity cache
       await this.cacheManager.delete(
-        this.cacheKeyBuilder.entity(this.entityName, screeningData.id)
+        this.cacheKeyBuilder.entity(this.entityName, screeningData.id),
       );
 
       // Invalidate student-specific caches
@@ -346,34 +371,34 @@ export class HealthScreeningRepository
           this.cacheKeyBuilder.summary(
             this.entityName,
             screeningData.studentId,
-            'by-student'
-          )
+            'by-student',
+          ),
         );
 
         await this.cacheManager.delete(
           this.cacheKeyBuilder.summary(
             this.entityName,
             screeningData.studentId,
-            'schedule'
-          )
+            'schedule',
+          ),
         );
 
         await this.cacheManager.deletePattern(
-          `white-cross:healthscreening:student:${screeningData.studentId}:*`
+          `white-cross:healthscreening:student:${screeningData.studentId}:*`,
         );
       }
 
       // Invalidate screening type caches
       if (screeningData.screeningType) {
         await this.cacheManager.deletePattern(
-          `white-cross:healthscreening:type:${screeningData.screeningType}:*`
+          `white-cross:healthscreening:type:${screeningData.screeningType}:*`,
         );
       }
 
       // Invalidate abnormal results cache if applicable
       if (screeningData.isAbnormal) {
         await this.cacheManager.deletePattern(
-          `white-cross:healthscreening:abnormal:*`
+          `white-cross:healthscreening:abnormal:*`,
         );
       }
     } catch (error) {

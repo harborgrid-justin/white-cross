@@ -58,13 +58,15 @@ export interface UpdateGrowthTrackingDTO {
 }
 
 @Injectable()
-export class GrowthTrackingRepository
-  extends BaseRepository<any, GrowthTrackingAttributes, CreateGrowthTrackingDTO>
-{
+export class GrowthTrackingRepository extends BaseRepository<
+  any,
+  GrowthTrackingAttributes,
+  CreateGrowthTrackingDTO
+> {
   constructor(
     @InjectModel(GrowthTracking) model: any,
     @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('ICacheManager') cacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'GrowthTracking');
   }
@@ -73,7 +75,7 @@ export class GrowthTrackingRepository
     try {
       const measurements = await this.model.findAll({
         where: { studentId },
-        order: [['measurementDate', 'ASC']]
+        order: [['measurementDate', 'ASC']],
       });
       return measurements.map((m: any) => this.mapToEntity(m));
     } catch (error) {
@@ -82,16 +84,18 @@ export class GrowthTrackingRepository
         'Failed to find growth tracking by student',
         'FIND_BY_STUDENT_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
 
-  async findLatestMeasurement(studentId: string): Promise<GrowthTrackingAttributes | null> {
+  async findLatestMeasurement(
+    studentId: string,
+  ): Promise<GrowthTrackingAttributes | null> {
     try {
       const measurement = await this.model.findOne({
         where: { studentId },
-        order: [['measurementDate', 'DESC']]
+        order: [['measurementDate', 'DESC']],
       });
       return measurement ? this.mapToEntity(measurement) : null;
     } catch (error) {
@@ -100,7 +104,7 @@ export class GrowthTrackingRepository
         'Failed to find latest growth measurement',
         'FIND_LATEST_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
@@ -109,15 +113,22 @@ export class GrowthTrackingRepository
     // Validation logic
   }
 
-  protected async validateUpdate(id: string, data: UpdateGrowthTrackingDTO): Promise<void> {
+  protected async validateUpdate(
+    id: string,
+    data: UpdateGrowthTrackingDTO,
+  ): Promise<void> {
     // Validation logic
   }
 
   protected async invalidateCaches(growth: any): Promise<void> {
     try {
       const growthData = growth.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, growthData.id));
-      await this.cacheManager.deletePattern(`white-cross:growth-tracking:student:${growthData.studentId}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, growthData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:growth-tracking:student:${growthData.studentId}:*`,
+      );
     } catch (error) {
       this.logger.warn('Error invalidating growth tracking caches:', error);
     }
@@ -127,5 +138,3 @@ export class GrowthTrackingRepository
     return sanitizeSensitiveData({ ...data });
   }
 }
-
-

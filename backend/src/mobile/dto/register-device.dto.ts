@@ -13,7 +13,7 @@ export class RegisterDeviceDto {
 
   @ApiProperty({
     description: 'Notification platform',
-    enum: NotificationPlatform
+    enum: NotificationPlatform,
   })
   @IsEnum(NotificationPlatform)
   platform: NotificationPlatform;

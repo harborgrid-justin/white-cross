@@ -5,10 +5,18 @@
  * HIPAA Compliance: All chronic condition data is PHI and requires audit logging
  */
 
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { ChronicCondition, ConditionStatus } from '../../database/models/chronic-condition.model';
+import {
+  ChronicCondition,
+  ConditionStatus,
+} from '../../database/models/chronic-condition.model';
 import { Student } from '../../database/models/student.model';
 
 @Injectable()
@@ -23,32 +31,40 @@ export class ChronicConditionService {
   ) {}
 
   async addChronicCondition(conditionData: any): Promise<ChronicCondition> {
-    this.logger.log(`Adding chronic condition for student ${conditionData.studentId}`);
-    
+    this.logger.log(
+      `Adding chronic condition for student ${conditionData.studentId}`,
+    );
+
     // Verify student exists
     const student = await this.studentModel.findByPk(conditionData.studentId);
     if (!student) {
-      throw new BadRequestException(`Student with ID ${conditionData.studentId} not found`);
+      throw new BadRequestException(
+        `Student with ID ${conditionData.studentId} not found`,
+      );
     }
-    
+
     const condition = await this.chronicConditionModel.create({
       ...conditionData,
       status: ConditionStatus.ACTIVE,
       isActive: true,
     });
-    
-    this.logger.log(`PHI Created: Chronic condition record created for student ${conditionData.studentId}`);
+
+    this.logger.log(
+      `PHI Created: Chronic condition record created for student ${conditionData.studentId}`,
+    );
     return condition;
   }
 
   async getChronicConditions(studentId?: string): Promise<ChronicCondition[]> {
-    this.logger.log(`Getting chronic conditions${studentId ? ` for student ${studentId}` : ''}`);
-    
+    this.logger.log(
+      `Getting chronic conditions${studentId ? ` for student ${studentId}` : ''}`,
+    );
+
     const whereClause: any = { isActive: true };
     if (studentId) {
       whereClause.studentId = studentId;
     }
-    
+
     return await this.chronicConditionModel.findAll({
       where: whereClause,
       include: [
@@ -57,7 +73,11 @@ export class ChronicConditionService {
           attributes: ['id', 'firstName', 'lastName'],
         },
       ],
-      order: [['status', 'ASC'], ['nextReviewDate', 'ASC'], ['createdAt', 'DESC']],
+      order: [
+        ['status', 'ASC'],
+        ['nextReviewDate', 'ASC'],
+        ['createdAt', 'DESC'],
+      ],
     });
   }
 
@@ -71,64 +91,84 @@ export class ChronicConditionService {
         },
       ],
     });
-    
+
     if (!condition) {
       throw new NotFoundException(`Chronic condition with ID ${id} not found`);
     }
-    
+
     return condition;
   }
 
-  async findByStudent(studentId: string, user: any): Promise<ChronicCondition[]> {
-    this.logger.log(`Finding chronic conditions for student ${studentId} by user ${user.id}`);
-    
+  async findByStudent(
+    studentId: string,
+    user: any,
+  ): Promise<ChronicCondition[]> {
+    this.logger.log(
+      `Finding chronic conditions for student ${studentId} by user ${user.id}`,
+    );
+
     // Verify student exists
     const student = await this.studentModel.findByPk(studentId);
     if (!student) {
       throw new NotFoundException(`Student with ID ${studentId} not found`);
     }
-    
+
     return await this.chronicConditionModel.findAll({
-      where: { 
+      where: {
         studentId,
         isActive: true,
       },
-      order: [['status', 'ASC'], ['nextReviewDate', 'ASC']],
+      order: [
+        ['status', 'ASC'],
+        ['nextReviewDate', 'ASC'],
+      ],
     });
   }
 
   async create(createDto: any, user: any): Promise<ChronicCondition> {
-    this.logger.log(`Creating chronic condition for student ${createDto.studentId} by user ${user.id}`);
-    
+    this.logger.log(
+      `Creating chronic condition for student ${createDto.studentId} by user ${user.id}`,
+    );
+
     // Verify student exists
     const student = await this.studentModel.findByPk(createDto.studentId);
     if (!student) {
-      throw new BadRequestException(`Student with ID ${createDto.studentId} not found`);
+      throw new BadRequestException(
+        `Student with ID ${createDto.studentId} not found`,
+      );
     }
-    
+
     const condition = await this.chronicConditionModel.create({
       ...createDto,
       status: ConditionStatus.ACTIVE,
       isActive: true,
       createdBy: user.id,
     });
-    
-    this.logger.log(`PHI Created: Chronic condition record created for student ${createDto.studentId}`);
+
+    this.logger.log(
+      `PHI Created: Chronic condition record created for student ${createDto.studentId}`,
+    );
     return condition;
   }
 
-  async update(id: string, updateDto: any, user: any): Promise<ChronicCondition> {
+  async update(
+    id: string,
+    updateDto: any,
+    user: any,
+  ): Promise<ChronicCondition> {
     const condition = await this.chronicConditionModel.findByPk(id);
     if (!condition) {
       throw new NotFoundException(`Chronic condition with ID ${id} not found`);
     }
-    
+
     await condition.update({
       ...updateDto,
       updatedBy: user.id,
     });
-    
-    this.logger.log(`PHI Updated: Chronic condition ${id} updated by user ${user.id}`);
+
+    this.logger.log(
+      `PHI Updated: Chronic condition ${id} updated by user ${user.id}`,
+    );
     return condition;
   }
 
@@ -137,28 +177,32 @@ export class ChronicConditionService {
     if (!condition) {
       throw new NotFoundException(`Chronic condition with ID ${id} not found`);
     }
-    
+
     // Soft delete by setting isActive to false
     await condition.update({
       isActive: false,
       status: ConditionStatus.RESOLVED,
     });
-    
-    this.logger.log(`PHI Deleted: Chronic condition ${id} deactivated by user ${user.id}`);
+
+    this.logger.log(
+      `PHI Deleted: Chronic condition ${id} deactivated by user ${user.id}`,
+    );
   }
 
   async findActive(studentId?: string): Promise<ChronicCondition[]> {
-    this.logger.log(`Finding active chronic conditions${studentId ? ` for student ${studentId}` : ''}`);
-    
-    const whereClause: any = { 
+    this.logger.log(
+      `Finding active chronic conditions${studentId ? ` for student ${studentId}` : ''}`,
+    );
+
+    const whereClause: any = {
       isActive: true,
       status: ConditionStatus.ACTIVE,
     };
-    
+
     if (studentId) {
       whereClause.studentId = studentId;
     }
-    
+
     return await this.chronicConditionModel.findAll({
       where: whereClause,
       include: [
@@ -167,32 +211,45 @@ export class ChronicConditionService {
           attributes: ['id', 'firstName', 'lastName'],
         },
       ],
-      order: [['nextReviewDate', 'ASC'], ['severity', 'DESC']],
+      order: [
+        ['nextReviewDate', 'ASC'],
+        ['severity', 'DESC'],
+      ],
     });
   }
 
-  async updateCarePlan(conditionId: string, plan: any, user: any): Promise<ChronicCondition> {
-    this.logger.log(`Updating care plan for chronic condition ${conditionId} by user ${user.id}`);
-    
+  async updateCarePlan(
+    conditionId: string,
+    plan: any,
+    user: any,
+  ): Promise<ChronicCondition> {
+    this.logger.log(
+      `Updating care plan for chronic condition ${conditionId} by user ${user.id}`,
+    );
+
     const condition = await this.chronicConditionModel.findByPk(conditionId);
     if (!condition) {
-      throw new NotFoundException(`Chronic condition with ID ${conditionId} not found`);
+      throw new NotFoundException(
+        `Chronic condition with ID ${conditionId} not found`,
+      );
     }
-    
+
     await condition.update({
       carePlan: plan,
       lastReviewDate: new Date(),
     });
-    
-    this.logger.log(`PHI Updated: Care plan updated for chronic condition ${conditionId}`);
+
+    this.logger.log(
+      `PHI Updated: Care plan updated for chronic condition ${conditionId}`,
+    );
     return condition;
   }
 
   async search(query: string, filters: any = {}): Promise<ChronicCondition[]> {
     this.logger.log(`Searching chronic conditions with query: ${query}`);
-    
+
     const whereClause: any = { isActive: true };
-    
+
     // Text search
     if (query) {
       whereClause[Op.or] = [
@@ -228,7 +285,11 @@ export class ChronicConditionService {
           attributes: ['id', 'firstName', 'lastName'],
         },
       ],
-      order: [['status', 'ASC'], ['nextReviewDate', 'ASC'], ['createdAt', 'DESC']],
+      order: [
+        ['status', 'ASC'],
+        ['nextReviewDate', 'ASC'],
+        ['createdAt', 'DESC'],
+      ],
     });
   }
 
@@ -237,11 +298,11 @@ export class ChronicConditionService {
    */
   async getConditionsRequiringReview(): Promise<ChronicCondition[]> {
     this.logger.log('Getting chronic conditions requiring review');
-    
+
     const now = new Date();
     const nextMonth = new Date();
     nextMonth.setMonth(now.getMonth() + 1);
-    
+
     return await this.chronicConditionModel.findAll({
       where: {
         isActive: true,
@@ -264,7 +325,7 @@ export class ChronicConditionService {
    */
   async getConditionsByICDCode(icdCode: string): Promise<ChronicCondition[]> {
     this.logger.log(`Getting chronic conditions with ICD code: ${icdCode}`);
-    
+
     return await this.chronicConditionModel.findAll({
       where: {
         isActive: true,
@@ -287,14 +348,11 @@ export class ChronicConditionService {
    */
   async getConditionsRequiringAccommodations(): Promise<ChronicCondition[]> {
     this.logger.log('Getting chronic conditions requiring accommodations');
-    
+
     return await this.chronicConditionModel.findAll({
       where: {
         isActive: true,
-        [Op.or]: [
-          { requiresIEP: true },
-          { requires504: true },
-        ],
+        [Op.or]: [{ requiresIEP: true }, { requires504: true }],
       },
       include: [
         {

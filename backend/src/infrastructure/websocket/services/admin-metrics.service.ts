@@ -12,7 +12,14 @@
  * @since 2025-11-05
  */
 
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy, Inject, forwardRef } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  OnModuleDestroy,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WebSocketService } from '../websocket.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -73,7 +80,7 @@ export interface SystemMetrics {
 }
 
 /**
- * Admin activity interface  
+ * Admin activity interface
  */
 export interface AdminActivity {
   id: string;
@@ -109,19 +116,19 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
   private metricsInterval: NodeJS.Timeout | null = null;
   private previousCpuInfo: any = null;
   private previousNetworkStats: any = null;
-  
+
   // Metrics storage for trends
   private metricsHistory: SystemMetrics[] = [];
   private readonly maxHistorySize = 100; // Keep last 100 data points
-  
+
   // Active alerts
   private activeAlerts = new Map<string, SystemAlert>();
   private alertThresholds = {
     cpu: 80,
     memory: 85,
     disk: 90,
-    responseTime: 5000,  // 5 seconds
-    errorRate: 5,        // 5%
+    responseTime: 5000, // 5 seconds
+    errorRate: 5, // 5%
   };
 
   constructor(
@@ -131,10 +138,15 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   async onModuleInit() {
-    this.isEnabled = this.configService.get<boolean>('ADMIN_METRICS_ENABLED', true);
-    
+    this.isEnabled = this.configService.get<boolean>(
+      'ADMIN_METRICS_ENABLED',
+      true,
+    );
+
     if (this.isEnabled) {
-      this.logger.log('Admin Metrics Service initialized - Starting real-time monitoring');
+      this.logger.log(
+        'Admin Metrics Service initialized - Starting real-time monitoring',
+      );
       await this.startMetricsCollection();
     } else {
       this.logger.log('Admin Metrics Service disabled via configuration');
@@ -170,7 +182,7 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
    */
   private async collectSystemMetrics(): Promise<SystemMetrics> {
     const timestamp = new Date().toISOString();
-    
+
     // System info
     const uptime = os.uptime();
     const loadAverage = os.loadavg();
@@ -180,8 +192,8 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
 
     // CPU metrics
     const cpuInfo = await this.getCpuMetrics();
-    
-    // Memory metrics  
+
+    // Memory metrics
     const totalMem = os.totalmem();
     const freeMem = os.freemem();
     const usedMem = totalMem - freeMem;
@@ -189,13 +201,13 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
 
     // Disk metrics
     const diskInfo = await this.getDiskMetrics();
-    
+
     // Network metrics
     const networkInfo = await this.getNetworkMetrics();
-    
+
     // Database metrics (placeholder - integrate with your database service)
     const databaseInfo = await this.getDatabaseMetrics();
-    
+
     // WebSocket metrics
     const websocketInfo = await this.getWebSocketMetrics();
 
@@ -246,7 +258,7 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
       const totalTickDiff = totalTick - this.previousCpuInfo.totalTick;
       const totalIdleDiff = totalIdle - this.previousCpuInfo.totalIdle;
       const usage = 100 - Math.round((100 * totalIdleDiff) / totalTickDiff);
-      
+
       this.previousCpuInfo = { totalTick, totalIdle };
       return { usage: Math.max(0, Math.min(100, usage)) };
     } else {
@@ -269,11 +281,16 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
       if (process.platform !== 'win32') {
         const { stdout } = await execAsync('df -h / | tail -1');
         const parts = stdout.trim().split(/\s+/);
-        
+
         const parseSize = (size: string): number => {
           const unit = size.slice(-1).toLowerCase();
           const value = parseFloat(size);
-          const multipliers = { k: 1024, m: 1024 ** 2, g: 1024 ** 3, t: 1024 ** 4 };
+          const multipliers = {
+            k: 1024,
+            m: 1024 ** 2,
+            g: 1024 ** 3,
+            t: 1024 ** 4,
+          };
           return value * (multipliers[unit] || 1);
         };
 
@@ -287,8 +304,8 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
         // Windows fallback - basic implementation
         return {
           total: 1000000000000, // 1TB placeholder
-          used: 500000000000,   // 500GB placeholder  
-          free: 500000000000,   // 500GB placeholder
+          used: 500000000000, // 500GB placeholder
+          free: 500000000000, // 500GB placeholder
           percentage: 50,
         };
       }
@@ -311,9 +328,9 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
       // This is a simplified implementation
       // In production, you'd want to read from /proc/net/dev or similar
       const networkInterfaces = os.networkInterfaces();
-      let bytesIn = 0;
-      let bytesOut = 0;
-      
+      const bytesIn = 0;
+      const bytesOut = 0;
+
       // Placeholder values - integrate with your network monitoring
       return {
         bytesIn: Math.floor(Math.random() * 1000000),
@@ -361,12 +378,14 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
   }> {
     try {
       // Get metrics from WebSocket gateway
-      const connectedClients = this.webSocketService['websocketGateway']?.getConnectedSocketsCount() || 0;
-      
+      const connectedClients =
+        this.webSocketService['websocketGateway']?.getConnectedSocketsCount() ||
+        0;
+
       return {
         connectedClients,
         totalMessages: Math.floor(Math.random() * 10000), // Placeholder
-        errors: Math.floor(Math.random() * 10),           // Placeholder
+        errors: Math.floor(Math.random() * 10), // Placeholder
       };
     } catch (error) {
       this.logger.warn('Failed to get WebSocket metrics:', error.message);
@@ -406,9 +425,12 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
           message: `CPU usage is at ${metrics.cpu.usage.toFixed(1)}%`,
           timestamp: metrics.timestamp,
           acknowledged: false,
-          details: { currentUsage: metrics.cpu.usage, threshold: this.alertThresholds.cpu },
+          details: {
+            currentUsage: metrics.cpu.usage,
+            threshold: this.alertThresholds.cpu,
+          },
         };
-        
+
         this.activeAlerts.set(alertId, alert);
         alerts.push(alert);
       }
@@ -422,15 +444,18 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
       if (!this.activeAlerts.has(alertId)) {
         const alert: SystemAlert = {
           id: alertId,
-          type: 'performance', 
+          type: 'performance',
           severity: metrics.memory.percentage > 95 ? 'critical' : 'warning',
           title: 'High Memory Usage',
           message: `Memory usage is at ${metrics.memory.percentage.toFixed(1)}%`,
           timestamp: metrics.timestamp,
           acknowledged: false,
-          details: { currentUsage: metrics.memory.percentage, threshold: this.alertThresholds.memory },
+          details: {
+            currentUsage: metrics.memory.percentage,
+            threshold: this.alertThresholds.memory,
+          },
         };
-        
+
         this.activeAlerts.set(alertId, alert);
         alerts.push(alert);
       }
@@ -450,9 +475,12 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
           message: `Disk usage is at ${metrics.disk.percentage.toFixed(1)}%`,
           timestamp: metrics.timestamp,
           acknowledged: false,
-          details: { currentUsage: metrics.disk.percentage, threshold: this.alertThresholds.disk },
+          details: {
+            currentUsage: metrics.disk.percentage,
+            threshold: this.alertThresholds.disk,
+          },
         };
-        
+
         this.activeAlerts.set(alertId, alert);
         alerts.push(alert);
       }
@@ -479,7 +507,7 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
           metrics,
           trend: this.calculateTrend(),
           alerts: Array.from(this.activeAlerts.values()),
-        }
+        },
       );
     } catch (error) {
       this.logger.error('Failed to broadcast metrics:', error);
@@ -495,7 +523,7 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
         await this.webSocketService.broadcastToRoom(
           'admin:alerts',
           'admin:alert:new',
-          alert
+          alert,
         );
       }
     } catch (error) {
@@ -518,7 +546,10 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
     const current = this.metricsHistory[this.metricsHistory.length - 1];
     const previous = this.metricsHistory[this.metricsHistory.length - 2];
 
-    const calculateDirection = (current: number, previous: number): 'up' | 'down' | 'stable' => {
+    const calculateDirection = (
+      current: number,
+      previous: number,
+    ): 'up' | 'down' | 'stable' => {
       const diff = current - previous;
       if (Math.abs(diff) < 1) return 'stable';
       return diff > 0 ? 'up' : 'down';
@@ -526,15 +557,23 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
 
     return {
       cpu: calculateDirection(current.cpu.usage, previous.cpu.usage),
-      memory: calculateDirection(current.memory.percentage, previous.memory.percentage),
-      disk: calculateDirection(current.disk.percentage, previous.disk.percentage),
+      memory: calculateDirection(
+        current.memory.percentage,
+        previous.memory.percentage,
+      ),
+      disk: calculateDirection(
+        current.disk.percentage,
+        previous.disk.percentage,
+      ),
     };
   }
 
   /**
    * Log admin activity and broadcast to monitoring clients
    */
-  async logAdminActivity(activity: Omit<AdminActivity, 'id' | 'timestamp'>): Promise<void> {
+  async logAdminActivity(
+    activity: Omit<AdminActivity, 'id' | 'timestamp'>,
+  ): Promise<void> {
     const adminActivity: AdminActivity = {
       id: `activity_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       timestamp: new Date().toISOString(),
@@ -546,15 +585,18 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
       await this.webSocketService.broadcastToRoom(
         'admin:activity',
         'admin:activity:new',
-        adminActivity
+        adminActivity,
       );
 
-      this.logger.log(`Admin activity logged: ${activity.action} by ${activity.userName}`, {
-        userId: activity.userId,
-        action: activity.action,
-        resource: activity.resource,
-        severity: activity.severity,
-      });
+      this.logger.log(
+        `Admin activity logged: ${activity.action} by ${activity.userName}`,
+        {
+          userId: activity.userId,
+          action: activity.action,
+          resource: activity.resource,
+          severity: activity.severity,
+        },
+      );
     } catch (error) {
       this.logger.error('Failed to broadcast admin activity:', error);
     }
@@ -592,14 +634,14 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
     if (alert) {
       alert.acknowledged = true;
       this.activeAlerts.set(alertId, alert);
-      
+
       // Broadcast alert acknowledgment
       await this.webSocketService.broadcastToRoom(
         'admin:alerts',
         'admin:alert:acknowledged',
-        { alertId, userId, timestamp: new Date().toISOString() }
+        { alertId, userId, timestamp: new Date().toISOString() },
       );
-      
+
       this.logger.log(`Alert ${alertId} acknowledged by user ${userId}`);
     }
   }
@@ -609,15 +651,19 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
    */
   getSystemHealthStatus(): 'healthy' | 'degraded' | 'critical' {
     const alerts = Array.from(this.activeAlerts.values());
-    
-    if (alerts.some(alert => alert.severity === 'critical')) {
+
+    if (alerts.some((alert) => alert.severity === 'critical')) {
       return 'critical';
     }
-    
-    if (alerts.some(alert => alert.severity === 'warning' || alert.severity === 'error')) {
+
+    if (
+      alerts.some(
+        (alert) => alert.severity === 'warning' || alert.severity === 'error',
+      )
+    ) {
       return 'degraded';
     }
-    
+
     return 'healthy';
   }
 
@@ -628,7 +674,9 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
   private cleanupOldMetrics() {
     if (this.metricsHistory.length > this.maxHistorySize) {
       this.metricsHistory = this.metricsHistory.slice(-this.maxHistorySize);
-      this.logger.debug(`Cleaned up old metrics, keeping last ${this.maxHistorySize} entries`);
+      this.logger.debug(
+        `Cleaned up old metrics, keeping last ${this.maxHistorySize} entries`,
+      );
     }
   }
 }

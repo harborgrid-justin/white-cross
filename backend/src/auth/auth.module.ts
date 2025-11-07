@@ -29,8 +29,8 @@ import { EmailVerificationService } from './services/email-verification.service'
         if (!jwtSecret) {
           throw new Error(
             'CRITICAL SECURITY ERROR: JWT_SECRET is not configured. ' +
-            'Application cannot start without proper JWT secret configuration. ' +
-            'Please set JWT_SECRET in your .env file to a strong, random secret.'
+              'Application cannot start without proper JWT secret configuration. ' +
+              'Please set JWT_SECRET in your .env file to a strong, random secret.',
           );
         }
 
@@ -38,7 +38,8 @@ import { EmailVerificationService } from './services/email-verification.service'
         if (jwtSecret.length < 32) {
           throw new Error(
             'CRITICAL SECURITY ERROR: JWT_SECRET must be at least 32 characters long. ' +
-            'Current length: ' + jwtSecret.length
+              'Current length: ' +
+              jwtSecret.length,
           );
         }
 

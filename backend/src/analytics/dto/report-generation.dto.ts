@@ -58,7 +58,10 @@ export class ScheduleRecurringReportDto {
   @IsEnum(ReportType)
   reportType: ReportType;
 
-  @ApiProperty({ enum: ['DAILY', 'WEEKLY', 'MONTHLY', 'QUARTERLY', 'ANNUALLY'], description: 'Frequency' })
+  @ApiProperty({
+    enum: ['DAILY', 'WEEKLY', 'MONTHLY', 'QUARTERLY', 'ANNUALLY'],
+    description: 'Frequency',
+  })
   @IsEnum(['DAILY', 'WEEKLY', 'MONTHLY', 'QUARTERLY', 'ANNUALLY'])
   frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'ANNUALLY';
 
@@ -66,7 +69,10 @@ export class ScheduleRecurringReportDto {
   @IsEnum(ReportFormat)
   format: ReportFormat;
 
-  @ApiProperty({ type: [String], description: 'Email addresses for distribution' })
+  @ApiProperty({
+    type: [String],
+    description: 'Email addresses for distribution',
+  })
   @IsArray()
   @IsString({ each: true })
   distributionList: string[];
@@ -102,7 +108,10 @@ export class DistributeReportDto {
  * Get Reports Filter DTO
  */
 export class GetReportsFilterDto {
-  @ApiPropertyOptional({ enum: ReportType, description: 'Filter by report type' })
+  @ApiPropertyOptional({
+    enum: ReportType,
+    description: 'Filter by report type',
+  })
   @IsOptional()
   @IsEnum(ReportType)
   reportType?: ReportType;

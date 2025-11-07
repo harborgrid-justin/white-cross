@@ -9,7 +9,8 @@ import { AuditAction } from '../enums';
 
 export class CreateAuditLogDto {
   @ApiPropertyOptional({
-    description: 'ID of user performing the action (optional for system actions)',
+    description:
+      'ID of user performing the action (optional for system actions)',
     example: 'user-uuid-123',
   })
   @IsString()

@@ -107,7 +107,12 @@ export interface HealthcareErrorResponse extends ErrorResponse {
   error: 'Healthcare Error';
   errorCode: string;
   /** Healthcare domain context */
-  domain?: 'clinical' | 'medication' | 'allergy' | 'vaccination' | 'appointment';
+  domain?:
+    | 'clinical'
+    | 'medication'
+    | 'allergy'
+    | 'vaccination'
+    | 'appointment';
   /** Safety level */
   safetyLevel?: 'critical' | 'warning' | 'info';
 }
@@ -122,7 +127,12 @@ export interface SecurityErrorResponse extends ErrorResponse {
   error: 'Security Error';
   errorCode: string;
   /** Security violation type */
-  violationType?: 'authentication' | 'authorization' | 'rate_limit' | 'ip_restriction' | 'csrf';
+  violationType?:
+    | 'authentication'
+    | 'authorization'
+    | 'rate_limit'
+    | 'ip_restriction'
+    | 'csrf';
   /** Whether incident was logged */
   incidentLogged: boolean;
 }

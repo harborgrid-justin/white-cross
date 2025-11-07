@@ -10,7 +10,11 @@ import {
   CreatedAt,
 } from 'sequelize-typescript';
 import { ReportSchedule } from './report-schedule.model';
-import { ReportType, OutputFormat, ReportStatus } from '../constants/report.constants';
+import {
+  ReportType,
+  OutputFormat,
+  ReportStatus,
+} from '../constants/report.constants';
 
 /**
  * Report Execution Model

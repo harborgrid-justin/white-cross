@@ -22,13 +22,13 @@ export enum HealthRecordType {
   NUTRITION = 'NUTRITION',
   SLEEP = 'SLEEP',
   DEVELOPMENT = 'DEVELOPMENT',
-  OTHER = 'OTHER'
+  OTHER = 'OTHER',
 }
 
 export enum HealthRecordStatus {
   ACTIVE = 'ACTIVE',
   ARCHIVED = 'ARCHIVED',
-  DELETED = 'DELETED'
+  DELETED = 'DELETED',
 }
 
 export interface HealthRecordAttributes {
@@ -105,11 +105,27 @@ export interface HealthSummary {
 
 export interface HealthRecord extends HealthRecordAttributes {}
 
-export interface IHealthRecordRepository extends IRepository<HealthRecordAttributes, CreateHealthRecordData, UpdateHealthRecordData> {
-  findByStudent(studentId: string, options?: QueryOptions): Promise<HealthRecordAttributes[]>;
-  findByType(type: HealthRecordType, studentId?: string, options?: QueryOptions): Promise<HealthRecordAttributes[]>;
+export interface IHealthRecordRepository
+  extends IRepository<
+    HealthRecordAttributes,
+    CreateHealthRecordData,
+    UpdateHealthRecordData
+  > {
+  findByStudent(
+    studentId: string,
+    options?: QueryOptions,
+  ): Promise<HealthRecordAttributes[]>;
+  findByType(
+    type: HealthRecordType,
+    studentId?: string,
+    options?: QueryOptions,
+  ): Promise<HealthRecordAttributes[]>;
   findRequiringFollowUp(beforeDate?: Date): Promise<HealthRecordAttributes[]>;
-  findByDateRange(startDate: Date, endDate: Date, filters?: HealthRecordFilters): Promise<HealthRecordAttributes[]>;
+  findByDateRange(
+    startDate: Date,
+    endDate: Date,
+    filters?: HealthRecordFilters,
+  ): Promise<HealthRecordAttributes[]>;
   getStudentHealthSummary(studentId: string): Promise<HealthSummary>;
   archiveRecord(id: string, context: ExecutionContext): Promise<void>;
   getRecordsCount(filters?: HealthRecordFilters): Promise<number>;

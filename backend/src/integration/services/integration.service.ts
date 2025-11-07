@@ -54,7 +54,12 @@ export class IntegrationService {
   }
 
   // Logs
-  getIntegrationLogs(integrationId?: string, type?: string, page?: number, limit?: number) {
+  getIntegrationLogs(
+    integrationId?: string,
+    type?: string,
+    page?: number,
+    limit?: number,
+  ) {
     return this.logService.findAll(integrationId, type, page, limit);
   }
 

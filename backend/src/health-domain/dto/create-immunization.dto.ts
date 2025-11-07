@@ -1,4 +1,10 @@
-import { IsString, IsDate, IsOptional, IsNumber, IsEnum } from 'class-validator';
+import {
+  IsString,
+  IsDate,
+  IsOptional,
+  IsNumber,
+  IsEnum,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { VaccineType } from '../../health-record/interfaces/vaccination.interface';

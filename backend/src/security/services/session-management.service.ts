@@ -103,7 +103,7 @@ export class SessionManagementService {
     try {
       await this.sessionModel.update(
         { isActive: false },
-        { where: { id: sessionId } }
+        { where: { id: sessionId } },
       );
       this.logger.log('Session invalidated', { sessionId });
       return true;
@@ -120,7 +120,7 @@ export class SessionManagementService {
     try {
       const [affectedCount] = await this.sessionModel.update(
         { isActive: false },
-        { where: { userId, isActive: true } }
+        { where: { userId, isActive: true } },
       );
 
       this.logger.log('User sessions invalidated', {
@@ -167,10 +167,13 @@ export class SessionManagementService {
         // Invalidate the oldest session
         const oldestSession = activeSessions[activeSessions.length - 1];
         await this.invalidateSession(oldestSession.id);
-        this.logger.warn('Concurrent session limit reached, oldest session invalidated', {
-          userId,
-          limit: this.MAX_CONCURRENT_SESSIONS,
-        });
+        this.logger.warn(
+          'Concurrent session limit reached, oldest session invalidated',
+          {
+            userId,
+            limit: this.MAX_CONCURRENT_SESSIONS,
+          },
+        );
       }
     } catch (error) {
       this.logger.error('Error enforcing session limit', { error, userId });
@@ -198,11 +201,13 @@ export class SessionManagementService {
             },
             isActive: true,
           },
-        }
+        },
       );
 
       if (affectedCount > 0) {
-        this.logger.log('Expired sessions cleaned up', { count: affectedCount });
+        this.logger.log('Expired sessions cleaned up', {
+          count: affectedCount,
+        });
       }
 
       return affectedCount;

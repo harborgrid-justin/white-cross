@@ -78,12 +78,19 @@ export class HealthRecordResolver {
    */
   @Query(() => HealthRecordListResponseDto, { name: 'healthRecords' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN, UserRole.NURSE)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.SCHOOL_ADMIN,
+    UserRole.DISTRICT_ADMIN,
+    UserRole.NURSE,
+  )
   async getHealthRecords(
     @Args('page', { type: () => Number, defaultValue: 1 }) page: number,
     @Args('limit', { type: () => Number, defaultValue: 20 }) limit: number,
-    @Args('orderBy', { type: () => String, defaultValue: 'recordDate' }) orderBy: string,
-    @Args('orderDirection', { type: () => String, defaultValue: 'DESC' }) orderDirection: string,
+    @Args('orderBy', { type: () => String, defaultValue: 'recordDate' })
+    orderBy: string,
+    @Args('orderDirection', { type: () => String, defaultValue: 'DESC' })
+    orderDirection: string,
     @Args('filters', { type: () => HealthRecordFilterInputDto, nullable: true })
     filters?: HealthRecordFilterInputDto,
     @Context() context?: any,
@@ -111,9 +118,12 @@ export class HealthRecordResolver {
     if (filters) {
       if (filters.studentId) serviceFilters.studentId = filters.studentId;
       if (filters.recordType) serviceFilters.recordType = filters.recordType;
-      if (filters.isConfidential !== undefined) serviceFilters.isConfidential = filters.isConfidential;
-      if (filters.followUpRequired !== undefined) serviceFilters.followUpRequired = filters.followUpRequired;
-      if (filters.followUpCompleted !== undefined) serviceFilters.followUpCompleted = filters.followUpCompleted;
+      if (filters.isConfidential !== undefined)
+        serviceFilters.isConfidential = filters.isConfidential;
+      if (filters.followUpRequired !== undefined)
+        serviceFilters.followUpRequired = filters.followUpRequired;
+      if (filters.followUpCompleted !== undefined)
+        serviceFilters.followUpCompleted = filters.followUpCompleted;
       if (filters.fromDate) serviceFilters.fromDate = filters.fromDate;
       if (filters.toDate) serviceFilters.toDate = filters.toDate;
       if (filters.search) serviceFilters.search = filters.search;
@@ -126,7 +136,9 @@ export class HealthRecordResolver {
     const paginationData = result.meta || {};
 
     return {
-      healthRecords: healthRecords.map((record: any) => this.mapHealthRecordToDto(record)),
+      healthRecords: healthRecords.map((record: any) =>
+        this.mapHealthRecordToDto(record),
+      ),
       pagination: {
         page: paginationData.page || page,
         limit: paginationData.limit || limit,
@@ -144,7 +156,12 @@ export class HealthRecordResolver {
    */
   @Query(() => HealthRecordDto, { name: 'healthRecord', nullable: true })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN, UserRole.NURSE)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.SCHOOL_ADMIN,
+    UserRole.DISTRICT_ADMIN,
+    UserRole.NURSE,
+  )
   async getHealthRecord(
     @Args('id', { type: () => ID }) id: string,
     @Context() context?: any,
@@ -174,7 +191,12 @@ export class HealthRecordResolver {
    */
   @Query(() => [HealthRecordDto], { name: 'healthRecordsByStudent' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN, UserRole.NURSE)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.SCHOOL_ADMIN,
+    UserRole.DISTRICT_ADMIN,
+    UserRole.NURSE,
+  )
   async getHealthRecordsByStudent(
     @Args('studentId', { type: () => ID }) studentId: string,
     @Context() context?: any,
@@ -200,7 +222,12 @@ export class HealthRecordResolver {
    */
   @Mutation(() => HealthRecordDto)
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN, UserRole.NURSE)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.SCHOOL_ADMIN,
+    UserRole.DISTRICT_ADMIN,
+    UserRole.NURSE,
+  )
   async createHealthRecord(
     @Args('input') input: HealthRecordInputDto,
     @Context() context: any,
@@ -231,7 +258,12 @@ export class HealthRecordResolver {
    */
   @Mutation(() => HealthRecordDto)
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN, UserRole.NURSE)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.SCHOOL_ADMIN,
+    UserRole.DISTRICT_ADMIN,
+    UserRole.NURSE,
+  )
   async updateHealthRecord(
     @Args('id', { type: () => ID }) id: string,
     @Args('input') input: HealthRecordUpdateInputDto,

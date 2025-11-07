@@ -18,11 +18,9 @@ import { Contact } from '../database/models/contact.model';
 import { EmergencyContact } from '../database/models/emergency-contact.model';
 
 @Module({
-  imports: [
-    SequelizeModule.forFeature([Contact, EmergencyContact])
-  ],
+  imports: [SequelizeModule.forFeature([Contact, EmergencyContact])],
   providers: [ContactService, EmergencyContactService],
   controllers: [ContactController],
-  exports: [ContactService, EmergencyContactService]
+  exports: [ContactService, EmergencyContactService],
 })
 export class ContactModule {}

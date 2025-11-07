@@ -15,7 +15,10 @@ import {
   BroadcastStatus,
   DeliveryStatus,
 } from './emergency-broadcast.enums';
-import { EmergencyBroadcast, RecipientDeliveryStatus } from './emergency-broadcast.interfaces';
+import {
+  EmergencyBroadcast,
+  RecipientDeliveryStatus,
+} from './emergency-broadcast.interfaces';
 import {
   CreateEmergencyBroadcastDto,
   UpdateEmergencyBroadcastDto,
@@ -112,8 +115,7 @@ export class EmergencyBroadcastService {
         createDto.priority || this.determinePriority(createDto.type);
 
       // Auto-determine channels if not set
-      const channels =
-        createDto.channels || this.getDeliveryChannels(priority);
+      const channels = createDto.channels || this.getDeliveryChannels(priority);
 
       // Set default expiration (24 hours for non-critical, 1 hour for critical)
       let expiresAt = createDto.expiresAt;
@@ -206,12 +208,17 @@ export class EmergencyBroadcastService {
   /**
    * Send emergency broadcast
    */
-  async sendBroadcast(broadcastId: string, userId: string = 'system'): Promise<SendBroadcastResponseDto> {
+  async sendBroadcast(
+    broadcastId: string,
+    userId: string = 'system',
+  ): Promise<SendBroadcastResponseDto> {
     try {
       // Retrieve broadcast from database
       const broadcast = await this.broadcastRepository.findById(broadcastId);
       if (!broadcast) {
-        throw new NotFoundException(`Broadcast with ID ${broadcastId} not found`);
+        throw new NotFoundException(
+          `Broadcast with ID ${broadcastId} not found`,
+        );
       }
 
       this.logger.log('Sending emergency broadcast', { broadcastId });
@@ -249,7 +256,9 @@ export class EmergencyBroadcastService {
       const sent = deliveryResults.filter(
         (r) => r.status === DeliveryStatus.DELIVERED,
       ).length;
-      const failed = deliveryResults.filter((r) => r.status === DeliveryStatus.FAILED).length;
+      const failed = deliveryResults.filter(
+        (r) => r.status === DeliveryStatus.FAILED,
+      ).length;
 
       await this.broadcastRepository.update(
         broadcastId,
@@ -358,11 +367,15 @@ export class EmergencyBroadcastService {
       throw new NotFoundException(`Broadcast ${broadcastId} not found`);
     }
 
-    const channels = (broadcast as any).channels || [CommunicationChannel.EMAIL];
+    const channels = (broadcast as any).channels || [
+      CommunicationChannel.EMAIL,
+    ];
     const messageTitle = (broadcast as any).title;
     const messageContent = (broadcast as any).message;
 
-    this.logger.log(`Delivering to ${recipients.length} recipients via channels: ${channels.join(', ')}`);
+    this.logger.log(
+      `Delivering to ${recipients.length} recipients via channels: ${channels.join(', ')}`,
+    );
 
     // Process each recipient
     for (const recipient of recipients) {
@@ -580,7 +593,9 @@ export class EmergencyBroadcastService {
     }
 
     // Call communication service
-    const result = await this.communicationService.sendMessage(messageDto as any);
+    const result = await this.communicationService.sendMessage(
+      messageDto as any,
+    );
     return result;
   }
 
@@ -616,7 +631,9 @@ export class EmergencyBroadcastService {
       // Query database for broadcast
       const broadcast = await this.broadcastRepository.findById(broadcastId);
       if (!broadcast) {
-        throw new NotFoundException(`Broadcast with ID ${broadcastId} not found`);
+        throw new NotFoundException(
+          `Broadcast with ID ${broadcastId} not found`,
+        );
       }
 
       // Get delivery statistics
@@ -624,7 +641,10 @@ export class EmergencyBroadcastService {
         total: (broadcast as any).totalRecipients || 0,
         delivered: (broadcast as any).deliveredCount || 0,
         failed: (broadcast as any).failedCount || 0,
-        pending: ((broadcast as any).totalRecipients || 0) - ((broadcast as any).deliveredCount || 0) - ((broadcast as any).failedCount || 0),
+        pending:
+          ((broadcast as any).totalRecipients || 0) -
+          ((broadcast as any).deliveredCount || 0) -
+          ((broadcast as any).failedCount || 0),
         acknowledged: (broadcast as any).acknowledgedCount || 0,
       };
 
@@ -645,12 +665,18 @@ export class EmergencyBroadcastService {
   /**
    * Cancel pending broadcast
    */
-  async cancelBroadcast(broadcastId: string, reason: string, userId: string = 'system'): Promise<void> {
+  async cancelBroadcast(
+    broadcastId: string,
+    reason: string,
+    userId: string = 'system',
+  ): Promise<void> {
     try {
       // Verify broadcast exists
       const broadcast = await this.broadcastRepository.findById(broadcastId);
       if (!broadcast) {
-        throw new NotFoundException(`Broadcast with ID ${broadcastId} not found`);
+        throw new NotFoundException(
+          `Broadcast with ID ${broadcastId} not found`,
+        );
       }
 
       // Create execution context
@@ -691,7 +717,9 @@ export class EmergencyBroadcastService {
       // Verify broadcast exists
       const broadcast = await this.broadcastRepository.findById(broadcastId);
       if (!broadcast) {
-        throw new NotFoundException(`Broadcast with ID ${broadcastId} not found`);
+        throw new NotFoundException(
+          `Broadcast with ID ${broadcastId} not found`,
+        );
       }
 
       // In real implementation, would update delivery tracking table

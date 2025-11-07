@@ -16,7 +16,7 @@ export enum AllergyType {
   ENVIRONMENTAL = 'ENVIRONMENTAL',
   INSECT = 'INSECT',
   LATEX = 'LATEX',
-  OTHER = 'OTHER'
+  OTHER = 'OTHER',
 }
 
 /**
@@ -26,7 +26,7 @@ export enum AllergySeverity {
   MILD = 'MILD',
   MODERATE = 'MODERATE',
   SEVERE = 'SEVERE',
-  LIFE_THREATENING = 'LIFE_THREATENING'
+  LIFE_THREATENING = 'LIFE_THREATENING',
 }
 
 export interface Allergy {

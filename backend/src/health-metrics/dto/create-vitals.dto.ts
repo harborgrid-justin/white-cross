@@ -1,4 +1,10 @@
-import { IsNumber, IsOptional, IsString, ValidateNested, IsObject } from 'class-validator';
+import {
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
+  IsObject,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 class BloodPressureDto {

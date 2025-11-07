@@ -28,7 +28,8 @@ export const HEALTHCARE_PATTERNS = {
   ICD10: /^[A-Z]\d{2}(\.\d{1,4})?$/,
 
   // Phone number - US format with optional extensions
-  PHONE: /^(\+1[-.\s]?)?(\([0-9]{3}\)|[0-9]{3})[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}(\s?(ext|x)\s?\d{1,5})?$/i,
+  PHONE:
+    /^(\+1[-.\s]?)?(\([0-9]{3}\)|[0-9]{3})[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}(\s?(ext|x)\s?\d{1,5})?$/i,
 
   // Email - RFC 5322 compliant
   EMAIL: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
@@ -46,7 +47,7 @@ export const HEALTHCARE_PATTERNS = {
   DOSAGE: /^\d+(\.\d+)?\s?(mg|mcg|g|ml|L|IU|units?)$/i,
 
   // Alphanumeric with spaces and basic punctuation
-  ALPHANUMERIC_EXTENDED: /^[a-zA-Z0-9\s\-.,()]+$/
+  ALPHANUMERIC_EXTENDED: /^[a-zA-Z0-9\s\-.,()]+$/,
 };
 
 /**
@@ -96,7 +97,7 @@ export const VALIDATION_CONFIGS = {
     enableSecurityValidation: true,
     logValidationErrors: true,
     maxFieldLength: 1000,
-    allowedFileTypes: ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx']
+    allowedFileTypes: ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'],
   } as ValidationConfig,
 
   admin: {
@@ -104,7 +105,7 @@ export const VALIDATION_CONFIGS = {
     enableSecurityValidation: true,
     logValidationErrors: true,
     maxFieldLength: 500,
-    allowedFileTypes: ['pdf', 'csv', 'xlsx']
+    allowedFileTypes: ['pdf', 'csv', 'xlsx'],
   } as ValidationConfig,
 
   public: {
@@ -112,6 +113,6 @@ export const VALIDATION_CONFIGS = {
     enableSecurityValidation: true,
     logValidationErrors: false,
     maxFieldLength: 200,
-    allowedFileTypes: ['jpg', 'jpeg', 'png']
-  } as ValidationConfig
+    allowedFileTypes: ['jpg', 'jpeg', 'png'],
+  } as ValidationConfig,
 };

@@ -1,4 +1,9 @@
-import { Injectable, BadRequestException, UnauthorizedException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  UnauthorizedException,
+  Logger,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
@@ -30,26 +35,33 @@ export class PasswordResetService {
   /**
    * Initiate password reset - generates token and sends email
    */
-  async initiatePasswordReset(email: string): Promise<{ message: string; success: boolean }> {
+  async initiatePasswordReset(
+    email: string,
+  ): Promise<{ message: string; success: boolean }> {
     const user = await this.userModel.findOne({ where: { email } });
 
     // Always return success even if user doesn't exist (security best practice)
     if (!user) {
-      this.logger.warn(`Password reset requested for non-existent email: ${email}`);
+      this.logger.warn(
+        `Password reset requested for non-existent email: ${email}`,
+      );
       return {
         success: true,
-        message: 'If an account exists with this email, a password reset link has been sent.',
+        message:
+          'If an account exists with this email, a password reset link has been sent.',
       };
     }
 
     // Generate secure random token
     const token = this.generateResetToken();
-    const expiresAt = new Date(Date.now() + this.tokenExpiryMinutes * 60 * 1000);
+    const expiresAt = new Date(
+      Date.now() + this.tokenExpiryMinutes * 60 * 1000,
+    );
 
     // Store token
     this.resetTokens.set(token, {
       token,
-      userId: user.id!,
+      userId: user.id,
       expiresAt,
     });
 
@@ -60,14 +72,17 @@ export class PasswordResetService {
 
     return {
       success: true,
-      message: 'If an account exists with this email, a password reset link has been sent.',
+      message:
+        'If an account exists with this email, a password reset link has been sent.',
     };
   }
 
   /**
    * Verify reset token validity
    */
-  async verifyResetToken(token: string): Promise<{ valid: boolean; message: string }> {
+  async verifyResetToken(
+    token: string,
+  ): Promise<{ valid: boolean; message: string }> {
     const resetToken = this.resetTokens.get(token);
 
     if (!resetToken) {
@@ -94,7 +109,10 @@ export class PasswordResetService {
   /**
    * Reset password using token
    */
-  async resetPassword(token: string, newPassword: string): Promise<{ success: boolean; message: string }> {
+  async resetPassword(
+    token: string,
+    newPassword: string,
+  ): Promise<{ success: boolean; message: string }> {
     // Verify token
     const verification = await this.verifyResetToken(token);
     if (!verification.valid) {
@@ -111,7 +129,7 @@ export class PasswordResetService {
     // Validate password strength
     if (!this.validatePasswordStrength(newPassword)) {
       throw new BadRequestException(
-        'Password must be at least 8 characters and include uppercase, lowercase, number, and special character'
+        'Password must be at least 8 characters and include uppercase, lowercase, number, and special character',
       );
     }
 
@@ -127,7 +145,8 @@ export class PasswordResetService {
 
     return {
       success: true,
-      message: 'Password has been reset successfully. You can now login with your new password.',
+      message:
+        'Password has been reset successfully. You can now login with your new password.',
     };
   }
 
@@ -161,7 +180,10 @@ export class PasswordResetService {
    * Send password reset email
    * In production, integrate with email service (SendGrid, AWS SES, etc.)
    */
-  private async sendPasswordResetEmail(email: string, token: string): Promise<void> {
+  private async sendPasswordResetEmail(
+    email: string,
+    token: string,
+  ): Promise<void> {
     const resetUrl = `${this.getAppUrl()}/reset-password?token=${token}`;
 
     // TODO: In production, send actual email

@@ -12,19 +12,19 @@ export class BudgetSummaryDto {
 
   @ApiProperty({
     description: 'Total amount allocated across all categories in dollars',
-    example: 250000.00,
+    example: 250000.0,
   })
   totalAllocated: number;
 
   @ApiProperty({
     description: 'Total amount spent across all categories in dollars',
-    example: 187500.50,
+    example: 187500.5,
   })
   totalSpent: number;
 
   @ApiProperty({
     description: 'Total remaining budget in dollars',
-    example: 62499.50,
+    example: 62499.5,
   })
   totalRemaining: number;
 

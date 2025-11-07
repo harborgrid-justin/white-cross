@@ -1,9 +1,9 @@
-import { 
-  Injectable, 
-  NestInterceptor, 
-  ExecutionContext, 
-  CallHandler, 
-  Logger 
+import {
+  Injectable,
+  NestInterceptor,
+  ExecutionContext,
+  CallHandler,
+  Logger,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
@@ -17,10 +17,13 @@ export class DiscoveryLoggingInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest<Request>();
     const response = context.switchToHttp().getResponse<Response>();
     const { method, url, ip, headers } = request;
-    
+
     // Extract relevant information
     const userAgent = headers['user-agent'] || 'Unknown';
-    const correlationId = headers['x-correlation-id'] || headers['x-request-id'] || this.generateCorrelationId();
+    const correlationId =
+      headers['x-correlation-id'] ||
+      headers['x-request-id'] ||
+      this.generateCorrelationId();
     const startTime = Date.now();
     const user = (request as any).user;
 
@@ -37,7 +40,10 @@ export class DiscoveryLoggingInterceptor implements NestInterceptor {
     };
 
     // Log request start
-    this.logger.log(`Discovery API Request Started: ${method} ${url}`, logContext);
+    this.logger.log(
+      `Discovery API Request Started: ${method} ${url}`,
+      logContext,
+    );
 
     return next.handle().pipe(
       tap({
@@ -56,14 +62,15 @@ export class DiscoveryLoggingInterceptor implements NestInterceptor {
 
           this.logger.log(
             `Discovery API Request Completed: ${method} ${url} - ${statusCode} (${duration}ms)`,
-            successContext
+            successContext,
           );
 
           // Log slow requests as warnings
-          if (duration > 1000) { // > 1 second
+          if (duration > 1000) {
+            // > 1 second
             this.logger.warn(
               `Slow Discovery API Request: ${method} ${url} took ${duration}ms`,
-              successContext
+              successContext,
             );
           }
         },
@@ -84,7 +91,7 @@ export class DiscoveryLoggingInterceptor implements NestInterceptor {
           this.logger.error(
             `Discovery API Request Failed: ${method} ${url} - ${statusCode} (${duration}ms)`,
             error.stack,
-            errorContext
+            errorContext,
           );
         },
       }),
@@ -101,7 +108,7 @@ export class DiscoveryLoggingInterceptor implements NestInterceptor {
 
   private calculateResponseSize(data: any): number {
     if (!data) return 0;
-    
+
     try {
       return JSON.stringify(data).length;
     } catch {

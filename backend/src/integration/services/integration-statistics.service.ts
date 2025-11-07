@@ -1,7 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { IntegrationConfig, IntegrationStatus } from '../../database/models/integration-config.model';
+import {
+  IntegrationConfig,
+  IntegrationStatus,
+} from '../../database/models/integration-config.model';
 import { IntegrationLog } from '../../database/models/integration-log.model';
 
 export interface IntegrationStatistics {
@@ -17,7 +20,10 @@ export interface IntegrationStatistics {
     totalRecordsSucceeded: number;
     totalRecordsFailed: number;
   };
-  statsByType: Record<string, { success: number; failed: number; total: number }>;
+  statsByType: Record<
+    string,
+    { success: number; failed: number; total: number }
+  >;
 }
 
 /**
@@ -43,38 +49,58 @@ export class IntegrationStatisticsService {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-      const [
-        totalIntegrations,
-        activeIntegrations,
-        recentLogs,
-      ] = await Promise.all([
-        this.configModel.count(),
-        this.configModel.count({ where: { status: IntegrationStatus.ACTIVE } }),
-        this.logModel.findAll({
-          where: {
-            action: 'sync',
-            createdAt: { [Op.gt]: thirtyDaysAgo },
-          },
-          order: [['createdAt', 'DESC']],
-          limit: 1000,
-        }),
-      ]);
+      const [totalIntegrations, activeIntegrations, recentLogs] =
+        await Promise.all([
+          this.configModel.count(),
+          this.configModel.count({
+            where: { status: IntegrationStatus.ACTIVE },
+          }),
+          this.logModel.findAll({
+            where: {
+              action: 'sync',
+              createdAt: { [Op.gt]: thirtyDaysAgo },
+            },
+            order: [['createdAt', 'DESC']],
+            limit: 1000,
+          }),
+        ]);
 
       // Calculate sync statistics
       const totalSyncs = recentLogs.length;
-      const successfulSyncs = recentLogs.filter(log => log.status === 'success').length;
-      const failedSyncs = recentLogs.filter(log => log.status === 'failed').length;
-      const successRate = totalSyncs > 0 ? (successfulSyncs / totalSyncs) * 100 : 0;
+      const successfulSyncs = recentLogs.filter(
+        (log) => log.status === 'success',
+      ).length;
+      const failedSyncs = recentLogs.filter(
+        (log) => log.status === 'failed',
+      ).length;
+      const successRate =
+        totalSyncs > 0 ? (successfulSyncs / totalSyncs) * 100 : 0;
 
-      const totalRecordsProcessed = recentLogs.reduce((sum, log) => sum + (log.recordsProcessed || 0), 0);
-      const totalRecordsSucceeded = recentLogs.reduce((sum, log) => sum + (log.recordsSucceeded || 0), 0);
-      const totalRecordsFailed = recentLogs.reduce((sum, log) => sum + (log.recordsFailed || 0), 0);
+      const totalRecordsProcessed = recentLogs.reduce(
+        (sum, log) => sum + (log.recordsProcessed || 0),
+        0,
+      );
+      const totalRecordsSucceeded = recentLogs.reduce(
+        (sum, log) => sum + (log.recordsSucceeded || 0),
+        0,
+      );
+      const totalRecordsFailed = recentLogs.reduce(
+        (sum, log) => sum + (log.recordsFailed || 0),
+        0,
+      );
 
       // Group stats by type
-      const statsByType: Record<string, { success: number; failed: number; total: number }> = {};
-      recentLogs.forEach(log => {
+      const statsByType: Record<
+        string,
+        { success: number; failed: number; total: number }
+      > = {};
+      recentLogs.forEach((log) => {
         if (!statsByType[log.integrationType]) {
-          statsByType[log.integrationType] = { success: 0, failed: 0, total: 0 };
+          statsByType[log.integrationType] = {
+            success: 0,
+            failed: 0,
+            total: 0,
+          };
         }
         if (log.status === 'success') {
           statsByType[log.integrationType].success++;

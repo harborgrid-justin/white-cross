@@ -9,7 +9,7 @@ import {
   BelongsTo,
   BeforeCreate,
   Scopes,
-  BeforeUpdate
+  BeforeUpdate,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
@@ -20,7 +20,7 @@ export enum MaintenanceType {
   INSPECTION = 'INSPECTION',
   CLEANING = 'CLEANING',
   REPLACEMENT = 'REPLACEMENT',
-  UPGRADE = 'UPGRADE'
+  UPGRADE = 'UPGRADE',
 }
 
 export interface MaintenanceLogAttributes {
@@ -38,10 +38,10 @@ export interface MaintenanceLogAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'maintenance_logs',
@@ -49,28 +49,31 @@ export interface MaintenanceLogAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['inventoryItemId']
+      fields: ['inventoryItemId'],
     },
     {
-      fields: ['type']
+      fields: ['type'],
     },
     {
-      fields: ['performedById']
+      fields: ['performedById'],
     },
     {
-      fields: ['nextMaintenanceDate']
+      fields: ['nextMaintenanceDate'],
     },
     {
       fields: ['createdAt'],
-      name: 'idx_maintenance_log_created_at'
+      name: 'idx_maintenance_log_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_maintenance_log_updated_at'
-    }
-  ]
+      name: 'idx_maintenance_log_updated_at',
+    },
+  ],
 })
-export class MaintenanceLog extends Model<MaintenanceLogAttributes> implements MaintenanceLogAttributes {
+export class MaintenanceLog
+  extends Model<MaintenanceLogAttributes>
+  implements MaintenanceLogAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -79,33 +82,33 @@ export class MaintenanceLog extends Model<MaintenanceLogAttributes> implements M
   @ForeignKey(() => require('./inventory-item.model').InventoryItem)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   inventoryItemId: string;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(MaintenanceType)]
+      isIn: [Object.values(MaintenanceType)],
     },
-    allowNull: false
+    allowNull: false,
   })
   type: MaintenanceType;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false
+    allowNull: false,
   })
   description: string;
 
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   performedById: string;
 
   @Column({
-    type: DataType.DECIMAL(10, 2)
+    type: DataType.DECIMAL(10, 2),
   })
   cost?: number;
 
@@ -125,14 +128,15 @@ export class MaintenanceLog extends Model<MaintenanceLogAttributes> implements M
   @BelongsTo(() => require('./inventory-item.model').InventoryItem)
   declare inventoryItem?: any;
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: MaintenanceLog) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] MaintenanceLog ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] MaintenanceLog ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

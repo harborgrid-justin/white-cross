@@ -22,7 +22,10 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { TemplateService } from '../services/template.service';
-import { CreateTemplateDto, UpdateTemplateDto } from '../dto/create-template.dto';
+import {
+  CreateTemplateDto,
+  UpdateTemplateDto,
+} from '../dto/create-template.dto';
 
 @ApiTags('Message Templates')
 @ApiBearerAuth()
@@ -66,7 +69,11 @@ export class TemplateController {
     summary: 'List message templates',
     description: 'Get filtered list of message templates',
   })
-  @ApiQuery({ name: 'type', required: false, enum: ['EMAIL', 'SMS', 'PUSH_NOTIFICATION', 'VOICE'] })
+  @ApiQuery({
+    name: 'type',
+    required: false,
+    enum: ['EMAIL', 'SMS', 'PUSH_NOTIFICATION', 'VOICE'],
+  })
   @ApiQuery({ name: 'category', required: false })
   @ApiQuery({ name: 'isActive', required: false, type: Boolean, example: true })
   @ApiResponse({

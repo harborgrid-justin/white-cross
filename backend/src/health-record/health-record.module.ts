@@ -63,19 +63,19 @@ import { CacheEntry } from '../database/models/cache-entry.model';
 
 /**
  * Health Record Module
- * 
+ *
  * Integrates enterprise patterns for HIPAA-compliant PHI management:
- * 
+ *
  * 🔒 Security & Compliance:
  * - PHI Access Logger: Structured audit logging with correlation IDs
  * - Rate Limit Guard: Tiered rate limiting based on operation sensitivity
  * - Audit Interceptor: HIPAA-compliant audit trails for all operations
- * 
+ *
  * 📊 Performance & Monitoring:
  * - Metrics Service: Comprehensive PHI access pattern monitoring
  * - Cache Interceptor: Intelligent caching with compliance-aware TTL
  * - Prometheus integration for external monitoring systems
- * 
+ *
  * 📋 Compliance Dashboard:
  * - Real-time PHI access statistics
  * - Security incident monitoring
@@ -90,7 +90,7 @@ import { CacheEntry } from '../database/models/cache-entry.model';
       max: 200, // Maximum number of items in cache (higher for health records)
       isGlobal: false,
     }),
-    
+
     SequelizeModule.forFeature([
       HealthRecord,
       Allergy,
@@ -114,21 +114,21 @@ import { CacheEntry } from '../database/models/cache-entry.model';
   providers: [
     // Core Service
     HealthRecordService,
-    
+
     // Enterprise Pattern Services
     PHIAccessLogger,
     HealthRecordMetricsService,
-    
+
     // Analytics Optimization Services (Phase 4)
     CacheStrategyService,
     QueryPerformanceAnalyzer,
     IntelligentCacheInvalidationService,
     ResourceOptimizationService,
-    
+
     // Enterprise Pattern Interceptors
     HealthRecordAuditInterceptor,
     HealthRecordCacheInterceptor,
-    
+
     // Enterprise Pattern Guards
     HealthRecordRateLimitGuard,
   ],
@@ -140,7 +140,7 @@ import { CacheEntry } from '../database/models/cache-entry.model';
     HealthRecordAuditInterceptor,
     HealthRecordCacheInterceptor,
     HealthRecordRateLimitGuard,
-    
+
     // Analytics Optimization Services (Phase 4)
     CacheStrategyService,
     QueryPerformanceAnalyzer,

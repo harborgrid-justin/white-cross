@@ -13,12 +13,12 @@
  * File: /backend/src/shared/utils/array.ts
  * Locator: WC-UTL-ARR-072
  * Purpose: Healthcare-Focused Array Utilities - Medical data manipulation and grouping
- * 
+ *
  * Upstream: lodash library, independent utility module
  * Downstream: ../services/*, healthcare data processing, student/medication grouping
  * Dependencies: lodash, TypeScript generics, healthcare data types
  * Exports: groupBy, uniqBy, chunk, healthcare-specific grouping functions
- * 
+ *
  * LLM Context: Type-safe array utilities for White Cross healthcare system.
  * Provides lodash wrappers plus healthcare-specific functions for medication grouping,
  * student sorting, appointment management. Critical for data processing performance.
@@ -126,7 +126,8 @@ export const intersection = <T>(arrays: T[][]) => _.intersection(...arrays);
  * // Result: [1, 'text', 'valid']
  * ```
  */
-export const compact = <T>(array: (T | null | undefined | false | 0 | '')[]) => _.compact(array);
+export const compact = <T>(array: (T | null | undefined | false | 0 | '')[]) =>
+  _.compact(array);
 
 /**
  * Flattens nested arrays by one level.
@@ -179,7 +180,9 @@ export const flattenDeep = (array: any[]) => _.flattenDeep(array);
  * // Result: { 'S1': [Aspirin, Ibuprofen], 'S2': [Antibiotic] }
  * ```
  */
-export const groupMedicationsByStudent = <T extends { studentId: string }>(medications: T[]) => {
+export const groupMedicationsByStudent = <T extends { studentId: string }>(
+  medications: T[],
+) => {
   return _.groupBy(medications, 'studentId');
 };
 
@@ -202,7 +205,9 @@ export const groupMedicationsByStudent = <T extends { studentId: string }>(medic
  * // Result: { 'allergy': [...], 'immunization': [...] }
  * ```
  */
-export const groupHealthRecordsByType = <T extends { type: string }>(records: T[]) => {
+export const groupHealthRecordsByType = <T extends { type: string }>(
+  records: T[],
+) => {
   return _.groupBy(records, 'type');
 };
 
@@ -225,7 +230,9 @@ export const groupHealthRecordsByType = <T extends { type: string }>(records: T[
  * // Result: [{ id: '1', ... }, { id: '3', ... }]
  * ```
  */
-export const filterActiveRecords = <T extends { isActive: boolean }>(records: T[]) => {
+export const filterActiveRecords = <T extends { isActive: boolean }>(
+  records: T[],
+) => {
   return _.filter(records, 'isActive');
 };
 
@@ -248,7 +255,9 @@ export const filterActiveRecords = <T extends { isActive: boolean }>(records: T[
  * // Result: [id: '2' (March), id: '3' (February), id: '1' (January)]
  * ```
  */
-export const sortByDateDesc = <T extends { createdAt: string | Date }>(records: T[]) => {
+export const sortByDateDesc = <T extends { createdAt: string | Date }>(
+  records: T[],
+) => {
   return _.orderBy(records, ['createdAt'], ['desc']);
 };
 
@@ -270,7 +279,9 @@ export const sortByDateDesc = <T extends { createdAt: string | Date }>(records: 
  * // Result: [id: '2' (January), id: '1' (March)]
  * ```
  */
-export const sortByDateAsc = <T extends { createdAt: string | Date }>(records: T[]) => {
+export const sortByDateAsc = <T extends { createdAt: string | Date }>(
+  records: T[],
+) => {
   return _.orderBy(records, ['createdAt'], ['asc']);
 };
 
@@ -293,7 +304,9 @@ export const sortByDateAsc = <T extends { createdAt: string | Date }>(records: T
  * // Result: { 'N1': [2 appointments], 'N2': [1 appointment] }
  * ```
  */
-export const groupAppointmentsByNurse = <T extends { nurseId: string }>(appointments: T[]) => {
+export const groupAppointmentsByNurse = <T extends { nurseId: string }>(
+  appointments: T[],
+) => {
   return _.groupBy(appointments, 'nurseId');
 };
 
@@ -316,7 +329,9 @@ export const groupAppointmentsByNurse = <T extends { nurseId: string }>(appointm
  * // Result: { '9': [Alice, Charlie], '10': [Bob] }
  * ```
  */
-export const groupStudentsByGrade = <T extends { grade: string }>(students: T[]) => {
+export const groupStudentsByGrade = <T extends { grade: string }>(
+  students: T[],
+) => {
   return _.groupBy(students, 'grade');
 };
 
@@ -340,9 +355,11 @@ export const groupStudentsByGrade = <T extends { grade: string }>(students: T[])
  * // Result: [Parent, Mother]
  * ```
  */
-export const filterEmergencyContactsByPriority = <T extends { priority: string }>(
+export const filterEmergencyContactsByPriority = <
+  T extends { priority: string },
+>(
   contacts: T[],
-  priority: string
+  priority: string,
 ) => {
   return _.filter(contacts, { priority });
 };
@@ -362,5 +379,5 @@ export default {
   sortByDateAsc,
   groupAppointmentsByNurse,
   groupStudentsByGrade,
-  filterEmergencyContactsByPriority
+  filterEmergencyContactsByPriority,
 };

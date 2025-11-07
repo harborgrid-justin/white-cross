@@ -18,7 +18,7 @@ import {
   AllowNull,
   Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import type { District } from './district.model';
@@ -75,30 +75,35 @@ export interface CreateSchoolAttributes {
   active: {
     where: {
       isActive: true,
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['name', 'ASC']]
+    order: [['name', 'ASC']],
   },
   byDistrict: (districtId: string) => ({
     where: { districtId, isActive: true },
-    order: [['name', 'ASC']]
+    order: [['name', 'ASC']],
   }),
   byState: (state: string) => ({
     where: { state, isActive: true },
-    order: [['city', 'ASC'], ['name', 'ASC']]
+    order: [
+      ['city', 'ASC'],
+      ['name', 'ASC'],
+    ],
   }),
   byCity: (city: string) => ({
     where: { city, isActive: true },
-    order: [['name', 'ASC']]
+    order: [['name', 'ASC']],
   }),
   withStudents: {
-    include: [{
-      association: 'students',
-      where: { isActive: true },
-      required: false
-    }],
-    order: [['name', 'ASC']]
-  }
+    include: [
+      {
+        association: 'students',
+        where: { isActive: true },
+        required: false,
+      },
+    ],
+    order: [['name', 'ASC']],
+  },
 }))
 @Table({
   tableName: 'schools',
@@ -111,8 +116,8 @@ export interface CreateSchoolAttributes {
     { fields: ['isActive'] },
     { fields: ['createdAt'], name: 'idx_schools_created_at' },
     { fields: ['updatedAt'], name: 'idx_schools_updated_at' },
-    { fields: ['state', 'city'], name: 'idx_schools_state_city' }
-  ]
+    { fields: ['state', 'city'], name: 'idx_schools_state_city' },
+  ],
 })
 export class School extends Model<SchoolAttributes, CreateSchoolAttributes> {
   @PrimaryKey
@@ -124,7 +129,7 @@ export class School extends Model<SchoolAttributes, CreateSchoolAttributes> {
   @Column({
     type: DataType.STRING(200),
     allowNull: false,
-    comment: 'Name of the school'
+    comment: 'Name of the school',
   })
   name: string;
 
@@ -132,7 +137,7 @@ export class School extends Model<SchoolAttributes, CreateSchoolAttributes> {
   @Column({
     type: DataType.STRING(50),
     allowNull: false,
-    unique: true
+    unique: true,
   })
   @Index
   code: string;
@@ -142,7 +147,7 @@ export class School extends Model<SchoolAttributes, CreateSchoolAttributes> {
   @Column({
     type: DataType.UUID,
     allowNull: false,
-    comment: 'ID of the district this school belongs to'
+    comment: 'ID of the district this school belongs to',
   })
   @Index
   districtId: string;
@@ -151,7 +156,7 @@ export class School extends Model<SchoolAttributes, CreateSchoolAttributes> {
   @Column({
     type: DataType.TEXT,
     allowNull: true,
-    comment: 'Physical address of the school'
+    comment: 'Physical address of the school',
   })
   address?: string;
 
@@ -159,7 +164,7 @@ export class School extends Model<SchoolAttributes, CreateSchoolAttributes> {
   @Column({
     type: DataType.STRING(100),
     allowNull: true,
-    comment: 'City where the school is located'
+    comment: 'City where the school is located',
   })
   city?: string;
 
@@ -167,7 +172,7 @@ export class School extends Model<SchoolAttributes, CreateSchoolAttributes> {
   @Column({
     type: DataType.STRING(2),
     allowNull: true,
-    comment: 'State code (2-letter abbreviation)'
+    comment: 'State code (2-letter abbreviation)',
   })
   state?: string;
 
@@ -175,7 +180,7 @@ export class School extends Model<SchoolAttributes, CreateSchoolAttributes> {
   @Column({
     type: DataType.STRING(10),
     allowNull: true,
-    comment: 'ZIP code of the school'
+    comment: 'ZIP code of the school',
   })
   zipCode?: string;
 
@@ -183,7 +188,7 @@ export class School extends Model<SchoolAttributes, CreateSchoolAttributes> {
   @Column({
     type: DataType.STRING(20),
     allowNull: true,
-    comment: 'Primary phone number for the school'
+    comment: 'Primary phone number for the school',
   })
   phone?: string;
 
@@ -191,7 +196,7 @@ export class School extends Model<SchoolAttributes, CreateSchoolAttributes> {
   @Column({
     type: DataType.STRING(255),
     allowNull: true,
-    comment: 'Primary email address for the school'
+    comment: 'Primary email address for the school',
   })
   email?: string;
 
@@ -199,7 +204,7 @@ export class School extends Model<SchoolAttributes, CreateSchoolAttributes> {
   @Column({
     type: DataType.STRING(200),
     allowNull: true,
-    comment: 'Name of the school principal'
+    comment: 'Name of the school principal',
   })
   principal?: string;
 
@@ -207,7 +212,7 @@ export class School extends Model<SchoolAttributes, CreateSchoolAttributes> {
   @Column({
     type: DataType.INTEGER,
     allowNull: true,
-    comment: 'Total number of enrolled students'
+    comment: 'Total number of enrolled students',
   })
   totalEnrollment?: number;
 
@@ -216,7 +221,7 @@ export class School extends Model<SchoolAttributes, CreateSchoolAttributes> {
     type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: true,
-    comment: 'Whether the school is active'
+    comment: 'Whether the school is active',
   })
   isActive?: boolean;
 
@@ -224,7 +229,7 @@ export class School extends Model<SchoolAttributes, CreateSchoolAttributes> {
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    comment: 'Timestamp when the school was created'
+    comment: 'Timestamp when the school was created',
   })
   declare createdAt?: Date;
 
@@ -232,7 +237,7 @@ export class School extends Model<SchoolAttributes, CreateSchoolAttributes> {
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    comment: 'Timestamp when the school was last updated'
+    comment: 'Timestamp when the school was last updated',
   })
   declare updatedAt?: Date;
 
@@ -242,7 +247,9 @@ export class School extends Model<SchoolAttributes, CreateSchoolAttributes> {
   static async auditAccess(instance: School) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] School ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] School ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }
@@ -251,23 +258,32 @@ export class School extends Model<SchoolAttributes, CreateSchoolAttributes> {
   // Relationships
   @BelongsTo(() => require('./district.model').District, {
     foreignKey: 'districtId',
-    as: 'district'
+    as: 'district',
   })
   declare district?: District;
 
-  @HasMany(() => require('./user.model').User, { foreignKey: 'schoolId', as: 'users' })
+  @HasMany(() => require('./user.model').User, {
+    foreignKey: 'schoolId',
+    as: 'users',
+  })
   declare users?: User[];
 
-  @HasMany(() => require('./student.model').Student, { foreignKey: 'schoolId', as: 'students' })
+  @HasMany(() => require('./student.model').Student, {
+    foreignKey: 'schoolId',
+    as: 'students',
+  })
   declare students?: Student[];
 
-  @HasMany(() => require('./alert.model').Alert, { foreignKey: 'schoolId', as: 'alerts' })
+  @HasMany(() => require('./alert.model').Alert, {
+    foreignKey: 'schoolId',
+    as: 'alerts',
+  })
   declare alerts?: Alert[];
 
   @HasMany(() => require('./incident-report.model').IncidentReport, {
     foreignKey: 'schoolId',
     as: 'incidentReports',
-    constraints: false
+    constraints: false,
   })
   declare incidentReports?: IncidentReport[];
 }

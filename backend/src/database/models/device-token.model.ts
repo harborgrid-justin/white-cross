@@ -11,17 +11,17 @@ import {
   BeforeCreate,
   BeforeUpdate,
   UpdatedAt,
-  CreatedAt
+  CreatedAt,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum NotificationPlatform {
-  FCM = 'FCM',           // Firebase Cloud Messaging (Android)
-  APNS = 'APNS',         // Apple Push Notification Service (iOS)
+  FCM = 'FCM', // Firebase Cloud Messaging (Android)
+  APNS = 'APNS', // Apple Push Notification Service (iOS)
   WEB_PUSH = 'WEB_PUSH', // Web Push API
-  SMS = 'SMS',           // Fallback SMS
-  EMAIL = 'EMAIL'        // Fallback Email
+  SMS = 'SMS', // Fallback SMS
+  EMAIL = 'EMAIL', // Fallback Email
 }
 
 export interface DeviceTokenAttributes {
@@ -69,10 +69,10 @@ export interface DeviceTokenCreationAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'device_tokens',
@@ -81,25 +81,28 @@ export interface DeviceTokenCreationAttributes {
   indexes: [
     {
       fields: ['userId', 'deviceId'],
-      unique: true
-  },
+      unique: true,
+    },
     {
-      fields: ['platform']
-  },
+      fields: ['platform'],
+    },
     {
-      fields: ['isActive', 'isValid']
-  },
+      fields: ['isActive', 'isValid'],
+    },
     {
       fields: ['createdAt'],
-      name: 'idx_device_token_created_at'
+      name: 'idx_device_token_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_device_token_updated_at'
-    }
-  ]
-  })
-export class DeviceToken extends Model<DeviceTokenAttributes, DeviceTokenCreationAttributes> implements DeviceTokenAttributes {
+      name: 'idx_device_token_updated_at',
+    },
+  ],
+})
+export class DeviceToken
+  extends Model<DeviceTokenAttributes, DeviceTokenCreationAttributes>
+  implements DeviceTokenAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -107,55 +110,55 @@ export class DeviceToken extends Model<DeviceTokenAttributes, DeviceTokenCreatio
 
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   @Index
   userId: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   deviceId: string;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(NotificationPlatform)]
+      isIn: [Object.values(NotificationPlatform)],
     },
-    allowNull: false
+    allowNull: false,
   })
   @Index
   platform: NotificationPlatform;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false
+    allowNull: false,
   })
   token: string;
 
   // Device metadata
   @AllowNull
   @Column({
-    type: DataType.STRING(255)
+    type: DataType.STRING(255),
   })
   deviceName?: string;
 
   @AllowNull
   @Column({
-    type: DataType.STRING(255)
+    type: DataType.STRING(255),
   })
   deviceModel?: string;
 
   @AllowNull
   @Column({
-    type: DataType.STRING(255)
+    type: DataType.STRING(255),
   })
   osVersion?: string;
 
   @AllowNull
   @Column({
-    type: DataType.STRING(255)
+    type: DataType.STRING(255),
   })
   appVersion?: string;
 
@@ -163,26 +166,26 @@ export class DeviceToken extends Model<DeviceTokenAttributes, DeviceTokenCreatio
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true
+    defaultValue: true,
   })
   isActive: boolean;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true
+    defaultValue: true,
   })
   isValid: boolean;
 
   @AllowNull
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   lastValidated?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.STRING(255)
+    type: DataType.STRING(255),
   })
   invalidReason?: string;
 
@@ -190,21 +193,21 @@ export class DeviceToken extends Model<DeviceTokenAttributes, DeviceTokenCreatio
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true
+    defaultValue: true,
   })
   allowNotifications: boolean;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true
+    defaultValue: true,
   })
   allowSound: boolean;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true
+    defaultValue: true,
   })
   allowBadge: boolean;
 
@@ -216,10 +219,9 @@ export class DeviceToken extends Model<DeviceTokenAttributes, DeviceTokenCreatio
 
   @AllowNull
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   lastUsedAt?: Date;
-
 
   // Hooks for HIPAA compliance
   @BeforeCreate
@@ -227,7 +229,9 @@ export class DeviceToken extends Model<DeviceTokenAttributes, DeviceTokenCreatio
   static async auditPHIAccess(instance: DeviceToken) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] DeviceToken ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] DeviceToken ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

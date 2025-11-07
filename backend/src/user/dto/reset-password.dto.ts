@@ -6,7 +6,8 @@ import { ApiProperty } from '@nestjs/swagger';
  */
 export class AdminResetPasswordDto {
   @ApiProperty({
-    description: 'New password (min 8 characters, must include uppercase, lowercase, number, and special character)',
+    description:
+      'New password (min 8 characters, must include uppercase, lowercase, number, and special character)',
     example: 'TempPassword123!',
     minLength: 8,
   })

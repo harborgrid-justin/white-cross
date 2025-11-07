@@ -1,11 +1,23 @@
-import { Injectable, Logger, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, WhereOptions, Sequelize } from 'sequelize';
 import { Message } from '../../database/models/message.model';
-import { MessageDelivery, DeliveryStatus } from '../../database/models/message-delivery.model';
+import {
+  MessageDelivery,
+  DeliveryStatus,
+} from '../../database/models/message-delivery.model';
 import { MessageRead } from '../../database/models/message-read.model';
 import { MessageReaction } from '../../database/models/message-reaction.model';
-import { Conversation, ConversationType } from '../../database/models/conversation.model';
+import {
+  Conversation,
+  ConversationType,
+} from '../../database/models/conversation.model';
 import { ConversationParticipant } from '../../database/models/conversation-participant.model';
 import { EncryptionService } from '../../infrastructure/encryption/encryption.service';
 import { MessageQueueService } from '../../infrastructure/queue/message-queue.service';
@@ -15,7 +27,10 @@ import { SendGroupMessageDto } from '../dto/send-group-message.dto';
 import { EditMessageDto } from '../dto/edit-message.dto';
 import { MessagePaginationDto } from '../dto/message-pagination.dto';
 import { SearchMessagesDto } from '../dto/search-messages.dto';
-import { MarkAsReadDto, MarkConversationAsReadDto } from '../dto/mark-as-read.dto';
+import {
+  MarkAsReadDto,
+  MarkConversationAsReadDto,
+} from '../dto/mark-as-read.dto';
 
 /**
  * EnhancedMessageService
@@ -47,9 +62,11 @@ export class EnhancedMessageService {
     @InjectModel(Message) private messageModel: typeof Message,
     @InjectModel(MessageDelivery) private deliveryModel: typeof MessageDelivery,
     @InjectModel(MessageRead) private messageReadModel: typeof MessageRead,
-    @InjectModel(MessageReaction) private messageReactionModel: typeof MessageReaction,
+    @InjectModel(MessageReaction)
+    private messageReactionModel: typeof MessageReaction,
     @InjectModel(Conversation) private conversationModel: typeof Conversation,
-    @InjectModel(ConversationParticipant) private participantModel: typeof ConversationParticipant,
+    @InjectModel(ConversationParticipant)
+    private participantModel: typeof ConversationParticipant,
     private readonly encryptionService: EncryptionService,
     private readonly queueService: MessageQueueService,
     private readonly queueHelper: QueueIntegrationHelper,
@@ -72,7 +89,9 @@ export class EnhancedMessageService {
     senderId: string,
     tenantId: string,
   ): Promise<any> {
-    this.logger.log(`Sending direct message from ${senderId} to ${dto.recipientId}`);
+    this.logger.log(
+      `Sending direct message from ${senderId} to ${dto.recipientId}`,
+    );
 
     // Validate recipient exists
     await this.validateUser(dto.recipientId);
@@ -85,19 +104,28 @@ export class EnhancedMessageService {
     );
 
     // Verify sender is a participant
-    const isParticipant = await this.isConversationParticipant(conversation.id, senderId);
+    const isParticipant = await this.isConversationParticipant(
+      conversation.id,
+      senderId,
+    );
     if (!isParticipant) {
-      throw new ForbiddenException('You are not a participant in this conversation');
+      throw new ForbiddenException(
+        'You are not a participant in this conversation',
+      );
     }
 
     // Encrypt content if requested
     let encryptedContent: string | undefined;
     if (dto.encrypted) {
-      const encryptionResult = await this.encryptionService.encrypt(dto.content);
+      const encryptionResult = await this.encryptionService.encrypt(
+        dto.content,
+      );
       if (encryptionResult.success) {
         encryptedContent = encryptionResult.data;
       } else {
-        throw new BadRequestException(`Encryption failed: ${encryptionResult.message}`);
+        throw new BadRequestException(
+          `Encryption failed: ${encryptionResult.message}`,
+        );
       }
     }
 
@@ -145,7 +173,7 @@ export class EnhancedMessageService {
     });
 
     this.logger.log(
-      `Message ${message.id} queued for delivery. Jobs: ${Object.keys(queueResult.jobIds).join(', ')}`
+      `Message ${message.id} queued for delivery. Jobs: ${Object.keys(queueResult.jobIds).join(', ')}`,
     );
 
     return {
@@ -176,7 +204,9 @@ export class EnhancedMessageService {
     senderId: string,
     tenantId: string,
   ): Promise<any> {
-    this.logger.log(`Sending group message to conversation ${dto.conversationId}`);
+    this.logger.log(
+      `Sending group message to conversation ${dto.conversationId}`,
+    );
 
     // Get conversation and verify it exists
     const conversation = await this.conversationModel.findOne({
@@ -188,9 +218,14 @@ export class EnhancedMessageService {
     }
 
     // Verify sender is a participant
-    const isParticipant = await this.isConversationParticipant(conversation.id, senderId);
+    const isParticipant = await this.isConversationParticipant(
+      conversation.id,
+      senderId,
+    );
     if (!isParticipant) {
-      throw new ForbiddenException('You are not a participant in this conversation');
+      throw new ForbiddenException(
+        'You are not a participant in this conversation',
+      );
     }
 
     // Get all participants
@@ -201,11 +236,15 @@ export class EnhancedMessageService {
     // Encrypt content if requested
     let encryptedContent: string | undefined;
     if (dto.encrypted) {
-      const encryptionResult = await this.encryptionService.encrypt(dto.content);
+      const encryptionResult = await this.encryptionService.encrypt(
+        dto.content,
+      );
       if (encryptionResult.success) {
         encryptedContent = encryptionResult.data;
       } else {
-        throw new BadRequestException(`Encryption failed: ${encryptionResult.message}`);
+        throw new BadRequestException(
+          `Encryption failed: ${encryptionResult.message}`,
+        );
       }
     }
 
@@ -244,8 +283,8 @@ export class EnhancedMessageService {
 
     // Get recipient IDs (exclude sender)
     const recipientIds = participants
-      .filter(p => p.userId !== senderId)
-      .map(p => p.userId);
+      .filter((p) => p.userId !== senderId)
+      .map((p) => p.userId);
 
     // Queue message for batch delivery
     const queueResult = await this.queueService.addBatchMessageJob({
@@ -261,7 +300,7 @@ export class EnhancedMessageService {
     });
 
     this.logger.log(
-      `Group message ${message.id} queued for batch delivery to ${recipientIds.length} recipients. Job ID: ${queueResult.id}`
+      `Group message ${message.id} queued for batch delivery to ${recipientIds.length} recipients. Job ID: ${queueResult.id}`,
     );
 
     return {
@@ -309,11 +348,15 @@ export class EnhancedMessageService {
     // Update encrypted content if it was originally encrypted
     let encryptedContent: string | undefined;
     if (message.encryptedContent) {
-      const encryptionResult = await this.encryptionService.encrypt(dto.content);
+      const encryptionResult = await this.encryptionService.encrypt(
+        dto.content,
+      );
       if (encryptionResult.success) {
         encryptedContent = encryptionResult.data;
       } else {
-        throw new BadRequestException(`Encryption failed: ${encryptionResult.message}`);
+        throw new BadRequestException(
+          `Encryption failed: ${encryptionResult.message}`,
+        );
       }
     }
 
@@ -321,7 +364,8 @@ export class EnhancedMessageService {
     await message.update({
       content: dto.content,
       encryptedContent,
-      attachments: dto.attachments !== undefined ? dto.attachments : message.attachments,
+      attachments:
+        dto.attachments !== undefined ? dto.attachments : message.attachments,
       isEdited: true,
       editedAt: new Date(),
       metadata: {
@@ -379,9 +423,11 @@ export class EnhancedMessageService {
    * @returns Number of messages marked as read
    */
   async markMessagesAsRead(dto: MarkAsReadDto, userId: string): Promise<any> {
-    this.logger.log(`Marking ${dto.messageIds.length} messages as read for user ${userId}`);
+    this.logger.log(
+      `Marking ${dto.messageIds.length} messages as read for user ${userId}`,
+    );
 
-    const readPromises = dto.messageIds.map(messageId =>
+    const readPromises = dto.messageIds.map((messageId) =>
       this.messageReadModel.findOrCreate({
         where: { messageId, userId },
         defaults: {
@@ -389,7 +435,7 @@ export class EnhancedMessageService {
           userId,
           readAt: new Date(),
         } as any,
-      })
+      }),
     );
 
     const results = await Promise.all(readPromises);
@@ -411,8 +457,13 @@ export class EnhancedMessageService {
    * @param userId - ID of the user marking messages as read
    * @returns Number of messages marked as read
    */
-  async markConversationAsRead(dto: MarkConversationAsReadDto, userId: string): Promise<any> {
-    this.logger.log(`Marking conversation ${dto.conversationId} as read for user ${userId}`);
+  async markConversationAsRead(
+    dto: MarkConversationAsReadDto,
+    userId: string,
+  ): Promise<any> {
+    this.logger.log(
+      `Marking conversation ${dto.conversationId} as read for user ${userId}`,
+    );
 
     // Get all unread messages in the conversation
     const messages = await this.messageModel.findAll({
@@ -430,15 +481,17 @@ export class EnhancedMessageService {
     });
 
     // Filter messages that haven't been read yet
-    const unreadMessages = messages.filter((m: any) => !m.messageReads || m.messageReads.length === 0);
+    const unreadMessages = messages.filter(
+      (m: any) => !m.messageReads || m.messageReads.length === 0,
+    );
 
     // Mark all as read
-    const readPromises = unreadMessages.map(message =>
+    const readPromises = unreadMessages.map((message) =>
       this.messageReadModel.create({
         messageId: message.id,
         userId,
         readAt: new Date(),
-      } as any)
+      } as any),
     );
 
     await Promise.all(readPromises);
@@ -451,7 +504,7 @@ export class EnhancedMessageService {
           conversationId: dto.conversationId,
           userId,
         },
-      }
+      },
     );
 
     return {
@@ -483,9 +536,14 @@ export class EnhancedMessageService {
 
     if (dto.conversationId) {
       // Verify user is a participant
-      const isParticipant = await this.isConversationParticipant(dto.conversationId, userId);
+      const isParticipant = await this.isConversationParticipant(
+        dto.conversationId,
+        userId,
+      );
       if (!isParticipant) {
-        throw new ForbiddenException('You are not a participant in this conversation');
+        throw new ForbiddenException(
+          'You are not a participant in this conversation',
+        );
       }
       where.conversationId = dto.conversationId;
     }
@@ -495,7 +553,10 @@ export class EnhancedMessageService {
     }
 
     if (dto.dateFrom) {
-      where.createdAt = { ...where.createdAt, [Op.gte]: new Date(dto.dateFrom) };
+      where.createdAt = {
+        ...where.createdAt,
+        [Op.gte]: new Date(dto.dateFrom),
+      };
     }
 
     if (dto.dateTo) {
@@ -503,22 +564,23 @@ export class EnhancedMessageService {
     }
 
     // Query messages
-    const { rows: messages, count: total } = await this.messageModel.findAndCountAll({
-      where,
-      offset,
-      limit,
-      order: [['createdAt', dto.sortOrder || 'DESC']],
-      include: [
-        {
-          model: this.messageReadModel,
-          where: { userId },
-          required: false,
-        },
-      ],
-    });
+    const { rows: messages, count: total } =
+      await this.messageModel.findAndCountAll({
+        where,
+        offset,
+        limit,
+        order: [['createdAt', dto.sortOrder || 'DESC']],
+        include: [
+          {
+            model: this.messageReadModel,
+            where: { userId },
+            required: false,
+          },
+        ],
+      });
 
     return {
-      messages: messages.map(m => m.toJSON()),
+      messages: messages.map((m) => m.toJSON()),
       pagination: {
         page: dto.page || 1,
         limit,
@@ -564,7 +626,10 @@ export class EnhancedMessageService {
     }
 
     if (dto.dateFrom) {
-      where.createdAt = { ...where.createdAt, [Op.gte]: new Date(dto.dateFrom) };
+      where.createdAt = {
+        ...where.createdAt,
+        [Op.gte]: new Date(dto.dateFrom),
+      };
     }
 
     if (dto.dateTo) {
@@ -581,19 +646,22 @@ export class EnhancedMessageService {
       attributes: ['conversationId'],
     });
 
-    const conversationIds = participantConversations.map(p => p.conversationId);
+    const conversationIds = participantConversations.map(
+      (p) => p.conversationId,
+    );
     where.conversationId = { [Op.in]: conversationIds };
 
     // Query messages
-    const { rows: messages, count: total } = await this.messageModel.findAndCountAll({
-      where,
-      offset,
-      limit,
-      order: [['createdAt', 'DESC']],
-    });
+    const { rows: messages, count: total } =
+      await this.messageModel.findAndCountAll({
+        where,
+        offset,
+        limit,
+        order: [['createdAt', 'DESC']],
+      });
 
     return {
-      messages: messages.map(m => m.toJSON()),
+      messages: messages.map((m) => m.toJSON()),
       pagination: {
         page: dto.page || 1,
         limit,
@@ -627,7 +695,9 @@ export class EnhancedMessageService {
         attributes: ['conversationId'],
       });
 
-      const conversationIds = participantConversations.map(p => p.conversationId);
+      const conversationIds = participantConversations.map(
+        (p) => p.conversationId,
+      );
       where.conversationId = { [Op.in]: conversationIds };
     }
 
@@ -696,7 +766,7 @@ export class EnhancedMessageService {
       });
 
       if (participants.length === 2) {
-        const participantIds = participants.map(p => p.userId).sort();
+        const participantIds = participants.map((p) => p.userId).sort();
         const requestedIds = [userId1, userId2].sort();
         if (JSON.stringify(participantIds) === JSON.stringify(requestedIds)) {
           return existingConversation;
@@ -741,7 +811,10 @@ export class EnhancedMessageService {
   /**
    * Check if user is a participant in a conversation
    */
-  private async isConversationParticipant(conversationId: string, userId: string): Promise<boolean> {
+  private async isConversationParticipant(
+    conversationId: string,
+    userId: string,
+  ): Promise<boolean> {
     const participant = await this.participantModel.findOne({
       where: { conversationId, userId },
     });
@@ -751,14 +824,19 @@ export class EnhancedMessageService {
   /**
    * Update participant's last read timestamp
    */
-  private async updateParticipantReadTimestamp(messageIds: string[], userId: string): Promise<void> {
+  private async updateParticipantReadTimestamp(
+    messageIds: string[],
+    userId: string,
+  ): Promise<void> {
     // Get conversations for these messages
     const messages = await this.messageModel.findAll({
       where: { id: { [Op.in]: messageIds } },
       attributes: ['conversationId'],
     });
 
-    const conversationIds = [...new Set(messages.map(m => m.conversationId))].filter(Boolean);
+    const conversationIds = [
+      ...new Set(messages.map((m) => m.conversationId)),
+    ].filter(Boolean);
 
     // Update lastReadAt for all relevant conversations
     await this.participantModel.update(
@@ -768,7 +846,7 @@ export class EnhancedMessageService {
           conversationId: { [Op.in]: conversationIds as string[] },
           userId,
         },
-      }
+      },
     );
   }
 

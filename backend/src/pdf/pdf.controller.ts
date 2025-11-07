@@ -7,7 +7,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import type { Response } from 'express';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { PdfService } from './pdf.service';
 import { GenerateStudentHealthSummaryDto } from './dto/generate-student-health-summary.dto';
 import { GenerateMedicationLogDto } from './dto/generate-medication-log.dto';
@@ -42,8 +47,7 @@ export class PdfController {
     @Body() dto: GenerateStudentHealthSummaryDto,
     @Res() res: Response,
   ): Promise<void> {
-    const pdfBuffer =
-      await this.pdfService.generateStudentHealthSummary(dto);
+    const pdfBuffer = await this.pdfService.generateStudentHealthSummary(dto);
 
     res.set({
       'Content-Type': 'application/pdf',
@@ -93,8 +97,7 @@ export class PdfController {
     @Body() dto: GenerateImmunizationReportDto,
     @Res() res: Response,
   ): Promise<void> {
-    const pdfBuffer =
-      await this.pdfService.generateImmunizationReport(dto);
+    const pdfBuffer = await this.pdfService.generateImmunizationReport(dto);
 
     res.set({
       'Content-Type': 'application/pdf',
@@ -217,10 +220,7 @@ export class PdfController {
     description: 'PDF signed successfully',
     type: Buffer,
   })
-  async signPdf(
-    @Body() dto: SignPdfDto,
-    @Res() res: Response,
-  ): Promise<void> {
+  async signPdf(@Body() dto: SignPdfDto, @Res() res: Response): Promise<void> {
     const pdfBuffer = await this.pdfService.signPdf(
       dto.pdfBuffer,
       dto.signatureName,

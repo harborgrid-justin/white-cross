@@ -2,33 +2,44 @@
  * Common validation utilities used across multiple services
  */
 
-import { ValidationResult, ValidationError, ValidationErrorCode } from '../security/validation.service';
+import {
+  ValidationResult,
+  ValidationError,
+  ValidationErrorCode,
+} from '../security/validation.service';
 
 /**
  * Validate UUID format
  */
-export function validateUUID(value: string, fieldName: string = 'ID'): ValidationResult {
+export function validateUUID(
+  value: string,
+  fieldName: string = 'ID',
+): ValidationResult {
   const errors: ValidationError[] = [];
-  
+
   if (!value) {
     errors.push({
       field: fieldName,
       message: `${fieldName} is required`,
-      code: ValidationErrorCode.REQUIRED
+      code: ValidationErrorCode.REQUIRED,
     });
-  } else if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)) {
+  } else if (
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      value,
+    )
+  ) {
     errors.push({
       field: fieldName,
       message: `${fieldName} must be a valid UUID format`,
       code: ValidationErrorCode.INVALID_FORMAT,
-      value
+      value,
     });
   }
 
   return {
     isValid: errors.length === 0,
     errors,
-    warnings: []
+    warnings: [],
   };
 }
 
@@ -37,18 +48,18 @@ export function validateUUID(value: string, fieldName: string = 'ID'): Validatio
  */
 export function validateRequiredFields(
   data: Record<string, any>,
-  requiredFields: string[]
+  requiredFields: string[],
 ): ValidationResult {
   const errors: ValidationError[] = [];
 
   for (const field of requiredFields) {
     const value = data[field];
-    
+
     if (value === undefined || value === null || value === '') {
       errors.push({
         field,
         message: `${field} is required`,
-        code: ValidationErrorCode.REQUIRED
+        code: ValidationErrorCode.REQUIRED,
       });
     }
   }
@@ -56,21 +67,24 @@ export function validateRequiredFields(
   return {
     isValid: errors.length === 0,
     errors,
-    warnings: []
+    warnings: [],
   };
 }
 
 /**
  * Validate email format
  */
-export function validateEmail(email: string, fieldName: string = 'email'): ValidationResult {
+export function validateEmail(
+  email: string,
+  fieldName: string = 'email',
+): ValidationResult {
   const errors: ValidationError[] = [];
-  
+
   if (!email) {
     errors.push({
       field: fieldName,
       message: `${fieldName} is required`,
-      code: ValidationErrorCode.REQUIRED
+      code: ValidationErrorCode.REQUIRED,
     });
   } else {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -79,7 +93,7 @@ export function validateEmail(email: string, fieldName: string = 'email'): Valid
         field: fieldName,
         message: `${fieldName} must be a valid email address`,
         code: ValidationErrorCode.INVALID_FORMAT,
-        value: email
+        value: email,
       });
     }
   }
@@ -87,40 +101,43 @@ export function validateEmail(email: string, fieldName: string = 'email'): Valid
   return {
     isValid: errors.length === 0,
     errors,
-    warnings: []
+    warnings: [],
   };
 }
 
 /**
  * Validate phone number format
  */
-export function validatePhoneNumber(phone: string, fieldName: string = 'phone'): ValidationResult {
+export function validatePhoneNumber(
+  phone: string,
+  fieldName: string = 'phone',
+): ValidationResult {
   const errors: ValidationError[] = [];
   const warnings: ValidationError[] = [];
-  
+
   if (!phone) {
     errors.push({
       field: fieldName,
       message: `${fieldName} is required`,
-      code: ValidationErrorCode.REQUIRED
+      code: ValidationErrorCode.REQUIRED,
     });
   } else {
     // Remove all non-digit characters for validation
     const digitsOnly = phone.replace(/\D/g, '');
-    
+
     if (digitsOnly.length < 10) {
       errors.push({
         field: fieldName,
         message: `${fieldName} must contain at least 10 digits`,
         code: ValidationErrorCode.TOO_SHORT,
-        value: phone
+        value: phone,
       });
     } else if (digitsOnly.length > 15) {
       errors.push({
         field: fieldName,
         message: `${fieldName} cannot contain more than 15 digits`,
         code: ValidationErrorCode.TOO_LONG,
-        value: phone
+        value: phone,
       });
     }
 
@@ -130,7 +147,7 @@ export function validatePhoneNumber(phone: string, fieldName: string = 'phone'):
         field: fieldName,
         message: `${fieldName} contains unusual characters`,
         code: ValidationErrorCode.UNUSUAL_FORMAT,
-        value: phone
+        value: phone,
       });
     }
   }
@@ -138,7 +155,7 @@ export function validatePhoneNumber(phone: string, fieldName: string = 'phone'):
   return {
     isValid: errors.length === 0,
     errors,
-    warnings
+    warnings,
   };
 }
 
@@ -148,7 +165,7 @@ export function validatePhoneNumber(phone: string, fieldName: string = 'phone'):
 export function validateStringLength(
   value: string,
   fieldName: string,
-  constraints: { min?: number; max?: number }
+  constraints: { min?: number; max?: number },
 ): ValidationResult {
   const errors: ValidationError[] = [];
   const { min, max } = constraints;
@@ -158,7 +175,7 @@ export function validateStringLength(
       errors.push({
         field: fieldName,
         message: `${fieldName} is required`,
-        code: ValidationErrorCode.REQUIRED
+        code: ValidationErrorCode.REQUIRED,
       });
     }
   } else {
@@ -167,7 +184,7 @@ export function validateStringLength(
         field: fieldName,
         message: `${fieldName} must be at least ${min} characters long`,
         code: ValidationErrorCode.TOO_SHORT,
-        value: value.length
+        value: value.length,
       });
     }
 
@@ -176,7 +193,7 @@ export function validateStringLength(
         field: fieldName,
         message: `${fieldName} cannot exceed ${max} characters`,
         code: ValidationErrorCode.TOO_LONG,
-        value: value.length
+        value: value.length,
       });
     }
   }
@@ -184,7 +201,7 @@ export function validateStringLength(
   return {
     isValid: errors.length === 0,
     errors,
-    warnings: []
+    warnings: [],
   };
 }
 
@@ -194,7 +211,7 @@ export function validateStringLength(
 export function validateNumericRange(
   value: number,
   fieldName: string,
-  constraints: { min?: number; max?: number; integer?: boolean }
+  constraints: { min?: number; max?: number; integer?: boolean },
 ): ValidationResult {
   const errors: ValidationError[] = [];
   const { min, max, integer } = constraints;
@@ -203,7 +220,7 @@ export function validateNumericRange(
     errors.push({
       field: fieldName,
       message: `${fieldName} is required`,
-      code: ValidationErrorCode.REQUIRED
+      code: ValidationErrorCode.REQUIRED,
     });
   } else {
     if (typeof value !== 'number' || isNaN(value)) {
@@ -211,7 +228,7 @@ export function validateNumericRange(
         field: fieldName,
         message: `${fieldName} must be a valid number`,
         code: ValidationErrorCode.INVALID_TYPE,
-        value
+        value,
       });
     } else {
       if (integer && !Number.isInteger(value)) {
@@ -219,7 +236,7 @@ export function validateNumericRange(
           field: fieldName,
           message: `${fieldName} must be an integer`,
           code: ValidationErrorCode.NOT_INTEGER,
-          value
+          value,
         });
       }
 
@@ -228,7 +245,7 @@ export function validateNumericRange(
           field: fieldName,
           message: `${fieldName} must be at least ${min}`,
           code: ValidationErrorCode.TOO_SMALL,
-          value
+          value,
         });
       }
 
@@ -237,7 +254,7 @@ export function validateNumericRange(
           field: fieldName,
           message: `${fieldName} cannot exceed ${max}`,
           code: ValidationErrorCode.TOO_LARGE,
-          value
+          value,
         });
       }
     }
@@ -246,7 +263,7 @@ export function validateNumericRange(
   return {
     isValid: errors.length === 0,
     errors,
-    warnings: []
+    warnings: [],
   };
 }
 
@@ -256,7 +273,7 @@ export function validateNumericRange(
 export function validateEnum<T extends string>(
   value: T,
   fieldName: string,
-  allowedValues: readonly T[]
+  allowedValues: readonly T[],
 ): ValidationResult {
   const errors: ValidationError[] = [];
 
@@ -264,21 +281,21 @@ export function validateEnum<T extends string>(
     errors.push({
       field: fieldName,
       message: `${fieldName} is required`,
-      code: ValidationErrorCode.REQUIRED
+      code: ValidationErrorCode.REQUIRED,
     });
   } else if (!allowedValues.includes(value)) {
     errors.push({
       field: fieldName,
       message: `${fieldName} must be one of: ${allowedValues.join(', ')}`,
       code: ValidationErrorCode.INVALID_VALUE,
-      value
+      value,
     });
   }
 
   return {
     isValid: errors.length === 0,
     errors,
-    warnings: []
+    warnings: [],
   };
 }
 
@@ -288,12 +305,12 @@ export function validateEnum<T extends string>(
 export function validateArray(
   value: any[],
   fieldName: string,
-  constraints: { 
-    minLength?: number; 
-    maxLength?: number; 
+  constraints: {
+    minLength?: number;
+    maxLength?: number;
     uniqueItems?: boolean;
     itemValidator?: (item: any, index: number) => ValidationResult;
-  }
+  },
 ): ValidationResult {
   const errors: ValidationError[] = [];
   const warnings: ValidationError[] = [];
@@ -304,7 +321,7 @@ export function validateArray(
       field: fieldName,
       message: `${fieldName} must be an array`,
       code: ValidationErrorCode.INVALID_TYPE,
-      value
+      value,
     });
     return { isValid: false, errors, warnings };
   }
@@ -314,7 +331,7 @@ export function validateArray(
       field: fieldName,
       message: `${fieldName} must contain at least ${minLength} items`,
       code: ValidationErrorCode.TOO_SHORT,
-      value: value.length
+      value: value.length,
     });
   }
 
@@ -323,7 +340,7 @@ export function validateArray(
       field: fieldName,
       message: `${fieldName} cannot contain more than ${maxLength} items`,
       code: ValidationErrorCode.TOO_LONG,
-      value: value.length
+      value: value.length,
     });
   }
 
@@ -333,7 +350,7 @@ export function validateArray(
       warnings.push({
         field: fieldName,
         message: `${fieldName} contains duplicate items`,
-        code: ValidationErrorCode.DUPLICATE_ITEMS
+        code: ValidationErrorCode.DUPLICATE_ITEMS,
       });
     }
   }
@@ -342,20 +359,20 @@ export function validateArray(
   if (itemValidator) {
     value.forEach((item, index) => {
       const itemResult = itemValidator(item, index);
-      
+
       // Prefix field names with array index
-      itemResult.errors.forEach(error => {
+      itemResult.errors.forEach((error) => {
         errors.push({
           ...error,
-          field: `${fieldName}[${index}].${error.field}`
+          field: `${fieldName}[${index}].${error.field}`,
         });
       });
 
       if (itemResult.warnings && itemResult.warnings.length > 0) {
-        itemResult.warnings.forEach(warning => {
+        itemResult.warnings.forEach((warning) => {
           warnings.push({
             ...warning,
-            field: `${fieldName}[${index}].${warning.field}`
+            field: `${fieldName}[${index}].${warning.field}`,
           });
         });
       }
@@ -365,14 +382,16 @@ export function validateArray(
   return {
     isValid: errors.length === 0,
     errors,
-    warnings
+    warnings,
   };
 }
 
 /**
  * Combine multiple validation results
  */
-export function combineValidationResults(...results: ValidationResult[]): ValidationResult {
+export function combineValidationResults(
+  ...results: ValidationResult[]
+): ValidationResult {
   const allErrors: ValidationError[] = [];
   const allWarnings: ValidationError[] = [];
 
@@ -386,7 +405,7 @@ export function combineValidationResults(...results: ValidationResult[]): Valida
   return {
     isValid: allErrors.length === 0,
     errors: allErrors,
-    warnings: allWarnings
+    warnings: allWarnings,
   };
 }
 
@@ -395,7 +414,7 @@ export function combineValidationResults(...results: ValidationResult[]): Valida
  */
 export function validateObject(
   data: Record<string, any>,
-  schema: Record<string, (value: any) => ValidationResult>
+  schema: Record<string, (value: any) => ValidationResult>,
 ): ValidationResult {
   const results: ValidationResult[] = [];
 

@@ -8,5 +8,5 @@ export {
   ComplianceViolation,
   ViolationType,
   ViolationSeverity,
-  ViolationStatus
+  ViolationStatus,
 } from '../../database/models/compliance-violation.model';

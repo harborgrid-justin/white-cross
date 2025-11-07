@@ -55,7 +55,8 @@ export default registerAs('auth', (): AuthConfig => {
       algorithm: 'HS256',
     },
     session: {
-      secret: process.env.JWT_SECRET as string, // Reuse JWT secret for sessions
+      // SECURITY: Use separate secret for sessions (never reuse JWT_SECRET)
+      secret: process.env.SESSION_SECRET as string,
       resave: false,
       saveUninitialized: false,
       cookie: {

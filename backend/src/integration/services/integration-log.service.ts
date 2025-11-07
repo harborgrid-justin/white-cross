@@ -37,7 +37,10 @@ export class IntegrationLogService {
       return await this.logModel.create({
         ...data,
         startedAt: new Date(),
-        completedAt: (data.status === 'success' || data.status === 'failed') ? new Date() : undefined,
+        completedAt:
+          data.status === 'success' || data.status === 'failed'
+            ? new Date()
+            : undefined,
       });
     } catch (error) {
       this.logger.error('Error creating integration log', error);
@@ -66,10 +69,12 @@ export class IntegrationLogService {
       const offset = (page - 1) * limit;
       const { rows: logs, count: total } = await this.logModel.findAndCountAll({
         where: whereClause,
-        include: [{
-          model: IntegrationConfig,
-          as: 'integration',
-        }],
+        include: [
+          {
+            model: IntegrationConfig,
+            as: 'integration',
+          },
+        ],
         order: [['createdAt', 'DESC']],
         limit,
         offset,

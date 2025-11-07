@@ -27,23 +27,34 @@ export interface UpdateSyncStateDTO {
 }
 
 @Injectable()
-export class SyncStateRepository extends BaseRepository<any, SyncStateAttributes, CreateSyncStateDTO> {
+export class SyncStateRepository extends BaseRepository<
+  any,
+  SyncStateAttributes,
+  CreateSyncStateDTO
+> {
   constructor(
     @InjectModel(SyncState) model: typeof SyncState,
     @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('ICacheManager') cacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'SyncState');
   }
 
   protected async validateCreate(data: CreateSyncStateDTO): Promise<void> {}
-  protected async validateUpdate(id: string, data: UpdateSyncStateDTO): Promise<void> {}
+  protected async validateUpdate(
+    id: string,
+    data: UpdateSyncStateDTO,
+  ): Promise<void> {}
 
   protected async invalidateCaches(entity: any): Promise<void> {
     try {
       const entityData = entity.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, entityData.id));
-      await this.cacheManager.deletePattern(`white-cross:${this.entityName.toLowerCase()}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, entityData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:${this.entityName.toLowerCase()}:*`,
+      );
     } catch (error) {
       this.logger.warn(`Error invalidating ${this.entityName} caches:`, error);
     }
@@ -53,5 +64,3 @@ export class SyncStateRepository extends BaseRepository<any, SyncStateAttributes
     return sanitizeSensitiveData({ ...data });
   }
 }
-
-

@@ -26,7 +26,7 @@ export const MEDICATION_DOSAGE_FORMS = [
   'Ointment',
   'Gel',
   'Spray',
-  'Lozenge'
+  'Lozenge',
 ] as const;
 
 /**
@@ -47,7 +47,7 @@ export const MEDICATION_CATEGORIES = [
   'Otic',
   'Emergency Medication',
   'Vitamin/Supplement',
-  'Other'
+  'Other',
 ] as const;
 
 /**
@@ -60,7 +60,7 @@ export const MEDICATION_STRENGTH_UNITS = [
   'ml',
   'units',
   'mEq',
-  '%'
+  '%',
 ] as const;
 
 /**
@@ -78,7 +78,7 @@ export const MEDICATION_ROUTES = [
   'Otic',
   'Nasal',
   'Rectal',
-  'Transdermal'
+  'Transdermal',
 ] as const;
 
 /**
@@ -98,17 +98,17 @@ export const MEDICATION_FREQUENCIES = [
   'After meals',
   'At bedtime',
   'Weekly',
-  'Monthly'
+  'Monthly',
 ] as const;
 
 /**
  * TypeScript types derived from constants
  */
-export type MedicationDosageForm = typeof MEDICATION_DOSAGE_FORMS[number];
-export type MedicationCategory = typeof MEDICATION_CATEGORIES[number];
-export type MedicationStrengthUnit = typeof MEDICATION_STRENGTH_UNITS[number];
-export type MedicationRoute = typeof MEDICATION_ROUTES[number];
-export type MedicationFrequency = typeof MEDICATION_FREQUENCIES[number];
+export type MedicationDosageForm = (typeof MEDICATION_DOSAGE_FORMS)[number];
+export type MedicationCategory = (typeof MEDICATION_CATEGORIES)[number];
+export type MedicationStrengthUnit = (typeof MEDICATION_STRENGTH_UNITS)[number];
+export type MedicationRoute = (typeof MEDICATION_ROUTES)[number];
+export type MedicationFrequency = (typeof MEDICATION_FREQUENCIES)[number];
 
 /**
  * Combined medication form options interface
@@ -130,5 +130,5 @@ export const getMedicationFormOptions = (): MedicationFormOptions => ({
   categories: MEDICATION_CATEGORIES,
   strengthUnits: MEDICATION_STRENGTH_UNITS,
   routes: MEDICATION_ROUTES,
-  frequencies: MEDICATION_FREQUENCIES
+  frequencies: MEDICATION_FREQUENCIES,
 });

@@ -11,8 +11,8 @@ import {
   BelongsTo,
   HasMany,
   Scopes,
-  DeletedAt
-  } from 'sequelize-typescript';
+  DeletedAt,
+} from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 import * as bcrypt from 'bcrypt';
 import { Op } from 'sequelize';
@@ -32,8 +32,8 @@ export enum UserRole {
   SCHOOL_ADMIN = 'SCHOOL_ADMIN',
   DISTRICT_ADMIN = 'DISTRICT_ADMIN',
   VIEWER = 'VIEWER',
-  COUNSELOR = 'COUNSELOR'
-  }
+  COUNSELOR = 'COUNSELOR',
+}
 
 export interface UserAttributes {
   id: string;
@@ -112,53 +112,72 @@ export interface UserCreationAttributes
   active: {
     where: {
       isActive: true,
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
+    order: [['createdAt', 'DESC']],
   },
   byRole: (role: UserRole) => ({
     where: { role, isActive: true },
-    order: [['lastName', 'ASC'], ['firstName', 'ASC']]
+    order: [
+      ['lastName', 'ASC'],
+      ['firstName', 'ASC'],
+    ],
   }),
   bySchool: (schoolId: string) => ({
     where: { schoolId, isActive: true },
-    order: [['lastName', 'ASC'], ['firstName', 'ASC']]
+    order: [
+      ['lastName', 'ASC'],
+      ['firstName', 'ASC'],
+    ],
   }),
   byDistrict: (districtId: string) => ({
     where: { districtId, isActive: true },
-    order: [['lastName', 'ASC'], ['firstName', 'ASC']]
+    order: [
+      ['lastName', 'ASC'],
+      ['firstName', 'ASC'],
+    ],
   }),
   nurses: {
     where: {
       role: UserRole.NURSE,
-      isActive: true
+      isActive: true,
     },
-    order: [['lastName', 'ASC'], ['firstName', 'ASC']]
+    order: [
+      ['lastName', 'ASC'],
+      ['firstName', 'ASC'],
+    ],
   },
   admins: {
     where: {
       role: {
-        [Op.in]: [UserRole.ADMIN, UserRole.DISTRICT_ADMIN, UserRole.SCHOOL_ADMIN]
+        [Op.in]: [
+          UserRole.ADMIN,
+          UserRole.DISTRICT_ADMIN,
+          UserRole.SCHOOL_ADMIN,
+        ],
       },
-      isActive: true
+      isActive: true,
     },
-    order: [['role', 'ASC'], ['lastName', 'ASC']]
+    order: [
+      ['role', 'ASC'],
+      ['lastName', 'ASC'],
+    ],
   },
   locked: {
     where: {
       lockoutUntil: {
-        [Op.gt]: new Date()
-      }
+        [Op.gt]: new Date(),
+      },
     },
-    order: [['lockoutUntil', 'DESC']]
+    order: [['lockoutUntil', 'DESC']],
   },
   unverified: {
     where: {
       emailVerified: false,
-      isActive: true
+      isActive: true,
     },
-    order: [['createdAt', 'ASC']]
-  }
+    order: [['createdAt', 'ASC']],
+  },
 }))
 @Table({
   tableName: 'users',
@@ -174,9 +193,9 @@ export interface UserCreationAttributes
     { fields: ['emailVerificationToken'] },
     { fields: ['passwordResetToken'] },
     { fields: ['createdAt'], name: 'idx_users_created_at' },
-    { fields: ['updatedAt'], name: 'idx_users_updated_at' }
-  ]
-  })
+    { fields: ['updatedAt'], name: 'idx_users_updated_at' },
+  ],
+})
 export class User extends Model<UserAttributes, UserCreationAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -188,26 +207,26 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
     allowNull: false,
     unique: true,
     validate: { isEmail: true },
-    comment: 'User email address (unique, used for login)'
+    comment: 'User email address (unique, used for login)',
   })
   declare email: string;
 
   @Column({
     type: DataType.STRING(255),
     allowNull: false,
-    comment: 'Hashed password (bcrypt)'
+    comment: 'Hashed password (bcrypt)',
   })
   declare password: string;
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: false
+    allowNull: false,
   })
   declare firstName: string;
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: false
+    allowNull: false,
   })
   declare lastName: string;
 
@@ -216,22 +235,22 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
     allowNull: false,
     defaultValue: UserRole.NURSE,
     validate: {
-      isIn: [Object.values(UserRole)]
+      isIn: [Object.values(UserRole)],
     },
-    comment: 'User role for authorization'
+    comment: 'User role for authorization',
   })
   declare role: UserRole;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true
+    defaultValue: true,
   })
   declare isActive: boolean;
 
   @Column({
     type: DataType.DATE,
-    allowNull: true
+    allowNull: true,
   })
   declare lastLogin?: Date;
 
@@ -241,11 +260,11 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
     allowNull: true,
     references: {
       model: 'schools',
-      key: 'id'
+      key: 'id',
     },
     onUpdate: 'CASCADE',
     onDelete: 'SET NULL',
-    comment: 'ID of the school this user is associated with'
+    comment: 'ID of the school this user is associated with',
   })
   declare schoolId?: string;
 
@@ -255,107 +274,109 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
     allowNull: true,
     references: {
       model: 'districts',
-      key: 'id'
+      key: 'id',
     },
     onUpdate: 'CASCADE',
     onDelete: 'SET NULL',
-    comment: 'ID of the district this user is associated with'
+    comment: 'ID of the district this user is associated with',
   })
   declare districtId?: string;
 
   @Column({
     type: DataType.STRING(20),
-    allowNull: true
+    allowNull: true,
   })
   declare phone?: string;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false
+    defaultValue: false,
   })
   declare emailVerified: boolean;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: true
+    allowNull: true,
   })
   declare emailVerificationToken?: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: true
+    allowNull: true,
   })
   declare emailVerificationExpires?: Date;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: true
+    allowNull: true,
   })
   declare passwordResetToken?: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: true
+    allowNull: true,
   })
   declare passwordResetExpires?: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    comment: 'Timestamp when password was last changed (for token invalidation)'
+    comment:
+      'Timestamp when password was last changed (for token invalidation)',
   })
   declare passwordChangedAt?: Date;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false
+    defaultValue: false,
   })
   declare twoFactorEnabled: boolean;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: true
+    allowNull: true,
   })
   declare twoFactorSecret?: string;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 0
+    defaultValue: 0,
   })
   declare failedLoginAttempts: number;
 
   @Column({
     type: DataType.DATE,
-    allowNull: true
+    allowNull: true,
   })
   declare lockoutUntil?: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    comment: 'Timestamp when password was last changed (for password rotation policy)'
+    comment:
+      'Timestamp when password was last changed (for password rotation policy)',
   })
   declare lastPasswordChange?: Date;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false
+    defaultValue: false,
   })
   declare mustChangePassword: boolean;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   declare createdAt: Date;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   declare updatedAt: Date;
 
@@ -364,28 +385,28 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
     type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: false,
-    comment: 'Whether multi-factor authentication is enabled'
+    comment: 'Whether multi-factor authentication is enabled',
   })
   declare mfaEnabled: boolean;
 
   @Column({
     type: DataType.STRING(255),
     allowNull: true,
-    comment: 'TOTP secret for MFA (encrypted)'
+    comment: 'TOTP secret for MFA (encrypted)',
   })
   declare mfaSecret?: string | null;
 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
-    comment: 'JSON array of hashed backup codes for MFA recovery'
+    comment: 'JSON array of hashed backup codes for MFA recovery',
   })
   declare mfaBackupCodes?: string | null;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    comment: 'Timestamp when MFA was enabled'
+    comment: 'Timestamp when MFA was enabled',
   })
   declare mfaEnabledAt?: Date | null;
 
@@ -393,21 +414,21 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
   @Column({
     type: DataType.STRING(50),
     allowNull: true,
-    comment: 'OAuth provider (google, microsoft, etc.)'
+    comment: 'OAuth provider (google, microsoft, etc.)',
   })
   declare oauthProvider?: string | null;
 
   @Column({
     type: DataType.STRING(255),
     allowNull: true,
-    comment: 'User ID from OAuth provider'
+    comment: 'User ID from OAuth provider',
   })
   declare oauthProviderId?: string | null;
 
   @Column({
     type: DataType.STRING(500),
     allowNull: true,
-    comment: 'URL to user profile picture'
+    comment: 'URL to user profile picture',
   })
   declare profilePictureUrl?: string | null;
 
@@ -416,14 +437,14 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
     type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: false,
-    comment: 'Whether email address has been verified'
+    comment: 'Whether email address has been verified',
   })
   declare isEmailVerified: boolean;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    comment: 'Timestamp when email was verified'
+    comment: 'Timestamp when email was verified',
   })
   declare emailVerifiedAt?: Date | null;
 
@@ -432,55 +453,104 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    comment: 'Soft delete timestamp for paranoid mode'
+    comment: 'Soft delete timestamp for paranoid mode',
   })
   declare deletedAt?: Date | null;
 
   // Associations
   @BelongsTo(() => require('./school.model').School, {
     foreignKey: 'schoolId',
-    as: 'school'
+    as: 'school',
   })
   declare school?: School;
 
   @BelongsTo(() => require('./district.model').District, {
     foreignKey: 'districtId',
-    as: 'district'
+    as: 'district',
   })
   declare district?: District;
 
   // One-to-many relationships
-  @HasMany(() => require('./appointment.model').Appointment, { foreignKey: 'nurseId', as: 'appointments' })
+  @HasMany(() => require('./appointment.model').Appointment, {
+    foreignKey: 'nurseId',
+    as: 'appointments',
+  })
   declare appointments?: Appointment[];
 
-  @HasMany(() => require('./clinical-note.model').ClinicalNote, { foreignKey: 'createdBy', as: 'clinicalNotes' })
+  @HasMany(() => require('./clinical-note.model').ClinicalNote, {
+    foreignKey: 'createdBy',
+    as: 'clinicalNotes',
+  })
   declare clinicalNotes?: ClinicalNote[];
 
-  @HasMany(() => require('./message.model').Message, { foreignKey: 'senderId', as: 'sentMessages' })
+  @HasMany(() => require('./message.model').Message, {
+    foreignKey: 'senderId',
+    as: 'sentMessages',
+  })
   declare sentMessages?: Message[];
 
-  @HasMany(() => require('./alert.model').Alert, { foreignKey: 'createdBy', as: 'createdAlerts' })
+  @HasMany(() => require('./alert.model').Alert, {
+    foreignKey: 'createdBy',
+    as: 'createdAlerts',
+  })
   declare createdAlerts?: Alert[];
 
-  @HasMany(() => require('./alert.model').Alert, { foreignKey: 'acknowledgedBy', as: 'acknowledgedAlerts' })
+  @HasMany(() => require('./alert.model').Alert, {
+    foreignKey: 'acknowledgedBy',
+    as: 'acknowledgedAlerts',
+  })
   declare acknowledgedAlerts?: Alert[];
 
-  @HasMany(() => require('./alert.model').Alert, { foreignKey: 'resolvedBy', as: 'resolvedAlerts' })
+  @HasMany(() => require('./alert.model').Alert, {
+    foreignKey: 'resolvedBy',
+    as: 'resolvedAlerts',
+  })
   declare resolvedAlerts?: Alert[];
 
-  @HasMany(() => require('./incident-report.model').IncidentReport, { foreignKey: 'reportedById', as: 'reportedIncidents' })
+  @HasMany(() => require('./incident-report.model').IncidentReport, {
+    foreignKey: 'reportedById',
+    as: 'reportedIncidents',
+  })
   declare reportedIncidents?: IncidentReport[];
 
-  @HasMany(() => require('./prescription.model').Prescription, { foreignKey: 'prescribedBy', as: 'prescriptions' })
+  @HasMany(() => require('./prescription.model').Prescription, {
+    foreignKey: 'prescribedBy',
+    as: 'prescriptions',
+  })
   declare prescriptions?: Prescription[];
 
-  @HasMany(() => require('./clinic-visit.model').ClinicVisit, { foreignKey: 'attendedBy', as: 'clinicVisits' })
+  @HasMany(() => require('./clinic-visit.model').ClinicVisit, {
+    foreignKey: 'attendedBy',
+    as: 'clinicVisits',
+  })
   declare clinicVisits?: ClinicVisit[];
 
+  /**
+   * SECURITY FIX: Configurable bcrypt salt rounds
+   *
+   * Before: Hardcoded 10 rounds (inconsistent with AuthService using 12)
+   * After: Reads from BCRYPT_SALT_ROUNDS environment variable (default 12)
+   *
+   * Salt Rounds Guidance:
+   * - 10 rounds: Fast, acceptable for general use
+   * - 12 rounds: Balanced, recommended for healthcare (PHI protection)
+   * - 14 rounds: Very secure, slower (consider for admin accounts)
+   *
+   * IMPORTANT: Must match AuthService configuration
+   */
   @BeforeCreate
   static async hashPasswordBeforeCreate(user: User) {
     if (user.password) {
-      user.password = await bcrypt.hash(user.password, 10);
+      const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS || '12', 10);
+
+      // Validate salt rounds
+      if (saltRounds < 10 || saltRounds > 14) {
+        throw new Error(
+          `SECURITY WARNING: bcrypt salt rounds must be between 10 and 14. Current: ${saltRounds}`,
+        );
+      }
+
+      user.password = await bcrypt.hash(user.password, saltRounds);
       user.lastPasswordChange = new Date();
     }
   }
@@ -488,7 +558,16 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
   @BeforeUpdate
   static async hashPasswordBeforeUpdate(user: User) {
     if (user.changed('password')) {
-      user.password = await bcrypt.hash(user.password, 10);
+      const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS || '12', 10);
+
+      // Validate salt rounds
+      if (saltRounds < 10 || saltRounds > 14) {
+        throw new Error(
+          `SECURITY WARNING: bcrypt salt rounds must be between 10 and 14. Current: ${saltRounds}`,
+        );
+      }
+
+      user.password = await bcrypt.hash(user.password, saltRounds);
       user.passwordChangedAt = new Date();
       user.lastPasswordChange = new Date();
     }
@@ -502,7 +581,9 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
       const phiFields = ['email', 'firstName', 'lastName', 'phone'];
 
       // Import the helper function dynamically to avoid circular dependencies
-      const { logModelPHIFieldChanges } = await import('../services/model-audit-helper.service.js');
+      const { logModelPHIFieldChanges } = await import(
+        '../services/model-audit-helper.service.js'
+      );
 
       // Get the transaction if available
       const transaction = (user as any).sequelize?.transaction || undefined;
@@ -533,11 +614,13 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
       emailVerificationToken,
       emailVerificationExpires,
       twoFactorSecret,
+      mfaSecret,
+      mfaBackupCodes,
       ...safeData
     } = this.get({ plain: true });
     return {
       ...safeData,
-      id: this.id!, // Ensure id is always included
+      id: this.id, // Ensure id is always included
     };
   }
 
@@ -547,7 +630,9 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
 
   passwordChangedAfter(timestamp: number): boolean {
     if (this.passwordChangedAt) {
-      const changedTimestamp = Math.floor(this.passwordChangedAt.getTime() / 1000);
+      const changedTimestamp = Math.floor(
+        this.passwordChangedAt.getTime() / 1000,
+      );
       return changedTimestamp > timestamp;
     }
     return false;

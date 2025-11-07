@@ -26,23 +26,34 @@ export interface UpdateContactDTO {
 }
 
 @Injectable()
-export class ContactRepository extends BaseRepository<any, ContactAttributes, CreateContactDTO> {
+export class ContactRepository extends BaseRepository<
+  any,
+  ContactAttributes,
+  CreateContactDTO
+> {
   constructor(
-    @InjectModel(('' as any)) model: any,
+    @InjectModel('' as any) model: any,
     @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('ICacheManager') cacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'Contact');
   }
 
   protected async validateCreate(data: CreateContactDTO): Promise<void> {}
-  protected async validateUpdate(id: string, data: UpdateContactDTO): Promise<void> {}
+  protected async validateUpdate(
+    id: string,
+    data: UpdateContactDTO,
+  ): Promise<void> {}
 
   protected async invalidateCaches(entity: any): Promise<void> {
     try {
       const entityData = entity.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, entityData.id));
-      await this.cacheManager.deletePattern(`white-cross:${this.entityName.toLowerCase()}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, entityData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:${this.entityName.toLowerCase()}:*`,
+      );
     } catch (error) {
       this.logger.warn(`Error invalidating ${this.entityName} caches:`, error);
     }

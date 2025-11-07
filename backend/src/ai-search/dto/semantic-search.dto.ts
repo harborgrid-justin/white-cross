@@ -19,7 +19,11 @@ import {
 import { Type } from 'class-transformer';
 
 export class SearchFiltersDto {
-  @ApiProperty({ description: 'Data types to search', required: false, example: ['patient', 'appointment'] })
+  @ApiProperty({
+    description: 'Data types to search',
+    required: false,
+    example: ['patient', 'appointment'],
+  })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
@@ -61,20 +65,32 @@ export class SemanticSearchDto {
   @MaxLength(500)
   query: string;
 
-  @ApiProperty({ description: 'Search filters', required: false, type: SearchFiltersDto })
+  @ApiProperty({
+    description: 'Search filters',
+    required: false,
+    type: SearchFiltersDto,
+  })
   @IsOptional()
   @ValidateNested()
   @Type(() => SearchFiltersDto)
   filters?: SearchFiltersDto;
 
-  @ApiProperty({ description: 'Maximum number of results', required: false, default: 10 })
+  @ApiProperty({
+    description: 'Maximum number of results',
+    required: false,
+    default: 10,
+  })
   @IsOptional()
   @IsNumber()
   @Min(1)
   @Max(100)
   limit?: number;
 
-  @ApiProperty({ description: 'Similarity threshold (0-1)', required: false, default: 0.7 })
+  @ApiProperty({
+    description: 'Similarity threshold (0-1)',
+    required: false,
+    default: 0.7,
+  })
   @IsOptional()
   @IsNumber()
   @Min(0)

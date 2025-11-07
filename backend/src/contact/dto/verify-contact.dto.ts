@@ -10,14 +10,14 @@ export class ContactVerifyDto {
   @ApiProperty({
     enum: VerificationStatus,
     example: VerificationStatus.VERIFIED,
-    description: 'New verification status'
+    description: 'New verification status',
   })
   @IsEnum(VerificationStatus)
   verificationStatus: VerificationStatus;
 
   @ApiPropertyOptional({
     example: 'Contact verified via phone call',
-    description: 'Verification notes'
+    description: 'Verification notes',
   })
   @IsOptional()
   @IsString()

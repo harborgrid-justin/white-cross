@@ -89,7 +89,7 @@ export class WsExceptionFilter extends BaseWsExceptionFilter {
     // Optionally disconnect client for critical errors
     if (this.shouldDisconnect(exception)) {
       this.logger.warn(
-        `Disconnecting client ${client.id} (user: ${userId}) due to critical error`
+        `Disconnecting client ${client.id} (user: ${userId}) due to critical error`,
       );
       client.disconnect();
     }
@@ -231,7 +231,7 @@ export class WsExceptionFilter extends BaseWsExceptionFilter {
       organizationId: string;
       pattern: string;
       errorType: string;
-    }
+    },
   ): void {
     const logContext = {
       socketId: context.socketId,
@@ -245,12 +245,12 @@ export class WsExceptionFilter extends BaseWsExceptionFilter {
       this.logger.error(
         `WebSocket Error: ${exception.message}`,
         exception.stack,
-        JSON.stringify(logContext)
+        JSON.stringify(logContext),
       );
     } else {
       this.logger.error(
         `WebSocket Error: ${String(exception)}`,
-        JSON.stringify(logContext)
+        JSON.stringify(logContext),
       );
     }
 

@@ -13,12 +13,12 @@
  * File: /backend/src/shared/utils/date.ts
  * Locator: WC-UTL-DAT-073
  * Purpose: Healthcare Date Utilities - Medical timeline and age calculations
- * 
+ *
  * Upstream: lodash library, independent utility module
  * Downstream: ../services/*, appointment scheduling, medication timing, age validation
  * Dependencies: lodash, Date API, healthcare business logic
  * Exports: isToday, isWithinLastDays, groupByPeriod, calculateAge
- * 
+ *
  * LLM Context: Date manipulation utilities for White Cross healthcare system.
  * Handles age calculations, appointment grouping, medication schedules, timeline analysis.
  * Critical for HIPAA compliance date tracking and healthcare business rules.
@@ -38,8 +38,16 @@ export const isToday = (date: Date | string) => {
   const today = new Date();
   const compareDate = new Date(date);
   return _.isEqual(
-    { year: today.getFullYear(), month: today.getMonth(), date: today.getDate() },
-    { year: compareDate.getFullYear(), month: compareDate.getMonth(), date: compareDate.getDate() }
+    {
+      year: today.getFullYear(),
+      month: today.getMonth(),
+      date: today.getDate(),
+    },
+    {
+      year: compareDate.getFullYear(),
+      month: compareDate.getMonth(),
+      date: compareDate.getDate(),
+    },
   );
 };
 
@@ -58,7 +66,7 @@ export const isWithinLastDays = (date: Date | string, days: number) => {
  */
 export const groupByPeriod = <T extends { date: Date | string }>(
   items: T[],
-  period: 'day' | 'week' | 'month'
+  period: 'day' | 'week' | 'month',
 ) => {
   return _.groupBy(items, (item: T) => {
     const date = new Date(item.date);
@@ -98,5 +106,5 @@ export default {
   isToday,
   isWithinLastDays,
   groupByPeriod,
-  calculateAge
+  calculateAge,
 };

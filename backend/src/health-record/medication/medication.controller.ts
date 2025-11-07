@@ -36,8 +36,13 @@ export class MedicationController {
     description: 'Medication created successfully',
     type: Medication,
   })
-  @ApiResponse({ status: 409, description: 'Medication with this NDC already exists' })
-  async create(@Body() createDto: HealthRecordCreateMedicationDto): Promise<Medication> {
+  @ApiResponse({
+    status: 409,
+    description: 'Medication with this NDC already exists',
+  })
+  async create(
+    @Body() createDto: HealthRecordCreateMedicationDto,
+  ): Promise<Medication> {
     return this.medicationService.create(createDto);
   }
 
@@ -85,7 +90,9 @@ export class MedicationController {
   }
 
   @Get('witness-required')
-  @ApiOperation({ summary: 'Get medications requiring witness for administration' })
+  @ApiOperation({
+    summary: 'Get medications requiring witness for administration',
+  })
   @ApiResponse({
     status: 200,
     description: 'List of medications requiring witness',
@@ -117,7 +124,10 @@ export class MedicationController {
     type: Medication,
   })
   @ApiResponse({ status: 404, description: 'Medication not found' })
-  @ApiResponse({ status: 409, description: 'Medication with this NDC already exists' })
+  @ApiResponse({
+    status: 409,
+    description: 'Medication with this NDC already exists',
+  })
   async update(
     @Param('id') id: string,
     @Body() updateDto: UpdateHealthRecordMedicationDto,
@@ -129,7 +139,10 @@ export class MedicationController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Deactivate medication (soft delete)' })
   @ApiParam({ name: 'id', description: 'Medication UUID' })
-  @ApiResponse({ status: 204, description: 'Medication deactivated successfully' })
+  @ApiResponse({
+    status: 204,
+    description: 'Medication deactivated successfully',
+  })
   @ApiResponse({ status: 404, description: 'Medication not found' })
   async deactivate(@Param('id') id: string): Promise<void> {
     // TODO: Get user ID from authentication context

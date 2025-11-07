@@ -1,4 +1,12 @@
-import { IsString, IsUUID, IsArray, IsOptional, IsEnum, IsDate, ValidateNested } from 'class-validator';
+import {
+  IsString,
+  IsUUID,
+  IsArray,
+  IsOptional,
+  IsEnum,
+  IsDate,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ProtocolStatus } from '../../enums/protocol-status.enum';
@@ -13,7 +21,10 @@ export class ProtocolStepDto {
   @ApiProperty({ description: 'Step title', example: 'Initial Assessment' })
   title: string;
 
-  @ApiProperty({ description: 'Step description', example: 'Assess patient vital signs and symptoms' })
+  @ApiProperty({
+    description: 'Step description',
+    example: 'Assess patient vital signs and symptoms',
+  })
   description: string;
 
   @ApiProperty({ description: 'Is this step required?', default: true })
@@ -27,13 +38,22 @@ export class ProtocolDecisionPointDto {
   @ApiProperty({ description: 'Step number where decision occurs', example: 3 })
   step: number;
 
-  @ApiProperty({ description: 'Condition to evaluate', example: 'Temperature > 101°F' })
+  @ApiProperty({
+    description: 'Condition to evaluate',
+    example: 'Temperature > 101°F',
+  })
   condition: string;
 
-  @ApiProperty({ description: 'Action if condition is true', example: 'Proceed to fever protocol' })
+  @ApiProperty({
+    description: 'Action if condition is true',
+    example: 'Proceed to fever protocol',
+  })
   ifTrue: string;
 
-  @ApiProperty({ description: 'Action if condition is false', example: 'Continue with standard care' })
+  @ApiProperty({
+    description: 'Action if condition is false',
+    example: 'Continue with standard care',
+  })
   ifFalse: string;
 }
 
@@ -41,7 +61,10 @@ export class ProtocolDecisionPointDto {
  * DTO for creating a new clinical protocol
  */
 export class CreateProtocolDto {
-  @ApiProperty({ description: 'Protocol name', example: 'Asthma Management Protocol' })
+  @ApiProperty({
+    description: 'Protocol name',
+    example: 'Asthma Management Protocol',
+  })
   @IsString()
   name: string;
 
@@ -61,12 +84,18 @@ export class CreateProtocolDto {
   @IsString()
   description: string;
 
-  @ApiProperty({ description: 'Clinical indications for using this protocol', example: ['Acute asthma exacerbation', 'Wheezing'] })
+  @ApiProperty({
+    description: 'Clinical indications for using this protocol',
+    example: ['Acute asthma exacerbation', 'Wheezing'],
+  })
   @IsArray()
   @IsString({ each: true })
   indications: string[];
 
-  @ApiPropertyOptional({ description: 'Contraindications', example: ['Severe respiratory distress'] })
+  @ApiPropertyOptional({
+    description: 'Contraindications',
+    example: ['Severe respiratory distress'],
+  })
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
@@ -78,26 +107,39 @@ export class CreateProtocolDto {
   @Type(() => ProtocolStepDto)
   steps: ProtocolStepDto[];
 
-  @ApiPropertyOptional({ description: 'Decision points in protocol', type: [ProtocolDecisionPointDto] })
+  @ApiPropertyOptional({
+    description: 'Decision points in protocol',
+    type: [ProtocolDecisionPointDto],
+  })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ProtocolDecisionPointDto)
   @IsOptional()
   decisionPoints?: ProtocolDecisionPointDto[];
 
-  @ApiPropertyOptional({ description: 'Required equipment', example: ['Peak flow meter', 'Nebulizer'] })
+  @ApiPropertyOptional({
+    description: 'Required equipment',
+    example: ['Peak flow meter', 'Nebulizer'],
+  })
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
   requiredEquipment?: string[];
 
-  @ApiPropertyOptional({ description: 'Medications used in protocol', example: ['Albuterol', 'Prednisone'] })
+  @ApiPropertyOptional({
+    description: 'Medications used in protocol',
+    example: ['Albuterol', 'Prednisone'],
+  })
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
   medications?: string[];
 
-  @ApiPropertyOptional({ description: 'Initial status', enum: ProtocolStatus, default: ProtocolStatus.DRAFT })
+  @ApiPropertyOptional({
+    description: 'Initial status',
+    enum: ProtocolStatus,
+    default: ProtocolStatus.DRAFT,
+  })
   @IsEnum(ProtocolStatus)
   @IsOptional()
   status?: ProtocolStatus;
@@ -118,13 +160,19 @@ export class CreateProtocolDto {
   @IsOptional()
   reviewDate?: Date;
 
-  @ApiPropertyOptional({ description: 'References and citations', example: ['NHLBI Guidelines 2020'] })
+  @ApiPropertyOptional({
+    description: 'References and citations',
+    example: ['NHLBI Guidelines 2020'],
+  })
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
   references?: string[];
 
-  @ApiPropertyOptional({ description: 'Tags for categorization', example: ['pediatric', 'emergency'] })
+  @ApiPropertyOptional({
+    description: 'Tags for categorization',
+    example: ['pediatric', 'emergency'],
+  })
   @IsArray()
   @IsString({ each: true })
   @IsOptional()

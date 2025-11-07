@@ -22,7 +22,10 @@ import {
 import { AllergyService } from './allergy.service';
 import { HealthRecordCreateAllergyDto } from './dto/create-allergy.dto';
 import { HealthRecordUpdateAllergyDto } from './dto/update-allergy.dto';
-import { CheckMedicationConflictsDto, MedicationConflictResponseDto } from './dto/check-conflicts.dto';
+import {
+  CheckMedicationConflictsDto,
+  MedicationConflictResponseDto,
+} from './dto/check-conflicts.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
@@ -55,7 +58,10 @@ export class AllergyController {
     status: 200,
     description: 'Allergy retrieved successfully',
   })
-  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Authentication required',
+  })
   @ApiResponse({ status: 404, description: 'Allergy not found' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async getAllergyById(@Param('id') id: string, @Request() req: any) {
@@ -77,9 +83,15 @@ export class AllergyController {
     description: 'Student allergies retrieved successfully',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Must be assigned nurse or admin' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Must be assigned nurse or admin',
+  })
   @ApiResponse({ status: 404, description: 'Student not found' })
-  async getStudentAllergies(@Param('studentId') studentId: string, @Request() req: any) {
+  async getStudentAllergies(
+    @Param('studentId') studentId: string,
+    @Request() req: any,
+  ) {
     return this.allergyService.findByStudent(studentId, req.user);
   }
 
@@ -102,9 +114,15 @@ export class AllergyController {
     description: 'Bad request - Validation error',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Requires NURSE or ADMIN role' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Requires NURSE or ADMIN role',
+  })
   @ApiResponse({ status: 404, description: 'Student not found' })
-  async createAllergy(@Body() createAllergyDto: HealthRecordCreateAllergyDto, @Request() req: any) {
+  async createAllergy(
+    @Body() createAllergyDto: HealthRecordCreateAllergyDto,
+    @Request() req: any,
+  ) {
     return this.allergyService.create(createAllergyDto, req.user);
   }
 
@@ -126,7 +144,10 @@ export class AllergyController {
   })
   @ApiResponse({ status: 400, description: 'Bad request - Validation error' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Requires NURSE or ADMIN role' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Requires NURSE or ADMIN role',
+  })
   @ApiResponse({ status: 404, description: 'Allergy not found' })
   async updateAllergy(
     @Param('id') id: string,
@@ -148,7 +169,8 @@ export class AllergyController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Check medication-allergy conflicts (CRITICAL SAFETY)',
-    description: 'Checks if a medication conflicts with student\'s known allergies. Returns severity level and recommendations.'
+    description:
+      "Checks if a medication conflicts with student's known allergies. Returns severity level and recommendations.",
   })
   @ApiBody({ type: CheckMedicationConflictsDto })
   @ApiResponse({
@@ -160,8 +182,14 @@ export class AllergyController {
     status: 400,
     description: 'Bad request - Invalid student ID or medication name',
   })
-  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Requires NURSE, COUNSELOR, or ADMIN role' })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Authentication required',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Requires NURSE, COUNSELOR, or ADMIN role',
+  })
   @ApiResponse({ status: 404, description: 'Student not found' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async checkMedicationConflicts(
@@ -174,7 +202,8 @@ export class AllergyController {
     );
 
     // Enhanced response with safety recommendations
-    let recommendation: 'SAFE' | 'CONSULT_PHYSICIAN' | 'DO_NOT_ADMINISTER' = 'SAFE';
+    let recommendation: 'SAFE' | 'CONSULT_PHYSICIAN' | 'DO_NOT_ADMINISTER' =
+      'SAFE';
     let warning: string | undefined;
 
     if (result.hasInteractions) {

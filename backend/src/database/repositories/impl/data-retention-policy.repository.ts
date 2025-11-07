@@ -51,23 +51,36 @@ export interface UpdateDataRetentionPolicyDTO {
 }
 
 @Injectable()
-export class DataRetentionPolicyRepository extends BaseRepository<any, DataRetentionPolicyAttributes, CreateDataRetentionPolicyDTO> {
+export class DataRetentionPolicyRepository extends BaseRepository<
+  any,
+  DataRetentionPolicyAttributes,
+  CreateDataRetentionPolicyDTO
+> {
   constructor(
     @InjectModel(DataRetentionPolicy) model: typeof DataRetentionPolicy,
     @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('ICacheManager') cacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'DataRetentionPolicy');
   }
 
-  protected async validateCreate(data: CreateDataRetentionPolicyDTO): Promise<void> {}
-  protected async validateUpdate(id: string, data: UpdateDataRetentionPolicyDTO): Promise<void> {}
+  protected async validateCreate(
+    data: CreateDataRetentionPolicyDTO,
+  ): Promise<void> {}
+  protected async validateUpdate(
+    id: string,
+    data: UpdateDataRetentionPolicyDTO,
+  ): Promise<void> {}
 
   protected async invalidateCaches(entity: any): Promise<void> {
     try {
       const entityData = entity.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, entityData.id));
-      await this.cacheManager.deletePattern(`white-cross:${this.entityName.toLowerCase()}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, entityData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:${this.entityName.toLowerCase()}:*`,
+      );
     } catch (error) {
       this.logger.warn(`Error invalidating ${this.entityName} caches:`, error);
     }

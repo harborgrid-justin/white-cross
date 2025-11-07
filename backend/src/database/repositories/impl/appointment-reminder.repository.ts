@@ -17,11 +17,16 @@ export class AppointmentReminderRepository {
     return this.appointmentReminderModel.findByPk(id);
   }
 
-  async create(data: Partial<AppointmentReminder>): Promise<AppointmentReminder> {
+  async create(
+    data: Partial<AppointmentReminder>,
+  ): Promise<AppointmentReminder> {
     return this.appointmentReminderModel.create(data as any);
   }
 
-  async update(id: string, data: Partial<AppointmentReminder>): Promise<[number]> {
+  async update(
+    id: string,
+    data: Partial<AppointmentReminder>,
+  ): Promise<[number]> {
     return this.appointmentReminderModel.update(data as any, {
       where: { id },
     });

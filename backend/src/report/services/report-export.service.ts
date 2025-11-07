@@ -88,7 +88,9 @@ export class ReportExportService {
   ): Promise<Buffer> {
     // PDF generation using pdfkit would go here
     // For now, returning a placeholder
-    this.logger.warn('PDF export not fully implemented - returning JSON as fallback');
+    this.logger.warn(
+      'PDF export not fully implemented - returning JSON as fallback',
+    );
     return Buffer.from(JSON.stringify(data, null, 2));
   }
 
@@ -113,7 +115,9 @@ export class ReportExportService {
       const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
       return buffer;
     } catch (error) {
-      this.logger.warn('Excel library not available - returning JSON as fallback');
+      this.logger.warn(
+        'Excel library not available - returning JSON as fallback',
+      );
       return Buffer.from(JSON.stringify(data, null, 2));
     }
   }
@@ -139,7 +143,7 @@ export class ReportExportService {
       let csv = headers.join(',') + '\n';
 
       for (const row of flatData) {
-        const values = headers.map(header => {
+        const values = headers.map((header) => {
           const value = row[header];
           // Escape values containing commas or quotes
           if (value === null || value === undefined) return '';
@@ -164,10 +168,12 @@ export class ReportExportService {
    */
   private flattenData(data: any): any[] {
     if (Array.isArray(data)) {
-      return data.map(item => this.flattenObject(item));
+      return data.map((item) => this.flattenObject(item));
     } else if (typeof data === 'object' && data !== null) {
       // If data is an object with array properties, extract the first array
-      const arrayProps = Object.keys(data).filter(key => Array.isArray(data[key]));
+      const arrayProps = Object.keys(data).filter((key) =>
+        Array.isArray(data[key]),
+      );
       if (arrayProps.length > 0) {
         return data[arrayProps[0]].map((item: any) => this.flattenObject(item));
       }
@@ -189,7 +195,11 @@ export class ReportExportService {
 
         if (value === null || value === undefined) {
           flattened[newKey] = '';
-        } else if (typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date)) {
+        } else if (
+          typeof value === 'object' &&
+          !Array.isArray(value) &&
+          !(value instanceof Date)
+        ) {
           // Recursively flatten nested objects
           Object.assign(flattened, this.flattenObject(value, newKey));
         } else if (Array.isArray(value)) {

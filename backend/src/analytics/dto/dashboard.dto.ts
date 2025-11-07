@@ -20,13 +20,19 @@ export class GetNurseDashboardQueryDto {
   @IsString()
   timeRange?: string;
 
-  @ApiPropertyOptional({ description: 'Include active health alerts', default: true })
+  @ApiPropertyOptional({
+    description: 'Include active health alerts',
+    default: true,
+  })
   @IsOptional()
   @IsBoolean()
   @Type(() => Boolean)
   includeAlerts?: boolean;
 
-  @ApiPropertyOptional({ description: 'Include upcoming tasks and appointments', default: true })
+  @ApiPropertyOptional({
+    description: 'Include upcoming tasks and appointments',
+    default: true,
+  })
   @IsOptional()
   @IsBoolean()
   @Type(() => Boolean)
@@ -37,7 +43,9 @@ export class GetNurseDashboardQueryDto {
  * Get Admin Dashboard Query DTO
  */
 export class GetAdminDashboardQueryDto {
-  @ApiPropertyOptional({ description: 'District ID for district-wide analytics' })
+  @ApiPropertyOptional({
+    description: 'District ID for district-wide analytics',
+  })
   @IsOptional()
   @IsString()
   districtId?: string;
@@ -56,13 +64,19 @@ export class GetAdminDashboardQueryDto {
   @IsString()
   timeRange?: string;
 
-  @ApiPropertyOptional({ description: 'Include compliance metrics', default: true })
+  @ApiPropertyOptional({
+    description: 'Include compliance metrics',
+    default: true,
+  })
   @IsOptional()
   @IsBoolean()
   @Type(() => Boolean)
   includeComplianceMetrics?: boolean;
 
-  @ApiPropertyOptional({ description: 'Include financial data', default: false })
+  @ApiPropertyOptional({
+    description: 'Include financial data',
+    default: false,
+  })
   @IsOptional()
   @IsBoolean()
   @Type(() => Boolean)
@@ -78,7 +92,10 @@ export class GetPlatformSummaryQueryDto {
   @IsString()
   districtId?: string;
 
-  @ApiPropertyOptional({ type: [String], description: 'School IDs to include in summary' })
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'School IDs to include in summary',
+  })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
@@ -94,7 +111,10 @@ export class GetPlatformSummaryQueryDto {
   @Type(() => Date)
   endDate?: Date;
 
-  @ApiPropertyOptional({ description: 'Include detailed breakdown', default: false })
+  @ApiPropertyOptional({
+    description: 'Include detailed breakdown',
+    default: false,
+  })
   @IsOptional()
   @IsBoolean()
   @Type(() => Boolean)

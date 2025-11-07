@@ -39,14 +39,16 @@ export class DrugInteractionDto {
 
   @ApiProperty({
     description: 'Detailed description of the interaction and its effects',
-    example: 'Concurrent use may increase bleeding risk due to additive anticoagulant effects',
+    example:
+      'Concurrent use may increase bleeding risk due to additive anticoagulant effects',
   })
   @IsString()
   description: string;
 
   @ApiProperty({
     description: 'Clinical recommendation for managing this interaction',
-    example: 'Monitor INR levels more frequently. Consider alternative pain management options.',
+    example:
+      'Monitor INR levels more frequently. Consider alternative pain management options.',
   })
   @IsString()
   recommendation: string;

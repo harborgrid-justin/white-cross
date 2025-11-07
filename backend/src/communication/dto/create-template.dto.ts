@@ -36,7 +36,8 @@ export class CreateTemplateDto {
     description: 'Template content with variable placeholders',
     minLength: 1,
     maxLength: 50000,
-    example: 'Dear {{parentName}}, this is a reminder that {{studentName}} has an appointment on {{date}} at {{time}}.',
+    example:
+      'Dear {{parentName}}, this is a reminder that {{studentName}} has an appointment on {{date}} at {{time}}.',
   })
   @IsString()
   @MinLength(1)

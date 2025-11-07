@@ -13,7 +13,7 @@ export {
   ExpressMiddlewareUtils,
   ExpressRequestWrapper,
   ExpressResponseWrapper,
-  ExpressNextWrapper
+  ExpressNextWrapper,
 } from './express/express.adapter';
 
 // Hapi Adapters
@@ -22,7 +22,7 @@ export {
   HapiMiddlewareUtils,
   HapiRequestWrapper,
   HapiResponseWrapper,
-  HapiNextWrapper
+  HapiNextWrapper,
 } from './hapi/hapi.adapter';
 
 // Shared Utilities
@@ -30,7 +30,7 @@ export {
   BaseFrameworkAdapter,
   HealthcareMiddlewareUtils,
   ResponseUtils,
-  RequestValidationUtils
+  RequestValidationUtils,
 } from './shared/base.adapter';
 
 // Re-export types for convenience

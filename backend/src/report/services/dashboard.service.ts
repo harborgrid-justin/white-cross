@@ -68,7 +68,9 @@ export class DashboardService {
           } as any,
         }),
         this.allergyModel.count({ where: { verified: true } }),
-        this.chronicConditionModel.count({ where: { status: ConditionStatus.ACTIVE } }),
+        this.chronicConditionModel.count({
+          where: { status: ConditionStatus.ACTIVE },
+        }),
       ]);
 
       this.logger.log('Dashboard metrics retrieved successfully');

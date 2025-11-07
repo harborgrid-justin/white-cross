@@ -1,9 +1,23 @@
-import { IsString, IsEnum, IsOptional, IsDateString, MinLength, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsOptional,
+  IsDateString,
+  MinLength,
+  MaxLength,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { PolicyCategory, PolicyStatus } from '../entities/policy-document.entity';
+import {
+  PolicyCategory,
+  PolicyStatus,
+} from '../entities/policy-document.entity';
 
 export class CreatePolicyDto {
-  @ApiProperty({ description: 'Policy title (5-200 chars)', minLength: 5, maxLength: 200 })
+  @ApiProperty({
+    description: 'Policy title (5-200 chars)',
+    minLength: 5,
+    maxLength: 200,
+  })
   @IsString()
   @MinLength(5)
   @MaxLength(200)
@@ -13,7 +27,10 @@ export class CreatePolicyDto {
   @IsEnum(PolicyCategory)
   category: PolicyCategory;
 
-  @ApiProperty({ description: 'Complete policy content (100-100000 chars)', minLength: 100 })
+  @ApiProperty({
+    description: 'Complete policy content (100-100000 chars)',
+    minLength: 100,
+  })
   @IsString()
   @MinLength(100)
   content: string;
@@ -33,7 +50,10 @@ export class CreatePolicyDto {
 }
 
 export class UpdatePolicyDto {
-  @ApiPropertyOptional({ enum: PolicyStatus, description: 'Updated policy status' })
+  @ApiPropertyOptional({
+    enum: PolicyStatus,
+    description: 'Updated policy status',
+  })
   @IsOptional()
   @IsEnum(PolicyStatus)
   status?: PolicyStatus;
@@ -56,7 +76,10 @@ export class AcknowledgePolicyDto {
 }
 
 export class QueryPolicyDto {
-  @ApiPropertyOptional({ enum: PolicyCategory, description: 'Filter by category' })
+  @ApiPropertyOptional({
+    enum: PolicyCategory,
+    description: 'Filter by category',
+  })
   @IsOptional()
   @IsEnum(PolicyCategory)
   category?: PolicyCategory;

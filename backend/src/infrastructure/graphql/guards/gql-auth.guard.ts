@@ -11,7 +11,12 @@
  * - Public route support via @Public() decorator
  * - Comprehensive audit logging
  */
-import { Injectable, ExecutionContext, UnauthorizedException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  ExecutionContext,
+  UnauthorizedException,
+  Logger,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Reflector } from '@nestjs/core';
@@ -79,7 +84,8 @@ export class GqlAuthGuard extends AuthGuard('jwt') {
 
       if (token) {
         // Check individual token blacklist
-        const isBlacklisted = await this.tokenBlacklistService.isTokenBlacklisted(token);
+        const isBlacklisted =
+          await this.tokenBlacklistService.isTokenBlacklisted(token);
 
         if (isBlacklisted) {
           this.logger.warn('Blacklisted token attempted GraphQL access', {
@@ -95,18 +101,26 @@ export class GqlAuthGuard extends AuthGuard('jwt') {
         if (user && user.id) {
           const tokenPayload = this.decodeToken(token);
           if (tokenPayload && tokenPayload.iat) {
-            const userTokensBlacklisted = await this.tokenBlacklistService.areUserTokensBlacklisted(
-              user.id,
-              tokenPayload.iat
-            );
+            const userTokensBlacklisted =
+              await this.tokenBlacklistService.areUserTokensBlacklisted(
+                user.id,
+                tokenPayload.iat,
+              );
 
             if (userTokensBlacklisted) {
-              this.logger.warn('User tokens invalidated - GraphQL access denied', {
-                userId: user.id,
-                tokenIssuedAt: new Date(tokenPayload.iat * 1000).toISOString(),
-              });
+              this.logger.warn(
+                'User tokens invalidated - GraphQL access denied',
+                {
+                  userId: user.id,
+                  tokenIssuedAt: new Date(
+                    tokenPayload.iat * 1000,
+                  ).toISOString(),
+                },
+              );
 
-              throw new UnauthorizedException('Session invalidated. Please login again.');
+              throw new UnauthorizedException(
+                'Session invalidated. Please login again.',
+              );
             }
           }
         }
@@ -141,7 +155,12 @@ export class GqlAuthGuard extends AuthGuard('jwt') {
    *
    * Adds authenticated user to GraphQL context
    */
-  handleRequest<TUser = any>(err: any, user: any, info: any, context: ExecutionContext): TUser {
+  handleRequest<TUser = any>(
+    err: any,
+    user: any,
+    info: any,
+    context: ExecutionContext,
+  ): TUser {
     // You can throw an exception based on either "info" or "err" arguments
     if (err || !user) {
       const request = this.getRequest(context);
@@ -152,7 +171,9 @@ export class GqlAuthGuard extends AuthGuard('jwt') {
         query: request?.body?.query?.substring(0, 100),
       });
 
-      throw err || new UnauthorizedException('Authentication required for GraphQL');
+      throw (
+        err || new UnauthorizedException('Authentication required for GraphQL')
+      );
     }
 
     return user;

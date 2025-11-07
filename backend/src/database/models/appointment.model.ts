@@ -11,16 +11,13 @@ import {
   Index,
   Scopes,
   BeforeCreate,
-  BeforeUpdate
-  } from 'sequelize-typescript';
+  BeforeUpdate,
+} from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 import { Op } from 'sequelize';
 import type { User } from './user.model';
 import type { Student } from './student.model';
 import type { AppointmentReminder } from './appointment-reminder.model';
-
-
-
 
 export enum AppointmentType {
   ROUTINE_CHECKUP = 'ROUTINE_CHECKUP',
@@ -29,16 +26,16 @@ export enum AppointmentType {
   ILLNESS_EVALUATION = 'ILLNESS_EVALUATION',
   FOLLOW_UP = 'FOLLOW_UP',
   SCREENING = 'SCREENING',
-  EMERGENCY = 'EMERGENCY'
-  }
+  EMERGENCY = 'EMERGENCY',
+}
 
 export enum AppointmentStatus {
   SCHEDULED = 'SCHEDULED',
   IN_PROGRESS = 'IN_PROGRESS',
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
-  NO_SHOW = 'NO_SHOW'
-  }
+  NO_SHOW = 'NO_SHOW',
+}
 
 export interface AppointmentAttributes {
   id: string;
@@ -75,59 +72,59 @@ export interface AppointmentCreationAttributes
   upcoming: {
     where: {
       scheduledAt: {
-        [Op.gte]: new Date()
+        [Op.gte]: new Date(),
       },
       status: {
-        [Op.in]: [AppointmentStatus.SCHEDULED, AppointmentStatus.IN_PROGRESS]
-      }
+        [Op.in]: [AppointmentStatus.SCHEDULED, AppointmentStatus.IN_PROGRESS],
+      },
     },
-    order: [['scheduledAt', 'ASC']]
+    order: [['scheduledAt', 'ASC']],
   },
   past: {
     where: {
       scheduledAt: {
-        [Op.lt]: new Date()
-      }
+        [Op.lt]: new Date(),
+      },
     },
-    order: [['scheduledAt', 'DESC']]
+    order: [['scheduledAt', 'DESC']],
   },
   today: {
     where: {
       scheduledAt: {
         [Op.gte]: new Date(new Date().setHours(0, 0, 0, 0)),
-        [Op.lt]: new Date(new Date().setHours(23, 59, 59, 999))
-      }
+        [Op.lt]: new Date(new Date().setHours(23, 59, 59, 999)),
+      },
     },
-    order: [['scheduledAt', 'ASC']]
+    order: [['scheduledAt', 'ASC']],
   },
   byStatus: (status: AppointmentStatus) => ({
     where: { status },
-    order: [['scheduledAt', 'DESC']]
+    order: [['scheduledAt', 'DESC']],
   }),
   byNurse: (nurseId: string) => ({
     where: { nurseId },
-    order: [['scheduledAt', 'ASC']]
+    order: [['scheduledAt', 'ASC']],
   }),
   byStudent: (studentId: string) => ({
     where: { studentId },
-    order: [['scheduledAt', 'DESC']]
+    order: [['scheduledAt', 'DESC']],
   }),
   emergency: {
     where: {
       type: AppointmentType.EMERGENCY,
       status: {
-        [Op.ne]: AppointmentStatus.CANCELLED
-      }
+        [Op.ne]: AppointmentStatus.CANCELLED,
+      },
     },
-    order: [['scheduledAt', 'DESC']]
+    order: [['scheduledAt', 'DESC']],
   },
   recurring: {
     where: {
       recurringGroupId: {
-        [Op.ne]: null
-      }
-    }
-  }
+        [Op.ne]: null,
+      },
+    },
+  },
 }))
 @Table({
   tableName: 'appointments',
@@ -138,43 +135,46 @@ export interface AppointmentCreationAttributes
     // Composite indexes for common query patterns
     {
       fields: ['studentId', 'scheduledAt'],
-      name: 'idx_appointments_student_scheduled'
+      name: 'idx_appointments_student_scheduled',
     },
     {
       fields: ['nurseId', 'scheduledAt'],
-      name: 'idx_appointments_nurse_scheduled'
+      name: 'idx_appointments_nurse_scheduled',
     },
     {
       fields: ['status', 'scheduledAt'],
-      name: 'idx_appointments_status_scheduled'
+      name: 'idx_appointments_status_scheduled',
     },
     {
       fields: ['studentId', 'status', 'scheduledAt'],
-      name: 'idx_appointments_student_status_scheduled'
+      name: 'idx_appointments_student_status_scheduled',
     },
     {
       fields: ['type', 'status', 'scheduledAt'],
-      name: 'idx_appointments_type_status_scheduled'
+      name: 'idx_appointments_type_status_scheduled',
     },
     {
       fields: ['recurringGroupId'],
-      name: 'idx_appointments_recurring_group'
+      name: 'idx_appointments_recurring_group',
     },
     {
       fields: ['nurseId', 'scheduledAt', 'status'],
-      name: 'idx_appointments_nurse_scheduled_status'
+      name: 'idx_appointments_nurse_scheduled_status',
     },
     {
       fields: ['createdAt'],
-      name: 'idx_appointments_created_at'
+      name: 'idx_appointments_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_appointments_updated_at'
-    }
-  ]
-  })
-export class Appointment extends Model<AppointmentAttributes, AppointmentCreationAttributes> {
+      name: 'idx_appointments_updated_at',
+    },
+  ],
+})
+export class Appointment extends Model<
+  AppointmentAttributes,
+  AppointmentCreationAttributes
+> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
@@ -188,10 +188,10 @@ export class Appointment extends Model<AppointmentAttributes, AppointmentCreatio
     comment: 'Foreign key to students table - appointment patient',
     references: {
       model: 'students',
-      key: 'id'
+      key: 'id',
     },
     onUpdate: 'CASCADE',
-    onDelete: 'CASCADE'
+    onDelete: 'CASCADE',
   })
   studentId: string;
 
@@ -203,26 +203,34 @@ export class Appointment extends Model<AppointmentAttributes, AppointmentCreatio
     comment: 'Foreign key to users table - assigned nurse',
     references: {
       model: 'users',
-      key: 'id'
+      key: 'id',
     },
     onUpdate: 'CASCADE',
-    onDelete: 'SET NULL'
+    onDelete: 'SET NULL',
   })
   nurseId: string;
 
-  @BelongsTo(() => require('./user.model').User, { foreignKey: 'nurseId', as: 'nurse', constraints: true })
+  @BelongsTo(() => require('./user.model').User, {
+    foreignKey: 'nurseId',
+    as: 'nurse',
+    constraints: true,
+  })
   declare nurse?: User;
 
-  @BelongsTo(() => require('./student.model').Student, { foreignKey: 'studentId', as: 'student', constraints: true })
+  @BelongsTo(() => require('./student.model').Student, {
+    foreignKey: 'studentId',
+    as: 'student',
+    constraints: true,
+  })
   declare student?: Student;
 
   @Index
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(AppointmentType)]
+      isIn: [Object.values(AppointmentType)],
     },
-    allowNull: false
+    allowNull: false,
   })
   type: AppointmentType;
 
@@ -241,7 +249,7 @@ export class Appointment extends Model<AppointmentAttributes, AppointmentCreatio
   @Index
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   scheduledAt: Date;
 
@@ -263,9 +271,9 @@ export class Appointment extends Model<AppointmentAttributes, AppointmentCreatio
     defaultValue: 30,
     validate: {
       min: 15,
-      max: 120
-  },
-    comment: 'Duration in minutes'
+      max: 120,
+    },
+    comment: 'Duration in minutes',
   })
   duration: number;
 
@@ -273,10 +281,10 @@ export class Appointment extends Model<AppointmentAttributes, AppointmentCreatio
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(AppointmentStatus)]
+      isIn: [Object.values(AppointmentStatus)],
     },
     allowNull: false,
-    defaultValue: AppointmentStatus.SCHEDULED
+    defaultValue: AppointmentStatus.SCHEDULED,
   })
   status: AppointmentStatus;
 
@@ -284,8 +292,8 @@ export class Appointment extends Model<AppointmentAttributes, AppointmentCreatio
     type: DataType.STRING(500),
     allowNull: false,
     validate: {
-      len: [3, 500]
-  }
+      len: [3, 500],
+    },
   })
   reason: string;
 
@@ -293,8 +301,8 @@ export class Appointment extends Model<AppointmentAttributes, AppointmentCreatio
     type: DataType.TEXT,
     allowNull: true,
     validate: {
-      len: [0, 5000]
-  }
+      len: [0, 5000],
+    },
   })
   notes?: string;
 
@@ -302,21 +310,21 @@ export class Appointment extends Model<AppointmentAttributes, AppointmentCreatio
   @Column({
     type: DataType.UUID,
     allowNull: true,
-    comment: 'Group ID for recurring appointments'
+    comment: 'Group ID for recurring appointments',
   })
   recurringGroupId?: string;
 
   @Column({
     type: DataType.STRING(50),
     allowNull: true,
-    comment: 'Frequency: DAILY, WEEKLY, MONTHLY, YEARLY'
+    comment: 'Frequency: DAILY, WEEKLY, MONTHLY, YEARLY',
   })
   recurringFrequency?: string;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    comment: 'End date for recurring appointments'
+    comment: 'End date for recurring appointments',
   })
   recurringEndDate?: Date;
 
@@ -325,13 +333,13 @@ export class Appointment extends Model<AppointmentAttributes, AppointmentCreatio
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   declare createdAt: Date;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   declare updatedAt: Date;
 
@@ -339,8 +347,12 @@ export class Appointment extends Model<AppointmentAttributes, AppointmentCreatio
    * Virtual attribute: Check if appointment is upcoming
    */
   get isUpcoming(): boolean {
-    return this.scheduledAt > new Date() &&
-           [AppointmentStatus.SCHEDULED, AppointmentStatus.IN_PROGRESS].includes(this.status);
+    return (
+      this.scheduledAt > new Date() &&
+      [AppointmentStatus.SCHEDULED, AppointmentStatus.IN_PROGRESS].includes(
+        this.status,
+      )
+    );
   }
 
   /**
@@ -365,8 +377,12 @@ export class Appointment extends Model<AppointmentAttributes, AppointmentCreatio
   static async auditPHIAccess(instance: Appointment) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] Appointment ${instance.id} modified for student ${instance.studentId} at ${new Date().toISOString()}`);
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}, Nurse: ${instance.nurseId}`);
+      console.log(
+        `[AUDIT] Appointment ${instance.id} modified for student ${instance.studentId} at ${new Date().toISOString()}`,
+      );
+      console.log(
+        `[AUDIT] Changed fields: ${changedFields.join(', ')}, Nurse: ${instance.nurseId}`,
+      );
       // TODO: Integrate with AuditLog service for persistent audit trail
     }
   }
@@ -374,7 +390,10 @@ export class Appointment extends Model<AppointmentAttributes, AppointmentCreatio
   @BeforeCreate
   @BeforeUpdate
   static async validateScheduledDate(instance: Appointment) {
-    if (instance.status === AppointmentStatus.SCHEDULED && instance.scheduledAt < new Date()) {
+    if (
+      instance.status === AppointmentStatus.SCHEDULED &&
+      instance.scheduledAt < new Date()
+    ) {
       throw new Error('Cannot schedule appointment in the past');
     }
   }
@@ -385,7 +404,10 @@ export class Appointment extends Model<AppointmentAttributes, AppointmentCreatio
     if (instance.recurringGroupId && !instance.recurringFrequency) {
       throw new Error('Recurring appointments must have a frequency');
     }
-    if (instance.recurringEndDate && instance.recurringEndDate < instance.scheduledAt) {
+    if (
+      instance.recurringEndDate &&
+      instance.recurringEndDate < instance.scheduledAt
+    ) {
       throw new Error('Recurring end date must be after scheduled date');
     }
   }

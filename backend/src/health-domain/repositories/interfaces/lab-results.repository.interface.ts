@@ -93,12 +93,37 @@ export interface LabResultTrend {
   averageValue: number;
 }
 
-export interface ILabResultsRepository extends IRepository<LabResultsAttributes, CreateLabResultsDTO, UpdateLabResultsDTO> {
-  findByStudent(studentId: string, options?: QueryOptions): Promise<LabResultsAttributes[]>;
-  findByTestType(testType: string, options?: QueryOptions): Promise<LabResultsAttributes[]>;
-  findByDateRange(studentId: string, startDate: Date, endDate: Date): Promise<LabResultsAttributes[]>;
-  findAbnormalResults(studentId?: string, options?: QueryOptions): Promise<LabResultsAttributes[]>;
+export interface ILabResultsRepository
+  extends IRepository<
+    LabResultsAttributes,
+    CreateLabResultsDTO,
+    UpdateLabResultsDTO
+  > {
+  findByStudent(
+    studentId: string,
+    options?: QueryOptions,
+  ): Promise<LabResultsAttributes[]>;
+  findByTestType(
+    testType: string,
+    options?: QueryOptions,
+  ): Promise<LabResultsAttributes[]>;
+  findByDateRange(
+    studentId: string,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<LabResultsAttributes[]>;
+  findAbnormalResults(
+    studentId?: string,
+    options?: QueryOptions,
+  ): Promise<LabResultsAttributes[]>;
   findPendingResults(options?: QueryOptions): Promise<LabResultsAttributes[]>;
-  getResultTrends(studentId: string, testType: string, months?: number): Promise<LabResultTrend>;
-  compareResults(studentId: string, testType: string): Promise<LabResultsAttributes[]>;
+  getResultTrends(
+    studentId: string,
+    testType: string,
+    months?: number,
+  ): Promise<LabResultTrend>;
+  compareResults(
+    studentId: string,
+    testType: string,
+  ): Promise<LabResultsAttributes[]>;
 }

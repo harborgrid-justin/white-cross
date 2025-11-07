@@ -27,7 +27,9 @@ export class VitalSignsService {
     return vitals;
   }
 
-  async findAll(filters: VitalsFiltersDto): Promise<{ vitals: VitalSigns[]; total: number }> {
+  async findAll(
+    filters: VitalsFiltersDto,
+  ): Promise<{ vitals: VitalSigns[]; total: number }> {
     const whereClause: any = {};
 
     if (filters.studentId) whereClause.studentId = filters.studentId;
@@ -36,7 +38,9 @@ export class VitalSignsService {
 
     if (filters.dateFrom || filters.dateTo) {
       if (filters.dateFrom && filters.dateTo) {
-        whereClause.measurementDate = { [Op.between]: [filters.dateFrom, filters.dateTo] };
+        whereClause.measurementDate = {
+          [Op.between]: [filters.dateFrom, filters.dateTo],
+        };
       } else if (filters.dateFrom) {
         whereClause.measurementDate = { [Op.gte]: filters.dateFrom };
       } else if (filters.dateTo) {
@@ -44,19 +48,23 @@ export class VitalSignsService {
       }
     }
 
-    const { rows: vitals, count: total } = await this.vitalsModel.findAndCountAll({
-      where: whereClause,
-      offset: filters.offset || 0,
-      limit: filters.limit || 20,
-      order: [['measurementDate', 'DESC']],
-    });
+    const { rows: vitals, count: total } =
+      await this.vitalsModel.findAndCountAll({
+        where: whereClause,
+        offset: filters.offset || 0,
+        limit: filters.limit || 20,
+        order: [['measurementDate', 'DESC']],
+      });
 
     return { vitals, total };
   }
 
   // findByVisit removed - visitId not in model
 
-  async findByStudent(studentId: string, limit: number = 10): Promise<VitalSigns[]> {
+  async findByStudent(
+    studentId: string,
+    limit: number = 10,
+  ): Promise<VitalSigns[]> {
     return this.vitalsModel.findAll({
       where: { studentId },
       order: [['measurementDate', 'DESC']],
@@ -64,7 +72,11 @@ export class VitalSignsService {
     });
   }
 
-  async getTrends(studentId: string, startDate: Date, endDate: Date): Promise<VitalSigns[]> {
+  async getTrends(
+    studentId: string,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<VitalSigns[]> {
     return this.vitalsModel.findAll({
       where: {
         studentId,
@@ -84,7 +96,8 @@ export class VitalSignsService {
 
   async remove(id: string): Promise<void> {
     const result = await this.vitalsModel.destroy({ where: { id } });
-    if (result === 0) throw new NotFoundException(`Vital signs ${id} not found`);
+    if (result === 0)
+      throw new NotFoundException(`Vital signs ${id} not found`);
     this.logger.log(`Deleted vital signs ${id}`);
   }
 }

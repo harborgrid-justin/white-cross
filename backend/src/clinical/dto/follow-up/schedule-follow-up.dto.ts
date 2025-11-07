@@ -1,4 +1,12 @@
-import { IsUUID, IsString, IsInt, IsDate, IsOptional, IsEnum, Min } from 'class-validator';
+import {
+  IsUUID,
+  IsString,
+  IsInt,
+  IsDate,
+  IsOptional,
+  IsEnum,
+  Min,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { FollowUpStatus } from '../../enums/follow-up-status.enum';
@@ -7,11 +15,16 @@ import { FollowUpStatus } from '../../enums/follow-up-status.enum';
  * DTO for scheduling a follow-up appointment
  */
 export class ScheduleFollowUpDto {
-  @ApiProperty({ description: 'Student ID', example: '123e4567-e89b-12d3-a456-426614174000' })
+  @ApiProperty({
+    description: 'Student ID',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+  })
   @IsUUID()
   studentId: string;
 
-  @ApiPropertyOptional({ description: 'Original clinic visit ID that triggered follow-up' })
+  @ApiPropertyOptional({
+    description: 'Original clinic visit ID that triggered follow-up',
+  })
   @IsUUID()
   @IsOptional()
   originalVisitId?: string;
@@ -20,18 +33,29 @@ export class ScheduleFollowUpDto {
   @IsUUID()
   scheduledBy: string;
 
-  @ApiProperty({ description: 'Scheduled date and time', example: '2025-11-15T14:00:00Z' })
+  @ApiProperty({
+    description: 'Scheduled date and time',
+    example: '2025-11-15T14:00:00Z',
+  })
   @Type(() => Date)
   @IsDate()
   scheduledDate: Date;
 
-  @ApiPropertyOptional({ description: 'Duration in minutes', example: 30, minimum: 15, default: 30 })
+  @ApiPropertyOptional({
+    description: 'Duration in minutes',
+    example: 30,
+    minimum: 15,
+    default: 30,
+  })
   @IsInt()
   @Min(15)
   @IsOptional()
   durationMinutes?: number = 30;
 
-  @ApiProperty({ description: 'Reason for follow-up', example: 'Recheck blood pressure' })
+  @ApiProperty({
+    description: 'Reason for follow-up',
+    example: 'Recheck blood pressure',
+  })
   @IsString()
   reason: string;
 
@@ -39,7 +63,11 @@ export class ScheduleFollowUpDto {
   @IsString()
   type: string;
 
-  @ApiPropertyOptional({ description: 'Initial status', enum: FollowUpStatus, default: FollowUpStatus.SCHEDULED })
+  @ApiPropertyOptional({
+    description: 'Initial status',
+    enum: FollowUpStatus,
+    default: FollowUpStatus.SCHEDULED,
+  })
   @IsEnum(FollowUpStatus)
   @IsOptional()
   status?: FollowUpStatus;

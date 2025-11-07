@@ -3,6 +3,6 @@ import { ValidationService } from './validation.service';
 
 @Module({
   providers: [ValidationService],
-  exports: [ValidationService]
+  exports: [ValidationService],
 })
 export class ValidationModule {}

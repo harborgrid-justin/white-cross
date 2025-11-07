@@ -68,11 +68,14 @@ export interface PaginationMeta {
  * });
  * ```
  */
-export function parsePagination(requestOrQuery: Request | Record<string, any>): PaginationParams {
+export function parsePagination(
+  requestOrQuery: Request | Record<string, any>,
+): PaginationParams {
   // Support both request object and query object directly
-  const query = ('query' in requestOrQuery && requestOrQuery.query)
-    ? requestOrQuery.query as Record<string, any>
-    : requestOrQuery as Record<string, any>;
+  const query =
+    'query' in requestOrQuery && requestOrQuery.query
+      ? (requestOrQuery.query as Record<string, any>)
+      : (requestOrQuery as Record<string, any>);
 
   // Parse page number
   let page = parseInt(query.page as string, 10);
@@ -97,7 +100,7 @@ export function parsePagination(requestOrQuery: Request | Record<string, any>): 
   return {
     page,
     limit,
-    offset
+    offset,
   };
 }
 
@@ -123,7 +126,7 @@ export function parsePagination(requestOrQuery: Request | Record<string, any>): 
 export function buildPaginationMeta(
   page: number,
   limit: number,
-  totalItems: number
+  totalItems: number,
 ): PaginationMeta {
   const totalPages = Math.ceil(totalItems / limit);
 
@@ -133,7 +136,7 @@ export function buildPaginationMeta(
     totalItems,
     totalPages,
     hasNextPage: page < totalPages,
-    hasPreviousPage: page > 1
+    hasPreviousPage: page > 1,
   };
 }
 
@@ -151,18 +154,18 @@ export interface FilterOperator {
  * Supported filter operators
  */
 export const FILTER_OPERATORS = {
-  eq: 'eq',           // Equal
-  ne: 'ne',           // Not equal
-  gt: 'gt',           // Greater than
-  gte: 'gte',         // Greater than or equal
-  lt: 'lt',           // Less than
-  lte: 'lte',         // Less than or equal
-  like: 'like',       // Like (case-sensitive)
-  ilike: 'iLike',     // Like (case-insensitive)
-  in: 'in',           // In array
-  notIn: 'notIn',     // Not in array
+  eq: 'eq', // Equal
+  ne: 'ne', // Not equal
+  gt: 'gt', // Greater than
+  gte: 'gte', // Greater than or equal
+  lt: 'lt', // Less than
+  lte: 'lte', // Less than or equal
+  like: 'like', // Like (case-sensitive)
+  ilike: 'iLike', // Like (case-insensitive)
+  in: 'in', // In array
+  notIn: 'notIn', // Not in array
   between: 'between', // Between two values
-  is: 'is',           // Is (for null/not null)
+  is: 'is', // Is (for null/not null)
 } as const;
 
 /**
@@ -209,12 +212,13 @@ export interface FilterFieldConfig {
 export function buildFilters(
   requestOrQuery: Request | Record<string, any>,
   allowedFieldsOrConfig: string[] | Record<string, FilterFieldConfig>,
-  defaults: Record<string, any> = {}
+  defaults: Record<string, any> = {},
 ): Record<string, any> {
   // Support both request object and query object directly
-  const query = ('query' in requestOrQuery && requestOrQuery.query)
-    ? requestOrQuery.query as Record<string, any>
-    : requestOrQuery as Record<string, any>;
+  const query =
+    'query' in requestOrQuery && requestOrQuery.query
+      ? (requestOrQuery.query as Record<string, any>)
+      : (requestOrQuery as Record<string, any>);
 
   // Extract allowed field names from either array or config object
   const allowedFields = Array.isArray(allowedFieldsOrConfig)
@@ -232,7 +236,11 @@ export function buildFilters(
     }
 
     // Handle simple equality
-    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    if (
+      typeof value === 'string' ||
+      typeof value === 'number' ||
+      typeof value === 'boolean'
+    ) {
       filters[field] = value;
       continue;
     }
@@ -272,12 +280,16 @@ export function buildFilters(
           case 'in':
             fieldFilters[Op.in] = Array.isArray(operatorValue)
               ? operatorValue
-              : typeof operatorValue === 'string' ? operatorValue.split(',') : [operatorValue];
+              : typeof operatorValue === 'string'
+                ? operatorValue.split(',')
+                : [operatorValue];
             break;
           case 'notin':
             fieldFilters[Op.notIn] = Array.isArray(operatorValue)
               ? operatorValue
-              : typeof operatorValue === 'string' ? operatorValue.split(',') : [operatorValue];
+              : typeof operatorValue === 'string'
+                ? operatorValue.split(',')
+                : [operatorValue];
             break;
           case 'between':
             if (Array.isArray(operatorValue) && operatorValue.length === 2) {
@@ -349,15 +361,20 @@ export function buildSort(
   requestOrQuery: Request | Record<string, any>,
   allowedFields: string[],
   defaultSort: string = 'createdAt',
-  defaultOrder: 'ASC' | 'DESC' = 'DESC'
+  defaultOrder: 'ASC' | 'DESC' = 'DESC',
 ): Array<[string, 'ASC' | 'DESC']> {
   // Support both request object and query object directly
-  const query = ('query' in requestOrQuery && requestOrQuery.query)
-    ? requestOrQuery.query as Record<string, any>
-    : requestOrQuery as Record<string, any>;
+  const query =
+    'query' in requestOrQuery && requestOrQuery.query
+      ? (requestOrQuery.query as Record<string, any>)
+      : (requestOrQuery as Record<string, any>);
 
   let sortField = query.sort || query.sortBy || defaultSort;
-  let sortOrder = (query.order || query.sortOrder || defaultOrder).toUpperCase();
+  let sortOrder = (
+    query.order ||
+    query.sortOrder ||
+    defaultOrder
+  ).toUpperCase();
 
   // Validate sort field
   if (!allowedFields.includes(sortField)) {

@@ -10,7 +10,14 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { DrugInteractionService } from '../services/drug-interaction.service';
 import { DrugSearchDto } from '../dto/drug/drug-search.dto';
 import { InteractionCheckDto } from '../dto/drug/interaction-check.dto';
@@ -29,7 +36,9 @@ import { ClinicalUpdateAllergyDto } from '../dto/drug/update-allergy.dto';
 @ApiBearerAuth()
 @Controller('clinical/drugs')
 export class DrugInteractionController {
-  constructor(private readonly drugInteractionService: DrugInteractionService) {}
+  constructor(
+    private readonly drugInteractionService: DrugInteractionService,
+  ) {}
 
   /**
    * Search drugs by name or brand
@@ -38,7 +47,10 @@ export class DrugInteractionController {
   @ApiOperation({ summary: 'Search drugs by name or brand' })
   @ApiResponse({ status: 200, description: 'Drugs found successfully' })
   async searchDrugs(@Body() searchDto: DrugSearchDto) {
-    return this.drugInteractionService.searchDrugs(searchDto.query, searchDto.limit);
+    return this.drugInteractionService.searchDrugs(
+      searchDto.query,
+      searchDto.limit,
+    );
   }
 
   /**
@@ -83,7 +95,10 @@ export class DrugInteractionController {
   @ApiParam({ name: 'id', description: 'Drug ID' })
   @ApiResponse({ status: 200, description: 'Drug updated successfully' })
   @ApiResponse({ status: 404, description: 'Drug not found' })
-  async updateDrug(@Param('id') id: string, @Body() updateDrugDto: UpdateDrugDto) {
+  async updateDrug(
+    @Param('id') id: string,
+    @Body() updateDrugDto: UpdateDrugDto,
+  ) {
     return this.drugInteractionService.updateDrug(id, updateDrugDto);
   }
 
@@ -92,7 +107,10 @@ export class DrugInteractionController {
    */
   @Get('class/:drugClass')
   @ApiOperation({ summary: 'Get drugs by classification' })
-  @ApiParam({ name: 'drugClass', description: 'Drug class (e.g., NSAID, antibiotic)' })
+  @ApiParam({
+    name: 'drugClass',
+    description: 'Drug class (e.g., NSAID, antibiotic)',
+  })
   @ApiResponse({ status: 200, description: 'Drugs found successfully' })
   async getDrugsByClass(@Param('drugClass') drugClass: string) {
     return this.drugInteractionService.getDrugsByClass(drugClass);
@@ -108,7 +126,10 @@ export class DrugInteractionController {
     required: false,
     description: 'Controlled substance schedule (I-V)',
   })
-  @ApiResponse({ status: 200, description: 'Controlled substances found successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Controlled substances found successfully',
+  })
   async getControlledSubstances(@Query('schedule') schedule?: string) {
     return this.drugInteractionService.getControlledSubstances(schedule);
   }
@@ -119,9 +140,13 @@ export class DrugInteractionController {
   @Post('../interactions/check')
   @ApiOperation({
     summary: 'Check drug-drug interactions and allergies',
-    description: 'Performs pairwise interaction checking and calculates overall risk level',
+    description:
+      'Performs pairwise interaction checking and calculates overall risk level',
   })
-  @ApiResponse({ status: 200, description: 'Interaction check completed successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Interaction check completed successfully',
+  })
   async checkInteractions(@Body() interactionCheckDto: InteractionCheckDto) {
     return this.drugInteractionService.checkInteractions(interactionCheckDto);
   }
@@ -149,7 +174,10 @@ export class DrugInteractionController {
     @Param('id') id: string,
     @Body() updateInteractionDto: UpdateInteractionDto,
   ) {
-    return this.drugInteractionService.updateInteraction(id, updateInteractionDto);
+    return this.drugInteractionService.updateInteraction(
+      id,
+      updateInteractionDto,
+    );
   }
 
   /**
@@ -181,7 +209,10 @@ export class DrugInteractionController {
    */
   @Get('../interactions/statistics/summary')
   @ApiOperation({ summary: 'Get drug interaction statistics' })
-  @ApiResponse({ status: 200, description: 'Statistics retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Statistics retrieved successfully',
+  })
   async getInteractionStatistics() {
     return this.drugInteractionService.getInteractionStatistics();
   }
@@ -205,7 +236,10 @@ export class DrugInteractionController {
   @ApiParam({ name: 'id', description: 'Allergy ID' })
   @ApiResponse({ status: 200, description: 'Allergy updated successfully' })
   @ApiResponse({ status: 404, description: 'Allergy not found' })
-  async updateAllergy(@Param('id') id: string, @Body() updateAllergyDto: ClinicalUpdateAllergyDto) {
+  async updateAllergy(
+    @Param('id') id: string,
+    @Body() updateAllergyDto: ClinicalUpdateAllergyDto,
+  ) {
     return this.drugInteractionService.updateAllergy(id, updateAllergyDto);
   }
 

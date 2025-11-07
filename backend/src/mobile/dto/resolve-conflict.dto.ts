@@ -8,12 +8,15 @@ import { ConflictResolution } from '../enums';
 export class ResolveConflictDto {
   @ApiProperty({
     description: 'Conflict resolution strategy',
-    enum: ConflictResolution
+    enum: ConflictResolution,
   })
   @IsEnum(ConflictResolution)
   resolution: ConflictResolution;
 
-  @ApiProperty({ description: 'Manually merged data (for MERGE strategy)', required: false })
+  @ApiProperty({
+    description: 'Manually merged data (for MERGE strategy)',
+    required: false,
+  })
   @IsObject()
   @IsOptional()
   mergedData?: any;

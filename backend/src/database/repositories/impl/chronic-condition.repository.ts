@@ -41,14 +41,14 @@ export class ChronicConditionRepository {
   async findByStudent(studentId: string): Promise<ChronicCondition[]> {
     return this.chronicConditionModel.findAll({
       where: { studentId, isActive: true },
-      order: [['diagnosedDate', 'DESC']]
+      order: [['diagnosedDate', 'DESC']],
     });
   }
 
   async findBySeverity(severity: string): Promise<ChronicCondition[]> {
     return this.chronicConditionModel.findAll({
       where: { severity, isActive: true },
-      order: [['condition', 'ASC']]
+      order: [['condition', 'ASC']],
     });
   }
 }

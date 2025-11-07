@@ -68,7 +68,8 @@ export class EmergencyContactUpdateDto {
   @IsOptional()
   @IsString()
   @Matches(/^[\d\s\-().+]+$/, {
-    message: 'Phone number must contain only digits, spaces, hyphens, parentheses, or plus sign',
+    message:
+      'Phone number must contain only digits, spaces, hyphens, parentheses, or plus sign',
   })
   phoneNumber?: string;
 

@@ -1,6 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { CreateMessageTemplateDto, UpdateMessageTemplateDto, CreateMessageDto, BroadcastMessageDto, EmergencyAlertDto } from '../dto';
-import { MessageDeliveryStatusResult, DeliverySummary, CommunicationStatistics } from '../interfaces';
+import {
+  CreateMessageTemplateDto,
+  UpdateMessageTemplateDto,
+  CreateMessageDto,
+  BroadcastMessageDto,
+  EmergencyAlertDto,
+} from '../dto';
+import {
+  MessageDeliveryStatusResult,
+  DeliverySummary,
+  CommunicationStatistics,
+} from '../interfaces';
 
 @Injectable()
 export class CommunicationService {
@@ -11,17 +21,26 @@ export class CommunicationService {
     return { id: 'template-id', ...dto, createdAt: new Date() };
   }
 
-  async sendMessage(dto: CreateMessageDto): Promise<{ message: any; deliveryStatuses: MessageDeliveryStatusResult[] }> {
+  async sendMessage(dto: CreateMessageDto): Promise<{
+    message: any;
+    deliveryStatuses: MessageDeliveryStatusResult[];
+  }> {
     this.logger.log('Sending message');
     return { message: {}, deliveryStatuses: [] };
   }
 
-  async sendBroadcastMessage(dto: BroadcastMessageDto): Promise<{ message: any; deliveryStatuses: MessageDeliveryStatusResult[] }> {
+  async sendBroadcastMessage(dto: BroadcastMessageDto): Promise<{
+    message: any;
+    deliveryStatuses: MessageDeliveryStatusResult[];
+  }> {
     this.logger.log('Sending broadcast message');
     return { message: {}, deliveryStatuses: [] };
   }
 
-  async sendEmergencyAlert(dto: EmergencyAlertDto): Promise<{ message: any; deliveryStatuses: MessageDeliveryStatusResult[] }> {
+  async sendEmergencyAlert(dto: EmergencyAlertDto): Promise<{
+    message: any;
+    deliveryStatuses: MessageDeliveryStatusResult[];
+  }> {
     this.logger.log('Sending emergency alert');
     return { message: {}, deliveryStatuses: [] };
   }

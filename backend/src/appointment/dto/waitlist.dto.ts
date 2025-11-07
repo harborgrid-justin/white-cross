@@ -48,7 +48,8 @@ export class CreateWaitlistEntryDto {
   studentId: string;
 
   @ApiPropertyOptional({
-    description: 'Preferred nurse UUID (optional - any available nurse if not specified)',
+    description:
+      'Preferred nurse UUID (optional - any available nurse if not specified)',
     example: '987fcdeb-51a2-43d1-b456-426614174001',
     format: 'uuid',
   })

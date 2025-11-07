@@ -47,7 +47,9 @@ export class SecurityCreateIncidentDto {
   @IsString()
   userId?: string;
 
-  @ApiPropertyOptional({ description: 'IP address associated with the incident' })
+  @ApiPropertyOptional({
+    description: 'IP address associated with the incident',
+  })
   @IsOptional()
   @IsString()
   ipAddress?: string;
@@ -67,7 +69,10 @@ export class SecurityCreateIncidentDto {
   @IsNotEmpty()
   detectionMethod: string;
 
-  @ApiProperty({ description: 'Indicators that triggered detection', type: [String] })
+  @ApiProperty({
+    description: 'Indicators that triggered detection',
+    type: [String],
+  })
   @IsArray()
   @IsString({ each: true })
   indicators: string[];
@@ -77,10 +82,10 @@ export class SecurityCreateIncidentDto {
   @IsString()
   impact?: string;
 
-  @ApiPropertyOptional({ 
-    description: 'Additional metadata', 
+  @ApiPropertyOptional({
+    description: 'Additional metadata',
     type: 'object',
-    additionalProperties: true
+    additionalProperties: true,
   })
   @IsOptional()
   @IsObject()

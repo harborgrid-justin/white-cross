@@ -5,6 +5,4 @@
  */
 
 // Re-export the Sequelize model
-export {
-  AnalyticsReport
-} from '../../database/models/analytics-report.model';
+export { AnalyticsReport } from '../../database/models/analytics-report.model';

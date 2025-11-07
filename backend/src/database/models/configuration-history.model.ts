@@ -17,7 +17,7 @@ import {
   AllowNull,
   Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 
@@ -53,10 +53,10 @@ export interface CreateConfigurationHistoryAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'configuration_history',
@@ -69,15 +69,18 @@ export interface CreateConfigurationHistoryAttributes {
     { fields: ['configurationId'] },
     {
       fields: ['createdAt'],
-      name: 'idx_configuration_history_created_at'
+      name: 'idx_configuration_history_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_configuration_history_updated_at'
-    }
-  ]
+      name: 'idx_configuration_history_updated_at',
+    },
+  ],
 })
-export class ConfigurationHistory extends Model<ConfigurationHistoryAttributes, CreateConfigurationHistoryAttributes> {
+export class ConfigurationHistory extends Model<
+  ConfigurationHistoryAttributes,
+  CreateConfigurationHistoryAttributes
+> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
@@ -87,7 +90,7 @@ export class ConfigurationHistory extends Model<ConfigurationHistoryAttributes, 
   @Column({
     type: DataType.STRING(100),
     allowNull: false,
-    comment: 'Configuration key that was changed'
+    comment: 'Configuration key that was changed',
   })
   @Index
   configKey: string;
@@ -96,7 +99,7 @@ export class ConfigurationHistory extends Model<ConfigurationHistoryAttributes, 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
-    comment: 'Previous value before the change'
+    comment: 'Previous value before the change',
   })
   oldValue?: string;
 
@@ -104,7 +107,7 @@ export class ConfigurationHistory extends Model<ConfigurationHistoryAttributes, 
   @Column({
     type: DataType.TEXT,
     allowNull: false,
-    comment: 'New value after the change'
+    comment: 'New value after the change',
   })
   newValue: string;
 
@@ -112,7 +115,7 @@ export class ConfigurationHistory extends Model<ConfigurationHistoryAttributes, 
   @Column({
     type: DataType.UUID,
     allowNull: false,
-    comment: 'ID of the user who made the change'
+    comment: 'ID of the user who made the change',
   })
   @Index
   changedBy: string;
@@ -122,7 +125,7 @@ export class ConfigurationHistory extends Model<ConfigurationHistoryAttributes, 
   @Column({
     type: DataType.UUID,
     allowNull: false,
-    comment: 'ID of the system configuration that was changed'
+    comment: 'ID of the system configuration that was changed',
   })
   @Index
   configurationId: string;
@@ -131,17 +134,16 @@ export class ConfigurationHistory extends Model<ConfigurationHistoryAttributes, 
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    comment: 'Timestamp when the configuration change was made'
+    comment: 'Timestamp when the configuration change was made',
   })
   declare createdAt?: Date;
 
   // Relationships
   @BelongsTo(() => require('./system-config.model').SystemConfig, {
     foreignKey: 'configurationId',
-    as: 'configuration'
+    as: 'configuration',
   })
   declare configuration?: any;
-
 
   // Hooks for HIPAA compliance
   @BeforeCreate
@@ -149,7 +151,9 @@ export class ConfigurationHistory extends Model<ConfigurationHistoryAttributes, 
   static async auditPHIAccess(instance: ConfigurationHistory) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] ConfigurationHistory ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] ConfigurationHistory ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

@@ -26,23 +26,34 @@ export interface UpdateFeatureFlagDTO {
 }
 
 @Injectable()
-export class FeatureFlagRepository extends BaseRepository<any, FeatureFlagAttributes, CreateFeatureFlagDTO> {
+export class FeatureFlagRepository extends BaseRepository<
+  any,
+  FeatureFlagAttributes,
+  CreateFeatureFlagDTO
+> {
   constructor(
-    @InjectModel(('' as any)) model: any,
+    @InjectModel('' as any) model: any,
     @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('ICacheManager') cacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'FeatureFlag');
   }
 
   protected async validateCreate(data: CreateFeatureFlagDTO): Promise<void> {}
-  protected async validateUpdate(id: string, data: UpdateFeatureFlagDTO): Promise<void> {}
+  protected async validateUpdate(
+    id: string,
+    data: UpdateFeatureFlagDTO,
+  ): Promise<void> {}
 
   protected async invalidateCaches(entity: any): Promise<void> {
     try {
       const entityData = entity.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, entityData.id));
-      await this.cacheManager.deletePattern(`white-cross:${this.entityName.toLowerCase()}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, entityData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:${this.entityName.toLowerCase()}:*`,
+      );
     } catch (error) {
       this.logger.warn(`Error invalidating ${this.entityName} caches:`, error);
     }
@@ -52,5 +63,3 @@ export class FeatureFlagRepository extends BaseRepository<any, FeatureFlagAttrib
     return sanitizeSensitiveData({ ...data });
   }
 }
-
-

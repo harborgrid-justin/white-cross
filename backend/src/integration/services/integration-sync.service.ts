@@ -1,6 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { IntegrationConfig, IntegrationStatus } from '../../database/models/integration-config.model';
+import {
+  IntegrationConfig,
+  IntegrationStatus,
+} from '../../database/models/integration-config.model';
 import { IntegrationConfigService } from './integration-config.service';
 import { IntegrationLogService } from './integration-log.service';
 
@@ -42,7 +45,10 @@ export class IntegrationSyncService {
       }
 
       // Update status to SYNCING
-      await this.configModel.update({ status: IntegrationStatus.SYNCING }, { where: { id } });
+      await this.configModel.update(
+        { status: IntegrationStatus.SYNCING },
+        { where: { id } },
+      );
 
       // Perform the sync operation
       const syncResult = await this.performSync(integration);
@@ -50,11 +56,16 @@ export class IntegrationSyncService {
       const duration = Date.now() - startTime;
 
       // Update integration with sync results
-      await this.configModel.update({
-        status: syncResult.success ? IntegrationStatus.ACTIVE : IntegrationStatus.ERROR,
-        lastSyncAt: new Date(),
-        lastSyncStatus: syncResult.success ? 'success' : 'failed',
-      }, { where: { id } });
+      await this.configModel.update(
+        {
+          status: syncResult.success
+            ? IntegrationStatus.ACTIVE
+            : IntegrationStatus.ERROR,
+          lastSyncAt: new Date(),
+          lastSyncStatus: syncResult.success ? 'success' : 'failed',
+        },
+        { where: { id } },
+      );
 
       // Log the sync
       await this.logService.create({
@@ -74,7 +85,9 @@ export class IntegrationSyncService {
         })),
       });
 
-      this.logger.log(`Sync ${syncResult.success ? 'completed' : 'failed'} for ${integration.name}`);
+      this.logger.log(
+        `Sync ${syncResult.success ? 'completed' : 'failed'} for ${integration.name}`,
+      );
 
       return {
         ...syncResult,
@@ -83,11 +96,14 @@ export class IntegrationSyncService {
     } catch (error) {
       const duration = Date.now() - startTime;
 
-      await this.configModel.update({
-        status: IntegrationStatus.ERROR,
-        lastSyncAt: new Date(),
-        lastSyncStatus: 'failed',
-      }, { where: { id } });
+      await this.configModel.update(
+        {
+          status: IntegrationStatus.ERROR,
+          lastSyncAt: new Date(),
+          lastSyncStatus: 'failed',
+        },
+        { where: { id } },
+      );
 
       this.logger.error('Error syncing integration', error);
 
@@ -113,12 +129,14 @@ export class IntegrationSyncService {
     const recordsSucceeded = recordsProcessed - recordsFailed;
 
     // Simulate some processing time
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const errors: string[] = [];
     if (recordsFailed > 0) {
       for (let i = 0; i < Math.min(recordsFailed, 3); i++) {
-        errors.push(`Record ${i + 1}: Validation error - missing required field`);
+        errors.push(
+          `Record ${i + 1}: Validation error - missing required field`,
+        );
       }
       if (recordsFailed > 3) {
         errors.push(`... and ${recordsFailed - 3} more errors`);

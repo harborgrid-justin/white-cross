@@ -20,13 +20,14 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(private readonly configService: ConfigService) {
     const clientID = configService.get<string>('GOOGLE_CLIENT_ID');
     const clientSecret = configService.get<string>('GOOGLE_CLIENT_SECRET');
-    const callbackURL = configService.get<string>('GOOGLE_CALLBACK_URL') ||
-                        'http://localhost:3001/api/auth/oauth/google/callback';
+    const callbackURL =
+      configService.get<string>('GOOGLE_CALLBACK_URL') ||
+      'http://localhost:3001/api/auth/oauth/google/callback';
 
     // If Google OAuth is not configured, log warning and use dummy values
     if (!clientID || !clientSecret) {
       console.warn(
-        'Google OAuth not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env to enable Google login.'
+        'Google OAuth not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env to enable Google login.',
       );
     }
 
@@ -61,7 +62,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         provider: 'google',
       };
 
-      this.logger.log(`Google OAuth validation successful for: ${oauthProfile.email}`);
+      this.logger.log(
+        `Google OAuth validation successful for: ${oauthProfile.email}`,
+      );
 
       done(null, oauthProfile);
     } catch (error) {

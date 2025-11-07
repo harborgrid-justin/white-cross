@@ -26,23 +26,36 @@ export interface UpdateDocumentPermissionDTO {
 }
 
 @Injectable()
-export class DocumentPermissionRepository extends BaseRepository<any, DocumentPermissionAttributes, CreateDocumentPermissionDTO> {
+export class DocumentPermissionRepository extends BaseRepository<
+  any,
+  DocumentPermissionAttributes,
+  CreateDocumentPermissionDTO
+> {
   constructor(
-    @InjectModel(('' as any)) model: any,
+    @InjectModel('' as any) model: any,
     @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('ICacheManager') cacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'DocumentPermission');
   }
 
-  protected async validateCreate(data: CreateDocumentPermissionDTO): Promise<void> {}
-  protected async validateUpdate(id: string, data: UpdateDocumentPermissionDTO): Promise<void> {}
+  protected async validateCreate(
+    data: CreateDocumentPermissionDTO,
+  ): Promise<void> {}
+  protected async validateUpdate(
+    id: string,
+    data: UpdateDocumentPermissionDTO,
+  ): Promise<void> {}
 
   protected async invalidateCaches(entity: any): Promise<void> {
     try {
       const entityData = entity.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, entityData.id));
-      await this.cacheManager.deletePattern(`white-cross:${this.entityName.toLowerCase()}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, entityData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:${this.entityName.toLowerCase()}:*`,
+      );
     } catch (error) {
       this.logger.warn(`Error invalidating ${this.entityName} caches:`, error);
     }

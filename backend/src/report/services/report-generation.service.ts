@@ -81,7 +81,9 @@ export class ReportGenerationService {
           break;
 
         default:
-          throw new BadRequestException(`Unsupported report type: ${reportType}`);
+          throw new BadRequestException(
+            `Unsupported report type: ${reportType}`,
+          );
       }
 
       const executionTime = Date.now() - startTime;
@@ -115,7 +117,9 @@ export class ReportGenerationService {
       return data.length;
     } else if (typeof data === 'object' && data !== null) {
       // Find the first array property and count its length
-      const arrayProps = Object.keys(data).filter(key => Array.isArray(data[key]));
+      const arrayProps = Object.keys(data).filter((key) =>
+        Array.isArray(data[key]),
+      );
       if (arrayProps.length > 0) {
         return data[arrayProps[0]].length;
       }

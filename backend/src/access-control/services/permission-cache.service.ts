@@ -18,8 +18,10 @@ export class PermissionCacheService {
   private readonly logger = new Logger(PermissionCacheService.name);
 
   // Cache stores with TTL
-  private userPermissionsCache: Map<string, { data: any; expiresAt: number }> = new Map();
-  private rolePermissionsCache: Map<string, { data: any; expiresAt: number }> = new Map();
+  private userPermissionsCache: Map<string, { data: any; expiresAt: number }> =
+    new Map();
+  private rolePermissionsCache: Map<string, { data: any; expiresAt: number }> =
+    new Map();
 
   // Cache statistics
   private stats = {
@@ -178,13 +180,25 @@ export class PermissionCacheService {
    * Get cache statistics
    */
   getStatistics(): any {
-    const userHitRate = this.stats.userPermissions.hits + this.stats.userPermissions.misses > 0
-      ? (this.stats.userPermissions.hits / (this.stats.userPermissions.hits + this.stats.userPermissions.misses) * 100).toFixed(2)
-      : '0.00';
+    const userHitRate =
+      this.stats.userPermissions.hits + this.stats.userPermissions.misses > 0
+        ? (
+            (this.stats.userPermissions.hits /
+              (this.stats.userPermissions.hits +
+                this.stats.userPermissions.misses)) *
+            100
+          ).toFixed(2)
+        : '0.00';
 
-    const roleHitRate = this.stats.rolePermissions.hits + this.stats.rolePermissions.misses > 0
-      ? (this.stats.rolePermissions.hits / (this.stats.rolePermissions.hits + this.stats.rolePermissions.misses) * 100).toFixed(2)
-      : '0.00';
+    const roleHitRate =
+      this.stats.rolePermissions.hits + this.stats.rolePermissions.misses > 0
+        ? (
+            (this.stats.rolePermissions.hits /
+              (this.stats.rolePermissions.hits +
+                this.stats.rolePermissions.misses)) *
+            100
+          ).toFixed(2)
+        : '0.00';
 
     return {
       userPermissions: {
@@ -197,7 +211,8 @@ export class PermissionCacheService {
         hitRate: `${roleHitRate}%`,
         size: this.rolePermissionsCache.size,
       },
-      totalSize: this.userPermissionsCache.size + this.rolePermissionsCache.size,
+      totalSize:
+        this.userPermissionsCache.size + this.rolePermissionsCache.size,
     };
   }
 
@@ -247,14 +262,19 @@ export class PermissionCacheService {
     }
 
     if (userRemoved > 0 || roleRemoved > 0) {
-      this.logger.debug(`Cache cleanup: removed ${userRemoved} user permissions, ${roleRemoved} role permissions`);
+      this.logger.debug(
+        `Cache cleanup: removed ${userRemoved} user permissions, ${roleRemoved} role permissions`,
+      );
     }
   }
 
   /**
    * Warm cache with frequently accessed data
    */
-  async warmCache(getUserPermissionsFn: (userId: string) => Promise<any>, userIds: string[]): Promise<void> {
+  async warmCache(
+    getUserPermissionsFn: (userId: string) => Promise<any>,
+    userIds: string[],
+  ): Promise<void> {
     this.logger.log(`Warming cache for ${userIds.length} users`);
 
     for (const userId of userIds) {

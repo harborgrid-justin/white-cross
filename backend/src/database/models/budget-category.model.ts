@@ -12,7 +12,7 @@ import {
   UpdatedAt,
   Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 
@@ -31,28 +31,28 @@ import { Op } from 'sequelize';
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'budget_categories',
   timestamps: true,
   underscored: false,
   createdAt: 'created_at',
-  updatedAt: 'updated_at'
-  ,
+  updatedAt: 'updated_at',
   indexes: [
     {
       fields: ['createdAt'],
-      name: 'idx_budget_category_created_at'
+      name: 'idx_budget_category_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_budget_category_updated_at'
-    }
-  ]})
+      name: 'idx_budget_category_updated_at',
+    },
+  ],
+})
 export class BudgetCategory extends Model<BudgetCategory> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -61,56 +61,59 @@ export class BudgetCategory extends Model<BudgetCategory> {
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   name: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: true
+    allowNull: true,
   })
   description: string | null;
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: false
+    allowNull: false,
   })
   fiscalYear: number;
 
   @Column({
     type: DataType.DECIMAL(10, 2),
-    allowNull: false
+    allowNull: false,
   })
   allocatedAmount: number;
 
   @Column({
     type: DataType.DECIMAL(10, 2),
     allowNull: false,
-    defaultValue: 0
+    defaultValue: 0,
   })
   spentAmount: number;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true
+    defaultValue: true,
   })
   isActive: boolean;
 
   @CreatedAt
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   declare createdAt: Date;
 
   @UpdatedAt
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   declare updatedAt: Date;
 
   // Relationships
-  @HasMany(() => require('./budget-transaction.model').BudgetTransaction, 'category_id')
+  @HasMany(
+    () => require('./budget-transaction.model').BudgetTransaction,
+    'category_id',
+  )
   declare transactions: any[];
 
   // Virtual properties for calculations
@@ -128,14 +131,15 @@ export class BudgetCategory extends Model<BudgetCategory> {
     return Number(this.spentAmount) > Number(this.allocatedAmount);
   }
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: BudgetCategory) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] BudgetCategory ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] BudgetCategory ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

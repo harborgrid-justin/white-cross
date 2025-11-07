@@ -2,11 +2,11 @@
  * @fileoverview Central Models Index for Circular Dependency Prevention
  * @module database/models/index
  * @description Provides ordered model imports to prevent circular dependencies
- * 
+ *
  * IMPORTANT: Models are exported in dependency order to prevent circular imports.
  * Base models (with no foreign keys) are exported first, followed by models
  * with foreign key dependencies in proper order.
- * 
+ *
  * Sequelize v6 Compliance:
  * - All associations use proper syntax with foreignKey and as options
  * - No deprecated API usage (findById, string-based includes, etc.)

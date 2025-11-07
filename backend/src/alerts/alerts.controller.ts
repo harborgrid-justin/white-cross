@@ -104,9 +104,7 @@ export class AlertsController {
     status: 204,
     description: 'Alert deleted successfully',
   })
-  async remove(
-    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
-  ) {
+  async remove(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     await this.alertsService.deleteAlert(id);
   }
 

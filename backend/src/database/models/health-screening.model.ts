@@ -7,7 +7,7 @@ import {
   Default,
   Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
@@ -28,10 +28,10 @@ export interface HealthScreeningAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'health_screenings',
@@ -40,25 +40,28 @@ export interface HealthScreeningAttributes {
   paranoid: true,
   indexes: [
     {
-      fields: ['studentId']
+      fields: ['studentId'],
     },
     {
-      fields: ['screeningType']
+      fields: ['screeningType'],
     },
     {
-      fields: ['screeningDate']
+      fields: ['screeningDate'],
     },
     {
       fields: ['createdAt'],
-      name: 'idx_health_screening_created_at'
+      name: 'idx_health_screening_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_health_screening_updated_at'
-    }
-  ]
+      name: 'idx_health_screening_updated_at',
+    },
+  ],
 })
-export class HealthScreening extends Model<HealthScreeningAttributes> implements HealthScreeningAttributes {
+export class HealthScreening
+  extends Model<HealthScreeningAttributes>
+  implements HealthScreeningAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -66,31 +69,31 @@ export class HealthScreening extends Model<HealthScreeningAttributes> implements
 
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   studentId: string;
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: false
+    allowNull: false,
   })
   screeningType: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   screeningDate: Date;
 
   @Column({
     type: DataType.JSON,
-    allowNull: false
+    allowNull: false,
   })
   results: any;
 
   @Column({
     type: DataType.BOOLEAN,
-    allowNull: false
+    allowNull: false,
   })
   passed: boolean;
 
@@ -99,7 +102,7 @@ export class HealthScreening extends Model<HealthScreeningAttributes> implements
 
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   conductedBy: string;
 
@@ -109,14 +112,15 @@ export class HealthScreening extends Model<HealthScreeningAttributes> implements
   @Column(DataType.DATE)
   declare updatedAt?: Date;
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: HealthScreening) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] HealthScreening ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] HealthScreening ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

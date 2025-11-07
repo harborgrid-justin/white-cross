@@ -31,14 +31,14 @@ export * from './pagination';
 export * from './payloadHelpers';
 // Note: validation utilities moved to ../security/validation.service.ts
 // DateHelpers provides more comprehensive date utilities
-export { 
-  formatDate, 
-  getDateRange, 
-  isPast, 
-  isFuture, 
-  addDays, 
-  addMonths, 
-  addYears, 
+export {
+  formatDate,
+  getDateRange,
+  isPast,
+  isFuture,
+  addDays,
+  addMonths,
+  addYears,
   parseDate,
   toISOString,
   getVaccinationPeriods,

@@ -4,7 +4,13 @@
  * Defines GraphQL object types, input types, and response types for Student entity
  * using NestJS GraphQL decorators for code-first schema generation.
  */
-import { ObjectType, Field, ID, InputType, registerEnumType } from '@nestjs/graphql';
+import {
+  ObjectType,
+  Field,
+  ID,
+  InputType,
+  registerEnumType,
+} from '@nestjs/graphql';
 import { PaginationDto } from './pagination.dto';
 import {
   IsString,
@@ -14,7 +20,7 @@ import {
   IsDateString,
   MinLength,
   MaxLength,
-  Matches
+  Matches,
 } from 'class-validator';
 
 /**
@@ -24,13 +30,13 @@ export enum Gender {
   MALE = 'MALE',
   FEMALE = 'FEMALE',
   OTHER = 'OTHER',
-  PREFER_NOT_TO_SAY = 'PREFER_NOT_TO_SAY'
+  PREFER_NOT_TO_SAY = 'PREFER_NOT_TO_SAY',
 }
 
 // Register enum with GraphQL
 registerEnumType(Gender, {
   name: 'Gender',
-  description: 'Student gender'
+  description: 'Student gender',
 });
 
 /**
@@ -141,7 +147,9 @@ export class StudentInputDto {
   @Field({ nullable: true })
   @IsOptional()
   @IsString()
-  @MaxLength(50, { message: 'Medical record number must not exceed 50 characters' })
+  @MaxLength(50, {
+    message: 'Medical record number must not exceed 50 characters',
+  })
   medicalRecordNum?: string;
 
   @Field({ nullable: true, defaultValue: true })
@@ -210,7 +218,9 @@ export class StudentUpdateInputDto {
   @Field({ nullable: true })
   @IsOptional()
   @IsString()
-  @MaxLength(50, { message: 'Medical record number must not exceed 50 characters' })
+  @MaxLength(50, {
+    message: 'Medical record number must not exceed 50 characters',
+  })
   medicalRecordNum?: string;
 
   @Field({ nullable: true })

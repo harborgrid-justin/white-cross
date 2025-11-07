@@ -131,7 +131,10 @@ export class AnalyticsController {
     @Param() params: GetStudentHealthMetricsParamDto,
     @Query() query: GetStudentHealthMetricsQueryDto,
   ) {
-    return this.analyticsService.getStudentHealthMetrics(params.studentId, query);
+    return this.analyticsService.getStudentHealthMetrics(
+      params.studentId,
+      query,
+    );
   }
 
   @Get('health-metrics/school/:schoolId')
@@ -350,7 +353,10 @@ export class AnalyticsController {
   @ApiResponse({ status: 400, description: 'Invalid report parameters' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Report generation failed' })
-  async generateCustomReport(@Body() dto: AnalyticsGenerateCustomReportDto, @Request() req: any) {
+  async generateCustomReport(
+    @Body() dto: AnalyticsGenerateCustomReportDto,
+    @Request() req: any,
+  ) {
     const userId = req.user?.id || 'system';
     return this.analyticsService.generateCustomReport(dto, userId);
   }
@@ -370,7 +376,10 @@ export class AnalyticsController {
   @ApiResponse({ status: 400, description: 'Invalid report ID' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Report not found' })
-  async getGeneratedReport(@Param() params: GetReportParamDto, @Query() query: GetReportQueryDto) {
+  async getGeneratedReport(
+    @Param() params: GetReportParamDto,
+    @Query() query: GetReportQueryDto,
+  ) {
     return this.analyticsService.getGeneratedReport(params.id, query);
   }
 }

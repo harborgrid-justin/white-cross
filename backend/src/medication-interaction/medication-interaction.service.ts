@@ -18,24 +18,25 @@ import {
 
 // Mock drug interaction database
 const KNOWN_INTERACTIONS: { [key: string]: DrugInteractionDto[] } = {
-  'warfarin': [
+  warfarin: [
     {
       severity: InteractionSeverity.MAJOR,
       medication1: 'warfarin',
       medication2: 'aspirin',
       description: 'Increased risk of bleeding',
-      recommendation: 'Monitor INR closely, consider alternative pain management'
-    }
+      recommendation:
+        'Monitor INR closely, consider alternative pain management',
+    },
   ],
-  'metformin': [
+  metformin: [
     {
       severity: InteractionSeverity.MODERATE,
       medication1: 'metformin',
       medication2: 'insulin',
       description: 'Increased risk of hypoglycemia',
-      recommendation: 'Monitor blood glucose levels frequently'
-    }
-  ]
+      recommendation: 'Monitor blood glucose levels frequently',
+    },
+  ],
 };
 
 @Injectable()
@@ -50,7 +51,9 @@ export class MedicationInteractionService {
   /**
    * Check for interactions in student's current medications
    */
-  async checkStudentMedications(studentId: string): Promise<InteractionCheckResultDto> {
+  async checkStudentMedications(
+    studentId: string,
+  ): Promise<InteractionCheckResultDto> {
     try {
       const medications = await this.studentMedicationModel.findAll({
         where: { studentId, isActive: true },
@@ -134,7 +137,9 @@ export class MedicationInteractionService {
         safetyScore,
       };
     } catch (error) {
-      this.logger.error('Error checking new medication interactions', { error });
+      this.logger.error('Error checking new medication interactions', {
+        error,
+      });
       throw error;
     }
   }

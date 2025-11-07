@@ -14,11 +14,7 @@
  */
 
 // Retry utilities
-export {
-  retry,
-  retryOnError,
-  retryOnErrorType,
-} from './retry';
+export { retry, retryOnError, retryOnErrorType } from './retry';
 
 export type { RetryOptions } from './retry';
 

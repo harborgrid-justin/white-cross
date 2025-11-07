@@ -101,18 +101,22 @@ export class LoggingInterceptor implements NestInterceptor {
           const duration = Date.now() - startTime;
 
           // Log successful response with structured format
-          this.logger.logWithMetadata('info', `${method} ${url} - ${response.statusCode}`, {
-            type: 'RESPONSE',
-            requestId,
-            method,
-            url,
-            statusCode: response.statusCode,
-            duration,
-            durationMs: `${duration}ms`,
-            userId,
-            organizationId,
-            timestamp: new Date().toISOString(),
-          });
+          this.logger.logWithMetadata(
+            'info',
+            `${method} ${url} - ${response.statusCode}`,
+            {
+              type: 'RESPONSE',
+              requestId,
+              method,
+              url,
+              statusCode: response.statusCode,
+              duration,
+              durationMs: `${duration}ms`,
+              userId,
+              organizationId,
+              timestamp: new Date().toISOString(),
+            },
+          );
 
           // Add Sentry breadcrumb for successful response
           this.sentryService.addBreadcrumb({
@@ -131,20 +135,24 @@ export class LoggingInterceptor implements NestInterceptor {
           const statusCode = error.status || 500;
 
           // Log error response with structured format
-          this.logger.logWithMetadata('error', `${method} ${url} - ${statusCode}`, {
-            type: 'ERROR',
-            requestId,
-            method,
-            url,
-            statusCode,
-            duration,
-            durationMs: `${duration}ms`,
-            userId,
-            organizationId,
-            error: error.message,
-            errorName: error.name,
-            timestamp: new Date().toISOString(),
-          });
+          this.logger.logWithMetadata(
+            'error',
+            `${method} ${url} - ${statusCode}`,
+            {
+              type: 'ERROR',
+              requestId,
+              method,
+              url,
+              statusCode,
+              duration,
+              durationMs: `${duration}ms`,
+              userId,
+              organizationId,
+              error: error.message,
+              errorName: error.name,
+              timestamp: new Date().toISOString(),
+            },
+          );
 
           // Report to Sentry for 5xx errors and critical issues
           if (statusCode >= 500) {
@@ -205,6 +213,8 @@ export class LoggingInterceptor implements NestInterceptor {
    */
   private isSensitiveField(field: string): boolean {
     const fieldLower = field.toLowerCase();
-    return this.sensitiveFields.some(sensitive => fieldLower.includes(sensitive));
+    return this.sensitiveFields.some((sensitive) =>
+      fieldLower.includes(sensitive),
+    );
   }
 }

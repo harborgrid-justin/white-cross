@@ -8,7 +8,10 @@ import {
   ChronicConditionFiltersDto,
   PaginationDto,
 } from './dto';
-import { ConditionStatus, AccommodationType } from '../database/models/chronic-condition.model';
+import {
+  ConditionStatus,
+  AccommodationType,
+} from '../database/models/chronic-condition.model';
 import {
   ChronicConditionStatistics,
   ChronicConditionSearchResult,
@@ -60,7 +63,9 @@ export class ChronicConditionService {
         isActive: true, // Default to active
       };
 
-      const savedCondition = await this.chronicConditionModel.create(conditionData as any);
+      const savedCondition = await this.chronicConditionModel.create(
+        conditionData as any,
+      );
 
       // PHI Audit Log
       this.logger.log({
@@ -312,16 +317,17 @@ export class ChronicConditionService {
     }
 
     // Get total count and results
-    const { count: total, rows: conditions } = await this.chronicConditionModel.findAndCountAll({
-      where,
-      order: [
-        ['status', 'ASC'],
-        ['nextReviewDate', 'ASC'],
-        ['diagnosedDate', 'DESC'],
-      ],
-      offset,
-      limit,
-    });
+    const { count: total, rows: conditions } =
+      await this.chronicConditionModel.findAndCountAll({
+        where,
+        order: [
+          ['status', 'ASC'],
+          ['nextReviewDate', 'ASC'],
+          ['diagnosedDate', 'DESC'],
+        ],
+        offset,
+        limit,
+      });
 
     // PHI Audit Log
     this.logger.log({
@@ -379,10 +385,7 @@ export class ChronicConditionService {
     } else if (type === AccommodationType.PLAN_504) {
       where.requires504 = true;
     } else {
-      where[Op.or] = [
-        { requiresIEP: true },
-        { requires504: true },
-      ];
+      where[Op.or] = [{ requiresIEP: true }, { requires504: true }];
     }
 
     const conditions = await this.chronicConditionModel.findAll({
@@ -472,7 +475,10 @@ export class ChronicConditionService {
   /**
    * Updates the care plan for a chronic condition and refreshes review date.
    */
-  async updateCarePlan(id: string, carePlan: string): Promise<ChronicCondition> {
+  async updateCarePlan(
+    id: string,
+    carePlan: string,
+  ): Promise<ChronicCondition> {
     return this.updateChronicCondition(id, {
       carePlan,
       lastReviewDate: new Date().toISOString(),
@@ -502,7 +508,9 @@ export class ChronicConditionService {
         isActive: true, // Default to active
       }));
 
-      const savedConditions = await this.chronicConditionModel.bulkCreate(conditions as any);
+      const savedConditions = await this.chronicConditionModel.bulkCreate(
+        conditions as any,
+      );
 
       // PHI Audit Log
       this.logger.log({

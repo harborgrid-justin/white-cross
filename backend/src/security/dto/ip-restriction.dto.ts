@@ -78,7 +78,9 @@ export class IpCheckDto {
   @IsIP()
   ipAddress: string;
 
-  @ApiPropertyOptional({ description: 'User ID for user-specific restrictions' })
+  @ApiPropertyOptional({
+    description: 'User ID for user-specific restrictions',
+  })
   @IsOptional()
   @IsString()
   userId?: string;

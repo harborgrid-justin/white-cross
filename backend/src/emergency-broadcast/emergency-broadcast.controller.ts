@@ -55,7 +55,8 @@ export class EmergencyBroadcastController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Create emergency broadcast',
-    description: 'Creates a new emergency broadcast message for immediate or scheduled delivery',
+    description:
+      'Creates a new emergency broadcast message for immediate or scheduled delivery',
   })
   @ApiBody({
     type: CreateEmergencyBroadcastDto,

@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { DataRetentionPolicy, DataRetentionPolicyAttributes } from '../../database/models/data-retention-policy.model';
+import {
+  DataRetentionPolicy,
+  DataRetentionPolicyAttributes,
+} from '../../database/models/data-retention-policy.model';
 
 @Injectable()
 export class DataRetentionRepository {
@@ -29,12 +32,16 @@ export class DataRetentionRepository {
     return this.dataRetentionModel.findByPk(id);
   }
 
-  async create(data: Omit<DataRetentionPolicyAttributes, 'id' | 'createdAt' | 'updatedAt'>) {
+  async create(
+    data: Omit<DataRetentionPolicyAttributes, 'id' | 'createdAt' | 'updatedAt'>,
+  ) {
     return this.dataRetentionModel.create(data);
   }
 
   async update(id: string, data: Partial<DataRetentionPolicyAttributes>) {
-    const [affectedCount] = await this.dataRetentionModel.update(data, { where: { id } });
+    const [affectedCount] = await this.dataRetentionModel.update(data, {
+      where: { id },
+    });
     if (affectedCount > 0) {
       return this.findById(id);
     }

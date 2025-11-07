@@ -1,4 +1,13 @@
-import { IsString, IsOptional, IsEnum, IsArray, IsBoolean, IsDateString, ValidateNested, ArrayMinSize } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsArray,
+  IsBoolean,
+  IsDateString,
+  ValidateNested,
+  ArrayMinSize,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { MessageType, MessagePriority, MessageCategory } from '../enums';
 

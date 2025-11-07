@@ -18,7 +18,7 @@ export class SequelizeUnitOfWorkService implements IUnitOfWork {
 
   constructor(
     private readonly sequelize: Sequelize,
-    @Inject('IAuditLogger') private readonly auditLogger: IAuditLogger
+    @Inject('IAuditLogger') private readonly auditLogger: IAuditLogger,
   ) {}
 
   async begin(): Promise<void> {
@@ -27,7 +27,7 @@ export class SequelizeUnitOfWorkService implements IUnitOfWork {
     }
 
     this.transaction = await this.sequelize.transaction({
-      isolationLevel: Transaction.ISOLATION_LEVELS.READ_COMMITTED
+      isolationLevel: Transaction.ISOLATION_LEVELS.READ_COMMITTED,
     });
 
     this.logger.debug('Transaction begun');
@@ -59,7 +59,7 @@ export class SequelizeUnitOfWorkService implements IUnitOfWork {
 
   async executeInTransaction<T>(
     operation: (uow: IUnitOfWork) => Promise<T>,
-    context: ExecutionContext
+    context: ExecutionContext,
   ): Promise<T> {
     const transactionId = context.transactionId || this.generateTransactionId();
     const startTime = Date.now();
@@ -69,7 +69,7 @@ export class SequelizeUnitOfWorkService implements IUnitOfWork {
     try {
       const result = await this.sequelize.transaction(
         {
-          isolationLevel: Transaction.ISOLATION_LEVELS.READ_COMMITTED
+          isolationLevel: Transaction.ISOLATION_LEVELS.READ_COMMITTED,
         },
         async (t) => {
           this.transaction = t;
@@ -78,10 +78,12 @@ export class SequelizeUnitOfWorkService implements IUnitOfWork {
 
           const operationResult = await operation(this);
 
-          this.logger.debug(`Transaction ${transactionId} operation completed successfully`);
+          this.logger.debug(
+            `Transaction ${transactionId} operation completed successfully`,
+          );
 
           return operationResult;
-        }
+        },
       );
 
       const duration = Date.now() - startTime;
@@ -89,10 +91,12 @@ export class SequelizeUnitOfWorkService implements IUnitOfWork {
       await this.auditLogger.logTransaction('TRANSACTION_COMMIT', context, {
         transactionId,
         duration,
-        success: true
+        success: true,
       });
 
-      this.logger.log(`Transaction ${transactionId} committed successfully (${duration}ms)`);
+      this.logger.log(
+        `Transaction ${transactionId} committed successfully (${duration}ms)`,
+      );
 
       return result;
     } catch (error) {
@@ -102,12 +106,12 @@ export class SequelizeUnitOfWorkService implements IUnitOfWork {
         transactionId,
         duration,
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
 
       this.logger.error(
         `Transaction ${transactionId} rolled back (${duration}ms)`,
-        error instanceof Error ? error.stack : String(error)
+        error instanceof Error ? error.stack : String(error),
       );
 
       throw error;

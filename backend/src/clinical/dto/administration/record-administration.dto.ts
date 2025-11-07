@@ -1,7 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsEnum, IsOptional, IsBoolean, IsNumber, IsObject, ValidateNested } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsOptional,
+  IsBoolean,
+  IsNumber,
+  IsObject,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
-import { AdministrationRoute, FiveRightsDataDto } from './five-rights-verification.dto';
+import {
+  AdministrationRoute,
+  FiveRightsDataDto,
+} from './five-rights-verification.dto';
 
 export enum StudentResponse {
   NORMAL = 'normal',

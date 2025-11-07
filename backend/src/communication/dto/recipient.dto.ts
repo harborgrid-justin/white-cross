@@ -1,4 +1,10 @@
-import { IsString, IsOptional, IsEnum, IsEmail, Matches } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsEmail,
+  Matches,
+} from 'class-validator';
 import { RecipientType } from '../enums';
 
 export class RecipientDto {
@@ -13,7 +19,9 @@ export class RecipientDto {
   email?: string;
 
   @IsOptional()
-  @Matches(/^\+?[1-9]\d{1,14}$/, { message: 'Phone number must be in E.164 format' })
+  @Matches(/^\+?[1-9]\d{1,14}$/, {
+    message: 'Phone number must be in E.164 format',
+  })
   phoneNumber?: string;
 
   @IsOptional()

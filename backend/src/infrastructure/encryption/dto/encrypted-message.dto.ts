@@ -102,7 +102,8 @@ export class CreateEncryptedMessageDto {
   conversationId: string;
 
   @ApiPropertyOptional({
-    description: 'Additional authenticated data (not encrypted but authenticated)',
+    description:
+      'Additional authenticated data (not encrypted but authenticated)',
     example: 'metadata-string',
   })
   @IsOptional()

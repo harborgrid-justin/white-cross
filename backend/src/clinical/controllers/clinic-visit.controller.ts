@@ -10,7 +10,14 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { ClinicVisitService } from '../services/clinic-visit.service';
 import { CheckInDto } from '../dto/visit/check-in.dto';
 import { CheckOutDto } from '../dto/visit/check-out.dto';
@@ -32,10 +39,14 @@ export class ClinicVisitController {
   @Post('check-in')
   @ApiOperation({
     summary: 'Check in student to clinic',
-    description: 'Creates a new clinic visit and validates no active visit exists',
+    description:
+      'Creates a new clinic visit and validates no active visit exists',
   })
   @ApiResponse({ status: 201, description: 'Student checked in successfully' })
-  @ApiResponse({ status: 409, description: 'Student already has an active visit' })
+  @ApiResponse({
+    status: 409,
+    description: 'Student already has an active visit',
+  })
   async checkIn(@Body() checkInDto: CheckInDto) {
     return this.clinicVisitService.checkIn(checkInDto);
   }
@@ -64,7 +75,10 @@ export class ClinicVisitController {
     summary: 'Get all active clinic visits',
     description: 'Returns visits that have not been checked out',
   })
-  @ApiResponse({ status: 200, description: 'Active visits retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Active visits retrieved successfully',
+  })
   async getActiveVisits() {
     return this.clinicVisitService.getActiveVisits();
   }
@@ -100,8 +114,15 @@ export class ClinicVisitController {
   @Get('student/:studentId')
   @ApiOperation({ summary: 'Get visit history for a student' })
   @ApiParam({ name: 'studentId', description: 'Student ID' })
-  @ApiQuery({ name: 'limit', required: false, description: 'Maximum number of results' })
-  @ApiResponse({ status: 200, description: 'Student visits retrieved successfully' })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Maximum number of results',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Student visits retrieved successfully',
+  })
   async getVisitsByStudent(
     @Param('studentId') studentId: string,
     @Query('limit') limit?: number,
@@ -117,7 +138,10 @@ export class ClinicVisitController {
   @ApiParam({ name: 'id', description: 'Visit ID' })
   @ApiResponse({ status: 200, description: 'Visit updated successfully' })
   @ApiResponse({ status: 404, description: 'Visit not found' })
-  async updateVisit(@Param('id') id: string, @Body() updates: Partial<CheckInDto & CheckOutDto>) {
+  async updateVisit(
+    @Param('id') id: string,
+    @Body() updates: Partial<CheckInDto & CheckOutDto>,
+  ) {
     return this.clinicVisitService.updateVisit(id, updates);
   }
 
@@ -142,11 +166,28 @@ export class ClinicVisitController {
     summary: 'Get visit statistics',
     description: 'Aggregated statistics for a date range',
   })
-  @ApiQuery({ name: 'startDate', required: true, description: 'Start date (ISO 8601)' })
-  @ApiQuery({ name: 'endDate', required: true, description: 'End date (ISO 8601)' })
-  @ApiResponse({ status: 200, description: 'Statistics retrieved successfully' })
-  async getStatistics(@Query('startDate') startDate: string, @Query('endDate') endDate: string) {
-    return this.clinicVisitService.getStatistics(new Date(startDate), new Date(endDate));
+  @ApiQuery({
+    name: 'startDate',
+    required: true,
+    description: 'Start date (ISO 8601)',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: true,
+    description: 'End date (ISO 8601)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Statistics retrieved successfully',
+  })
+  async getStatistics(
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+  ) {
+    return this.clinicVisitService.getStatistics(
+      new Date(startDate),
+      new Date(endDate),
+    );
   }
 
   /**
@@ -158,9 +199,20 @@ export class ClinicVisitController {
     description: 'Aggregated visit history and frequency for a student',
   })
   @ApiParam({ name: 'studentId', description: 'Student ID' })
-  @ApiQuery({ name: 'startDate', required: false, description: 'Start date (ISO 8601)' })
-  @ApiQuery({ name: 'endDate', required: false, description: 'End date (ISO 8601)' })
-  @ApiResponse({ status: 200, description: 'Student summary retrieved successfully' })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    description: 'Start date (ISO 8601)',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    description: 'End date (ISO 8601)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Student summary retrieved successfully',
+  })
   async getStudentVisitSummary(
     @Param('studentId') studentId: string,
     @Query('startDate') startDate?: string,
@@ -168,7 +220,11 @@ export class ClinicVisitController {
   ) {
     const start = startDate ? new Date(startDate) : undefined;
     const end = endDate ? new Date(endDate) : undefined;
-    return this.clinicVisitService.getStudentVisitSummary(studentId, start, end);
+    return this.clinicVisitService.getStudentVisitSummary(
+      studentId,
+      start,
+      end,
+    );
   }
 
   /**
@@ -179,10 +235,25 @@ export class ClinicVisitController {
     summary: 'Get frequent clinic visitors',
     description: 'Students with highest visit frequency in date range',
   })
-  @ApiQuery({ name: 'startDate', required: true, description: 'Start date (ISO 8601)' })
-  @ApiQuery({ name: 'endDate', required: true, description: 'End date (ISO 8601)' })
-  @ApiQuery({ name: 'limit', required: false, description: 'Maximum number of results' })
-  @ApiResponse({ status: 200, description: 'Frequent visitors retrieved successfully' })
+  @ApiQuery({
+    name: 'startDate',
+    required: true,
+    description: 'Start date (ISO 8601)',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: true,
+    description: 'End date (ISO 8601)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Maximum number of results',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Frequent visitors retrieved successfully',
+  })
   async getFrequentVisitors(
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,
@@ -203,13 +274,27 @@ export class ClinicVisitController {
     summary: 'Get visit time distribution',
     description: 'Distribution of visits by time of day',
   })
-  @ApiQuery({ name: 'startDate', required: true, description: 'Start date (ISO 8601)' })
-  @ApiQuery({ name: 'endDate', required: true, description: 'End date (ISO 8601)' })
-  @ApiResponse({ status: 200, description: 'Time distribution retrieved successfully' })
+  @ApiQuery({
+    name: 'startDate',
+    required: true,
+    description: 'Start date (ISO 8601)',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: true,
+    description: 'End date (ISO 8601)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Time distribution retrieved successfully',
+  })
   async getVisitsByTimeOfDay(
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,
   ) {
-    return this.clinicVisitService.getVisitsByTimeOfDay(new Date(startDate), new Date(endDate));
+    return this.clinicVisitService.getVisitsByTimeOfDay(
+      new Date(startDate),
+      new Date(endDate),
+    );
   }
 }

@@ -1,4 +1,12 @@
-import { IsString, IsUUID, IsInt, IsOptional, IsDate, IsEnum, Min } from 'class-validator';
+import {
+  IsString,
+  IsUUID,
+  IsInt,
+  IsOptional,
+  IsDate,
+  IsEnum,
+  Min,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PrescriptionStatus } from '../../enums/prescription-status.enum';
@@ -7,7 +15,10 @@ import { PrescriptionStatus } from '../../enums/prescription-status.enum';
  * DTO for creating a new prescription
  */
 export class CreatePrescriptionDto {
-  @ApiProperty({ description: 'Student ID', example: '123e4567-e89b-12d3-a456-426614174000' })
+  @ApiProperty({
+    description: 'Student ID',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+  })
   @IsUUID()
   studentId: string;
 
@@ -21,7 +32,10 @@ export class CreatePrescriptionDto {
   @IsOptional()
   treatmentPlanId?: string;
 
-  @ApiProperty({ description: 'Prescribing physician/provider', example: '123e4567-e89b-12d3-a456-426614174000' })
+  @ApiProperty({
+    description: 'Prescribing physician/provider',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+  })
   @IsUUID()
   prescribedBy: string;
 
@@ -29,7 +43,10 @@ export class CreatePrescriptionDto {
   @IsString()
   drugName: string;
 
-  @ApiPropertyOptional({ description: 'Drug code (NDC, etc.)', example: '00093-4155-73' })
+  @ApiPropertyOptional({
+    description: 'Drug code (NDC, etc.)',
+    example: '00093-4155-73',
+  })
   @IsString()
   @IsOptional()
   drugCode?: string;
@@ -38,7 +55,10 @@ export class CreatePrescriptionDto {
   @IsString()
   dosage: string;
 
-  @ApiProperty({ description: 'Frequency of administration', example: 'Three times daily' })
+  @ApiProperty({
+    description: 'Frequency of administration',
+    example: 'Three times daily',
+  })
   @IsString()
   frequency: string;
 
@@ -51,7 +71,12 @@ export class CreatePrescriptionDto {
   @Min(1)
   quantity: number;
 
-  @ApiPropertyOptional({ description: 'Number of refills authorized', example: 2, minimum: 0, default: 0 })
+  @ApiPropertyOptional({
+    description: 'Number of refills authorized',
+    example: 2,
+    minimum: 0,
+    default: 0,
+  })
   @IsInt()
   @Min(0)
   @IsOptional()
@@ -73,7 +98,11 @@ export class CreatePrescriptionDto {
   @IsOptional()
   instructions?: string;
 
-  @ApiPropertyOptional({ description: 'Initial status', enum: PrescriptionStatus, default: PrescriptionStatus.PENDING })
+  @ApiPropertyOptional({
+    description: 'Initial status',
+    enum: PrescriptionStatus,
+    default: PrescriptionStatus.PENDING,
+  })
   @IsEnum(PrescriptionStatus)
   @IsOptional()
   status?: PrescriptionStatus;

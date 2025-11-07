@@ -76,7 +76,7 @@ export class UUIDScalar implements CustomScalar<string, string> {
     // Validate format
     if (!this.uuidV4Regex.test(normalizedUUID)) {
       throw new Error(
-        `Invalid UUID v4 format: ${value}. Expected format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx`
+        `Invalid UUID v4 format: ${value}. Expected format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx`,
       );
     }
 

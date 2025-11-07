@@ -26,17 +26,27 @@ export class AuditQueryService {
    * @param filters - Filter criteria for audit logs
    * @returns Promise with paginated audit logs
    */
-  async getAuditLogs(filters: {
-    userId?: string;
-    entityType?: string;
-    action?: AuditAction | string;
-    startDate?: Date;
-    endDate?: Date;
-    page?: number;
-    limit?: number;
-  } = {}): Promise<IPaginatedResult<AuditLog>> {
+  async getAuditLogs(
+    filters: {
+      userId?: string;
+      entityType?: string;
+      action?: AuditAction | string;
+      startDate?: Date;
+      endDate?: Date;
+      page?: number;
+      limit?: number;
+    } = {},
+  ): Promise<IPaginatedResult<AuditLog>> {
     try {
-      const { userId, entityType, action, startDate, endDate, page = 1, limit = 50 } = filters;
+      const {
+        userId,
+        entityType,
+        action,
+        startDate,
+        endDate,
+        page = 1,
+        limit = 50,
+      } = filters;
       const skip = (page - 1) * limit;
 
       const where: any = {};
@@ -55,16 +65,17 @@ export class AuditQueryService {
 
       if (startDate || endDate) {
         where.createdAt = {
-          [Op.between]: [startDate || new Date(0), endDate || new Date()]
+          [Op.between]: [startDate || new Date(0), endDate || new Date()],
         };
       }
 
-      const { rows: data, count: total } = await this.auditLogModel.findAndCountAll({
-        where,
-        order: [['createdAt', 'DESC']],
-        offset: skip,
-        limit,
-      });
+      const { rows: data, count: total } =
+        await this.auditLogModel.findAndCountAll({
+          where,
+          order: [['createdAt', 'DESC']],
+          offset: skip,
+          limit,
+        });
 
       return {
         data,
@@ -99,15 +110,16 @@ export class AuditQueryService {
     try {
       const skip = (page - 1) * limit;
 
-      const { rows: data, count: total } = await this.auditLogModel.findAndCountAll({
-        where: {
-          entityType,
-          entityId,
-        },
-        order: [['createdAt', 'DESC']],
-        offset: skip,
-        limit,
-      });
+      const { rows: data, count: total } =
+        await this.auditLogModel.findAndCountAll({
+          where: {
+            entityType,
+            entityId,
+          },
+          order: [['createdAt', 'DESC']],
+          offset: skip,
+          limit,
+        });
 
       return {
         data,
@@ -140,12 +152,13 @@ export class AuditQueryService {
     try {
       const skip = (page - 1) * limit;
 
-      const { rows: data, count: total } = await this.auditLogModel.findAndCountAll({
-        where: { userId },
-        order: [['createdAt', 'DESC']],
-        offset: skip,
-        limit,
-      });
+      const { rows: data, count: total } =
+        await this.auditLogModel.findAndCountAll({
+          where: { userId },
+          order: [['createdAt', 'DESC']],
+          offset: skip,
+          limit,
+        });
 
       return {
         data,
@@ -182,16 +195,19 @@ export class AuditQueryService {
         [Op.or]: [
           { entityType: { [Op.iLike]: `%${keyword}%` } },
           { entityId: { [Op.iLike]: `%${keyword}%` } },
-          literal(`CAST(changes AS TEXT) ILIKE '${keyword.replace(/'/g, "''")}'`)
-        ]
+          literal(
+            `CAST(changes AS TEXT) ILIKE '${keyword.replace(/'/g, "''")}'`,
+          ),
+        ],
       };
 
-      const { rows: data, count: total } = await this.auditLogModel.findAndCountAll({
-        where: whereClause,
-        order: [['createdAt', 'DESC']],
-        offset: skip,
-        limit,
-      });
+      const { rows: data, count: total } =
+        await this.auditLogModel.findAndCountAll({
+          where: whereClause,
+          order: [['createdAt', 'DESC']],
+          offset: skip,
+          limit,
+        });
 
       return {
         data,

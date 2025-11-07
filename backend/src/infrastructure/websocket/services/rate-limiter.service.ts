@@ -146,7 +146,9 @@ export class RateLimiterService {
       return true;
     } else {
       // Rate limited
-      this.logger.warn(`Rate limit exceeded for user ${userId} on event ${eventType}`);
+      this.logger.warn(
+        `Rate limit exceeded for user ${userId} on event ${eventType}`,
+      );
       return false;
     }
   }
@@ -310,7 +312,9 @@ export class RateLimiterService {
     keysToDelete.forEach((key) => this.buckets.delete(key));
 
     if (keysToDelete.length > 0) {
-      this.logger.debug(`Cleaned up ${keysToDelete.length} stale rate limit entries`);
+      this.logger.debug(
+        `Cleaned up ${keysToDelete.length} stale rate limit entries`,
+      );
     }
   }
 

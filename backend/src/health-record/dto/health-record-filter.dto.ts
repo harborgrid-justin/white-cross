@@ -5,7 +5,14 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsDate, IsNumber, Min, Max } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsDate,
+  IsNumber,
+  Min,
+  Max,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class HealthRecordFilterDto {

@@ -1,4 +1,13 @@
-import { IsString, IsUUID, IsEnum, IsOptional, IsDateString, IsArray, IsBoolean, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsUUID,
+  IsEnum,
+  IsOptional,
+  IsDateString,
+  IsArray,
+  IsBoolean,
+  MaxLength,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { ConditionStatus } from '../../interfaces/chronic-condition.interface';

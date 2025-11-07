@@ -38,8 +38,14 @@ import { UpdateConversationDto } from '../dto/update-conversation.dto';
 import { EditMessageDto } from '../dto/edit-message.dto';
 import { MessagePaginationDto } from '../dto/message-pagination.dto';
 import { SearchMessagesDto } from '../dto/search-messages.dto';
-import { MarkAsReadDto, MarkConversationAsReadDto } from '../dto/mark-as-read.dto';
-import { AddParticipantDto, UpdateParticipantDto } from '../dto/conversation-participant.dto';
+import {
+  MarkAsReadDto,
+  MarkConversationAsReadDto,
+} from '../dto/mark-as-read.dto';
+import {
+  AddParticipantDto,
+  UpdateParticipantDto,
+} from '../dto/conversation-participant.dto';
 
 /**
  * EnhancedMessageController
@@ -70,7 +76,8 @@ export class EnhancedMessageController {
   @Post('direct')
   @ApiOperation({
     summary: 'Send a direct message',
-    description: 'Send a 1-to-1 direct message. Automatically creates a conversation if one doesn\'t exist.',
+    description:
+      "Send a 1-to-1 direct message. Automatically creates a conversation if one doesn't exist.",
   })
   @ApiBody({ type: SendDirectMessageDto })
   @ApiResponse({
@@ -110,7 +117,10 @@ export class EnhancedMessageController {
     status: 201,
     description: 'Group message sent successfully',
   })
-  @ApiResponse({ status: 403, description: 'Not a participant in the conversation' })
+  @ApiResponse({
+    status: 403,
+    description: 'Not a participant in the conversation',
+  })
   @ApiResponse({ status: 404, description: 'Conversation not found' })
   async sendGroupMessage(@Body() dto: SendGroupMessageDto, @Req() req: any) {
     const senderId = req.user?.id;
@@ -121,7 +131,8 @@ export class EnhancedMessageController {
   @Put(':id')
   @ApiOperation({
     summary: 'Edit a message',
-    description: 'Edit message content. Only the sender can edit their messages.',
+    description:
+      'Edit message content. Only the sender can edit their messages.',
   })
   @ApiParam({ name: 'id', description: 'Message ID (UUID)' })
   @ApiBody({ type: EditMessageDto })
@@ -129,7 +140,10 @@ export class EnhancedMessageController {
     status: 200,
     description: 'Message updated successfully',
   })
-  @ApiResponse({ status: 403, description: 'Not authorized to edit this message' })
+  @ApiResponse({
+    status: 403,
+    description: 'Not authorized to edit this message',
+  })
   @ApiResponse({ status: 404, description: 'Message not found' })
   async editMessage(
     @Param('id') id: string,
@@ -144,14 +158,18 @@ export class EnhancedMessageController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary: 'Delete a message',
-    description: 'Soft delete a message. Only the sender can delete their messages.',
+    description:
+      'Soft delete a message. Only the sender can delete their messages.',
   })
   @ApiParam({ name: 'id', description: 'Message ID (UUID)' })
   @ApiResponse({
     status: 204,
     description: 'Message deleted successfully',
   })
-  @ApiResponse({ status: 403, description: 'Not authorized to delete this message' })
+  @ApiResponse({
+    status: 403,
+    description: 'Not authorized to delete this message',
+  })
   @ApiResponse({ status: 404, description: 'Message not found' })
   async deleteMessage(@Param('id') id: string, @Req() req: any) {
     const userId = req.user?.id;
@@ -189,7 +207,10 @@ export class EnhancedMessageController {
     status: 200,
     description: 'Conversation marked as read',
   })
-  async markConversationAsRead(@Body() dto: MarkConversationAsReadDto, @Req() req: any) {
+  async markConversationAsRead(
+    @Body() dto: MarkConversationAsReadDto,
+    @Req() req: any,
+  ) {
     const userId = req.user?.id;
     return this.messageService.markConversationAsRead(dto, userId);
   }
@@ -227,9 +248,14 @@ export class EnhancedMessageController {
   @Get('unread/count')
   @ApiOperation({
     summary: 'Get unread message count',
-    description: 'Get total unread message count and breakdown by conversation.',
+    description:
+      'Get total unread message count and breakdown by conversation.',
   })
-  @ApiQuery({ name: 'conversationId', required: false, description: 'Filter by conversation' })
+  @ApiQuery({
+    name: 'conversationId',
+    required: false,
+    description: 'Filter by conversation',
+  })
   @ApiResponse({
     status: 200,
     description: 'Unread count retrieved successfully',
@@ -270,10 +296,15 @@ export class EnhancedMessageController {
       },
     },
   })
-  async uploadAttachments(@UploadedFiles() files: multer.File[], @Req() req: any) {
+  async uploadAttachments(
+    @UploadedFiles() files: multer.File[],
+    @Req() req: any,
+  ) {
     // TODO: Implement file upload to storage service (S3, etc.)
     // For now, return placeholder URLs
-    const urls = files.map(file => `https://storage.example.com/files/${file.originalname}`);
+    const urls = files.map(
+      (file) => `https://storage.example.com/files/${file.originalname}`,
+    );
     return { urls };
   }
 
@@ -290,10 +321,17 @@ export class EnhancedMessageController {
     description: 'Conversation created successfully',
   })
   @ApiResponse({ status: 400, description: 'Invalid conversation data' })
-  async createConversation(@Body() dto: CreateConversationDto, @Req() req: any) {
+  async createConversation(
+    @Body() dto: CreateConversationDto,
+    @Req() req: any,
+  ) {
     const creatorId = req.user?.id;
     const tenantId = req.user?.tenantId;
-    return this.conversationService.createConversation(dto, creatorId, tenantId);
+    return this.conversationService.createConversation(
+      dto,
+      creatorId,
+      tenantId,
+    );
   }
 
   @Get('conversations')
@@ -302,7 +340,11 @@ export class EnhancedMessageController {
     description: 'Get list of conversations for the current user.',
   })
   @ApiQuery({ name: 'includeArchived', required: false, type: Boolean })
-  @ApiQuery({ name: 'type', required: false, enum: ['DIRECT', 'GROUP', 'CHANNEL'] })
+  @ApiQuery({
+    name: 'type',
+    required: false,
+    enum: ['DIRECT', 'GROUP', 'CHANNEL'],
+  })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
   @ApiResponse({
@@ -336,7 +378,10 @@ export class EnhancedMessageController {
     status: 200,
     description: 'Conversation retrieved successfully',
   })
-  @ApiResponse({ status: 403, description: 'Not a participant in the conversation' })
+  @ApiResponse({
+    status: 403,
+    description: 'Not a participant in the conversation',
+  })
   @ApiResponse({ status: 404, description: 'Conversation not found' })
   async getConversation(@Param('id') id: string, @Req() req: any) {
     const userId = req.user?.id;
@@ -355,7 +400,10 @@ export class EnhancedMessageController {
     status: 200,
     description: 'Conversation updated successfully',
   })
-  @ApiResponse({ status: 403, description: 'Not authorized to update conversation' })
+  @ApiResponse({
+    status: 403,
+    description: 'Not authorized to update conversation',
+  })
   @ApiResponse({ status: 404, description: 'Conversation not found' })
   async updateConversation(
     @Param('id') id: string,
@@ -364,7 +412,12 @@ export class EnhancedMessageController {
   ) {
     const userId = req.user?.id;
     const tenantId = req.user?.tenantId;
-    return this.conversationService.updateConversation(id, dto, userId, tenantId);
+    return this.conversationService.updateConversation(
+      id,
+      dto,
+      userId,
+      tenantId,
+    );
   }
 
   @Delete('conversations/:id')
@@ -378,7 +431,10 @@ export class EnhancedMessageController {
     status: 204,
     description: 'Conversation deleted successfully',
   })
-  @ApiResponse({ status: 403, description: 'Only owner can delete conversation' })
+  @ApiResponse({
+    status: 403,
+    description: 'Only owner can delete conversation',
+  })
   @ApiResponse({ status: 404, description: 'Conversation not found' })
   async deleteConversation(@Param('id') id: string, @Req() req: any) {
     const userId = req.user?.id;
@@ -391,7 +447,8 @@ export class EnhancedMessageController {
   @Post('conversations/:id/participants')
   @ApiOperation({
     summary: 'Add participant to conversation',
-    description: 'Add a new participant to the conversation. Requires OWNER or ADMIN role.',
+    description:
+      'Add a new participant to the conversation. Requires OWNER or ADMIN role.',
   })
   @ApiParam({ name: 'id', description: 'Conversation ID (UUID)' })
   @ApiBody({ type: AddParticipantDto })
@@ -399,7 +456,10 @@ export class EnhancedMessageController {
     status: 201,
     description: 'Participant added successfully',
   })
-  @ApiResponse({ status: 403, description: 'Not authorized to add participants' })
+  @ApiResponse({
+    status: 403,
+    description: 'Not authorized to add participants',
+  })
   @ApiResponse({ status: 404, description: 'Conversation not found' })
   async addParticipant(
     @Param('id') id: string,
@@ -408,14 +468,20 @@ export class EnhancedMessageController {
   ) {
     const requesterId = req.user?.id;
     const tenantId = req.user?.tenantId;
-    return this.conversationService.addParticipant(id, dto, requesterId, tenantId);
+    return this.conversationService.addParticipant(
+      id,
+      dto,
+      requesterId,
+      tenantId,
+    );
   }
 
   @Delete('conversations/:id/participants/:userId')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary: 'Remove participant from conversation',
-    description: 'Remove a participant. OWNER/ADMIN can remove others, users can remove themselves.',
+    description:
+      'Remove a participant. OWNER/ADMIN can remove others, users can remove themselves.',
   })
   @ApiParam({ name: 'id', description: 'Conversation ID (UUID)' })
   @ApiParam({ name: 'userId', description: 'User ID to remove (UUID)' })
@@ -423,8 +489,14 @@ export class EnhancedMessageController {
     status: 204,
     description: 'Participant removed successfully',
   })
-  @ApiResponse({ status: 403, description: 'Not authorized to remove participant' })
-  @ApiResponse({ status: 404, description: 'Conversation or participant not found' })
+  @ApiResponse({
+    status: 403,
+    description: 'Not authorized to remove participant',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Conversation or participant not found',
+  })
   async removeParticipant(
     @Param('id') id: string,
     @Param('userId') userId: string,
@@ -432,7 +504,12 @@ export class EnhancedMessageController {
   ) {
     const requesterId = req.user?.id;
     const tenantId = req.user?.tenantId;
-    await this.conversationService.removeParticipant(id, userId, requesterId, tenantId);
+    await this.conversationService.removeParticipant(
+      id,
+      userId,
+      requesterId,
+      tenantId,
+    );
   }
 
   @Get('conversations/:id/participants')
@@ -445,7 +522,10 @@ export class EnhancedMessageController {
     status: 200,
     description: 'Participants retrieved successfully',
   })
-  @ApiResponse({ status: 403, description: 'Not a participant in the conversation' })
+  @ApiResponse({
+    status: 403,
+    description: 'Not a participant in the conversation',
+  })
   async getParticipants(@Param('id') id: string, @Req() req: any) {
     const userId = req.user?.id;
     return this.conversationService.getParticipants(id, userId);
@@ -454,7 +534,8 @@ export class EnhancedMessageController {
   @Put('conversations/:id/settings')
   @ApiOperation({
     summary: 'Update participant settings',
-    description: 'Update settings for current user in the conversation (mute, pin, etc.).',
+    description:
+      'Update settings for current user in the conversation (mute, pin, etc.).',
   })
   @ApiParam({ name: 'id', description: 'Conversation ID (UUID)' })
   @ApiBody({ type: UpdateParticipantDto })
@@ -476,7 +557,8 @@ export class EnhancedMessageController {
   @Get('queue/metrics')
   @ApiOperation({
     summary: 'Get queue metrics',
-    description: 'Retrieve metrics for all message queues (waiting, active, completed, failed).',
+    description:
+      'Retrieve metrics for all message queues (waiting, active, completed, failed).',
   })
   @ApiResponse({
     status: 200,
@@ -541,7 +623,8 @@ export class EnhancedMessageController {
   @Get('queue/:queueName/failed')
   @ApiOperation({
     summary: 'Get failed jobs',
-    description: 'Retrieve list of failed jobs from a specific queue for debugging.',
+    description:
+      'Retrieve list of failed jobs from a specific queue for debugging.',
   })
   @ApiParam({ name: 'queueName', description: 'Queue name' })
   @ApiQuery({

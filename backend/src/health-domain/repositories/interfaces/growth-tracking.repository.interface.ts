@@ -92,12 +92,35 @@ export interface GrowthTrend {
   };
 }
 
-export interface IGrowthTrackingRepository extends IRepository<GrowthTrackingAttributes, CreateGrowthTrackingDTO, UpdateGrowthTrackingDTO> {
-  findByStudent(studentId: string, options?: QueryOptions): Promise<GrowthTrackingAttributes[]>;
-  findLatestByStudent(studentId: string): Promise<GrowthTrackingAttributes | null>;
-  findByDateRange(studentId: string, startDate: Date, endDate: Date): Promise<GrowthTrackingAttributes[]>;
-  calculateBMI(height: number, heightUnit: string, weight: number, weightUnit: string): number;
+export interface IGrowthTrackingRepository
+  extends IRepository<
+    GrowthTrackingAttributes,
+    CreateGrowthTrackingDTO,
+    UpdateGrowthTrackingDTO
+  > {
+  findByStudent(
+    studentId: string,
+    options?: QueryOptions,
+  ): Promise<GrowthTrackingAttributes[]>;
+  findLatestByStudent(
+    studentId: string,
+  ): Promise<GrowthTrackingAttributes | null>;
+  findByDateRange(
+    studentId: string,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<GrowthTrackingAttributes[]>;
+  calculateBMI(
+    height: number,
+    heightUnit: string,
+    weight: number,
+    weightUnit: string,
+  ): number;
   getGrowthPercentiles(studentId: string): Promise<GrowthPercentiles>;
   getGrowthTrend(studentId: string, months?: number): Promise<GrowthTrend>;
-  findByAgeRange(minAge: number, maxAge: number, options?: QueryOptions): Promise<GrowthTrackingAttributes[]>;
+  findByAgeRange(
+    minAge: number,
+    maxAge: number,
+    options?: QueryOptions,
+  ): Promise<GrowthTrackingAttributes[]>;
 }

@@ -30,13 +30,13 @@ export enum HealthRecordType {
   VACCINATION = 'VACCINATION',
   MEDICATION = 'MEDICATION',
   ALLERGY = 'ALLERGY',
-  OTHER = 'OTHER'
+  OTHER = 'OTHER',
 }
 
 /**
  * Health Record Operation Types
  */
-export type HealthRecordOperation = 
+export type HealthRecordOperation =
   | 'READ_HEALTH_RECORD'
   | 'CREATE_HEALTH_RECORD'
   | 'UPDATE_HEALTH_RECORD'
@@ -69,7 +69,7 @@ export type ComplianceLevel = 'PUBLIC' | 'INTERNAL' | 'PHI' | 'SENSITIVE_PHI';
 /**
  * PHI Data Types
  */
-export type PHIDataType = 
+export type PHIDataType =
   | 'HEALTH_RECORDS'
   | 'ALLERGIES'
   | 'VACCINATIONS'
@@ -87,23 +87,23 @@ export type SecuritySeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
  * Rate limiting configuration for health records
  */
 export interface HealthRecordRateLimitConfig {
-  phiReadLimit: number;          // PHI read operations per window
-  phiWriteLimit: number;         // PHI write operations per window
-  exportLimit: number;           // Export operations per window
-  searchLimit: number;           // Search operations per window
-  windowMs: number;              // Time window in milliseconds
-  blockDuration: number;         // Block duration after limit exceeded
+  phiReadLimit: number; // PHI read operations per window
+  phiWriteLimit: number; // PHI write operations per window
+  exportLimit: number; // Export operations per window
+  searchLimit: number; // Search operations per window
+  windowMs: number; // Time window in milliseconds
+  blockDuration: number; // Block duration after limit exceeded
 }
 
 /**
  * Cache configuration for health records
  */
 export interface HealthRecordCacheConfig {
-  phiTTL: number;               // TTL for PHI data (seconds)
-  aggregateTTL: number;         // TTL for aggregate data (seconds)
-  maxEntries: number;           // Maximum cache entries
-  encryptKeys: boolean;         // Whether to encrypt cache keys
-  complianceMode: boolean;      // HIPAA compliance mode
+  phiTTL: number; // TTL for PHI data (seconds)
+  aggregateTTL: number; // TTL for aggregate data (seconds)
+  maxEntries: number; // Maximum cache entries
+  encryptKeys: boolean; // Whether to encrypt cache keys
+  complianceMode: boolean; // HIPAA compliance mode
 }
 
 /**

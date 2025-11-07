@@ -6,6 +6,4 @@
  */
 
 // Re-export the Sequelize model
-export {
-  District
-} from '../../database/models/district.model';
+export { District } from '../../database/models/district.model';

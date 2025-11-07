@@ -10,7 +10,7 @@ import {
   BeforeCreate,
   BeforeUpdate,
   UpdatedAt,
-  CreatedAt
+  CreatedAt,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
@@ -22,13 +22,13 @@ export enum DataRetentionCategory {
   AUDIT_LOGS = 'AUDIT_LOGS',
   CONSENT_FORMS = 'CONSENT_FORMS',
   INCIDENT_REPORTS = 'INCIDENT_REPORTS',
-  TRAINING_RECORDS = 'TRAINING_RECORDS'
+  TRAINING_RECORDS = 'TRAINING_RECORDS',
 }
 
 export enum RetentionStatus {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',
-  UNDER_REVIEW = 'UNDER_REVIEW'
+  UNDER_REVIEW = 'UNDER_REVIEW',
 }
 
 export interface DataRetentionPolicyAttributes {
@@ -48,10 +48,10 @@ export interface DataRetentionPolicyAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'data_retention_policies',
@@ -59,28 +59,31 @@ export interface DataRetentionPolicyAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['category']
-  },
+      fields: ['category'],
+    },
     {
-      fields: ['status']
-  },
+      fields: ['status'],
+    },
     {
-      fields: ['autoDelete']
-  },
+      fields: ['autoDelete'],
+    },
     {
-      fields: ['lastReviewedAt']
-  },
+      fields: ['lastReviewedAt'],
+    },
     {
       fields: ['createdAt'],
-      name: 'idx_data_retention_policy_created_at'
+      name: 'idx_data_retention_policy_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_data_retention_policy_updated_at'
-    }
-  ]
-  })
-export class DataRetentionPolicy extends Model<DataRetentionPolicyAttributes> implements DataRetentionPolicyAttributes {
+      name: 'idx_data_retention_policy_updated_at',
+    },
+  ],
+})
+export class DataRetentionPolicy
+  extends Model<DataRetentionPolicyAttributes>
+  implements DataRetentionPolicyAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -89,44 +92,44 @@ export class DataRetentionPolicy extends Model<DataRetentionPolicyAttributes> im
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(DataRetentionCategory)]
+      isIn: [Object.values(DataRetentionCategory)],
     },
-    allowNull: false
+    allowNull: false,
   })
   category: DataRetentionCategory;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false
+    allowNull: false,
   })
   description: string;
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: false
+    allowNull: false,
   })
   retentionPeriodDays: number;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false
+    allowNull: false,
   })
   legalBasis: string;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(RetentionStatus)]
+      isIn: [Object.values(RetentionStatus)],
     },
     allowNull: false,
-    defaultValue: RetentionStatus.ACTIVE
+    defaultValue: RetentionStatus.ACTIVE,
   })
   status: RetentionStatus;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false
+    defaultValue: false,
   })
   autoDelete: boolean;
 
@@ -144,14 +147,15 @@ export class DataRetentionPolicy extends Model<DataRetentionPolicyAttributes> im
   @Column(DataType.DATE)
   declare updatedAt?: Date;
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: DataRetentionPolicy) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] DataRetentionPolicy ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] DataRetentionPolicy ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

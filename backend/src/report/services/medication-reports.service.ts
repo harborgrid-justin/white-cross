@@ -51,13 +51,25 @@ export class MedicationReportsService {
             model: this.studentMedicationModel,
             as: 'studentMedication',
             include: [
-              { model: this.studentMedicationModel.associations.medication?.target, as: 'medication' },
-              { model: this.studentMedicationModel.associations.student?.target, as: 'student' },
+              {
+                model:
+                  this.studentMedicationModel.associations.medication?.target,
+                as: 'medication',
+              },
+              {
+                model: this.studentMedicationModel.associations.student?.target,
+                as: 'student',
+              },
             ],
           },
-          { model: this.medicationLogModel.associations.nurse?.target, as: 'nurse' },
+          {
+            model: this.medicationLogModel.associations.nurse?.target,
+            as: 'nurse',
+          },
         ],
-        where: medicationId ? { ...whereClause, '$studentMedication.medicationId$': medicationId } : whereClause,
+        where: medicationId
+          ? { ...whereClause, '$studentMedication.medicationId$': medicationId }
+          : whereClause,
         order: [['administeredAt', 'DESC']],
         limit: 100,
       });
@@ -88,7 +100,14 @@ export class MedicationReportsService {
         ORDER BY count DESC
         LIMIT 10`,
         {
-          bind: startDate && endDate ? [startDate, endDate] : startDate ? [startDate] : endDate ? [endDate] : [],
+          bind:
+            startDate && endDate
+              ? [startDate, endDate]
+              : startDate
+                ? [startDate]
+                : endDate
+                  ? [endDate]
+                  : [],
           type: QueryTypes.SELECT,
         },
       );
@@ -111,11 +130,21 @@ export class MedicationReportsService {
             model: this.studentMedicationModel,
             as: 'studentMedication',
             include: [
-              { model: this.studentMedicationModel.associations.medication?.target, as: 'medication' },
-              { model: this.studentMedicationModel.associations.student?.target, as: 'student' },
+              {
+                model:
+                  this.studentMedicationModel.associations.medication?.target,
+                as: 'medication',
+              },
+              {
+                model: this.studentMedicationModel.associations.student?.target,
+                as: 'student',
+              },
             ],
           },
-          { model: this.medicationLogModel.associations.nurse?.target, as: 'nurse' },
+          {
+            model: this.medicationLogModel.associations.nurse?.target,
+            as: 'nurse',
+          },
         ],
         order: [['administeredAt', 'DESC']],
       });

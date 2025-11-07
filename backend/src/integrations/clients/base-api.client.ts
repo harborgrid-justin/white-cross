@@ -251,8 +251,7 @@ export abstract class BaseApiClient {
     // Check if limit exceeded
     if (this.requestTimestamps.length >= this.rateLimitConfig.maxRequests) {
       const oldestTimestamp = this.requestTimestamps[0];
-      const waitTime =
-        oldestTimestamp + this.rateLimitConfig.windowMs - now;
+      const waitTime = oldestTimestamp + this.rateLimitConfig.windowMs - now;
 
       throw new Error(
         `Rate limit exceeded for ${this.name} API. ` +
@@ -333,7 +332,8 @@ export abstract class BaseApiClient {
                 (error.response.status >= 500 && error.response.status < 600);
 
               if (shouldRetry) {
-                const delayMs = this.config.retryDelay! * Math.pow(2, retryCount - 1);
+                const delayMs =
+                  this.config.retryDelay! * Math.pow(2, retryCount - 1);
                 this.logger.warn(
                   `${this.name} API retry attempt ${retryCount} after ${delayMs}ms. Error: ${error.message}`,
                   BaseApiClient.name,

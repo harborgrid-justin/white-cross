@@ -51,10 +51,10 @@ export class IntegrationEncryptionService {
   /**
    * Encrypt sensitive data before storage
    */
-  encryptSensitiveData(data: {
+  encryptSensitiveData(data: { apiKey?: string; password?: string }): {
     apiKey?: string;
     password?: string;
-  }): { apiKey?: string; password?: string } {
+  } {
     return {
       apiKey: data.apiKey ? this.encryptCredential(data.apiKey) : undefined,
       password: data.password

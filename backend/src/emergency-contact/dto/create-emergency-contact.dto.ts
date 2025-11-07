@@ -19,7 +19,11 @@ import {
   ValidateIf,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ContactPriority, PreferredContactMethod, NotificationChannel } from '../../contact/enums';
+import {
+  ContactPriority,
+  PreferredContactMethod,
+  NotificationChannel,
+} from '../../contact/enums';
 
 export class EmergencyContactCreateDto {
   @ApiProperty({
@@ -70,7 +74,8 @@ export class EmergencyContactCreateDto {
   @IsString()
   @MaxLength(20, { message: 'Phone number cannot exceed 20 characters' })
   @Matches(/^[\d\s\-().+]+$/, {
-    message: 'Phone number must contain only digits, spaces, hyphens, parentheses, or plus sign',
+    message:
+      'Phone number must contain only digits, spaces, hyphens, parentheses, or plus sign',
   })
   phoneNumber: string;
 

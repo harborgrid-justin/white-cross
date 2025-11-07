@@ -9,11 +9,10 @@ import {
   BelongsTo,
   BeforeCreate,
   Scopes,
-  BeforeUpdate
+  BeforeUpdate,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
-
 
 export interface PurchaseOrderItemAttributes {
   id: string;
@@ -27,10 +26,10 @@ export interface PurchaseOrderItemAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'purchase_order_items',
@@ -38,22 +37,25 @@ export interface PurchaseOrderItemAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['purchaseOrderId']
+      fields: ['purchaseOrderId'],
     },
     {
-      fields: ['inventoryItemId']
+      fields: ['inventoryItemId'],
     },
     {
       fields: ['createdAt'],
-      name: 'idx_purchase_order_item_created_at'
+      name: 'idx_purchase_order_item_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_purchase_order_item_updated_at'
-    }
-  ]
+      name: 'idx_purchase_order_item_updated_at',
+    },
+  ],
 })
-export class PurchaseOrderItem extends Model<PurchaseOrderItemAttributes> implements PurchaseOrderItemAttributes {
+export class PurchaseOrderItem
+  extends Model<PurchaseOrderItemAttributes>
+  implements PurchaseOrderItemAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -62,32 +64,32 @@ export class PurchaseOrderItem extends Model<PurchaseOrderItemAttributes> implem
   @ForeignKey(() => require('./purchase-order.model').PurchaseOrder)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   purchaseOrderId: string;
 
   @ForeignKey(() => require('./inventory-item.model').InventoryItem)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   inventoryItemId: string;
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: false
+    allowNull: false,
   })
   quantity: number;
 
   @Column({
     type: DataType.DECIMAL(10, 2),
-    allowNull: false
+    allowNull: false,
   })
   unitCost: number;
 
   @Column({
     type: DataType.DECIMAL(12, 2),
-    allowNull: false
+    allowNull: false,
   })
   totalCost: number;
 
@@ -101,14 +103,15 @@ export class PurchaseOrderItem extends Model<PurchaseOrderItemAttributes> implem
   @BelongsTo(() => require('./inventory-item.model').InventoryItem)
   declare inventoryItem?: any;
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: PurchaseOrderItem) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] PurchaseOrderItem ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] PurchaseOrderItem ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

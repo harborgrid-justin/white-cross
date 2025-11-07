@@ -160,7 +160,9 @@ export class IntegrationValidationService {
     if ('retryAttempts' in settings && settings.retryAttempts !== undefined) {
       const retryAttempts = Number(settings.retryAttempts);
       if (isNaN(retryAttempts) || retryAttempts < 0 || retryAttempts > 10) {
-        throw new BadRequestException('Retry attempts must be between 0 and 10');
+        throw new BadRequestException(
+          'Retry attempts must be between 0 and 10',
+        );
       }
     }
 
@@ -198,7 +200,10 @@ export class IntegrationValidationService {
       }
     }
 
-    if ('rateLimitPerSecond' in settings && settings.rateLimitPerSecond !== undefined) {
+    if (
+      'rateLimitPerSecond' in settings &&
+      settings.rateLimitPerSecond !== undefined
+    ) {
       const rateLimit = Number(settings.rateLimitPerSecond);
       if (isNaN(rateLimit) || rateLimit < 1 || rateLimit > 1000) {
         throw new BadRequestException(

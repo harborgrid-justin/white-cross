@@ -51,13 +51,15 @@ export interface UpdateMedicationLogDTO {
 }
 
 @Injectable()
-export class MedicationLogRepository
-  extends BaseRepository<MedicationLog, MedicationLogAttributes, CreateMedicationLogDTO>
-{
+export class MedicationLogRepository extends BaseRepository<
+  MedicationLog,
+  MedicationLogAttributes,
+  CreateMedicationLogDTO
+> {
   constructor(
     @InjectModel(MedicationLog) model: typeof MedicationLog,
     @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('ICacheManager') cacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'MedicationLog');
   }
@@ -67,7 +69,7 @@ export class MedicationLogRepository
    */
   async findByStudent(
     studentId: string,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): Promise<MedicationLogAttributes[]> {
     try {
       const logs = await this.model.findAll({
@@ -82,7 +84,7 @@ export class MedicationLogRepository
         'Failed to find medication logs by student',
         'FIND_BY_STUDENT_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
@@ -92,7 +94,7 @@ export class MedicationLogRepository
    */
   async findPending(
     studentId?: string,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): Promise<MedicationLogAttributes[]> {
     try {
       const where: any = { status: 'PENDING' };
@@ -112,7 +114,7 @@ export class MedicationLogRepository
         'Failed to find pending medication logs',
         'FIND_PENDING_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
@@ -124,7 +126,7 @@ export class MedicationLogRepository
     startDate: Date,
     endDate: Date,
     studentId?: string,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): Promise<MedicationLogAttributes[]> {
     try {
       const where: any = {
@@ -148,7 +150,7 @@ export class MedicationLogRepository
         'Failed to find medication logs by date range',
         'FIND_BY_DATE_RANGE_ERROR',
         500,
-        { startDate, endDate, studentId, error: (error as Error).message }
+        { startDate, endDate, studentId, error: (error as Error).message },
       );
     }
   }
@@ -160,7 +162,7 @@ export class MedicationLogRepository
     studentId: string,
     medicationId?: string,
     startDate?: Date,
-    endDate?: Date
+    endDate?: Date,
   ): Promise<{
     totalScheduled: number;
     totalAdministered: number;
@@ -180,7 +182,7 @@ export class MedicationLogRepository
       const logs = await this.model.findAll({ where });
       const totalScheduled = logs.length;
       const totalAdministered = logs.filter(
-        (log: any) => log.status === 'ADMINISTERED'
+        (log: any) => log.status === 'ADMINISTERED',
       ).length;
 
       return {
@@ -197,7 +199,7 @@ export class MedicationLogRepository
         'Failed to calculate adherence rate',
         'CALCULATE_ADHERENCE_ERROR',
         500,
-        { studentId, medicationId, error: (error as Error).message }
+        { studentId, medicationId, error: (error as Error).message },
       );
     }
   }
@@ -208,7 +210,7 @@ export class MedicationLogRepository
 
   protected async validateUpdate(
     id: string,
-    data: UpdateMedicationLogDTO
+    data: UpdateMedicationLogDTO,
   ): Promise<void> {
     // Validation logic
   }
@@ -217,10 +219,10 @@ export class MedicationLogRepository
     try {
       const logData = log.get();
       await this.cacheManager.delete(
-        this.cacheKeyBuilder.entity(this.entityName, logData.id)
+        this.cacheKeyBuilder.entity(this.entityName, logData.id),
       );
       await this.cacheManager.deletePattern(
-        `white-cross:medication-log:student:${logData.studentId}:*`
+        `white-cross:medication-log:student:${logData.studentId}:*`,
       );
     } catch (error) {
       this.logger.warn('Error invalidating medication log caches:', error);

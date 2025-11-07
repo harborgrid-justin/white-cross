@@ -29,7 +29,12 @@ import {
  */
 export interface JobChainStep {
   /** Job type identifier */
-  type: 'delivery' | 'notification' | 'encryption' | 'indexing' | 'confirmation';
+  type:
+    | 'delivery'
+    | 'notification'
+    | 'encryption'
+    | 'indexing'
+    | 'confirmation';
 
   /** Job data */
   data: any;
@@ -113,8 +118,12 @@ export class QueueIntegrationHelper {
    * @param context - Message context
    * @returns Job chain result with all job IDs
    */
-  async queueMessageWorkflow(context: MessageQueueContext): Promise<JobChainResult> {
-    this.logger.log(`Queueing message workflow for message ${context.messageId}`);
+  async queueMessageWorkflow(
+    context: MessageQueueContext,
+  ): Promise<JobChainResult> {
+    this.logger.log(
+      `Queueing message workflow for message ${context.messageId}`,
+    );
 
     const result: JobChainResult = {
       success: true,
@@ -133,7 +142,10 @@ export class QueueIntegrationHelper {
           result.jobs.encryption = encryptionJob;
           result.jobIds.encryption = encryptionJob.id as string;
         } catch (error) {
-          this.logger.error(`Encryption queuing failed: ${error.message}`, error.stack);
+          this.logger.error(
+            `Encryption queuing failed: ${error.message}`,
+            error.stack,
+          );
           errors.push({ step: 'encryption', error: error as Error });
           result.success = false;
           // Encryption failure is critical - abort workflow
@@ -148,7 +160,10 @@ export class QueueIntegrationHelper {
         result.jobs.delivery = deliveryJob;
         result.jobIds.delivery = deliveryJob.id as string;
       } catch (error) {
-        this.logger.error(`Delivery queuing failed: ${error.message}`, error.stack);
+        this.logger.error(
+          `Delivery queuing failed: ${error.message}`,
+          error.stack,
+        );
         errors.push({ step: 'delivery', error: error as Error });
         result.success = false;
         // Delivery failure is critical - abort workflow
@@ -162,7 +177,9 @@ export class QueueIntegrationHelper {
         result.jobs.notification = notificationJob;
         result.jobIds.notification = notificationJob.id as string;
       } catch (error) {
-        this.logger.warn(`Notification queuing failed (non-critical): ${error.message}`);
+        this.logger.warn(
+          `Notification queuing failed (non-critical): ${error.message}`,
+        );
         errors.push({ step: 'notification', error: error as Error });
         // Notification failure is non-critical
       }
@@ -173,7 +190,9 @@ export class QueueIntegrationHelper {
         result.jobs.indexing = indexingJob;
         result.jobIds.indexing = indexingJob.id as string;
       } catch (error) {
-        this.logger.warn(`Indexing queuing failed (non-critical): ${error.message}`);
+        this.logger.warn(
+          `Indexing queuing failed (non-critical): ${error.message}`,
+        );
         errors.push({ step: 'indexing', error: error as Error });
         // Indexing failure is non-critical
       }
@@ -184,13 +203,16 @@ export class QueueIntegrationHelper {
 
       this.logger.log(
         `Message workflow queued successfully. ` +
-        `Jobs created: ${Object.keys(result.jobIds).length}, ` +
-        `Errors: ${errors.length}`,
+          `Jobs created: ${Object.keys(result.jobIds).length}, ` +
+          `Errors: ${errors.length}`,
       );
 
       return result;
     } catch (error) {
-      this.logger.error(`Unexpected error in message workflow: ${error.message}`, error.stack);
+      this.logger.error(
+        `Unexpected error in message workflow: ${error.message}`,
+        error.stack,
+      );
       result.success = false;
       result.errors = [{ step: 'workflow', error: error as Error }];
       return result;
@@ -203,7 +225,9 @@ export class QueueIntegrationHelper {
    * @param context - Message context
    * @returns Delivery job
    */
-  async queueDelivery(context: MessageQueueContext): Promise<Job<SendMessageJobDto>> {
+  async queueDelivery(
+    context: MessageQueueContext,
+  ): Promise<Job<SendMessageJobDto>> {
     const priority = this.mapPriorityToJobPriority(context.priority);
 
     const jobData: SendMessageJobDto = {
@@ -231,7 +255,9 @@ export class QueueIntegrationHelper {
    * @param context - Message context
    * @returns Notification job
    */
-  async queueNotification(context: MessageQueueContext): Promise<Job<NotificationJobDto>> {
+  async queueNotification(
+    context: MessageQueueContext,
+  ): Promise<Job<NotificationJobDto>> {
     const priority = this.mapPriorityToNotificationPriority(context.priority);
     const jobPriority = this.mapPriorityToJobPriority(context.priority);
 
@@ -262,7 +288,9 @@ export class QueueIntegrationHelper {
    * @param context - Message context
    * @returns Encryption job
    */
-  async queueEncryption(context: MessageQueueContext): Promise<Job<EncryptionJobDto>> {
+  async queueEncryption(
+    context: MessageQueueContext,
+  ): Promise<Job<EncryptionJobDto>> {
     const priority = JobPriority.HIGH; // Encryption is high priority
 
     const jobData: EncryptionJobDto = {
@@ -286,7 +314,9 @@ export class QueueIntegrationHelper {
    * @param context - Message context
    * @returns Indexing job
    */
-  async queueIndexing(context: MessageQueueContext): Promise<Job<IndexingJobDto>> {
+  async queueIndexing(
+    context: MessageQueueContext,
+  ): Promise<Job<IndexingJobDto>> {
     const jobData: IndexingJobDto = {
       messageId: context.messageId,
       operation: 'index',
@@ -323,7 +353,8 @@ export class QueueIntegrationHelper {
       messageId,
       recipientId,
       status: status as any,
-      deliveredAt: status === 'DELIVERED' || status === 'READ' ? new Date() : undefined,
+      deliveredAt:
+        status === 'DELIVERED' || status === 'READ' ? new Date() : undefined,
       readAt: status === 'READ' ? new Date() : undefined,
       failureReason,
       createdAt: new Date(),
@@ -341,7 +372,10 @@ export class QueueIntegrationHelper {
    * @param jobId - Job ID
    * @returns Job status information
    */
-  async getJobStatus(queueName: any, jobId: string): Promise<{
+  async getJobStatus(
+    queueName: any,
+    jobId: string,
+  ): Promise<{
     id: string;
     state: string;
     progress: number;
@@ -355,10 +389,15 @@ export class QueueIntegrationHelper {
     try {
       // This would need to be implemented in MessageQueueService
       // For now, return a placeholder
-      this.logger.debug(`Getting status for job ${jobId} in queue ${queueName}`);
+      this.logger.debug(
+        `Getting status for job ${jobId} in queue ${queueName}`,
+      );
       return null;
     } catch (error) {
-      this.logger.error(`Error getting job status: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error getting job status: ${error.message}`,
+        error.stack,
+      );
       return null;
     }
   }
@@ -388,8 +427,8 @@ export class QueueIntegrationHelper {
       error?: string;
     }> = [];
 
-    let completed = 0;
-    let failed = 0;
+    const completed = 0;
+    const failed = 0;
     let pending = 0;
 
     for (const jobId of jobIds) {

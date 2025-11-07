@@ -10,7 +10,7 @@ import {
   CreateStudentDTO as CreateStudentData,
   UpdateStudentDTO as UpdateStudentData,
   StudentFilters,
-  GradeStatistics
+  GradeStatistics,
 } from '../database/repositories/interfaces/student.repository.interface';
 
 /**
@@ -46,7 +46,11 @@ export interface IStudentService {
    * @param filters - Optional filters
    * @returns Promise resolving to student list result
    */
-  getStudents(page?: number, limit?: number, filters?: StudentFilters): Promise<StudentListResult>;
+  getStudents(
+    page?: number,
+    limit?: number,
+    filters?: StudentFilters,
+  ): Promise<StudentListResult>;
 
   /**
    * Get a single student by ID
@@ -146,7 +150,11 @@ export interface IStudentService {
  * Segregated interface for basic CRUD operations (ISP compliance)
  */
 export interface IStudentCrudService {
-  getStudents(page?: number, limit?: number, filters?: StudentFilters): Promise<StudentListResult>;
+  getStudents(
+    page?: number,
+    limit?: number,
+    filters?: StudentFilters,
+  ): Promise<StudentListResult>;
   getStudentById(id: string): Promise<Student | null>;
   getStudentByNumber(studentNumber: string): Promise<Student | null>;
   createStudent(data: CreateStudentData): Promise<Student>;

@@ -26,7 +26,12 @@ import { Server, Socket } from 'socket.io';
 import { WsJwtAuthGuard } from '../guards/ws-jwt-auth.guard';
 import { WsExceptionFilter } from '../filters/ws-exception.filter';
 import { WsLoggingInterceptor } from '../interceptors/ws-logging.interceptor';
-import { AdminMetricsService, SystemMetrics, AdminActivity, SystemAlert } from '../services/admin-metrics.service';
+import {
+  AdminMetricsService,
+  SystemMetrics,
+  AdminActivity,
+  SystemAlert,
+} from '../services/admin-metrics.service';
 import type { AuthenticatedSocket } from '../interfaces/authenticated-socket.interface';
 
 /**
@@ -51,12 +56,31 @@ interface AdminServerToClientEvents {
     alerts: SystemAlert[];
   }) => void;
   'admin:alert:new': (alert: SystemAlert) => void;
-  'admin:alert:acknowledged': (data: { alertId: string; userId: string; timestamp: string }) => void;
+  'admin:alert:acknowledged': (data: {
+    alertId: string;
+    userId: string;
+    timestamp: string;
+  }) => void;
   'admin:activity:new': (activity: AdminActivity) => void;
-  'admin:client:connected': (data: { clientId: string; userName: string; timestamp: string }) => void;
-  'admin:client:disconnected': (data: { clientId: string; userName: string; timestamp: string }) => void;
-  'admin:system:status': (data: { status: 'healthy' | 'degraded' | 'critical'; timestamp: string }) => void;
-  'admin:tools:result': (data: { toolId: string; result: any; timestamp: string }) => void;
+  'admin:client:connected': (data: {
+    clientId: string;
+    userName: string;
+    timestamp: string;
+  }) => void;
+  'admin:client:disconnected': (data: {
+    clientId: string;
+    userName: string;
+    timestamp: string;
+  }) => void;
+  'admin:system:status': (data: {
+    status: 'healthy' | 'degraded' | 'critical';
+    timestamp: string;
+  }) => void;
+  'admin:tools:result': (data: {
+    toolId: string;
+    result: any;
+    timestamp: string;
+  }) => void;
 }
 
 interface AdminClientToServerEvents {
@@ -90,26 +114,24 @@ export class AdminWebSocketGateway
 
   private readonly logger = new Logger(AdminWebSocketGateway.name);
   private readonly connectedClients = new Map<string, AdminClient>();
-  
+
   // Available subscription channels
   private readonly availableChannels = new Set([
     'metrics',
-    'alerts', 
+    'alerts',
     'activity',
     'system-status',
     'tools-results',
   ]);
 
-  constructor(
-    private readonly adminMetricsService: AdminMetricsService,
-  ) {}
+  constructor(private readonly adminMetricsService: AdminMetricsService) {}
 
   /**
    * Gateway initialization
    */
   afterInit(server: Server): void {
     this.logger.log('Admin WebSocket Gateway initialized');
-    
+
     // Set up admin-specific rooms
     this.setupAdminRooms();
   }
@@ -121,14 +143,20 @@ export class AdminWebSocketGateway
     try {
       const user = client.user;
       if (!user) {
-        this.logger.warn(`Admin WebSocket connection rejected: No user context`);
+        this.logger.warn(
+          `Admin WebSocket connection rejected: No user context`,
+        );
         client.disconnect();
         return;
       }
 
       // Check if user has admin privileges
-      if (!['admin', 'system_administrator', 'super_admin'].includes(user.role)) {
-        this.logger.warn(`Admin WebSocket connection rejected: Insufficient privileges for user ${user.userId}`);
+      if (
+        !['admin', 'system_administrator', 'super_admin'].includes(user.role)
+      ) {
+        this.logger.warn(
+          `Admin WebSocket connection rejected: Insufficient privileges for user ${user.userId}`,
+        );
         client.disconnect();
         return;
       }
@@ -151,7 +179,9 @@ export class AdminWebSocketGateway
       await client.join('admin:activity');
       await client.join('admin:system-status');
 
-      this.logger.log(`Admin client connected: ${adminClient.userName} (${user.userId}) - Role: ${user.role}`);
+      this.logger.log(
+        `Admin client connected: ${adminClient.userName} (${user.userId}) - Role: ${user.role}`,
+      );
 
       // Send current system status
       const currentMetrics = await this.adminMetricsService.getCurrentMetrics();
@@ -192,7 +222,6 @@ export class AdminWebSocketGateway
           namespace: '/admin',
         },
       });
-
     } catch (error) {
       this.logger.error(`Admin connection error for ${client.id}:`, error);
       client.disconnect();
@@ -204,9 +233,11 @@ export class AdminWebSocketGateway
    */
   handleDisconnect(client: AuthenticatedSocket): void {
     const adminClient = this.connectedClients.get(client.id);
-    
+
     if (adminClient) {
-      this.logger.log(`Admin client disconnected: ${adminClient.userName} (${adminClient.userId})`);
+      this.logger.log(
+        `Admin client disconnected: ${adminClient.userName} (${adminClient.userId})`,
+      );
 
       // Broadcast disconnection to other admins
       this.server.to('admin:activity').emit('admin:client:disconnected', {
@@ -239,7 +270,7 @@ export class AdminWebSocketGateway
    */
   @SubscribeMessage('admin:ping')
   handlePing(@ConnectedSocket() client: AuthenticatedSocket): void {
-    client.emit('admin:pong', { 
+    client.emit('admin:pong', {
       timestamp: new Date().toISOString(),
       serverTime: Date.now(),
     });
@@ -258,14 +289,18 @@ export class AdminWebSocketGateway
     if (!adminClient) return;
 
     if (!this.availableChannels.has(channel)) {
-      this.logger.warn(`Invalid subscription channel: ${channel} requested by ${adminClient.userName}`);
+      this.logger.warn(
+        `Invalid subscription channel: ${channel} requested by ${adminClient.userName}`,
+      );
       return;
     }
 
     adminClient.subscriptions.add(channel);
     await client.join(`admin:${channel}`);
 
-    this.logger.debug(`Admin client ${adminClient.userName} subscribed to ${channel}`);
+    this.logger.debug(
+      `Admin client ${adminClient.userName} subscribed to ${channel}`,
+    );
 
     // Send initial data for the subscribed channel
     await this.sendChannelData(client, channel);
@@ -286,7 +321,9 @@ export class AdminWebSocketGateway
     adminClient.subscriptions.delete(channel);
     await client.leave(`admin:${channel}`);
 
-    this.logger.debug(`Admin client ${adminClient.userName} unsubscribed from ${channel}`);
+    this.logger.debug(
+      `Admin client ${adminClient.userName} unsubscribed from ${channel}`,
+    );
   }
 
   /**
@@ -294,7 +331,9 @@ export class AdminWebSocketGateway
    */
   @UseGuards(WsJwtAuthGuard)
   @SubscribeMessage('admin:metrics:request')
-  async handleMetricsRequest(@ConnectedSocket() client: AuthenticatedSocket): Promise<void> {
+  async handleMetricsRequest(
+    @ConnectedSocket() client: AuthenticatedSocket,
+  ): Promise<void> {
     const currentMetrics = await this.adminMetricsService.getCurrentMetrics();
     const activeAlerts = this.adminMetricsService.getActiveAlerts();
     const metricsHistory = this.adminMetricsService.getMetricsHistory(20);
@@ -326,7 +365,10 @@ export class AdminWebSocketGateway
     const adminClient = this.connectedClients.get(client.id);
     if (!adminClient) return;
 
-    await this.adminMetricsService.acknowledgeAlert(alertId, adminClient.userId);
+    await this.adminMetricsService.acknowledgeAlert(
+      alertId,
+      adminClient.userId,
+    );
 
     // Log the acknowledgment
     await this.adminMetricsService.logAdminActivity({
@@ -354,7 +396,9 @@ export class AdminWebSocketGateway
     if (!adminClient) return;
 
     try {
-      this.logger.log(`Admin tool execution: ${data.toolId} by ${adminClient.userName}`);
+      this.logger.log(
+        `Admin tool execution: ${data.toolId} by ${adminClient.userName}`,
+      );
 
       // Execute the admin tool (placeholder - implement actual tools)
       const result = await this.executeAdminTool(data.toolId, data.params);
@@ -377,10 +421,9 @@ export class AdminWebSocketGateway
         severity: 'warning', // Tool executions are significant
         details: { toolId: data.toolId, params: data.params },
       });
-
     } catch (error) {
       this.logger.error(`Admin tool execution failed: ${data.toolId}`, error);
-      
+
       client.emit('admin:tools:result', {
         toolId: data.toolId,
         result: { success: false, error: error.message },
@@ -418,7 +461,10 @@ export class AdminWebSocketGateway
   /**
    * Send initial data for a subscribed channel
    */
-  private async sendChannelData(client: AuthenticatedSocket, channel: string): Promise<void> {
+  private async sendChannelData(
+    client: AuthenticatedSocket,
+    channel: string,
+  ): Promise<void> {
     switch (channel) {
       case 'metrics':
         const metrics = await this.adminMetricsService.getCurrentMetrics();
@@ -433,7 +479,7 @@ export class AdminWebSocketGateway
 
       case 'alerts':
         const alerts = this.adminMetricsService.getActiveAlerts();
-        alerts.forEach(alert => {
+        alerts.forEach((alert) => {
           client.emit('admin:alert:new', alert);
         });
         break;
@@ -454,7 +500,7 @@ export class AdminWebSocketGateway
   private calculateTrend(): any {
     return {
       cpu: 'stable',
-      memory: 'stable', 
+      memory: 'stable',
       disk: 'stable',
     };
   }
@@ -465,12 +511,24 @@ export class AdminWebSocketGateway
   private async executeAdminTool(toolId: string, params?: any): Promise<any> {
     // Placeholder implementation - add actual admin tools
     const tools: Record<string, () => Promise<any>> = {
-      'cache-clear': async () => ({ success: true, message: 'Cache cleared successfully' }),
-      'database-backup': async () => ({ success: true, message: 'Database backup initiated' }),
-      'log-cleanup': async () => ({ success: true, message: 'Log cleanup completed' }),
-      'system-restart': async () => ({ success: true, message: 'System restart scheduled' }),
-      'health-check': async () => ({ 
-        success: true, 
+      'cache-clear': async () => ({
+        success: true,
+        message: 'Cache cleared successfully',
+      }),
+      'database-backup': async () => ({
+        success: true,
+        message: 'Database backup initiated',
+      }),
+      'log-cleanup': async () => ({
+        success: true,
+        message: 'Log cleanup completed',
+      }),
+      'system-restart': async () => ({
+        success: true,
+        message: 'System restart scheduled',
+      }),
+      'health-check': async () => ({
+        success: true,
         message: 'Health check completed',
         results: await this.adminMetricsService.getCurrentMetrics(),
       }),

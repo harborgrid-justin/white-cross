@@ -248,7 +248,10 @@ export class SecurityIncidentService {
 
         if (filters.startDate && filters.endDate) {
           where.detectedAt = {
-            [Op.between]: [new Date(filters.startDate), new Date(filters.endDate)],
+            [Op.between]: [
+              new Date(filters.startDate),
+              new Date(filters.endDate),
+            ],
           };
         }
       }
@@ -293,10 +296,7 @@ export class SecurityIncidentService {
 
       Object.assign(incident, dto);
 
-      if (
-        dto.status === IncidentStatus.RESOLVED &&
-        !incident.resolvedAt
-      ) {
+      if (dto.status === IncidentStatus.RESOLVED && !incident.resolvedAt) {
         incident.resolvedAt = new Date();
       }
 
@@ -346,7 +346,8 @@ export class SecurityIncidentService {
 
       incidents.forEach((incident) => {
         byType[incident.type] = (byType[incident.type] || 0) + 1;
-        bySeverity[incident.severity] = (bySeverity[incident.severity] || 0) + 1;
+        bySeverity[incident.severity] =
+          (bySeverity[incident.severity] || 0) + 1;
         byStatus[incident.status] = (byStatus[incident.status] || 0) + 1;
       });
 

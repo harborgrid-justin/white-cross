@@ -62,24 +62,33 @@ export class PHIAccessService {
    * @param filters - Filter criteria for PHI access logs
    * @returns Promise with paginated PHI access logs
    */
-  async getPHIAccessLogs(filters: {
-    userId?: string;
-    studentId?: string;
-    accessType?: string;
-    dataCategory?: string;
-    startDate?: Date;
-    endDate?: Date;
-    page?: number;
-    limit?: number;
-  } = {}): Promise<IPaginatedResult<AuditLog>> {
+  async getPHIAccessLogs(
+    filters: {
+      userId?: string;
+      studentId?: string;
+      accessType?: string;
+      dataCategory?: string;
+      startDate?: Date;
+      endDate?: Date;
+      page?: number;
+      limit?: number;
+    } = {},
+  ): Promise<IPaginatedResult<AuditLog>> {
     try {
-      const { userId, studentId, accessType, dataCategory, startDate, endDate, page = 1, limit = 50 } = filters;
+      const {
+        userId,
+        studentId,
+        accessType,
+        dataCategory,
+        startDate,
+        endDate,
+        page = 1,
+        limit = 50,
+      } = filters;
       const skip = (page - 1) * limit;
 
       const whereClause: any = {
-        [Op.and]: [
-          literal(`changes->>'isPHIAccess' = 'true'`)
-        ]
+        [Op.and]: [literal(`changes->>'isPHIAccess' = 'true'`)],
       };
 
       if (userId) {
@@ -87,15 +96,21 @@ export class PHIAccessService {
       }
 
       if (studentId) {
-        whereClause[Op.and].push(literal(`changes->>'studentId' = '${studentId}'`));
+        whereClause[Op.and].push(
+          literal(`changes->>'studentId' = '${studentId}'`),
+        );
       }
 
       if (accessType) {
-        whereClause[Op.and].push(literal(`changes->>'accessType' = '${accessType}'`));
+        whereClause[Op.and].push(
+          literal(`changes->>'accessType' = '${accessType}'`),
+        );
       }
 
       if (dataCategory) {
-        whereClause[Op.and].push(literal(`changes->>'dataCategory' = '${dataCategory}'`));
+        whereClause[Op.and].push(
+          literal(`changes->>'dataCategory' = '${dataCategory}'`),
+        );
       }
 
       if (startDate) {
@@ -106,12 +121,13 @@ export class PHIAccessService {
         whereClause.createdAt = { ...whereClause.createdAt, [Op.lte]: endDate };
       }
 
-      const { rows: data, count: total } = await this.auditLogModel.findAndCountAll({
-        where: whereClause,
-        order: [['createdAt', 'DESC']],
-        offset: skip,
-        limit,
-      });
+      const { rows: data, count: total } =
+        await this.auditLogModel.findAndCountAll({
+          where: whereClause,
+          order: [['createdAt', 'DESC']],
+          offset: skip,
+          limit,
+        });
 
       return {
         data,

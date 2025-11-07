@@ -14,7 +14,12 @@
  * @security Token revocation, session management
  */
 
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import Redis from 'ioredis';
@@ -39,7 +44,10 @@ export class TokenBlacklistService implements OnModuleInit, OnModuleDestroy {
    */
   private async initializeRedis(): Promise<void> {
     try {
-      const redisHost = this.configService.get<string>('REDIS_HOST', 'localhost');
+      const redisHost = this.configService.get<string>(
+        'REDIS_HOST',
+        'localhost',
+      );
       const redisPort = this.configService.get<number>('REDIS_PORT', 6379);
       const redisPassword = this.configService.get<string>('REDIS_PASSWORD');
 
@@ -70,11 +78,14 @@ export class TokenBlacklistService implements OnModuleInit, OnModuleDestroy {
       await this.redisClient.ping();
       this.logger.log('Token Blacklist Service initialized with Redis');
     } catch (error) {
-      this.logger.error('Failed to initialize Redis for token blacklist:', error);
+      this.logger.error(
+        'Failed to initialize Redis for token blacklist:',
+        error,
+      );
       // Fallback to in-memory storage (NOT recommended for production)
       this.logger.warn(
         'SECURITY WARNING: Token blacklist will use in-memory storage. ' +
-        'This is NOT suitable for production with multiple instances.'
+          'This is NOT suitable for production with multiple instances.',
       );
     }
   }
@@ -89,7 +100,7 @@ export class TokenBlacklistService implements OnModuleInit, OnModuleDestroy {
   async blacklistToken(token: string, userId?: string): Promise<void> {
     try {
       // Decode token to get expiration
-      const decoded = this.jwtService.decode(token) as any;
+      const decoded = this.jwtService.decode(token);
 
       if (!decoded || !decoded.exp) {
         this.logger.warn('Cannot blacklist token without expiration');
@@ -117,10 +128,12 @@ export class TokenBlacklistService implements OnModuleInit, OnModuleDestroy {
             userId: userId || decoded.sub,
             blacklistedAt: new Date().toISOString(),
             expiresAt: new Date(decoded.exp * 1000).toISOString(),
-          })
+          }),
         );
 
-        this.logger.log(`Token blacklisted for user ${userId || decoded.sub}, expires in ${ttl}s`);
+        this.logger.log(
+          `Token blacklisted for user ${userId || decoded.sub}, expires in ${ttl}s`,
+        );
       } else {
         this.logger.warn('Redis not available, token not blacklisted');
       }
@@ -175,11 +188,7 @@ export class TokenBlacklistService implements OnModuleInit, OnModuleDestroy {
       const timestamp = Date.now();
 
       // Store for 7 days (longer than refresh token lifetime)
-      await this.redisClient.setex(
-        key,
-        7 * 24 * 60 * 60,
-        timestamp.toString()
-      );
+      await this.redisClient.setex(key, 7 * 24 * 60 * 60, timestamp.toString());
 
       this.logger.log(`All tokens blacklisted for user ${userId}`);
     } catch (error) {
@@ -195,7 +204,10 @@ export class TokenBlacklistService implements OnModuleInit, OnModuleDestroy {
    * @param tokenIssuedAt - Token issued at timestamp (iat claim)
    * @returns Promise<boolean>
    */
-  async areUserTokensBlacklisted(userId: string, tokenIssuedAt: number): Promise<boolean> {
+  async areUserTokensBlacklisted(
+    userId: string,
+    tokenIssuedAt: number,
+  ): Promise<boolean> {
     try {
       if (!this.redisClient) {
         return false;

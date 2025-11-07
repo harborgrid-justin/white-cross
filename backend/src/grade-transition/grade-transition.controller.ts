@@ -113,7 +113,10 @@ export class GradeTransitionController {
       type: 'object',
       properties: {
         success: { type: 'boolean', example: true },
-        message: { type: 'string', example: 'Student grade transitioned successfully' },
+        message: {
+          type: 'string',
+          example: 'Student grade transitioned successfully',
+        },
       },
     },
   })

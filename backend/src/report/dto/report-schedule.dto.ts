@@ -8,7 +8,11 @@ import {
   ValidateIf,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ReportType, OutputFormat, ScheduleFrequency } from '../constants/report.constants';
+import {
+  ReportType,
+  OutputFormat,
+  ScheduleFrequency,
+} from '../constants/report.constants';
 
 /**
  * DTO for creating/updating report schedules

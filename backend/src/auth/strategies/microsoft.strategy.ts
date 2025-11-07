@@ -20,13 +20,14 @@ export class MicrosoftStrategy extends PassportStrategy(Strategy, 'microsoft') {
   constructor(private readonly configService: ConfigService) {
     const clientID = configService.get<string>('MICROSOFT_CLIENT_ID');
     const clientSecret = configService.get<string>('MICROSOFT_CLIENT_SECRET');
-    const callbackURL = configService.get<string>('MICROSOFT_CALLBACK_URL') ||
-                        'http://localhost:3001/api/auth/oauth/microsoft/callback';
+    const callbackURL =
+      configService.get<string>('MICROSOFT_CALLBACK_URL') ||
+      'http://localhost:3001/api/auth/oauth/microsoft/callback';
 
     // If Microsoft OAuth is not configured, log warning and use dummy values
     if (!clientID || !clientSecret) {
       console.warn(
-        'Microsoft OAuth not configured. Set MICROSOFT_CLIENT_ID and MICROSOFT_CLIENT_SECRET in .env to enable Microsoft login.'
+        'Microsoft OAuth not configured. Set MICROSOFT_CLIENT_ID and MICROSOFT_CLIENT_SECRET in .env to enable Microsoft login.',
       );
     }
 
@@ -62,7 +63,9 @@ export class MicrosoftStrategy extends PassportStrategy(Strategy, 'microsoft') {
         provider: 'microsoft',
       };
 
-      this.logger.log(`Microsoft OAuth validation successful for: ${oauthProfile.email}`);
+      this.logger.log(
+        `Microsoft OAuth validation successful for: ${oauthProfile.email}`,
+      );
 
       done(null, oauthProfile);
     } catch (error) {

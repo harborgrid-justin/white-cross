@@ -1,7 +1,7 @@
 /**
  * @fileoverview Business Logic Exception
  * @module common/exceptions/exceptions/business
- * @description Custom exception for business rule violations
+ * @description Custom exception for business rule violations with retry semantics
  */
 
 import { HttpException, HttpStatus } from '@nestjs/common';
@@ -26,12 +26,15 @@ export class BusinessException extends HttpException {
   public readonly errorCode: ErrorCode;
   public readonly rule?: string;
   public readonly context?: Record<string, any>;
+  public readonly isRetryable: boolean;
+  public readonly timestamp: Date;
 
   constructor(
     message: string,
     errorCode: ErrorCode = ErrorCodes.OPERATION_NOT_ALLOWED,
     context?: Record<string, any>,
     rule?: string,
+    isRetryable: boolean = false,
   ) {
     const response = {
       success: false,
@@ -47,37 +50,43 @@ export class BusinessException extends HttpException {
     this.errorCode = errorCode;
     this.rule = rule;
     this.context = context;
+    this.isRetryable = isRetryable;
+    this.timestamp = new Date();
     this.name = 'BusinessException';
   }
 
   /**
    * Create exception for resource not found
    */
-  static notFound(resource: string, identifier?: string | number): BusinessException {
+  static notFound(
+    resource: string,
+    identifier?: string | number,
+  ): BusinessException {
     const message = identifier
       ? `${resource} with identifier '${identifier}' not found`
       : `${resource} not found`;
 
-    return new BusinessException(
-      message,
-      ErrorCodes.RESOURCE_NOT_FOUND,
-      { resource, identifier },
-    );
+    return new BusinessException(message, ErrorCodes.RESOURCE_NOT_FOUND, {
+      resource,
+      identifier,
+    });
   }
 
   /**
    * Create exception for resource already exists
    */
-  static alreadyExists(resource: string, identifier?: string | number): BusinessException {
+  static alreadyExists(
+    resource: string,
+    identifier?: string | number,
+  ): BusinessException {
     const message = identifier
       ? `${resource} with identifier '${identifier}' already exists`
       : `${resource} already exists`;
 
-    return new BusinessException(
-      message,
-      ErrorCodes.RESOURCE_ALREADY_EXISTS,
-      { resource, identifier },
-    );
+    return new BusinessException(message, ErrorCodes.RESOURCE_ALREADY_EXISTS, {
+      resource,
+      identifier,
+    });
   }
 
   /**
@@ -107,11 +116,11 @@ export class BusinessException extends HttpException {
       ? `Cannot delete ${resource}: ${count} ${dependency} exist`
       : `Cannot delete ${resource}: ${dependency} exist`;
 
-    return new BusinessException(
-      message,
-      ErrorCodes.DEPENDENCY_EXISTS,
-      { resource, dependency, count },
-    );
+    return new BusinessException(message, ErrorCodes.DEPENDENCY_EXISTS, {
+      resource,
+      dependency,
+      count,
+    });
   }
 
   /**

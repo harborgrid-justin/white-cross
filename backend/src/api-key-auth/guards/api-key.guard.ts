@@ -47,7 +47,9 @@ export class ApiKeyGuard implements CanActivate {
         path: request.path,
         ip: request.ip,
       });
-      throw new UnauthorizedException('API key required. Provide X-API-Key header.');
+      throw new UnauthorizedException(
+        'API key required. Provide X-API-Key header.',
+      );
     }
 
     try {
@@ -63,7 +65,9 @@ export class ApiKeyGuard implements CanActivate {
             clientIP,
             allowedPattern: apiKeyRecord.ipRestriction,
           });
-          throw new UnauthorizedException('API key not allowed from this IP address');
+          throw new UnauthorizedException(
+            'API key not allowed from this IP address',
+          );
         }
       }
 
@@ -131,12 +135,16 @@ export class ApiKeyGuard implements CanActivate {
   }
 
   /**
-   * Check if client IP matches IP restriction pattern
+   * SECURITY FIX: Improved IP pattern matching with proper CIDR support
    *
-   * Supports CIDR notation and exact matches
+   * Check if client IP matches IP restriction pattern
+   * Supports exact matches, wildcards, and CIDR notation
+   *
+   * IMPORTANT: For production use, install 'ip-cidr' library for full CIDR support
+   * npm install ip-cidr
    *
    * @param clientIP - Client IP address
-   * @param pattern - IP restriction pattern
+   * @param pattern - IP restriction pattern (supports: exact, wildcard, CIDR)
    * @returns True if IP matches pattern
    */
   private matchesIPPattern(clientIP: string, pattern: string): boolean {
@@ -145,14 +153,100 @@ export class ApiKeyGuard implements CanActivate {
       return true;
     }
 
-    // CIDR notation (simplified - production should use ip-cidr library)
+    // Wildcard pattern (e.g., 192.168.*.*)
+    if (pattern.includes('*')) {
+      const regexPattern = pattern.replace(/\./g, '\\.').replace(/\*/g, '\\d+');
+      const regex = new RegExp(`^${regexPattern}$`);
+      if (regex.test(clientIP)) {
+        return true;
+      }
+    }
+
+    // CIDR notation (basic implementation - use ip-cidr library for production)
     if (pattern.includes('/')) {
-      // For simplicity, return true (implement proper CIDR matching in production)
-      this.logger.warn('CIDR matching not implemented, allowing access');
-      return true;
+      this.logger.warn(
+        `CIDR matching requires 'ip-cidr' library. Install with: npm install ip-cidr`,
+        {
+          clientIP,
+          pattern,
+        },
+      );
+
+      // Basic CIDR validation for common cases (not production-ready)
+      const [networkIP, prefixLength] = pattern.split('/');
+      const prefix = parseInt(prefixLength, 10);
+
+      // For IPv4 only (simplified)
+      if (this.isIPv4(clientIP) && this.isIPv4(networkIP)) {
+        return this.simpleIPv4CIDRMatch(clientIP, networkIP, prefix);
+      }
+
+      // For security, deny if we can't validate properly
+      this.logger.warn(
+        `Denying access due to incomplete CIDR validation. Install ip-cidr library.`,
+      );
+      return false;
     }
 
     return false;
+  }
+
+  /**
+   * Check if string is IPv4 address
+   */
+  private isIPv4(ip: string): boolean {
+    const parts = ip.split('.');
+    if (parts.length !== 4) return false;
+    return parts.every((part) => {
+      const num = parseInt(part, 10);
+      return num >= 0 && num <= 255;
+    });
+  }
+
+  /**
+   * Simple IPv4 CIDR matching (basic implementation)
+   * IMPORTANT: Use ip-cidr library for production
+   */
+  private simpleIPv4CIDRMatch(
+    clientIP: string,
+    networkIP: string,
+    prefixLength: number,
+  ): boolean {
+    try {
+      const clientParts = clientIP.split('.').map(Number);
+      const networkParts = networkIP.split('.').map(Number);
+
+      // Convert to 32-bit integers
+      const clientInt =
+        (clientParts[0] << 24) |
+        (clientParts[1] << 16) |
+        (clientParts[2] << 8) |
+        clientParts[3];
+
+      const networkInt =
+        (networkParts[0] << 24) |
+        (networkParts[1] << 16) |
+        (networkParts[2] << 8) |
+        networkParts[3];
+
+      // Create subnet mask
+      const mask = (0xffffffff << (32 - prefixLength)) >>> 0;
+
+      // Compare network portions
+      const match = (clientInt & mask) === (networkInt & mask);
+
+      this.logger.debug('Simple CIDR match', {
+        clientIP,
+        networkIP,
+        prefixLength,
+        match,
+      });
+
+      return match;
+    } catch (error) {
+      this.logger.error('Error in simple CIDR matching', { error });
+      return false;
+    }
   }
 }
 

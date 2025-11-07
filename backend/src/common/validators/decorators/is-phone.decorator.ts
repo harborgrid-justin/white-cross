@@ -37,10 +37,12 @@ export class IsPhoneConstraint implements ValidatorConstraintInterface {
     // US phone number patterns
     const patterns = {
       // Standard US: (555) 123-4567, 555-123-4567, 555.123.4567
-      standard: /^(\+1[-.\s]?)?(\([0-9]{3}\)|[0-9]{3})[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}$/,
+      standard:
+        /^(\+1[-.\s]?)?(\([0-9]{3}\)|[0-9]{3})[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}$/,
 
       // With optional extension
-      withExtension: /^(\+1[-.\s]?)?(\([0-9]{3}\)|[0-9]{3})[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}(\s?(ext|x)\s?\d{1,5})?$/i,
+      withExtension:
+        /^(\+1[-.\s]?)?(\([0-9]{3}\)|[0-9]{3})[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}(\s?(ext|x)\s?\d{1,5})?$/i,
 
       // International format
       international: /^\+[1-9]\d{1,14}$/,
@@ -108,7 +110,7 @@ export function IsPhone(
   options?: PhoneValidationOptions,
   validationOptions?: ValidationOptions,
 ) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'isPhone',
       target: object.constructor,

@@ -94,7 +94,11 @@ export class RateLimiterService {
    */
   async incrementPhoneNumber(phoneNumber: string): Promise<RateLimitStatusDto> {
     const key = `phone:${phoneNumber}`;
-    return this.increment(key, this.DEFAULT_PER_PHONE_LIMIT, this.DEFAULT_WINDOW_SECONDS);
+    return this.increment(
+      key,
+      this.DEFAULT_PER_PHONE_LIMIT,
+      this.DEFAULT_WINDOW_SECONDS,
+    );
   }
 
   /**
@@ -105,7 +109,11 @@ export class RateLimiterService {
    */
   async incrementAccount(accountId: string): Promise<RateLimitStatusDto> {
     const key = `account:${accountId}`;
-    return this.increment(key, this.DEFAULT_PER_ACCOUNT_LIMIT, this.DEFAULT_WINDOW_SECONDS);
+    return this.increment(
+      key,
+      this.DEFAULT_PER_ACCOUNT_LIMIT,
+      this.DEFAULT_WINDOW_SECONDS,
+    );
   }
 
   /**
@@ -259,7 +267,9 @@ export class RateLimiterService {
     }
 
     if (cleanedCount > 0) {
-      this.logger.debug(`Cleaned up ${cleanedCount} expired rate limit entries`);
+      this.logger.debug(
+        `Cleaned up ${cleanedCount} expired rate limit entries`,
+      );
     }
   }
 }

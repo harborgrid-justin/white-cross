@@ -26,6 +26,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import type { Request, Response } from 'express';
 import * as crypto from 'crypto';
+import { AppConfigService } from '../../config/app-config.service';
 
 export interface CSRFConfig {
   cookieName: string;
@@ -134,9 +135,23 @@ export class CsrfGuard implements CanActivate {
     'PATCH',
   ]);
 
-  constructor(private reflector: Reflector) {
-    this.config = DEFAULT_CSRF_CONFIG;
+  constructor(
+    private reflector: Reflector,
+    private configService: AppConfigService,
+  ) {
+    // Use configuration from AppConfigService instead of DEFAULT_CSRF_CONFIG
+    this.config = {
+      cookieName: this.configService.security.csrf.cookieName,
+      headerName: this.configService.security.csrf.headerName,
+      tokenLifetimeMs: this.configService.security.csrf.tokenLifetimeMs,
+      skipPaths: DEFAULT_CSRF_CONFIG.skipPaths, // Keep default skip paths
+    };
     this.tokenCache = new CSRFTokenCache();
+
+    this.logger.log('CSRF Guard initialized', {
+      enabled: this.configService.security.csrf.enabled,
+      environment: this.configService.environment,
+    });
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -204,7 +219,7 @@ export class CsrfGuard implements CanActivate {
     // Set as cookie (HttpOnly, SameSite for security)
     res.cookie(this.config.cookieName, csrfToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: this.configService.isProduction,
       sameSite: 'strict',
       maxAge: this.config.tokenLifetimeMs,
     });
@@ -221,11 +236,14 @@ export class CsrfGuard implements CanActivate {
 
     // Require authentication for CSRF-protected operations
     if (!user || !user.id) {
-      this.logger.warn('CSRF: Unauthenticated request to CSRF-protected endpoint', {
-        path: req.path,
-        method: req.method,
-        ip: req.ip,
-      });
+      this.logger.warn(
+        'CSRF: Unauthenticated request to CSRF-protected endpoint',
+        {
+          path: req.path,
+          method: req.method,
+          ip: req.ip,
+        },
+      );
 
       throw new HttpException(
         {
@@ -297,12 +315,12 @@ export class CsrfGuard implements CanActivate {
     const timestamp = Date.now().toString();
     const randomBytes = crypto.randomBytes(32).toString('hex');
     const payload = `${userId}:${sessionId}:${timestamp}:${randomBytes}`;
-    const secret = process.env.CSRF_SECRET;
+    const secret = this.configService.csrfSecret;
 
     if (!secret) {
       throw new Error(
         'CRITICAL SECURITY ERROR: CSRF_SECRET not configured. ' +
-        'Please set CSRF_SECRET in your .env file.'
+          'Please set CSRF_SECRET in your .env file.',
       );
     }
 
@@ -348,7 +366,7 @@ export class CsrfGuard implements CanActivate {
 
       // Verify signature
       const payload = `${tokenUserId}:${tokenSessionId}:${timestamp}:${randomBytes}`;
-      const secret = process.env.CSRF_SECRET;
+      const secret = this.configService.csrfSecret;
 
       if (!secret) {
         this.logger.error('CSRF_SECRET not configured');
@@ -383,7 +401,7 @@ export class CsrfGuard implements CanActivate {
     }
 
     // Check body
-    const bodyToken = (req.body as any)?._csrf;
+    const bodyToken = req.body?._csrf;
     if (bodyToken) {
       return bodyToken;
     }

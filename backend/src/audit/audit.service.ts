@@ -81,13 +81,22 @@ export class AuditService {
     page: number = 1,
     limit: number = 20,
   ) {
-    return this.auditQueryService.getEntityAuditHistory(entityType, entityId, page, limit);
+    return this.auditQueryService.getEntityAuditHistory(
+      entityType,
+      entityId,
+      page,
+      limit,
+    );
   }
 
   /**
    * Get audit logs for a specific user
    */
-  async getUserAuditHistory(userId: string, page: number = 1, limit: number = 20) {
+  async getUserAuditHistory(
+    userId: string,
+    page: number = 1,
+    limit: number = 20,
+  ) {
     return this.auditQueryService.getUserAuditHistory(userId, page, limit);
   }
 
@@ -101,8 +110,18 @@ export class AuditService {
   /**
    * Get audit logs by date range
    */
-  async getAuditLogsByDateRange(startDate: Date, endDate: Date, page: number = 1, limit: number = 50) {
-    return this.auditQueryService.getAuditLogsByDateRange(startDate, endDate, page, limit);
+  async getAuditLogsByDateRange(
+    startDate: Date,
+    endDate: Date,
+    page: number = 1,
+    limit: number = 50,
+  ) {
+    return this.auditQueryService.getAuditLogsByDateRange(
+      startDate,
+      endDate,
+      page,
+      limit,
+    );
   }
 
   // ========== PHI ACCESS LOGS ==========
@@ -117,14 +136,26 @@ export class AuditService {
   /**
    * Get PHI access logs for a specific student
    */
-  async getStudentPHIAccessLogs(studentId: string, page: number = 1, limit: number = 20) {
-    return this.phiAccessService.getStudentPHIAccessLogs(studentId, page, limit);
+  async getStudentPHIAccessLogs(
+    studentId: string,
+    page: number = 1,
+    limit: number = 20,
+  ) {
+    return this.phiAccessService.getStudentPHIAccessLogs(
+      studentId,
+      page,
+      limit,
+    );
   }
 
   /**
    * Get PHI access logs for a specific user
    */
-  async getUserPHIAccessLogs(userId: string, page: number = 1, limit: number = 20) {
+  async getUserPHIAccessLogs(
+    userId: string,
+    page: number = 1,
+    limit: number = 20,
+  ) {
     return this.phiAccessService.getUserPHIAccessLogs(userId, page, limit);
   }
 

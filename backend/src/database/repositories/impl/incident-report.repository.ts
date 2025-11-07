@@ -54,11 +54,15 @@ export interface UpdateIncidentReportDTO {
 }
 
 @Injectable()
-export class IncidentReportRepository extends BaseRepository<IncidentReport, IncidentReportAttributes, CreateIncidentReportDTO> {
+export class IncidentReportRepository extends BaseRepository<
+  IncidentReport,
+  IncidentReportAttributes,
+  CreateIncidentReportDTO
+> {
   constructor(
     @InjectModel(IncidentReport) model: typeof IncidentReport,
     @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('ICacheManager') cacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'IncidentReport');
   }
@@ -68,7 +72,7 @@ export class IncidentReportRepository extends BaseRepository<IncidentReport, Inc
    */
   async findByStudent(
     studentId: string,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): Promise<IncidentReportAttributes[]> {
     try {
       const incidents = await this.model.findAll({
@@ -83,7 +87,7 @@ export class IncidentReportRepository extends BaseRepository<IncidentReport, Inc
         'Failed to find incidents by student',
         'FIND_BY_STUDENT_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
@@ -93,7 +97,7 @@ export class IncidentReportRepository extends BaseRepository<IncidentReport, Inc
    */
   async findBySeverity(
     severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL',
-    options?: QueryOptions
+    options?: QueryOptions,
   ): Promise<IncidentReportAttributes[]> {
     try {
       const incidents = await this.model.findAll({
@@ -108,7 +112,7 @@ export class IncidentReportRepository extends BaseRepository<IncidentReport, Inc
         'Failed to find incidents by severity',
         'FIND_BY_SEVERITY_ERROR',
         500,
-        { severity, error: (error as Error).message }
+        { severity, error: (error as Error).message },
       );
     }
   }
@@ -119,7 +123,7 @@ export class IncidentReportRepository extends BaseRepository<IncidentReport, Inc
   async findByDateRange(
     startDate: Date,
     endDate: Date,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): Promise<IncidentReportAttributes[]> {
     try {
       const incidents = await this.model.findAll({
@@ -138,19 +142,28 @@ export class IncidentReportRepository extends BaseRepository<IncidentReport, Inc
         'Failed to find incidents by date range',
         'FIND_BY_DATE_RANGE_ERROR',
         500,
-        { startDate, endDate, error: (error as Error).message }
+        { startDate, endDate, error: (error as Error).message },
       );
     }
   }
 
-  protected async validateCreate(data: CreateIncidentReportDTO): Promise<void> {}
-  protected async validateUpdate(id: string, data: UpdateIncidentReportDTO): Promise<void> {}
+  protected async validateCreate(
+    data: CreateIncidentReportDTO,
+  ): Promise<void> {}
+  protected async validateUpdate(
+    id: string,
+    data: UpdateIncidentReportDTO,
+  ): Promise<void> {}
 
   protected async invalidateCaches(entity: any): Promise<void> {
     try {
       const entityData = entity.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, entityData.id));
-      await this.cacheManager.deletePattern(`white-cross:${this.entityName.toLowerCase()}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, entityData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:${this.entityName.toLowerCase()}:*`,
+      );
     } catch (error) {
       this.logger.warn(`Error invalidating ${this.entityName} caches:`, error);
     }

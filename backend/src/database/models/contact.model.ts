@@ -1,4 +1,18 @@
-import { Table, Column, Model, DataType, PrimaryKey, Default, CreatedAt, UpdatedAt, DeletedAt, Index, Scopes, BeforeCreate, BeforeUpdate } from 'sequelize-typescript';
+import {
+  Table,
+  Column,
+  Model,
+  DataType,
+  PrimaryKey,
+  Default,
+  CreatedAt,
+  UpdatedAt,
+  DeletedAt,
+  Index,
+  Scopes,
+  BeforeCreate,
+  BeforeUpdate,
+} from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { ContactType } from '../../contact/enums/contact-type.enum';
 
@@ -13,41 +27,41 @@ import { ContactType } from '../../contact/enums/contact-type.enum';
   active: {
     where: {
       isActive: true,
-      deletedAt: null
-    }
+      deletedAt: null,
+    },
   },
   byType: (type: ContactType) => ({
-    where: { type }
+    where: { type },
   }),
   byRelation: (relationTo: string) => ({
-    where: { relationTo }
+    where: { relationTo },
   }),
   guardians: {
     where: {
       type: ContactType.Guardian,
-      isActive: true
-    }
+      isActive: true,
+    },
   },
   providers: {
     where: {
       type: ContactType.Provider,
-      isActive: true
-    }
+      isActive: true,
+    },
   },
   withEmail: {
     where: {
       email: {
-        [Op.ne]: null
-      }
-    }
+        [Op.ne]: null,
+      },
+    },
   },
   withPhone: {
     where: {
       phone: {
-        [Op.ne]: null
-      }
-    }
-  }
+        [Op.ne]: null,
+      },
+    },
+  },
 }))
 @Table({
   tableName: 'contacts',
@@ -60,13 +74,14 @@ import { ContactType } from '../../contact/enums/contact-type.enum';
   indexes: [
     {
       fields: ['createdAt'],
-      name: 'idx_contact_created_at'
+      name: 'idx_contact_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_contact_updated_at'
-    }
-  ]})
+      name: 'idx_contact_updated_at',
+    },
+  ],
+})
 @Index(['email'])
 @Index(['type'])
 @Index(['relationTo'])
@@ -82,13 +97,13 @@ export class Contact extends Model<Contact> {
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: false
+    allowNull: false,
   })
   firstName: string;
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: false
+    allowNull: false,
   })
   lastName: string;
 
@@ -97,9 +112,9 @@ export class Contact extends Model<Contact> {
     allowNull: true,
     validate: {
       isEmail: {
-        msg: 'Must be a valid email address'
-      }
-    }
+        msg: 'Must be a valid email address',
+      },
+    },
   })
   email: string | null;
 
@@ -109,48 +124,48 @@ export class Contact extends Model<Contact> {
     validate: {
       is: {
         args: /^\+?[1-9]\d{1,14}$/,
-        msg: 'Phone number must be in E.164 format or standard US format'
-      }
-    }
+        msg: 'Phone number must be in E.164 format or standard US format',
+      },
+    },
   })
   phone: string | null;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(ContactType)]
+      isIn: [Object.values(ContactType)],
     },
-    allowNull: false
+    allowNull: false,
   })
   type: ContactType;
 
   @Column({
     type: DataType.STRING(200),
-    allowNull: true
+    allowNull: true,
   })
   organization: string | null;
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: true
+    allowNull: true,
   })
   title: string | null;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: true
+    allowNull: true,
   })
   address: string | null;
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: true
+    allowNull: true,
   })
   city: string | null;
 
   @Column({
     type: DataType.STRING(50),
-    allowNull: true
+    allowNull: true,
   })
   state: string | null;
 
@@ -160,23 +175,23 @@ export class Contact extends Model<Contact> {
     validate: {
       is: {
         args: /^\d{5}(-\d{4})?$/,
-        msg: 'ZIP code must be in format 12345 or 12345-6789'
-      }
-    }
+        msg: 'ZIP code must be in format 12345 or 12345-6789',
+      },
+    },
   })
   zip: string | null;
 
   @Column({
     type: DataType.UUID,
     allowNull: true,
-    comment: 'UUID of related student or user'
+    comment: 'UUID of related student or user',
   })
   relationTo: string | null;
 
   @Column({
     type: DataType.STRING(50),
     allowNull: true,
-    comment: 'Type of relationship (parent, emergency, etc.)'
+    comment: 'Type of relationship (parent, emergency, etc.)',
   })
   relationshipType: string | null;
 
@@ -184,53 +199,53 @@ export class Contact extends Model<Contact> {
     type: DataType.JSONB,
     allowNull: true,
     defaultValue: {},
-    comment: 'Custom healthcare-specific fields'
+    comment: 'Custom healthcare-specific fields',
   })
   customFields: Record<string, any> | null;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true
+    defaultValue: true,
   })
   isActive: boolean;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: true
+    allowNull: true,
   })
   notes: string | null;
 
   @Column({
     type: DataType.UUID,
     allowNull: true,
-    comment: 'User who created this contact'
+    comment: 'User who created this contact',
   })
   createdBy: string | null;
 
   @Column({
     type: DataType.UUID,
     allowNull: true,
-    comment: 'User who last updated this contact'
+    comment: 'User who last updated this contact',
   })
   updatedBy: string | null;
 
   @CreatedAt
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   declare createdAt: Date;
 
   @UpdatedAt
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   declare updatedAt: Date;
 
   @DeletedAt
   @Column({
     type: DataType.DATE,
-    comment: 'Soft delete timestamp'
+    comment: 'Soft delete timestamp',
   })
   declare deletedAt: Date | null;
 
@@ -251,14 +266,15 @@ export class Contact extends Model<Contact> {
     return this.fullName;
   }
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: Contact) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] Contact ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] Contact ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

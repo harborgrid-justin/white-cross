@@ -13,7 +13,7 @@ import {
   NestMiddleware,
   UnauthorizedException,
   Logger,
-  Optional
+  Optional,
 } from '@nestjs/common';
 import type { Request, Response, NextFunction } from 'express';
 import * as crypto from 'crypto';
@@ -90,7 +90,10 @@ export class MemorySessionStore implements SessionStore {
     const entries = Array.from(this.sessions.entries());
     for (const [sessionId, session] of entries) {
       // Clean up inactive sessions older than 24 hours
-      if (!session.isActive && (now - session.lastActivity) > 24 * 60 * 60 * 1000) {
+      if (
+        !session.isActive &&
+        now - session.lastActivity > 24 * 60 * 60 * 1000
+      ) {
         await this.delete(sessionId);
         cleaned++;
       }
@@ -131,13 +134,16 @@ export class SessionMiddleware implements NestMiddleware {
 
     // Start cleanup timer for memory store
     if (this.store instanceof MemorySessionStore) {
-      setInterval(() => {
-        this.store.cleanup().then(cleaned => {
-          if (cleaned > 0) {
-            this.logger.debug(`Cleaned up ${cleaned} expired sessions`);
-          }
-        });
-      }, 60 * 60 * 1000); // Cleanup every hour
+      setInterval(
+        () => {
+          this.store.cleanup().then((cleaned) => {
+            if (cleaned > 0) {
+              this.logger.debug(`Cleaned up ${cleaned} expired sessions`);
+            }
+          });
+        },
+        60 * 60 * 1000,
+      ); // Cleanup every hour
     }
   }
 
@@ -176,7 +182,9 @@ export class SessionMiddleware implements NestMiddleware {
       const result = await this.validateSession(sessionId);
 
       if (!result.valid) {
-        throw new UnauthorizedException(result.error?.message || 'Invalid session');
+        throw new UnauthorizedException(
+          result.error?.message || 'Invalid session',
+        );
       }
 
       // Attach session to request
@@ -195,7 +203,7 @@ export class SessionMiddleware implements NestMiddleware {
 
       this.logger.error('Session middleware error', {
         error: error instanceof Error ? error.message : 'Unknown error',
-        sessionId
+        sessionId,
       });
 
       throw new UnauthorizedException('Session validation failed');
@@ -219,21 +227,23 @@ export class SessionMiddleware implements NestMiddleware {
     role: string,
     ipAddress: string,
     userAgent: string,
-    permissions?: string[]
+    permissions?: string[],
   ): Promise<SessionData> {
     // Check concurrent session limit
     const userSessions = await this.store.getUserSessions(userId);
-    const activeSessions = userSessions.filter(s => s.isActive);
+    const activeSessions = userSessions.filter((s) => s.isActive);
 
     if (activeSessions.length >= this.config.maxConcurrentSessions) {
       // Deactivate oldest session
-      const oldestSession = activeSessions.sort((a, b) => a.lastActivity - b.lastActivity)[0];
+      const oldestSession = activeSessions.sort(
+        (a, b) => a.lastActivity - b.lastActivity,
+      )[0];
       await this.store.update(oldestSession.sessionId, { isActive: false });
 
       if (this.config.auditSessions) {
         this.logger.log('Deactivated session due to concurrent limit', {
           userId,
-          deactivatedSessionId: oldestSession.sessionId
+          deactivatedSessionId: oldestSession.sessionId,
         });
       }
     }
@@ -252,7 +262,7 @@ export class SessionMiddleware implements NestMiddleware {
       ipAddress,
       userAgent,
       isActive: true,
-      permissions
+      permissions,
     };
 
     await this.store.create(session);
@@ -263,7 +273,7 @@ export class SessionMiddleware implements NestMiddleware {
         userId,
         email,
         role,
-        ipAddress
+        ipAddress,
       });
     }
 
@@ -286,8 +296,8 @@ export class SessionMiddleware implements NestMiddleware {
           valid: false,
           error: {
             code: 'SESSION_NOT_FOUND',
-            message: 'Session not found'
-          }
+            message: 'Session not found',
+          },
         };
       }
 
@@ -296,8 +306,8 @@ export class SessionMiddleware implements NestMiddleware {
           valid: false,
           error: {
             code: 'SESSION_INACTIVE',
-            message: 'Session is no longer active'
-          }
+            message: 'Session is no longer active',
+          },
         };
       }
 
@@ -312,7 +322,7 @@ export class SessionMiddleware implements NestMiddleware {
           this.logger.log('Session expired', {
             sessionId,
             userId: session.userId,
-            timeSinceActivity
+            timeSinceActivity,
           });
         }
 
@@ -320,8 +330,8 @@ export class SessionMiddleware implements NestMiddleware {
           valid: false,
           error: {
             code: 'SESSION_EXPIRED',
-            message: 'Session has expired'
-          }
+            message: 'Session has expired',
+          },
         };
       }
 
@@ -332,29 +342,31 @@ export class SessionMiddleware implements NestMiddleware {
 
       // Check if warning should be shown
       const timeRemaining = this.config.sessionTimeout - timeSinceActivity;
-      const warning = timeRemaining <= this.config.warningTime ? {
-        message: 'Your session will expire soon',
-        timeRemaining
-      } : undefined;
+      const warning =
+        timeRemaining <= this.config.warningTime
+          ? {
+              message: 'Your session will expire soon',
+              timeRemaining,
+            }
+          : undefined;
 
       return {
         valid: true,
         session,
-        warning
+        warning,
       };
-
     } catch (error) {
       this.logger.error('Session validation failed', {
         error: error instanceof Error ? error.message : 'Unknown error',
-        sessionId
+        sessionId,
       });
 
       return {
         valid: false,
         error: {
           code: 'SESSION_VALIDATION_ERROR',
-          message: 'Session validation failed'
-        }
+          message: 'Session validation failed',
+        },
       };
     }
   }
@@ -393,10 +405,10 @@ export class SessionMiddleware implements NestMiddleware {
       '/auth/login',
       '/auth/register',
       '/health',
-      '/api/health'
+      '/api/health',
     ];
 
-    return publicRoutes.some(route => path.startsWith(route));
+    return publicRoutes.some((route) => path.startsWith(route));
   }
 
   /**
@@ -424,14 +436,14 @@ export class SessionMiddleware implements NestMiddleware {
           this.logger.log('Session ended', {
             sessionId,
             userId: session.userId,
-            duration: Date.now() - session.createdAt
+            duration: Date.now() - session.createdAt,
           });
         }
       }
     } catch (error) {
       this.logger.error('Failed to end session', {
         error: error instanceof Error ? error.message : 'Unknown error',
-        sessionId
+        sessionId,
       });
     }
   }
@@ -454,13 +466,13 @@ export class SessionMiddleware implements NestMiddleware {
       if (this.config.auditSessions) {
         this.logger.log('All user sessions ended', {
           userId,
-          sessionCount: sessions.length
+          sessionCount: sessions.length,
         });
       }
     } catch (error) {
       this.logger.error('Failed to end user sessions', {
         error: error instanceof Error ? error.message : 'Unknown error',
-        userId
+        userId,
       });
     }
   }

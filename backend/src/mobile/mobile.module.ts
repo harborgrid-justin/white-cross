@@ -29,11 +29,11 @@ import { AuthModule } from '../auth/auth.module';
       DeviceToken,
       PushNotification,
       SyncQueueItem,
-      SyncConflict
-    ])
+      SyncConflict,
+    ]),
   ],
   providers: [NotificationService, OfflineSyncService],
   controllers: [NotificationController, DeviceController, SyncController],
-  exports: [NotificationService, OfflineSyncService]
+  exports: [NotificationService, OfflineSyncService],
 })
 export class MobileModule {}

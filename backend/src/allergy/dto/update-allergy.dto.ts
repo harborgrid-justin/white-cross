@@ -14,7 +14,8 @@ export class AllergyUpdateDto extends PartialType(CreateAllergyDto) {
    * Explicitly defined for update operations
    */
   @ApiPropertyOptional({
-    description: 'Whether the allergy has been clinically verified by a healthcare professional',
+    description:
+      'Whether the allergy has been clinically verified by a healthcare professional',
     example: true,
     type: Boolean,
   })

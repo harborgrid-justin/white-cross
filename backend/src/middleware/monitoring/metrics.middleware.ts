@@ -17,7 +17,7 @@ export enum MetricType {
   GAUGE = 'gauge',
   HISTOGRAM = 'histogram',
   TIMER = 'timer',
-  RATE = 'rate'
+  RATE = 'rate',
 }
 
 /**
@@ -32,7 +32,7 @@ export enum HealthcareMetricCategory {
   COMPLIANCE = 'compliance',
   SECURITY = 'security',
   PERFORMANCE = 'performance',
-  USAGE = 'usage'
+  USAGE = 'usage',
 }
 
 /**
@@ -88,16 +88,16 @@ export const DEFAULT_METRICS_CONFIG: IMetricsConfig = {
   retentionDays: 90,
   defaultTags: {
     service: 'white-cross-healthcare',
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
   },
   excludePaths: ['/health', '/metrics', '/favicon.ico'],
   enableAlerts: true,
   alertThresholds: {
     responseTime: 2000, // 2 seconds
-    errorRate: 0.05,    // 5%
-    memoryUsage: 0.85,  // 85%
-    cpuUsage: 0.80      // 80%
-  }
+    errorRate: 0.05, // 5%
+    memoryUsage: 0.85, // 85%
+    cpuUsage: 0.8, // 80%
+  },
 };
 
 /**
@@ -131,7 +131,7 @@ class MetricsStore {
   constructor(
     private batchSize: number,
     private flushInterval: number,
-    private onFlush: (metrics: MetricData[]) => Promise<void>
+    private onFlush: (metrics: MetricData[]) => Promise<void>,
   ) {
     this.startFlushTimer();
   }
@@ -212,7 +212,7 @@ class SystemMetricsCollector {
       value: memUsage.heapUsed,
       timestamp: now,
       tags: { ...tags, unit: 'bytes' },
-      unit: 'bytes'
+      unit: 'bytes',
     });
 
     metrics.push({
@@ -222,7 +222,7 @@ class SystemMetricsCollector {
       value: memoryUtilization,
       timestamp: now,
       tags: { ...tags, unit: 'percent' },
-      unit: 'percent'
+      unit: 'percent',
     });
 
     // CPU metrics
@@ -238,7 +238,7 @@ class SystemMetricsCollector {
       value: cpuUtilization,
       timestamp: now,
       tags: { ...tags, unit: 'seconds' },
-      unit: 'seconds'
+      unit: 'seconds',
     });
 
     // Event loop lag (approximate)
@@ -252,21 +252,28 @@ class SystemMetricsCollector {
       value: eventLoopLag,
       timestamp: now,
       tags: { ...tags, unit: 'ms' },
-      unit: 'ms'
+      unit: 'ms',
     });
 
     return metrics;
   }
 
-  public checkThresholds(memoryUtilization: number, cpuUtilization: number): string[] {
+  public checkThresholds(
+    memoryUtilization: number,
+    cpuUtilization: number,
+  ): string[] {
     const alerts: string[] = [];
 
     if (memoryUtilization > this.memoryThreshold) {
-      alerts.push(`Memory utilization ${(memoryUtilization * 100).toFixed(2)}% exceeds threshold ${(this.memoryThreshold * 100).toFixed(2)}%`);
+      alerts.push(
+        `Memory utilization ${(memoryUtilization * 100).toFixed(2)}% exceeds threshold ${(this.memoryThreshold * 100).toFixed(2)}%`,
+      );
     }
 
     if (cpuUtilization > this.cpuThreshold) {
-      alerts.push(`CPU utilization ${(cpuUtilization * 100).toFixed(2)}% exceeds threshold ${(this.cpuThreshold * 100).toFixed(2)}%`);
+      alerts.push(
+        `CPU utilization ${(cpuUtilization * 100).toFixed(2)}% exceeds threshold ${(this.cpuThreshold * 100).toFixed(2)}%`,
+      );
     }
 
     return alerts;
@@ -294,12 +301,12 @@ export class MetricsMiddleware implements NestMiddleware {
       this.metricsStore = new MetricsStore(
         this.config.batchSize,
         this.config.flushInterval,
-        this.onMetricsFlush.bind(this)
+        this.onMetricsFlush.bind(this),
       );
 
       this.systemCollector = new SystemMetricsCollector(
         this.config.alertThresholds.memoryUsage,
-        this.config.alertThresholds.cpuUsage
+        this.config.alertThresholds.cpuUsage,
       );
 
       // Start periodic system metrics collection
@@ -320,14 +327,14 @@ export class MetricsMiddleware implements NestMiddleware {
     }
 
     // Skip excluded paths
-    if (this.config.excludePaths.some(path => req.path.includes(path))) {
+    if (this.config.excludePaths.some((path) => req.path.includes(path))) {
       return next();
     }
 
     const metricsContext = this.createContext(req);
 
     // Collect request metrics
-    this.collectRequestMetrics(metricsContext).catch(err => {
+    this.collectRequestMetrics(metricsContext).catch((err) => {
       this.logger.error('Error collecting request metrics', err);
     });
 
@@ -355,8 +362,8 @@ export class MetricsMiddleware implements NestMiddleware {
       clientIP: this.getClientIP(req),
       bytes: {
         in: this.calculateRequestSize(req),
-        out: 0
-      }
+        out: 0,
+      },
     };
   }
 
@@ -387,7 +394,9 @@ export class MetricsMiddleware implements NestMiddleware {
 
     // Headers size
     Object.entries(req.headers).forEach(([key, value]) => {
-      size += key.length + (Array.isArray(value) ? value.join('').length : String(value).length);
+      size +=
+        key.length +
+        (Array.isArray(value) ? value.join('').length : String(value).length);
     });
 
     // Body size (if available)
@@ -416,7 +425,7 @@ export class MetricsMiddleware implements NestMiddleware {
       method: context.method,
       path: this.normalizePath(context.path),
       facility: context.facility || 'unknown',
-      user_role: context.user?.role || 'anonymous'
+      user_role: context.user?.role || 'anonymous',
     };
 
     // Request counter
@@ -427,7 +436,7 @@ export class MetricsMiddleware implements NestMiddleware {
       value: 1,
       timestamp: context.timestamp,
       tags,
-      description: 'Total number of HTTP requests'
+      description: 'Total number of HTTP requests',
     });
 
     // User activity metrics
@@ -459,14 +468,16 @@ export class MetricsMiddleware implements NestMiddleware {
       if (args.length > 0 && args[0]) {
         const responseData = args[0];
         context.bytes!.out = Buffer.byteLength(
-          typeof responseData === 'string' ? responseData : JSON.stringify(responseData),
-          'utf8'
+          typeof responseData === 'string'
+            ? responseData
+            : JSON.stringify(responseData),
+          'utf8',
         );
       }
 
       // Collect response metrics asynchronously
       setImmediate(() => {
-        this.collectResponseMetrics(context).catch(err => {
+        this.collectResponseMetrics(context).catch((err) => {
           this.logger.error('Error collecting response metrics', err);
         });
       });
@@ -487,7 +498,7 @@ export class MetricsMiddleware implements NestMiddleware {
       path: this.normalizePath(context.path),
       status_code: context.statusCode.toString(),
       facility: context.facility || 'unknown',
-      user_role: context.user?.role || 'anonymous'
+      user_role: context.user?.role || 'anonymous',
     };
 
     // Response time metrics
@@ -500,12 +511,17 @@ export class MetricsMiddleware implements NestMiddleware {
         timestamp: new Date(),
         tags: { ...tags, unit: 'ms' },
         unit: 'ms',
-        description: 'HTTP request duration in milliseconds'
+        description: 'HTTP request duration in milliseconds',
       });
 
       // Check response time thresholds
-      if (this.config.enableAlerts && context.responseTime > this.config.alertThresholds.responseTime) {
-        this.logger.warn(`Slow response detected: ${context.responseTime}ms for ${context.method} ${context.path}`);
+      if (
+        this.config.enableAlerts &&
+        context.responseTime > this.config.alertThresholds.responseTime
+      ) {
+        this.logger.warn(
+          `Slow response detected: ${context.responseTime}ms for ${context.method} ${context.path}`,
+        );
       }
     }
 
@@ -518,7 +534,7 @@ export class MetricsMiddleware implements NestMiddleware {
         value: 1,
         timestamp: new Date(),
         tags,
-        description: 'Total number of HTTP errors'
+        description: 'Total number of HTTP errors',
       });
 
       const pathKey = `${context.method}:${this.normalizePath(context.path)}`;
@@ -533,7 +549,7 @@ export class MetricsMiddleware implements NestMiddleware {
       value: context.bytes?.in || 0,
       timestamp: new Date(),
       tags: { ...tags, unit: 'bytes' },
-      unit: 'bytes'
+      unit: 'bytes',
     });
 
     this.recordMetric({
@@ -543,14 +559,17 @@ export class MetricsMiddleware implements NestMiddleware {
       value: context.bytes?.out || 0,
       timestamp: new Date(),
       tags: { ...tags, unit: 'bytes' },
-      unit: 'bytes'
+      unit: 'bytes',
     });
   }
 
   /**
    * Collect user-specific metrics
    */
-  private async collectUserMetrics(context: MetricsContext, tags: Record<string, string>): Promise<void> {
+  private async collectUserMetrics(
+    context: MetricsContext,
+    tags: Record<string, string>,
+  ): Promise<void> {
     if (!context.user) return;
 
     // User session activity
@@ -564,16 +583,19 @@ export class MetricsMiddleware implements NestMiddleware {
         ...tags,
         user_id: context.user.userId,
         user_role: context.user.role,
-        facility: context.user.facilityId || 'unknown'
+        facility: context.user.facilityId || 'unknown',
       },
-      description: 'User activity counter'
+      description: 'User activity counter',
     });
   }
 
   /**
    * Collect healthcare-specific metrics
    */
-  private async collectHealthcareMetrics(context: MetricsContext, tags: Record<string, string>): Promise<void> {
+  private async collectHealthcareMetrics(
+    context: MetricsContext,
+    tags: Record<string, string>,
+  ): Promise<void> {
     // PHI access detection
     if (this.isPHIAccess(context.path)) {
       this.recordMetric({
@@ -585,9 +607,9 @@ export class MetricsMiddleware implements NestMiddleware {
         tags: {
           ...tags,
           access_type: this.getAccessType(context.path),
-          user_role: context.user?.role || 'anonymous'
+          user_role: context.user?.role || 'anonymous',
         },
-        description: 'PHI access events'
+        description: 'PHI access events',
       });
     }
 
@@ -600,7 +622,7 @@ export class MetricsMiddleware implements NestMiddleware {
         value: 1,
         timestamp: context.timestamp,
         tags,
-        description: 'Emergency access events'
+        description: 'Emergency access events',
       });
     }
 
@@ -613,7 +635,7 @@ export class MetricsMiddleware implements NestMiddleware {
         value: 1,
         timestamp: context.timestamp,
         tags,
-        description: 'Medication administration events'
+        description: 'Medication administration events',
       });
     }
   }
@@ -622,8 +644,10 @@ export class MetricsMiddleware implements NestMiddleware {
    * Collect system-wide metrics
    */
   private collectSystemMetrics(): void {
-    const metrics = this.systemCollector.collectSystemMetrics(this.config.defaultTags);
-    metrics.forEach(metric => this.recordMetric(metric));
+    const metrics = this.systemCollector.collectSystemMetrics(
+      this.config.defaultTags,
+    );
+    metrics.forEach((metric) => this.recordMetric(metric));
   }
 
   /**
@@ -655,10 +679,10 @@ export class MetricsMiddleware implements NestMiddleware {
       '/api/health-records',
       '/api/medical-history',
       '/api/medications',
-      '/api/immunizations'
+      '/api/immunizations',
     ];
 
-    return phiPaths.some(phiPath => path.startsWith(phiPath));
+    return phiPaths.some((phiPath) => path.startsWith(phiPath));
   }
 
   /**
@@ -695,10 +719,14 @@ export class MetricsMiddleware implements NestMiddleware {
       // Group metrics by category for structured logging
       const groupedMetrics = this.groupMetricsByCategory(metrics);
 
-      for (const [category, categoryMetrics] of Object.entries(groupedMetrics)) {
-        this.logger.debug(`[METRICS][${category}] ${categoryMetrics.length} metrics`, categoryMetrics);
+      for (const [category, categoryMetrics] of Object.entries(
+        groupedMetrics,
+      )) {
+        this.logger.debug(
+          `[METRICS][${category}] ${categoryMetrics.length} metrics`,
+          categoryMetrics,
+        );
       }
-
     } catch (error) {
       this.logger.error('Error in metrics flush', error);
       throw error;
@@ -708,15 +736,20 @@ export class MetricsMiddleware implements NestMiddleware {
   /**
    * Group metrics by category for organized output
    */
-  private groupMetricsByCategory(metrics: MetricData[]): Record<string, MetricData[]> {
-    return metrics.reduce((groups, metric) => {
-      const category = metric.category;
-      if (!groups[category]) {
-        groups[category] = [];
-      }
-      groups[category].push(metric);
-      return groups;
-    }, {} as Record<string, MetricData[]>);
+  private groupMetricsByCategory(
+    metrics: MetricData[],
+  ): Record<string, MetricData[]> {
+    return metrics.reduce(
+      (groups, metric) => {
+        const category = metric.category;
+        if (!groups[category]) {
+          groups[category] = [];
+        }
+        groups[category].push(metric);
+        return groups;
+      },
+      {} as Record<string, MetricData[]>,
+    );
   }
 
   /**
@@ -729,7 +762,7 @@ export class MetricsMiddleware implements NestMiddleware {
       config: this.config,
       uptime: process.uptime(),
       memoryUsage: process.memoryUsage(),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -749,7 +782,9 @@ export class MetricsMiddleware implements NestMiddleware {
 /**
  * Factory function to create metrics middleware with healthcare defaults
  */
-export function createMetricsMiddleware(config: Partial<IMetricsConfig> = {}): MetricsMiddleware {
+export function createMetricsMiddleware(
+  config: Partial<IMetricsConfig> = {},
+): MetricsMiddleware {
   const middleware = new MetricsMiddleware();
   (middleware as any).config = { ...DEFAULT_METRICS_CONFIG, ...config };
   return middleware;

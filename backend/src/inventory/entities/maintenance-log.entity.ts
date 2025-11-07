@@ -4,4 +4,7 @@
  */
 
 // Re-export the Sequelize model
-export { MaintenanceLog, MaintenanceType } from '../../database/models/maintenance-log.model';
+export {
+  MaintenanceLog,
+  MaintenanceType,
+} from '../../database/models/maintenance-log.model';

@@ -25,7 +25,10 @@ export interface SanitizeHtmlOptions {
  * @param options - Sanitization options
  * @returns Sanitized value
  */
-function sanitizeHtml(value: string, options: SanitizeHtmlOptions = {}): string {
+function sanitizeHtml(
+  value: string,
+  options: SanitizeHtmlOptions = {},
+): string {
   if (typeof value !== 'string') return value;
 
   // Remove all HTML tags by default
@@ -59,7 +62,10 @@ function sanitizeHtml(value: string, options: SanitizeHtmlOptions = {}): string 
   }
 
   // Remove dangerous attributes from allowed tags
-  sanitized = sanitized.replace(/\s*(on\w+|javascript:|data:|style)\s*=\s*["'][^"']*["']/gi, '');
+  sanitized = sanitized.replace(
+    /\s*(on\w+|javascript:|data:|style)\s*=\s*["'][^"']*["']/gi,
+    '',
+  );
 
   // Decode HTML entities to prevent double encoding
   sanitized = sanitized

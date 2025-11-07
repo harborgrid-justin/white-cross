@@ -1,4 +1,10 @@
-import { IsString, IsUUID, IsOptional, IsDateString, MinLength } from 'class-validator';
+import {
+  IsString,
+  IsUUID,
+  IsOptional,
+  IsDateString,
+  MinLength,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 /**
@@ -47,7 +53,8 @@ export class AddAllergyDto {
 
   @ApiPropertyOptional({
     description: 'Additional notes about the allergy',
-    example: 'Patient reports reaction occurred within 30 minutes of administration',
+    example:
+      'Patient reports reaction occurred within 30 minutes of administration',
   })
   @IsOptional()
   @IsString()

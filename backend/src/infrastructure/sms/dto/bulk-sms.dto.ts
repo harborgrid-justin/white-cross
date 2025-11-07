@@ -75,9 +75,7 @@ export class BulkSmsResultDto {
 
   @ApiProperty({
     description: 'Failed recipients with error details',
-    example: [
-      { phoneNumber: '+15551234567', error: 'Invalid phone number' },
-    ],
+    example: [{ phoneNumber: '+15551234567', error: 'Invalid phone number' }],
   })
   failures: Array<{ phoneNumber: string; error: string }>;
 

@@ -10,7 +10,12 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 
 // Import services
 import { DistrictService } from './services/district.service';
@@ -175,14 +180,20 @@ export class AdministrationController {
 
   @Get('config/:key')
   @ApiOperation({ summary: 'Get configuration by key' })
-  @ApiResponse({ status: 200, description: 'Configuration retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Configuration retrieved successfully',
+  })
   getConfiguration(@Param('key') key: string) {
     return this.configurationService.getConfiguration(key);
   }
 
   @Get('config')
   @ApiOperation({ summary: 'Get all configurations' })
-  @ApiResponse({ status: 200, description: 'Configurations retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Configurations retrieved successfully',
+  })
   getAllConfigurations() {
     return this.configurationService.getAllConfigurations();
   }
@@ -197,14 +208,20 @@ export class AdministrationController {
   @Delete('config/:key')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete configuration' })
-  @ApiResponse({ status: 204, description: 'Configuration deleted successfully' })
+  @ApiResponse({
+    status: 204,
+    description: 'Configuration deleted successfully',
+  })
   deleteConfiguration(@Param('key') key: string) {
     return this.configurationService.deleteConfiguration(key);
   }
 
   @Get('config/:key/history')
   @ApiOperation({ summary: 'Get configuration change history' })
-  @ApiResponse({ status: 200, description: 'Configuration history retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Configuration history retrieved successfully',
+  })
   getConfigurationHistory(@Param('key') key: string) {
     return this.configurationService.getConfigurationHistory(key);
   }
@@ -220,7 +237,10 @@ export class AdministrationController {
 
   @Get('audit-logs')
   @ApiOperation({ summary: 'Get audit logs with filters and pagination' })
-  @ApiResponse({ status: 200, description: 'Audit logs retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Audit logs retrieved successfully',
+  })
   getAuditLogs(@Query() query: AuditQueryDto) {
     return this.auditService.getAuditLogs(query);
   }
@@ -236,7 +256,10 @@ export class AdministrationController {
 
   @Get('backups')
   @ApiOperation({ summary: 'Get backup logs with pagination' })
-  @ApiResponse({ status: 200, description: 'Backup logs retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Backup logs retrieved successfully',
+  })
   getBackupLogs(@Query() query: BackupQueryDto) {
     return this.backupService.getBackupLogs(query);
   }

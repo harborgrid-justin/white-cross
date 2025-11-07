@@ -19,7 +19,7 @@ import {
   BeforeCreate,
   BeforeUpdate,
   UpdatedAt,
-  CreatedAt
+  CreatedAt,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
@@ -28,14 +28,14 @@ export enum ActionStatus {
   PENDING = 'PENDING',
   IN_PROGRESS = 'IN_PROGRESS',
   COMPLETED = 'COMPLETED',
-  CANCELLED = 'CANCELLED'
+  CANCELLED = 'CANCELLED',
 }
 
 export enum ActionPriority {
   LOW = 'LOW',
   MEDIUM = 'MEDIUM',
   HIGH = 'HIGH',
-  URGENT = 'URGENT'
+  URGENT = 'URGENT',
 }
 
 export interface FollowUpActionAttributes {
@@ -73,10 +73,10 @@ export interface CreateFollowUpActionAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'follow_up_actions',
@@ -88,15 +88,18 @@ export interface CreateFollowUpActionAttributes {
     { fields: ['dueDate', 'status'] },
     {
       fields: ['createdAt'],
-      name: 'idx_follow_up_action_created_at'
+      name: 'idx_follow_up_action_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_follow_up_action_updated_at'
-    }
-  ]
+      name: 'idx_follow_up_action_updated_at',
+    },
+  ],
 })
-export class FollowUpAction extends Model<FollowUpActionAttributes, CreateFollowUpActionAttributes> {
+export class FollowUpAction extends Model<
+  FollowUpActionAttributes,
+  CreateFollowUpActionAttributes
+> {
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -107,7 +110,7 @@ export class FollowUpAction extends Model<FollowUpActionAttributes, CreateFollow
   @Column({
     type: DataType.UUID,
     allowNull: false,
-    comment: 'ID of the incident report this action belongs to'
+    comment: 'ID of the incident report this action belongs to',
   })
   @Index
   incidentReportId: string;
@@ -116,7 +119,7 @@ export class FollowUpAction extends Model<FollowUpActionAttributes, CreateFollow
   @Column({
     type: DataType.TEXT,
     allowNull: false,
-    comment: 'Description of the follow-up action to be taken'
+    comment: 'Description of the follow-up action to be taken',
   })
   action: string;
 
@@ -124,7 +127,7 @@ export class FollowUpAction extends Model<FollowUpActionAttributes, CreateFollow
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    comment: 'Date and time when this action is due'
+    comment: 'Date and time when this action is due',
   })
   @Index
   dueDate: Date;
@@ -133,11 +136,11 @@ export class FollowUpAction extends Model<FollowUpActionAttributes, CreateFollow
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(ActionPriority)]
+      isIn: [Object.values(ActionPriority)],
     },
     allowNull: false,
     defaultValue: ActionPriority.MEDIUM,
-    comment: 'Priority level of the action'
+    comment: 'Priority level of the action',
   })
   @Index
   priority: ActionPriority;
@@ -146,11 +149,11 @@ export class FollowUpAction extends Model<FollowUpActionAttributes, CreateFollow
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(ActionStatus)]
+      isIn: [Object.values(ActionStatus)],
     },
     allowNull: false,
     defaultValue: ActionStatus.PENDING,
-    comment: 'Current status of the action'
+    comment: 'Current status of the action',
   })
   @Index
   status?: ActionStatus;
@@ -159,7 +162,7 @@ export class FollowUpAction extends Model<FollowUpActionAttributes, CreateFollow
   @Column({
     type: DataType.UUID,
     allowNull: true,
-    comment: 'ID of the user assigned to complete this action'
+    comment: 'ID of the user assigned to complete this action',
   })
   @Index
   assignedTo?: string;
@@ -168,7 +171,7 @@ export class FollowUpAction extends Model<FollowUpActionAttributes, CreateFollow
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    comment: 'Date and time when the action was completed'
+    comment: 'Date and time when the action was completed',
   })
   completedAt?: Date;
 
@@ -176,7 +179,7 @@ export class FollowUpAction extends Model<FollowUpActionAttributes, CreateFollow
   @Column({
     type: DataType.UUID,
     allowNull: true,
-    comment: 'ID of the user who completed the action'
+    comment: 'ID of the user who completed the action',
   })
   completedBy?: string;
 
@@ -184,7 +187,7 @@ export class FollowUpAction extends Model<FollowUpActionAttributes, CreateFollow
   @Column({
     type: DataType.TEXT,
     allowNull: true,
-    comment: 'Additional notes about the action or completion'
+    comment: 'Additional notes about the action or completion',
   })
   notes?: string;
 
@@ -192,7 +195,7 @@ export class FollowUpAction extends Model<FollowUpActionAttributes, CreateFollow
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    comment: 'Timestamp when the action was created'
+    comment: 'Timestamp when the action was created',
   })
   declare createdAt?: Date;
 
@@ -200,17 +203,16 @@ export class FollowUpAction extends Model<FollowUpActionAttributes, CreateFollow
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    comment: 'Timestamp when the action was last updated'
+    comment: 'Timestamp when the action was last updated',
   })
   declare updatedAt?: Date;
 
   // Relationships
   @BelongsTo(() => require('./incident-report.model').IncidentReport, {
     foreignKey: 'incidentReportId',
-    as: 'incidentReport'
+    as: 'incidentReport',
   })
   declare incidentReport?: any;
-
 
   // Hooks for HIPAA compliance
   @BeforeCreate
@@ -218,7 +220,9 @@ export class FollowUpAction extends Model<FollowUpActionAttributes, CreateFollow
   static async auditPHIAccess(instance: FollowUpAction) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] FollowUpAction ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] FollowUpAction ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

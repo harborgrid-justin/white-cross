@@ -94,7 +94,7 @@ export class EncryptedTransformer implements ValueTransformer {
  * @returns ValueTransformer for encrypted columns
  */
 export function createEncryptedTransformer(
-  encryptionService: EncryptionService
+  encryptionService: EncryptionService,
 ): ValueTransformer {
   return new EncryptedTransformer(encryptionService);
 }

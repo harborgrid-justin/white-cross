@@ -10,7 +10,7 @@ import {
   DeletedAt,
   Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
 } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 import { ConversationParticipant } from './conversation-participant.model';
@@ -24,7 +24,7 @@ import { ConversationParticipant } from './conversation-participant.model';
 export enum ConversationType {
   DIRECT = 'DIRECT',
   GROUP = 'GROUP',
-  CHANNEL = 'CHANNEL'
+  CHANNEL = 'CHANNEL',
 }
 
 /**
@@ -50,7 +50,16 @@ export interface ConversationAttributes {
 export interface ConversationCreationAttributes
   extends Optional<
     ConversationAttributes,
-    'id' | 'name' | 'description' | 'avatarUrl' | 'lastMessageAt' | 'metadata' | 'isArchived' | 'createdAt' | 'updatedAt' | 'deletedAt'
+    | 'id'
+    | 'name'
+    | 'description'
+    | 'avatarUrl'
+    | 'lastMessageAt'
+    | 'metadata'
+    | 'isArchived'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'deletedAt'
   > {}
 
 /**
@@ -71,10 +80,10 @@ export interface ConversationCreationAttributes
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'conversations',
@@ -84,14 +93,18 @@ export interface ConversationCreationAttributes
   indexes: [
     {
       fields: ['createdAt'],
-      name: 'idx_conversation_created_at'
+      name: 'idx_conversation_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_conversation_updated_at'
-    }
-  ]})
-export class Conversation extends Model<ConversationAttributes, ConversationCreationAttributes> {
+      name: 'idx_conversation_updated_at',
+    },
+  ],
+})
+export class Conversation extends Model<
+  ConversationAttributes,
+  ConversationCreationAttributes
+> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
@@ -101,30 +114,30 @@ export class Conversation extends Model<ConversationAttributes, ConversationCrea
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(ConversationType)]
+      isIn: [Object.values(ConversationType)],
     },
-    allowNull: false
+    allowNull: false,
   })
   declare type: ConversationType;
 
   @Column({
     type: DataType.STRING(255),
     allowNull: true,
-    comment: 'Display name for group conversations and channels'
+    comment: 'Display name for group conversations and channels',
   })
   declare name?: string;
 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
-    comment: 'Description for group conversations and channels'
+    comment: 'Description for group conversations and channels',
   })
   declare description?: string;
 
   @Column({
     type: DataType.STRING(500),
     allowNull: true,
-    comment: 'Avatar/profile image URL'
+    comment: 'Avatar/profile image URL',
   })
   declare avatarUrl?: string;
 
@@ -132,7 +145,7 @@ export class Conversation extends Model<ConversationAttributes, ConversationCrea
   @Column({
     type: DataType.UUID,
     allowNull: false,
-    comment: 'Tenant ID for multi-tenant isolation'
+    comment: 'Tenant ID for multi-tenant isolation',
   })
   declare tenantId: string;
 
@@ -140,7 +153,7 @@ export class Conversation extends Model<ConversationAttributes, ConversationCrea
   @Column({
     type: DataType.UUID,
     allowNull: false,
-    comment: 'User who created the conversation'
+    comment: 'User who created the conversation',
   })
   declare createdById: string;
 
@@ -148,7 +161,7 @@ export class Conversation extends Model<ConversationAttributes, ConversationCrea
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    comment: 'Timestamp of last message for sorting'
+    comment: 'Timestamp of last message for sorting',
   })
   declare lastMessageAt?: Date;
 
@@ -156,7 +169,7 @@ export class Conversation extends Model<ConversationAttributes, ConversationCrea
     type: DataType.JSONB,
     allowNull: true,
     defaultValue: {},
-    comment: 'Extensible metadata field for additional properties'
+    comment: 'Extensible metadata field for additional properties',
   })
   declare metadata?: Record<string, any>;
 
@@ -165,27 +178,33 @@ export class Conversation extends Model<ConversationAttributes, ConversationCrea
     type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: false,
-    comment: 'Whether the conversation is archived'
+    comment: 'Whether the conversation is archived',
   })
   declare isArchived: boolean;
 
-  @HasMany(() => ConversationParticipant, { foreignKey: 'conversationId', as: 'participants' })
+  @HasMany(() => ConversationParticipant, {
+    foreignKey: 'conversationId',
+    as: 'participants',
+  })
   declare participants?: ConversationParticipant[];
 
-  @HasMany(() => require('./message.model').Message, { foreignKey: 'conversationId', as: 'messages' })
+  @HasMany(() => require('./message.model').Message, {
+    foreignKey: 'conversationId',
+    as: 'messages',
+  })
   declare messages?: any[];
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW
+    defaultValue: DataType.NOW,
   })
   declare createdAt: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW
+    defaultValue: DataType.NOW,
   })
   declare updatedAt: Date;
 
@@ -193,10 +212,9 @@ export class Conversation extends Model<ConversationAttributes, ConversationCrea
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    comment: 'Soft delete timestamp'
+    comment: 'Soft delete timestamp',
   })
   declare deletedAt?: Date;
-
 
   // Hooks for HIPAA compliance
   @BeforeCreate
@@ -204,7 +222,9 @@ export class Conversation extends Model<ConversationAttributes, ConversationCrea
   static async auditPHIAccess(instance: Conversation) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] Conversation ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] Conversation ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

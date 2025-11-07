@@ -1,4 +1,11 @@
-import { IsString, IsUUID, IsEnum, IsOptional, IsArray, MinLength } from 'class-validator';
+import {
+  IsString,
+  IsUUID,
+  IsEnum,
+  IsOptional,
+  IsArray,
+  MinLength,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { InteractionSeverity } from '../../enums/interaction-severity.enum';
 

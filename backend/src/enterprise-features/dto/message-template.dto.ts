@@ -18,7 +18,10 @@ export class CreateMessageTemplateDto {
   @IsString()
   body: string;
 
-  @ApiProperty({ description: 'List of variable names in template', type: [String] })
+  @ApiProperty({
+    description: 'List of variable names in template',
+    type: [String],
+  })
   @IsArray()
   @IsString({ each: true })
   variables: string[];

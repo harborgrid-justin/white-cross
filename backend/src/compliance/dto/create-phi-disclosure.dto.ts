@@ -16,7 +16,12 @@ import {
   IsEmail,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { DisclosureType, DisclosurePurpose, DisclosureMethod, RecipientType } from '../enums';
+import {
+  DisclosureType,
+  DisclosurePurpose,
+  DisclosureMethod,
+  RecipientType,
+} from '../enums';
 
 export class CreatePhiDisclosureDto {
   @ApiProperty({
@@ -70,12 +75,16 @@ export class CreatePhiDisclosureDto {
   informationDisclosed: string[];
 
   @ApiProperty({
-    description: 'Minimum necessary justification (HIPAA requirement, min 10 characters)',
-    example: 'Information required for emergency treatment coordination with external provider',
+    description:
+      'Minimum necessary justification (HIPAA requirement, min 10 characters)',
+    example:
+      'Information required for emergency treatment coordination with external provider',
     minLength: 10,
   })
   @IsString()
-  @MinLength(10, { message: 'Minimum necessary justification must be at least 10 characters' })
+  @MinLength(10, {
+    message: 'Minimum necessary justification must be at least 10 characters',
+  })
   minimumNecessary: string;
 
   @ApiProperty({
@@ -179,7 +188,8 @@ export class CreatePhiDisclosureDto {
 
   @ApiPropertyOptional({
     description: 'Additional notes about the disclosure',
-    example: 'Emergency situation required immediate disclosure to treating physician',
+    example:
+      'Emergency situation required immediate disclosure to treating physician',
   })
   @IsString()
   @IsOptional()

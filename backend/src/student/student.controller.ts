@@ -16,6 +16,8 @@ import {
   HttpCode,
   HttpStatus,
   ParseUUIDPipe,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -25,8 +27,15 @@ import {
   ApiQuery,
   ApiBearerAuth,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { HealthRecordAuditInterceptor } from '../health-record/interceptors/health-record-audit.interceptor';
 import { StudentService } from './student.service';
-import type { PaginatedResponse, StudentStatistics, StudentDataExport } from './dto';
+import type {
+  PaginatedResponse,
+  StudentStatistics,
+  StudentDataExport,
+} from './dto';
 import { Student } from '../database/models/student.model';
 import {
   CreateStudentDto,
@@ -61,7 +70,8 @@ import {
  */
 @ApiTags('students')
 @Controller('students')
-// @ApiBearerAuth() // Uncomment when authentication is implemented
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 export class StudentController {
   constructor(private readonly studentService: StudentService) {}
 
@@ -73,7 +83,8 @@ export class StudentController {
   @Post()
   @ApiOperation({
     summary: 'Create a new student',
-    description: 'Creates a new student record with validation. Student number and medical record number must be unique.',
+    description:
+      'Creates a new student record with validation. Student number and medical record number must be unique.',
   })
   @ApiResponse({
     status: 201,
@@ -102,7 +113,8 @@ export class StudentController {
   @Get()
   @ApiOperation({
     summary: 'Get all students',
-    description: 'Retrieves paginated list of students with optional filters (search, grade, nurse, active status)',
+    description:
+      'Retrieves paginated list of students with optional filters (search, grade, nurse, active status)',
   })
   @ApiResponse({
     status: 200,
@@ -130,7 +142,9 @@ export class StudentController {
     status: 500,
     description: 'Internal server error',
   })
-  async findAll(@Query() filterDto: StudentFilterDto): Promise<PaginatedResponse<Student>> {
+  async findAll(
+    @Query() filterDto: StudentFilterDto,
+  ): Promise<PaginatedResponse<Student>> {
     return this.studentService.findAll(filterDto);
   }
 
@@ -140,7 +154,8 @@ export class StudentController {
   @Patch(':id')
   @ApiOperation({
     summary: 'Update student',
-    description: 'Updates student information. All fields are optional. Validates uniqueness constraints.',
+    description:
+      'Updates student information. All fields are optional. Validates uniqueness constraints.',
   })
   @ApiParam({
     name: 'id',
@@ -183,7 +198,8 @@ export class StudentController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary: 'Delete student',
-    description: 'Soft deletes a student by setting isActive to false. Does not permanently remove data.',
+    description:
+      'Soft deletes a student by setting isActive to false. Does not permanently remove data.',
   })
   @ApiParam({
     name: 'id',
@@ -219,7 +235,8 @@ export class StudentController {
   @Patch(':id/deactivate')
   @ApiOperation({
     summary: 'Deactivate student',
-    description: 'Deactivates a student by setting isActive to false. Optional reason can be provided.',
+    description:
+      'Deactivates a student by setting isActive to false. Optional reason can be provided.',
   })
   @ApiParam({
     name: 'id',
@@ -255,7 +272,8 @@ export class StudentController {
   @Patch(':id/reactivate')
   @ApiOperation({
     summary: 'Reactivate student',
-    description: 'Reactivates a previously deactivated student by setting isActive to true.',
+    description:
+      'Reactivates a previously deactivated student by setting isActive to true.',
   })
   @ApiParam({
     name: 'id',
@@ -272,7 +290,9 @@ export class StudentController {
     status: 404,
     description: 'Student not found',
   })
-  async reactivate(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+  async reactivate(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ) {
     return this.studentService.reactivate(id);
   }
 
@@ -316,7 +336,8 @@ export class StudentController {
   @Post('bulk-update')
   @ApiOperation({
     summary: 'Bulk update students',
-    description: 'Updates multiple students with the same data (nurse, grade, or active status).',
+    description:
+      'Updates multiple students with the same data (nurse, grade, or active status).',
   })
   @ApiResponse({
     status: 200,
@@ -342,9 +363,11 @@ export class StudentController {
    * Search students
    */
   @Get('search/query')
+  @Throttle({ default: { limit: 60, ttl: 60000 } })
   @ApiOperation({
     summary: 'Search students',
-    description: 'Full-text search across firstName, lastName, and studentNumber fields.',
+    description:
+      'Full-text search across firstName, lastName, and studentNumber fields.',
   })
   @ApiQuery({
     name: 'q',
@@ -377,7 +400,8 @@ export class StudentController {
   @Get('grades/list')
   @ApiOperation({
     summary: 'Get all grades',
-    description: 'Retrieves list of all unique grade levels currently in use by active students.',
+    description:
+      'Retrieves list of all unique grade levels currently in use by active students.',
   })
   @ApiResponse({
     status: 200,
@@ -444,7 +468,9 @@ export class StudentController {
     status: 400,
     description: 'Invalid UUID format',
   })
-  async findAssignedStudents(@Param('nurseId', new ParseUUIDPipe({ version: '4' })) nurseId: string) {
+  async findAssignedStudents(
+    @Param('nurseId', new ParseUUIDPipe({ version: '4' })) nurseId: string,
+  ) {
     return this.studentService.findAssignedStudents(nurseId);
   }
 
@@ -456,7 +482,8 @@ export class StudentController {
   @Get(':id/statistics')
   @ApiOperation({
     summary: 'Get student statistics',
-    description: 'Retrieves aggregated statistics for a student (health records, allergies, medications, etc.).',
+    description:
+      'Retrieves aggregated statistics for a student (health records, allergies, medications, etc.).',
   })
   @ApiParam({
     name: 'id',
@@ -482,7 +509,9 @@ export class StudentController {
     status: 404,
     description: 'Student not found',
   })
-  async getStatistics(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<StudentStatistics> {
+  async getStatistics(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ): Promise<StudentStatistics> {
     return this.studentService.getStatistics(id);
   }
 
@@ -490,9 +519,12 @@ export class StudentController {
    * Export student data
    */
   @Get(':id/export')
+  @UseInterceptors(HealthRecordAuditInterceptor)
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @ApiOperation({
     summary: 'Export student data',
-    description: 'Generates comprehensive data export for a student including full profile and statistics.',
+    description:
+      'Generates comprehensive data export for a student including full profile and statistics.',
   })
   @ApiParam({
     name: 'id',
@@ -525,7 +557,9 @@ export class StudentController {
     status: 404,
     description: 'Student not found',
   })
-  async exportData(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<StudentDataExport> {
+  async exportData(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ): Promise<StudentDataExport> {
     return this.studentService.exportData(id);
   }
 
@@ -535,6 +569,8 @@ export class StudentController {
    * Get student health records
    */
   @Get(':id/health-records')
+  @UseInterceptors(HealthRecordAuditInterceptor)
+  @Throttle({ default: { limit: 100, ttl: 60000 } })
   @ApiOperation({
     summary: 'Get student health records',
     description:
@@ -566,13 +602,19 @@ export class StudentController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Query() query: StudentHealthRecordsDto,
   ) {
-    return this.studentService.getStudentHealthRecords(id, query.page, query.limit);
+    return this.studentService.getStudentHealthRecords(
+      id,
+      query.page,
+      query.limit,
+    );
   }
 
   /**
    * Get student mental health records
    */
   @Get(':id/mental-health-records')
+  @UseInterceptors(HealthRecordAuditInterceptor)
+  @Throttle({ default: { limit: 50, ttl: 60000 } })
   @ApiOperation({
     summary: 'Get student mental health records',
     description:
@@ -604,7 +646,11 @@ export class StudentController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Query() query: MentalHealthRecordsDto,
   ) {
-    return this.studentService.getStudentMentalHealthRecords(id, query.page, query.limit);
+    return this.studentService.getStudentMentalHealthRecords(
+      id,
+      query.page,
+      query.limit,
+    );
   }
 
   // ==================== Photo Management Endpoints ====================
@@ -613,6 +659,8 @@ export class StudentController {
    * Upload student photo
    */
   @Post(':id/photo')
+  @UseInterceptors(HealthRecordAuditInterceptor)
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   @ApiOperation({
     summary: 'Upload student photo',
     description:
@@ -655,6 +703,8 @@ export class StudentController {
    * Search students by photo using facial recognition
    */
   @Post('photo/search')
+  @UseInterceptors(HealthRecordAuditInterceptor)
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @ApiOperation({
     summary: 'Search for student by photo using facial recognition',
     description:
@@ -721,7 +771,10 @@ export class StudentController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() importTranscriptDto: ImportTranscriptDto,
   ) {
-    return this.studentService.importAcademicTranscript(id, importTranscriptDto);
+    return this.studentService.importAcademicTranscript(
+      id,
+      importTranscriptDto,
+    );
   }
 
   /**
@@ -819,8 +872,12 @@ export class StudentController {
     status: 403,
     description: 'Forbidden - Requires ADMIN role',
   })
-  async performBulkGradeTransition(@Body() bulkGradeTransitionDto: BulkGradeTransitionDto) {
-    return this.studentService.performBulkGradeTransition(bulkGradeTransitionDto);
+  async performBulkGradeTransition(
+    @Body() bulkGradeTransitionDto: BulkGradeTransitionDto,
+  ) {
+    return this.studentService.performBulkGradeTransition(
+      bulkGradeTransitionDto,
+    );
   }
 
   /**
@@ -880,7 +937,8 @@ export class StudentController {
    */
   @Post('barcode/verify-medication')
   @ApiOperation({
-    summary: 'Verify medication administration using three-point barcode verification',
+    summary:
+      'Verify medication administration using three-point barcode verification',
     description:
       'HIGHLY SENSITIVE PHI ENDPOINT - Implements five rights of medication administration using barcode verification: Right Patient (student barcode), Right Medication (medication barcode), and Right Person (nurse barcode). Critical safety feature for medication administration.',
   })
@@ -904,8 +962,12 @@ export class StudentController {
     status: 404,
     description: 'Student, medication, or nurse not found',
   })
-  async verifyMedicationAdministration(@Body() verifyMedicationDto: VerifyMedicationDto) {
-    return this.studentService.verifyMedicationAdministration(verifyMedicationDto);
+  async verifyMedicationAdministration(
+    @Body() verifyMedicationDto: VerifyMedicationDto,
+  ) {
+    return this.studentService.verifyMedicationAdministration(
+      verifyMedicationDto,
+    );
   }
 
   // ==================== Waitlist Management Endpoints ====================
@@ -981,7 +1043,8 @@ export class StudentController {
   @Get(':id')
   @ApiOperation({
     summary: 'Get student by ID',
-    description: 'Retrieves a single student by their UUID with full profile information',
+    description:
+      'Retrieves a single student by their UUID with full profile information',
   })
   @ApiParam({
     name: 'id',

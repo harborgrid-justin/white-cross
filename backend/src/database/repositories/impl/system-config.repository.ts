@@ -27,23 +27,34 @@ export interface UpdateSystemConfigDTO {
 }
 
 @Injectable()
-export class SystemConfigRepository extends BaseRepository<any, SystemConfigAttributes, CreateSystemConfigDTO> {
+export class SystemConfigRepository extends BaseRepository<
+  any,
+  SystemConfigAttributes,
+  CreateSystemConfigDTO
+> {
   constructor(
     @InjectModel(SystemConfig) model: typeof SystemConfig,
     @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('ICacheManager') cacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'SystemConfig');
   }
 
   protected async validateCreate(data: CreateSystemConfigDTO): Promise<void> {}
-  protected async validateUpdate(id: string, data: UpdateSystemConfigDTO): Promise<void> {}
+  protected async validateUpdate(
+    id: string,
+    data: UpdateSystemConfigDTO,
+  ): Promise<void> {}
 
   protected async invalidateCaches(entity: any): Promise<void> {
     try {
       const entityData = entity.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, entityData.id));
-      await this.cacheManager.deletePattern(`white-cross:${this.entityName.toLowerCase()}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, entityData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:${this.entityName.toLowerCase()}:*`,
+      );
     } catch (error) {
       this.logger.warn(`Error invalidating ${this.entityName} caches:`, error);
     }
@@ -53,5 +64,3 @@ export class SystemConfigRepository extends BaseRepository<any, SystemConfigAttr
     return sanitizeSensitiveData({ ...data });
   }
 }
-
-

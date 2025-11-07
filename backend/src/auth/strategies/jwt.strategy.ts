@@ -26,7 +26,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     // CRITICAL SECURITY: Fail fast if JWT_SECRET is not configured
     if (!jwtSecret) {
       throw new Error(
-        'CRITICAL SECURITY ERROR: JWT_SECRET is not configured in JWT Strategy'
+        'CRITICAL SECURITY ERROR: JWT_SECRET is not configured in JWT Strategy',
       );
     }
 
@@ -61,12 +61,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     // Check if account is locked
     if (user.isAccountLocked()) {
-      throw new UnauthorizedException('Account is temporarily locked. Please try again later.');
+      throw new UnauthorizedException(
+        'Account is temporarily locked. Please try again later.',
+      );
     }
 
     // Check if password was changed after token was issued
     if (payload.iat && user.passwordChangedAfter(payload.iat)) {
-      throw new UnauthorizedException('Password was changed. Please login again.');
+      throw new UnauthorizedException(
+        'Password was changed. Please login again.',
+      );
     }
 
     // Return user object (will be attached to request.user)

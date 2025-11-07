@@ -38,7 +38,8 @@ export const PUB_SUB = 'PUB_SUB';
     {
       provide: PUB_SUB,
       useFactory: (configService: ConfigService) => {
-        const redisHost = configService.get<string>('REDIS_HOST') || 'localhost';
+        const redisHost =
+          configService.get<string>('REDIS_HOST') || 'localhost';
         const redisPort = configService.get<number>('REDIS_PORT') || 6379;
         const redisPassword = configService.get<string>('REDIS_PASSWORD');
         const redisDb = configService.get<number>('REDIS_DB') || 0;

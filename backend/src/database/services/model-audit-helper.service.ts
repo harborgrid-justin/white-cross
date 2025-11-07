@@ -73,7 +73,9 @@ export class ModelAuditHelper {
   ): Promise<void> {
     // Filter to only PHI fields that changed
     const changedPHIFields = allChangedFields.filter((field) =>
-      phiFields.some((phiField) => field.toLowerCase() === phiField.toLowerCase()),
+      phiFields.some(
+        (phiField) => field.toLowerCase() === phiField.toLowerCase(),
+      ),
     );
 
     if (changedPHIFields.length > 0) {
@@ -103,7 +105,13 @@ export async function logModelPHIAccess(
 ): Promise<void> {
   const helper = ModelAuditHelper.getInstance();
   if (helper) {
-    await helper.logPHIAccessFromHook(entityType, entityId, action, changedFields, transaction);
+    await helper.logPHIAccessFromHook(
+      entityType,
+      entityId,
+      action,
+      changedFields,
+      transaction,
+    );
   } else {
     // Fallback to console logging if service not initialized yet
     console.log(
@@ -135,7 +143,9 @@ export async function logModelPHIFieldChanges(
   } else {
     // Fallback to console logging if service not initialized yet
     const changedPHIFields = allChangedFields.filter((field) =>
-      phiFields.some((phiField) => field.toLowerCase() === phiField.toLowerCase()),
+      phiFields.some(
+        (phiField) => field.toLowerCase() === phiField.toLowerCase(),
+      ),
     );
     if (changedPHIFields.length > 0) {
       console.log(

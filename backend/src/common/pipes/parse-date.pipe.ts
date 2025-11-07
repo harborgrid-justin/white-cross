@@ -4,11 +4,7 @@
  * @description Transforms string dates to Date objects with validation
  */
 
-import {
-  PipeTransform,
-  Injectable,
-  BadRequestException,
-} from '@nestjs/common';
+import { PipeTransform, Injectable, BadRequestException } from '@nestjs/common';
 
 /**
  * Parse Date Pipe
@@ -61,7 +57,10 @@ export class ParseDatePipe implements PipeTransform<string | number, Date> {
 
   transform(value: string | number): Date {
     // Handle optional values - return current date as placeholder
-    if (this.options?.optional && (value === null || value === undefined || value === '')) {
+    if (
+      this.options?.optional &&
+      (value === null || value === undefined || value === '')
+    ) {
       return new Date(); // This will be filtered out by validation if needed
     }
 

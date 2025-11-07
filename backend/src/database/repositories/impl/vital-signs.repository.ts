@@ -62,23 +62,28 @@ export interface UpdateVitalSignsDTO {
 }
 
 @Injectable()
-export class VitalSignsRepository
-  extends BaseRepository<any, VitalSignsAttributes, CreateVitalSignsDTO>
-{
+export class VitalSignsRepository extends BaseRepository<
+  any,
+  VitalSignsAttributes,
+  CreateVitalSignsDTO
+> {
   constructor(
     @InjectModel(VitalSigns) model: typeof VitalSigns,
     @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('ICacheManager') cacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'VitalSigns');
   }
 
-  async findByStudent(studentId: string, limit: number = 10): Promise<VitalSignsAttributes[]> {
+  async findByStudent(
+    studentId: string,
+    limit: number = 10,
+  ): Promise<VitalSignsAttributes[]> {
     try {
       const vitalSigns = await this.model.findAll({
         where: { studentId },
         order: [['measurementDate', 'DESC']],
-        limit
+        limit,
       });
       return vitalSigns.map((v: any) => this.mapToEntity(v));
     } catch (error) {
@@ -87,19 +92,23 @@ export class VitalSignsRepository
         'Failed to find vital signs by student',
         'FIND_BY_STUDENT_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
 
-  async findByDateRange(studentId: string, startDate: Date, endDate: Date): Promise<VitalSignsAttributes[]> {
+  async findByDateRange(
+    studentId: string,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<VitalSignsAttributes[]> {
     try {
       const vitalSigns = await this.model.findAll({
         where: {
           studentId,
-          measurementDate: { [Op.between]: [startDate, endDate] }
+          measurementDate: { [Op.between]: [startDate, endDate] },
         },
-        order: [['measurementDate', 'ASC']]
+        order: [['measurementDate', 'ASC']],
       });
       return vitalSigns.map((v: any) => this.mapToEntity(v));
     } catch (error) {
@@ -108,7 +117,7 @@ export class VitalSignsRepository
         'Failed to find vital signs by date range',
         'FIND_BY_DATE_RANGE_ERROR',
         500,
-        { studentId, startDate, endDate, error: (error as Error).message }
+        { studentId, startDate, endDate, error: (error as Error).message },
       );
     }
   }
@@ -117,15 +126,22 @@ export class VitalSignsRepository
     // Validation logic
   }
 
-  protected async validateUpdate(id: string, data: UpdateVitalSignsDTO): Promise<void> {
+  protected async validateUpdate(
+    id: string,
+    data: UpdateVitalSignsDTO,
+  ): Promise<void> {
     // Validation logic
   }
 
   protected async invalidateCaches(vitalSigns: any): Promise<void> {
     try {
       const vitalSignsData = vitalSigns.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, vitalSignsData.id));
-      await this.cacheManager.deletePattern(`white-cross:vital-signs:student:${vitalSignsData.studentId}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, vitalSignsData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:vital-signs:student:${vitalSignsData.studentId}:*`,
+      );
     } catch (error) {
       this.logger.warn('Error invalidating vital signs caches:', error);
     }
@@ -135,5 +151,3 @@ export class VitalSignsRepository
     return sanitizeSensitiveData({ ...data });
   }
 }
-
-

@@ -321,7 +321,8 @@ export class User extends Model<UserAttributes> {
       return false;
     }
     return (
-      this.passwordResetToken === token && this.passwordResetExpires > new Date()
+      this.passwordResetToken === token &&
+      this.passwordResetExpires > new Date()
     );
   }
 

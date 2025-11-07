@@ -62,7 +62,9 @@ export class ComplianceReportGeneratorService {
     generatedBy: string;
   }): Promise<ComplianceReport> {
     try {
-      this.logger.log(`Generating immunization compliance report for school ${params.schoolId}`);
+      this.logger.log(
+        `Generating immunization compliance report for school ${params.schoolId}`,
+      );
 
       // Check cache first
       const cacheKey = `immunization-report:${params.schoolId}:${params.periodStart}-${params.periodEnd}`;
@@ -90,17 +92,21 @@ export class ComplianceReportGeneratorService {
             [Op.between]: [params.periodStart, params.periodEnd],
           },
         },
-        include: [{
-          model: Student,
-          where: { schoolId: params.schoolId },
-          required: true,
-        }],
+        include: [
+          {
+            model: Student,
+            where: { schoolId: params.schoolId },
+            required: true,
+          },
+        ],
       });
 
       // Calculate compliance metrics
       const compliantStudents = Math.floor(totalStudents * 0.943); // 94.3% compliance
       const nonCompliantStudents = totalStudents - compliantStudents;
-      const complianceRate = Number(((compliantStudents / totalStudents) * 100).toFixed(1));
+      const complianceRate = Number(
+        ((compliantStudents / totalStudents) * 100).toFixed(1),
+      );
 
       // Analyze by vaccine type
       const vaccineCompliance = {
@@ -131,27 +137,48 @@ export class ComplianceReportGeneratorService {
           sectionTitle: 'Compliance by Vaccine Type',
           sectionType: 'breakdown',
           data: vaccineCompliance,
-          tables: [{
-            headers: ['Vaccine', 'Compliant Students', 'Compliance Rate', 'Status'],
-            rows: Object.entries(vaccineCompliance).map(([vaccine, data]) => [
-              vaccine,
-              data.compliant.toString(),
-              `${data.rate}%`,
-              data.rate >= 95 ? 'Compliant' : 'Below Target',
-            ]),
-          }],
-          summary: 'HPV vaccination rate is below the 90% target, requiring focused intervention.',
+          tables: [
+            {
+              headers: [
+                'Vaccine',
+                'Compliant Students',
+                'Compliance Rate',
+                'Status',
+              ],
+              rows: Object.entries(vaccineCompliance).map(([vaccine, data]) => [
+                vaccine,
+                data.compliant.toString(),
+                `${data.rate}%`,
+                data.rate >= 95 ? 'Compliant' : 'Below Target',
+              ]),
+            },
+          ],
+          summary:
+            'HPV vaccination rate is below the 90% target, requiring focused intervention.',
         },
         {
           sectionTitle: 'Grade-Level Analysis',
           sectionType: 'analysis',
           data: {
-            kindergarten: { students: Math.floor(totalStudents * 0.15), compliant: Math.floor(totalStudents * 0.15 * 0.975) },
-            elementary: { students: Math.floor(totalStudents * 0.40), compliant: Math.floor(totalStudents * 0.40 * 0.952) },
-            middle: { students: Math.floor(totalStudents * 0.25), compliant: Math.floor(totalStudents * 0.25 * 0.928) },
-            high: { students: Math.floor(totalStudents * 0.20), compliant: Math.floor(totalStudents * 0.20 * 0.903) },
+            kindergarten: {
+              students: Math.floor(totalStudents * 0.15),
+              compliant: Math.floor(totalStudents * 0.15 * 0.975),
+            },
+            elementary: {
+              students: Math.floor(totalStudents * 0.4),
+              compliant: Math.floor(totalStudents * 0.4 * 0.952),
+            },
+            middle: {
+              students: Math.floor(totalStudents * 0.25),
+              compliant: Math.floor(totalStudents * 0.25 * 0.928),
+            },
+            high: {
+              students: Math.floor(totalStudents * 0.2),
+              compliant: Math.floor(totalStudents * 0.2 * 0.903),
+            },
           },
-          summary: 'Compliance rates decrease with grade level, with high school showing lowest compliance at 90.3%.',
+          summary:
+            'Compliance rates decrease with grade level, with high school showing lowest compliance at 90.3%.',
         },
       ];
 
@@ -196,7 +223,8 @@ export class ComplianceReportGeneratorService {
         id: this.generateReportId(),
         reportType: ReportType.IMMUNIZATION_COMPLIANCE,
         title: 'Immunization Compliance Report',
-        description: 'State-mandated immunization compliance status with detailed breakdown',
+        description:
+          'State-mandated immunization compliance status with detailed breakdown',
         periodStart: params.periodStart,
         periodEnd: params.periodEnd,
         generatedDate: new Date(),
@@ -206,7 +234,10 @@ export class ComplianceReportGeneratorService {
           compliantRecords: compliantStudents,
           nonCompliantRecords: nonCompliantStudents,
           complianceRate,
-          status: complianceRate >= 95 ? ComplianceStatus.COMPLIANT : ComplianceStatus.PARTIALLY_COMPLIANT,
+          status:
+            complianceRate >= 95
+              ? ComplianceStatus.COMPLIANT
+              : ComplianceStatus.PARTIALLY_COMPLIANT,
         },
         sections,
         findings,
@@ -243,7 +274,9 @@ export class ComplianceReportGeneratorService {
     generatedBy: string;
   }): Promise<ComplianceReport> {
     try {
-      this.logger.log(`Generating controlled substance report for school ${params.schoolId}`);
+      this.logger.log(
+        `Generating controlled substance report for school ${params.schoolId}`,
+      );
 
       // Query medication administration records for controlled substances
       const medicationRecords = await this.healthRecordModel.findAll({
@@ -253,11 +286,13 @@ export class ComplianceReportGeneratorService {
             [Op.between]: [params.periodStart, params.periodEnd],
           },
         },
-        include: [{
-          model: Student,
-          where: { schoolId: params.schoolId },
-          required: true,
-        }],
+        include: [
+          {
+            model: Student,
+            where: { schoolId: params.schoolId },
+            required: true,
+          },
+        ],
       });
 
       const totalRecords = Math.max(287, medicationRecords.length);
@@ -282,7 +317,8 @@ export class ComplianceReportGeneratorService {
           severity: 'LOW',
           category: 'Documentation',
           issue: 'Missing witness signatures on Schedule II administrations',
-          details: '2 Schedule II medication administrations lack required witness signatures',
+          details:
+            '2 Schedule II medication administrations lack required witness signatures',
           affectedCount: 2,
           requiresAction: true,
           responsibleParty: 'Licensed Nurse',
@@ -307,7 +343,10 @@ export class ComplianceReportGeneratorService {
         },
         sections,
         findings,
-        recommendations: ['Ensure all Schedule II administrations have witness signatures', 'Implement digital signature capture for witness verification'],
+        recommendations: [
+          'Ensure all Schedule II administrations have witness signatures',
+          'Implement digital signature capture for witness verification',
+        ],
         status: ReportStatus.COMPLETED,
         format: params.format,
         generatedBy: params.generatedBy,
@@ -319,7 +358,10 @@ export class ComplianceReportGeneratorService {
       this.logger.log(`Controlled substance report generated: ${report.id}`);
       return report;
     } catch (error) {
-      this.logger.error('Error generating controlled substance report', error.stack);
+      this.logger.error(
+        'Error generating controlled substance report',
+        error.stack,
+      );
       throw error;
     }
   }
@@ -336,7 +378,9 @@ export class ComplianceReportGeneratorService {
     generatedBy: string;
   }): Promise<ComplianceReport> {
     try {
-      this.logger.log(`Generating HIPAA audit report for school ${params.schoolId}`);
+      this.logger.log(
+        `Generating HIPAA audit report for school ${params.schoolId}`,
+      );
 
       // In production, would query audit logs for PHI access
       const totalAccessEvents = 5234;
@@ -366,7 +410,8 @@ export class ComplianceReportGeneratorService {
           severity: 'HIGH',
           category: 'Unauthorized Access',
           issue: 'After-hours PHI access without business justification',
-          details: '36 instances of PHI access outside normal business hours without documented reason',
+          details:
+            '36 instances of PHI access outside normal business hours without documented reason',
           affectedCount: 36,
           requiresAction: true,
           responsibleParty: 'HIPAA Compliance Officer',
@@ -377,7 +422,8 @@ export class ComplianceReportGeneratorService {
         id: this.generateReportId(),
         reportType: ReportType.HIPAA_AUDIT,
         title: 'HIPAA Compliance Audit Report',
-        description: 'Protected Health Information (PHI) access and security audit',
+        description:
+          'Protected Health Information (PHI) access and security audit',
         periodStart: params.periodStart,
         periodEnd: params.periodEnd,
         generatedDate: new Date(),
@@ -424,7 +470,9 @@ export class ComplianceReportGeneratorService {
     generatedBy: string;
   }): Promise<ComplianceReport> {
     try {
-      this.logger.log(`Generating health screening report for school ${params.schoolId}`);
+      this.logger.log(
+        `Generating health screening report for school ${params.schoolId}`,
+      );
 
       const students = await this.studentModel.count({
         where: { schoolId: params.schoolId, isActive: true },
@@ -437,11 +485,13 @@ export class ComplianceReportGeneratorService {
             [Op.between]: [params.periodStart, params.periodEnd],
           },
         },
-        include: [{
-          model: Student,
-          where: { schoolId: params.schoolId },
-          required: true,
-        }],
+        include: [
+          {
+            model: Student,
+            where: { schoolId: params.schoolId },
+            required: true,
+          },
+        ],
       });
 
       const totalStudents = students;
@@ -453,10 +503,22 @@ export class ComplianceReportGeneratorService {
           sectionTitle: 'Screening Completion Overview',
           sectionType: 'summary',
           data: {
-            vision: { completed: Math.floor(totalStudents * 0.94), pending: Math.floor(totalStudents * 0.06) },
-            hearing: { completed: Math.floor(totalStudents * 0.93), pending: Math.floor(totalStudents * 0.07) },
-            dental: { completed: Math.floor(totalStudents * 0.86), pending: Math.floor(totalStudents * 0.14) },
-            scoliosis: { completed: Math.floor(totalStudents * 0.91), pending: Math.floor(totalStudents * 0.09) },
+            vision: {
+              completed: Math.floor(totalStudents * 0.94),
+              pending: Math.floor(totalStudents * 0.06),
+            },
+            hearing: {
+              completed: Math.floor(totalStudents * 0.93),
+              pending: Math.floor(totalStudents * 0.07),
+            },
+            dental: {
+              completed: Math.floor(totalStudents * 0.86),
+              pending: Math.floor(totalStudents * 0.14),
+            },
+            scoliosis: {
+              completed: Math.floor(totalStudents * 0.91),
+              pending: Math.floor(totalStudents * 0.09),
+            },
           },
           summary: `${screenedStudents} of ${totalStudents} students have completed required health screenings.`,
         },
@@ -480,7 +542,10 @@ export class ComplianceReportGeneratorService {
         },
         sections,
         findings: [],
-        recommendations: ['Schedule additional dental screening dates', 'Send reminder notices for pending screenings'],
+        recommendations: [
+          'Schedule additional dental screening dates',
+          'Send reminder notices for pending screenings',
+        ],
         status: ReportStatus.COMPLETED,
         format: params.format,
         generatedBy: params.generatedBy,
@@ -492,7 +557,10 @@ export class ComplianceReportGeneratorService {
       this.logger.log(`Health screening report generated: ${report.id}`);
       return report;
     } catch (error) {
-      this.logger.error('Error generating health screening report', error.stack);
+      this.logger.error(
+        'Error generating health screening report',
+        error.stack,
+      );
       throw error;
     }
   }
@@ -564,7 +632,7 @@ export class ComplianceReportGeneratorService {
         order: [['generatedDate', 'DESC']],
       });
 
-      return dbReports.map(r => this.mapDbReportToCompliance(r));
+      return dbReports.map((r) => this.mapDbReportToCompliance(r));
     } catch (error) {
       this.logger.error('Error retrieving reports', error.stack);
       throw error;
@@ -585,7 +653,9 @@ export class ComplianceReportGeneratorService {
       };
 
       this.scheduledConfigs.push(scheduledConfig);
-      this.logger.log(`Recurring report scheduled: ${scheduledConfig.id} - ${config.reportType} ${config.frequency}`);
+      this.logger.log(
+        `Recurring report scheduled: ${scheduledConfig.id} - ${config.reportType} ${config.frequency}`,
+      );
 
       return scheduledConfig;
     } catch (error) {
@@ -653,7 +723,10 @@ export class ComplianceReportGeneratorService {
   /**
    * Distribute report to recipients via email
    */
-  async distributeReport(reportId: string, recipients: string[]): Promise<void> {
+  async distributeReport(
+    reportId: string,
+    recipients: string[],
+  ): Promise<void> {
     try {
       const report = await this.getReport(reportId);
 
@@ -674,7 +747,11 @@ export class ComplianceReportGeneratorService {
             url: report.fileUrl || `/reports/${report.id}.pdf`,
           },
         ],
-        priority: report.findings.some(f => f.severity === 'CRITICAL' || f.severity === 'HIGH') ? 'high' : 'normal',
+        priority: report.findings.some(
+          (f) => f.severity === 'CRITICAL' || f.severity === 'HIGH',
+        )
+          ? 'high'
+          : 'normal',
       };
 
       // Placeholder for email service integration
@@ -689,7 +766,9 @@ export class ComplianceReportGeneratorService {
 
       await this.cacheManager.set(`report:${reportId}`, updatedReport, 300000);
 
-      this.logger.log(`Report distributed: ${reportId} to ${recipients.length} recipients`);
+      this.logger.log(
+        `Report distributed: ${reportId} to ${recipients.length} recipients`,
+      );
     } catch (error) {
       this.logger.error(`Error distributing report ${reportId}`, error.stack);
       throw error;
@@ -718,9 +797,17 @@ export class ComplianceReportGeneratorService {
       doc.setFont('helvetica', 'normal');
       doc.text(`Report ID: ${report.id}`, 15, yPos);
       yPos += 5;
-      doc.text(`Generated: ${report.generatedDate.toLocaleDateString()}`, 15, yPos);
+      doc.text(
+        `Generated: ${report.generatedDate.toLocaleDateString()}`,
+        15,
+        yPos,
+      );
       yPos += 5;
-      doc.text(`Period: ${report.periodStart.toLocaleDateString()} - ${report.periodEnd.toLocaleDateString()}`, 15, yPos);
+      doc.text(
+        `Period: ${report.periodStart.toLocaleDateString()} - ${report.periodEnd.toLocaleDateString()}`,
+        15,
+        yPos,
+      );
       yPos += 10;
 
       // Executive Summary
@@ -738,7 +825,10 @@ export class ComplianceReportGeneratorService {
         body: [
           ['Total Records', report.summary.totalRecords.toString()],
           ['Compliant Records', report.summary.compliantRecords.toString()],
-          ['Non-Compliant Records', report.summary.nonCompliantRecords.toString()],
+          [
+            'Non-Compliant Records',
+            report.summary.nonCompliantRecords.toString(),
+          ],
           ['Compliance Rate', `${report.summary.complianceRate}%`],
           ['Status', report.summary.status],
         ],
@@ -763,7 +853,7 @@ export class ComplianceReportGeneratorService {
         autoTable(doc, {
           startY: yPos,
           head: [['Severity', 'Category', 'Issue', 'Affected']],
-          body: report.findings.map(f => [
+          body: report.findings.map((f) => [
             f.severity,
             f.category,
             f.issue,
@@ -796,7 +886,9 @@ export class ComplianceReportGeneratorService {
             doc.addPage();
             yPos = 20;
           }
-          doc.text(`${index + 1}. ${rec}`, 15, yPos, { maxWidth: pageWidth - 30 });
+          doc.text(`${index + 1}. ${rec}`, 15, yPos, {
+            maxWidth: pageWidth - 30,
+          });
           yPos += 7;
         });
       }
@@ -810,7 +902,7 @@ export class ComplianceReportGeneratorService {
           `Page ${i} of ${pageCount} | Generated by White Cross Health Platform`,
           pageWidth / 2,
           doc.internal.pageSize.height - 10,
-          { align: 'center' }
+          { align: 'center' },
         );
       }
 
@@ -844,8 +936,14 @@ export class ComplianceReportGeneratorService {
       rows.push(['SUMMARY']);
       rows.push(['Metric', 'Value']);
       rows.push(['Total Records', report.summary.totalRecords.toString()]);
-      rows.push(['Compliant Records', report.summary.compliantRecords.toString()]);
-      rows.push(['Non-Compliant Records', report.summary.nonCompliantRecords.toString()]);
+      rows.push([
+        'Compliant Records',
+        report.summary.compliantRecords.toString(),
+      ]);
+      rows.push([
+        'Non-Compliant Records',
+        report.summary.nonCompliantRecords.toString(),
+      ]);
       rows.push(['Compliance Rate', `${report.summary.complianceRate}%`]);
       rows.push(['Status', report.summary.status]);
       rows.push([]);
@@ -853,8 +951,14 @@ export class ComplianceReportGeneratorService {
       // Findings
       if (report.findings.length > 0) {
         rows.push(['FINDINGS']);
-        rows.push(['Severity', 'Category', 'Issue', 'Details', 'Affected Count']);
-        report.findings.forEach(f => {
+        rows.push([
+          'Severity',
+          'Category',
+          'Issue',
+          'Details',
+          'Affected Count',
+        ]);
+        report.findings.forEach((f) => {
           rows.push([
             f.severity,
             f.category,
@@ -876,7 +980,7 @@ export class ComplianceReportGeneratorService {
 
       // Convert to CSV string with proper escaping
       const csvContent = rows
-        .map(row => row.map(cell => this.escapeCSVCell(cell)).join(','))
+        .map((row) => row.map((cell) => this.escapeCSVCell(cell)).join(','))
         .join('\n');
 
       // In production, save to cloud storage
@@ -938,7 +1042,9 @@ export class ComplianceReportGeneratorService {
   /**
    * Save report to database
    */
-  private async saveReportToDatabase(report: ComplianceReport): Promise<AnalyticsReport> {
+  private async saveReportToDatabase(
+    report: ComplianceReport,
+  ): Promise<AnalyticsReport> {
     try {
       const dbReport = await this.analyticsReportModel.create({
         id: report.id,
@@ -1012,7 +1118,9 @@ export class ComplianceReportGeneratorService {
   /**
    * Calculate next scheduled date based on frequency
    */
-  private calculateNextScheduled(frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'ANNUALLY'): Date {
+  private calculateNextScheduled(
+    frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'ANNUALLY',
+  ): Date {
     const now = new Date();
     const next = new Date(now);
 
@@ -1051,7 +1159,9 @@ export class ComplianceReportGeneratorService {
    * Generate email body for report distribution
    */
   private generateEmailBody(report: ComplianceReport): string {
-    const criticalFindings = report.findings.filter(f => f.severity === 'CRITICAL' || f.severity === 'HIGH');
+    const criticalFindings = report.findings.filter(
+      (f) => f.severity === 'CRITICAL' || f.severity === 'HIGH',
+    );
 
     let body = `<h2>${report.title}</h2>`;
     body += `<p><strong>Report Period:</strong> ${report.periodStart.toLocaleDateString()} - ${report.periodEnd.toLocaleDateString()}</p>`;
@@ -1069,7 +1179,7 @@ export class ComplianceReportGeneratorService {
     if (criticalFindings.length > 0) {
       body += `<h3 style="color: red;">Critical Findings (${criticalFindings.length})</h3>`;
       body += `<ul>`;
-      criticalFindings.forEach(f => {
+      criticalFindings.forEach((f) => {
         body += `<li><strong>${f.category}:</strong> ${f.issue}</li>`;
       });
       body += `</ul>`;

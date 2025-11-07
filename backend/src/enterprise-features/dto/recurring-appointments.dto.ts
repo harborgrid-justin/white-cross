@@ -1,4 +1,10 @@
-import { IsString, IsEnum, IsOptional, IsDateString, IsNumber } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsOptional,
+  IsDateString,
+  IsNumber,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateRecurringTemplateDto {
@@ -10,7 +16,10 @@ export class CreateRecurringTemplateDto {
   @IsString()
   appointmentType: string;
 
-  @ApiProperty({ enum: ['daily', 'weekly', 'biweekly', 'monthly'], description: 'Recurrence frequency' })
+  @ApiProperty({
+    enum: ['daily', 'weekly', 'biweekly', 'monthly'],
+    description: 'Recurrence frequency',
+  })
   @IsEnum(['daily', 'weekly', 'biweekly', 'monthly'])
   frequency: 'daily' | 'weekly' | 'biweekly' | 'monthly';
 

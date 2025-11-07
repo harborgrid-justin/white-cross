@@ -401,7 +401,10 @@ export class CacheService implements OnModuleDestroy {
       this.cleanup();
     }, this.config.cleanupInterval);
 
-    this.log('CLEANUP', `Started automatic cleanup (interval: ${this.config.cleanupInterval}ms)`);
+    this.log(
+      'CLEANUP',
+      `Started automatic cleanup (interval: ${this.config.cleanupInterval}ms)`,
+    );
   }
 
   /**

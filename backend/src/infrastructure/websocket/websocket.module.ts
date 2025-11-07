@@ -66,12 +66,14 @@ import { AuthModule } from '../../auth/auth.module';
     // JWT Module for authentication
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService): Promise<JwtModuleOptions> => {
+      useFactory: async (
+        configService: ConfigService,
+      ): Promise<JwtModuleOptions> => {
         const jwtSecret = configService.get<string>('JWT_SECRET');
 
         if (!jwtSecret) {
           throw new Error(
-            'CRITICAL SECURITY ERROR: JWT_SECRET not configured for WebSocket module'
+            'CRITICAL SECURITY ERROR: JWT_SECRET not configured for WebSocket module',
           );
         }
 

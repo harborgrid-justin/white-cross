@@ -36,12 +36,7 @@ import { PUB_SUB } from '../pubsub/pubsub.module';
 import { GqlAuthGuard, GqlRolesGuard } from '../guards';
 import { Roles } from '../../../auth/decorators/roles.decorator';
 import { UserRole } from '../../../database/models/user.model';
-import {
-  HealthRecordDto,
-  StudentDto,
-  AlertDto,
-  VitalsDto,
-} from '../dto';
+import { HealthRecordDto, StudentDto, AlertDto, VitalsDto } from '../dto';
 
 /**
  * Subscription event names
@@ -100,7 +95,12 @@ export class SubscriptionResolver {
     },
   })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN, UserRole.NURSE)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.SCHOOL_ADMIN,
+    UserRole.DISTRICT_ADMIN,
+    UserRole.NURSE,
+  )
   healthRecordCreated(
     @Args('studentId', { type: () => ID, nullable: true }) studentId?: string,
   ) {
@@ -136,7 +136,12 @@ export class SubscriptionResolver {
     },
   })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN, UserRole.NURSE)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.SCHOOL_ADMIN,
+    UserRole.DISTRICT_ADMIN,
+    UserRole.NURSE,
+  )
   healthRecordUpdated(
     @Args('studentId', { type: () => ID, nullable: true }) studentId?: string,
   ) {
@@ -285,10 +290,10 @@ export class SubscriptionResolver {
   })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
   @Roles(UserRole.ADMIN, UserRole.NURSE)
-  vitalsUpdated(
-    @Args('studentId', { type: () => ID }) studentId: string,
-  ) {
-    return this.pubSub.asyncIterator(`${SubscriptionEvent.VITALS_UPDATED}_${studentId}`);
+  vitalsUpdated(@Args('studentId', { type: () => ID }) studentId: string) {
+    return this.pubSub.asyncIterator(
+      `${SubscriptionEvent.VITALS_UPDATED}_${studentId}`,
+    );
   }
 }
 

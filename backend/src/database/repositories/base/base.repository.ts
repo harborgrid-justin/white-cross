@@ -24,12 +24,28 @@ import {
   WhereOptions,
   Attributes,
   CreationAttributes,
-  Op
+  Op,
 } from 'sequelize';
-import { IRepository, RepositoryError } from '../interfaces/repository.interface';
-import { ExecutionContext, QueryOptions, QueryCriteria, PaginatedResult, createPaginationMetadata, calculateSkip } from '../../types';
-import { IAuditLogger, sanitizeSensitiveData } from '../../interfaces/audit/audit-logger.interface';
-import { ICacheManager, CacheKeyBuilder } from '../../interfaces/cache/cache-manager.interface';
+import {
+  IRepository,
+  RepositoryError,
+} from '../interfaces/repository.interface';
+import {
+  ExecutionContext,
+  QueryOptions,
+  QueryCriteria,
+  PaginatedResult,
+  createPaginationMetadata,
+  calculateSkip,
+} from '../../types';
+import {
+  IAuditLogger,
+  sanitizeSensitiveData,
+} from '../../interfaces/audit/audit-logger.interface';
+import {
+  ICacheManager,
+  CacheKeyBuilder,
+} from '../../interfaces/cache/cache-manager.interface';
 import { getCacheTTL } from '../../types/database.enums';
 
 /**
@@ -39,9 +55,9 @@ import { getCacheTTL } from '../../types/database.enums';
 export abstract class BaseRepository<
   TModel extends Model & { id: string },
   TAttributes extends { id: string } = Attributes<TModel>,
-  TCreationAttributes = CreationAttributes<TModel>
-> implements IRepository<TAttributes, TCreationAttributes, Partial<TAttributes>> {
-
+  TCreationAttributes = CreationAttributes<TModel>,
+> implements IRepository<TAttributes, TCreationAttributes, Partial<TAttributes>>
+{
   protected readonly logger: Logger;
   protected readonly model: any; // Using any for sequelize-typescript compatibility
   protected readonly auditLogger: IAuditLogger;
@@ -53,7 +69,7 @@ export abstract class BaseRepository<
     model: any, // Using any for sequelize-typescript compatibility
     auditLogger: IAuditLogger,
     cacheManager: ICacheManager,
-    entityName: string
+    entityName: string,
   ) {
     this.model = model;
     this.auditLogger = auditLogger;
@@ -68,7 +84,7 @@ export abstract class BaseRepository<
    */
   async findById(
     id: string,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): Promise<TAttributes | null> {
     try {
       // Check cache first if enabled
@@ -103,7 +119,7 @@ export abstract class BaseRepository<
         `Failed to find ${this.entityName}`,
         'FIND_ERROR',
         500,
-        { id, error: (error as Error).message }
+        { id, error: (error as Error).message },
       );
     }
   }
@@ -113,7 +129,7 @@ export abstract class BaseRepository<
    */
   async findMany(
     criteria: QueryCriteria<TAttributes>,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): Promise<PaginatedResult<TAttributes>> {
     try {
       const page = criteria.pagination?.page || 1;
@@ -121,14 +137,16 @@ export abstract class BaseRepository<
       const offset = calculateSkip(page, limit);
 
       const whereClause = this.buildWhereClause(criteria.where);
-      const orderClause = this.buildOrderClause(criteria.orderBy || options?.orderBy);
+      const orderClause = this.buildOrderClause(
+        criteria.orderBy || options?.orderBy,
+      );
 
       const findOptions: FindOptions = {
         where: whereClause,
         order: orderClause,
         limit,
         offset,
-        ...this.buildFindOptions(options)
+        ...this.buildFindOptions(options),
       };
 
       const { rows, count } = await this.model.findAndCountAll(findOptions);
@@ -137,7 +155,7 @@ export abstract class BaseRepository<
 
       return {
         data: entities,
-        pagination: createPaginationMetadata(page, limit, count)
+        pagination: createPaginationMetadata(page, limit, count),
       };
     } catch (error) {
       this.logger.error(`Error finding ${this.entityName} records:`, error);
@@ -145,7 +163,7 @@ export abstract class BaseRepository<
         `Failed to find ${this.entityName} records`,
         'FIND_MANY_ERROR',
         500,
-        { error: (error as Error).message }
+        { error: (error as Error).message },
       );
     }
   }
@@ -155,7 +173,7 @@ export abstract class BaseRepository<
    */
   async create(
     data: TCreationAttributes,
-    context: ExecutionContext
+    context: ExecutionContext,
   ): Promise<TAttributes> {
     let transaction: Transaction | undefined;
 
@@ -167,7 +185,7 @@ export abstract class BaseRepository<
       transaction = await this.model.sequelize!.transaction();
 
       const createOptions: CreateOptions = {
-        transaction
+        transaction,
       };
 
       const result = await this.model.create(data as any, createOptions);
@@ -177,7 +195,7 @@ export abstract class BaseRepository<
         this.entityName,
         result.id as string,
         context,
-        this.sanitizeForAudit(result.get())
+        this.sanitizeForAudit(result.get()),
       );
 
       // Invalidate related caches
@@ -187,7 +205,9 @@ export abstract class BaseRepository<
         await transaction.commit();
       }
 
-      this.logger.log(`Created ${this.entityName}:${result.id} by user ${context.userId}`);
+      this.logger.log(
+        `Created ${this.entityName}:${result.id} by user ${context.userId}`,
+      );
 
       return this.mapToEntity(result);
     } catch (error) {
@@ -205,7 +225,7 @@ export abstract class BaseRepository<
         `Failed to create ${this.entityName}`,
         'CREATE_ERROR',
         500,
-        { error: (error as Error).message }
+        { error: (error as Error).message },
       );
     }
   }
@@ -216,7 +236,7 @@ export abstract class BaseRepository<
   async update(
     id: string,
     data: Partial<TAttributes>,
-    context: ExecutionContext
+    context: ExecutionContext,
   ): Promise<TAttributes> {
     let transaction: Transaction | undefined;
 
@@ -229,7 +249,7 @@ export abstract class BaseRepository<
           `${this.entityName} not found`,
           'NOT_FOUND',
           404,
-          { id }
+          { id },
         );
       }
 
@@ -242,7 +262,7 @@ export abstract class BaseRepository<
       const updateOptions: UpdateOptions = {
         where: { id } as any,
         transaction,
-        returning: true
+        returning: true,
       };
 
       await this.model.update(data as any, updateOptions);
@@ -255,24 +275,16 @@ export abstract class BaseRepository<
           `${this.entityName} not found after update`,
           'UPDATE_ERROR',
           500,
-          { id }
+          { id },
         );
       }
 
       // Calculate changes for audit
-      const changes = this.calculateChanges(
-        existing.get(),
-        updated.get()
-      );
+      const changes = this.calculateChanges(existing.get(), updated.get());
 
       // Audit log with changes
       if (Object.keys(changes).length > 0) {
-        await this.auditLogger.logUpdate(
-          this.entityName,
-          id,
-          context,
-          changes
-        );
+        await this.auditLogger.logUpdate(this.entityName, id, context, changes);
       }
 
       // Invalidate related caches
@@ -282,7 +294,9 @@ export abstract class BaseRepository<
         await transaction.commit();
       }
 
-      this.logger.log(`Updated ${this.entityName}:${id} by user ${context.userId}`);
+      this.logger.log(
+        `Updated ${this.entityName}:${id} by user ${context.userId}`,
+      );
 
       return this.mapToEntity(updated);
     } catch (error) {
@@ -300,7 +314,7 @@ export abstract class BaseRepository<
         `Failed to update ${this.entityName}`,
         'UPDATE_ERROR',
         500,
-        { id, error: (error as Error).message }
+        { id, error: (error as Error).message },
       );
     }
   }
@@ -319,7 +333,7 @@ export abstract class BaseRepository<
           `${this.entityName} not found`,
           'NOT_FOUND',
           404,
-          { id }
+          { id },
         );
       }
 
@@ -327,7 +341,7 @@ export abstract class BaseRepository<
 
       const destroyOptions: DestroyOptions = {
         where: { id } as any,
-        transaction
+        transaction,
       };
 
       await this.model.destroy(destroyOptions);
@@ -337,7 +351,7 @@ export abstract class BaseRepository<
         this.entityName,
         id,
         context,
-        this.sanitizeForAudit(existing.get())
+        this.sanitizeForAudit(existing.get()),
       );
 
       // Invalidate related caches
@@ -347,7 +361,9 @@ export abstract class BaseRepository<
         await transaction.commit();
       }
 
-      this.logger.log(`Deleted ${this.entityName}:${id} by user ${context.userId}`);
+      this.logger.log(
+        `Deleted ${this.entityName}:${id} by user ${context.userId}`,
+      );
     } catch (error) {
       if (transaction) {
         await transaction.rollback();
@@ -363,7 +379,7 @@ export abstract class BaseRepository<
         `Failed to delete ${this.entityName}`,
         'DELETE_ERROR',
         500,
-        { id, error: (error as Error).message }
+        { id, error: (error as Error).message },
       );
     }
   }
@@ -374,7 +390,7 @@ export abstract class BaseRepository<
   async exists(criteria: Partial<TAttributes>): Promise<boolean> {
     try {
       const count = await this.model.count({
-        where: criteria as WhereOptions
+        where: criteria as WhereOptions,
       });
       return count > 0;
     } catch (error) {
@@ -388,7 +404,7 @@ export abstract class BaseRepository<
    */
   async bulkCreate(
     data: TCreationAttributes[],
-    context: ExecutionContext
+    context: ExecutionContext,
   ): Promise<TAttributes[]> {
     let transaction: Transaction | undefined;
 
@@ -398,7 +414,7 @@ export abstract class BaseRepository<
       const results = await this.model.bulkCreate(data as any[], {
         transaction,
         validate: true,
-        returning: true
+        returning: true,
       });
 
       // Audit log bulk operation
@@ -406,14 +422,16 @@ export abstract class BaseRepository<
         'BULK_CREATE',
         this.entityName,
         context,
-        { count: results.length }
+        { count: results.length },
       );
 
       if (transaction) {
         await transaction.commit();
       }
 
-      this.logger.log(`Bulk created ${results.length} ${this.entityName} records`);
+      this.logger.log(
+        `Bulk created ${results.length} ${this.entityName} records`,
+      );
 
       return results.map((r) => this.mapToEntity(r));
     } catch (error) {
@@ -426,7 +444,7 @@ export abstract class BaseRepository<
         `Failed to bulk create ${this.entityName}`,
         'BULK_CREATE_ERROR',
         500,
-        { error: (error as Error).message }
+        { error: (error as Error).message },
       );
     }
   }
@@ -437,7 +455,7 @@ export abstract class BaseRepository<
   async count(criteria?: Partial<TAttributes>): Promise<number> {
     try {
       return await this.model.count({
-        where: criteria as WhereOptions
+        where: criteria as WhereOptions,
       });
     } catch (error) {
       this.logger.error(`Error counting ${this.entityName}:`, error);
@@ -445,7 +463,7 @@ export abstract class BaseRepository<
         `Failed to count ${this.entityName}`,
         'COUNT_ERROR',
         500,
-        { error: (error as Error).message }
+        { error: (error as Error).message },
       );
     }
   }
@@ -536,7 +554,7 @@ export abstract class BaseRepository<
 
     return Object.entries(orderBy).map(([key, direction]) => [
       key,
-      (direction as string).toUpperCase()
+      (direction as string).toUpperCase(),
     ]);
   }
 
@@ -545,7 +563,7 @@ export abstract class BaseRepository<
    */
   protected calculateChanges(
     before: any,
-    after: any
+    after: any,
   ): Record<string, { before: any; after: any }> {
     const changes: Record<string, { before: any; after: any }> = {};
 
@@ -557,7 +575,7 @@ export abstract class BaseRepository<
       ) {
         changes[key] = {
           before: before[key],
-          after: after[key]
+          after: after[key],
         };
       }
     }
@@ -577,7 +595,10 @@ export abstract class BaseRepository<
    * Validate data before update
    * Override for custom validation
    */
-  protected async validateUpdate(id: string, data: Partial<TAttributes>): Promise<void> {
+  protected async validateUpdate(
+    id: string,
+    data: Partial<TAttributes>,
+  ): Promise<void> {
     // Default: no validation
   }
 

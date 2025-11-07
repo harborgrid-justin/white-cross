@@ -8,7 +8,7 @@ import {
   BeforeCreate,
   BeforeUpdate,
   Scopes,
-  HasMany
+  HasMany,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 import { Op } from 'sequelize';
@@ -33,45 +33,48 @@ export interface MedicationAttributes {
   active: {
     where: {
       isActive: true,
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['name', 'ASC']]
+    order: [['name', 'ASC']],
   },
   controlled: {
     where: {
       isControlled: true,
-      isActive: true
+      isActive: true,
     },
-    order: [['deaSchedule', 'ASC'], ['name', 'ASC']]
+    order: [
+      ['deaSchedule', 'ASC'],
+      ['name', 'ASC'],
+    ],
   },
   byDEASchedule: (schedule: 'I' | 'II' | 'III' | 'IV' | 'V') => ({
     where: {
       deaSchedule: schedule,
-      isActive: true
+      isActive: true,
     },
-    order: [['name', 'ASC']]
+    order: [['name', 'ASC']],
   }),
   byDosageForm: (form: string) => ({
     where: {
       dosageForm: form,
-      isActive: true
+      isActive: true,
     },
-    order: [['name', 'ASC']]
+    order: [['name', 'ASC']],
   }),
   requiresWitness: {
     where: {
       requiresWitness: true,
-      isActive: true
+      isActive: true,
     },
-    order: [['name', 'ASC']]
+    order: [['name', 'ASC']],
   },
   byManufacturer: (manufacturer: string) => ({
     where: {
       manufacturer,
-      isActive: true
+      isActive: true,
     },
-    order: [['name', 'ASC']]
-  })
+    order: [['name', 'ASC']],
+  }),
 }))
 @Table({
   tableName: 'medications',
@@ -81,49 +84,52 @@ export interface MedicationAttributes {
   indexes: [
     {
       fields: ['name'],
-      name: 'idx_medications_name'
+      name: 'idx_medications_name',
     },
     {
       fields: ['genericName'],
-      name: 'idx_medications_generic_name'
+      name: 'idx_medications_generic_name',
     },
     {
       fields: ['ndc'],
       unique: true,
-      name: 'idx_medications_ndc_unique'
+      name: 'idx_medications_ndc_unique',
     },
     {
       fields: ['isControlled'],
-      name: 'idx_medications_controlled'
+      name: 'idx_medications_controlled',
     },
     {
       fields: ['isActive'],
-      name: 'idx_medications_active'
+      name: 'idx_medications_active',
     },
     // Additional composite indexes
     {
       fields: ['isActive', 'name'],
-      name: 'idx_medications_active_name'
+      name: 'idx_medications_active_name',
     },
     {
       fields: ['isControlled', 'deaSchedule'],
-      name: 'idx_medications_controlled_schedule'
+      name: 'idx_medications_controlled_schedule',
     },
     {
       fields: ['dosageForm', 'isActive'],
-      name: 'idx_medications_form_active'
+      name: 'idx_medications_form_active',
     },
     {
       fields: ['createdAt'],
-      name: 'idx_medications_created_at'
+      name: 'idx_medications_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_medications_updated_at'
-    }
-  ]
+      name: 'idx_medications_updated_at',
+    },
+  ],
 })
-export class Medication extends Model<MedicationAttributes> implements MedicationAttributes {
+export class Medication
+  extends Model<MedicationAttributes>
+  implements MedicationAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -131,7 +137,7 @@ export class Medication extends Model<MedicationAttributes> implements Medicatio
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   name: string;
 
@@ -140,13 +146,13 @@ export class Medication extends Model<MedicationAttributes> implements Medicatio
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   dosageForm: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   strength: string;
 
@@ -159,9 +165,9 @@ export class Medication extends Model<MedicationAttributes> implements Medicatio
     validate: {
       is: {
         args: /^\d{4,5}-\d{3,4}-\d{1,2}$/,
-        msg: 'NDC must be in format 12345-1234-12 or 1234-123-1'
-      }
-    }
+        msg: 'NDC must be in format 12345-1234-12 or 1234-123-1',
+      },
+    },
   })
   ndc?: string;
 
@@ -170,7 +176,7 @@ export class Medication extends Model<MedicationAttributes> implements Medicatio
   isControlled: boolean;
 
   @Column({
-    type: DataType.ENUM('I', 'II', 'III', 'IV', 'V')
+    type: DataType.ENUM('I', 'II', 'III', 'IV', 'V'),
   })
   deaSchedule?: 'I' | 'II' | 'III' | 'IV' | 'V';
 
@@ -195,10 +201,16 @@ export class Medication extends Model<MedicationAttributes> implements Medicatio
   declare updatedAt: Date;
 
   // Relationships
-  @HasMany(() => require('./student-medication.model').StudentMedication, { foreignKey: 'medicationId', as: 'studentMedications' })
+  @HasMany(() => require('./student-medication.model').StudentMedication, {
+    foreignKey: 'medicationId',
+    as: 'studentMedications',
+  })
   declare studentMedications?: any[];
 
-  @HasMany(() => require('./medication-log.model').MedicationLog, { foreignKey: 'medicationId', as: 'medicationLogs' })
+  @HasMany(() => require('./medication-log.model').MedicationLog, {
+    foreignKey: 'medicationId',
+    as: 'medicationLogs',
+  })
   declare medicationLogs?: any[];
 
   // Hooks for HIPAA compliance and validation
@@ -207,7 +219,9 @@ export class Medication extends Model<MedicationAttributes> implements Medicatio
   static async auditAccess(instance: Medication) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] Medication ${instance.id} (${instance.name}) modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] Medication ${instance.id} (${instance.name}) modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }
@@ -228,7 +242,10 @@ export class Medication extends Model<MedicationAttributes> implements Medicatio
   @BeforeUpdate
   static async setWitnessRequirement(instance: Medication) {
     // Schedule II and III controlled substances typically require witness
-    if (instance.isControlled && ['II', 'III'].includes(instance.deaSchedule || '')) {
+    if (
+      instance.isControlled &&
+      ['II', 'III'].includes(instance.deaSchedule || '')
+    ) {
       instance.requiresWitness = true;
     }
   }

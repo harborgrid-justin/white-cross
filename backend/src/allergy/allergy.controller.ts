@@ -58,7 +58,8 @@ export class AllergyController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Create a new allergy record',
-    description: 'Creates a new allergy record for a student with severity classification and clinical information',
+    description:
+      'Creates a new allergy record for a student with severity classification and clinical information',
   })
   @ApiResponse({
     status: 201,
@@ -123,7 +124,8 @@ export class AllergyController {
   @Get('student/:studentId')
   @ApiOperation({
     summary: 'Get all allergies for a student',
-    description: 'Retrieves all allergy records for a specific student, optionally including inactive allergies',
+    description:
+      'Retrieves all allergy records for a specific student, optionally including inactive allergies',
   })
   @ApiParam({
     name: 'studentId',
@@ -148,8 +150,14 @@ export class AllergyController {
           id: { type: 'string', format: 'uuid' },
           studentId: { type: 'string', format: 'uuid' },
           allergen: { type: 'string', example: 'Peanuts' },
-          severity: { type: 'string', enum: ['MILD', 'MODERATE', 'SEVERE', 'LIFE_THREATENING'] },
-          reaction: { type: 'string', example: 'Anaphylaxis, hives, difficulty breathing' },
+          severity: {
+            type: 'string',
+            enum: ['MILD', 'MODERATE', 'SEVERE', 'LIFE_THREATENING'],
+          },
+          reaction: {
+            type: 'string',
+            example: 'Anaphylaxis, hives, difficulty breathing',
+          },
           verified: { type: 'boolean' },
         },
       },
@@ -181,7 +189,8 @@ export class AllergyController {
   @Get('student/:studentId/critical')
   @ApiOperation({
     summary: 'Get critical allergies',
-    description: 'Retrieves only SEVERE and LIFE_THREATENING allergies for a student - used for safety alerts',
+    description:
+      'Retrieves only SEVERE and LIFE_THREATENING allergies for a student - used for safety alerts',
   })
   @ApiParam({
     name: 'studentId',
@@ -214,7 +223,8 @@ export class AllergyController {
   @Get('search/all')
   @ApiOperation({
     summary: 'Search allergies',
-    description: 'Advanced allergy search with filters (allergen type, severity, verified status) and pagination',
+    description:
+      'Advanced allergy search with filters (allergen type, severity, verified status) and pagination',
   })
   @ApiQuery({
     name: 'page',
@@ -267,7 +277,8 @@ export class AllergyController {
   @Get('statistics/all')
   @ApiOperation({
     summary: 'Get allergy statistics',
-    description: 'Retrieves aggregated statistics about allergies (counts by severity, type, etc.)',
+    description:
+      'Retrieves aggregated statistics about allergies (counts by severity, type, etc.)',
   })
   @ApiResponse({
     status: 200,
@@ -352,7 +363,8 @@ export class AllergyController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Deactivate allergy',
-    description: 'Soft deletes an allergy record (marks as inactive) - used when allergy is resolved or no longer relevant',
+    description:
+      'Soft deletes an allergy record (marks as inactive) - used when allergy is resolved or no longer relevant',
   })
   @ApiParam({
     name: 'id',
@@ -384,7 +396,8 @@ export class AllergyController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Delete allergy permanently',
-    description: 'Permanently deletes an allergy record from the database - use with caution',
+    description:
+      'Permanently deletes an allergy record from the database - use with caution',
   })
   @ApiParam({
     name: 'id',
@@ -415,7 +428,8 @@ export class AllergyController {
   @Post(':id/verify')
   @ApiOperation({
     summary: 'Verify allergy',
-    description: 'Marks an allergy as clinically verified by a healthcare professional',
+    description:
+      'Marks an allergy as clinically verified by a healthcare professional',
   })
   @ApiParam({
     name: 'id',
@@ -452,16 +466,29 @@ export class AllergyController {
   @Post('check-conflict')
   @ApiOperation({
     summary: 'Check drug-allergy conflict',
-    description: 'Safety check to detect potential drug-allergy interactions before medication administration',
+    description:
+      'Safety check to detect potential drug-allergy interactions before medication administration',
   })
   @ApiBody({
     schema: {
       type: 'object',
       required: ['studentId', 'medicationName'],
       properties: {
-        studentId: { type: 'string', format: 'uuid', description: 'Student UUID' },
-        medicationName: { type: 'string', example: 'Amoxicillin', description: 'Medication name to check' },
-        medicationClass: { type: 'string', example: 'Penicillin', description: 'Medication class (optional)' },
+        studentId: {
+          type: 'string',
+          format: 'uuid',
+          description: 'Student UUID',
+        },
+        medicationName: {
+          type: 'string',
+          example: 'Amoxicillin',
+          description: 'Medication name to check',
+        },
+        medicationClass: {
+          type: 'string',
+          example: 'Penicillin',
+          description: 'Medication class (optional)',
+        },
       },
     },
   })
@@ -483,7 +510,10 @@ export class AllergyController {
             },
           },
         },
-        recommendation: { type: 'string', example: 'DO NOT ADMINISTER - Severe allergy conflict detected' },
+        recommendation: {
+          type: 'string',
+          example: 'DO NOT ADMINISTER - Severe allergy conflict detected',
+        },
       },
     },
   })
@@ -518,7 +548,8 @@ export class AllergyController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Bulk create allergies',
-    description: 'Creates multiple allergy records in a single transaction - useful for data imports',
+    description:
+      'Creates multiple allergy records in a single transaction - useful for data imports',
   })
   @ApiBody({
     type: [CreateAllergyDto],

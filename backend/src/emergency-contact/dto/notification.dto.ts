@@ -32,7 +32,7 @@ export enum NotificationPriority {
 export class NotificationDto {
   @ApiProperty({
     description: 'Notification message content',
-    example: 'Your child has a minor injury and is in the nurse\'s office.',
+    example: "Your child has a minor injury and is in the nurse's office.",
     minLength: 1,
   })
   @IsString()

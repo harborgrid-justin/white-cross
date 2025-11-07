@@ -1,5 +1,24 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Query,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+  ApiBody,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { ClinicalNoteService } from '../services/clinical-note.service';
 import { CreateNoteDto } from '../dto/note/create-note.dto';
 import { UpdateNoteDto } from '../dto/note/update-note.dto';
@@ -12,9 +31,10 @@ export class ClinicalNoteController {
   constructor(private readonly noteService: ClinicalNoteService) {}
 
   @Post()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Create clinical note',
-    description: 'Creates a new clinical note for documenting student health visits, assessments, treatments, and clinical decisions. Supports structured SOAP format and free-text documentation.'
+    description:
+      'Creates a new clinical note for documenting student health visits, assessments, treatments, and clinical decisions. Supports structured SOAP format and free-text documentation.',
   })
   @ApiBody({ type: CreateNoteDto })
   @ApiResponse({
@@ -29,16 +49,41 @@ export class ClinicalNoteController {
   }
 
   @Get()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Query clinical notes',
-    description: 'Retrieves clinical notes with filtering options by student, visit, date range, note type, or clinical staff. Supports pagination and sorting for large datasets.'
+    description:
+      'Retrieves clinical notes with filtering options by student, visit, date range, note type, or clinical staff. Supports pagination and sorting for large datasets.',
   })
-  @ApiQuery({ name: 'studentId', required: false, description: 'Filter by student ID' })
-  @ApiQuery({ name: 'visitId', required: false, description: 'Filter by visit ID' })
-  @ApiQuery({ name: 'startDate', required: false, description: 'Start date for filtering' })
-  @ApiQuery({ name: 'endDate', required: false, description: 'End date for filtering' })
-  @ApiQuery({ name: 'noteType', required: false, description: 'Filter by note type (SOAP, Progress, Assessment)' })
-  @ApiQuery({ name: 'authorId', required: false, description: 'Filter by note author ID' })
+  @ApiQuery({
+    name: 'studentId',
+    required: false,
+    description: 'Filter by student ID',
+  })
+  @ApiQuery({
+    name: 'visitId',
+    required: false,
+    description: 'Filter by visit ID',
+  })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    description: 'Start date for filtering',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    description: 'End date for filtering',
+  })
+  @ApiQuery({
+    name: 'noteType',
+    required: false,
+    description: 'Filter by note type (SOAP, Progress, Assessment)',
+  })
+  @ApiQuery({
+    name: 'authorId',
+    required: false,
+    description: 'Filter by note author ID',
+  })
   @ApiResponse({
     status: 200,
     description: 'Clinical notes retrieved successfully',
@@ -49,9 +94,10 @@ export class ClinicalNoteController {
   }
 
   @Get('visit/:visitId')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get notes for a visit',
-    description: 'Retrieves all clinical notes associated with a specific student visit. Returns notes in chronological order with author information and electronic signatures.'
+    description:
+      'Retrieves all clinical notes associated with a specific student visit. Returns notes in chronological order with author information and electronic signatures.',
   })
   @ApiParam({ name: 'visitId', description: 'Visit UUID', format: 'uuid' })
   @ApiResponse({
@@ -65,9 +111,10 @@ export class ClinicalNoteController {
   }
 
   @Get('student/:studentId')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get notes for a student',
-    description: 'Retrieves comprehensive clinical documentation history for a student. Includes all clinical notes across visits, assessments, and health encounters for continuity of care.'
+    description:
+      'Retrieves comprehensive clinical documentation history for a student. Includes all clinical notes across visits, assessments, and health encounters for continuity of care.',
   })
   @ApiParam({ name: 'studentId', description: 'Student UUID', format: 'uuid' })
   @ApiResponse({
@@ -81,9 +128,10 @@ export class ClinicalNoteController {
   }
 
   @Get(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get note by ID',
-    description: 'Retrieves a specific clinical note by its UUID. Returns complete note content, metadata, signature status, and revision history.'
+    description:
+      'Retrieves a specific clinical note by its UUID. Returns complete note content, metadata, signature status, and revision history.',
   })
   @ApiParam({ name: 'id', description: 'Clinical note UUID', format: 'uuid' })
   @ApiResponse({
@@ -97,9 +145,10 @@ export class ClinicalNoteController {
   }
 
   @Patch(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Update clinical note',
-    description: 'Updates an existing clinical note. Only unsigned notes can be modified. Creates an audit trail of changes with timestamp and editor information for regulatory compliance.'
+    description:
+      'Updates an existing clinical note. Only unsigned notes can be modified. Creates an audit trail of changes with timestamp and editor information for regulatory compliance.',
   })
   @ApiParam({ name: 'id', description: 'Clinical note UUID', format: 'uuid' })
   @ApiBody({ type: UpdateNoteDto })
@@ -107,7 +156,10 @@ export class ClinicalNoteController {
     status: 200,
     description: 'Clinical note updated successfully',
   })
-  @ApiResponse({ status: 400, description: 'Invalid input data or note already signed' })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid input data or note already signed',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Clinical note not found' })
   async update(@Param('id') id: string, @Body() updateDto: UpdateNoteDto) {
@@ -115,16 +167,20 @@ export class ClinicalNoteController {
   }
 
   @Post(':id/sign')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Sign clinical note',
-    description: 'Applies electronic signature to a clinical note, finalizing the documentation. Once signed, the note becomes read-only and part of the permanent medical record.'
+    description:
+      'Applies electronic signature to a clinical note, finalizing the documentation. Once signed, the note becomes read-only and part of the permanent medical record.',
   })
   @ApiParam({ name: 'id', description: 'Clinical note UUID', format: 'uuid' })
   @ApiResponse({
     status: 200,
     description: 'Clinical note signed successfully',
   })
-  @ApiResponse({ status: 400, description: 'Note already signed or invalid state' })
+  @ApiResponse({
+    status: 400,
+    description: 'Note already signed or invalid state',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Clinical note not found' })
   async sign(@Param('id') id: string) {
@@ -133,9 +189,10 @@ export class ClinicalNoteController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Delete clinical note',
-    description: 'Soft deletes a clinical note. Signed notes cannot be deleted. Maintains audit trail and may be restricted by medical record retention policies.'
+    description:
+      'Soft deletes a clinical note. Signed notes cannot be deleted. Maintains audit trail and may be restricted by medical record retention policies.',
   })
   @ApiParam({ name: 'id', description: 'Clinical note UUID', format: 'uuid' })
   @ApiResponse({

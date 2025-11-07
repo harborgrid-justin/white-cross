@@ -139,7 +139,9 @@ export interface CacheWarmingStrategy {
   /** Priority level (1-10, 10 is highest) */
   priority: number;
   /** Data loader function */
-  loader: () => Promise<Array<{ key: string; value: any; options?: CacheOptions }>>;
+  loader: () => Promise<
+    Array<{ key: string; value: any; options?: CacheOptions }>
+  >;
   /** Schedule (cron expression for scheduled strategies) */
   schedule?: string;
   /** Cache duration in seconds */

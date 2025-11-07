@@ -7,5 +7,5 @@
 export {
   SyncSession,
   SyncStatus,
-  SyncDirection
+  SyncDirection,
 } from '../../database/models/sync-session.model';

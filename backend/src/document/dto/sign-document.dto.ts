@@ -5,7 +5,14 @@
  */
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsOptional, IsIP, MaxLength, MinLength } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsIP,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 export class SignDocumentDto {
   @ApiProperty({

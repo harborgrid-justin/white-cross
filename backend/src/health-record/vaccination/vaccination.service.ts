@@ -8,7 +8,12 @@
  * CDC Compliance: CVX codes, dose tracking, VIS documentation, compliance monitoring
  */
 
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Model, Op } from 'sequelize';
 import { Vaccination } from '../../database/models/vaccination.model';
@@ -230,17 +235,23 @@ export class VaccinationService {
       // Find matching vaccinations
       const matchingVaccines = vaccinations.filter(
         (v) =>
-          v.vaccineName &&
-          v.vaccineName.toLowerCase().includes(requirement.vaccineName.toLowerCase()) ||
-          v.vaccineType &&
-          requirement.vaccineName.toLowerCase().includes(v.vaccineType.toLowerCase()),
+          (v.vaccineName &&
+            v.vaccineName
+              .toLowerCase()
+              .includes(requirement.vaccineName.toLowerCase())) ||
+          (v.vaccineType &&
+            requirement.vaccineName
+              .toLowerCase()
+              .includes(v.vaccineType.toLowerCase())),
       );
 
       // Check if exemption exists
       const hasExemption = exemptedVaccinations.some(
         (v) =>
           v.vaccineName &&
-          v.vaccineName.toLowerCase().includes(requirement.vaccineName.toLowerCase()),
+          v.vaccineName
+            .toLowerCase()
+            .includes(requirement.vaccineName.toLowerCase()),
       );
 
       if (hasExemption) {
@@ -307,7 +318,10 @@ export class VaccinationService {
    * @param data - Updated vaccination data
    * @returns Updated vaccination record
    */
-  async updateVaccination(id: string, data: Partial<any>): Promise<Vaccination> {
+  async updateVaccination(
+    id: string,
+    data: Partial<any>,
+  ): Promise<Vaccination> {
     const existingVaccination = await this.vaccinationModel.findByPk(id, {
       include: ['student'],
     });
@@ -330,7 +344,8 @@ export class VaccinationService {
 
         // Recalculate next due date if not complete
         if (!data.seriesComplete) {
-          const adminDate = data.administrationDate ?? existingVaccination.administrationDate;
+          const adminDate =
+            data.administrationDate ?? existingVaccination.administrationDate;
           data.nextDueDate = this.calculateNextDueDate(
             adminDate,
             data.vaccineType ?? existingVaccination.vaccineType,
@@ -343,11 +358,18 @@ export class VaccinationService {
     }
 
     // Recalculate compliance status
-    if (data.nextDueDate !== undefined || data.seriesComplete !== undefined || data.exemptionStatus !== undefined) {
-      const adminDate = data.administrationDate ?? existingVaccination.administrationDate;
+    if (
+      data.nextDueDate !== undefined ||
+      data.seriesComplete !== undefined ||
+      data.exemptionStatus !== undefined
+    ) {
+      const adminDate =
+        data.administrationDate ?? existingVaccination.administrationDate;
       const nextDueDate = data.nextDueDate ?? existingVaccination.nextDueDate;
-      const seriesComplete = data.seriesComplete ?? existingVaccination.seriesComplete;
-      const exemptionStatus = data.exemptionStatus ?? existingVaccination.exemptionStatus;
+      const seriesComplete =
+        data.seriesComplete ?? existingVaccination.seriesComplete;
+      const exemptionStatus =
+        data.exemptionStatus ?? existingVaccination.exemptionStatus;
 
       data.complianceStatus = this.determineComplianceStatus(
         adminDate,
@@ -362,9 +384,12 @@ export class VaccinationService {
     const updatedVaccination = await existingVaccination.save();
 
     // Reload with associations
-    const vaccinationWithRelations = await this.vaccinationModel.findByPk(updatedVaccination.id, {
-      include: ['student'],
-    });
+    const vaccinationWithRelations = await this.vaccinationModel.findByPk(
+      updatedVaccination.id,
+      {
+        include: ['student'],
+      },
+    );
 
     if (!vaccinationWithRelations) {
       throw new Error('Failed to reload vaccination after update');
@@ -440,7 +465,9 @@ export class VaccinationService {
 
     const complianceReport = await this.checkComplianceStatus(studentId);
     const today = new Date();
-    const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const thirtyDaysFromNow = new Date(
+      today.getTime() + 30 * 24 * 60 * 60 * 1000,
+    );
 
     const dueVaccinations = complianceReport.upcoming.filter((vax: any) => {
       if (!vax.dueDate) return false;
@@ -448,7 +475,9 @@ export class VaccinationService {
       return dueDate >= today && dueDate <= thirtyDaysFromNow;
     });
 
-    this.logger.log(`PHI Access: Due vaccinations retrieved for student ${studentId}`);
+    this.logger.log(
+      `PHI Access: Due vaccinations retrieved for student ${studentId}`,
+    );
 
     return {
       studentId,
@@ -475,18 +504,22 @@ export class VaccinationService {
     const complianceReport = await this.checkComplianceStatus(studentId);
     const today = new Date();
 
-    const overdueVaccinations = complianceReport.missing.filter((vax: any) =>
-      vax.status === 'OVERDUE' && vax.dueDate
+    const overdueVaccinations = complianceReport.missing.filter(
+      (vax: any) => vax.status === 'OVERDUE' && vax.dueDate,
     );
 
-    this.logger.log(`PHI Access: Overdue vaccinations retrieved for student ${studentId}`);
+    this.logger.log(
+      `PHI Access: Overdue vaccinations retrieved for student ${studentId}`,
+    );
 
     return {
       studentId,
       studentName: `${student.firstName} ${student.lastName}`,
       dueVaccinations: overdueVaccinations.map((vax: any) => {
         const dueDate = new Date(vax.dueDate);
-        const daysOverdue = Math.floor((today.getTime() - dueDate.getTime()) / (24 * 60 * 60 * 1000));
+        const daysOverdue = Math.floor(
+          (today.getTime() - dueDate.getTime()) / (24 * 60 * 60 * 1000),
+        );
 
         return {
           vaccineName: vax.vaccineName,
@@ -520,16 +553,17 @@ export class VaccinationService {
         results.importedIds.push((vaccination as any).id);
       } catch (error) {
         results.errorCount++;
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorMessage =
+          error instanceof Error ? error.message : 'Unknown error';
         results.errors.push(
-          `Failed to import vaccination for student ${vaccinationData.studentId}: ${errorMessage}`
+          `Failed to import vaccination for student ${vaccinationData.studentId}: ${errorMessage}`,
         );
         this.logger.error(`Batch import error: ${errorMessage}`);
       }
     }
 
     this.logger.log(
-      `Batch import completed: ${results.successCount} successful, ${results.errorCount} failed`
+      `Batch import completed: ${results.successCount} successful, ${results.errorCount} failed`,
     );
 
     return results;
@@ -560,7 +594,11 @@ export class VaccinationService {
           { dose: 2, age: '4 months', timing: 'At 4 months' },
           { dose: 3, age: '6 months', timing: 'At 6 months' },
           { dose: 4, age: '15-18 months', timing: 'At 15-18 months' },
-          { dose: 5, age: '4-6 years', timing: 'At 4-6 years (before school entry)' },
+          {
+            dose: 5,
+            age: '4-6 years',
+            timing: 'At 4-6 years (before school entry)',
+          },
         ],
       },
       {
@@ -570,7 +608,11 @@ export class VaccinationService {
           { dose: 1, age: '2 months', timing: 'At 2 months' },
           { dose: 2, age: '4 months', timing: 'At 4 months' },
           { dose: 3, age: '6-18 months', timing: 'At 6-18 months' },
-          { dose: 4, age: '4-6 years', timing: 'At 4-6 years (before school entry)' },
+          {
+            dose: 4,
+            age: '4-6 years',
+            timing: 'At 4-6 years (before school entry)',
+          },
         ],
       },
       {
@@ -578,7 +620,11 @@ export class VaccinationService {
         cvxCode: '03',
         doses: [
           { dose: 1, age: '12-15 months', timing: 'At 12-15 months' },
-          { dose: 2, age: '4-6 years', timing: 'At 4-6 years (before school entry)' },
+          {
+            dose: 2,
+            age: '4-6 years',
+            timing: 'At 4-6 years (before school entry)',
+          },
         ],
       },
       {
@@ -592,8 +638,10 @@ export class VaccinationService {
     ];
 
     // Filter by vaccine type if specified
-    let filteredSchedules = vaccineType
-      ? schedules.filter((s) => s.vaccine.toLowerCase().includes(vaccineType.toLowerCase()))
+    const filteredSchedules = vaccineType
+      ? schedules.filter((s) =>
+          s.vaccine.toLowerCase().includes(vaccineType.toLowerCase()),
+        )
       : schedules;
 
     return {
@@ -632,7 +680,7 @@ export class VaccinationService {
     });
 
     this.logger.log(
-      `PHI Created: Vaccination exemption created for student ${studentId} (${exemptionDto.vaccineName})`
+      `PHI Created: Vaccination exemption created for student ${studentId} (${exemptionDto.vaccineName})`,
     );
 
     return exemption;
@@ -672,9 +720,13 @@ export class VaccinationService {
 
     // Calculate compliance for each student
     const complianceData = Object.values(studentGroups).map((group: any) => {
-      const compliantCount = group.vaccinations.filter((v: any) => v.complianceStatus === 'COMPLIANT' || v.complianceStatus === 'EXEMPT').length;
+      const compliantCount = group.vaccinations.filter(
+        (v: any) =>
+          v.complianceStatus === 'COMPLIANT' || v.complianceStatus === 'EXEMPT',
+      ).length;
       const totalVaccinations = group.vaccinations.length;
-      const compliancePercentage = totalVaccinations > 0 ? (compliantCount / totalVaccinations) * 100 : 0;
+      const compliancePercentage =
+        totalVaccinations > 0 ? (compliantCount / totalVaccinations) * 100 : 0;
 
       return {
         studentId: group.student.id,
@@ -682,7 +734,12 @@ export class VaccinationService {
         totalVaccinations,
         compliantCount,
         compliancePercentage: Math.round(compliancePercentage),
-        status: compliancePercentage >= 100 ? 'COMPLIANT' : compliancePercentage >= 50 ? 'PARTIALLY_COMPLIANT' : 'NON_COMPLIANT',
+        status:
+          compliancePercentage >= 100
+            ? 'COMPLIANT'
+            : compliancePercentage >= 50
+              ? 'PARTIALLY_COMPLIANT'
+              : 'NON_COMPLIANT',
       };
     });
 
@@ -691,16 +748,23 @@ export class VaccinationService {
       ? complianceData.filter((d: any) => d.status !== 'COMPLIANT')
       : complianceData;
 
-    this.logger.log(`Compliance report generated: ${filteredData.length} students`);
+    this.logger.log(
+      `Compliance report generated: ${filteredData.length} students`,
+    );
 
     return {
       reportDate: new Date().toISOString(),
       filters: { schoolId, gradeLevel, vaccineType, onlyNonCompliant },
       totalStudents: filteredData.length,
       summary: {
-        compliant: filteredData.filter((d: any) => d.status === 'COMPLIANT').length,
-        partiallyCompliant: filteredData.filter((d: any) => d.status === 'PARTIALLY_COMPLIANT').length,
-        nonCompliant: filteredData.filter((d: any) => d.status === 'NON_COMPLIANT').length,
+        compliant: filteredData.filter((d: any) => d.status === 'COMPLIANT')
+          .length,
+        partiallyCompliant: filteredData.filter(
+          (d: any) => d.status === 'PARTIALLY_COMPLIANT',
+        ).length,
+        nonCompliant: filteredData.filter(
+          (d: any) => d.status === 'NON_COMPLIANT',
+        ).length,
       },
       students: filteredData,
     };
@@ -847,7 +911,12 @@ export class VaccinationService {
     nextDueDate: Date | null,
     seriesComplete: boolean,
     exemptionStatus: boolean,
-  ): 'COMPLIANT' | 'OVERDUE' | 'PARTIALLY_COMPLIANT' | 'EXEMPT' | 'NON_COMPLIANT' {
+  ):
+    | 'COMPLIANT'
+    | 'OVERDUE'
+    | 'PARTIALLY_COMPLIANT'
+    | 'EXEMPT'
+    | 'NON_COMPLIANT' {
     if (exemptionStatus) {
       return 'EXEMPT';
     }

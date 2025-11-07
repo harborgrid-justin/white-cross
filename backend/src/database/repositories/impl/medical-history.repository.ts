@@ -47,13 +47,15 @@ export interface UpdateMedicalHistoryDTO {
 }
 
 @Injectable()
-export class MedicalHistoryRepository
-  extends BaseRepository<any, MedicalHistoryAttributes, CreateMedicalHistoryDTO>
-{
+export class MedicalHistoryRepository extends BaseRepository<
+  any,
+  MedicalHistoryAttributes,
+  CreateMedicalHistoryDTO
+> {
   constructor(
-    @InjectModel(('' as any)) model: any,
+    @InjectModel('' as any) model: any,
     @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('ICacheManager') cacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'MedicalHistory');
   }
@@ -62,7 +64,7 @@ export class MedicalHistoryRepository
     try {
       const history = await this.model.findAll({
         where: { studentId },
-        order: [['diagnosisDate', 'DESC']]
+        order: [['diagnosisDate', 'DESC']],
       });
       return history.map((h: any) => this.mapToEntity(h));
     } catch (error) {
@@ -71,16 +73,19 @@ export class MedicalHistoryRepository
         'Failed to find medical history by student',
         'FIND_BY_STUDENT_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
 
-  async findByCategory(studentId: string, category: string): Promise<MedicalHistoryAttributes[]> {
+  async findByCategory(
+    studentId: string,
+    category: string,
+  ): Promise<MedicalHistoryAttributes[]> {
     try {
       const history = await this.model.findAll({
         where: { studentId, category },
-        order: [['diagnosisDate', 'DESC']]
+        order: [['diagnosisDate', 'DESC']],
       });
       return history.map((h: any) => this.mapToEntity(h));
     } catch (error) {
@@ -89,16 +94,18 @@ export class MedicalHistoryRepository
         'Failed to find medical history by category',
         'FIND_BY_CATEGORY_ERROR',
         500,
-        { studentId, category, error: (error as Error).message }
+        { studentId, category, error: (error as Error).message },
       );
     }
   }
 
-  async findActiveConditions(studentId: string): Promise<MedicalHistoryAttributes[]> {
+  async findActiveConditions(
+    studentId: string,
+  ): Promise<MedicalHistoryAttributes[]> {
     try {
       const history = await this.model.findAll({
         where: { studentId, isResolved: false },
-        order: [['diagnosisDate', 'DESC']]
+        order: [['diagnosisDate', 'DESC']],
       });
       return history.map((h: any) => this.mapToEntity(h));
     } catch (error) {
@@ -107,7 +114,7 @@ export class MedicalHistoryRepository
         'Failed to find active conditions',
         'FIND_ACTIVE_CONDITIONS_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
@@ -116,15 +123,22 @@ export class MedicalHistoryRepository
     // Validation logic
   }
 
-  protected async validateUpdate(id: string, data: UpdateMedicalHistoryDTO): Promise<void> {
+  protected async validateUpdate(
+    id: string,
+    data: UpdateMedicalHistoryDTO,
+  ): Promise<void> {
     // Validation logic
   }
 
   protected async invalidateCaches(history: any): Promise<void> {
     try {
       const historyData = history.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, historyData.id));
-      await this.cacheManager.deletePattern(`white-cross:medical-history:student:${historyData.studentId}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, historyData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:medical-history:student:${historyData.studentId}:*`,
+      );
     } catch (error) {
       this.logger.warn('Error invalidating medical history caches:', error);
     }
@@ -134,9 +148,7 @@ export class MedicalHistoryRepository
     return sanitizeSensitiveData({
       ...data,
       condition: '[PHI]',
-      notes: '[PHI]'
+      notes: '[PHI]',
     });
   }
 }
-
-

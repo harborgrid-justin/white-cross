@@ -132,21 +132,23 @@ export class PdfService {
       });
 
       const pdfBuffer = Buffer.from(doc.output('arraybuffer'));
-      this.logger.log(`Student health summary PDF generated for ID: ${data.id}`);
+      this.logger.log(
+        `Student health summary PDF generated for ID: ${data.id}`,
+      );
 
       return pdfBuffer;
     } catch (error) {
       this.logger.error('Error generating student health summary PDF', error);
-      throw new BadRequestException('Failed to generate student health summary PDF');
+      throw new BadRequestException(
+        'Failed to generate student health summary PDF',
+      );
     }
   }
 
   /**
    * Generate medication administration log PDF
    */
-  async generateMedicationLog(
-    data: GenerateMedicationLogDto,
-  ): Promise<Buffer> {
+  async generateMedicationLog(data: GenerateMedicationLogDto): Promise<Buffer> {
     try {
       const doc = new jsPDF();
 
@@ -213,11 +215,7 @@ export class PdfService {
       // Report metadata
       doc.setFontSize(12);
       doc.text(`Organization: ${data.organizationName}`, 20, 40);
-      doc.text(
-        `Report Date: ${new Date().toLocaleDateString()}`,
-        20,
-        50,
-      );
+      doc.text(`Report Date: ${new Date().toLocaleDateString()}`, 20, 50);
       doc.text(`Total Students: ${data.totalStudents}`, 20, 60);
       doc.text(
         `Compliant: ${data.compliantStudents} (${data.complianceRate}%)`,
@@ -257,7 +255,9 @@ export class PdfService {
       return pdfBuffer;
     } catch (error) {
       this.logger.error('Error generating immunization report PDF', error);
-      throw new BadRequestException('Failed to generate immunization report PDF');
+      throw new BadRequestException(
+        'Failed to generate immunization report PDF',
+      );
     }
   }
 
@@ -327,7 +327,9 @@ export class PdfService {
   /**
    * Generate custom report with tables
    */
-  async generateCustomReport(data: PdfGenerateCustomReportDto): Promise<Buffer> {
+  async generateCustomReport(
+    data: PdfGenerateCustomReportDto,
+  ): Promise<Buffer> {
     try {
       const doc = new jsPDF();
       let yPosition = 20;
@@ -435,7 +437,7 @@ export class PdfService {
 
       for (const page of pages) {
         const { width, height } = page.getSize();
-        const degrees = await import('pdf-lib').then(m => m.degrees);
+        const degrees = await import('pdf-lib').then((m) => m.degrees);
         page.drawText(data.watermarkText, {
           x: data.x !== undefined ? data.x : width / 2 - 100,
           y: data.y !== undefined ? data.y : height / 2,

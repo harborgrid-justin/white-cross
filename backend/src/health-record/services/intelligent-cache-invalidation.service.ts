@@ -14,7 +14,11 @@ import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { HealthRecordMetricsService } from './health-record-metrics.service';
 import { PHIAccessLogger } from './phi-access-logger.service';
 import { CacheStrategyService } from './cache-strategy.service';
-import { AuditLog, ComplianceType, AuditSeverity } from '../../database/models/audit-log.model';
+import {
+  AuditLog,
+  ComplianceType,
+  AuditSeverity,
+} from '../../database/models/audit-log.model';
 import { AuditAction } from '../../database/types/database.enums';
 import { ComplianceLevel } from '../interfaces/health-record-types';
 
@@ -29,11 +33,11 @@ export interface CacheDependency {
 }
 
 export enum DependencyType {
-  DIRECT = 'DIRECT',           // Direct parent-child relationship
-  AGGREGATE = 'AGGREGATE',     // Aggregate data depends on source data
-  RELATED = 'RELATED',         // Related entities (student -> allergies)
-  DERIVED = 'DERIVED',         // Computed/derived data
-  CROSS_ENTITY = 'CROSS_ENTITY' // Cross-entity relationships
+  DIRECT = 'DIRECT', // Direct parent-child relationship
+  AGGREGATE = 'AGGREGATE', // Aggregate data depends on source data
+  RELATED = 'RELATED', // Related entities (student -> allergies)
+  DERIVED = 'DERIVED', // Computed/derived data
+  CROSS_ENTITY = 'CROSS_ENTITY', // Cross-entity relationships
 }
 
 export interface InvalidationRule {
@@ -86,7 +90,9 @@ export interface InvalidationMetrics {
  */
 @Injectable()
 export class IntelligentCacheInvalidationService implements OnModuleDestroy {
-  private readonly logger = new Logger(IntelligentCacheInvalidationService.name);
+  private readonly logger = new Logger(
+    IntelligentCacheInvalidationService.name,
+  );
 
   // Dependency tracking
   private readonly dependencyGraph = new Map<string, CacheDependency>();
@@ -117,8 +123,8 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
       PUBLIC: 0,
       INTERNAL: 0,
       PHI: 0,
-      SENSITIVE_PHI: 0
-    }
+      SENSITIVE_PHI: 0,
+    },
   };
 
   constructor(
@@ -136,12 +142,16 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
    * Initialize the invalidation service
    */
   private initializeService(): void {
-    this.logger.log('Initializing Intelligent Cache Invalidation Service with database persistence');
+    this.logger.log(
+      'Initializing Intelligent Cache Invalidation Service with database persistence',
+    );
 
     // Setup event listeners
     this.setupEventListeners();
 
-    this.logger.log('Intelligent Cache Invalidation Service initialized successfully');
+    this.logger.log(
+      'Intelligent Cache Invalidation Service initialized successfully',
+    );
   }
 
   /**
@@ -152,7 +162,7 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
     dependentKeys: string[],
     relationshipType: DependencyType,
     strength: number = 1.0,
-    complianceLevel: ComplianceLevel = 'INTERNAL'
+    complianceLevel: ComplianceLevel = 'INTERNAL',
   ): Promise<string> {
     const dependencyId = this.generateDependencyId(sourceKey, dependentKeys);
 
@@ -169,7 +179,7 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
     this.dependencyGraph.set(dependencyId, dependency);
 
     // Update reverse index
-    dependentKeys.forEach(depKey => {
+    dependentKeys.forEach((depKey) => {
       if (!this.reverseIndex.has(depKey)) {
         this.reverseIndex.set(depKey, new Set());
       }
@@ -188,11 +198,13 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
         dependentKeys,
         relationshipType,
         strength,
-        complianceLevel
-      }
+        complianceLevel,
+      },
     });
 
-    this.logger.debug(`Registered cache dependency: ${sourceKey} -> [${dependentKeys.join(', ')}]`);
+    this.logger.debug(
+      `Registered cache dependency: ${sourceKey} -> [${dependentKeys.join(', ')}]`,
+    );
     return dependencyId;
   }
 
@@ -202,7 +214,7 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
   async invalidateKey(
     cacheKey: string,
     reason: string = 'manual',
-    complianceLevel: ComplianceLevel = 'INTERNAL'
+    complianceLevel: ComplianceLevel = 'INTERNAL',
   ): Promise<void> {
     const startTime = Date.now();
 
@@ -211,7 +223,9 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
       this.invalidationMetrics.totalInvalidations++;
       this.invalidationMetrics.manualInvalidations++;
 
-      if (!this.invalidationMetrics.invalidationsByCompliance[complianceLevel]) {
+      if (
+        !this.invalidationMetrics.invalidationsByCompliance[complianceLevel]
+      ) {
         this.invalidationMetrics.invalidationsByCompliance[complianceLevel] = 0;
       }
       this.invalidationMetrics.invalidationsByCompliance[complianceLevel]++;
@@ -226,8 +240,8 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
         metadata: {
           reason,
           complianceLevel,
-          invalidationType: 'single'
-        }
+          invalidationType: 'single',
+        },
       });
 
       // Log PHI access if applicable
@@ -248,8 +262,9 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
       const invalidationTime = Date.now() - startTime;
       this.updateAverageInvalidationTime(invalidationTime);
 
-      this.logger.debug(`Invalidated cache key: ${cacheKey}, reason: ${reason}, time: ${invalidationTime}ms`);
-
+      this.logger.debug(
+        `Invalidated cache key: ${cacheKey}, reason: ${reason}, time: ${invalidationTime}ms`,
+      );
     } catch (error) {
       this.logger.error(`Failed to invalidate cache key ${cacheKey}:`, error);
     }
@@ -261,16 +276,16 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
   async invalidateByTags(
     tags: string[],
     reason: string = 'tag_based',
-    complianceLevel: ComplianceLevel = 'INTERNAL'
+    complianceLevel: ComplianceLevel = 'INTERNAL',
   ): Promise<void> {
     const startTime = Date.now();
     const keysToInvalidate = new Set<string>();
 
     // Collect all keys with matching tags
-    tags.forEach(tag => {
+    tags.forEach((tag) => {
       const taggedKeys = this.tagIndex.get(tag);
       if (taggedKeys) {
-        taggedKeys.forEach(key => keysToInvalidate.add(key));
+        taggedKeys.forEach((key) => keysToInvalidate.add(key));
       }
     });
 
@@ -280,18 +295,21 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
 
     try {
       // Invalidate all collected keys
-      const invalidationPromises = Array.from(keysToInvalidate).map(key =>
-        this.cacheService.invalidate(key)
+      const invalidationPromises = Array.from(keysToInvalidate).map((key) =>
+        this.cacheService.invalidate(key),
       );
       await Promise.all(invalidationPromises);
 
       this.invalidationMetrics.totalInvalidations += keysToInvalidate.size;
       this.invalidationMetrics.manualInvalidations += keysToInvalidate.size;
 
-      if (!this.invalidationMetrics.invalidationsByCompliance[complianceLevel]) {
+      if (
+        !this.invalidationMetrics.invalidationsByCompliance[complianceLevel]
+      ) {
         this.invalidationMetrics.invalidationsByCompliance[complianceLevel] = 0;
       }
-      this.invalidationMetrics.invalidationsByCompliance[complianceLevel] += keysToInvalidate.size;
+      this.invalidationMetrics.invalidationsByCompliance[complianceLevel] +=
+        keysToInvalidate.size;
 
       // Log bulk invalidation event to database
       await this.logInvalidationEvent({
@@ -305,8 +323,8 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
           reason,
           complianceLevel,
           keysInvalidated: keysToInvalidate.size,
-          invalidationType: 'bulk'
-        }
+          invalidationType: 'bulk',
+        },
       });
 
       // Log PHI access if applicable
@@ -325,12 +343,18 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
       }
 
       const invalidationTime = Date.now() - startTime;
-      this.updateAverageInvalidationTime(invalidationTime / keysToInvalidate.size);
+      this.updateAverageInvalidationTime(
+        invalidationTime / keysToInvalidate.size,
+      );
 
-      this.logger.debug(`Invalidated ${keysToInvalidate.size} cache keys by tags [${tags.join(', ')}], time: ${invalidationTime}ms`);
-
+      this.logger.debug(
+        `Invalidated ${keysToInvalidate.size} cache keys by tags [${tags.join(', ')}], time: ${invalidationTime}ms`,
+      );
     } catch (error) {
-      this.logger.error(`Failed to invalidate cache by tags [${tags.join(', ')}]:`, error);
+      this.logger.error(
+        `Failed to invalidate cache by tags [${tags.join(', ')}]:`,
+        error,
+      );
     }
   }
 
@@ -363,7 +387,6 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
 
       // Check for dependency-based invalidation
       await this.handleDependencyInvalidation(event);
-
     } catch (error) {
       this.logger.error(`Failed to handle data change event:`, error);
     }
@@ -379,27 +402,34 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
   /**
    * Get recent invalidation events from database
    */
-  async getRecentInvalidationEvents(limit: number = 100): Promise<InvalidationEvent[]> {
+  async getRecentInvalidationEvents(
+    limit: number = 100,
+  ): Promise<InvalidationEvent[]> {
     try {
       const auditLogs = await this.auditLogModel.findAll({
         where: {
-          entityType: 'CACHE_INVALIDATION'
+          entityType: 'CACHE_INVALIDATION',
         },
         order: [['createdAt', 'DESC']],
-        limit
+        limit,
       });
 
-      return auditLogs.map(log => ({
+      return auditLogs.map((log) => ({
         eventId: log.id || '',
-        eventType: log.action === AuditAction.CACHE_DELETE ? 'CACHE_INVALIDATION' : 'UNKNOWN',
+        eventType:
+          log.action === AuditAction.CACHE_DELETE
+            ? 'CACHE_INVALIDATION'
+            : 'UNKNOWN',
         sourceEntity: log.entityType,
         entityId: log.entityId || '',
         timestamp: log.createdAt || new Date(),
-        metadata: log.metadata || {}
+        metadata: log.metadata || {},
       }));
-
     } catch (error) {
-      this.logger.error('Failed to retrieve recent invalidation events:', error);
+      this.logger.error(
+        'Failed to retrieve recent invalidation events:',
+        error,
+      );
       return [];
     }
   }
@@ -418,18 +448,22 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
         changes: event.metadata,
         ipAddress: 'internal',
         userAgent: 'cache-invalidation-service',
-        isPHI: event.metadata?.complianceLevel === 'PHI' || event.metadata?.complianceLevel === 'SENSITIVE_PHI',
+        isPHI:
+          event.metadata?.complianceLevel === 'PHI' ||
+          event.metadata?.complianceLevel === 'SENSITIVE_PHI',
         complianceType: ComplianceType.HIPAA,
         severity: AuditSeverity.LOW,
         success: true,
         tags: ['cache-invalidation', event.eventType.toLowerCase()],
-        metadata: event.metadata
+        metadata: event.metadata,
       };
 
       await this.auditLogModel.create(auditEntry);
-
     } catch (error) {
-      this.logger.error(`Failed to log invalidation event ${event.eventId}:`, error);
+      this.logger.error(
+        `Failed to log invalidation event ${event.eventId}:`,
+        error,
+      );
     }
   }
 
@@ -438,10 +472,10 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
    */
   private mapEventTypeToAuditAction(eventType: string): AuditAction {
     const actionMap: Record<string, AuditAction> = {
-      'CACHE_INVALIDATION': AuditAction.CACHE_DELETE,
-      'BULK_CACHE_INVALIDATION': AuditAction.CACHE_DELETE,
-      'DEPENDENCY_REGISTERED': AuditAction.UPDATE,
-      'DATA_CHANGED': AuditAction.UPDATE
+      CACHE_INVALIDATION: AuditAction.CACHE_DELETE,
+      BULK_CACHE_INVALIDATION: AuditAction.CACHE_DELETE,
+      DEPENDENCY_REGISTERED: AuditAction.UPDATE,
+      DATA_CHANGED: AuditAction.UPDATE,
     };
 
     return actionMap[eventType] || AuditAction.UPDATE;
@@ -468,7 +502,10 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
   /**
    * Apply invalidation rule
    */
-  private async applyInvalidationRule(rule: InvalidationRule, event: InvalidationEvent): Promise<void> {
+  private async applyInvalidationRule(
+    rule: InvalidationRule,
+    event: InvalidationEvent,
+  ): Promise<void> {
     const keysToInvalidate: string[] = [];
 
     // Find matching cache keys
@@ -481,7 +518,7 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
       await this.invalidateByTags(
         keysToInvalidate,
         `rule_${rule.name}`,
-        event.metadata?.complianceLevel || 'INTERNAL'
+        event.metadata?.complianceLevel || 'INTERNAL',
       );
     }
   }
@@ -489,7 +526,9 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
   /**
    * Handle dependency-based invalidation
    */
-  private async handleDependencyInvalidation(event: InvalidationEvent): Promise<void> {
+  private async handleDependencyInvalidation(
+    event: InvalidationEvent,
+  ): Promise<void> {
     const sourceKey = this.generateCacheKey(event.sourceEntity, event.entityId);
     const dependentKeys = this.findDependentKeys(sourceKey);
 
@@ -500,7 +539,7 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
         await this.invalidateKey(
           depKey,
           'dependency_cascade',
-          event.metadata?.complianceLevel || 'INTERNAL'
+          event.metadata?.complianceLevel || 'INTERNAL',
         );
       }
     }
@@ -524,11 +563,14 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
   /**
    * Schedule delayed invalidation
    */
-  private scheduleDelayedInvalidation(rule: InvalidationRule, event: InvalidationEvent): void {
+  private scheduleDelayedInvalidation(
+    rule: InvalidationRule,
+    event: InvalidationEvent,
+  ): void {
     const timeoutKey = `${rule.id}_${event.eventId}`;
 
     if (this.pendingInvalidations.has(timeoutKey)) {
-      clearTimeout(this.pendingInvalidations.get(timeoutKey)!);
+      clearTimeout(this.pendingInvalidations.get(timeoutKey));
     }
 
     const timeout = setTimeout(async () => {
@@ -575,7 +617,10 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
   /**
    * Generate dependency ID
    */
-  private generateDependencyId(sourceKey: string, dependentKeys: string[]): string {
+  private generateDependencyId(
+    sourceKey: string,
+    dependentKeys: string[],
+  ): string {
     return `dep_${sourceKey}_${dependentKeys.join('_')}_${Date.now()}`;
   }
 
@@ -619,7 +664,7 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
       targetPatterns: ['student:*', 'health-record:student:*'],
       priority: 'HIGH',
       enabled: true,
-      complianceRequired: true
+      complianceRequired: true,
     });
 
     // Rule for allergy changes
@@ -630,7 +675,7 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
       targetPatterns: ['allergy:*', 'health-record:allergy:*'],
       priority: 'HIGH',
       enabled: true,
-      complianceRequired: true
+      complianceRequired: true,
     });
 
     // Rule for chronic condition changes
@@ -638,10 +683,13 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
       id: 'chronic_condition_changed',
       name: 'Chronic Condition Changed',
       eventPattern: 'health-record.chronic-condition.changed',
-      targetPatterns: ['chronic-condition:*', 'health-record:chronic-condition:*'],
+      targetPatterns: [
+        'chronic-condition:*',
+        'health-record:chronic-condition:*',
+      ],
       priority: 'MEDIUM',
       enabled: true,
-      complianceRequired: true
+      complianceRequired: true,
     });
   }
 

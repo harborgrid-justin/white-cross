@@ -99,7 +99,9 @@ export class IncidentFollowUpService {
   /**
    * Get follow-up actions for an incident
    */
-  async getFollowUpActions(incidentReportId: string): Promise<FollowUpAction[]> {
+  async getFollowUpActions(
+    incidentReportId: string,
+  ): Promise<FollowUpAction[]> {
     try {
       const actions = await this.followUpActionModel.findAll({
         where: { incidentReportId },
@@ -195,7 +197,9 @@ export class IncidentFollowUpService {
 
       // Don't allow deleting completed actions
       if (action.status === ActionStatus.COMPLETED) {
-        throw new BadRequestException('Cannot delete completed follow-up actions');
+        throw new BadRequestException(
+          'Cannot delete completed follow-up actions',
+        );
       }
 
       await action.destroy();
@@ -218,10 +222,16 @@ export class IncidentFollowUpService {
       if (dateFrom || dateTo) {
         whereClause.createdAt = {};
         if (dateFrom) {
-          whereClause.createdAt = { ...whereClause.createdAt, [Op.gte]: dateFrom };
+          whereClause.createdAt = {
+            ...whereClause.createdAt,
+            [Op.gte]: dateFrom,
+          };
         }
         if (dateTo) {
-          whereClause.createdAt = { ...whereClause.createdAt, [Op.lte]: dateTo };
+          whereClause.createdAt = {
+            ...whereClause.createdAt,
+            [Op.lte]: dateTo,
+          };
         }
       }
 

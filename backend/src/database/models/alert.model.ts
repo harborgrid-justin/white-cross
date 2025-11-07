@@ -11,13 +11,10 @@ import {
   Index,
   Scopes,
   BeforeCreate,
-  BeforeUpdate
-  } from 'sequelize-typescript';
+  BeforeUpdate,
+} from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 import { Op } from 'sequelize';
-
-
-
 
 /**
  * Alert Severity Levels
@@ -28,8 +25,8 @@ export enum AlertSeverity {
   MEDIUM = 'MEDIUM',
   HIGH = 'HIGH',
   CRITICAL = 'CRITICAL',
-  EMERGENCY = 'EMERGENCY'
-  }
+  EMERGENCY = 'EMERGENCY',
+}
 
 /**
  * Alert Categories
@@ -40,8 +37,8 @@ export enum AlertCategory {
   COMPLIANCE = 'COMPLIANCE',
   SYSTEM = 'SYSTEM',
   MEDICATION = 'MEDICATION',
-  APPOINTMENT = 'APPOINTMENT'
-  }
+  APPOINTMENT = 'APPOINTMENT',
+}
 
 /**
  * Alert Status
@@ -51,8 +48,8 @@ export enum AlertStatus {
   ACKNOWLEDGED = 'ACKNOWLEDGED',
   RESOLVED = 'RESOLVED',
   EXPIRED = 'EXPIRED',
-  DISMISSED = 'DISMISSED'
-  }
+  DISMISSED = 'DISMISSED',
+}
 
 /**
  * Alert Attributes Interface
@@ -104,70 +101,76 @@ export interface AlertAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      status: AlertStatus.ACTIVE
+      status: AlertStatus.ACTIVE,
     },
-    order: [['severity', 'DESC'], ['createdAt', 'DESC']]
+    order: [
+      ['severity', 'DESC'],
+      ['createdAt', 'DESC'],
+    ],
   },
   critical: {
     where: {
       severity: {
-        [Op.in]: [AlertSeverity.CRITICAL, AlertSeverity.EMERGENCY]
+        [Op.in]: [AlertSeverity.CRITICAL, AlertSeverity.EMERGENCY],
       },
       status: {
-        [Op.in]: [AlertStatus.ACTIVE, AlertStatus.ACKNOWLEDGED]
-      }
+        [Op.in]: [AlertStatus.ACTIVE, AlertStatus.ACKNOWLEDGED],
+      },
     },
-    order: [['createdAt', 'DESC']]
+    order: [['createdAt', 'DESC']],
   },
   byPriority: (severity: AlertSeverity) => ({
     where: { severity },
-    order: [['createdAt', 'DESC']]
+    order: [['createdAt', 'DESC']],
   }),
   bySeverity: (severity: AlertSeverity) => ({
     where: { severity },
-    order: [['createdAt', 'DESC']]
+    order: [['createdAt', 'DESC']],
   }),
   byCategory: (category: AlertCategory) => ({
     where: { category },
-    order: [['createdAt', 'DESC']]
+    order: [['createdAt', 'DESC']],
   }),
   byStudent: (studentId: string) => ({
     where: { studentId },
-    order: [['createdAt', 'DESC']]
+    order: [['createdAt', 'DESC']],
   }),
   byUser: (userId: string) => ({
     where: { userId },
-    order: [['createdAt', 'DESC']]
+    order: [['createdAt', 'DESC']],
   }),
   bySchool: (schoolId: string) => ({
     where: { schoolId },
-    order: [['createdAt', 'DESC']]
+    order: [['createdAt', 'DESC']],
   }),
   unacknowledged: {
     where: {
       status: AlertStatus.ACTIVE,
       requiresAcknowledgment: true,
-      acknowledgedAt: null
+      acknowledgedAt: null,
     },
-    order: [['severity', 'DESC'], ['createdAt', 'ASC']]
+    order: [
+      ['severity', 'DESC'],
+      ['createdAt', 'ASC'],
+    ],
   },
   needsEscalation: {
     where: {
       status: AlertStatus.ACTIVE,
       autoEscalateAfter: {
-        [Op.ne]: null
+        [Op.ne]: null,
       },
-      acknowledgedAt: null
-    }
+      acknowledgedAt: null,
+    },
   },
   recent: {
     where: {
       createdAt: {
-        [Op.gte]: new Date(Date.now() - 24 * 60 * 60 * 1000)
-      }
+        [Op.gte]: new Date(Date.now() - 24 * 60 * 60 * 1000),
+      },
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'alerts',
@@ -176,46 +179,46 @@ export interface AlertAttributes {
   indexes: [
     {
       fields: ['severity'],
-      name: 'alerts_severity_idx'
-  },
+      name: 'alerts_severity_idx',
+    },
     {
       fields: ['status'],
-      name: 'alerts_status_idx'
-  },
+      name: 'alerts_status_idx',
+    },
     {
       fields: ['category'],
-      name: 'alerts_category_idx'
-  },
+      name: 'alerts_category_idx',
+    },
     {
       fields: ['userId'],
-      name: 'alerts_user_id_idx'
-  },
+      name: 'alerts_user_id_idx',
+    },
     {
       fields: ['studentId'],
-      name: 'alerts_student_id_idx'
-  },
+      name: 'alerts_student_id_idx',
+    },
     {
       fields: ['schoolId'],
-      name: 'alerts_school_id_idx'
-  },
-    {
-      fields: ['createdAt'],
-      name: 'alerts_created_at_idx'
-  },
-    {
-      fields: ['status', 'severity', 'createdAt'],
-      name: 'alerts_status_severity_created_idx'
+      name: 'alerts_school_id_idx',
     },
     {
       fields: ['createdAt'],
-      name: 'idx_alert_created_at'
+      name: 'alerts_created_at_idx',
+    },
+    {
+      fields: ['status', 'severity', 'createdAt'],
+      name: 'alerts_status_severity_created_idx',
+    },
+    {
+      fields: ['createdAt'],
+      name: 'idx_alert_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_alert_updated_at'
-    }
-  ]
-  })
+      name: 'idx_alert_updated_at',
+    },
+  ],
+})
 export class Alert extends Model<AlertAttributes> implements AlertAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
@@ -227,11 +230,14 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
    */
   @ForeignKey(() => require('./alert-rule.model').AlertRule)
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   definitionId?: string;
 
-  @BelongsTo(() => require('./alert-rule.model').AlertRule, { foreignKey: 'definitionId', as: 'definition' })
+  @BelongsTo(() => require('./alert-rule.model').AlertRule, {
+    foreignKey: 'definitionId',
+    as: 'definition',
+  })
   declare definition?: any;
 
   /**
@@ -241,9 +247,9 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(AlertSeverity)]
+      isIn: [Object.values(AlertSeverity)],
     },
-    allowNull: false
+    allowNull: false,
   })
   severity: AlertSeverity;
 
@@ -254,9 +260,9 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(AlertCategory)]
+      isIn: [Object.values(AlertCategory)],
     },
-    allowNull: false
+    allowNull: false,
   })
   category: AlertCategory;
 
@@ -265,7 +271,7 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
    */
   @Column({
     type: DataType.STRING(500),
-    allowNull: false
+    allowNull: false,
   })
   title: string;
 
@@ -274,7 +280,7 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
    */
   @Column({
     type: DataType.TEXT,
-    allowNull: false
+    allowNull: false,
   })
   message: string;
 
@@ -284,11 +290,14 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
   @Index
   @ForeignKey(() => require('./student.model').Student)
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   studentId?: string;
 
-  @BelongsTo(() => require('./student.model').Student, { foreignKey: 'studentId', as: 'student' })
+  @BelongsTo(() => require('./student.model').Student, {
+    foreignKey: 'studentId',
+    as: 'student',
+  })
   declare student?: any;
 
   /**
@@ -297,11 +306,14 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
   @Index
   @ForeignKey(() => require('./user.model').User)
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   userId?: string;
 
-  @BelongsTo(() => require('./user.model').User, { foreignKey: 'userId', as: 'user' })
+  @BelongsTo(() => require('./user.model').User, {
+    foreignKey: 'userId',
+    as: 'user',
+  })
   declare user?: any;
 
   /**
@@ -310,11 +322,14 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
   @Index
   @ForeignKey(() => require('./school.model').School)
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   schoolId?: string;
 
-  @BelongsTo(() => require('./school.model').School, { foreignKey: 'schoolId', as: 'school' })
+  @BelongsTo(() => require('./school.model').School, {
+    foreignKey: 'schoolId',
+    as: 'school',
+  })
   declare school?: any;
 
   /**
@@ -324,10 +339,10 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(AlertStatus)]
+      isIn: [Object.values(AlertStatus)],
     },
     allowNull: false,
-    defaultValue: AlertStatus.ACTIVE
+    defaultValue: AlertStatus.ACTIVE,
   })
   status: AlertStatus;
 
@@ -343,18 +358,21 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
   @ForeignKey(() => require('./user.model').User)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   createdBy: string;
 
-  @BelongsTo(() => require('./user.model').User, { foreignKey: 'createdBy', as: 'creator' })
+  @BelongsTo(() => require('./user.model').User, {
+    foreignKey: 'createdBy',
+    as: 'creator',
+  })
   declare creator?: any;
 
   /**
    * When alert was acknowledged
    */
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   acknowledgedAt?: Date;
 
@@ -363,18 +381,21 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
    */
   @ForeignKey(() => require('./user.model').User)
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   acknowledgedBy?: string;
 
-  @BelongsTo(() => require('./user.model').User, { foreignKey: 'acknowledgedBy', as: 'acknowledger' })
+  @BelongsTo(() => require('./user.model').User, {
+    foreignKey: 'acknowledgedBy',
+    as: 'acknowledger',
+  })
   declare acknowledger?: any;
 
   /**
    * When alert was resolved
    */
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   resolvedAt?: Date;
 
@@ -383,18 +404,21 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
    */
   @ForeignKey(() => require('./user.model').User)
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   resolvedBy?: string;
 
-  @BelongsTo(() => require('./user.model').User, { foreignKey: 'resolvedBy', as: 'resolver' })
+  @BelongsTo(() => require('./user.model').User, {
+    foreignKey: 'resolvedBy',
+    as: 'resolver',
+  })
   declare resolver?: any;
 
   /**
    * When alert expires
    */
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   expiresAt?: Date;
 
@@ -402,7 +426,7 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
    * Auto-escalate after this many minutes
    */
   @Column({
-    type: DataType.INTEGER
+    type: DataType.INTEGER,
   })
   autoEscalateAfter?: number;
 
@@ -411,7 +435,7 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
    */
   @Column({
     type: DataType.INTEGER,
-    defaultValue: 0
+    defaultValue: 0,
   })
   escalationLevel?: number;
 
@@ -421,7 +445,7 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false
+    defaultValue: false,
   })
   requiresAcknowledgment: boolean;
 
@@ -429,14 +453,14 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW
+    defaultValue: DataType.NOW,
   })
   declare createdAt?: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW
+    defaultValue: DataType.NOW,
   })
   declare updatedAt?: Date;
 
@@ -454,14 +478,18 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
    * Check if alert needs escalation
    */
   needsEscalation(): boolean {
-    if (!this.autoEscalateAfter || this.status !== AlertStatus.ACTIVE || this.acknowledgedAt) {
+    if (
+      !this.autoEscalateAfter ||
+      this.status !== AlertStatus.ACTIVE ||
+      this.acknowledgedAt
+    ) {
       return false;
     }
 
-    const minutesSinceCreation = (Date.now() - this.createdAt!.getTime()) / (1000 * 60);
+    const minutesSinceCreation =
+      (Date.now() - this.createdAt!.getTime()) / (1000 * 60);
     return minutesSinceCreation >= this.autoEscalateAfter;
   }
-
 
   // Hooks for HIPAA compliance
   @BeforeCreate
@@ -469,7 +497,9 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
   static async auditPHIAccess(instance: Alert) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] Alert ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] Alert ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

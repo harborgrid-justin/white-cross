@@ -74,11 +74,33 @@ export interface UpdateVitalSignsDTO {
   notes?: string;
 }
 
-export interface IVitalSignsRepository extends IRepository<VitalSignsAttributes, CreateVitalSignsDTO, UpdateVitalSignsDTO> {
-  findByStudent(studentId: string, options?: QueryOptions): Promise<VitalSignsAttributes[]>;
+export interface IVitalSignsRepository
+  extends IRepository<
+    VitalSignsAttributes,
+    CreateVitalSignsDTO,
+    UpdateVitalSignsDTO
+  > {
+  findByStudent(
+    studentId: string,
+    options?: QueryOptions,
+  ): Promise<VitalSignsAttributes[]>;
   findLatestByStudent(studentId: string): Promise<VitalSignsAttributes | null>;
-  findByDateRange(studentId: string, startDate: Date, endDate: Date): Promise<VitalSignsAttributes[]>;
-  findAbnormalVitals(studentId?: string, options?: QueryOptions): Promise<VitalSignsAttributes[]>;
-  getVitalTrends(studentId: string, vitalType: string, days?: number): Promise<VitalSignsAttributes[]>;
-  bulkRecordVitals(records: CreateVitalSignsDTO[], context: ExecutionContext): Promise<VitalSignsAttributes[]>;
+  findByDateRange(
+    studentId: string,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<VitalSignsAttributes[]>;
+  findAbnormalVitals(
+    studentId?: string,
+    options?: QueryOptions,
+  ): Promise<VitalSignsAttributes[]>;
+  getVitalTrends(
+    studentId: string,
+    vitalType: string,
+    days?: number,
+  ): Promise<VitalSignsAttributes[]>;
+  bulkRecordVitals(
+    records: CreateVitalSignsDTO[],
+    context: ExecutionContext,
+  ): Promise<VitalSignsAttributes[]>;
 }

@@ -1,4 +1,12 @@
-import { IsString, IsOptional, IsEnum, IsArray, IsDateString, ValidateNested, ArrayMinSize } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsArray,
+  IsDateString,
+  ValidateNested,
+  ArrayMinSize,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { MessageType, MessagePriority, MessageCategory } from '../enums';
 import { RecipientDto } from './recipient.dto';

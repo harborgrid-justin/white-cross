@@ -1,13 +1,25 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { District } from '../entities/district.entity';
 import { School } from '../entities/school.entity';
 import { License } from '../entities/license.entity';
 import { AuditService } from './audit.service';
-import { CreateDistrictDto, UpdateDistrictDto, DistrictQueryDto } from '../dto/district.dto';
+import {
+  CreateDistrictDto,
+  UpdateDistrictDto,
+  DistrictQueryDto,
+} from '../dto/district.dto';
 import { AuditAction, LicenseStatus } from '../enums/administration.enums';
-import { PaginatedResponse, PaginationResult } from '../interfaces/administration.interfaces';
+import {
+  PaginatedResponse,
+  PaginationResult,
+} from '../interfaces/administration.interfaces';
 
 @Injectable()
 export class DistrictService {
@@ -28,14 +40,19 @@ export class DistrictService {
     try {
       const normalizedCode = data.code.toUpperCase().trim();
       const existing = await this.districtModel.findOne({
-        where: { code: normalizedCode }
+        where: { code: normalizedCode },
       });
 
       if (existing) {
-        throw new BadRequestException(`District with code '${normalizedCode}' already exists`);
+        throw new BadRequestException(
+          `District with code '${normalizedCode}' already exists`,
+        );
       }
 
-      const district = await this.districtModel.create({ ...data, code: normalizedCode } as any);
+      const district = await this.districtModel.create({
+        ...data,
+        code: normalizedCode,
+      } as any);
 
       await this.auditService.createAuditLog(
         AuditAction.CREATE,
@@ -53,17 +70,20 @@ export class DistrictService {
     }
   }
 
-  async getDistricts(queryDto: DistrictQueryDto): Promise<PaginatedResponse<District>> {
+  async getDistricts(
+    queryDto: DistrictQueryDto,
+  ): Promise<PaginatedResponse<District>> {
     try {
       const { page = 1, limit = 20 } = queryDto;
       const offset = (page - 1) * limit;
 
-      const { rows: districts, count: total } = await this.districtModel.findAndCountAll({
-        offset,
-        limit,
-        include: ['schools'],
-        order: [['name', 'ASC']],
-      });
+      const { rows: districts, count: total } =
+        await this.districtModel.findAndCountAll({
+          offset,
+          limit,
+          include: ['schools'],
+          order: [['name', 'ASC']],
+        });
 
       const pagination: PaginationResult = {
         page,

@@ -6,7 +6,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
-  Logger
+  Logger,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
@@ -15,7 +15,7 @@ import {
   ContactCreateEmergencyDto,
   ContactUpdateEmergencyDto,
   ContactVerifyDto,
-  EmergencyContactQueryDto
+  EmergencyContactQueryDto,
 } from '../dto';
 import { ContactPriority, VerificationStatus } from '../enums';
 
@@ -25,7 +25,7 @@ export class EmergencyContactService {
 
   constructor(
     @InjectModel(EmergencyContact)
-    private readonly emergencyContactModel: typeof EmergencyContact
+    private readonly emergencyContactModel: typeof EmergencyContact,
   ) {}
 
   /**
@@ -53,14 +53,20 @@ export class EmergencyContactService {
       where.verificationStatus = query.verificationStatus;
     }
 
-    const { rows: contacts, count: total } = await this.emergencyContactModel.findAndCountAll({
-      where,
-      offset,
-      limit,
-      order: [['priority', 'ASC'], ['createdAt', 'ASC']],
-    });
+    const { rows: contacts, count: total } =
+      await this.emergencyContactModel.findAndCountAll({
+        where,
+        offset,
+        limit,
+        order: [
+          ['priority', 'ASC'],
+          ['createdAt', 'ASC'],
+        ],
+      });
 
-    this.logger.log(`Retrieved ${contacts.length} emergency contacts (page ${page}, total ${total})`);
+    this.logger.log(
+      `Retrieved ${contacts.length} emergency contacts (page ${page}, total ${total})`,
+    );
 
     return {
       contacts,
@@ -68,8 +74,8 @@ export class EmergencyContactService {
         page,
         limit,
         total,
-        pages: Math.ceil(total / limit)
-      }
+        pages: Math.ceil(total / limit),
+      },
     };
   }
 
@@ -80,15 +86,17 @@ export class EmergencyContactService {
     const contacts = await this.emergencyContactModel.findAll({
       where: {
         studentId,
-        isActive: true
+        isActive: true,
       },
       order: [
         ['priority', 'ASC'],
-        ['createdAt', 'ASC']
-      ]
+        ['createdAt', 'ASC'],
+      ],
     });
 
-    this.logger.log(`Retrieved ${contacts.length} emergency contacts for student ${studentId}`);
+    this.logger.log(
+      `Retrieved ${contacts.length} emergency contacts for student ${studentId}`,
+    );
     return contacts;
   }
 
@@ -131,13 +139,14 @@ export class EmergencyContactService {
     const contact = this.emergencyContactModel.build({
       ...dto,
       notificationChannels: notificationChannelsString,
-      verificationStatus: dto.verificationStatus || VerificationStatus.UNVERIFIED,
-      isActive: dto.isActive !== undefined ? dto.isActive : true
+      verificationStatus:
+        dto.verificationStatus || VerificationStatus.UNVERIFIED,
+      isActive: dto.isActive !== undefined ? dto.isActive : true,
     } as any);
 
     await contact.save();
     this.logger.log(
-      `Created emergency contact ${contact.id} for student ${contact.studentId}`
+      `Created emergency contact ${contact.id} for student ${contact.studentId}`,
     );
 
     return contact;
@@ -146,7 +155,10 @@ export class EmergencyContactService {
   /**
    * Update emergency contact
    */
-  async update(id: string, dto: ContactUpdateEmergencyDto): Promise<EmergencyContact> {
+  async update(
+    id: string,
+    dto: ContactUpdateEmergencyDto,
+  ): Promise<EmergencyContact> {
     const contact = await this.findOne(id);
 
     // Convert notification channels array to JSON string if provided
@@ -157,7 +169,8 @@ export class EmergencyContactService {
 
     Object.assign(contact, {
       ...dto,
-      notificationChannels: notificationChannelsString || contact.notificationChannels
+      notificationChannels:
+        notificationChannelsString || contact.notificationChannels,
     });
 
     await contact.save();
@@ -177,13 +190,13 @@ export class EmergencyContactService {
       where: {
         studentId: contact.studentId,
         priority: ContactPriority.PRIMARY,
-        isActive: true
-      }
+        isActive: true,
+      },
     });
 
     if (primaryContacts.length === 1 && primaryContacts[0].id === id) {
       throw new BadRequestException(
-        'Cannot delete the last primary contact. Student must have at least one primary contact.'
+        'Cannot delete the last primary contact. Student must have at least one primary contact.',
       );
     }
 
@@ -196,7 +209,10 @@ export class EmergencyContactService {
   /**
    * Verify contact
    */
-  async verifyContact(id: string, dto: ContactVerifyDto): Promise<EmergencyContact> {
+  async verifyContact(
+    id: string,
+    dto: ContactVerifyDto,
+  ): Promise<EmergencyContact> {
     const contact = await this.findOne(id);
 
     contact.verificationStatus = dto.verificationStatus;
@@ -210,7 +226,9 @@ export class EmergencyContactService {
     }
 
     await contact.save();
-    this.logger.log(`Verified emergency contact ${id} with status ${dto.verificationStatus}`);
+    this.logger.log(
+      `Verified emergency contact ${id} with status ${dto.verificationStatus}`,
+    );
 
     return contact;
   }
@@ -226,20 +244,24 @@ export class EmergencyContactService {
   }> {
     const allContacts = await this.findAllByStudent(studentId);
 
-    const primary = allContacts.filter((c) => c.priority === ContactPriority.PRIMARY);
-    const secondary = allContacts.filter((c) => c.priority === ContactPriority.SECONDARY);
+    const primary = allContacts.filter(
+      (c) => c.priority === ContactPriority.PRIMARY,
+    );
+    const secondary = allContacts.filter(
+      (c) => c.priority === ContactPriority.SECONDARY,
+    );
     const emergencyOnly = allContacts.filter(
-      (c) => c.priority === ContactPriority.EMERGENCY_ONLY
+      (c) => c.priority === ContactPriority.EMERGENCY_ONLY,
     );
 
     this.logger.log(
-      `Notification routing for student ${studentId}: ${primary.length} primary, ${secondary.length} secondary, ${emergencyOnly.length} emergency-only`
+      `Notification routing for student ${studentId}: ${primary.length} primary, ${secondary.length} secondary, ${emergencyOnly.length} emergency-only`,
     );
 
     return {
       primary,
       secondary,
-      emergencyOnly
+      emergencyOnly,
     };
   }
 
@@ -251,9 +273,9 @@ export class EmergencyContactService {
       where: {
         studentId,
         priority: ContactPriority.PRIMARY,
-        isActive: true
+        isActive: true,
       },
-      order: [['createdAt', 'ASC']]
+      order: [['createdAt', 'ASC']],
     });
 
     return contacts;
@@ -262,17 +284,24 @@ export class EmergencyContactService {
   /**
    * Get authorized pickup contacts for a student
    */
-  async getAuthorizedPickupContacts(studentId: string): Promise<EmergencyContact[]> {
+  async getAuthorizedPickupContacts(
+    studentId: string,
+  ): Promise<EmergencyContact[]> {
     const contacts = await this.emergencyContactModel.findAll({
       where: {
         studentId,
         canPickupStudent: true,
-        isActive: true
+        isActive: true,
       },
-      order: [['priority', 'ASC'], ['lastName', 'ASC']]
+      order: [
+        ['priority', 'ASC'],
+        ['lastName', 'ASC'],
+      ],
     });
 
-    this.logger.log(`Retrieved ${contacts.length} authorized pickup contacts for student ${studentId}`);
+    this.logger.log(
+      `Retrieved ${contacts.length} authorized pickup contacts for student ${studentId}`,
+    );
     return contacts;
   }
 }

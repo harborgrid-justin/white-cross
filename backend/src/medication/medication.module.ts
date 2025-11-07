@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MedicationController } from './medication.controller';
 import { MedicationService } from './services/medication.service';
 import { MedicationRepository } from './medication.repository';
 import { StudentMedication } from '../database/models/student-medication.model';
 import { Medication } from '../database/models/medication.model';
-import { WebSocketModule } from '../infrastructure/websocket/websocket.module';
 
 /**
  * Medication Module
@@ -28,6 +28,12 @@ import { WebSocketModule } from '../infrastructure/websocket/websocket.module';
  * - Controller: Handles HTTP requests and responses
  * - Service: Implements business logic and validation
  * - Repository: Provides data access layer using Sequelize
+ * - Event-driven: Uses EventEmitter for decoupled notifications
+ *
+ * Event-Driven Design:
+ * - Emits events for medication CRUD operations
+ * - WebSocket notifications handled by event listeners
+ * - No circular dependencies with infrastructure services
  *
  * Security:
  * - All endpoints require JWT authentication (configured at app level)
@@ -56,11 +62,9 @@ import { WebSocketModule } from '../infrastructure/websocket/websocket.module';
  */
 @Module({
   imports: [
-    SequelizeModule.forFeature([
-      StudentMedication,
-      Medication,
-    ]),
-    WebSocketModule,
+    SequelizeModule.forFeature([StudentMedication, Medication]),
+    // EventEmitter for decoupled notifications (no circular dependency)
+    EventEmitterModule.forRoot(),
   ],
   controllers: [MedicationController],
   providers: [MedicationService, MedicationRepository],

@@ -41,20 +41,26 @@ export interface UpdateSessionDTO {
 }
 
 @Injectable()
-export class SessionRepository
-  extends BaseRepository<any, SessionAttributes, CreateSessionDTO>
-{
+export class SessionRepository extends BaseRepository<
+  any,
+  SessionAttributes,
+  CreateSessionDTO
+> {
   constructor(
-    @InjectModel(('' as any)) model: any,
+    @InjectModel('' as any) model: any,
     @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('ICacheManager') cacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'Session');
   }
 
   async findByToken(token: string): Promise<SessionAttributes | null> {
     try {
-      const cacheKey = this.cacheKeyBuilder.summary(this.entityName, token, 'by-token');
+      const cacheKey = this.cacheKeyBuilder.summary(
+        this.entityName,
+        token,
+        'by-token',
+      );
       const cached = await this.cacheManager.get<SessionAttributes>(cacheKey);
 
       if (cached) {
@@ -63,7 +69,7 @@ export class SessionRepository
       }
 
       const session = await this.model.findOne({
-        where: { token, isActive: true, expiresAt: { [Op.gt]: new Date() } }
+        where: { token, isActive: true, expiresAt: { [Op.gt]: new Date() } },
       });
 
       if (!session) return null;
@@ -77,7 +83,7 @@ export class SessionRepository
         'Failed to find session by token',
         'FIND_BY_TOKEN_ERROR',
         500,
-        { error: (error as Error).message }
+        { error: (error as Error).message },
       );
     }
   }
@@ -88,9 +94,9 @@ export class SessionRepository
         where: {
           userId,
           isActive: true,
-          expiresAt: { [Op.gt]: new Date() }
+          expiresAt: { [Op.gt]: new Date() },
         },
-        order: [['lastActivityAt', 'DESC']]
+        order: [['lastActivityAt', 'DESC']],
       });
       return sessions.map((s: any) => this.mapToEntity(s));
     } catch (error) {
@@ -99,7 +105,7 @@ export class SessionRepository
         'Failed to find sessions by user',
         'FIND_BY_USER_ERROR',
         500,
-        { userId, error: (error as Error).message }
+        { userId, error: (error as Error).message },
       );
     }
   }
@@ -108,7 +114,7 @@ export class SessionRepository
     try {
       await this.model.update(
         { lastActivityAt: new Date() },
-        { where: { id: sessionId } }
+        { where: { id: sessionId } },
       );
 
       const session = await this.model.findByPk(sessionId);
@@ -120,19 +126,19 @@ export class SessionRepository
     }
   }
 
-  async invalidateSession(sessionId: string, context: ExecutionContext): Promise<void> {
+  async invalidateSession(
+    sessionId: string,
+    context: ExecutionContext,
+  ): Promise<void> {
     try {
       await this.model.update(
         { isActive: false },
-        { where: { id: sessionId } }
+        { where: { id: sessionId } },
       );
 
-      await this.auditLogger.logUpdate(
-        this.entityName,
-        sessionId,
-        context,
-        { isActive: { before: true, after: false } }
-      );
+      await this.auditLogger.logUpdate(this.entityName, sessionId, context, {
+        isActive: { before: true, after: false },
+      });
 
       const session = await this.model.findByPk(sessionId);
       if (session) {
@@ -146,12 +152,15 @@ export class SessionRepository
         'Failed to invalidate session',
         'INVALIDATE_SESSION_ERROR',
         500,
-        { sessionId, error: (error as Error).message }
+        { sessionId, error: (error as Error).message },
       );
     }
   }
 
-  async invalidateUserSessions(userId: string, context: ExecutionContext): Promise<void> {
+  async invalidateUserSessions(
+    userId: string,
+    context: ExecutionContext,
+  ): Promise<void> {
     let transaction: Transaction | undefined;
 
     try {
@@ -159,21 +168,23 @@ export class SessionRepository
 
       await this.model.update(
         { isActive: false },
-        { where: { userId, isActive: true }, transaction }
+        { where: { userId, isActive: true }, transaction },
       );
 
       await this.auditLogger.logBulkOperation(
         'INVALIDATE_USER_SESSIONS',
         this.entityName,
         context,
-        { userId }
+        { userId },
       );
 
       if (transaction) {
         await transaction.commit();
       }
 
-      await this.cacheManager.deletePattern(`white-cross:session:user:${userId}:*`);
+      await this.cacheManager.deletePattern(
+        `white-cross:session:user:${userId}:*`,
+      );
 
       this.logger.log(`Invalidated all sessions for user ${userId}`);
     } catch (error) {
@@ -186,7 +197,7 @@ export class SessionRepository
         'Failed to invalidate user sessions',
         'INVALIDATE_USER_SESSIONS_ERROR',
         500,
-        { userId, error: (error as Error).message }
+        { userId, error: (error as Error).message },
       );
     }
   }
@@ -197,9 +208,9 @@ export class SessionRepository
         where: {
           [Op.or]: [
             { expiresAt: { [Op.lt]: new Date() } },
-            { isActive: false }
-          ]
-        }
+            { isActive: false },
+          ],
+        },
       });
 
       this.logger.log(`Cleaned up ${result} expired sessions`);
@@ -214,7 +225,10 @@ export class SessionRepository
     // No validation needed for session creation
   }
 
-  protected async validateUpdate(id: string, data: UpdateSessionDTO): Promise<void> {
+  protected async validateUpdate(
+    id: string,
+    data: UpdateSessionDTO,
+  ): Promise<void> {
     // No validation needed for session updates
   }
 
@@ -222,18 +236,22 @@ export class SessionRepository
     try {
       const sessionData = session.get();
       await this.cacheManager.delete(
-        this.cacheKeyBuilder.entity(this.entityName, sessionData.id)
+        this.cacheKeyBuilder.entity(this.entityName, sessionData.id),
       );
 
       if (sessionData.token) {
         await this.cacheManager.delete(
-          this.cacheKeyBuilder.summary(this.entityName, sessionData.token, 'by-token')
+          this.cacheKeyBuilder.summary(
+            this.entityName,
+            sessionData.token,
+            'by-token',
+          ),
         );
       }
 
       if (sessionData.userId) {
         await this.cacheManager.deletePattern(
-          `white-cross:session:user:${sessionData.userId}:*`
+          `white-cross:session:user:${sessionData.userId}:*`,
         );
       }
     } catch (error) {
@@ -245,9 +263,7 @@ export class SessionRepository
     return sanitizeSensitiveData({
       ...data,
       token: '[REDACTED]',
-      refreshToken: '[REDACTED]'
+      refreshToken: '[REDACTED]',
     });
   }
 }
-
-

@@ -96,13 +96,14 @@ export class HealthRecordService {
     }
 
     // Execute query with pagination
-    const { rows: records, count: total } = await this.healthRecordModel.findAndCountAll({
-      where: whereClause,
-      include: [{ model: this.studentModel, as: 'student' }],
-      order: [['recordDate', 'DESC']],
-      limit,
-      offset,
-    });
+    const { rows: records, count: total } =
+      await this.healthRecordModel.findAndCountAll({
+        where: whereClause,
+        include: [{ model: this.studentModel, as: 'student' }],
+        order: [['recordDate', 'DESC']],
+        limit,
+        offset,
+      });
 
     // PHI Access Audit Log
     this.logger.log(
@@ -304,9 +305,12 @@ export class HealthRecordService {
     const savedAllergy = await this.allergyModel.create(allergyData);
 
     // Reload with associations
-    const allergyWithRelations = await this.allergyModel.findByPk(savedAllergy.id, {
-      include: [{ model: this.studentModel, as: 'student' }],
-    });
+    const allergyWithRelations = await this.allergyModel.findByPk(
+      savedAllergy.id,
+      {
+        include: [{ model: this.studentModel, as: 'student' }],
+      },
+    );
 
     if (!allergyWithRelations) {
       throw new Error('Failed to reload allergy after creation');
@@ -437,12 +441,16 @@ export class HealthRecordService {
       ...data,
       isActive: true,
     };
-    const savedCondition = await this.chronicConditionModel.create(conditionData);
+    const savedCondition =
+      await this.chronicConditionModel.create(conditionData);
 
     // Reload with associations
-    const conditionWithRelations = await this.chronicConditionModel.findByPk(savedCondition.id, {
-      include: [{ model: this.studentModel, as: 'student' }],
-    });
+    const conditionWithRelations = await this.chronicConditionModel.findByPk(
+      savedCondition.id,
+      {
+        include: [{ model: this.studentModel, as: 'student' }],
+      },
+    );
 
     if (!conditionWithRelations) {
       throw new Error('Failed to reload chronic condition after creation');
@@ -502,9 +510,12 @@ export class HealthRecordService {
     await existingCondition.update(data);
 
     // Reload with associations
-    const conditionWithRelations = await this.chronicConditionModel.findByPk(id, {
-      include: [{ model: this.studentModel, as: 'student' }],
-    });
+    const conditionWithRelations = await this.chronicConditionModel.findByPk(
+      id,
+      {
+        include: [{ model: this.studentModel, as: 'student' }],
+      },
+    );
 
     if (!conditionWithRelations) {
       throw new Error('Failed to reload chronic condition after update');
@@ -570,12 +581,16 @@ export class HealthRecordService {
       ...data,
       seriesComplete,
     };
-    const savedVaccination = await this.vaccinationModel.create(vaccinationData);
+    const savedVaccination =
+      await this.vaccinationModel.create(vaccinationData);
 
     // Reload with associations
-    const vaccinationWithRelations = await this.vaccinationModel.findByPk(savedVaccination.id, {
-      include: [{ model: this.studentModel, as: 'student' }],
-    });
+    const vaccinationWithRelations = await this.vaccinationModel.findByPk(
+      savedVaccination.id,
+      {
+        include: [{ model: this.studentModel, as: 'student' }],
+      },
+    );
 
     if (!vaccinationWithRelations) {
       throw new Error('Failed to reload vaccination after creation');
@@ -719,7 +734,9 @@ export class HealthRecordService {
         if (height && weight) {
           // BMI = weight (kg) / (height (m))^2
           const heightInMeters = height / 100;
-          bmi = parseFloat((weight / (heightInMeters * heightInMeters)).toFixed(1));
+          bmi = parseFloat(
+            (weight / (heightInMeters * heightInMeters)).toFixed(1),
+          );
         }
 
         return {
@@ -730,7 +747,9 @@ export class HealthRecordService {
           recordType: record.recordType,
         };
       })
-      .filter((point) => point.height !== undefined || point.weight !== undefined);
+      .filter(
+        (point) => point.height !== undefined || point.weight !== undefined,
+      );
 
     // PHI Access Audit Log
     this.logger.log(
@@ -746,11 +765,16 @@ export class HealthRecordService {
    * @param limit - Number of records to retrieve
    * @returns Array of recent vital signs
    */
-  async getRecentVitals(studentId: string, limit: number = 10): Promise<VitalSigns[]> {
+  async getRecentVitals(
+    studentId: string,
+    limit: number = 10,
+  ): Promise<VitalSigns[]> {
     const records = await this.healthRecordModel.findAll({
       where: {
         studentId,
-        recordType: { [Op.in]: ['VITAL_SIGNS_CHECK', 'CHECKUP', 'PHYSICAL_EXAM'] },
+        recordType: {
+          [Op.in]: ['VITAL_SIGNS_CHECK', 'CHECKUP', 'PHYSICAL_EXAM'],
+        },
       },
       order: [['recordDate', 'DESC']],
       limit,
@@ -815,7 +839,7 @@ export class HealthRecordService {
 
     // Count records by type using Sequelize aggregation
     const recordCounts: Record<string, number> = {};
-    const countsByType = await this.healthRecordModel.findAll({
+    const countsByType = (await this.healthRecordModel.findAll({
       attributes: [
         'recordType',
         [this.healthRecordModel.sequelize!.fn('COUNT', '*'), 'count'],
@@ -823,7 +847,7 @@ export class HealthRecordService {
       where: { studentId },
       group: ['recordType'],
       raw: true,
-    }) as any[];
+    })) as any[];
 
     countsByType.forEach((row) => {
       recordCounts[row.recordType] = parseInt(row.count, 10);
@@ -875,13 +899,14 @@ export class HealthRecordService {
     }
 
     // Execute query with pagination
-    const { rows: records, count: total } = await this.healthRecordModel.findAndCountAll({
-      where: whereClause,
-      include: [{ model: this.studentModel, as: 'student' }],
-      order: [['recordDate', 'DESC']],
-      limit,
-      offset,
-    });
+    const { rows: records, count: total } =
+      await this.healthRecordModel.findAndCountAll({
+        where: whereClause,
+        include: [{ model: this.studentModel, as: 'student' }],
+        order: [['recordDate', 'DESC']],
+        limit,
+        offset,
+      });
 
     // PHI Access Audit Log
     this.logger.log(
@@ -1040,9 +1065,7 @@ export class HealthRecordService {
           });
           results.imported++;
         } catch (error) {
-          results.errors.push(
-            `Failed to import vaccination: ${error.message}`,
-          );
+          results.errors.push(`Failed to import vaccination: ${error.message}`);
           results.skipped++;
         }
       }
@@ -1099,13 +1122,14 @@ export class HealthRecordService {
     }
 
     // Execute query with pagination
-    const { rows: records, count: total } = await this.healthRecordModel.findAndCountAll({
-      where: whereClause,
-      include: [{ model: this.studentModel, as: 'student' }],
-      order: [['recordDate', 'DESC']],
-      limit,
-      offset,
-    });
+    const { rows: records, count: total } =
+      await this.healthRecordModel.findAndCountAll({
+        where: whereClause,
+        include: [{ model: this.studentModel, as: 'student' }],
+        order: [['recordDate', 'DESC']],
+        limit,
+        offset,
+      });
 
     // PHI Access Audit Log
     this.logger.log(
@@ -1226,7 +1250,9 @@ export class HealthRecordService {
   async getCompleteHealthProfile(studentId: string): Promise<any> {
     const healthRecord = await this.getHealthRecord(studentId);
     if (!healthRecord) {
-      throw new NotFoundException(`Health record for student ${studentId} not found`);
+      throw new NotFoundException(
+        `Health record for student ${studentId} not found`,
+      );
     }
 
     // Get additional related data
@@ -1259,7 +1285,11 @@ export class HealthRecordService {
    * @param filters - Optional filters
    * @returns Paginated health records
    */
-  async findAll(page: number = 1, limit: number = 20, filters: any = {}): Promise<any> {
+  async findAll(
+    page: number = 1,
+    limit: number = 20,
+    filters: any = {},
+  ): Promise<any> {
     return this.getAllHealthRecords(page, limit, filters);
   }
 
@@ -1280,7 +1310,12 @@ export class HealthRecordService {
    * @param filters - Optional filters
    * @returns Paginated health records for student
    */
-  async findByStudent(studentId: string, page: number = 1, limit: number = 20, filters: any = {}): Promise<any> {
+  async findByStudent(
+    studentId: string,
+    page: number = 1,
+    limit: number = 20,
+    filters: any = {},
+  ): Promise<any> {
     return this.getStudentHealthRecords(studentId, page, limit, filters);
   }
 

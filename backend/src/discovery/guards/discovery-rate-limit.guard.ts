@@ -1,7 +1,15 @@
-import { Injectable, CanActivate, ExecutionContext, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  Logger,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
-import { RATE_LIMIT_KEY, RateLimitConfig } from '../decorators/rate-limit.decorator';
+import {
+  RATE_LIMIT_KEY,
+  RateLimitConfig,
+} from '../decorators/rate-limit.decorator';
 import { RateLimitExceededException } from '../exceptions/discovery.exceptions';
 
 interface RequestRecord {
@@ -18,9 +26,12 @@ export class DiscoveryRateLimitGuard implements CanActivate {
 
   constructor(private reflector: Reflector) {
     // Clean up old entries every 5 minutes
-    this.cleanupInterval = setInterval(() => {
-      this.cleanupOldEntries();
-    }, 5 * 60 * 1000);
+    this.cleanupInterval = setInterval(
+      () => {
+        this.cleanupOldEntries();
+      },
+      5 * 60 * 1000,
+    );
   }
 
   onModuleDestroy() {
@@ -30,10 +41,10 @@ export class DiscoveryRateLimitGuard implements CanActivate {
   }
 
   canActivate(context: ExecutionContext): boolean {
-    const rateLimitConfig = this.reflector.getAllAndOverride<RateLimitConfig>(RATE_LIMIT_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const rateLimitConfig = this.reflector.getAllAndOverride<RateLimitConfig>(
+      RATE_LIMIT_KEY,
+      [context.getHandler(), context.getClass()],
+    );
 
     if (!rateLimitConfig) {
       return true; // No rate limit configured, allow access
@@ -41,29 +52,34 @@ export class DiscoveryRateLimitGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest<Request>();
     const identifier = this.getIdentifier(request);
-    
+
     return this.checkRateLimit(identifier, rateLimitConfig, request);
   }
 
   private getIdentifier(request: Request): string {
     const user = request.user as any;
-    
+
     // Prefer user ID for authenticated users, fall back to IP
     if (user?.id) {
       return `user:${user.id}`;
     }
-    
+
     // Use IP address as fallback
-    const ip = request.ip || 
-               request.connection.remoteAddress || 
-               request.socket.remoteAddress ||
-               (request.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
-               'unknown';
-               
+    const ip =
+      request.ip ||
+      request.connection.remoteAddress ||
+      request.socket.remoteAddress ||
+      (request.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+      'unknown';
+
     return `ip:${ip}`;
   }
 
-  private checkRateLimit(identifier: string, config: RateLimitConfig, request: Request): boolean {
+  private checkRateLimit(
+    identifier: string,
+    config: RateLimitConfig,
+    request: Request,
+  ): boolean {
     const now = Date.now();
     const windowStart = now - config.windowMs;
 
@@ -79,7 +95,9 @@ export class DiscoveryRateLimitGuard implements CanActivate {
     }
 
     // Remove requests outside the current window
-    record.requests = record.requests.filter(timestamp => timestamp > windowStart);
+    record.requests = record.requests.filter(
+      (timestamp) => timestamp > windowStart,
+    );
     record.count = record.requests.length;
 
     // Check if limit is exceeded
@@ -101,7 +119,11 @@ export class DiscoveryRateLimitGuard implements CanActivate {
         },
       );
 
-      throw new RateLimitExceededException(config.limit, config.windowMs, identifier);
+      throw new RateLimitExceededException(
+        config.limit,
+        config.windowMs,
+        identifier,
+      );
     }
 
     // Add current request to the record
@@ -109,7 +131,8 @@ export class DiscoveryRateLimitGuard implements CanActivate {
     record.count = record.requests.length;
 
     // Log rate limit status for monitoring
-    if (record.count > config.limit * 0.8) { // Warn when approaching limit
+    if (record.count > config.limit * 0.8) {
+      // Warn when approaching limit
       this.logger.warn(
         `Rate limit approaching for ${identifier}: ${record.count}/${config.limit}`,
         {
@@ -132,8 +155,9 @@ export class DiscoveryRateLimitGuard implements CanActivate {
       // Remove entries that haven't been used in the last hour
       const lastRequestTime = Math.max(...record.requests, record.windowStart);
       const timeSinceLastRequest = now - lastRequestTime;
-      
-      if (timeSinceLastRequest > 60 * 60 * 1000) { // 1 hour
+
+      if (timeSinceLastRequest > 60 * 60 * 1000) {
+        // 1 hour
         this.requests.delete(identifier);
         cleanedCount++;
       }
@@ -145,7 +169,9 @@ export class DiscoveryRateLimitGuard implements CanActivate {
   }
 
   // Method to get current rate limit status (useful for monitoring)
-  getRateLimitStatus(identifier: string): { count: number; limit?: number; windowMs?: number } | null {
+  getRateLimitStatus(
+    identifier: string,
+  ): { count: number; limit?: number; windowMs?: number } | null {
     const record = this.requests.get(identifier);
     if (!record) {
       return null;

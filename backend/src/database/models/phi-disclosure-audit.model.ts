@@ -10,7 +10,7 @@ import {
   BelongsTo,
   Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
@@ -29,29 +29,32 @@ export interface PhiDisclosureAuditAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'phi_disclosure_audits',
   timestamps: false,
   indexes: [
     {
-      fields: ['disclosureId']
-  },
+      fields: ['disclosureId'],
+    },
     {
       fields: ['createdAt'],
-      name: 'idx_phi_disclosure_audit_created_at'
+      name: 'idx_phi_disclosure_audit_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_phi_disclosure_audit_updated_at'
-    }
-  ]
-  })
-export class PhiDisclosureAudit extends Model<PhiDisclosureAuditAttributes> implements PhiDisclosureAuditAttributes {
+      name: 'idx_phi_disclosure_audit_updated_at',
+    },
+  ],
+})
+export class PhiDisclosureAudit
+  extends Model<PhiDisclosureAuditAttributes>
+  implements PhiDisclosureAuditAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -60,13 +63,13 @@ export class PhiDisclosureAudit extends Model<PhiDisclosureAuditAttributes> impl
   @ForeignKey(() => require('./phi-disclosure.model').PhiDisclosure)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   disclosureId: string;
 
   @Column({
     type: DataType.STRING(50),
-    allowNull: false
+    allowNull: false,
   })
   action: string;
 
@@ -76,7 +79,7 @@ export class PhiDisclosureAudit extends Model<PhiDisclosureAuditAttributes> impl
 
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   performedBy: string;
 
@@ -94,14 +97,15 @@ export class PhiDisclosureAudit extends Model<PhiDisclosureAuditAttributes> impl
   @Column(DataType.DATE)
   declare createdAt?: Date;
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: PhiDisclosureAudit) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] PhiDisclosureAudit ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] PhiDisclosureAudit ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

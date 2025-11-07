@@ -8,7 +8,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Process, Processor } from '@nestjs/bull';
 import { Job } from 'bullmq';
 import { TwilioProvider } from '../providers/twilio.provider';
-import { SmsQueueJobDto, SmsDeliveryResultDto, SmsDeliveryStatus } from '../dto/sms-queue-job.dto';
+import {
+  SmsQueueJobDto,
+  SmsDeliveryResultDto,
+  SmsDeliveryStatus,
+} from '../dto/sms-queue-job.dto';
 
 /**
  * Queue name for SMS processing
@@ -61,7 +65,10 @@ export class SmsQueueProcessor {
       const result = await this.twilioProvider.sendSms(to, message, metadata);
 
       // Check if sending was successful
-      if (result.status === SmsDeliveryStatus.FAILED && attemptNumber < maxRetries) {
+      if (
+        result.status === SmsDeliveryStatus.FAILED &&
+        attemptNumber < maxRetries
+      ) {
         // Check if error is retryable
         const isRetryable = result.errorCode
           ? this.twilioProvider.isRetryableError(result.errorCode)
@@ -125,11 +132,17 @@ export class SmsQueueProcessor {
    */
   @Process(SmsJobType.SEND_BULK)
   async handleSendBulk(
-    job: Job<{ recipients: string[]; message: string; metadata?: Record<string, unknown> }>,
+    job: Job<{
+      recipients: string[];
+      message: string;
+      metadata?: Record<string, unknown>;
+    }>,
   ): Promise<SmsDeliveryResultDto[]> {
     const { recipients, message, metadata } = job.data;
 
-    this.logger.log(`Processing bulk SMS job ${job.id} - ${recipients.length} recipients`);
+    this.logger.log(
+      `Processing bulk SMS job ${job.id} - ${recipients.length} recipients`,
+    );
 
     const results: SmsDeliveryResultDto[] = [];
 
@@ -176,7 +189,9 @@ export class SmsQueueProcessor {
    * @returns Updated delivery result
    */
   @Process(SmsJobType.CHECK_STATUS)
-  async handleCheckStatus(job: Job<{ messageId: string }>): Promise<SmsDeliveryResultDto> {
+  async handleCheckStatus(
+    job: Job<{ messageId: string }>,
+  ): Promise<SmsDeliveryResultDto> {
     const { messageId } = job.data;
 
     this.logger.debug(`Checking SMS status for message ${messageId}`);
@@ -188,7 +203,9 @@ export class SmsQueueProcessor {
 
       return result;
     } catch (error) {
-      this.logger.error(`Failed to check status for message ${messageId}: ${error.message}`);
+      this.logger.error(
+        `Failed to check status for message ${messageId}: ${error.message}`,
+      );
       throw error;
     }
   }

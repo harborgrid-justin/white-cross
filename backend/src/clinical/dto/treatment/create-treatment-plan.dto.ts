@@ -1,4 +1,11 @@
-import { IsString, IsUUID, IsArray, IsOptional, IsDate, IsEnum } from 'class-validator';
+import {
+  IsString,
+  IsUUID,
+  IsArray,
+  IsOptional,
+  IsDate,
+  IsEnum,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { TreatmentStatus } from '../../enums/treatment-status.enum';
@@ -7,7 +14,10 @@ import { TreatmentStatus } from '../../enums/treatment-status.enum';
  * DTO for creating a new treatment plan
  */
 export class CreateTreatmentPlanDto {
-  @ApiProperty({ description: 'Student ID', example: '123e4567-e89b-12d3-a456-426614174000' })
+  @ApiProperty({
+    description: 'Student ID',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+  })
   @IsUUID()
   studentId: string;
 
@@ -16,25 +26,40 @@ export class CreateTreatmentPlanDto {
   @IsOptional()
   visitId?: string;
 
-  @ApiProperty({ description: 'Staff member creating the plan', example: '123e4567-e89b-12d3-a456-426614174000' })
+  @ApiProperty({
+    description: 'Staff member creating the plan',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+  })
   @IsUUID()
   createdBy: string;
 
-  @ApiProperty({ description: 'Primary diagnosis', example: 'Type 1 Diabetes Mellitus' })
+  @ApiProperty({
+    description: 'Primary diagnosis',
+    example: 'Type 1 Diabetes Mellitus',
+  })
   @IsString()
   diagnosis: string;
 
-  @ApiProperty({ description: 'Treatment goals', example: ['Stabilize blood glucose', 'Prevent complications'] })
+  @ApiProperty({
+    description: 'Treatment goals',
+    example: ['Stabilize blood glucose', 'Prevent complications'],
+  })
   @IsArray()
   @IsString({ each: true })
   treatmentGoals: string[];
 
-  @ApiProperty({ description: 'Planned interventions', example: ['Insulin therapy', 'Dietary modifications', 'Regular monitoring'] })
+  @ApiProperty({
+    description: 'Planned interventions',
+    example: ['Insulin therapy', 'Dietary modifications', 'Regular monitoring'],
+  })
   @IsArray()
   @IsString({ each: true })
   interventions: string[];
 
-  @ApiPropertyOptional({ description: 'List of medications', example: ['Insulin glargine', 'Metformin'] })
+  @ApiPropertyOptional({
+    description: 'List of medications',
+    example: ['Insulin glargine', 'Metformin'],
+  })
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
@@ -51,7 +76,11 @@ export class CreateTreatmentPlanDto {
   @IsOptional()
   endDate?: Date;
 
-  @ApiPropertyOptional({ description: 'Treatment plan status', enum: TreatmentStatus, default: TreatmentStatus.DRAFT })
+  @ApiPropertyOptional({
+    description: 'Treatment plan status',
+    enum: TreatmentStatus,
+    default: TreatmentStatus.DRAFT,
+  })
   @IsEnum(TreatmentStatus)
   @IsOptional()
   status?: TreatmentStatus;

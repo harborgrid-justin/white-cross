@@ -27,10 +27,12 @@ export class SeedStudentsCommand extends CommandRunner {
     try {
       // Check if students already exist
       const existingCount = await this.studentModel.count();
-      
+
       if (existingCount > 0) {
         console.log(`⚠️  Found ${existingCount} existing students in database`);
-        console.log('❌ Skipping seed to avoid duplicates. Clear students table first if needed.\n');
+        console.log(
+          '❌ Skipping seed to avoid duplicates. Clear students table first if needed.\n',
+        );
         return;
       }
 
@@ -41,24 +43,32 @@ export class SeedStudentsCommand extends CommandRunner {
       });
 
       if (schools.length === 0) {
-        console.log('❌ No schools found in database. Please seed schools first.');
+        console.log(
+          '❌ No schools found in database. Please seed schools first.',
+        );
         console.log('   Run: npm run seed:schools\n');
         return;
       }
 
-      const schoolIds = schools.map(s => s.id);
-      const districtIds = schools.map(s => s.districtId);
+      const schoolIds = schools.map((s) => s.id);
+      const districtIds = schools.map((s) => s.districtId);
       console.log(`✅ Found ${schoolIds.length} schools`);
 
       // Generate student data
       const studentsPerSchool = 20; // Create 20 students per school
-      console.log(`📝 Generating ${studentsPerSchool} students per school (${schoolIds.length * studentsPerSchool} total)...`);
-      const students = generateStudents(schoolIds, districtIds, studentsPerSchool);
+      console.log(
+        `📝 Generating ${studentsPerSchool} students per school (${schoolIds.length * studentsPerSchool} total)...`,
+      );
+      const students = generateStudents(
+        schoolIds,
+        districtIds,
+        studentsPerSchool,
+      );
 
       // Bulk insert students in batches to avoid memory issues
       const batchSize = 100;
       let totalCreated = 0;
-      
+
       console.log('💾 Inserting students into database...');
       for (let i = 0; i < students.length; i += batchSize) {
         const batch = students.slice(i, i + batchSize);
@@ -67,20 +77,30 @@ export class SeedStudentsCommand extends CommandRunner {
           returning: true,
         });
         totalCreated += created.length;
-        console.log(`   Inserted batch ${Math.floor(i / batchSize) + 1}: ${created.length} students (Total: ${totalCreated})`);
+        console.log(
+          `   Inserted batch ${Math.floor(i / batchSize) + 1}: ${created.length} students (Total: ${totalCreated})`,
+        );
       }
 
       console.log(`✅ Successfully seeded ${totalCreated} students`);
-      
+
       // Show sample students
       const sampleStudents = await this.studentModel.findAll({
         limit: 5,
-        attributes: ['studentNumber', 'firstName', 'lastName', 'grade', 'gender'],
+        attributes: [
+          'studentNumber',
+          'firstName',
+          'lastName',
+          'grade',
+          'gender',
+        ],
       });
-      
+
       console.log('\nSample students:');
       sampleStudents.forEach((student) => {
-        console.log(`  - ${student.studentNumber}: ${student.firstName} ${student.lastName} (Grade ${student.grade}, ${student.gender})`);
+        console.log(
+          `  - ${student.studentNumber}: ${student.firstName} ${student.lastName} (Grade ${student.grade}, ${student.gender})`,
+        );
       });
       console.log('');
     } catch (error) {

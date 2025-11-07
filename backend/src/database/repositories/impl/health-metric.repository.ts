@@ -26,23 +26,34 @@ export interface UpdateHealthMetricDTO {
 }
 
 @Injectable()
-export class HealthMetricRepository extends BaseRepository<any, HealthMetricAttributes, CreateHealthMetricDTO> {
+export class HealthMetricRepository extends BaseRepository<
+  any,
+  HealthMetricAttributes,
+  CreateHealthMetricDTO
+> {
   constructor(
-    @InjectModel(('' as any)) model: any,
+    @InjectModel('' as any) model: any,
     @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('ICacheManager') cacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'HealthMetric');
   }
 
   protected async validateCreate(data: CreateHealthMetricDTO): Promise<void> {}
-  protected async validateUpdate(id: string, data: UpdateHealthMetricDTO): Promise<void> {}
+  protected async validateUpdate(
+    id: string,
+    data: UpdateHealthMetricDTO,
+  ): Promise<void> {}
 
   protected async invalidateCaches(entity: any): Promise<void> {
     try {
       const entityData = entity.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, entityData.id));
-      await this.cacheManager.deletePattern(`white-cross:${this.entityName.toLowerCase()}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, entityData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:${this.entityName.toLowerCase()}:*`,
+      );
     } catch (error) {
       this.logger.warn(`Error invalidating ${this.entityName} caches:`, error);
     }
@@ -52,5 +63,3 @@ export class HealthMetricRepository extends BaseRepository<any, HealthMetricAttr
     return sanitizeSensitiveData({ ...data });
   }
 }
-
-

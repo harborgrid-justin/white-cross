@@ -45,9 +45,7 @@ export class AuditStatisticsService {
             [Op.ne]: null,
           },
         },
-        attributes: [
-          [fn('COUNT', fn('DISTINCT', col('userId'))), 'count']
-        ],
+        attributes: [[fn('COUNT', fn('DISTINCT', col('userId'))), 'count']],
         raw: true,
       });
 
@@ -58,10 +56,7 @@ export class AuditStatisticsService {
             [Op.between]: [startDate, endDate],
           },
         },
-        attributes: [
-          'action',
-          [fn('COUNT', col('*')), 'count']
-        ],
+        attributes: ['action', [fn('COUNT', col('*')), 'count']],
         group: ['action'],
         raw: true,
       });
@@ -73,10 +68,7 @@ export class AuditStatisticsService {
             [Op.between]: [startDate, endDate],
           },
         },
-        attributes: [
-          'entityType',
-          [fn('COUNT', col('*')), 'count']
-        ],
+        attributes: ['entityType', [fn('COUNT', col('*')), 'count']],
         group: ['entityType'],
         raw: true,
       });

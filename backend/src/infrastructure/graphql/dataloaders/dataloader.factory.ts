@@ -53,7 +53,9 @@ export class DataLoaderFactory {
 
           // Create a map for O(1) lookup, filtering out nulls
           const studentMap = new Map(
-            students.filter(student => student !== null).map((student) => [student!.id, student])
+            students
+              .filter((student) => student !== null)
+              .map((student) => [student.id, student]),
           );
 
           // Return students in the same order as requested IDs
@@ -69,7 +71,7 @@ export class DataLoaderFactory {
         cache: true, // Enable per-request caching
         batchScheduleFn: (callback) => setTimeout(callback, 1), // Batch within 1ms
         maxBatchSize: 100, // Limit batch size to prevent memory issues
-      }
+      },
     );
   }
 
@@ -89,7 +91,8 @@ export class DataLoaderFactory {
 
           // Fetch all contacts for these students in a single query
           // findByStudentIds already returns contacts grouped by student ID
-          const contactsByStudent = await this.contactService.findByStudentIds(ids);
+          const contactsByStudent =
+            await this.contactService.findByStudentIds(ids);
 
           // Return contacts arrays in same order as requested IDs
           return contactsByStudent;
@@ -102,7 +105,7 @@ export class DataLoaderFactory {
         cache: true,
         batchScheduleFn: (callback) => setTimeout(callback, 1),
         maxBatchSize: 100,
-      }
+      },
     );
   }
 
@@ -124,7 +127,9 @@ export class DataLoaderFactory {
 
           // Create a map for O(1) lookup, filtering out nulls
           const contactMap = new Map(
-            contacts.filter(contact => contact !== null).map((contact) => [contact!.id, contact])
+            contacts
+              .filter((contact) => contact !== null)
+              .map((contact) => [contact.id, contact]),
           );
 
           // Return contacts in the same order as requested IDs
@@ -138,7 +143,7 @@ export class DataLoaderFactory {
         cache: true,
         batchScheduleFn: (callback) => setTimeout(callback, 1),
         maxBatchSize: 100,
-      }
+      },
     );
   }
 
@@ -158,7 +163,8 @@ export class DataLoaderFactory {
 
           // Fetch all medications for these students in a single query
           // findByStudentIds already returns medications grouped by student ID
-          const medicationsByStudent = await this.medicationService.findByStudentIds(ids);
+          const medicationsByStudent =
+            await this.medicationService.findByStudentIds(ids);
 
           // Return medications arrays in same order as requested IDs
           return medicationsByStudent;
@@ -171,7 +177,7 @@ export class DataLoaderFactory {
         cache: true,
         batchScheduleFn: (callback) => setTimeout(callback, 1),
         maxBatchSize: 100,
-      }
+      },
     );
   }
 
@@ -193,7 +199,9 @@ export class DataLoaderFactory {
 
           // Create a map for O(1) lookup, filtering out nulls
           const medicationMap = new Map(
-            medications.filter(medication => medication !== null).map((medication) => [medication!.id, medication])
+            medications
+              .filter((medication) => medication !== null)
+              .map((medication) => [medication.id, medication]),
           );
 
           // Return medications in the same order as requested IDs
@@ -207,7 +215,7 @@ export class DataLoaderFactory {
         cache: true,
         batchScheduleFn: (callback) => setTimeout(callback, 1),
         maxBatchSize: 100,
-      }
+      },
     );
   }
 
@@ -227,11 +235,16 @@ export class DataLoaderFactory {
 
           // This is a placeholder - implement when HealthRecordService is available
           // For now, return null for all students
-          console.warn('HealthRecord DataLoader not fully implemented - requires HealthRecordService');
+          console.warn(
+            'HealthRecord DataLoader not fully implemented - requires HealthRecordService',
+          );
 
           return ids.map(() => null);
         } catch (error) {
-          console.error('Error in health-records-by-student DataLoader:', error);
+          console.error(
+            'Error in health-records-by-student DataLoader:',
+            error,
+          );
           return studentIds.map(() => error);
         }
       },
@@ -239,7 +252,7 @@ export class DataLoaderFactory {
         cache: true,
         batchScheduleFn: (callback) => setTimeout(callback, 1),
         maxBatchSize: 100,
-      }
+      },
     );
   }
 

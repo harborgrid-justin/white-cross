@@ -7,7 +7,7 @@ import {
   Default,
   BeforeCreate,
   BeforeUpdate,
-  Scopes
+  Scopes,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
@@ -42,10 +42,10 @@ export interface LabResultsAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'lab_results',
@@ -54,34 +54,37 @@ export interface LabResultsAttributes {
   paranoid: true,
   indexes: [
     {
-      fields: ['studentId']
+      fields: ['studentId'],
     },
     {
-      fields: ['testType']
+      fields: ['testType'],
     },
     {
-      fields: ['status']
+      fields: ['status'],
     },
     {
-      fields: ['isAbnormal']
+      fields: ['isAbnormal'],
     },
     {
-      fields: ['orderedDate']
+      fields: ['orderedDate'],
     },
     {
-      fields: ['resultDate']
+      fields: ['resultDate'],
     },
     {
       fields: ['createdAt'],
-      name: 'idx_lab_results_created_at'
+      name: 'idx_lab_results_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_lab_results_updated_at'
-    }
-  ]
+      name: 'idx_lab_results_updated_at',
+    },
+  ],
 })
-export class LabResults extends Model<LabResultsAttributes> implements LabResultsAttributes {
+export class LabResults
+  extends Model<LabResultsAttributes>
+  implements LabResultsAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -89,19 +92,27 @@ export class LabResults extends Model<LabResultsAttributes> implements LabResult
 
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   studentId: string;
 
   @Column({
-    type: DataType.ENUM('blood_test', 'urinalysis', 'culture', 'chemistry', 'hematology', 'microbiology', 'other'),
-    allowNull: false
+    type: DataType.ENUM(
+      'blood_test',
+      'urinalysis',
+      'culture',
+      'chemistry',
+      'hematology',
+      'microbiology',
+      'other',
+    ),
+    allowNull: false,
   })
   testType: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   testName: string;
 
@@ -110,7 +121,7 @@ export class LabResults extends Model<LabResultsAttributes> implements LabResult
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   orderedDate: Date;
 
@@ -122,7 +133,7 @@ export class LabResults extends Model<LabResultsAttributes> implements LabResult
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false
+    allowNull: false,
   })
   result: string;
 
@@ -173,14 +184,15 @@ export class LabResults extends Model<LabResultsAttributes> implements LabResult
   @Column(DataType.DATE)
   declare updatedAt?: Date;
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: LabResults) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] LabResults ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] LabResults ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }
@@ -199,7 +211,7 @@ export class LabResults extends Model<LabResultsAttributes> implements LabResult
 
       // Basic parsing for ranges like "10-20" or "< 5" or "> 100"
       if (range.includes('-')) {
-        const [min, max] = range.split('-').map(r => parseFloat(r.trim()));
+        const [min, max] = range.split('-').map((r) => parseFloat(r.trim()));
         if (!isNaN(min) && !isNaN(max)) {
           if (value < min) abnormalFlags.push('low');
           if (value > max) abnormalFlags.push('high');
@@ -216,10 +228,16 @@ export class LabResults extends Model<LabResultsAttributes> implements LabResult
     // Check for critical values (would need domain-specific logic)
     if (instance.resultValue !== undefined) {
       // Example critical value checks
-      if (instance.testName.toLowerCase().includes('glucose') && instance.resultValue > 500) {
+      if (
+        instance.testName.toLowerCase().includes('glucose') &&
+        instance.resultValue > 500
+      ) {
         abnormalFlags.push('critical_high');
       }
-      if (instance.testName.toLowerCase().includes('potassium') && (instance.resultValue < 3.0 || instance.resultValue > 6.0)) {
+      if (
+        instance.testName.toLowerCase().includes('potassium') &&
+        (instance.resultValue < 3.0 || instance.resultValue > 6.0)
+      ) {
         abnormalFlags.push('critical');
       }
     }

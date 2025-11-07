@@ -8,7 +8,7 @@ import {
   AllowNull,
   Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
@@ -19,8 +19,8 @@ export enum ConsentType {
   FIELD_TRIP = 'FIELD_TRIP',
   EMERGENCY_TREATMENT = 'EMERGENCY_TREATMENT',
   DATA_SHARING = 'DATA_SHARING',
-  RESEARCH = 'RESEARCH'
-  }
+  RESEARCH = 'RESEARCH',
+}
 
 export interface ConsentFormAttributes {
   id?: string;
@@ -38,10 +38,10 @@ export interface ConsentFormAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'consent_forms',
@@ -49,25 +49,28 @@ export interface ConsentFormAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['type']
-  },
+      fields: ['type'],
+    },
     {
-      fields: ['isActive']
-  },
+      fields: ['isActive'],
+    },
     {
-      fields: ['expiresAt']
-  },
+      fields: ['expiresAt'],
+    },
     {
       fields: ['createdAt'],
-      name: 'idx_consent_form_created_at'
+      name: 'idx_consent_form_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_consent_form_updated_at'
-    }
-  ]
-  })
-export class ConsentForm extends Model<ConsentFormAttributes> implements ConsentFormAttributes {
+      name: 'idx_consent_form_updated_at',
+    },
+  ],
+})
+export class ConsentForm
+  extends Model<ConsentFormAttributes>
+  implements ConsentFormAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -76,41 +79,41 @@ export class ConsentForm extends Model<ConsentFormAttributes> implements Consent
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(ConsentType)]
+      isIn: [Object.values(ConsentType)],
     },
-    allowNull: false
+    allowNull: false,
   })
   type: ConsentType;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   title: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false
+    allowNull: false,
   })
   description: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false
+    allowNull: false,
   })
   content: string;
 
   @Column({
     type: DataType.STRING(20),
     allowNull: false,
-    defaultValue: '1.0'
+    defaultValue: '1.0',
   })
   declare version: string;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true
+    defaultValue: true,
   })
   isActive: boolean;
 
@@ -124,14 +127,15 @@ export class ConsentForm extends Model<ConsentFormAttributes> implements Consent
   @Column(DataType.DATE)
   declare updatedAt?: Date;
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: ConsentForm) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] ConsentForm ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] ConsentForm ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

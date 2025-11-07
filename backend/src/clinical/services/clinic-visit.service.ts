@@ -100,7 +100,9 @@ export class ClinicVisitService {
   /**
    * Get visits with filtering and pagination
    */
-  async getVisits(filters: VisitFiltersDto): Promise<{ visits: ClinicVisit[]; total: number }> {
+  async getVisits(
+    filters: VisitFiltersDto,
+  ): Promise<{ visits: ClinicVisit[]; total: number }> {
     const where: any = {};
 
     if (filters.studentId) {
@@ -131,12 +133,13 @@ export class ClinicVisitService {
       }
     }
 
-    const { rows: visits, count: total } = await this.clinicVisitModel.findAndCountAll({
-      where,
-      offset: filters.offset || 0,
-      limit: filters.limit || 20,
-      order: [['checkInTime', 'DESC']],
-    });
+    const { rows: visits, count: total } =
+      await this.clinicVisitModel.findAndCountAll({
+        where,
+        offset: filters.offset || 0,
+        limit: filters.limit || 20,
+        order: [['checkInTime', 'DESC']],
+      });
 
     return { visits, total };
   }
@@ -159,7 +162,10 @@ export class ClinicVisitService {
   /**
    * Get visits for a student
    */
-  async getVisitsByStudent(studentId: string, limit: number = 10): Promise<ClinicVisit[]> {
+  async getVisitsByStudent(
+    studentId: string,
+    limit: number = 10,
+  ): Promise<ClinicVisit[]> {
     return this.clinicVisitModel.findAll({
       where: { studentId },
       order: [['checkInTime', 'DESC']],
@@ -170,7 +176,10 @@ export class ClinicVisitService {
   /**
    * Update a visit
    */
-  async updateVisit(id: string, updates: Partial<CheckInDto & CheckOutDto>): Promise<ClinicVisit> {
+  async updateVisit(
+    id: string,
+    updates: Partial<CheckInDto & CheckOutDto>,
+  ): Promise<ClinicVisit> {
     const visit = await this.getVisitById(id);
 
     await visit.update(updates);
@@ -195,7 +204,10 @@ export class ClinicVisitService {
   /**
    * Get visit statistics
    */
-  async getStatistics(startDate: Date, endDate: Date): Promise<VisitStatistics> {
+  async getStatistics(
+    startDate: Date,
+    endDate: Date,
+  ): Promise<VisitStatistics> {
     const visits = await this.clinicVisitModel.findAll({
       where: {
         checkInTime: {
@@ -235,7 +247,8 @@ export class ClinicVisitService {
       }
 
       // Count by disposition
-      stats.byDisposition[visit.disposition] = (stats.byDisposition[visit.disposition] || 0) + 1;
+      stats.byDisposition[visit.disposition] =
+        (stats.byDisposition[visit.disposition] || 0) + 1;
 
       // Sum minutes missed
       if (visit.minutesMissed) {
@@ -251,8 +264,10 @@ export class ClinicVisitService {
     }
 
     // Calculate averages
-    stats.averageVisitDuration = durationCount > 0 ? totalDuration / durationCount : 0;
-    stats.averageMinutesMissed = visits.length > 0 ? stats.totalMinutesMissed / visits.length : 0;
+    stats.averageVisitDuration =
+      durationCount > 0 ? totalDuration / durationCount : 0;
+    stats.averageMinutesMissed =
+      visits.length > 0 ? stats.totalMinutesMissed / visits.length : 0;
 
     // Get most common symptoms
     stats.mostCommonSymptoms = Object.entries(symptomCounts)
@@ -319,7 +334,8 @@ export class ClinicVisitService {
       }
     }
 
-    summary.averageDuration = durationCount > 0 ? totalDuration / durationCount : 0;
+    summary.averageDuration =
+      durationCount > 0 ? totalDuration / durationCount : 0;
 
     // Get most common reasons
     summary.mostCommonReasons = Object.entries(reasonCounts)
@@ -329,13 +345,16 @@ export class ClinicVisitService {
 
     // Calculate visit frequency (visits per month)
     if (startDate && endDate) {
-      const months = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
+      const months =
+        (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
       summary.visitFrequency = visits.length / (months || 1);
     } else if (visits.length > 1) {
       // Use actual date range from visits
       const oldestVisit = visits[visits.length - 1].checkInTime;
       const newestVisit = visits[0].checkInTime;
-      const months = (newestVisit.getTime() - oldestVisit.getTime()) / (1000 * 60 * 60 * 24 * 30);
+      const months =
+        (newestVisit.getTime() - oldestVisit.getTime()) /
+        (1000 * 60 * 60 * 24 * 30);
       summary.visitFrequency = visits.length / (months || 1);
     }
 
@@ -407,7 +426,8 @@ export class ClinicVisitService {
         }
       }
 
-      summary.averageDuration = durationCount > 0 ? totalDuration / durationCount : 0;
+      summary.averageDuration =
+        durationCount > 0 ? totalDuration / durationCount : 0;
 
       // Get most common reasons
       summary.mostCommonReasons = Object.entries(reasonCounts)
@@ -416,20 +436,26 @@ export class ClinicVisitService {
         .map(([reason]) => reason);
 
       // Calculate visit frequency (visits per month)
-      const months = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
+      const months =
+        (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
       summary.visitFrequency = studentVisitList.length / (months || 1);
 
       summaries.push(summary);
     }
 
     // Sort by total visits and return top N
-    return summaries.sort((a, b) => b.totalVisits - a.totalVisits).slice(0, limit);
+    return summaries
+      .sort((a, b) => b.totalVisits - a.totalVisits)
+      .slice(0, limit);
   }
 
   /**
    * Get visits by time of day distribution
    */
-  async getVisitsByTimeOfDay(startDate: Date, endDate: Date): Promise<Record<string, number>> {
+  async getVisitsByTimeOfDay(
+    startDate: Date,
+    endDate: Date,
+  ): Promise<Record<string, number>> {
     const visits = await this.clinicVisitModel.findAll({
       where: {
         checkInTime: {

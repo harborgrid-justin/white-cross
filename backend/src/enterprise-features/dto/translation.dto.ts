@@ -18,7 +18,10 @@ export class DetectLanguageDto {
 }
 
 export class TranslateBulkMessagesDto {
-  @ApiProperty({ description: 'Array of messages to translate', type: [String] })
+  @ApiProperty({
+    description: 'Array of messages to translate',
+    type: [String],
+  })
   @IsArray()
   @IsString({ each: true })
   messages: string[];

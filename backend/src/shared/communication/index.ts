@@ -23,7 +23,7 @@
 
 /**
  * Communication utilities index
- * 
+ *
  * Centralized exports for all communication-related utilities
  */
 

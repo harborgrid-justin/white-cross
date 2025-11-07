@@ -113,7 +113,9 @@ export class ReadReceiptDto {
    * @returns True if batch read receipt, false otherwise
    */
   isBatchReceipt(): boolean {
-    return !!this.lastReadMessageId && this.lastReadMessageId !== this.messageId;
+    return (
+      !!this.lastReadMessageId && this.lastReadMessageId !== this.messageId
+    );
   }
 
   /**

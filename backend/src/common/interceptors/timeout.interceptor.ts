@@ -24,7 +24,10 @@ import { catchError, timeout } from 'rxjs/operators';
  */
 @Injectable()
 export class TimeoutInterceptor implements NestInterceptor {
-  private readonly defaultTimeout = parseInt(process.env.REQUEST_TIMEOUT || '30000', 10);
+  private readonly defaultTimeout = parseInt(
+    process.env.REQUEST_TIMEOUT || '30000',
+    10,
+  );
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest();
@@ -35,11 +38,14 @@ export class TimeoutInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       timeout(timeoutMs),
-      catchError(err => {
+      catchError((err) => {
         if (err instanceof TimeoutError) {
-          return throwError(() => new RequestTimeoutException(
-            `Request exceeded timeout of ${timeoutMs}ms`,
-          ));
+          return throwError(
+            () =>
+              new RequestTimeoutException(
+                `Request exceeded timeout of ${timeoutMs}ms`,
+              ),
+          );
         }
         return throwError(() => err);
       }),

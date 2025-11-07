@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsUUID, IsEnum, IsOptional, IsBoolean, IsString, MaxLength } from 'class-validator';
+import {
+  IsUUID,
+  IsEnum,
+  IsOptional,
+  IsBoolean,
+  IsString,
+  MaxLength,
+} from 'class-validator';
 
 /**
  * Participant role enumeration

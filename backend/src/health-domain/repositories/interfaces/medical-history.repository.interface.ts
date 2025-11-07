@@ -65,12 +65,31 @@ export interface UpdateMedicalHistoryDTO {
   requiresMonitoring?: boolean;
 }
 
-export interface IMedicalHistoryRepository extends IRepository<MedicalHistoryAttributes, CreateMedicalHistoryDTO, UpdateMedicalHistoryDTO> {
-  findByStudent(studentId: string, options?: QueryOptions): Promise<MedicalHistoryAttributes[]>;
-  findByCondition(condition: string, options?: QueryOptions): Promise<MedicalHistoryAttributes[]>;
+export interface IMedicalHistoryRepository
+  extends IRepository<
+    MedicalHistoryAttributes,
+    CreateMedicalHistoryDTO,
+    UpdateMedicalHistoryDTO
+  > {
+  findByStudent(
+    studentId: string,
+    options?: QueryOptions,
+  ): Promise<MedicalHistoryAttributes[]>;
+  findByCondition(
+    condition: string,
+    options?: QueryOptions,
+  ): Promise<MedicalHistoryAttributes[]>;
   findActiveConditions(studentId: string): Promise<MedicalHistoryAttributes[]>;
-  findByCategory(category: string, options?: QueryOptions): Promise<MedicalHistoryAttributes[]>;
+  findByCategory(
+    category: string,
+    options?: QueryOptions,
+  ): Promise<MedicalHistoryAttributes[]>;
   findFamilyHistory(studentId: string): Promise<MedicalHistoryAttributes[]>;
-  searchConditions(query: string, options?: QueryOptions): Promise<MedicalHistoryAttributes[]>;
-  flagCriticalConditions(studentId: string): Promise<MedicalHistoryAttributes[]>;
+  searchConditions(
+    query: string,
+    options?: QueryOptions,
+  ): Promise<MedicalHistoryAttributes[]>;
+  flagCriticalConditions(
+    studentId: string,
+  ): Promise<MedicalHistoryAttributes[]>;
 }

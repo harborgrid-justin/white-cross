@@ -52,13 +52,15 @@ export interface UpdateImmunizationDTO {
 }
 
 @Injectable()
-export class ImmunizationRepository
-  extends BaseRepository<any, ImmunizationAttributes, CreateImmunizationDTO>
-{
+export class ImmunizationRepository extends BaseRepository<
+  any,
+  ImmunizationAttributes,
+  CreateImmunizationDTO
+> {
   constructor(
     @InjectModel(Immunization) model: any,
     @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('ICacheManager') cacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'Immunization');
   }
@@ -67,7 +69,7 @@ export class ImmunizationRepository
     try {
       const immunizations = await this.model.findAll({
         where: { studentId },
-        order: [['administeredDate', 'DESC']]
+        order: [['administeredDate', 'DESC']],
       });
       return immunizations.map((i: any) => this.mapToEntity(i));
     } catch (error) {
@@ -76,16 +78,19 @@ export class ImmunizationRepository
         'Failed to find immunizations by student',
         'FIND_BY_STUDENT_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
 
-  async findByVaccine(studentId: string, vaccineName: string): Promise<ImmunizationAttributes[]> {
+  async findByVaccine(
+    studentId: string,
+    vaccineName: string,
+  ): Promise<ImmunizationAttributes[]> {
     try {
       const immunizations = await this.model.findAll({
         where: { studentId, vaccineName },
-        order: [['dosageNumber', 'ASC']]
+        order: [['dosageNumber', 'ASC']],
       });
       return immunizations.map((i: any) => this.mapToEntity(i));
     } catch (error) {
@@ -94,12 +99,14 @@ export class ImmunizationRepository
         'Failed to find immunizations by vaccine',
         'FIND_BY_VACCINE_ERROR',
         500,
-        { studentId, vaccineName, error: (error as Error).message }
+        { studentId, vaccineName, error: (error as Error).message },
       );
     }
   }
 
-  async findUpcomingDue(daysAhead: number = 30): Promise<ImmunizationAttributes[]> {
+  async findUpcomingDue(
+    daysAhead: number = 30,
+  ): Promise<ImmunizationAttributes[]> {
     try {
       const futureDate = new Date();
       futureDate.setDate(futureDate.getDate() + daysAhead);
@@ -107,10 +114,10 @@ export class ImmunizationRepository
       const immunizations = await this.model.findAll({
         where: {
           nextDueDate: {
-            [Op.between]: [new Date(), futureDate]
-          }
+            [Op.between]: [new Date(), futureDate],
+          },
         },
-        order: [['nextDueDate', 'ASC']]
+        order: [['nextDueDate', 'ASC']],
       });
       return immunizations.map((i: any) => this.mapToEntity(i));
     } catch (error) {
@@ -119,7 +126,7 @@ export class ImmunizationRepository
         'Failed to find upcoming due immunizations',
         'FIND_UPCOMING_DUE_ERROR',
         500,
-        { error: (error as Error).message }
+        { error: (error as Error).message },
       );
     }
   }
@@ -128,15 +135,22 @@ export class ImmunizationRepository
     // Validation logic
   }
 
-  protected async validateUpdate(id: string, data: UpdateImmunizationDTO): Promise<void> {
+  protected async validateUpdate(
+    id: string,
+    data: UpdateImmunizationDTO,
+  ): Promise<void> {
     // Validation logic
   }
 
   protected async invalidateCaches(immunization: any): Promise<void> {
     try {
       const immunizationData = immunization.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, immunizationData.id));
-      await this.cacheManager.deletePattern(`white-cross:immunization:student:${immunizationData.studentId}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, immunizationData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:immunization:student:${immunizationData.studentId}:*`,
+      );
     } catch (error) {
       this.logger.warn('Error invalidating immunization caches:', error);
     }

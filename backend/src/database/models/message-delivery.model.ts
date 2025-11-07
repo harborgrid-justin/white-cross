@@ -10,7 +10,7 @@ import {
   Index,
   Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
 } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 import { Message } from './message.model';
@@ -22,7 +22,7 @@ export enum RecipientType {
   EMERGENCY_CONTACT = 'EMERGENCY_CONTACT',
   STUDENT = 'STUDENT',
   STAFF = 'STAFF',
-  ADMINISTRATOR = 'ADMINISTRATOR'
+  ADMINISTRATOR = 'ADMINISTRATOR',
 }
 
 export enum DeliveryStatus {
@@ -30,14 +30,14 @@ export enum DeliveryStatus {
   SENT = 'SENT',
   DELIVERED = 'DELIVERED',
   FAILED = 'FAILED',
-  BOUNCED = 'BOUNCED'
+  BOUNCED = 'BOUNCED',
 }
 
 export enum DeliveryChannelType {
   EMAIL = 'EMAIL',
   SMS = 'SMS',
   PUSH = 'PUSH',
-  IN_APP = 'IN_APP'
+  IN_APP = 'IN_APP',
 }
 
 export interface MessageDeliveryAttributes {
@@ -59,16 +59,23 @@ export interface MessageDeliveryAttributes {
 export interface MessageDeliveryCreationAttributes
   extends Optional<
     MessageDeliveryAttributes,
-    'id' | 'contactInfo' | 'sentAt' | 'deliveredAt' | 'failureReason' | 'externalId' | 'createdAt' | 'updatedAt'
+    | 'id'
+    | 'contactInfo'
+    | 'sentAt'
+    | 'deliveredAt'
+    | 'failureReason'
+    | 'externalId'
+    | 'createdAt'
+    | 'updatedAt'
   > {}
 
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'message_deliveries',
@@ -78,14 +85,18 @@ export interface MessageDeliveryCreationAttributes
   indexes: [
     {
       fields: ['createdAt'],
-      name: 'idx_message_delivery_created_at'
+      name: 'idx_message_delivery_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_message_delivery_updated_at'
-    }
-  ]})
-export class MessageDelivery extends Model<MessageDeliveryAttributes, MessageDeliveryCreationAttributes> {
+      name: 'idx_message_delivery_updated_at',
+    },
+  ],
+})
+export class MessageDelivery extends Model<
+  MessageDeliveryAttributes,
+  MessageDeliveryCreationAttributes
+> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
@@ -95,16 +106,16 @@ export class MessageDelivery extends Model<MessageDeliveryAttributes, MessageDel
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(RecipientType)]
+      isIn: [Object.values(RecipientType)],
     },
-    allowNull: false
+    allowNull: false,
   })
   recipientType: RecipientType;
 
   @Index
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   recipientId: string;
 
@@ -112,9 +123,9 @@ export class MessageDelivery extends Model<MessageDeliveryAttributes, MessageDel
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(DeliveryChannelType)]
+      isIn: [Object.values(DeliveryChannelType)],
     },
-    allowNull: false
+    allowNull: false,
   })
   declare channel: any;
 
@@ -122,40 +133,40 @@ export class MessageDelivery extends Model<MessageDeliveryAttributes, MessageDel
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(DeliveryStatus)]
+      isIn: [Object.values(DeliveryStatus)],
     },
-    allowNull: false
+    allowNull: false,
   })
   status: DeliveryStatus;
 
   @Column({
     type: DataType.STRING(500),
-    allowNull: true
+    allowNull: true,
   })
   contactInfo?: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: true
+    allowNull: true,
   })
   sentAt?: Date;
 
   @Column({
     type: DataType.DATE,
-    allowNull: true
+    allowNull: true,
   })
   deliveredAt?: Date;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: true
+    allowNull: true,
   })
   failureReason?: string;
 
   @Index
   @Column({
     type: DataType.STRING(255),
-    allowNull: true
+    allowNull: true,
   })
   externalId?: string;
 
@@ -163,27 +174,29 @@ export class MessageDelivery extends Model<MessageDeliveryAttributes, MessageDel
   @ForeignKey(() => require('./message.model').Message)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   messageId: string;
 
-  @BelongsTo(() => require('./message.model').Message, { foreignKey: 'messageId', as: 'message' })
+  @BelongsTo(() => require('./message.model').Message, {
+    foreignKey: 'messageId',
+    as: 'message',
+  })
   declare message: any;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW
+    defaultValue: DataType.NOW,
   })
   declare createdAt?: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW
+    defaultValue: DataType.NOW,
   })
   declare updatedAt?: Date;
-
 
   // Hooks for HIPAA compliance
   @BeforeCreate
@@ -191,7 +204,9 @@ export class MessageDelivery extends Model<MessageDeliveryAttributes, MessageDel
   static async auditPHIAccess(instance: MessageDelivery) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] MessageDelivery ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] MessageDelivery ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

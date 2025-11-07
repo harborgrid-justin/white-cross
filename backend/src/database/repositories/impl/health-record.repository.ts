@@ -49,22 +49,27 @@ export interface UpdateHealthRecordDTO {
 }
 
 @Injectable()
-export class HealthRecordRepository
-  extends BaseRepository<HealthRecord, HealthRecordAttributes, CreateHealthRecordDTO>
-{
+export class HealthRecordRepository extends BaseRepository<
+  HealthRecord,
+  HealthRecordAttributes,
+  CreateHealthRecordDTO
+> {
   constructor(
     @InjectModel(HealthRecord) model: typeof HealthRecord,
     @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('ICacheManager') cacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'HealthRecord');
   }
 
-  async findByStudent(studentId: string, options?: QueryOptions): Promise<HealthRecordAttributes[]> {
+  async findByStudent(
+    studentId: string,
+    options?: QueryOptions,
+  ): Promise<HealthRecordAttributes[]> {
     try {
       const records = await this.model.findAll({
         where: { studentId },
-        order: [['recordDate', 'DESC']]
+        order: [['recordDate', 'DESC']],
       });
       return records.map((r: any) => this.mapToEntity(r));
     } catch (error) {
@@ -73,16 +78,19 @@ export class HealthRecordRepository
         'Failed to find health records by student',
         'FIND_BY_STUDENT_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
 
-  async findByType(studentId: string, recordType: string): Promise<HealthRecordAttributes[]> {
+  async findByType(
+    studentId: string,
+    recordType: string,
+  ): Promise<HealthRecordAttributes[]> {
     try {
       const records = await this.model.findAll({
         where: { studentId, recordType },
-        order: [['recordDate', 'DESC']]
+        order: [['recordDate', 'DESC']],
       });
       return records.map((r: any) => this.mapToEntity(r));
     } catch (error) {
@@ -91,19 +99,23 @@ export class HealthRecordRepository
         'Failed to find health records by type',
         'FIND_BY_TYPE_ERROR',
         500,
-        { studentId, recordType, error: (error as Error).message }
+        { studentId, recordType, error: (error as Error).message },
       );
     }
   }
 
-  async findByDateRange(studentId: string, startDate: Date, endDate: Date): Promise<HealthRecordAttributes[]> {
+  async findByDateRange(
+    studentId: string,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<HealthRecordAttributes[]> {
     try {
       const records = await this.model.findAll({
         where: {
           studentId,
-          recordDate: { [Op.between]: [startDate, endDate] }
+          recordDate: { [Op.between]: [startDate, endDate] },
         },
-        order: [['recordDate', 'DESC']]
+        order: [['recordDate', 'DESC']],
       });
       return records.map((r: any) => this.mapToEntity(r));
     } catch (error) {
@@ -112,7 +124,7 @@ export class HealthRecordRepository
         'Failed to find health records by date range',
         'FIND_BY_DATE_RANGE_ERROR',
         500,
-        { studentId, startDate, endDate, error: (error as Error).message }
+        { studentId, startDate, endDate, error: (error as Error).message },
       );
     }
   }
@@ -121,15 +133,22 @@ export class HealthRecordRepository
     // Validation logic for health records
   }
 
-  protected async validateUpdate(id: string, data: UpdateHealthRecordDTO): Promise<void> {
+  protected async validateUpdate(
+    id: string,
+    data: UpdateHealthRecordDTO,
+  ): Promise<void> {
     // Validation logic for health record updates
   }
 
   protected async invalidateCaches(record: any): Promise<void> {
     try {
       const recordData = record.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, recordData.id));
-      await this.cacheManager.deletePattern(`white-cross:health-record:student:${recordData.studentId}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, recordData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:health-record:student:${recordData.studentId}:*`,
+      );
     } catch (error) {
       this.logger.warn('Error invalidating health record caches:', error);
     }
@@ -139,9 +158,7 @@ export class HealthRecordRepository
     return sanitizeSensitiveData({
       ...data,
       diagnosis: '[PHI]',
-      notes: '[PHI]'
+      notes: '[PHI]',
     });
   }
 }
-
-

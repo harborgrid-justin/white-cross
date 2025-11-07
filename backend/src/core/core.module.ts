@@ -144,19 +144,20 @@ import { AllExceptionsFilter } from '../common/exceptions/filters/all-exceptions
      */
     {
       provide: APP_PIPE,
-      useFactory: () => new ValidationPipe({
-        transform: true,              // Auto-transform to DTO types
-        whitelist: true,               // Strip properties without decorators
-        forbidNonWhitelisted: true,    // Throw error on unknown properties
-        transformOptions: {
-          enableImplicitConversion: true, // Auto-convert types (string to number, etc.)
-        },
-        disableErrorMessages: process.env.NODE_ENV === 'production', // Hide validation details in prod
-        validationError: {
-          target: false,               // Don't include target object in errors (security)
-          value: false,                // Don't include value in errors (security)
-        },
-      }),
+      useFactory: () =>
+        new ValidationPipe({
+          transform: true, // Auto-transform to DTO types
+          whitelist: true, // Strip properties without decorators
+          forbidNonWhitelisted: true, // Throw error on unknown properties
+          transformOptions: {
+            enableImplicitConversion: true, // Auto-convert types (string to number, etc.)
+          },
+          disableErrorMessages: process.env.NODE_ENV === 'production', // Hide validation details in prod
+          validationError: {
+            target: false, // Don't include target object in errors (security)
+            value: false, // Don't include value in errors (security)
+          },
+        }),
     },
 
     // ==================== Global Exception Filters ====================

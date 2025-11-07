@@ -7,5 +7,5 @@
 export {
   IntegrationConfig,
   IntegrationType,
-  IntegrationStatus
+  IntegrationStatus,
 } from '../../database/models/integration-config.model';

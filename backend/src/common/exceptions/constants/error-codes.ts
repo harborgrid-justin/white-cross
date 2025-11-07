@@ -184,7 +184,7 @@ export const ErrorCodes = {
 /**
  * Error code type
  */
-export type ErrorCode = typeof ErrorCodes[keyof typeof ErrorCodes];
+export type ErrorCode = (typeof ErrorCodes)[keyof typeof ErrorCodes];
 
 /**
  * Get error code category

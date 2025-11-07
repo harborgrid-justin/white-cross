@@ -54,20 +54,26 @@ export interface UpdateUserDTO {
 }
 
 @Injectable()
-export class UserRepository
-  extends BaseRepository<any, UserAttributes, CreateUserDTO>
-{
+export class UserRepository extends BaseRepository<
+  any,
+  UserAttributes,
+  CreateUserDTO
+> {
   constructor(
     @InjectModel(User) model: typeof User,
     @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('ICacheManager') cacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'User');
   }
 
   async findByEmail(email: string): Promise<UserAttributes | null> {
     try {
-      const cacheKey = this.cacheKeyBuilder.summary(this.entityName, email, 'by-email');
+      const cacheKey = this.cacheKeyBuilder.summary(
+        this.entityName,
+        email,
+        'by-email',
+      );
       const cached = await this.cacheManager.get<UserAttributes>(cacheKey);
 
       if (cached) {
@@ -87,7 +93,7 @@ export class UserRepository
         'Failed to find user by email',
         'FIND_BY_EMAIL_ERROR',
         500,
-        { email, error: (error as Error).message }
+        { email, error: (error as Error).message },
       );
     }
   }
@@ -102,7 +108,7 @@ export class UserRepository
         'Failed to find user by username',
         'FIND_BY_USERNAME_ERROR',
         500,
-        { username, error: (error as Error).message }
+        { username, error: (error as Error).message },
       );
     }
   }
@@ -111,7 +117,10 @@ export class UserRepository
     try {
       const users = await this.model.findAll({
         where: { roleId, isActive: true },
-        order: [['lastName', 'ASC'], ['firstName', 'ASC']]
+        order: [
+          ['lastName', 'ASC'],
+          ['firstName', 'ASC'],
+        ],
       });
       return users.map((u: any) => this.mapToEntity(u));
     } catch (error) {
@@ -120,7 +129,7 @@ export class UserRepository
         'Failed to find users by role',
         'FIND_BY_ROLE_ERROR',
         500,
-        { roleId, error: (error as Error).message }
+        { roleId, error: (error as Error).message },
       );
     }
   }
@@ -129,7 +138,7 @@ export class UserRepository
     try {
       await this.model.update(
         { lastLoginAt: new Date(), failedLoginAttempts: 0 },
-        { where: { id: userId } }
+        { where: { id: userId } },
       );
       await this.invalidateCaches(await this.model.findByPk(userId));
     } catch (error) {
@@ -159,7 +168,7 @@ export class UserRepository
         'Failed to increment failed logins',
         'INCREMENT_FAILED_LOGINS_ERROR',
         500,
-        { userId, error: (error as Error).message }
+        { userId, error: (error as Error).message },
       );
     }
   }
@@ -168,7 +177,7 @@ export class UserRepository
     try {
       await this.model.update(
         { lockedUntil: null, failedLoginAttempts: 0 },
-        { where: { id: userId } }
+        { where: { id: userId } },
       );
       await this.invalidateCaches(await this.model.findByPk(userId));
     } catch (error) {
@@ -177,58 +186,65 @@ export class UserRepository
         'Failed to unlock account',
         'UNLOCK_ACCOUNT_ERROR',
         500,
-        { userId, error: (error as Error).message }
+        { userId, error: (error as Error).message },
       );
     }
   }
 
   protected async validateCreate(data: CreateUserDTO): Promise<void> {
-    const existingEmail = await this.model.findOne({ where: { email: data.email } });
+    const existingEmail = await this.model.findOne({
+      where: { email: data.email },
+    });
     if (existingEmail) {
       throw new RepositoryError(
         'Email already exists',
         'DUPLICATE_EMAIL',
         409,
-        { email: data.email }
+        { email: data.email },
       );
     }
 
-    const existingUsername = await this.model.findOne({ where: { username: data.username } });
+    const existingUsername = await this.model.findOne({
+      where: { username: data.username },
+    });
     if (existingUsername) {
       throw new RepositoryError(
         'Username already exists',
         'DUPLICATE_USERNAME',
         409,
-        { username: data.username }
+        { username: data.username },
       );
     }
   }
 
-  protected async validateUpdate(id: string, data: UpdateUserDTO): Promise<void> {
+  protected async validateUpdate(
+    id: string,
+    data: UpdateUserDTO,
+  ): Promise<void> {
     if (data.email) {
       const existing = await this.model.findOne({
-        where: { email: data.email, id: { [Op.ne]: id } }
+        where: { email: data.email, id: { [Op.ne]: id } },
       });
       if (existing) {
         throw new RepositoryError(
           'Email already exists',
           'DUPLICATE_EMAIL',
           409,
-          { email: data.email }
+          { email: data.email },
         );
       }
     }
 
     if (data.username) {
       const existing = await this.model.findOne({
-        where: { username: data.username, id: { [Op.ne]: id } }
+        where: { username: data.username, id: { [Op.ne]: id } },
       });
       if (existing) {
         throw new RepositoryError(
           'Username already exists',
           'DUPLICATE_USERNAME',
           409,
-          { username: data.username }
+          { username: data.username },
         );
       }
     }
@@ -237,17 +253,27 @@ export class UserRepository
   protected async invalidateCaches(user: any): Promise<void> {
     try {
       const userData = user.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, userData.id));
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, userData.id),
+      );
 
       if (userData.email) {
         await this.cacheManager.delete(
-          this.cacheKeyBuilder.summary(this.entityName, userData.email, 'by-email')
+          this.cacheKeyBuilder.summary(
+            this.entityName,
+            userData.email,
+            'by-email',
+          ),
         );
       }
 
       if (userData.username) {
         await this.cacheManager.delete(
-          this.cacheKeyBuilder.summary(this.entityName, userData.username, 'by-username')
+          this.cacheKeyBuilder.summary(
+            this.entityName,
+            userData.username,
+            'by-username',
+          ),
         );
       }
     } catch (error) {
@@ -258,9 +284,7 @@ export class UserRepository
   protected sanitizeForAudit(data: any): any {
     return sanitizeSensitiveData({
       ...data,
-      passwordHash: '[REDACTED]'
+      passwordHash: '[REDACTED]',
     });
   }
 }
-
-

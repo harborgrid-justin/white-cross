@@ -52,19 +52,31 @@ export class ComplianceUtils {
   /**
    * Validate content length for legal documents
    */
-  static validateContentLength(content: string, minLength: number = 50): boolean {
+  static validateContentLength(
+    content: string,
+    minLength: number = 50,
+  ): boolean {
     return content.trim().length >= minLength;
   }
 
   /**
    * Validate signature data size and format
    */
-  static validateSignatureData(signatureData: string): { valid: boolean; error?: string } {
+  static validateSignatureData(signatureData: string): {
+    valid: boolean;
+    error?: string;
+  } {
     if (signatureData.length < 10) {
-      return { valid: false, error: 'Digital signature data appears incomplete' };
+      return {
+        valid: false,
+        error: 'Digital signature data appears incomplete',
+      };
     }
     if (signatureData.length > 100000) {
-      return { valid: false, error: 'Digital signature data is too large (max 100KB)' };
+      return {
+        valid: false,
+        error: 'Digital signature data is too large (max 100KB)',
+      };
     }
     return { valid: true };
   }
@@ -81,13 +93,15 @@ export class ComplianceUtils {
       if (currentStatus === PolicyStatus.ARCHIVED) {
         return {
           valid: false,
-          error: 'Cannot reactivate an archived policy. Create a new version instead.',
+          error:
+            'Cannot reactivate an archived policy. Create a new version instead.',
         };
       }
       if (currentStatus === PolicyStatus.SUPERSEDED) {
         return {
           valid: false,
-          error: 'Cannot reactivate a superseded policy. Create a new version instead.',
+          error:
+            'Cannot reactivate a superseded policy. Create a new version instead.',
         };
       }
     }
@@ -106,7 +120,9 @@ export class ComplianceUtils {
   /**
    * Get priority level based on days overdue
    */
-  static getPriorityLevel(daysOverdue: number): 'low' | 'medium' | 'high' | 'critical' {
+  static getPriorityLevel(
+    daysOverdue: number,
+  ): 'low' | 'medium' | 'high' | 'critical' {
     if (daysOverdue > 30) return 'critical';
     if (daysOverdue > 14) return 'high';
     if (daysOverdue > 7) return 'medium';
@@ -116,7 +132,10 @@ export class ComplianceUtils {
   /**
    * Calculate completion percentage for a report
    */
-  static calculateCompletionPercentage(totalItems: number, completedItems: number): number {
+  static calculateCompletionPercentage(
+    totalItems: number,
+    completedItems: number,
+  ): number {
     if (totalItems === 0) return 100;
     return Math.round((completedItems / totalItems) * 100);
   }
@@ -124,7 +143,9 @@ export class ComplianceUtils {
   /**
    * Get required compliance categories for report type
    */
-  static getRequiredCategories(reportType: ComplianceReportType): ComplianceCategory[] {
+  static getRequiredCategories(
+    reportType: ComplianceReportType,
+  ): ComplianceCategory[] {
     const categoryMap: Record<ComplianceReportType, ComplianceCategory[]> = {
       [ComplianceReportType.HIPAA]: [
         ComplianceCategory.PRIVACY,
@@ -202,9 +223,12 @@ export const COMPLIANCE_ERRORS = {
   NOT_FOUND: 'Resource not found',
 
   // Validation
-  INVALID_VERSION_FORMAT: 'Version must be in format: X.Y or X.Y.Z (e.g., 1.0, 2.1.3)',
-  INVALID_RELATIONSHIP: 'Relationship must be a valid authorized relationship type',
-  CONTENT_TOO_SHORT: 'Content must meet minimum length requirements for legal validity',
+  INVALID_VERSION_FORMAT:
+    'Version must be in format: X.Y or X.Y.Z (e.g., 1.0, 2.1.3)',
+  INVALID_RELATIONSHIP:
+    'Relationship must be a valid authorized relationship type',
+  CONTENT_TOO_SHORT:
+    'Content must meet minimum length requirements for legal validity',
   SIGNATURE_INCOMPLETE: 'Digital signature data appears incomplete',
   SIGNATURE_TOO_LARGE: 'Digital signature data is too large (max 100KB)',
   MINIMUM_NECESSARY_TOO_SHORT:
@@ -226,7 +250,8 @@ export const COMPLIANCE_ERRORS = {
   SIGNATORY_NAME_REQUIRED: 'Signatory name is required for legal validity',
 
   // PHI Disclosure
-  AUTHORIZATION_DATE_REQUIRED: 'Authorization date required when authorization is obtained',
+  AUTHORIZATION_DATE_REQUIRED:
+    'Authorization date required when authorization is obtained',
 
   // Dates
   EXPIRATION_DATE_PAST: 'Expiration date must be in the future',

@@ -17,14 +17,18 @@ export interface EnterpriseRateLimitConfig {
 }
 
 export const ENTERPRISE_RATE_LIMIT_KEY = 'enterprise-rate-limit';
-export const EnterpriseRateLimit = (config: EnterpriseRateLimitConfig) => 
+export const EnterpriseRateLimit = (config: EnterpriseRateLimitConfig) =>
   SetMetadata(ENTERPRISE_RATE_LIMIT_KEY, config);
 
 // Security Decorators
 export const ENTERPRISE_SECURITY_LEVEL_KEY = 'enterprise-security-level';
-export type SecurityLevel = 'public' | 'internal' | 'restricted' | 'confidential';
+export type SecurityLevel =
+  | 'public'
+  | 'internal'
+  | 'restricted'
+  | 'confidential';
 
-export const SecurityLevel = (level: SecurityLevel) => 
+export const SecurityLevel = (level: SecurityLevel) =>
   SetMetadata(ENTERPRISE_SECURITY_LEVEL_KEY, level);
 
 export const PublicAccess = () => SecurityLevel('public');
@@ -42,10 +46,10 @@ export interface HipaaConfig {
   retentionPeriod?: number; // In days
 }
 
-export const HipaaCompliant = (config: HipaaConfig) => 
+export const HipaaCompliant = (config: HipaaConfig) =>
   SetMetadata(ENTERPRISE_HIPAA_KEY, config);
 
-export const PHIData = (encryptionRequired: boolean = true) => 
+export const PHIData = (encryptionRequired: boolean = true) =>
   HipaaCompliant({
     requiresAudit: true,
     phiData: true,
@@ -56,46 +60,54 @@ export const PHIData = (encryptionRequired: boolean = true) =>
 
 // Cache Configuration
 export const ENTERPRISE_CACHE_KEY = 'enterprise-cache';
-export const EnterpriseCache = (config: EnterpriseCacheConfig) => 
+export const EnterpriseCache = (config: EnterpriseCacheConfig) =>
   SetMetadata(ENTERPRISE_CACHE_KEY, config);
 
 // Predefined cache configurations
-export const CachePublic = (ttl: number = 300) => EnterpriseCache({
-  enabled: true,
-  ttl,
-  includeQuery: true,
-  compliance: { hipaaCompliant: false, encryptKeys: false },
-});
+export const CachePublic = (ttl: number = 300) =>
+  EnterpriseCache({
+    enabled: true,
+    ttl,
+    includeQuery: true,
+    compliance: { hipaaCompliant: false, encryptKeys: false },
+  });
 
-export const CacheInternal = (ttl: number = 600) => EnterpriseCache({
-  enabled: true,
-  ttl,
-  includeQuery: true,
-  includeUser: true,
-  compliance: { hipaaCompliant: false, encryptKeys: true },
-});
+export const CacheInternal = (ttl: number = 600) =>
+  EnterpriseCache({
+    enabled: true,
+    ttl,
+    includeQuery: true,
+    includeUser: true,
+    compliance: { hipaaCompliant: false, encryptKeys: true },
+  });
 
-export const CacheRestricted = (ttl: number = 300) => EnterpriseCache({
-  enabled: true,
-  ttl,
-  includeQuery: true,
-  includeUser: true,
-  includeParams: true,
-  compliance: { hipaaCompliant: true, encryptKeys: true, maxRetentionTime: ttl },
-});
+export const CacheRestricted = (ttl: number = 300) =>
+  EnterpriseCache({
+    enabled: true,
+    ttl,
+    includeQuery: true,
+    includeUser: true,
+    includeParams: true,
+    compliance: {
+      hipaaCompliant: true,
+      encryptKeys: true,
+      maxRetentionTime: ttl,
+    },
+  });
 
-export const CacheConfidential = (ttl: number = 60) => EnterpriseCache({
-  enabled: true,
-  ttl,
-  includeQuery: true,
-  includeUser: true,
-  includeParams: true,
-  compliance: { 
-    hipaaCompliant: true, 
-    encryptKeys: true, 
-    maxRetentionTime: Math.min(ttl, 300) // Max 5 minutes for confidential data
-  },
-});
+export const CacheConfidential = (ttl: number = 60) =>
+  EnterpriseCache({
+    enabled: true,
+    ttl,
+    includeQuery: true,
+    includeUser: true,
+    includeParams: true,
+    compliance: {
+      hipaaCompliant: true,
+      encryptKeys: true,
+      maxRetentionTime: Math.min(ttl, 300), // Max 5 minutes for confidential data
+    },
+  });
 
 // Metrics Configuration
 export const ENTERPRISE_METRICS_KEY = 'enterprise-metrics';
@@ -107,32 +119,35 @@ export interface MetricsConfig {
   sampleRate?: number; // 0-1, for performance sampling
 }
 
-export const EnterpriseMetrics = (config: MetricsConfig) => 
+export const EnterpriseMetrics = (config: MetricsConfig) =>
   SetMetadata(ENTERPRISE_METRICS_KEY, config);
 
-export const BasicMetrics = () => EnterpriseMetrics({
-  enabled: true,
-  trackPerformance: true,
-  trackSecurity: false,
-  trackCompliance: false,
-  sampleRate: 1.0,
-});
+export const BasicMetrics = () =>
+  EnterpriseMetrics({
+    enabled: true,
+    trackPerformance: true,
+    trackSecurity: false,
+    trackCompliance: false,
+    sampleRate: 1.0,
+  });
 
-export const SecurityMetrics = () => EnterpriseMetrics({
-  enabled: true,
-  trackPerformance: true,
-  trackSecurity: true,
-  trackCompliance: false,
-  sampleRate: 1.0,
-});
+export const SecurityMetrics = () =>
+  EnterpriseMetrics({
+    enabled: true,
+    trackPerformance: true,
+    trackSecurity: true,
+    trackCompliance: false,
+    sampleRate: 1.0,
+  });
 
-export const ComplianceMetrics = () => EnterpriseMetrics({
-  enabled: true,
-  trackPerformance: true,
-  trackSecurity: true,
-  trackCompliance: true,
-  sampleRate: 1.0,
-});
+export const ComplianceMetrics = () =>
+  EnterpriseMetrics({
+    enabled: true,
+    trackPerformance: true,
+    trackSecurity: true,
+    trackCompliance: true,
+    sampleRate: 1.0,
+  });
 
 // Audit Logging
 export const ENTERPRISE_AUDIT_KEY = 'enterprise-audit';
@@ -146,35 +161,38 @@ export interface AuditConfig {
   retentionDays?: number;
 }
 
-export const EnterpriseAudit = (config: AuditConfig) => 
+export const EnterpriseAudit = (config: AuditConfig) =>
   SetMetadata(ENTERPRISE_AUDIT_KEY, config);
 
-export const BasicAudit = () => EnterpriseAudit({
-  enabled: true,
-  logRequest: true,
-  logResponse: false,
-  logHeaders: false,
-  logBody: false,
-});
+export const BasicAudit = () =>
+  EnterpriseAudit({
+    enabled: true,
+    logRequest: true,
+    logResponse: false,
+    logHeaders: false,
+    logBody: false,
+  });
 
-export const SecurityAudit = () => EnterpriseAudit({
-  enabled: true,
-  logRequest: true,
-  logResponse: true,
-  logHeaders: true,
-  logBody: false,
-  retentionDays: 90,
-});
+export const SecurityAudit = () =>
+  EnterpriseAudit({
+    enabled: true,
+    logRequest: true,
+    logResponse: true,
+    logHeaders: true,
+    logBody: false,
+    retentionDays: 90,
+  });
 
-export const ComplianceAudit = () => EnterpriseAudit({
-  enabled: true,
-  logRequest: true,
-  logResponse: true,
-  logHeaders: true,
-  logBody: true,
-  sensitiveFields: ['password', 'ssn', 'creditCard', 'medicalRecord'],
-  retentionDays: 2555, // 7 years
-});
+export const ComplianceAudit = () =>
+  EnterpriseAudit({
+    enabled: true,
+    logRequest: true,
+    logResponse: true,
+    logHeaders: true,
+    logBody: true,
+    sensitiveFields: ['password', 'ssn', 'creditCard', 'medicalRecord'],
+    retentionDays: 2555, // 7 years
+  });
 
 // Performance Monitoring
 export const ENTERPRISE_PERFORMANCE_KEY = 'enterprise-performance';
@@ -187,24 +205,26 @@ export interface PerformanceConfig {
   alertThreshold?: number; // milliseconds
 }
 
-export const EnterprisePerformance = (config: PerformanceConfig) => 
+export const EnterprisePerformance = (config: PerformanceConfig) =>
   SetMetadata(ENTERPRISE_PERFORMANCE_KEY, config);
 
-export const BasicPerformance = () => EnterprisePerformance({
-  enabled: true,
-  trackResponseTime: true,
-  trackMemoryUsage: false,
-  trackDatabaseQueries: false,
-});
+export const BasicPerformance = () =>
+  EnterprisePerformance({
+    enabled: true,
+    trackResponseTime: true,
+    trackMemoryUsage: false,
+    trackDatabaseQueries: false,
+  });
 
-export const DetailedPerformance = () => EnterprisePerformance({
-  enabled: true,
-  trackResponseTime: true,
-  trackMemoryUsage: true,
-  trackDatabaseQueries: true,
-  slowQueryThreshold: 1000,
-  alertThreshold: 5000,
-});
+export const DetailedPerformance = () =>
+  EnterprisePerformance({
+    enabled: true,
+    trackResponseTime: true,
+    trackMemoryUsage: true,
+    trackDatabaseQueries: true,
+    slowQueryThreshold: 1000,
+    alertThreshold: 5000,
+  });
 
 // Convenience Decorators for Common Patterns
 export const HealthRecordEndpoint = () => [

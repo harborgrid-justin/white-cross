@@ -1,4 +1,11 @@
-import { IsString, IsOptional, IsEnum, IsObject, IsBoolean, IsIP } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsObject,
+  IsBoolean,
+  IsIP,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AuditAction } from '../enums';
 
@@ -39,7 +46,10 @@ export class CreateAuditLogDto {
   @IsString()
   userAgent?: string;
 
-  @ApiPropertyOptional({ description: 'Whether the action was successful', default: true })
+  @ApiPropertyOptional({
+    description: 'Whether the action was successful',
+    default: true,
+  })
   @IsOptional()
   @IsBoolean()
   success?: boolean;

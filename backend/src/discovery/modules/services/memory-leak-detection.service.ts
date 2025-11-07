@@ -21,7 +21,7 @@ export interface MemorySnapshot {
 
 /**
  * Memory Leak Detection Service
- * 
+ *
  * Detects potential memory leaks using Discovery Service patterns
  */
 @Injectable()
@@ -48,7 +48,7 @@ export class MemoryLeakDetectionService {
       addedAt: Date.now(),
       memoryHistory: [],
     });
-    
+
     this.logger.log(`Added provider to leak monitoring: ${providerName}`, {
       alertThreshold: metadata.alertThreshold,
       monitoring: metadata.monitoring,
@@ -58,14 +58,17 @@ export class MemoryLeakDetectionService {
   /**
    * Start memory leak detection
    */
-  startMonitoring(intervalMs: number = 60000): void { // Default 1 minute
+  startMonitoring(intervalMs: number = 60000): void {
+    // Default 1 minute
     if (this.isMonitoring) {
       this.logger.warn('Memory leak detection already started');
       return;
     }
 
     this.isMonitoring = true;
-    this.logger.log(`Starting memory leak detection with ${intervalMs}ms interval`);
+    this.logger.log(
+      `Starting memory leak detection with ${intervalMs}ms interval`,
+    );
 
     this.detectionInterval = setInterval(async () => {
       await this.detectMemoryLeaks();
@@ -80,7 +83,7 @@ export class MemoryLeakDetectionService {
       clearInterval(this.detectionInterval);
       this.detectionInterval = undefined;
     }
-    
+
     this.isMonitoring = false;
     this.logger.log('Memory leak detection stopped');
   }
@@ -93,7 +96,7 @@ export class MemoryLeakDetectionService {
       // Take memory snapshot
       const snapshot = await this.takeMemorySnapshot();
       this.memorySnapshots.push(snapshot);
-      
+
       // Keep snapshots within limit
       if (this.memorySnapshots.length > this.maxSnapshots) {
         this.memorySnapshots = this.memorySnapshots.slice(-this.maxSnapshots);
@@ -101,21 +104,23 @@ export class MemoryLeakDetectionService {
 
       // Analyze memory patterns
       await this.analyzeMemoryPatterns();
-      
+
       // Update leak suspects
       await this.updateLeakSuspects();
-      
+
       // Log significant findings
-      const criticalLeaks = Array.from(this.leakSuspects.values())
-        .filter(suspect => suspect.confidence > 0.8);
-        
+      const criticalLeaks = Array.from(this.leakSuspects.values()).filter(
+        (suspect) => suspect.confidence > 0.8,
+      );
+
       if (criticalLeaks.length > 0) {
-        this.logger.warn(`Detected ${criticalLeaks.length} potential memory leaks:`, 
-          criticalLeaks.map(leak => ({
+        this.logger.warn(
+          `Detected ${criticalLeaks.length} potential memory leaks:`,
+          criticalLeaks.map((leak) => ({
             provider: leak.providerName,
             growthRate: `${leak.memoryGrowthRate.toFixed(2)}MB/min`,
             confidence: `${(leak.confidence * 100).toFixed(1)}%`,
-          }))
+          })),
         );
       }
     } catch (error) {
@@ -127,8 +132,9 @@ export class MemoryLeakDetectionService {
    * Get current leak suspects
    */
   getLeakSuspects(): LeakSuspect[] {
-    return Array.from(this.leakSuspects.values())
-      .sort((a, b) => b.confidence - a.confidence);
+    return Array.from(this.leakSuspects.values()).sort(
+      (a, b) => b.confidence - a.confidence,
+    );
   }
 
   /**
@@ -142,22 +148,30 @@ export class MemoryLeakDetectionService {
     recommendations: string[];
   } {
     const suspects = this.getLeakSuspects();
-    const criticalLeaks = suspects.filter(s => s.confidence > 0.8);
+    const criticalLeaks = suspects.filter((s) => s.confidence > 0.8);
     const memoryTrend = this.calculateMemoryTrend();
-    
+
     const recommendations: string[] = [];
-    
+
     if (criticalLeaks.length > 0) {
-      recommendations.push(`Investigate ${criticalLeaks.length} critical memory leaks immediately`);
-      recommendations.push('Review event listeners, timers, and cache cleanup in affected providers');
+      recommendations.push(
+        `Investigate ${criticalLeaks.length} critical memory leaks immediately`,
+      );
+      recommendations.push(
+        'Review event listeners, timers, and cache cleanup in affected providers',
+      );
     }
-    
+
     if (memoryTrend === 'increasing') {
-      recommendations.push('Monitor memory growth - consider implementing more aggressive cleanup');
+      recommendations.push(
+        'Monitor memory growth - consider implementing more aggressive cleanup',
+      );
     }
-    
+
     if (suspects.length > 5) {
-      recommendations.push('High number of leak suspects - review overall memory management strategy');
+      recommendations.push(
+        'High number of leak suspects - review overall memory management strategy',
+      );
     }
 
     const summary = [
@@ -190,7 +204,7 @@ export class MemoryLeakDetectionService {
     }
 
     let recommendation = 'No specific issues detected';
-    
+
     if (suspect.confidence > 0.8) {
       recommendation = 'Critical: Immediate investigation required';
     } else if (suspect.confidence > 0.6) {
@@ -220,35 +234,41 @@ export class MemoryLeakDetectionService {
   private async takeMemorySnapshot(): Promise<MemorySnapshot> {
     const memoryUsage = process.memoryUsage();
     const providerMemoryMap = new Map<string, number>();
-    
+
     // Estimate memory usage per provider (simplified approach)
     // In a real implementation, you might use more sophisticated memory profiling
     const providers = this.discoveryService.getProviders();
     let totalEstimatedMemory = 0;
-    
+
     for (const wrapper of providers) {
       if (!wrapper.metatype) continue;
-      
+
       const providerName = wrapper.name || 'unknown';
-      
+
       // Simple heuristic: estimate memory based on provider type and metadata
       let estimatedMemory = 1024 * 1024; // 1MB base
-      
+
       const cacheMetadata = this.reflector.get('cacheable', wrapper.metatype);
       if (cacheMetadata?.enabled) {
         estimatedMemory += (cacheMetadata.maxSize || 100) * 10000; // Rough estimate
       }
-      
-      const poolMetadata = this.reflector.get('resource-pool', wrapper.metatype);
+
+      const poolMetadata = this.reflector.get(
+        'resource-pool',
+        wrapper.metatype,
+      );
       if (poolMetadata?.enabled) {
         estimatedMemory += (poolMetadata.maxSize || 10) * 100000; // Rough estimate
       }
-      
-      const leakProneMetadata = this.reflector.get('leak-prone', wrapper.metatype);
+
+      const leakProneMetadata = this.reflector.get(
+        'leak-prone',
+        wrapper.metatype,
+      );
       if (leakProneMetadata?.monitoring) {
         estimatedMemory *= 1.5; // Increase estimate for leak-prone providers
       }
-      
+
       providerMemoryMap.set(providerName, estimatedMemory);
       totalEstimatedMemory += estimatedMemory;
     }
@@ -272,10 +292,10 @@ export class MemoryLeakDetectionService {
     }
 
     const recentSnapshots = this.memorySnapshots.slice(-10);
-    
+
     // Analyze overall memory trend
     const memoryGrowth = this.calculateMemoryGrowthRate(recentSnapshots);
-    
+
     // Analyze per-provider patterns
     for (const [providerName, _] of this.monitoredProviders) {
       await this.analyzeProviderMemoryPattern(providerName, recentSnapshots);
@@ -285,22 +305,35 @@ export class MemoryLeakDetectionService {
   /**
    * Analyze memory pattern for a specific provider
    */
-  private async analyzeProviderMemoryPattern(providerName: string, snapshots: MemorySnapshot[]): Promise<void> {
+  private async analyzeProviderMemoryPattern(
+    providerName: string,
+    snapshots: MemorySnapshot[],
+  ): Promise<void> {
     const providerMemoryHistory = snapshots
-      .map(snapshot => snapshot.providerMemoryMap.get(providerName) || 0)
-      .filter(memory => memory > 0);
+      .map((snapshot) => snapshot.providerMemoryMap.get(providerName) || 0)
+      .filter((memory) => memory > 0);
 
     if (providerMemoryHistory.length < 3) {
       return; // Need at least 3 data points
     }
 
-    const growthRate = this.calculateGrowthRate(providerMemoryHistory, snapshots);
-    const suspiciousPatterns = this.identifySuspiciousPatterns(providerMemoryHistory);
-    const confidence = this.calculateLeakConfidence(growthRate, suspiciousPatterns, providerName);
+    const growthRate = this.calculateGrowthRate(
+      providerMemoryHistory,
+      snapshots,
+    );
+    const suspiciousPatterns = this.identifySuspiciousPatterns(
+      providerMemoryHistory,
+    );
+    const confidence = this.calculateLeakConfidence(
+      growthRate,
+      suspiciousPatterns,
+      providerName,
+    );
 
-    if (confidence > 0.3) { // Only track if there's reasonable suspicion
+    if (confidence > 0.3) {
+      // Only track if there's reasonable suspicion
       const existing = this.leakSuspects.get(providerName);
-      
+
       this.leakSuspects.set(providerName, {
         providerName,
         memoryGrowthRate: growthRate,
@@ -315,17 +348,20 @@ export class MemoryLeakDetectionService {
   /**
    * Calculate memory growth rate in MB per minute
    */
-  private calculateGrowthRate(memoryHistory: number[], snapshots: MemorySnapshot[]): number {
+  private calculateGrowthRate(
+    memoryHistory: number[],
+    snapshots: MemorySnapshot[],
+  ): number {
     if (memoryHistory.length < 2) return 0;
 
     const firstMemory = memoryHistory[0];
     const lastMemory = memoryHistory[memoryHistory.length - 1];
     const firstTime = snapshots[0].timestamp;
     const lastTime = snapshots[snapshots.length - 1].timestamp;
-    
+
     const timeDiffMinutes = (lastTime - firstTime) / (1000 * 60);
     const memoryDiffMB = (lastMemory - firstMemory) / (1024 * 1024);
-    
+
     return timeDiffMinutes > 0 ? memoryDiffMB / timeDiffMinutes : 0;
   }
 
@@ -334,7 +370,7 @@ export class MemoryLeakDetectionService {
    */
   private identifySuspiciousPatterns(memoryHistory: number[]): string[] {
     const patterns: string[] = [];
-    
+
     // Check for consistent growth
     let growthCount = 0;
     for (let i = 1; i < memoryHistory.length; i++) {
@@ -342,19 +378,20 @@ export class MemoryLeakDetectionService {
         growthCount++;
       }
     }
-    
+
     const growthRatio = growthCount / (memoryHistory.length - 1);
     if (growthRatio > 0.8) {
       patterns.push('Consistent memory growth');
     }
-    
+
     // Check for sudden spikes
-    const average = memoryHistory.reduce((a, b) => a + b, 0) / memoryHistory.length;
-    const hasSpike = memoryHistory.some(memory => memory > average * 2);
+    const average =
+      memoryHistory.reduce((a, b) => a + b, 0) / memoryHistory.length;
+    const hasSpike = memoryHistory.some((memory) => memory > average * 2);
     if (hasSpike) {
       patterns.push('Memory spikes detected');
     }
-    
+
     // Check for step increases
     let stepIncreases = 0;
     for (let i = 1; i < memoryHistory.length; i++) {
@@ -363,7 +400,7 @@ export class MemoryLeakDetectionService {
         stepIncreases++;
       }
     }
-    
+
     if (stepIncreases > 2) {
       patterns.push('Step-wise memory increases');
     }
@@ -375,26 +412,30 @@ export class MemoryLeakDetectionService {
    * Calculate confidence level for leak detection
    */
   private calculateLeakConfidence(
-    growthRate: number, 
-    patterns: string[], 
-    providerName: string
+    growthRate: number,
+    patterns: string[],
+    providerName: string,
   ): number {
     let confidence = 0;
-    
+
     // Growth rate factor (0-0.4)
-    if (growthRate > 10) { // > 10MB/min
+    if (growthRate > 10) {
+      // > 10MB/min
       confidence += 0.4;
-    } else if (growthRate > 5) { // > 5MB/min
+    } else if (growthRate > 5) {
+      // > 5MB/min
       confidence += 0.3;
-    } else if (growthRate > 1) { // > 1MB/min
+    } else if (growthRate > 1) {
+      // > 1MB/min
       confidence += 0.2;
-    } else if (growthRate > 0.1) { // > 0.1MB/min
+    } else if (growthRate > 0.1) {
+      // > 0.1MB/min
       confidence += 0.1;
     }
-    
+
     // Pattern factor (0-0.3)
     confidence += Math.min(patterns.length * 0.1, 0.3);
-    
+
     // Provider metadata factor (0-0.3)
     const monitoredProvider = this.monitoredProviders.get(providerName);
     if (monitoredProvider) {
@@ -415,7 +456,7 @@ export class MemoryLeakDetectionService {
   private async updateLeakSuspects(): Promise<void> {
     const now = Date.now();
     const staleThreshold = 10 * 60 * 1000; // 10 minutes
-    
+
     // Remove stale suspects
     for (const [providerName, suspect] of this.leakSuspects.entries()) {
       if (now - suspect.lastUpdated > staleThreshold) {
@@ -434,9 +475,9 @@ export class MemoryLeakDetectionService {
     }
 
     const recent = this.memorySnapshots.slice(-5);
-    const memoryValues = recent.map(s => s.heapUsed);
+    const memoryValues = recent.map((s) => s.heapUsed);
     const slope = this.calculateSlope(memoryValues);
-    
+
     const threshold = 1024 * 1024; // 1MB
     if (slope > threshold) {
       return 'increasing';
@@ -453,20 +494,20 @@ export class MemoryLeakDetectionService {
   private calculateSlope(values: number[]): number {
     const n = values.length;
     if (n < 2) return 0;
-    
+
     const xMean = (n - 1) / 2;
     const yMean = values.reduce((a, b) => a + b, 0) / n;
-    
+
     let numerator = 0;
     let denominator = 0;
-    
+
     for (let i = 0; i < n; i++) {
       const xDiff = i - xMean;
       const yDiff = values[i] - yMean;
       numerator += xDiff * yDiff;
       denominator += xDiff * xDiff;
     }
-    
+
     return denominator === 0 ? 0 : numerator / denominator;
   }
 
@@ -482,13 +523,13 @@ export class MemoryLeakDetectionService {
    */
   private calculateMemoryGrowthRate(snapshots: MemorySnapshot[]): number {
     if (snapshots.length < 2) return 0;
-    
+
     const first = snapshots[0];
     const last = snapshots[snapshots.length - 1];
-    
+
     const timeDiffMinutes = (last.timestamp - first.timestamp) / (1000 * 60);
     const memoryDiffMB = (last.heapUsed - first.heapUsed) / (1024 * 1024);
-    
+
     return timeDiffMinutes > 0 ? memoryDiffMB / timeDiffMinutes : 0;
   }
 }

@@ -11,7 +11,11 @@ import {
   UpdatedAt,
 } from 'sequelize-typescript';
 import { ReportTemplate } from './report-template.model';
-import { ReportType, OutputFormat, ScheduleFrequency } from '../constants/report.constants';
+import {
+  ReportType,
+  OutputFormat,
+  ScheduleFrequency,
+} from '../constants/report.constants';
 
 /**
  * Report Schedule Model

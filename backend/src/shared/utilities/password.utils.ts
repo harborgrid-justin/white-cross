@@ -23,7 +23,7 @@ import * as bcrypt from 'bcrypt';
 export const PASSWORD_CONFIG = {
   SALT_ROUNDS: 12, // Higher for healthcare applications
   MIN_LENGTH: 12,
-  MAX_LENGTH: 128
+  MAX_LENGTH: 128,
 } as const;
 
 /**
@@ -34,7 +34,7 @@ export const PASSWORD_CONFIG = {
  */
 export const hashPassword = async (
   password: string,
-  saltRounds: number = PASSWORD_CONFIG.SALT_ROUNDS
+  saltRounds: number = PASSWORD_CONFIG.SALT_ROUNDS,
 ): Promise<string> => {
   try {
     if (!password || typeof password !== 'string') {
@@ -42,11 +42,15 @@ export const hashPassword = async (
     }
 
     if (password.length < PASSWORD_CONFIG.MIN_LENGTH) {
-      throw new Error(`Password must be at least ${PASSWORD_CONFIG.MIN_LENGTH} characters long`);
+      throw new Error(
+        `Password must be at least ${PASSWORD_CONFIG.MIN_LENGTH} characters long`,
+      );
     }
 
     if (password.length > PASSWORD_CONFIG.MAX_LENGTH) {
-      throw new Error(`Password cannot exceed ${PASSWORD_CONFIG.MAX_LENGTH} characters`);
+      throw new Error(
+        `Password cannot exceed ${PASSWORD_CONFIG.MAX_LENGTH} characters`,
+      );
     }
 
     const hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -65,7 +69,7 @@ export const hashPassword = async (
  */
 export const comparePassword = async (
   candidatePassword: string,
-  hashedPassword: string
+  hashedPassword: string,
 ): Promise<boolean> => {
   try {
     if (!candidatePassword || typeof candidatePassword !== 'string') {
@@ -93,7 +97,7 @@ export const validatePasswordComplexity = (password: string) => {
   const validation = {
     isValid: true,
     errors: [] as string[],
-    strength: 0
+    strength: 0,
   };
 
   if (!password) {
@@ -104,14 +108,18 @@ export const validatePasswordComplexity = (password: string) => {
 
   // Length check
   if (password.length < PASSWORD_CONFIG.MIN_LENGTH) {
-    validation.errors.push(`Password must be at least ${PASSWORD_CONFIG.MIN_LENGTH} characters long`);
+    validation.errors.push(
+      `Password must be at least ${PASSWORD_CONFIG.MIN_LENGTH} characters long`,
+    );
     validation.isValid = false;
   } else {
     validation.strength += 1;
   }
 
   if (password.length > PASSWORD_CONFIG.MAX_LENGTH) {
-    validation.errors.push(`Password cannot exceed ${PASSWORD_CONFIG.MAX_LENGTH} characters`);
+    validation.errors.push(
+      `Password cannot exceed ${PASSWORD_CONFIG.MAX_LENGTH} characters`,
+    );
     validation.isValid = false;
   }
 
@@ -122,14 +130,18 @@ export const validatePasswordComplexity = (password: string) => {
   const hasSpecialChars = /[@$!%*?&]/.test(password);
 
   if (!hasLowercase) {
-    validation.errors.push('Password must contain at least one lowercase letter');
+    validation.errors.push(
+      'Password must contain at least one lowercase letter',
+    );
     validation.isValid = false;
   } else {
     validation.strength += 1;
   }
 
   if (!hasUppercase) {
-    validation.errors.push('Password must contain at least one uppercase letter');
+    validation.errors.push(
+      'Password must contain at least one uppercase letter',
+    );
     validation.isValid = false;
   } else {
     validation.strength += 1;
@@ -143,16 +155,22 @@ export const validatePasswordComplexity = (password: string) => {
   }
 
   if (!hasSpecialChars) {
-    validation.errors.push('Password must contain at least one special character (@$!%*?&)');
+    validation.errors.push(
+      'Password must contain at least one special character (@$!%*?&)',
+    );
     validation.isValid = false;
   } else {
     validation.strength += 1;
   }
 
   // Additional security checks
-  const hasSequentialChars = /(?:abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz|123|234|345|456|567|678|789)/i.test(password);
+  const hasSequentialChars =
+    /(?:abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz|123|234|345|456|567|678|789)/i.test(
+      password,
+    );
   const hasRepeatedChars = /(.)\1{2,}/.test(password);
-  const hasCommonPatterns = /(?:password|admin|user|test|qwerty|123456|abcdef)/i.test(password);
+  const hasCommonPatterns =
+    /(?:password|admin|user|test|qwerty|123456|abcdef)/i.test(password);
 
   if (hasSequentialChars) {
     validation.errors.push('Password should not contain sequential characters');
@@ -165,7 +183,9 @@ export const validatePasswordComplexity = (password: string) => {
   }
 
   if (hasCommonPatterns) {
-    validation.errors.push('Password should not contain common words or patterns');
+    validation.errors.push(
+      'Password should not contain common words or patterns',
+    );
     validation.strength -= 1;
   }
 
@@ -200,7 +220,10 @@ export const generateSecurePassword = (length: number = 16): string => {
   }
 
   // Shuffle the password to avoid predictable patterns
-  return password.split('').sort(() => Math.random() - 0.5).join('');
+  return password
+    .split('')
+    .sort(() => Math.random() - 0.5)
+    .join('');
 };
 
 export default {
@@ -208,5 +231,5 @@ export default {
   comparePassword,
   validatePasswordComplexity,
   generateSecurePassword,
-  PASSWORD_CONFIG
+  PASSWORD_CONFIG,
 };

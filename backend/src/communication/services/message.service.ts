@@ -1,4 +1,10 @@
-import { Injectable, Logger, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Message } from '../../database/models/message.model';
 import { MessageDelivery } from '../../database/models/message-delivery.model';
@@ -50,7 +56,8 @@ export class MessageService {
           recipientId: recipient.id,
           channel: channel,
           status: status,
-          contactInfo: channel === 'EMAIL' ? recipient.email : recipient.phoneNumber,
+          contactInfo:
+            channel === 'EMAIL' ? recipient.email : recipient.phoneNumber,
           messageId: message.id,
           sentAt: sentAt,
         });
@@ -84,14 +91,15 @@ export class MessageService {
     if (filters.priority) where.priority = filters.priority;
 
     // Initialize searchWhere as an object, not undefined
-    let searchWhere: any = {};
+    const searchWhere: any = {};
 
-    const { rows: messages, count: total } = await this.messageModel.findAndCountAll({
-      where,
-      offset,
-      limit,
-      order: [['createdAt', 'DESC']],
-    });
+    const { rows: messages, count: total } =
+      await this.messageModel.findAndCountAll({
+        where,
+        offset,
+        limit,
+        order: [['createdAt', 'DESC']],
+      });
 
     return {
       messages: messages.map((m) => m.toJSON()),
@@ -176,11 +184,13 @@ export class MessageService {
 
     // Create reply message to original sender
     return this.sendMessage({
-      recipients: [{
-        type: 'NURSE' as any,
-        id: originalMessage.senderId,
-        email: undefined,
-      }],
+      recipients: [
+        {
+          type: 'NURSE' as any,
+          id: originalMessage.senderId,
+          email: undefined,
+        },
+      ],
       channels: replyData.channels || ['EMAIL'],
       subject: `Re: ${originalMessage.subject || 'Your message'}`,
       content: replyData.content,
@@ -202,7 +212,9 @@ export class MessageService {
     }
 
     if (!message.scheduledAt || message.scheduledAt <= new Date()) {
-      throw new BadRequestException('Cannot delete messages that have already been sent');
+      throw new BadRequestException(
+        'Cannot delete messages that have already been sent',
+      );
     }
 
     await message.destroy();

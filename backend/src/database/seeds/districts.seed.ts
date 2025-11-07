@@ -16,7 +16,14 @@ export interface DistrictSeedData {
 }
 
 const US_STATES = ['NY', 'CA', 'TX', 'FL', 'IL', 'PA', 'OH', 'GA', 'NC', 'MI'];
-const DISTRICT_TYPES = ['Unified', 'Elementary', 'Union', 'Joint', 'Independent', 'Community'];
+const DISTRICT_TYPES = [
+  'Unified',
+  'Elementary',
+  'Union',
+  'Joint',
+  'Independent',
+  'Community',
+];
 
 /**
  * Generate realistic district data
@@ -28,10 +35,17 @@ export function generateDistricts(count: number): DistrictSeedData[] {
     const state = US_STATES[i % US_STATES.length];
     const districtType = DISTRICT_TYPES[i % DISTRICT_TYPES.length];
     const districtNumber = (i + 1).toString().padStart(3, '0');
-    
-    const cityNames = ['Springfield', 'Madison', 'Franklin', 'Lincoln', 'Washington', 'Jefferson'];
+
+    const cityNames = [
+      'Springfield',
+      'Madison',
+      'Franklin',
+      'Lincoln',
+      'Washington',
+      'Jefferson',
+    ];
     const city = cityNames[i % cityNames.length];
-    
+
     districts.push({
       name: `${city} ${districtType} School District`,
       code: `DIST-${state}-${districtNumber}`,

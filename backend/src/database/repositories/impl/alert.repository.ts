@@ -24,23 +24,34 @@ export interface UpdateAlertDTO {
 }
 
 @Injectable()
-export class AlertRepository extends BaseRepository<any, AlertAttributes, CreateAlertDTO> {
+export class AlertRepository extends BaseRepository<
+  any,
+  AlertAttributes,
+  CreateAlertDTO
+> {
   constructor(
     @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('ICacheManager') cacheManager,
   ) {
     // TODO: Inject proper Alert model when implemented
     super(null as any, auditLogger, cacheManager, 'Alert');
   }
 
   protected async validateCreate(data: CreateAlertDTO): Promise<void> {}
-  protected async validateUpdate(id: string, data: UpdateAlertDTO): Promise<void> {}
+  protected async validateUpdate(
+    id: string,
+    data: UpdateAlertDTO,
+  ): Promise<void> {}
 
   protected async invalidateCaches(entity: any): Promise<void> {
     try {
       const entityData = entity.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, entityData.id));
-      await this.cacheManager.deletePattern(`white-cross:${this.entityName.toLowerCase()}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, entityData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:${this.entityName.toLowerCase()}:*`,
+      );
     } catch (error) {
       this.logger.warn(`Error invalidating ${this.entityName} caches:`, error);
     }
@@ -50,5 +61,3 @@ export class AlertRepository extends BaseRepository<any, AlertAttributes, Create
     return sanitizeSensitiveData({ ...data });
   }
 }
-
-

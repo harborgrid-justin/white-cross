@@ -15,25 +15,19 @@ export {
   AuditSeverity,
 } from './audit.middleware';
 
-export type {
-  AuditEvent,
-  AuditConfig,
-  AuditSummary,
-} from './audit.middleware';
+export type { AuditEvent, AuditConfig, AuditSummary } from './audit.middleware';
 
 export {
   AUDIT_CONFIGS,
   createAuditMiddleware,
   createHealthcareAudit,
-  createProductionAudit
+  createProductionAudit,
 } from './audit.middleware';
 
 export { AuditInterceptor } from './audit.interceptor';
 
 // Tracing components
-export {
-  TracingMiddleware,
-} from './tracing.middleware';
+export { TracingMiddleware } from './tracing.middleware';
 
 export type {
   TraceSpan,
@@ -45,7 +39,7 @@ export type {
 
 export {
   DEFAULT_TRACING_CONFIG,
-  createTracingMiddleware
+  createTracingMiddleware,
 } from './tracing.middleware';
 
 // Metrics components
@@ -55,20 +49,15 @@ export {
   HealthcareMetricCategory,
 } from './metrics.middleware';
 
-export type {
-  MetricData,
-  IMetricsConfig,
-} from './metrics.middleware';
+export type { MetricData, IMetricsConfig } from './metrics.middleware';
 
 export {
   DEFAULT_METRICS_CONFIG,
-  createMetricsMiddleware
+  createMetricsMiddleware,
 } from './metrics.middleware';
 
 // Performance components
-export {
-  PerformanceMiddleware,
-} from './performance.middleware';
+export { PerformanceMiddleware } from './performance.middleware';
 
 export type {
   PerformanceMetrics,
@@ -80,7 +69,7 @@ export {
   PERFORMANCE_CONFIGS,
   createPerformanceMiddleware,
   createHealthcarePerformance,
-  createProductionPerformance
+  createProductionPerformance,
 } from './performance.middleware';
 
 export { PerformanceInterceptor } from './performance.interceptor';

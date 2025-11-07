@@ -35,13 +35,16 @@ export interface CircuitBreakerStatus {
 @Injectable()
 export class CircuitBreakerService {
   private readonly logger = new Logger(CircuitBreakerService.name);
-  private readonly circuits = new Map<string, {
-    state: CircuitState;
-    failureCount: number;
-    successCount: number;
-    nextAttempt: number;
-    config: CircuitBreakerConfig;
-  }>();
+  private readonly circuits = new Map<
+    string,
+    {
+      state: CircuitState;
+      failureCount: number;
+      successCount: number;
+      nextAttempt: number;
+      config: CircuitBreakerConfig;
+    }
+  >();
 
   /**
    * Initialize a circuit breaker for a specific service
@@ -70,10 +73,7 @@ export class CircuitBreakerService {
   /**
    * Execute a function with circuit breaker protection
    */
-  async execute<T>(
-    serviceName: string,
-    fn: () => Promise<T>,
-  ): Promise<T> {
+  async execute<T>(serviceName: string, fn: () => Promise<T>): Promise<T> {
     if (!this.circuits.has(serviceName)) {
       this.initialize(serviceName);
     }
@@ -135,13 +135,10 @@ export class CircuitBreakerService {
     if (circuit.failureCount >= circuit.config.failureThreshold) {
       circuit.state = CircuitState.OPEN;
       circuit.nextAttempt = Date.now() + circuit.config.timeout;
-      this.logger.error(
-        `${serviceName} circuit breaker: CLOSED -> OPEN`,
-        {
-          failures: circuit.failureCount,
-          nextAttempt: new Date(circuit.nextAttempt).toISOString(),
-        },
-      );
+      this.logger.error(`${serviceName} circuit breaker: CLOSED -> OPEN`, {
+        failures: circuit.failureCount,
+        nextAttempt: new Date(circuit.nextAttempt).toISOString(),
+      });
     }
   }
 
@@ -155,9 +152,10 @@ export class CircuitBreakerService {
     return {
       state: circuit.state,
       failures: circuit.failureCount,
-      nextAttempt: circuit.state === CircuitState.OPEN
-        ? new Date(circuit.nextAttempt)
-        : undefined,
+      nextAttempt:
+        circuit.state === CircuitState.OPEN
+          ? new Date(circuit.nextAttempt)
+          : undefined,
     };
   }
 

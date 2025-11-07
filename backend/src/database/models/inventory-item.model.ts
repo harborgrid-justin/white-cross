@@ -8,12 +8,10 @@ import {
   HasMany,
   BeforeCreate,
   Scopes,
-  BeforeUpdate
+  BeforeUpdate,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
-
-
 
 export interface InventoryItemAttributes {
   id: string;
@@ -33,10 +31,10 @@ export interface InventoryItemAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'inventory_items',
@@ -44,41 +42,44 @@ export interface InventoryItemAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['name']
+      fields: ['name'],
     },
     {
-      fields: ['category']
+      fields: ['category'],
     },
     {
       fields: ['sku'],
-      unique: true
+      unique: true,
     },
     {
-      fields: ['supplier']
+      fields: ['supplier'],
     },
     {
-      fields: ['isActive']
+      fields: ['isActive'],
     },
     {
-      fields: ['reorderLevel']
+      fields: ['reorderLevel'],
     },
     {
       fields: ['createdAt'],
-      name: 'idx_inventory_item_created_at'
+      name: 'idx_inventory_item_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_inventory_item_updated_at'
+      name: 'idx_inventory_item_updated_at',
     },
     {
       // Full-text search GIN index (created by migration)
       name: 'idx_inventory_items_search_vector',
       using: 'GIN',
       fields: ['search_vector'] as any, // tsvector type, managed by PostgreSQL trigger
-    }
-  ]
+    },
+  ],
 })
-export class InventoryItem extends Model<InventoryItemAttributes> implements InventoryItemAttributes {
+export class InventoryItem
+  extends Model<InventoryItemAttributes>
+  implements InventoryItemAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -86,13 +87,13 @@ export class InventoryItem extends Model<InventoryItemAttributes> implements Inv
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   name: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   category: string;
 
@@ -101,7 +102,7 @@ export class InventoryItem extends Model<InventoryItemAttributes> implements Inv
 
   @Column({
     type: DataType.STRING(255),
-    unique: true
+    unique: true,
   })
   sku?: string;
 
@@ -109,19 +110,19 @@ export class InventoryItem extends Model<InventoryItemAttributes> implements Inv
   supplier?: string;
 
   @Column({
-    type: DataType.DECIMAL(10, 2)
+    type: DataType.DECIMAL(10, 2),
   })
   unitCost?: number;
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: false
+    allowNull: false,
   })
   reorderLevel: number;
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: false
+    allowNull: false,
   })
   reorderQuantity: number;
 
@@ -151,14 +152,15 @@ export class InventoryItem extends Model<InventoryItemAttributes> implements Inv
   @HasMany(() => require('./purchase-order-item.model').PurchaseOrderItem)
   declare purchaseOrderItems?: any[];
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: InventoryItem) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] InventoryItem ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] InventoryItem ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

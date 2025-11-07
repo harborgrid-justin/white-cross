@@ -1,13 +1,31 @@
-import { IsString, IsEnum, IsOptional, IsDateString, IsObject, MinLength, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsOptional,
+  IsDateString,
+  IsObject,
+  MinLength,
+  MaxLength,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ComplianceReportType, ComplianceStatus } from '../entities/compliance-report.entity';
+import {
+  ComplianceReportType,
+  ComplianceStatus,
+} from '../entities/compliance-report.entity';
 
 export class CreateComplianceReportDto {
-  @ApiProperty({ enum: ComplianceReportType, description: 'Type of compliance report' })
+  @ApiProperty({
+    enum: ComplianceReportType,
+    description: 'Type of compliance report',
+  })
   @IsEnum(ComplianceReportType)
   reportType: ComplianceReportType;
 
-  @ApiProperty({ description: 'Report title (5-200 chars)', minLength: 5, maxLength: 200 })
+  @ApiProperty({
+    description: 'Report title (5-200 chars)',
+    minLength: 5,
+    maxLength: 200,
+  })
   @IsString()
   @MinLength(5)
   @MaxLength(200)
@@ -29,7 +47,10 @@ export class CreateComplianceReportDto {
 }
 
 export class UpdateComplianceReportDto {
-  @ApiPropertyOptional({ enum: ComplianceStatus, description: 'Updated status' })
+  @ApiPropertyOptional({
+    enum: ComplianceStatus,
+    description: 'Updated status',
+  })
   @IsOptional()
   @IsEnum(ComplianceStatus)
   status?: ComplianceStatus;
@@ -51,7 +72,10 @@ export class UpdateComplianceReportDto {
 }
 
 export class ComplianceGenerateReportDto {
-  @ApiProperty({ enum: ComplianceReportType, description: 'Report type to generate' })
+  @ApiProperty({
+    enum: ComplianceReportType,
+    description: 'Report type to generate',
+  })
   @IsEnum(ComplianceReportType)
   reportType: ComplianceReportType;
 
@@ -59,28 +83,41 @@ export class ComplianceGenerateReportDto {
   @IsString()
   period: string;
 
-  @ApiPropertyOptional({ description: 'Start date for data collection (ISO 8601)' })
+  @ApiPropertyOptional({
+    description: 'Start date for data collection (ISO 8601)',
+  })
   @IsOptional()
   @IsDateString()
   startDate?: string;
 
-  @ApiPropertyOptional({ description: 'End date for data collection (ISO 8601)' })
+  @ApiPropertyOptional({
+    description: 'End date for data collection (ISO 8601)',
+  })
   @IsOptional()
   @IsDateString()
   endDate?: string;
 
-  @ApiPropertyOptional({ description: 'Include automated recommendations', default: true })
+  @ApiPropertyOptional({
+    description: 'Include automated recommendations',
+    default: true,
+  })
   @IsOptional()
   includeRecommendations?: boolean;
 }
 
 export class QueryComplianceReportDto {
-  @ApiPropertyOptional({ enum: ComplianceReportType, description: 'Filter by report type' })
+  @ApiPropertyOptional({
+    enum: ComplianceReportType,
+    description: 'Filter by report type',
+  })
   @IsOptional()
   @IsEnum(ComplianceReportType)
   reportType?: ComplianceReportType;
 
-  @ApiPropertyOptional({ enum: ComplianceStatus, description: 'Filter by status' })
+  @ApiPropertyOptional({
+    enum: ComplianceStatus,
+    description: 'Filter by status',
+  })
   @IsOptional()
   @IsEnum(ComplianceStatus)
   status?: ComplianceStatus;

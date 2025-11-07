@@ -1,4 +1,10 @@
-import { IsString, IsEnum, IsArray, IsOptional, ArrayMinSize } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsArray,
+  IsOptional,
+  ArrayMinSize,
+} from 'class-validator';
 import { MessageType } from '../enums';
 
 export class EmergencyAlertDto {

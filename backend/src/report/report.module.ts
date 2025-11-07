@@ -66,10 +66,6 @@ import { ReportsController } from './controllers/reports.controller';
     ReportExportService,
   ],
   controllers: [ReportsController],
-  exports: [
-    ReportGenerationService,
-    ReportExportService,
-    DashboardService,
-  ],
+  exports: [ReportGenerationService, ReportExportService, DashboardService],
 })
 export class ReportModule {}

@@ -11,7 +11,11 @@ import {
   IsBoolean,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { MessagePriority, MessageCategory, MessageType } from './send-message.dto';
+import {
+  MessagePriority,
+  MessageCategory,
+  MessageType,
+} from './send-message.dto';
 
 export class AudienceDto {
   @ApiPropertyOptional({

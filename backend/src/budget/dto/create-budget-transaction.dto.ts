@@ -1,4 +1,12 @@
-import { IsNotEmpty, IsString, IsNumber, IsUUID, IsOptional, Min, MaxLength } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsNumber,
+  IsUUID,
+  IsOptional,
+  Min,
+  MaxLength,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 /**
@@ -16,7 +24,7 @@ export class CreateBudgetTransactionDto {
 
   @ApiProperty({
     description: 'Transaction amount in dollars (must be positive)',
-    example: 125.50,
+    example: 125.5,
     minimum: 0.01,
   })
   @IsNotEmpty()
@@ -43,7 +51,8 @@ export class CreateBudgetTransactionDto {
   referenceId?: string;
 
   @ApiPropertyOptional({
-    description: 'Type of reference (e.g., invoice, purchase_order, reimbursement)',
+    description:
+      'Type of reference (e.g., invoice, purchase_order, reimbursement)',
     example: 'invoice',
     maxLength: 100,
   })

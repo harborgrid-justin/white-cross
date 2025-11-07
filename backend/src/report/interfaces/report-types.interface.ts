@@ -17,7 +17,11 @@ import { OutputFormat, ReportStatus } from '../constants/report.constants';
 export interface HealthTrendsReport {
   healthRecords: Array<{ type: HealthRecordType; count: number }>;
   chronicConditions: Array<{ condition: string; count: number }>;
-  allergies: Array<{ allergen: string; severity: AllergySeverity; count: number }>;
+  allergies: Array<{
+    allergen: string;
+    severity: AllergySeverity;
+    count: number;
+  }>;
   monthlyTrends: Array<{ month: Date; type: HealthRecordType; count: number }>;
 }
 
@@ -53,7 +57,11 @@ export interface AttendanceCorrelationReport {
   healthVisits: Array<{ studentId: string; count: number; student: Student }>;
   incidentVisits: Array<{ studentId: string; count: number; student: Student }>;
   chronicStudents: ChronicCondition[];
-  appointmentFrequency: Array<{ studentId: string; count: number; student: Student }>;
+  appointmentFrequency: Array<{
+    studentId: string;
+    count: number;
+    student: Student;
+  }>;
 }
 
 /**

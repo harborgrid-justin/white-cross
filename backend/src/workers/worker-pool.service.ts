@@ -16,7 +16,12 @@
  * - CPU-intensive task optimization
  */
 
-import { OnModuleInit, OnModuleDestroy, Logger, Injectable } from '@nestjs/common';
+import {
+  OnModuleInit,
+  OnModuleDestroy,
+  Logger,
+  Injectable,
+} from '@nestjs/common';
 import { Worker } from 'worker_threads';
 import { cpus } from 'os';
 import { EventEmitter } from 'events';
@@ -34,7 +39,7 @@ import {
   Cleanup,
   MemorySensitive,
   ImmediateCleanup,
-  LeakProne
+  LeakProne,
 } from '../discovery/modules/decorators/memory-optimization.decorators';
 
 @CPUIntensive()
@@ -45,27 +50,30 @@ import {
   maxSize: 16, // Based on typical CPU core counts
   priority: 10,
   validationEnabled: true,
-  autoScale: true
+  autoScale: true,
 })
 @MemoryIntensive({
   enabled: true,
   threshold: 150, // 150MB threshold for worker threads
   priority: 'high',
   cleanupStrategy: 'aggressive',
-  monitoring: true
+  monitoring: true,
 })
 @MemoryMonitoring({
   enabled: true,
   interval: 15000, // 15 seconds - more frequent for worker monitoring
   threshold: 100, // 100MB
-  alerts: true
+  alerts: true,
 })
 @LeakProne({
   monitoring: true,
-  alertThreshold: 200 // 200MB for worker memory leaks
+  alertThreshold: 200, // 200MB for worker memory leaks
 })
 @Injectable()
-export class WorkerPoolService extends EventEmitter implements OnModuleInit, OnModuleDestroy {
+export class WorkerPoolService
+  extends EventEmitter
+  implements OnModuleInit, OnModuleDestroy
+{
   private readonly logger = new Logger(WorkerPoolService.name);
   private workers: WorkerInfo[] = [];
   private taskQueue: WorkerTask[] = [];
@@ -82,10 +90,7 @@ export class WorkerPoolService extends EventEmitter implements OnModuleInit, OnM
    * @param workerScript - Absolute path to the compiled worker script (.js file)
    * @param options - Pool configuration options
    */
-  constructor(
-    workerScript: string,
-    options: WorkerPoolOptions = {}
-  ) {
+  constructor(workerScript: string, options: WorkerPoolOptions = {}) {
     super();
 
     this.workerScript = workerScript;
@@ -124,7 +129,9 @@ export class WorkerPoolService extends EventEmitter implements OnModuleInit, OnM
     }
 
     this.isInitialized = true;
-    this.logger.log(`Worker pool initialized with ${this.workers.length} workers`);
+    this.logger.log(
+      `Worker pool initialized with ${this.workers.length} workers`,
+    );
   }
 
   /**
@@ -300,7 +307,7 @@ export class WorkerPoolService extends EventEmitter implements OnModuleInit, OnM
   public async executeTask<T>(
     type: string,
     data: any,
-    priority: number = 0
+    priority: number = 0,
   ): Promise<T> {
     if (this.isShuttingDown) {
       throw new Error('Worker pool is shutting down');
@@ -343,7 +350,10 @@ export class WorkerPoolService extends EventEmitter implements OnModuleInit, OnM
       activeWorkers: this.workers.filter((w) => w.busy).length,
       idleWorkers: this.workers.filter((w) => !w.busy).length,
       queuedTasks: this.taskQueue.length,
-      totalTasksProcessed: this.workers.reduce((sum, w) => sum + w.taskCount, 0),
+      totalTasksProcessed: this.workers.reduce(
+        (sum, w) => sum + w.taskCount,
+        0,
+      ),
       totalErrors: this.workers.reduce((sum, w) => sum + w.errors, 0),
     };
   }
@@ -380,7 +390,7 @@ export class WorkerPoolService extends EventEmitter implements OnModuleInit, OnM
         } catch (error) {
           this.logger.error('Error terminating worker', error);
         }
-      })
+      }),
     );
 
     this.workers = [];

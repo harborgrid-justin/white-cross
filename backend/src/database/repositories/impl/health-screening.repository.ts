@@ -49,13 +49,15 @@ export interface UpdateHealthScreeningDTO {
 }
 
 @Injectable()
-export class HealthScreeningRepository
-  extends BaseRepository<any, HealthScreeningAttributes, CreateHealthScreeningDTO>
-{
+export class HealthScreeningRepository extends BaseRepository<
+  any,
+  HealthScreeningAttributes,
+  CreateHealthScreeningDTO
+> {
   constructor(
     @InjectModel(HealthScreening) model: any,
     @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('ICacheManager') cacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'HealthScreening');
   }
@@ -64,7 +66,7 @@ export class HealthScreeningRepository
     try {
       const screenings = await this.model.findAll({
         where: { studentId },
-        order: [['screeningDate', 'DESC']]
+        order: [['screeningDate', 'DESC']],
       });
       return screenings.map((s: any) => this.mapToEntity(s));
     } catch (error) {
@@ -73,16 +75,18 @@ export class HealthScreeningRepository
         'Failed to find health screenings by student',
         'FIND_BY_STUDENT_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
 
-  async findByType(screeningType: string): Promise<HealthScreeningAttributes[]> {
+  async findByType(
+    screeningType: string,
+  ): Promise<HealthScreeningAttributes[]> {
     try {
       const screenings = await this.model.findAll({
         where: { screeningType },
-        order: [['screeningDate', 'DESC']]
+        order: [['screeningDate', 'DESC']],
       });
       return screenings.map((s: any) => this.mapToEntity(s));
     } catch (error) {
@@ -91,7 +95,7 @@ export class HealthScreeningRepository
         'Failed to find health screenings by type',
         'FIND_BY_TYPE_ERROR',
         500,
-        { screeningType, error: (error as Error).message }
+        { screeningType, error: (error as Error).message },
       );
     }
   }
@@ -100,7 +104,7 @@ export class HealthScreeningRepository
     try {
       const screenings = await this.model.findAll({
         where: { followUpRequired: true },
-        order: [['screeningDate', 'ASC']]
+        order: [['screeningDate', 'ASC']],
       });
       return screenings.map((s: any) => this.mapToEntity(s));
     } catch (error) {
@@ -109,24 +113,33 @@ export class HealthScreeningRepository
         'Failed to find screenings requiring follow-up',
         'FIND_FOLLOW_UP_REQUIRED_ERROR',
         500,
-        { error: (error as Error).message }
+        { error: (error as Error).message },
       );
     }
   }
 
-  protected async validateCreate(data: CreateHealthScreeningDTO): Promise<void> {
+  protected async validateCreate(
+    data: CreateHealthScreeningDTO,
+  ): Promise<void> {
     // Validation logic
   }
 
-  protected async validateUpdate(id: string, data: UpdateHealthScreeningDTO): Promise<void> {
+  protected async validateUpdate(
+    id: string,
+    data: UpdateHealthScreeningDTO,
+  ): Promise<void> {
     // Validation logic
   }
 
   protected async invalidateCaches(screening: any): Promise<void> {
     try {
       const screeningData = screening.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, screeningData.id));
-      await this.cacheManager.deletePattern(`white-cross:health-screening:student:${screeningData.studentId}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, screeningData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:health-screening:student:${screeningData.studentId}:*`,
+      );
     } catch (error) {
       this.logger.warn('Error invalidating health screening caches:', error);
     }

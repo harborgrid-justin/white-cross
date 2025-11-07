@@ -40,7 +40,7 @@ import {
   INextFunction,
   MiddlewareContext,
   HealthcareRequest,
-  HealthcareResponse
+  HealthcareResponse,
 } from '../../utils/types/middleware.types';
 
 /**
@@ -69,7 +69,10 @@ export class ExpressRequestWrapper implements IRequest {
     this.query = expressRequest.query;
     this.params = expressRequest.params;
     this.body = expressRequest.body;
-    this.ip = expressRequest.ip || expressRequest.connection?.remoteAddress || 'unknown';
+    this.ip =
+      expressRequest.ip ||
+      expressRequest.connection?.remoteAddress ||
+      'unknown';
     this.userAgent = expressRequest.get('User-Agent');
     this.correlationId = expressRequest.get('X-Correlation-ID');
     this.sessionId = (expressRequest as any).sessionID;
@@ -118,7 +121,10 @@ export class ExpressResponseWrapper implements IResponse {
   }
 
   getHeader(name: string): string | string[] | undefined {
-    return this.expressResponse.getHeader(name) as string | string[] | undefined;
+    return this.expressResponse.getHeader(name) as
+      | string
+      | string[]
+      | undefined;
   }
 
   removeHeader(name: string): this {
@@ -255,10 +261,12 @@ export class ExpressMiddlewareAdapter {
       // Create middleware context
       const context: MiddlewareContext = {
         startTime: Date.now(),
-        correlationId: wrappedRequest.correlationId || `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        correlationId:
+          wrappedRequest.correlationId ||
+          `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         framework: 'express',
         environment: process.env.NODE_ENV || 'development',
-        metadata: {}
+        metadata: {},
       };
 
       // Execute the framework-agnostic middleware
@@ -271,7 +279,7 @@ export class ExpressMiddlewareAdapter {
    */
   createHealthcareMiddleware(
     middlewareFactory: (config: any) => IMiddleware,
-    config: any = {}
+    config: any = {},
   ): RequestHandler {
     const middleware = middlewareFactory(config);
     return this.adapt(middleware);
@@ -281,25 +289,37 @@ export class ExpressMiddlewareAdapter {
    * Chains multiple middleware adapters together
    */
   chain(...middlewares: IMiddleware[]): RequestHandler[] {
-    return middlewares.map(middleware => this.adapt(middleware));
+    return middlewares.map((middleware) => this.adapt(middleware));
   }
 
   /**
    * Creates error handling middleware for Express
    */
   createErrorHandler(
-    errorHandler: (error: Error, request: IRequest, response: IResponse, context: MiddlewareContext) => void
+    errorHandler: (
+      error: Error,
+      request: IRequest,
+      response: IResponse,
+      context: MiddlewareContext,
+    ) => void,
   ): (err: Error, req: Request, res: Response, next: NextFunction) => void {
-    return (err: Error, req: Request, res: Response, next: NextFunction): void => {
+    return (
+      err: Error,
+      req: Request,
+      res: Response,
+      next: NextFunction,
+    ): void => {
       const wrappedRequest = new ExpressRequestWrapper(req);
       const wrappedResponse = new ExpressResponseWrapper(res);
 
       const context: MiddlewareContext = {
         startTime: Date.now(),
-        correlationId: wrappedRequest.correlationId || `err-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        correlationId:
+          wrappedRequest.correlationId ||
+          `err-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         framework: 'express',
         environment: process.env.NODE_ENV || 'development',
-        metadata: { error: true }
+        metadata: { error: true },
       };
 
       try {
@@ -324,20 +344,26 @@ export class ExpressMiddlewareAdapter {
         patientId: req.params.patientId || req.body?.patientId,
         facilityId: req.headers['x-facility-id'] as string,
         providerId: (req.user as any)?.userId || (req.user as any)?.id,
-        accessType: req.headers['x-access-type'] as 'routine' | 'emergency' | 'break_glass',
+        accessType: req.headers['x-access-type'] as
+          | 'routine'
+          | 'emergency'
+          | 'break_glass',
         auditRequired: true,
         phiAccess: false,
-        complianceFlags: []
+        complianceFlags: [],
       };
 
       // Add healthcare-specific response methods
       const healthcareRes = res as HealthcareResponse;
 
-      healthcareRes.sendHipaaCompliant = function(data: any, options: {
-        logAccess?: boolean;
-        patientId?: string;
-        dataType?: string
-      } = {}) {
+      healthcareRes.sendHipaaCompliant = function (
+        data: any,
+        options: {
+          logAccess?: boolean;
+          patientId?: string;
+          dataType?: string;
+        } = {},
+      ) {
         if (options.logAccess && options.patientId) {
           // Log PHI access for HIPAA compliance
           healthcareReq.healthcareContext.phiAccess = true;
@@ -351,15 +377,20 @@ export class ExpressMiddlewareAdapter {
         return this.json(data);
       };
 
-      healthcareRes.sanitizeResponse = function(data: any): any {
+      healthcareRes.sanitizeResponse = function (data: any): any {
         if (!data) return data;
 
         // Remove common sensitive fields
-        const sensitiveFields = ['ssn', 'socialSecurityNumber', 'password', 'token'];
+        const sensitiveFields = [
+          'ssn',
+          'socialSecurityNumber',
+          'password',
+          'token',
+        ];
 
         if (typeof data === 'object') {
           const sanitized = { ...data };
-          sensitiveFields.forEach(field => {
+          sensitiveFields.forEach((field) => {
             if (sanitized[field]) {
               delete sanitized[field];
             }
@@ -385,9 +416,11 @@ export class ExpressMiddlewareUtils {
    * Extracts correlation ID from Express request
    */
   getCorrelationId(req: Request): string {
-    return req.get('X-Correlation-ID') ||
-           req.get('X-Request-ID') ||
-           `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    return (
+      req.get('X-Correlation-ID') ||
+      req.get('X-Request-ID') ||
+      `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    );
   }
 
   /**
@@ -397,9 +430,15 @@ export class ExpressMiddlewareUtils {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('X-XSS-Protection', '1; mode=block');
-    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    res.setHeader(
+      'Strict-Transport-Security',
+      'max-age=31536000; includeSubDomains',
+    );
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-    res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+    res.setHeader(
+      'Permissions-Policy',
+      'geolocation=(), microphone=(), camera=()',
+    );
   }
 
   /**
@@ -412,7 +451,7 @@ export class ExpressMiddlewareUtils {
       role: user?.role,
       permissions: user?.permissions || [],
       facilityId: user?.facilityId || req.get('X-Facility-ID'),
-      sessionId: (req as any).sessionID
+      sessionId: (req as any).sessionID,
     };
   }
 }

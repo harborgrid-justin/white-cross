@@ -17,7 +17,10 @@ import { Op, Transaction, Sequelize } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 import { WebSocketService } from '../infrastructure/websocket/websocket.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
-import { UpdateAppointmentDto, AppointmentStatus } from './dto/update-appointment.dto';
+import {
+  UpdateAppointmentDto,
+  AppointmentStatus,
+} from './dto/update-appointment.dto';
 import { AppointmentFiltersDto } from './dto/appointment-filters.dto';
 import {
   CreateWaitlistEntryDto,
@@ -37,24 +40,31 @@ import {
   BulkCancelDto,
   DateRangeDto,
 } from './dto/statistics.dto';
-import { CreateRecurringAppointmentDto, RecurrenceFrequency } from './dto/recurring.dto';
-import { AppointmentEntity, PaginatedResponse, AvailabilitySlot } from './entities/appointment.entity';
+import {
+  CreateRecurringAppointmentDto,
+  RecurrenceFrequency,
+} from './dto/recurring.dto';
+import {
+  AppointmentEntity,
+  PaginatedResponse,
+  AvailabilitySlot,
+} from './entities/appointment.entity';
 import { AppointmentValidation } from './validators/appointment-validation';
 import { AppointmentStatusTransitions } from './validators/status-transitions';
 import {
   Appointment,
   AppointmentType as ModelAppointmentType,
-  AppointmentStatus as ModelAppointmentStatus
+  AppointmentStatus as ModelAppointmentStatus,
 } from '../database/models/appointment.model';
 import {
   AppointmentReminder,
   MessageType,
-  ReminderStatus
+  ReminderStatus,
 } from '../database/models/appointment-reminder.model';
 import {
   AppointmentWaitlist,
   WaitlistPriority,
-  WaitlistStatus
+  WaitlistStatus,
 } from '../database/models/appointment-waitlist.model';
 import { User } from '../database/models/user.model';
 
@@ -159,7 +169,7 @@ export class AppointmentService {
       });
 
       // Map to entity format
-      const data = rows.map(row => this.mapToEntity(row));
+      const data = rows.map((row) => this.mapToEntity(row));
 
       const totalPages = Math.ceil(count / limit);
       return {
@@ -174,7 +184,10 @@ export class AppointmentService {
         },
       };
     } catch (error) {
-      this.logger.error(`Error fetching appointments: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error fetching appointments: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to fetch appointments');
     }
   }
@@ -191,7 +204,14 @@ export class AppointmentService {
           {
             model: User,
             as: 'nurse',
-            attributes: ['id', 'firstName', 'lastName', 'email', 'role', 'phone'],
+            attributes: [
+              'id',
+              'firstName',
+              'lastName',
+              'email',
+              'role',
+              'phone',
+            ],
           },
         ],
       });
@@ -205,7 +225,10 @@ export class AppointmentService {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      this.logger.error(`Error fetching appointment ${id}: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error fetching appointment ${id}: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to fetch appointment');
     }
   }
@@ -229,18 +252,24 @@ export class AppointmentService {
     this.logger.log(`Creating appointment for student ${createDto.studentId}`);
 
     // Apply defaults
-    const duration = createDto.duration || AppointmentValidation.DEFAULT_DURATION_MINUTES;
+    const duration =
+      createDto.duration || AppointmentValidation.DEFAULT_DURATION_MINUTES;
 
     // Validate appointment data
     AppointmentValidation.validateFutureDateTime(createDto.scheduledDate);
     AppointmentValidation.validateDuration(duration);
-    AppointmentValidation.validateBusinessHours(createDto.scheduledDate, duration);
+    AppointmentValidation.validateBusinessHours(
+      createDto.scheduledDate,
+      duration,
+    );
     AppointmentValidation.validateNotWeekend(createDto.scheduledDate);
 
     // Verify nurse exists
     const nurse = await this.userModel.findByPk(createDto.nurseId);
     if (!nurse) {
-      throw new BadRequestException(`Nurse with ID ${createDto.nurseId} not found`);
+      throw new BadRequestException(
+        `Nurse with ID ${createDto.nurseId} not found`,
+      );
     }
 
     // Check for conflicts
@@ -257,58 +286,75 @@ export class AppointmentService {
     }
 
     // Check daily appointment limit for nurse
-    await this.validateDailyAppointmentLimit(createDto.nurseId, createDto.scheduledDate);
+    await this.validateDailyAppointmentLimit(
+      createDto.nurseId,
+      createDto.scheduledDate,
+    );
 
     try {
       // Create appointment within transaction
-      const result = await this.sequelize.transaction(async (transaction: Transaction) => {
-        // Create appointment
-        const appointment = await this.appointmentModel.create(
-          {
-            studentId: createDto.studentId,
-            nurseId: createDto.nurseId,
-            type: createDto.appointmentType as unknown as ModelAppointmentType,
-            scheduledAt: createDto.scheduledDate,
-            duration,
-            reason: createDto.reason || 'Scheduled appointment',
-            notes: createDto.notes,
-            status: ModelAppointmentStatus.SCHEDULED,
-          },
-          { transaction },
-        );
-
-        // Schedule reminders
-        await this.scheduleReminders(appointment.id!, createDto.scheduledDate, transaction);
-
-        // Remove from waitlist if student was waiting
-        await this.waitlistModel.update(
-          { status: WaitlistStatus.SCHEDULED },
-          {
-            where: {
+      const result = await this.sequelize.transaction(
+        async (transaction: Transaction) => {
+          // Create appointment
+          const appointment = await this.appointmentModel.create(
+            {
               studentId: createDto.studentId,
-              status: WaitlistStatus.WAITING,
+              nurseId: createDto.nurseId,
+              type: createDto.appointmentType as unknown as ModelAppointmentType,
+              scheduledAt: createDto.scheduledDate,
+              duration,
+              reason: createDto.reason || 'Scheduled appointment',
+              notes: createDto.notes,
+              status: ModelAppointmentStatus.SCHEDULED,
             },
-            transaction,
-          },
-        );
+            { transaction },
+          );
 
-        return appointment;
-      });
+          // Schedule reminders
+          await this.scheduleReminders(
+            appointment.id,
+            createDto.scheduledDate,
+            transaction,
+          );
+
+          // Remove from waitlist if student was waiting
+          await this.waitlistModel.update(
+            { status: WaitlistStatus.SCHEDULED },
+            {
+              where: {
+                studentId: createDto.studentId,
+                status: WaitlistStatus.WAITING,
+              },
+              transaction,
+            },
+          );
+
+          return appointment;
+        },
+      );
 
       // Fetch complete appointment with relations
-      const appointment = await this.getAppointmentById(result.id!);
+      const appointment = await this.getAppointmentById(result.id);
 
       // Send real-time notification about new appointment
       try {
-        await this.sendAppointmentNotification(appointment, 'appointment:created');
+        await this.sendAppointmentNotification(
+          appointment,
+          'appointment:created',
+        );
       } catch (error) {
-        this.logger.error(`Failed to send WebSocket notification: ${error.message}`);
+        this.logger.error(
+          `Failed to send WebSocket notification: ${error.message}`,
+        );
         // Don't fail the operation if notification fails
       }
 
       return appointment;
     } catch (error) {
-      this.logger.error(`Error creating appointment: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error creating appointment: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to create appointment');
     }
   }
@@ -335,7 +381,9 @@ export class AppointmentService {
     }
 
     // Validate not in final state
-    AppointmentValidation.validateNotFinalState(existingAppointment.status as unknown as AppointmentStatus);
+    AppointmentValidation.validateNotFinalState(
+      existingAppointment.status as unknown as AppointmentStatus,
+    );
 
     // Validate status transition if status is being changed
     if (updateDto.status && updateDto.status !== existingAppointment.status) {
@@ -349,7 +397,10 @@ export class AppointmentService {
     if (updateDto.scheduledDate) {
       const duration = updateDto.duration || existingAppointment.duration;
       AppointmentValidation.validateFutureDateTime(updateDto.scheduledDate);
-      AppointmentValidation.validateBusinessHours(updateDto.scheduledDate, duration);
+      AppointmentValidation.validateBusinessHours(
+        updateDto.scheduledDate,
+        duration,
+      );
       AppointmentValidation.validateNotWeekend(updateDto.scheduledDate);
 
       // Check conflicts (excluding this appointment)
@@ -370,11 +421,15 @@ export class AppointmentService {
     try {
       // Update appointment
       await existingAppointment.update({
-        ...(updateDto.scheduledDate && { scheduledAt: updateDto.scheduledDate }),
+        ...(updateDto.scheduledDate && {
+          scheduledAt: updateDto.scheduledDate,
+        }),
         ...(updateDto.duration && { duration: updateDto.duration }),
         ...(updateDto.reason && { reason: updateDto.reason }),
         ...(updateDto.notes && { notes: updateDto.notes }),
-        ...(updateDto.status && { status: updateDto.status as unknown as ModelAppointmentStatus }),
+        ...(updateDto.status && {
+          status: updateDto.status as unknown as ModelAppointmentStatus,
+        }),
       });
 
       // If rescheduled, update reminders
@@ -393,7 +448,11 @@ export class AppointmentService {
           );
 
           // Schedule new reminders
-          await this.scheduleReminders(id, updateDto.scheduledDate!, transaction);
+          await this.scheduleReminders(
+            id,
+            updateDto.scheduledDate!,
+            transaction,
+          );
         });
       }
 
@@ -401,15 +460,23 @@ export class AppointmentService {
 
       // Send real-time notification about appointment update
       try {
-        await this.sendAppointmentNotification(appointment, 'appointment:updated');
+        await this.sendAppointmentNotification(
+          appointment,
+          'appointment:updated',
+        );
       } catch (error) {
-        this.logger.error(`Failed to send WebSocket notification: ${error.message}`);
+        this.logger.error(
+          `Failed to send WebSocket notification: ${error.message}`,
+        );
         // Don't fail the operation if notification fails
       }
 
       return appointment;
     } catch (error) {
-      this.logger.error(`Error updating appointment ${id}: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error updating appointment ${id}: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to update appointment');
     }
   }
@@ -422,7 +489,10 @@ export class AppointmentService {
    * - Minimum cancellation notice period (2 hours)
    * - Attempts to fill slot from waitlist
    */
-  async cancelAppointment(id: string, reason?: string): Promise<AppointmentEntity> {
+  async cancelAppointment(
+    id: string,
+    reason?: string,
+  ): Promise<AppointmentEntity> {
     this.logger.log(`Cancelling appointment: ${id}`);
 
     const appointment = await this.appointmentModel.findByPk(id);
@@ -431,7 +501,9 @@ export class AppointmentService {
     }
 
     // Validate can be cancelled
-    AppointmentValidation.validateCanBeCancelled(appointment.status as unknown as AppointmentStatus);
+    AppointmentValidation.validateCanBeCancelled(
+      appointment.status as unknown as AppointmentStatus,
+    );
     AppointmentValidation.validateCancellationNotice(appointment.scheduledAt);
 
     try {
@@ -470,7 +542,10 @@ export class AppointmentService {
 
       return await this.getAppointmentById(id);
     } catch (error) {
-      this.logger.error(`Error cancelling appointment ${id}: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error cancelling appointment ${id}: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to cancel appointment');
     }
   }
@@ -487,7 +562,9 @@ export class AppointmentService {
     }
 
     // Validate can be started
-    AppointmentValidation.validateCanBeStarted(appointment.status as unknown as AppointmentStatus);
+    AppointmentValidation.validateCanBeStarted(
+      appointment.status as unknown as AppointmentStatus,
+    );
     AppointmentValidation.validateStartTiming(appointment.scheduledAt);
 
     await appointment.update({
@@ -519,7 +596,9 @@ export class AppointmentService {
     }
 
     // Validate can be completed
-    AppointmentValidation.validateCanBeCompleted(appointment.status as unknown as AppointmentStatus);
+    AppointmentValidation.validateCanBeCompleted(
+      appointment.status as unknown as AppointmentStatus,
+    );
 
     let notes = appointment.notes || '';
     if (completionData?.notes) {
@@ -552,7 +631,9 @@ export class AppointmentService {
     }
 
     // Validate can be marked no-show
-    AppointmentValidation.validateCanBeMarkedNoShow(appointment.status as unknown as AppointmentStatus);
+    AppointmentValidation.validateCanBeMarkedNoShow(
+      appointment.status as unknown as AppointmentStatus,
+    );
     AppointmentValidation.validateAppointmentPassed(appointment.scheduledAt);
 
     await appointment.update({
@@ -591,7 +672,10 @@ export class AppointmentService {
             [Op.gt]: new Date(),
           },
           status: {
-            [Op.in]: [ModelAppointmentStatus.SCHEDULED, ModelAppointmentStatus.IN_PROGRESS],
+            [Op.in]: [
+              ModelAppointmentStatus.SCHEDULED,
+              ModelAppointmentStatus.IN_PROGRESS,
+            ],
           },
         },
         order: [['scheduledAt', 'ASC']],
@@ -605,9 +689,12 @@ export class AppointmentService {
         ],
       });
 
-      return appointments.map(apt => this.mapToEntity(apt));
+      return appointments.map((apt) => this.mapToEntity(apt));
     } catch (error) {
-      this.logger.error(`Error fetching upcoming appointments: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error fetching upcoming appointments: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to fetch upcoming appointments');
     }
   }
@@ -615,14 +702,18 @@ export class AppointmentService {
   /**
    * Get appointments by a specific date
    */
-  async getAppointmentsByDate(dateStr: string): Promise<{ data: AppointmentEntity[] }> {
+  async getAppointmentsByDate(
+    dateStr: string,
+  ): Promise<{ data: AppointmentEntity[] }> {
     this.logger.log(`Fetching appointments for date: ${dateStr}`);
 
     try {
       // Parse the date string and create start/end of day boundaries
       const date = new Date(dateStr);
       if (isNaN(date.getTime())) {
-        throw new BadRequestException('Invalid date format. Expected YYYY-MM-DD');
+        throw new BadRequestException(
+          'Invalid date format. Expected YYYY-MM-DD',
+        );
       }
 
       const dayStart = new Date(date);
@@ -648,13 +739,16 @@ export class AppointmentService {
         ],
       });
 
-      const data = appointments.map(apt => this.mapToEntity(apt));
+      const data = appointments.map((apt) => this.mapToEntity(apt));
       return { data };
     } catch (error) {
       if (error instanceof BadRequestException) {
         throw error;
       }
-      this.logger.error(`Error fetching appointments by date: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error fetching appointments by date: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to fetch appointments by date');
     }
   }
@@ -680,7 +774,10 @@ export class AppointmentService {
             [Op.lte]: futureDate,
           },
           status: {
-            [Op.in]: [ModelAppointmentStatus.SCHEDULED, ModelAppointmentStatus.IN_PROGRESS],
+            [Op.in]: [
+              ModelAppointmentStatus.SCHEDULED,
+              ModelAppointmentStatus.IN_PROGRESS,
+            ],
           },
         },
         order: [['scheduledAt', 'ASC']],
@@ -694,10 +791,13 @@ export class AppointmentService {
         ],
       });
 
-      const data = appointments.map(apt => this.mapToEntity(apt));
+      const data = appointments.map((apt) => this.mapToEntity(apt));
       return { data };
     } catch (error) {
-      this.logger.error(`Error fetching general upcoming appointments: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error fetching general upcoming appointments: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to fetch upcoming appointments');
     }
   }
@@ -732,7 +832,10 @@ export class AppointmentService {
       const whereClause: any = {
         nurseId,
         status: {
-          [Op.in]: [ModelAppointmentStatus.SCHEDULED, ModelAppointmentStatus.IN_PROGRESS],
+          [Op.in]: [
+            ModelAppointmentStatus.SCHEDULED,
+            ModelAppointmentStatus.IN_PROGRESS,
+          ],
         },
         [Op.or]: [
           // Appointment starts within the requested slot
@@ -746,9 +849,13 @@ export class AppointmentService {
           {
             [Op.and]: [
               Sequelize.where(
-                Sequelize.fn('DATE_ADD', Sequelize.col('scheduled_at'), Sequelize.literal('INTERVAL duration MINUTE')),
+                Sequelize.fn(
+                  'DATE_ADD',
+                  Sequelize.col('scheduled_at'),
+                  Sequelize.literal('INTERVAL duration MINUTE'),
+                ),
                 Op.gt,
-                slotStart
+                slotStart,
               ),
               Sequelize.where(Sequelize.col('scheduled_at'), Op.lt, slotEnd),
             ],
@@ -772,9 +879,12 @@ export class AppointmentService {
         ],
       });
 
-      return conflicts.map(apt => this.mapToEntity(apt));
+      return conflicts.map((apt) => this.mapToEntity(apt));
     } catch (error) {
-      this.logger.error(`Error checking availability: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error checking availability: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to check availability');
     }
   }
@@ -882,7 +992,10 @@ export class AppointmentService {
 
       return waitlistEntry;
     } catch (error) {
-      this.logger.error(`Error adding to waitlist: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error adding to waitlist: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to add to waitlist');
     }
   }
@@ -910,9 +1023,12 @@ export class AppointmentService {
         ],
       });
 
-      return appointments.map(apt => this.mapToEntity(apt));
+      return appointments.map((apt) => this.mapToEntity(apt));
     } catch (error) {
-      this.logger.error(`Error fetching appointment history: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error fetching appointment history: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to fetch appointment history');
     }
   }
@@ -920,7 +1036,10 @@ export class AppointmentService {
   /**
    * Get no-show statistics for a student (for cancellation policy enforcement)
    */
-  async getNoShowCount(studentId: string, daysBack: number = 90): Promise<number> {
+  async getNoShowCount(
+    studentId: string,
+    daysBack: number = 90,
+  ): Promise<number> {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysBack);
 
@@ -999,7 +1118,7 @@ export class AppointmentService {
       const waitlistEntries = await this.waitlistModel.findAll({
         where: Sequelize.or(
           { status: WaitlistStatus.WAITING, nurseId },
-          { status: WaitlistStatus.WAITING, nurseId: null }
+          { status: WaitlistStatus.WAITING, nurseId: null },
         ),
         order: [
           ['priority', 'DESC'],
@@ -1020,10 +1139,15 @@ export class AppointmentService {
           { transaction },
         );
 
-        this.logger.log(`Notified waitlist entry ${entry.id} about available slot`);
+        this.logger.log(
+          `Notified waitlist entry ${entry.id} about available slot`,
+        );
       }
     } catch (error) {
-      this.logger.error(`Error processing waitlist: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error processing waitlist: ${error.message}`,
+        error.stack,
+      );
       // Don't throw - this is a best-effort operation
     }
   }
@@ -1049,7 +1173,10 @@ export class AppointmentService {
           [Op.lte]: dayEnd,
         },
         status: {
-          [Op.in]: [ModelAppointmentStatus.SCHEDULED, ModelAppointmentStatus.IN_PROGRESS],
+          [Op.in]: [
+            ModelAppointmentStatus.SCHEDULED,
+            ModelAppointmentStatus.IN_PROGRESS,
+          ],
         },
       },
     });
@@ -1066,7 +1193,9 @@ export class AppointmentService {
   /**
    * Get waitlist with filtering and pagination
    */
-  async getWaitlist(filters: WaitlistFiltersDto = {}): Promise<{ waitlist: any[] }> {
+  async getWaitlist(
+    filters: WaitlistFiltersDto = {},
+  ): Promise<{ waitlist: any[] }> {
     this.logger.log('Fetching waitlist entries');
 
     try {
@@ -1104,7 +1233,10 @@ export class AppointmentService {
 
       return { waitlist: waitlistEntries };
     } catch (error) {
-      this.logger.error(`Error fetching waitlist: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error fetching waitlist: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to fetch waitlist');
     }
   }
@@ -1112,7 +1244,10 @@ export class AppointmentService {
   /**
    * Update waitlist entry priority
    */
-  async updateWaitlistPriority(id: string, priority: DtoWaitlistPriority): Promise<{ entry: any }> {
+  async updateWaitlistPriority(
+    id: string,
+    priority: DtoWaitlistPriority,
+  ): Promise<{ entry: any }> {
     this.logger.log(`Updating waitlist priority: ${id}`);
 
     try {
@@ -1127,7 +1262,10 @@ export class AppointmentService {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      this.logger.error(`Error updating waitlist priority: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error updating waitlist priority: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to update waitlist priority');
     }
   }
@@ -1135,7 +1273,9 @@ export class AppointmentService {
   /**
    * Get waitlist position
    */
-  async getWaitlistPosition(id: string): Promise<{ position: number; total: number }> {
+  async getWaitlistPosition(
+    id: string,
+  ): Promise<{ position: number; total: number }> {
     this.logger.log(`Getting waitlist position: ${id}`);
 
     try {
@@ -1167,7 +1307,10 @@ export class AppointmentService {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      this.logger.error(`Error getting waitlist position: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error getting waitlist position: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to get waitlist position');
     }
   }
@@ -1175,7 +1318,10 @@ export class AppointmentService {
   /**
    * Notify waitlist entry
    */
-  async notifyWaitlistEntry(id: string, message?: string): Promise<{ entry: any; notification: any }> {
+  async notifyWaitlistEntry(
+    id: string,
+    message?: string,
+  ): Promise<{ entry: any; notification: any }> {
     this.logger.log(`Notifying waitlist entry: ${id}`);
 
     try {
@@ -1201,7 +1347,10 @@ export class AppointmentService {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      this.logger.error(`Error notifying waitlist entry: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error notifying waitlist entry: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to notify waitlist entry');
     }
   }
@@ -1209,7 +1358,10 @@ export class AppointmentService {
   /**
    * Remove from waitlist
    */
-  async removeFromWaitlist(id: string, reason?: string): Promise<{ entry: any }> {
+  async removeFromWaitlist(
+    id: string,
+    reason?: string,
+  ): Promise<{ entry: any }> {
     this.logger.log(`Removing from waitlist: ${id}`);
 
     try {
@@ -1227,7 +1379,10 @@ export class AppointmentService {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      this.logger.error(`Error removing from waitlist: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error removing from waitlist: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to remove from waitlist');
     }
   }
@@ -1284,7 +1439,10 @@ export class AppointmentService {
         errors: errors.length > 0 ? errors : undefined,
       };
     } catch (error) {
-      this.logger.error(`Error processing reminders: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error processing reminders: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to process reminders');
     }
   }
@@ -1292,7 +1450,9 @@ export class AppointmentService {
   /**
    * Get appointment reminders
    */
-  async getAppointmentReminders(appointmentId: string): Promise<{ reminders: any[] }> {
+  async getAppointmentReminders(
+    appointmentId: string,
+  ): Promise<{ reminders: any[] }> {
     this.logger.log(`Getting reminders for appointment: ${appointmentId}`);
 
     try {
@@ -1303,7 +1463,10 @@ export class AppointmentService {
 
       return { reminders };
     } catch (error) {
-      this.logger.error(`Error getting appointment reminders: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error getting appointment reminders: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to get appointment reminders');
     }
   }
@@ -1311,14 +1474,20 @@ export class AppointmentService {
   /**
    * Schedule reminder
    */
-  async scheduleReminder(createDto: CreateReminderDto): Promise<{ reminder: any }> {
+  async scheduleReminder(
+    createDto: CreateReminderDto,
+  ): Promise<{ reminder: any }> {
     this.logger.log('Scheduling custom reminder');
 
     try {
       // Verify appointment exists
-      const appointment = await this.appointmentModel.findByPk(createDto.appointmentId);
+      const appointment = await this.appointmentModel.findByPk(
+        createDto.appointmentId,
+      );
       if (!appointment) {
-        throw new NotFoundException(`Appointment with ID ${createDto.appointmentId} not found`);
+        throw new NotFoundException(
+          `Appointment with ID ${createDto.appointmentId} not found`,
+        );
       }
 
       const reminder = await this.reminderModel.create({
@@ -1337,7 +1506,10 @@ export class AppointmentService {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      this.logger.error(`Error scheduling reminder: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error scheduling reminder: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to schedule reminder');
     }
   }
@@ -1360,7 +1532,10 @@ export class AppointmentService {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      this.logger.error(`Error cancelling reminder: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error cancelling reminder: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to cancel reminder');
     }
   }
@@ -1434,7 +1609,10 @@ export class AppointmentService {
         completionRate: total > 0 ? (completedCount / total) * 100 : 0,
       };
     } catch (error) {
-      this.logger.error(`Error getting statistics: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error getting statistics: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to get statistics');
     }
   }
@@ -1442,7 +1620,9 @@ export class AppointmentService {
   /**
    * Search appointments
    */
-  async searchAppointments(searchDto: SearchAppointmentsDto): Promise<PaginatedResponse<AppointmentEntity>> {
+  async searchAppointments(
+    searchDto: SearchAppointmentsDto,
+  ): Promise<PaginatedResponse<AppointmentEntity>> {
     this.logger.log('Searching appointments');
 
     try {
@@ -1500,7 +1680,7 @@ export class AppointmentService {
         ],
       });
 
-      const data = rows.map(row => this.mapToEntity(row));
+      const data = rows.map((row) => this.mapToEntity(row));
       const totalPages = Math.ceil(count / limit);
 
       return {
@@ -1515,7 +1695,10 @@ export class AppointmentService {
         },
       };
     } catch (error) {
-      this.logger.error(`Error searching appointments: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error searching appointments: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to search appointments');
     }
   }
@@ -1525,7 +1708,9 @@ export class AppointmentService {
   /**
    * Get appointments by date range
    */
-  async getAppointmentsByDateRange(dateRange: DateRangeDto): Promise<{ appointments: AppointmentEntity[] }> {
+  async getAppointmentsByDateRange(
+    dateRange: DateRangeDto,
+  ): Promise<{ appointments: AppointmentEntity[] }> {
     this.logger.log('Getting appointments by date range');
 
     try {
@@ -1552,10 +1737,13 @@ export class AppointmentService {
         ],
       });
 
-      const data = appointments.map(apt => this.mapToEntity(apt));
+      const data = appointments.map((apt) => this.mapToEntity(apt));
       return { appointments: data };
     } catch (error) {
-      this.logger.error(`Error getting appointments by date range: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error getting appointments by date range: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to get appointments by date range');
     }
   }
@@ -1563,7 +1751,11 @@ export class AppointmentService {
   /**
    * Get appointment trends
    */
-  async getAppointmentTrends(dateFrom: string, dateTo: string, groupBy: 'day' | 'week' | 'month' = 'day'): Promise<{ trends: any[] }> {
+  async getAppointmentTrends(
+    dateFrom: string,
+    dateTo: string,
+    groupBy: 'day' | 'week' | 'month' = 'day',
+  ): Promise<{ trends: any[] }> {
     this.logger.log('Getting appointment trends');
 
     try {
@@ -1594,7 +1786,10 @@ export class AppointmentService {
 
       return { trends };
     } catch (error) {
-      this.logger.error(`Error getting appointment trends: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error getting appointment trends: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to get appointment trends');
     }
   }
@@ -1602,7 +1797,11 @@ export class AppointmentService {
   /**
    * Get no-show statistics
    */
-  async getNoShowStats(nurseId?: string, dateFrom?: string, dateTo?: string): Promise<any> {
+  async getNoShowStats(
+    nurseId?: string,
+    dateFrom?: string,
+    dateTo?: string,
+  ): Promise<any> {
     this.logger.log('Getting no-show statistics');
 
     try {
@@ -1636,7 +1835,10 @@ export class AppointmentService {
         byStudent: [], // Mock - would implement proper aggregation
       };
     } catch (error) {
-      this.logger.error(`Error getting no-show stats: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error getting no-show stats: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to get no-show statistics');
     }
   }
@@ -1644,7 +1846,11 @@ export class AppointmentService {
   /**
    * Get utilization statistics
    */
-  async getUtilizationStats(nurseId: string, dateFrom: string, dateTo: string): Promise<any> {
+  async getUtilizationStats(
+    nurseId: string,
+    dateFrom: string,
+    dateTo: string,
+  ): Promise<any> {
     this.logger.log('Getting utilization statistics');
 
     try {
@@ -1685,7 +1891,8 @@ export class AppointmentService {
       const slotsPerDay = (hoursPerDay * 60) / 30; // 30-minute slots
       const totalSlots = businessDays * slotsPerDay;
       const availableSlots = totalSlots - bookedSlots;
-      const utilizationRate = totalSlots > 0 ? (bookedSlots / totalSlots) * 100 : 0;
+      const utilizationRate =
+        totalSlots > 0 ? (bookedSlots / totalSlots) * 100 : 0;
 
       return {
         utilizationRate,
@@ -1695,7 +1902,10 @@ export class AppointmentService {
         byDay: [], // Mock - would implement proper daily breakdown
       };
     } catch (error) {
-      this.logger.error(`Error getting utilization stats: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error getting utilization stats: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to get utilization statistics');
     }
   }
@@ -1703,14 +1913,16 @@ export class AppointmentService {
   /**
    * Create recurring appointments
    */
-  async createRecurringAppointments(createDto: CreateRecurringAppointmentDto): Promise<{ appointments: AppointmentEntity[]; count: number }> {
+  async createRecurringAppointments(
+    createDto: CreateRecurringAppointmentDto,
+  ): Promise<{ appointments: AppointmentEntity[]; count: number }> {
     this.logger.log('Creating recurring appointments');
 
     try {
       const appointments: AppointmentEntity[] = [];
       const startDate = new Date(createDto.scheduledAt);
       const endDate = new Date(createDto.recurrence.endDate);
-      let currentDate = new Date(startDate);
+      const currentDate = new Date(startDate);
 
       while (currentDate <= endDate) {
         // Check if this date should have an appointment based on recurrence pattern
@@ -1721,7 +1933,10 @@ export class AppointmentService {
             shouldCreate = true;
             break;
           case RecurrenceFrequency.WEEKLY:
-            if (!createDto.recurrence.daysOfWeek || createDto.recurrence.daysOfWeek.includes(currentDate.getDay())) {
+            if (
+              !createDto.recurrence.daysOfWeek ||
+              createDto.recurrence.daysOfWeek.includes(currentDate.getDay())
+            ) {
               shouldCreate = true;
             }
             break;
@@ -1747,27 +1962,38 @@ export class AppointmentService {
             const appointment = await this.createAppointment(appointmentDto);
             appointments.push(appointment);
           } catch (error) {
-            this.logger.warn(`Failed to create recurring appointment for ${currentDate.toISOString()}: ${error.message}`);
+            this.logger.warn(
+              `Failed to create recurring appointment for ${currentDate.toISOString()}: ${error.message}`,
+            );
           }
         }
 
         // Move to next occurrence
         switch (createDto.recurrence.frequency) {
           case RecurrenceFrequency.DAILY:
-            currentDate.setDate(currentDate.getDate() + createDto.recurrence.interval);
+            currentDate.setDate(
+              currentDate.getDate() + createDto.recurrence.interval,
+            );
             break;
           case RecurrenceFrequency.WEEKLY:
-            currentDate.setDate(currentDate.getDate() + (7 * createDto.recurrence.interval));
+            currentDate.setDate(
+              currentDate.getDate() + 7 * createDto.recurrence.interval,
+            );
             break;
           case RecurrenceFrequency.MONTHLY:
-            currentDate.setMonth(currentDate.getMonth() + createDto.recurrence.interval);
+            currentDate.setMonth(
+              currentDate.getMonth() + createDto.recurrence.interval,
+            );
             break;
         }
       }
 
       return { appointments, count: appointments.length };
     } catch (error) {
-      this.logger.error(`Error creating recurring appointments: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error creating recurring appointments: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to create recurring appointments');
     }
   }
@@ -1776,7 +2002,9 @@ export class AppointmentService {
    * Bulk cancel appointments
    * OPTIMIZED: Replaced sequential cancellations with bulk update operation
    */
-  async bulkCancelAppointments(bulkCancelDto: BulkCancelDto): Promise<{ cancelled: number; failed: number }> {
+  async bulkCancelAppointments(
+    bulkCancelDto: BulkCancelDto,
+  ): Promise<{ cancelled: number; failed: number }> {
     this.logger.log('Bulk cancelling appointments');
 
     try {
@@ -1789,7 +2017,7 @@ export class AppointmentService {
           where: this.sequelize.where(
             this.sequelize.col('id'),
             Op.in,
-            bulkCancelDto.appointmentIds
+            bulkCancelDto.appointmentIds,
           ) as any,
           transaction,
         });
@@ -1801,12 +2029,18 @@ export class AppointmentService {
         for (const appointment of appointments) {
           try {
             // Validate can be cancelled (not in final state)
-            AppointmentValidation.validateCanBeCancelled(appointment.status as unknown as AppointmentStatus);
-            AppointmentValidation.validateCancellationNotice(appointment.scheduledAt);
-            validAppointments.push(appointment.id!);
+            AppointmentValidation.validateCanBeCancelled(
+              appointment.status as unknown as AppointmentStatus,
+            );
+            AppointmentValidation.validateCancellationNotice(
+              appointment.scheduledAt,
+            );
+            validAppointments.push(appointment.id);
           } catch (error) {
-            this.logger.warn(`Cannot cancel appointment ${appointment.id}: ${error.message}`);
-            invalidAppointments.push(appointment.id!);
+            this.logger.warn(
+              `Cannot cancel appointment ${appointment.id}: ${error.message}`,
+            );
+            invalidAppointments.push(appointment.id);
           }
         }
 
@@ -1823,17 +2057,17 @@ export class AppointmentService {
               this.sequelize.col('notes'),
               bulkCancelDto.reason
                 ? `\nCancellation reason: ${bulkCancelDto.reason}`
-                : '\nBulk cancelled'
+                : '\nBulk cancelled',
             ) as any,
           },
           {
             where: this.sequelize.where(
               this.sequelize.col('id'),
               Op.in,
-              validAppointments
+              validAppointments,
             ) as any,
             transaction,
-          }
+          },
         );
 
         // OPTIMIZATION: Bulk cancel all related reminders in one query
@@ -1842,11 +2076,15 @@ export class AppointmentService {
             { status: ReminderStatus.CANCELLED },
             {
               where: this.sequelize.and(
-                this.sequelize.where(this.sequelize.col('appointment_id'), Op.in, validAppointments),
-                { status: ReminderStatus.SCHEDULED }
+                this.sequelize.where(
+                  this.sequelize.col('appointment_id'),
+                  Op.in,
+                  validAppointments,
+                ),
+                { status: ReminderStatus.SCHEDULED },
               ) as any,
               transaction,
-            }
+            },
           );
         }
 
@@ -1855,14 +2093,19 @@ export class AppointmentService {
 
         return {
           cancelled: affectedCount,
-          failed: bulkCancelDto.appointmentIds.length - affectedCount
+          failed: bulkCancelDto.appointmentIds.length - affectedCount,
         };
       });
 
-      this.logger.log(`Bulk cancellation completed: ${result.cancelled} cancelled, ${result.failed} failed`);
+      this.logger.log(
+        `Bulk cancellation completed: ${result.cancelled} cancelled, ${result.failed} failed`,
+      );
       return result;
     } catch (error) {
-      this.logger.error(`Error in bulk cancellation: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error in bulk cancellation: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to bulk cancel appointments');
     }
   }
@@ -1870,7 +2113,10 @@ export class AppointmentService {
   /**
    * Get appointments for multiple students
    */
-  async getAppointmentsForStudents(studentIds: string[], filters?: Partial<AppointmentFiltersDto>): Promise<{ appointments: AppointmentEntity[] }> {
+  async getAppointmentsForStudents(
+    studentIds: string[],
+    filters?: Partial<AppointmentFiltersDto>,
+  ): Promise<{ appointments: AppointmentEntity[] }> {
     this.logger.log('Getting appointments for multiple students');
 
     try {
@@ -1906,10 +2152,13 @@ export class AppointmentService {
         ],
       });
 
-      const data = appointments.map(apt => this.mapToEntity(apt));
+      const data = appointments.map((apt) => this.mapToEntity(apt));
       return { appointments: data };
     } catch (error) {
-      this.logger.error(`Error getting appointments for students: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error getting appointments for students: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to get appointments for students');
     }
   }
@@ -1917,22 +2166,39 @@ export class AppointmentService {
   /**
    * Check for scheduling conflicts
    */
-  async checkConflicts(nurseId: string, startTime: string, duration: number, excludeAppointmentId?: string): Promise<any> {
+  async checkConflicts(
+    nurseId: string,
+    startTime: string,
+    duration: number,
+    excludeAppointmentId?: string,
+  ): Promise<any> {
     this.logger.log('Checking scheduling conflicts');
 
     try {
       const startDateTime = new Date(startTime);
-      const conflicts = await this.checkAvailability(nurseId, startDateTime, duration, excludeAppointmentId);
+      const conflicts = await this.checkAvailability(
+        nurseId,
+        startDateTime,
+        duration,
+        excludeAppointmentId,
+      );
 
-      const availableSlots = await this.getAvailableSlots(nurseId, startDateTime, duration);
+      const availableSlots = await this.getAvailableSlots(
+        nurseId,
+        startDateTime,
+        duration,
+      );
 
       return {
         hasConflict: conflicts.length > 0,
         conflicts,
-        availableSlots: availableSlots.filter(slot => slot.isAvailable),
+        availableSlots: availableSlots.filter((slot) => slot.isAvailable),
       };
     } catch (error) {
-      this.logger.error(`Error checking conflicts: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error checking conflicts: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to check conflicts');
     }
   }
@@ -1940,7 +2206,11 @@ export class AppointmentService {
   /**
    * Export calendar
    */
-  async exportCalendar(nurseId: string, dateFrom?: string, dateTo?: string): Promise<string> {
+  async exportCalendar(
+    nurseId: string,
+    dateFrom?: string,
+    dateTo?: string,
+  ): Promise<string> {
     this.logger.log('Exporting calendar');
 
     try {
@@ -1962,12 +2232,22 @@ export class AppointmentService {
       });
 
       // Generate basic iCal format
-      let icalContent = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//White Cross//Appointments//EN\r\n';
+      let icalContent =
+        'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//White Cross//Appointments//EN\r\n';
 
       for (const appointment of appointments) {
-        const startTime = appointment.scheduledAt.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-        const endTime = new Date(appointment.scheduledAt.getTime() + appointment.duration * 60000)
-          .toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+        const startTime =
+          appointment.scheduledAt
+            .toISOString()
+            .replace(/[-:]/g, '')
+            .split('.')[0] + 'Z';
+        const endTime =
+          new Date(
+            appointment.scheduledAt.getTime() + appointment.duration * 60000,
+          )
+            .toISOString()
+            .replace(/[-:]/g, '')
+            .split('.')[0] + 'Z';
 
         icalContent += 'BEGIN:VEVENT\r\n';
         icalContent += `UID:${appointment.id}@whitecross.edu\r\n`;
@@ -1982,7 +2262,10 @@ export class AppointmentService {
 
       return icalContent;
     } catch (error) {
-      this.logger.error(`Error exporting calendar: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error exporting calendar: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to export calendar');
     }
   }
@@ -1998,7 +2281,8 @@ export class AppointmentService {
 
     while (current <= endDate) {
       const dayOfWeek = current.getDay();
-      if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Not Sunday or Saturday
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+        // Not Sunday or Saturday
         businessDays++;
       }
       current.setDate(current.getDate() + 1);
@@ -2012,7 +2296,7 @@ export class AppointmentService {
    */
   private mapToEntity(appointment: Appointment): AppointmentEntity {
     return {
-      id: appointment.id!,
+      id: appointment.id,
       studentId: appointment.studentId,
       nurseId: appointment.nurseId,
       type: appointment.type as any,
@@ -2022,15 +2306,17 @@ export class AppointmentService {
       reason: appointment.reason,
       notes: appointment.notes,
       status: appointment.status as any,
-      createdAt: appointment.createdAt!,
-      updatedAt: appointment.updatedAt!,
-      nurse: appointment.nurse ? {
-        id: appointment.nurse.id!,
-        firstName: appointment.nurse.firstName,
-        lastName: appointment.nurse.lastName,
-        email: appointment.nurse.email,
-        role: appointment.nurse.role || 'NURSE',
-      } : undefined,
+      createdAt: appointment.createdAt,
+      updatedAt: appointment.updatedAt,
+      nurse: appointment.nurse
+        ? {
+            id: appointment.nurse.id,
+            firstName: appointment.nurse.firstName,
+            lastName: appointment.nurse.lastName,
+            email: appointment.nurse.email,
+            role: appointment.nurse.role || 'NURSE',
+          }
+        : undefined,
     };
   }
 
@@ -2056,10 +2342,18 @@ export class AppointmentService {
    */
   private async sendAppointmentNotification(
     appointment: any,
-    event: 'appointment:created' | 'appointment:updated' | 'appointment:cancelled' | 'appointment:reminder' | 'appointment:started' | 'appointment:completed',
+    event:
+      | 'appointment:created'
+      | 'appointment:updated'
+      | 'appointment:cancelled'
+      | 'appointment:reminder'
+      | 'appointment:started'
+      | 'appointment:completed',
   ): Promise<void> {
     if (!this.websocketService || !this.websocketService.isInitialized()) {
-      this.logger.warn('WebSocket service not initialized, skipping notification');
+      this.logger.warn(
+        'WebSocket service not initialized, skipping notification',
+      );
       return;
     }
 

@@ -95,7 +95,9 @@ export class AuditInterceptor implements NestInterceptor {
 
   private getEntityTypeFromUrl(url: string): string {
     // Extract entity type from URL (e.g., /api/users/123 -> User)
-    const parts = url.split('/').filter((p) => p && !p.match(/^\d+$/) && p !== 'api');
+    const parts = url
+      .split('/')
+      .filter((p) => p && !p.match(/^\d+$/) && p !== 'api');
     if (parts.length > 0) {
       // Capitalize first letter and singularize
       const entity = parts[0];

@@ -13,7 +13,10 @@ export class ImportConfigurationsDto {
   @IsString()
   changedBy: string;
 
-  @ApiPropertyOptional({ description: 'Whether to overwrite existing configurations', default: false })
+  @ApiPropertyOptional({
+    description: 'Whether to overwrite existing configurations',
+    default: false,
+  })
   @IsOptional()
   @IsBoolean()
   overwrite?: boolean;

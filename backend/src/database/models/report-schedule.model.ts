@@ -10,7 +10,7 @@ import {
   BelongsTo,
   Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
@@ -22,8 +22,8 @@ export enum ScheduleFrequency {
   WEEKLY = 'weekly',
   MONTHLY = 'monthly',
   QUARTERLY = 'quarterly',
-  CUSTOM = 'custom'
-  }
+  CUSTOM = 'custom',
+}
 
 export interface ReportScheduleAttributes {
   id: string;
@@ -50,27 +50,30 @@ export interface ReportScheduleAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'report_schedules',
   timestamps: true,
-  underscored: false
-  ,
+  underscored: false,
   indexes: [
     {
       fields: ['createdAt'],
-      name: 'idx_report_schedule_created_at'
+      name: 'idx_report_schedule_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_report_schedule_updated_at'
-    }
-  ]})
-export class ReportSchedule extends Model<ReportScheduleAttributes> implements ReportScheduleAttributes {
+      name: 'idx_report_schedule_updated_at',
+    },
+  ],
+})
+export class ReportSchedule
+  extends Model<ReportScheduleAttributes>
+  implements ReportScheduleAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -78,51 +81,54 @@ export class ReportSchedule extends Model<ReportScheduleAttributes> implements R
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   name: string;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(ReportType)]
+      isIn: [Object.values(ReportType)],
     },
-    allowNull: false
+    allowNull: false,
   })
   reportType: ReportType;
 
   @AllowNull
   @ForeignKey(() => require('./report-template.model').ReportTemplate)
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   templateId?: string;
 
-  @BelongsTo(() => require('./report-template.model').ReportTemplate, { foreignKey: 'templateId', as: 'template' })
+  @BelongsTo(() => require('./report-template.model').ReportTemplate, {
+    foreignKey: 'templateId',
+    as: 'template',
+  })
   declare template?: any;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(ScheduleFrequency)]
+      isIn: [Object.values(ScheduleFrequency)],
     },
-    allowNull: false
+    allowNull: false,
   })
   frequency: ScheduleFrequency;
 
   @AllowNull
   @Column({
-    type: DataType.STRING(100)
+    type: DataType.STRING(100),
   })
   cronExpression?: string;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(OutputFormat)]
+      isIn: [Object.values(OutputFormat)],
     },
     allowNull: false,
-    defaultValue: OutputFormat.PDF
+    defaultValue: OutputFormat.PDF,
   })
   outputFormat: OutputFormat;
 
@@ -133,52 +139,52 @@ export class ReportSchedule extends Model<ReportScheduleAttributes> implements R
   @Column({
     type: DataType.JSON,
     allowNull: false,
-    defaultValue: []
+    defaultValue: [],
   })
   recipients: string[];
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true
+    defaultValue: true,
   })
   isActive: boolean;
 
   @AllowNull
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   lastExecutedAt?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   nextExecutionAt?: Date;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 0
+    defaultValue: 0,
   })
   executionCount: number;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 0
+    defaultValue: 0,
   })
   failureCount: number;
 
   @AllowNull
   @Column({
-    type: DataType.TEXT
+    type: DataType.TEXT,
   })
   lastError?: string;
 
   @AllowNull
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   createdBy?: string;
 
@@ -188,14 +194,15 @@ export class ReportSchedule extends Model<ReportScheduleAttributes> implements R
   @Column(DataType.DATE)
   declare updatedAt?: Date;
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: ReportSchedule) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] ReportSchedule ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] ReportSchedule ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

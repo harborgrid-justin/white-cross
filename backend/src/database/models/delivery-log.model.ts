@@ -12,7 +12,7 @@ import {
   BeforeCreate,
   BeforeUpdate,
   UpdatedAt,
-  CreatedAt
+  CreatedAt,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
@@ -21,7 +21,7 @@ export enum DeliveryChannel {
   EMAIL = 'email',
   SMS = 'sms',
   PUSH = 'push',
-  VOICE = 'voice'
+  VOICE = 'voice',
 }
 
 /**
@@ -62,10 +62,10 @@ export interface DeliveryLogAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'delivery_logs',
@@ -74,39 +74,42 @@ export interface DeliveryLogAttributes {
   indexes: [
     {
       fields: ['alertId'],
-      name: 'delivery_logs_alert_id_idx'
-  },
+      name: 'delivery_logs_alert_id_idx',
+    },
     {
       fields: ['channel'],
-      name: 'delivery_logs_channel_idx'
-  },
+      name: 'delivery_logs_channel_idx',
+    },
     {
       fields: ['success'],
-      name: 'delivery_logs_success_idx'
-  },
+      name: 'delivery_logs_success_idx',
+    },
     {
       fields: ['lastAttempt'],
-      name: 'delivery_logs_last_attempt_idx'
-  },
+      name: 'delivery_logs_last_attempt_idx',
+    },
     {
       fields: ['recipientId'],
-      name: 'delivery_logs_recipient_id_idx'
-  },
+      name: 'delivery_logs_recipient_id_idx',
+    },
     {
       fields: ['alertId', 'channel', 'recipientId'],
-      name: 'delivery_logs_alert_channel_recipient_idx'
+      name: 'delivery_logs_alert_channel_recipient_idx',
     },
     {
       fields: ['createdAt'],
-      name: 'idx_delivery_log_created_at'
+      name: 'idx_delivery_log_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_delivery_log_updated_at'
-    }
-  ]
-  })
-export class DeliveryLog extends Model<DeliveryLogAttributes> implements DeliveryLogAttributes {
+      name: 'idx_delivery_log_updated_at',
+    },
+  ],
+})
+export class DeliveryLog
+  extends Model<DeliveryLogAttributes>
+  implements DeliveryLogAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -119,11 +122,14 @@ export class DeliveryLog extends Model<DeliveryLogAttributes> implements Deliver
   @ForeignKey(() => require('./alert.model').Alert)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   alertId: string;
 
-  @BelongsTo(() => require('./alert.model').Alert, { foreignKey: 'alertId', as: 'alert' })
+  @BelongsTo(() => require('./alert.model').Alert, {
+    foreignKey: 'alertId',
+    as: 'alert',
+  })
   declare alert: any;
 
   /**
@@ -133,9 +139,9 @@ export class DeliveryLog extends Model<DeliveryLogAttributes> implements Deliver
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(DeliveryChannel)]
+      isIn: [Object.values(DeliveryChannel)],
     },
-    allowNull: false
+    allowNull: false,
   })
   declare channel: any;
 
@@ -145,11 +151,14 @@ export class DeliveryLog extends Model<DeliveryLogAttributes> implements Deliver
   @Index
   @ForeignKey(() => require('./user.model').User)
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   recipientId?: string;
 
-  @BelongsTo(() => require('./user.model').User, { foreignKey: 'recipientId', as: 'recipient' })
+  @BelongsTo(() => require('./user.model').User, {
+    foreignKey: 'recipientId',
+    as: 'recipient',
+  })
   declare recipient: any;
 
   /**
@@ -159,7 +168,7 @@ export class DeliveryLog extends Model<DeliveryLogAttributes> implements Deliver
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false
+    defaultValue: false,
   })
   success: boolean;
 
@@ -169,7 +178,7 @@ export class DeliveryLog extends Model<DeliveryLogAttributes> implements Deliver
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 1
+    defaultValue: 1,
   })
   attemptCount: number;
 
@@ -179,7 +188,7 @@ export class DeliveryLog extends Model<DeliveryLogAttributes> implements Deliver
   @Index
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   lastAttempt: Date;
 
@@ -187,7 +196,7 @@ export class DeliveryLog extends Model<DeliveryLogAttributes> implements Deliver
    * Timestamp of successful delivery
    */
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   deliveredAt?: Date;
 
@@ -195,21 +204,21 @@ export class DeliveryLog extends Model<DeliveryLogAttributes> implements Deliver
    * Error message if delivery failed
    */
   @Column({
-    type: DataType.TEXT
+    type: DataType.TEXT,
   })
   errorMessage?: string;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW
+    defaultValue: DataType.NOW,
   })
   declare createdAt?: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW
+    defaultValue: DataType.NOW,
   })
   declare updatedAt?: Date;
 
@@ -232,14 +241,15 @@ export class DeliveryLog extends Model<DeliveryLogAttributes> implements Deliver
     return timeSinceLastAttempt >= this.getBackoffMs();
   }
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: DeliveryLog) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] DeliveryLog ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] DeliveryLog ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

@@ -3,7 +3,10 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { QueryTypes } from 'sequelize';
 import { InventoryItem } from '../entities/inventory-item.entity';
-import { InventoryTransaction, InventoryTransactionType } from '../entities/inventory-transaction.entity';
+import {
+  InventoryTransaction,
+  InventoryTransactionType,
+} from '../entities/inventory-transaction.entity';
 import { StockAdjustmentDto } from '../dto/stock-adjustment.dto';
 
 export interface StockAdjustmentResult {
@@ -42,7 +45,7 @@ export class StockManagementService {
   async getCurrentStock(inventoryItemId: string): Promise<number> {
     try {
       const result = await this.transactionModel.sum('quantity', {
-        where: { inventoryItemId }
+        where: { inventoryItemId },
       });
 
       return Number(result) || 0;
@@ -72,14 +75,17 @@ export class StockManagementService {
       const currentStock = await this.getCurrentStock(id);
 
       // Create adjustment transaction
-      const transaction = await this.transactionModel.create({
-        inventoryItemId: id,
-        type: InventoryTransactionType.ADJUSTMENT,
-        quantity: adjustmentData.quantity,
-        reason: adjustmentData.reason,
-        notes: `Stock adjusted from ${currentStock} to ${currentStock + adjustmentData.quantity}. Reason: ${adjustmentData.reason}`,
-        performedById: adjustmentData.performedById,
-      } as any, { transaction: sequelizeTransaction });
+      const transaction = await this.transactionModel.create(
+        {
+          inventoryItemId: id,
+          type: InventoryTransactionType.ADJUSTMENT,
+          quantity: adjustmentData.quantity,
+          reason: adjustmentData.reason,
+          notes: `Stock adjusted from ${currentStock} to ${currentStock + adjustmentData.quantity}. Reason: ${adjustmentData.reason}`,
+          performedById: adjustmentData.performedById,
+        } as any,
+        { transaction: sequelizeTransaction },
+      );
 
       await sequelizeTransaction.commit();
 
@@ -113,15 +119,18 @@ export class StockManagementService {
     try {
       const offset = (page - 1) * limit;
 
-      const { rows: transactions, count: total } = await this.transactionModel.findAndCountAll({
-        where: { inventoryItemId },
-        order: [['createdAt', 'DESC']],
-        limit,
-        offset,
-      });
+      const { rows: transactions, count: total } =
+        await this.transactionModel.findAndCountAll({
+          where: { inventoryItemId },
+          order: [['createdAt', 'DESC']],
+          limit,
+          offset,
+        });
 
       // Calculate running stock totals
-      const history: (InventoryTransaction & { stockAfterTransaction: number })[] = [];
+      const history: (InventoryTransaction & {
+        stockAfterTransaction: number;
+      })[] = [];
 
       // Get all transactions in chronological order to calculate running totals
       const allTransactions = await this.transactionModel.findAll({
@@ -217,7 +226,9 @@ export class StockManagementService {
         ORDER BY COALESCE(stock.total_quantity, 0) ASC
       `;
 
-      const [lowStockItems] = await this.sequelize.query(query, { type: QueryTypes.SELECT });
+      const [lowStockItems] = await this.sequelize.query(query, {
+        type: QueryTypes.SELECT,
+      });
       return lowStockItems as any[];
     } catch (error) {
       this.logger.error('Error getting low stock items:', error);
@@ -247,7 +258,9 @@ export class StockManagementService {
         ORDER BY i.name ASC
       `;
 
-      const [outOfStockItems] = await this.sequelize.query(query, { type: QueryTypes.SELECT });
+      const [outOfStockItems] = await this.sequelize.query(query, {
+        type: QueryTypes.SELECT,
+      });
       return outOfStockItems as any[];
     } catch (error) {
       this.logger.error('Error getting out of stock items:', error);

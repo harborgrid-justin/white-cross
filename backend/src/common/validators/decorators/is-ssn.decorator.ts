@@ -135,7 +135,7 @@ export function IsSSN(
   options?: SSNValidationOptions,
   validationOptions?: ValidationOptions,
 ) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'isSSN',
       target: object.constructor,

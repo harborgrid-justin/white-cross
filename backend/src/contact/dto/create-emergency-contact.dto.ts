@@ -14,7 +14,7 @@ import {
   IsArray,
   ArrayMinSize,
   ArrayMaxSize,
-  IsIn
+  IsIn,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
@@ -22,37 +22,49 @@ import {
   VerificationStatus,
   PreferredContactMethod,
   VALID_NOTIFICATION_CHANNELS,
-  VALID_RELATIONSHIPS
+  VALID_RELATIONSHIPS,
 } from '../enums';
 
 export class ContactCreateEmergencyDto {
   @ApiProperty({
     example: '123e4567-e89b-12d3-a456-426614174000',
-    description: 'Student ID this contact belongs to'
+    description: 'Student ID this contact belongs to',
   })
   @IsUUID()
   studentId: string;
 
-  @ApiProperty({ example: 'Jane', description: 'First name', minLength: 1, maxLength: 100 })
+  @ApiProperty({
+    example: 'Jane',
+    description: 'First name',
+    minLength: 1,
+    maxLength: 100,
+  })
   @IsString()
   @Length(1, 100)
   @Matches(/^[a-zA-Z\s'-]+$/, {
-    message: 'First name can only contain letters, spaces, hyphens, and apostrophes'
+    message:
+      'First name can only contain letters, spaces, hyphens, and apostrophes',
   })
   firstName: string;
 
-  @ApiProperty({ example: 'Doe', description: 'Last name', minLength: 1, maxLength: 100 })
+  @ApiProperty({
+    example: 'Doe',
+    description: 'Last name',
+    minLength: 1,
+    maxLength: 100,
+  })
   @IsString()
   @Length(1, 100)
   @Matches(/^[a-zA-Z\s'-]+$/, {
-    message: 'Last name can only contain letters, spaces, hyphens, and apostrophes'
+    message:
+      'Last name can only contain letters, spaces, hyphens, and apostrophes',
   })
   lastName: string;
 
   @ApiProperty({
     example: 'PARENT',
     description: 'Relationship to student',
-    enum: VALID_RELATIONSHIPS
+    enum: VALID_RELATIONSHIPS,
   })
   @IsString()
   @IsIn(VALID_RELATIONSHIPS)
@@ -62,7 +74,7 @@ export class ContactCreateEmergencyDto {
     example: '+1-555-123-4567',
     description: 'Phone number (required)',
     minLength: 10,
-    maxLength: 20
+    maxLength: 20,
   })
   @IsString()
   @Length(10, 20)
@@ -70,7 +82,7 @@ export class ContactCreateEmergencyDto {
 
   @ApiPropertyOptional({
     example: 'jane.doe@example.com',
-    description: 'Email address (optional)'
+    description: 'Email address (optional)',
   })
   @IsOptional()
   @IsEmail()
@@ -79,7 +91,7 @@ export class ContactCreateEmergencyDto {
 
   @ApiPropertyOptional({
     example: '123 Main St, Springfield, IL 62701',
-    description: 'Physical address'
+    description: 'Physical address',
   })
   @IsOptional()
   @IsString()
@@ -90,7 +102,7 @@ export class ContactCreateEmergencyDto {
     enum: ContactPriority,
     example: ContactPriority.PRIMARY,
     description: 'Contact priority level',
-    default: ContactPriority.PRIMARY
+    default: ContactPriority.PRIMARY,
   })
   @IsEnum(ContactPriority)
   priority: ContactPriority;
@@ -98,7 +110,7 @@ export class ContactCreateEmergencyDto {
   @ApiPropertyOptional({
     example: true,
     description: 'Active status',
-    default: true
+    default: true,
   })
   @IsOptional()
   @IsBoolean()
@@ -107,7 +119,7 @@ export class ContactCreateEmergencyDto {
   @ApiPropertyOptional({
     enum: PreferredContactMethod,
     example: PreferredContactMethod.SMS,
-    description: 'Preferred contact method'
+    description: 'Preferred contact method',
   })
   @IsOptional()
   @IsEnum(PreferredContactMethod)
@@ -117,7 +129,7 @@ export class ContactCreateEmergencyDto {
     enum: VerificationStatus,
     example: VerificationStatus.UNVERIFIED,
     description: 'Verification status',
-    default: VerificationStatus.UNVERIFIED
+    default: VerificationStatus.UNVERIFIED,
   })
   @IsOptional()
   @IsEnum(VerificationStatus)
@@ -127,7 +139,7 @@ export class ContactCreateEmergencyDto {
     example: ['sms', 'email'],
     description: 'Notification channels',
     isArray: true,
-    enum: VALID_NOTIFICATION_CHANNELS
+    enum: VALID_NOTIFICATION_CHANNELS,
   })
   @IsOptional()
   @IsArray()
@@ -139,7 +151,7 @@ export class ContactCreateEmergencyDto {
   @ApiPropertyOptional({
     example: true,
     description: 'Whether contact can pick up student',
-    default: false
+    default: false,
   })
   @IsOptional()
   @IsBoolean()
@@ -147,7 +159,7 @@ export class ContactCreateEmergencyDto {
 
   @ApiPropertyOptional({
     example: 'Available after 3 PM',
-    description: 'Additional notes'
+    description: 'Additional notes',
   })
   @IsOptional()
   @IsString()

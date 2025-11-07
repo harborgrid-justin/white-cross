@@ -29,17 +29,17 @@ import {
     DiscoveryExampleService,
     DiscoveryMetricsService,
     DiscoveryCacheService,
-    
+
     // Guards and filters
     AdminDiscoveryGuard,
     DiscoveryRateLimitGuard,
     DiscoveryExceptionFilter,
-    
+
     // Interceptors
     DiscoveryLoggingInterceptor,
     DiscoveryCacheInterceptor,
     DiscoveryMetricsInterceptor,
-    
+
     // Example services to demonstrate discovery functionality
     ExperimentalHealthService,
     AiDiagnosisService,
@@ -54,17 +54,17 @@ import {
     DiscoveryExampleService,
     DiscoveryMetricsService,
     DiscoveryCacheService,
-    
+
     // Guards and filters
     AdminDiscoveryGuard,
     DiscoveryRateLimitGuard,
     DiscoveryExceptionFilter,
-    
+
     // Interceptors
     DiscoveryLoggingInterceptor,
     DiscoveryCacheInterceptor,
     DiscoveryMetricsInterceptor,
-    
+
     // Example services
     ExperimentalHealthService,
     AiDiagnosisService,

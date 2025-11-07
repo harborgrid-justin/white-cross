@@ -46,11 +46,12 @@ export class QueryLoggerService implements OnModuleInit {
   private recentQueries: Array<{ signature: string; timestamp: number }> = [];
 
   // Query tracking
-  private activeQueries = new Map<string, { startTime: number; options: any }>();
+  private activeQueries = new Map<
+    string,
+    { startTime: number; options: any }
+  >();
 
-  constructor(
-    @InjectConnection() private readonly sequelize: Sequelize
-  ) {}
+  constructor(@InjectConnection() private readonly sequelize: Sequelize) {}
 
   async onModuleInit(): Promise<void> {
     this.logger.log('Initializing Query Logger Service');
@@ -69,7 +70,7 @@ export class QueryLoggerService implements OnModuleInit {
 
       this.activeQueries.set(queryId, {
         startTime: query.startTime,
-        options
+        options,
       });
     });
 
@@ -93,7 +94,8 @@ export class QueryLoggerService implements OnModuleInit {
       this.detectNPlusOne(options, duration);
 
       // Clean up old data periodically
-      if (Math.random() < 0.01) { // 1% chance on each query
+      if (Math.random() < 0.01) {
+        // 1% chance on each query
         this.cleanupOldData();
       }
     });
@@ -113,12 +115,13 @@ export class QueryLoggerService implements OnModuleInit {
       avgDuration: 0,
       maxDuration: 0,
       minDuration: Infinity,
-      lastExecuted: new Date()
+      lastExecuted: new Date(),
     };
 
     existingStats.count++;
     existingStats.totalDuration += duration;
-    existingStats.avgDuration = existingStats.totalDuration / existingStats.count;
+    existingStats.avgDuration =
+      existingStats.totalDuration / existingStats.count;
     existingStats.maxDuration = Math.max(existingStats.maxDuration, duration);
     existingStats.minDuration = Math.min(existingStats.minDuration, duration);
     existingStats.lastExecuted = new Date();
@@ -128,7 +131,7 @@ export class QueryLoggerService implements OnModuleInit {
     // Track for N+1 detection
     this.recentQueries.push({
       signature,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
@@ -141,7 +144,7 @@ export class QueryLoggerService implements OnModuleInit {
       duration,
       timestamp: new Date(),
       model: options.model?.name,
-      bindings: options.bind
+      bindings: options.bind,
     };
 
     this.slowQueries.push(slowQuery);
@@ -152,15 +155,12 @@ export class QueryLoggerService implements OnModuleInit {
     }
 
     // Log slow query warning
-    this.logger.warn(
-      `Slow query detected (${duration}ms)`,
-      {
-        sql: slowQuery.sql,
-        model: slowQuery.model,
-        duration,
-        threshold: this.SLOW_QUERY_THRESHOLD
-      }
-    );
+    this.logger.warn(`Slow query detected (${duration}ms)`, {
+      sql: slowQuery.sql,
+      model: slowQuery.model,
+      duration,
+      threshold: this.SLOW_QUERY_THRESHOLD,
+    });
   }
 
   /**
@@ -172,29 +172,26 @@ export class QueryLoggerService implements OnModuleInit {
 
     // Clean up old entries from recent queries
     this.recentQueries = this.recentQueries.filter(
-      q => now - q.timestamp < this.N_PLUS_ONE_WINDOW
+      (q) => now - q.timestamp < this.N_PLUS_ONE_WINDOW,
     );
 
     // Count similar queries in the time window
     const similarQueries = this.recentQueries.filter(
-      q => q.signature === signature
+      (q) => q.signature === signature,
     );
 
     if (similarQueries.length >= this.N_PLUS_ONE_THRESHOLD) {
-      this.logger.warn(
-        `Possible N+1 query pattern detected`,
-        {
-          count: similarQueries.length,
-          window: `${this.N_PLUS_ONE_WINDOW}ms`,
-          sql: options.sql?.substring(0, 200),
-          model: options.model?.name,
-          suggestion: 'Consider using eager loading with include/associations'
-        }
-      );
+      this.logger.warn(`Possible N+1 query pattern detected`, {
+        count: similarQueries.length,
+        window: `${this.N_PLUS_ONE_WINDOW}ms`,
+        sql: options.sql?.substring(0, 200),
+        model: options.model?.name,
+        suggestion: 'Consider using eager loading with include/associations',
+      });
 
       // Clear the detected pattern to avoid spam
       this.recentQueries = this.recentQueries.filter(
-        q => q.signature !== signature
+        (q) => q.signature !== signature,
       );
     }
   }
@@ -205,16 +202,18 @@ export class QueryLoggerService implements OnModuleInit {
   private normalizeQuery(sql: string): string {
     if (!sql) return '';
 
-    return sql
-      // Remove parameter values
-      .replace(/\$\d+/g, '?')
-      .replace(/'[^']*'/g, "'?'")
-      .replace(/"\d+"/g, '"?"')
-      .replace(/\d+/g, '?')
-      // Normalize whitespace
-      .replace(/\s+/g, ' ')
-      .trim()
-      .toLowerCase();
+    return (
+      sql
+        // Remove parameter values
+        .replace(/\$\d+/g, '?')
+        .replace(/'[^']*'/g, "'?'")
+        .replace(/"\d+"/g, '"?"')
+        .replace(/\d+/g, '?')
+        // Normalize whitespace
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase()
+    );
   }
 
   /**
@@ -233,12 +232,12 @@ export class QueryLoggerService implements OnModuleInit {
 
     // Clean up old recent queries
     this.recentQueries = this.recentQueries.filter(
-      q => now - q.timestamp < ONE_HOUR
+      (q) => now - q.timestamp < ONE_HOUR,
     );
 
     // Keep only recent slow queries (last hour)
     this.slowQueries = this.slowQueries.filter(
-      q => now - q.timestamp.getTime() < ONE_HOUR
+      (q) => now - q.timestamp.getTime() < ONE_HOUR,
     );
 
     // Limit query stats size (keep top 1000 by execution count)
@@ -271,15 +270,17 @@ export class QueryLoggerService implements OnModuleInit {
       .slice(0, 10)
       .map(([signature, metrics]) => ({ signature, metrics }));
 
-    const totalQueries = Array.from(this.queryStats.values())
-      .reduce((sum, stats) => sum + stats.count, 0);
+    const totalQueries = Array.from(this.queryStats.values()).reduce(
+      (sum, stats) => sum + stats.count,
+      0,
+    );
 
     return {
       totalQueries,
       slowQueries: [...this.slowQueries].reverse(), // Most recent first
       topSlowQueries: sortedByDuration,
       topFrequentQueries: sortedByFrequency,
-      activeQueries: this.activeQueries.size
+      activeQueries: this.activeQueries.size,
     };
   }
 
@@ -301,15 +302,19 @@ export class QueryLoggerService implements OnModuleInit {
   /**
    * Get currently executing queries
    */
-  getActiveQueries(): Array<{ queryId: string; duration: number; options: any }> {
+  getActiveQueries(): Array<{
+    queryId: string;
+    duration: number;
+    options: any;
+  }> {
     const now = Date.now();
     return Array.from(this.activeQueries.entries()).map(([queryId, data]) => ({
       queryId,
       duration: now - data.startTime,
       options: {
         sql: data.options.sql?.substring(0, 200),
-        model: data.options.model?.name
-      }
+        model: data.options.model?.name,
+      },
     }));
   }
 

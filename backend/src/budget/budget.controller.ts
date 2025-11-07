@@ -58,7 +58,8 @@ export class BudgetController {
   @Get('categories')
   @ApiOperation({
     summary: 'Get budget categories',
-    description: 'Retrieves budget categories for a specific fiscal year with optional filtering',
+    description:
+      'Retrieves budget categories for a specific fiscal year with optional filtering',
   })
   @ApiQuery({
     name: 'fiscalYear',

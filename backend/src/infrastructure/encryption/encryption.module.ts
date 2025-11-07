@@ -36,13 +36,7 @@ import { KeyManagementService } from './key-management.service';
     ConfigModule,
     CacheModule, // For Redis integration
   ],
-  providers: [
-    EncryptionService,
-    KeyManagementService,
-  ],
-  exports: [
-    EncryptionService,
-    KeyManagementService,
-  ],
+  providers: [EncryptionService, KeyManagementService],
+  exports: [EncryptionService, KeyManagementService],
 })
 export class EncryptionModule {}

@@ -1,4 +1,9 @@
-import { Injectable, Logger, OnModuleInit, OnApplicationShutdown } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  OnApplicationShutdown,
+} from '@nestjs/common';
 import { DiscoveryService, Reflector } from '@nestjs/core';
 import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
 import { Module } from '@nestjs/core/injector/module';
@@ -15,7 +20,10 @@ interface GCOptimizationOptions {
 
 interface GCStrategy {
   name: string;
-  condition: (memoryUsage: NodeJS.MemoryUsage, options: any) => boolean | Promise<boolean>;
+  condition: (
+    memoryUsage: NodeJS.MemoryUsage,
+    options: any,
+  ) => boolean | Promise<boolean>;
   execute: (options: any) => Promise<void>;
   priority: number;
 }
@@ -40,7 +48,9 @@ interface OptimizationResult {
 }
 
 @Injectable()
-export class GCOptimizationService implements OnModuleInit, OnApplicationShutdown {
+export class GCOptimizationService
+  implements OnModuleInit, OnApplicationShutdown
+{
   private readonly logger = new Logger(GCOptimizationService.name);
   private gcTimer: NodeJS.Timeout | null = null;
   private readonly gcStrategies = new Map<string, GCStrategy>();
@@ -50,7 +60,7 @@ export class GCOptimizationService implements OnModuleInit, OnApplicationShutdow
     averageCollectionTime: 0,
     successRate: 100,
     lastOptimization: new Date(),
-    heapUtilization: 0
+    heapUtilization: 0,
   };
   private optimizationHistory: OptimizationResult[] = [];
   private gcProviders = new Set<any>();
@@ -60,7 +70,7 @@ export class GCOptimizationService implements OnModuleInit, OnApplicationShutdow
     private readonly discoveryService: DiscoveryService,
     private readonly reflector: Reflector,
     private readonly smartGCService: SmartGarbageCollectionService,
-    private readonly leakDetectionService: MemoryLeakDetectionService
+    private readonly leakDetectionService: MemoryLeakDetectionService,
   ) {
     this.initializeDefaultStrategies();
   }
@@ -91,11 +101,15 @@ export class GCOptimizationService implements OnModuleInit, OnApplicationShutdow
       for (const wrapper of allWrappers) {
         if (this.isGCOptimizable(wrapper)) {
           this.gcProviders.add(wrapper.instance);
-          this.logger.debug(`Discovered GC optimizable provider: ${wrapper.name}`);
+          this.logger.debug(
+            `Discovered GC optimizable provider: ${wrapper.name}`,
+          );
         }
       }
 
-      this.logger.log(`Discovered ${this.gcProviders.size} GC optimizable providers`);
+      this.logger.log(
+        `Discovered ${this.gcProviders.size} GC optimizable providers`,
+      );
     } catch (error) {
       this.logger.error('Error discovering GC providers', error);
     }
@@ -110,10 +124,18 @@ export class GCOptimizationService implements OnModuleInit, OnApplicationShutdow
     }
 
     const gcMetadata = this.reflector.get('gc-optimization', wrapper.metatype);
-    const memoryIntensive = this.reflector.get('memory-intensive', wrapper.metatype);
+    const memoryIntensive = this.reflector.get(
+      'memory-intensive',
+      wrapper.metatype,
+    );
     const leakProne = this.reflector.get('leak-prone', wrapper.metatype);
 
-    return gcMetadata || memoryIntensive || leakProne || this.hasGCMethods(wrapper.instance);
+    return (
+      gcMetadata ||
+      memoryIntensive ||
+      leakProne ||
+      this.hasGCMethods(wrapper.instance)
+    );
   }
 
   /**
@@ -121,7 +143,7 @@ export class GCOptimizationService implements OnModuleInit, OnApplicationShutdow
    */
   private hasGCMethods(instance: any): boolean {
     const gcMethods = ['cleanup', 'clearCache', 'dispose', 'destroy', 'reset'];
-    return gcMethods.some(method => typeof instance[method] === 'function');
+    return gcMethods.some((method) => typeof instance[method] === 'function');
   }
 
   /**
@@ -141,7 +163,7 @@ export class GCOptimizationService implements OnModuleInit, OnApplicationShutdow
           global.gc();
         }
         await this.clearProviderCaches();
-      }
+      },
     });
 
     // Heap fragmentation strategy
@@ -159,7 +181,7 @@ export class GCOptimizationService implements OnModuleInit, OnApplicationShutdow
           global.gc();
         }
         await this.compactProviderData();
-      }
+      },
     });
 
     // Leak detection strategy
@@ -178,7 +200,7 @@ export class GCOptimizationService implements OnModuleInit, OnApplicationShutdow
             await this.optimizeProvider(provider);
           }
         }
-      }
+      },
     });
 
     // Periodic cleanup strategy
@@ -186,12 +208,13 @@ export class GCOptimizationService implements OnModuleInit, OnApplicationShutdow
       name: 'Periodic Cleanup',
       priority: 4,
       condition: () => {
-        const timeSinceLastGC = Date.now() - this.gcMetrics.lastOptimization.getTime();
+        const timeSinceLastGC =
+          Date.now() - this.gcMetrics.lastOptimization.getTime();
         return timeSinceLastGC > 300000; // 5 minutes
       },
       execute: async () => {
         await this.performLightweightCleanup();
-      }
+      },
     });
   }
 
@@ -204,13 +227,17 @@ export class GCOptimizationService implements OnModuleInit, OnApplicationShutdow
       await this.performOptimization();
     }, interval);
 
-    this.logger.log(`GC optimization scheduler started (interval: ${interval}ms)`);
+    this.logger.log(
+      `GC optimization scheduler started (interval: ${interval}ms)`,
+    );
   }
 
   /**
    * Perform GC optimization based on current conditions
    */
-  async performOptimization(options?: Partial<GCOptimizationOptions>): Promise<OptimizationResult[]> {
+  async performOptimization(
+    options?: Partial<GCOptimizationOptions>,
+  ): Promise<OptimizationResult[]> {
     if (this.isOptimizing) {
       this.logger.debug('Optimization already in progress, skipping');
       return [];
@@ -224,8 +251,9 @@ export class GCOptimizationService implements OnModuleInit, OnApplicationShutdow
       const startTime = Date.now();
 
       // Sort strategies by priority
-      const sortedStrategies = Array.from(this.gcStrategies.entries())
-        .sort(([,a], [,b]) => a.priority - b.priority);
+      const sortedStrategies = Array.from(this.gcStrategies.entries()).sort(
+        ([, a], [, b]) => a.priority - b.priority,
+      );
 
       for (const [name, strategy] of sortedStrategies) {
         try {
@@ -246,11 +274,13 @@ export class GCOptimizationService implements OnModuleInit, OnApplicationShutdow
               memoryAfter: strategyMemoryAfter,
               memoryFreed,
               executionTime,
-              success: true
+              success: true,
             };
 
             results.push(result);
-            this.logger.debug(`GC strategy '${name}' freed ${memoryFreed} bytes in ${executionTime}ms`);
+            this.logger.debug(
+              `GC strategy '${name}' freed ${memoryFreed} bytes in ${executionTime}ms`,
+            );
           }
         } catch (error) {
           const result: OptimizationResult = {
@@ -260,7 +290,7 @@ export class GCOptimizationService implements OnModuleInit, OnApplicationShutdow
             memoryFreed: 0,
             executionTime: 0,
             success: false,
-            error: error.message
+            error: error.message,
           };
           results.push(result);
           this.logger.error(`GC strategy '${name}' failed:`, error);
@@ -280,8 +310,9 @@ export class GCOptimizationService implements OnModuleInit, OnApplicationShutdow
       const memoryAfter = process.memoryUsage();
       const totalMemoryFreed = memoryBefore.heapUsed - memoryAfter.heapUsed;
 
-      this.logger.log(`GC optimization completed: ${totalMemoryFreed} bytes freed in ${totalTime}ms`);
-
+      this.logger.log(
+        `GC optimization completed: ${totalMemoryFreed} bytes freed in ${totalTime}ms`,
+      );
     } catch (error) {
       this.logger.error('Error during GC optimization:', error);
     } finally {
@@ -333,7 +364,7 @@ export class GCOptimizationService implements OnModuleInit, OnApplicationShutdow
     const controllers = this.discoveryService.getControllers();
     const allWrappers = [...providers, ...controllers];
 
-    const wrapper = allWrappers.find(w => w.name === providerName);
+    const wrapper = allWrappers.find((w) => w.name === providerName);
     return wrapper?.instance || null;
   }
 
@@ -374,18 +405,26 @@ export class GCOptimizationService implements OnModuleInit, OnApplicationShutdow
    * Update GC metrics
    */
   private updateMetrics(results: OptimizationResult[]): void {
-    const successfulResults = results.filter(r => r.success);
-    const totalMemoryFreed = successfulResults.reduce((sum, r) => sum + r.memoryFreed, 0);
-    const averageTime = successfulResults.reduce((sum, r) => sum + r.executionTime, 0) / successfulResults.length || 0;
+    const successfulResults = results.filter((r) => r.success);
+    const totalMemoryFreed = successfulResults.reduce(
+      (sum, r) => sum + r.memoryFreed,
+      0,
+    );
+    const averageTime =
+      successfulResults.reduce((sum, r) => sum + r.executionTime, 0) /
+        successfulResults.length || 0;
 
     this.gcMetrics.totalCollections += results.length;
     this.gcMetrics.memoryFreed += totalMemoryFreed;
-    this.gcMetrics.averageCollectionTime = (this.gcMetrics.averageCollectionTime + averageTime) / 2;
-    this.gcMetrics.successRate = (successfulResults.length / results.length) * 100;
+    this.gcMetrics.averageCollectionTime =
+      (this.gcMetrics.averageCollectionTime + averageTime) / 2;
+    this.gcMetrics.successRate =
+      (successfulResults.length / results.length) * 100;
     this.gcMetrics.lastOptimization = new Date();
 
     const memoryUsage = process.memoryUsage();
-    this.gcMetrics.heapUtilization = (memoryUsage.heapUsed / memoryUsage.heapTotal) * 100;
+    this.gcMetrics.heapUtilization =
+      (memoryUsage.heapUsed / memoryUsage.heapTotal) * 100;
   }
 
   /**
@@ -393,10 +432,10 @@ export class GCOptimizationService implements OnModuleInit, OnApplicationShutdow
    */
   private async performFinalOptimization(): Promise<void> {
     this.logger.log('Performing final GC optimization before shutdown');
-    
+
     // Force cleanup of all providers
     await this.clearProviderCaches();
-    
+
     // Trigger garbage collection if available
     if (global.gc) {
       global.gc();
@@ -445,14 +484,16 @@ export class GCOptimizationService implements OnModuleInit, OnApplicationShutdow
     const memoryUsage = process.memoryUsage();
     return {
       ...memoryUsage,
-      heapUtilization: (memoryUsage.heapUsed / memoryUsage.heapTotal) * 100
+      heapUtilization: (memoryUsage.heapUsed / memoryUsage.heapTotal) * 100,
     };
   }
 
   /**
    * Force immediate optimization
    */
-  async forceOptimization(options?: Partial<GCOptimizationOptions>): Promise<OptimizationResult[]> {
+  async forceOptimization(
+    options?: Partial<GCOptimizationOptions>,
+  ): Promise<OptimizationResult[]> {
     this.logger.log('Forcing immediate GC optimization');
     return await this.performOptimization(options);
   }

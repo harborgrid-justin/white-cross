@@ -10,7 +10,14 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { ChronicConditionService } from './chronic-condition.service';
 import {
   ChronicConditionCreateDto,
@@ -69,7 +76,8 @@ export class ChronicConditionController {
   @Get('student/:studentId')
   @ApiOperation({
     summary: 'Get all chronic conditions for a student',
-    description: 'Retrieves all chronic conditions associated with a specific student',
+    description:
+      'Retrieves all chronic conditions associated with a specific student',
   })
   @ApiParam({ name: 'studentId', description: 'Student UUID' })
   @ApiQuery({
@@ -88,14 +96,15 @@ export class ChronicConditionController {
   ) {
     return this.chronicConditionService.getStudentChronicConditions(
       studentId,
-      includeInactive === true || includeInactive === 'true' as any,
+      includeInactive === true || includeInactive === ('true' as any),
     );
   }
 
   @Put(':id')
   @ApiOperation({
     summary: 'Update chronic condition',
-    description: 'Updates an existing chronic condition record with change tracking',
+    description:
+      'Updates an existing chronic condition record with change tracking',
   })
   @ApiParam({ name: 'id', description: 'Chronic condition UUID' })
   @ApiResponse({
@@ -145,8 +154,7 @@ export class ChronicConditionController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Search chronic conditions',
-    description:
-      'Advanced search with multi-criteria filtering and pagination',
+    description: 'Advanced search with multi-criteria filtering and pagination',
   })
   @ApiResponse({
     status: 200,
@@ -165,7 +173,8 @@ export class ChronicConditionController {
   @Get('reviews/due')
   @ApiOperation({
     summary: 'Get conditions requiring review',
-    description: 'Retrieves conditions with care plans due for review within specified days',
+    description:
+      'Retrieves conditions with care plans due for review within specified days',
   })
   @ApiQuery({
     name: 'daysAhead',
@@ -230,10 +239,7 @@ export class ChronicConditionController {
     description: 'Care plan successfully updated',
   })
   @ApiResponse({ status: 404, description: 'Chronic condition not found' })
-  updateCarePlan(
-    @Param('id') id: string,
-    @Body() dto: UpdateCarePlanDto,
-  ) {
+  updateCarePlan(@Param('id') id: string, @Body() dto: UpdateCarePlanDto) {
     return this.chronicConditionService.updateCarePlan(id, dto.carePlan);
   }
 
