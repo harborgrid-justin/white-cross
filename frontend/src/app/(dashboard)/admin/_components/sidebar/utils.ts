@@ -20,11 +20,11 @@ export function getStatusColor(status: string | undefined): string {
 /**
  * Get badge variant for status
  */
-export function getStatusBadgeVariant(status: string | undefined): "default" | "secondary" | "success" | "danger" | "warning" | "info" {
+export function getStatusBadgeVariant(status: string | undefined): "default" | "secondary" | "success" | "error" | "warning" | "info" {
   switch (status) {
     case 'success': return 'success';
     case 'warning': return 'warning';
-    case 'error': return 'danger';
+    case 'error': return 'error';
     case 'active': return 'info';
     default: return 'secondary';
   }

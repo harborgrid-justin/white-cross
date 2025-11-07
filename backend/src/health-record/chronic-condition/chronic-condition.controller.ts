@@ -27,7 +27,7 @@ import { ChronicCondition } from '../../database/models/chronic-condition.model'
 @ApiTags('chronic-conditions')
 @ApiBearerAuth()
 @Controller('chronic-conditions')
-export class ChronicConditionController {
+export class HealthRecordChronicConditionController {
   constructor(
     private readonly chronicConditionService: ChronicConditionService,
   ) {}

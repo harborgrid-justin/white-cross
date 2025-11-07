@@ -189,7 +189,7 @@ import {
   ConfigCategory,
   TrainingCategory,
   MetricType,
-} from '../../types/administration';
+} from '../../types/domain/administration';
 
 // ==================== VALIDATION SCHEMAS ====================
 

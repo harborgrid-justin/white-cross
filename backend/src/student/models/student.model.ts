@@ -178,7 +178,7 @@ export class Student extends Model {
   /**
    * Assigned nurse ID (foreign key to users table)
    */
-  @ForeignKey(() => require('../database/models/user.model').User)
+  @ForeignKey(() => require('../../database/models/user.model').User)
   @Column({
     type: DataType.UUID,
     allowNull: true,

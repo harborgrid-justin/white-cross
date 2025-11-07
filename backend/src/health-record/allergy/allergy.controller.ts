@@ -42,7 +42,7 @@ import { UserRole } from '../../database/models/user.model';
 @Controller('health-records/allergies')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-export class AllergyController {
+export class HealthRecordAllergyController {
   constructor(private readonly allergyService: AllergyService) {}
 
   /**

@@ -76,9 +76,9 @@ export interface Migration {
  * Table column definition for migrations
  */
 export interface MigrationColumnDefinition {
-  type: any;
+  type: unknown;
   allowNull?: boolean;
-  defaultValue?: any;
+  defaultValue?: unknown;
   primaryKey?: boolean;
   autoIncrement?: boolean;
   unique?: boolean | string;
@@ -89,7 +89,7 @@ export interface MigrationColumnDefinition {
   onUpdate?: string;
   onDelete?: string;
   comment?: string;
-  validate?: Record<string, any>;
+  validate?: Record<string, unknown>;
 }
 
 /**
