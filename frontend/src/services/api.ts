@@ -14,32 +14,153 @@
  * \`\`\`
  */
 
-// Re-export all API modules - using wildcards except where conflicts occur
+// Re-export all API modules - using explicit exports to avoid conflicts
+
+// Appointments API
 export * from './modules/appointmentsApi';
+
+// Students API
 export * from './modules/studentsApi';
+
+// Medications API
 export * from './modules/medicationsApi';
+
+// Access Control API
 export * from './modules/accessControlApi';
-export * from './modules/analyticsApi';
-export * from './modules/auditApi';
+
+// Analytics API - Export only unique types to avoid conflicts
+export {
+  analyticsApi,
+  AnalyticsApi,
+  createAnalyticsApi,
+  healthAnalytics,
+  incidentAnalytics,
+  medicationAnalytics,
+  appointmentAnalytics,
+  dashboardAnalytics,
+  reportsAnalytics,
+  advancedAnalytics,
+  analyticsCache,
+  CacheKeys,
+  CacheTTL
+} from './modules/analyticsApi';
+
+// Audit API - Primary source for audit types
+export {
+  auditApi,
+  AuditApi,
+  createAuditApi,
+  type AuditLog,
+  type PHIAccessLog,
+  type AuditStatistics,
+  type UserActivity,
+  type SecurityAnalysis,
+  type ComplianceReport,
+  type Anomaly,
+  type SessionAudit,
+  type DataAccessLog,
+  type AuditFilters,
+  type PHIAccessFilters
+} from './modules/auditApi';
+
+// Auth API
 export * from './modules/authApi';
-export * from './modules/broadcastsApi';
+
+// Broadcasts API - Primary source for broadcast types
+export {
+  broadcastsApi,
+  BroadcastsApi,
+  createBroadcastsApi,
+  type Broadcast,
+  type CreateBroadcastRequest,
+  type UpdateBroadcastRequest,
+  type BroadcastDelivery,
+  type BroadcastStatistics,
+  type BroadcastFilters
+} from './modules/broadcastsApi';
+
+// Budget API
 export * from './modules/budgetApi';
+
+// Communication API
 export * from './modules/communicationApi';
+
+// Compliance API
 export * from './modules/complianceApi';
+
+// Contacts API
 export * from './modules/contactsApi';
+
+// Dashboard API
 export * from './modules/dashboardApi';
+
+// Documents API
 export * from './modules/documentsApi';
+
+// Emergency Contacts API
 export * from './modules/emergencyContactsApi';
+
+// Incidents API
 export * from './modules/incidentsApi';
-export * from './modules/integrationApi';
+
+// Integration API - Primary source for integration types
+export {
+  integrationApi,
+  IntegrationApi,
+  createIntegrationApi,
+  type Integration,
+  type IntegrationType,
+  type IntegrationStatus,
+  type IntegrationLog,
+  type CreateIntegrationRequest,
+  type UpdateIntegrationRequest,
+  type ConnectionTestResult,
+  type SyncResult,
+  type SyncStatus,
+  type IntegrationStatistics,
+  type IntegrationSettings,
+  type LogFilters
+} from './modules/integrationApi';
+
+// Inventory API
 export * from './modules/inventoryApi';
-export * from './modules/messagesApi';
+
+// Messages API - Primary source for message types
+export {
+  messagesApi,
+  MessagesApi,
+  createMessagesApi,
+  type Message,
+  type CreateMessageRequest,
+  type UpdateMessageRequest,
+  type MessageTemplate,
+  type CreateTemplateRequest,
+  type DeliveryStatus,
+  type MessageStatistics,
+  type MessageFilters,
+  type MessagePriority,
+  type RecipientType
+} from './modules/messagesApi';
+
+// MFA API
 export * from './modules/mfaApi';
+
+// Purchase Order API
 export * from './modules/purchaseOrderApi';
+
+// Reports API
 export * from './modules/reportsApi';
+
+// Student Management API
 export * from './modules/studentManagementApi';
+
+// System API
 export * from './modules/systemApi';
+
+// Users API
 export * from './modules/usersApi';
+
+// Vendor API
 export * from './modules/vendorApi';
 
 // Export main API services, but avoid duplicate type exports

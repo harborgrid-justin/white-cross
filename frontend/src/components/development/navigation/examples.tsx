@@ -25,14 +25,14 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import BackButton, { IconBackButton, BackButtonWithConfirmation } from '../../ui/buttons/BackButton';
 import Breadcrumbs, { BreadcrumbItemComponent } from '../../ui/navigation/Breadcrumbs';
-import { useNavigationState } from '../../../hooks/utilities/useRouteState';
-import { useAuthContext } from '../../../hooks/utilities/AuthContext';
+import { useNavigationState } from '@/hooks/utilities/useRouteState';
+import { useAuthContext } from '@/identity-access/contexts/AuthContext';
 import {
   canAccessNavigationItem,
   filterNavigationItems,
   getDisabledReasonMessage,
-} from '../../../utils/navigationUtils';
-import type { NavigationItem } from '../../../types/navigation';
+} from '@/utils/navigationUtils';
+import type { NavigationItem } from '@/types/navigation';
 
 // ============================================================================
 // EXAMPLE 1: Basic Back Button

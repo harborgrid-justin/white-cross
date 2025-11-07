@@ -405,3 +405,6 @@ export default function IssueStockContent() {
     </div>
   );
 }
+
+// Export both named and default for flexibility
+export { IssueStockContent }

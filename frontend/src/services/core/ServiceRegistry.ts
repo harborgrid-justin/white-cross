@@ -61,72 +61,27 @@ import { BaseApiService } from './BaseApiService';
 import { ApiMonitoring } from './ApiMonitoring';
 
 // ==========================================
-// TYPE DEFINITIONS
+// TYPE DEFINITIONS (imported from ServiceRegistry.types.ts)
 // ==========================================
 
-export interface ServiceMetadata {
-  name: string;
-  version: string;
-  description: string;
-  endpoint: string;
-  category: ServiceCategory;
-  dependencies?: string[];
-  features?: string[];
-  deprecated?: boolean;
-  deprecationMessage?: string;
-  migrationGuide?: string;
-}
+import type {
+  ServiceMetadata,
+  ServiceCategory,
+  ServiceHealth,
+  ServiceStatus,
+  ServiceMetrics,
+  ServiceDependency,
+} from './ServiceRegistry.types';
 
-export type ServiceCategory =
-  | 'HEALTH'
-  | 'STUDENT'
-  | 'MEDICATION'
-  | 'APPOINTMENT'
-  | 'COMMUNICATION'
-  | 'COMPLIANCE'
-  | 'ADMINISTRATION'
-  | 'INTEGRATION'
-  | 'REPORTING'
-  | 'AUDIT';
-
-export interface ServiceHealth {
-  serviceId: string;
-  status: ServiceStatus;
-  lastCheck: Date;
-  responseTime: number;
-  errorRate: number;
-  throughput: number;
-  availabilityPercentage: number;
-  circuitBreakerState: 'CLOSED' | 'OPEN' | 'HALF_OPEN';
-  lastError?: string;
-}
-
-export type ServiceStatus =
-  | 'HEALTHY'
-  | 'DEGRADED'
-  | 'UNHEALTHY'
-  | 'UNKNOWN'
-  | 'MAINTENANCE';
-
-export interface ServiceMetrics {
-  serviceId: string;
-  totalRequests: number;
-  successfulRequests: number;
-  failedRequests: number;
-  averageResponseTime: number;
-  p95ResponseTime: number;
-  p99ResponseTime: number;
-  requestsPerSecond: number;
-  errorsByType: Record<string, number>;
-  lastUpdated: Date;
-}
-
-export interface ServiceDependency {
-  serviceId: string;
-  dependsOn: string[];
-  requiredFor: string[];
-  criticalDependency: boolean;
-}
+// Re-export types for backward compatibility
+export type {
+  ServiceMetadata,
+  ServiceCategory,
+  ServiceHealth,
+  ServiceStatus,
+  ServiceMetrics,
+  ServiceDependency,
+} from './ServiceRegistry.types';
 
 // ==========================================
 // SERVICE REGISTRY CLASS

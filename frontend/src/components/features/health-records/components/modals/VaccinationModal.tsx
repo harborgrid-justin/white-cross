@@ -171,3 +171,5 @@ export const VaccinationModal = React.memo<VaccinationModalProps>(({
 })
 
 VaccinationModal.displayName = 'VaccinationModal'
+// Default export for dynamic imports
+export default VaccinationModal

@@ -20,11 +20,7 @@ export const Domain = (domain: string): CustomDecorator<string> =>
 export const Cacheable = (ttl?: number): CustomDecorator<string> =>
   SetMetadata('cacheable', { enabled: true, ttl });
 
-// Custom decorator for rate limiting
-export const RateLimit = (
-  limit: number,
-  windowMs: number = 60000,
-): CustomDecorator<string> => SetMetadata('rate-limit', { limit, windowMs });
+// Note: RateLimit decorator exported from rate-limit.decorator.ts
 
 // Custom decorator for monitoring
 export const Monitored = (

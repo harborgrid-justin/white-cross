@@ -50,7 +50,7 @@ export interface TransactionDetail {
  * @param props - Component props
  * @returns Rendered transaction detail
  */
-export default function TransactionDetailContent({ transactionId }: TransactionDetailContentProps) {
+function TransactionDetailContent({ transactionId }: TransactionDetailContentProps) {
   const [transaction, setTransaction] = useState<TransactionDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -350,3 +350,7 @@ export default function TransactionDetailContent({ transactionId }: TransactionD
     </div>
   );
 }
+
+// Export both named and default for flexibility
+export { TransactionDetailContent }
+export default TransactionDetailContent

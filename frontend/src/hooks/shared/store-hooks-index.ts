@@ -218,4 +218,4 @@ export function useDebouncedSelector<T>(
 
 export * from './domainHooks';
 export * from './advancedHooks';
-export * from './allDomainHooks';
+// Note: allDomainHooks is exported from index.ts to avoid circular dependencies

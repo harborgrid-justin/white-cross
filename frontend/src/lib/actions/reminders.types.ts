@@ -2,20 +2,9 @@
  * @fileoverview Reminder Types - Next.js v14+ Compatible
  *
  * Type definitions for reminder management.
+ *
+ * Note: Runtime values (constants) are in reminders.constants.ts
  */
-
-// ==========================================
-// CONFIGURATION
-// ==========================================
-
-// Custom cache tags for reminders
-export const REMINDER_CACHE_TAGS = {
-  REMINDERS: 'reminders',
-  TEMPLATES: 'reminder-templates',
-  SCHEDULES: 'reminder-schedules',
-  RECIPIENTS: 'reminder-recipients',
-  LOGS: 'reminder-logs',
-} as const;
 
 // ==========================================
 // TYPE DEFINITIONS

@@ -19,7 +19,7 @@ import {
   MinLength,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { AlertSeverity, AlertCategory } from '../../../alerts/alerts.service';
+import { AlertSeverity, AlertCategory } from '../../../alerts/dto/create-alert.dto';
 
 /**
  * Email priority levels

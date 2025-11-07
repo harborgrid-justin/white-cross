@@ -4,20 +4,9 @@
  *
  * TypeScript interfaces and type definitions for purchase order management.
  * Contains all shared types used across purchase order modules.
+ *
+ * Note: Runtime values (constants) are in purchase-orders.constants.ts
  */
-
-// ==========================================
-// CONFIGURATION
-// ==========================================
-
-// Custom cache tags for purchase orders
-export const PURCHASE_ORDER_CACHE_TAGS = {
-  ORDERS: 'purchase-orders',
-  ITEMS: 'purchase-order-items',
-  VENDORS: 'purchase-order-vendors',
-  APPROVALS: 'purchase-order-approvals',
-  BUDGETS: 'purchase-order-budgets',
-} as const;
 
 // ==========================================
 // TYPE DEFINITIONS

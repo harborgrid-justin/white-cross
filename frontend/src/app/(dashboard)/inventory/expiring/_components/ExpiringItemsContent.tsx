@@ -440,3 +440,6 @@ export default function ExpiringItemsContent() {
     </div>
   );
 }
+
+// Export both named and default for flexibility
+export { ExpiringItemsContent }

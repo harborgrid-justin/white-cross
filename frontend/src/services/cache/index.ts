@@ -152,10 +152,10 @@ export type {
  * Call this function once during app initialization to set up
  * all caching infrastructure.
  *
- * @param queryClient - React Query client instance
+ * @param _queryClient - React Query client instance (unused, reserved for future use)
  */
 export async function initializeCacheInfrastructure(
-  queryClient: unknown
+  _queryClient?: unknown
 ): Promise<void> {
   console.log('[CacheInfrastructure] Initializing...');
 

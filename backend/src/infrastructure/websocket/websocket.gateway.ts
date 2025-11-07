@@ -54,7 +54,7 @@ import {
   ConversationEventDto,
 } from './dto';
 import { WsJwtAuthGuard } from './guards';
-import { RateLimiterService } from './services';
+import { RateLimiterService } from './services/rate-limiter.service';
 import { WsExceptionFilter } from './filters/ws-exception.filter';
 
 @UseFilters(new WsExceptionFilter())

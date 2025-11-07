@@ -535,3 +535,6 @@ export default function NewInventoryItemContent() {
     </div>
   );
 }
+
+// Export both named and default for flexibility
+export { NewInventoryItemContent }

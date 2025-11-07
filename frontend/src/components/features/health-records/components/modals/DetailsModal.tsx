@@ -48,3 +48,5 @@ export const DetailsModal: React.FC<DetailsModalProps> = ({
     </div>
   )
 }
+// Default export for dynamic imports
+export default DetailsModal

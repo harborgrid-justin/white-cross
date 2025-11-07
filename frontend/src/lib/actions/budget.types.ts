@@ -4,22 +4,9 @@
  *
  * TypeScript type definitions and interfaces for budget management system.
  * Supports categories, transactions, summaries, and filtering.
+ *
+ * Note: Runtime values (constants) are in budget.constants.ts
  */
-
-// ==========================================
-// CACHE CONFIGURATION
-// ==========================================
-
-/**
- * Custom cache tags for budget operations
- */
-export const BUDGET_CACHE_TAGS = {
-  CATEGORIES: 'budget-categories',
-  TRANSACTIONS: 'budget-transactions',
-  SUMMARY: 'budget-summary',
-  TRENDS: 'budget-trends',
-  REPORTS: 'budget-reports',
-} as const;
 
 // ==========================================
 // COMMON TYPES

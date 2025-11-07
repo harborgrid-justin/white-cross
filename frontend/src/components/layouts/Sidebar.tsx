@@ -20,8 +20,8 @@ import {
   TrendingUp, Activity, UserCog, Send, UserPlus, CalendarPlus, AlertCircle,
   Clock, X
 } from 'lucide-react'
-import { useAuthContext } from '../../contexts/AuthContext'
-import { useNavigation } from '../../contexts/NavigationContext'
+import { useAuthContext } from '@/identity-access/contexts/AuthContext'
+import { useNavigation } from '@/contexts/NavigationContext'
 import { NAVIGATION_SECTIONS, QUICK_ACCESS_ITEMS } from '../../config/navigationConfig'
 import { filterNavigationItems, markActiveNavigationItems } from '../../utils/navigationUtils'
 import type { NavigationItem, NavigationSection } from '../../types/navigation'

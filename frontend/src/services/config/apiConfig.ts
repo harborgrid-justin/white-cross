@@ -60,7 +60,7 @@
  * @see {@link ITokenManager} for token manager interface
  */
 
-import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import axios, { AxiosInstance } from 'axios';
 import { API_CONFIG } from '../../constants/config';
 import {
   API_ENDPOINTS,
@@ -132,7 +132,7 @@ import { setupCsrfProtection } from '../security/CsrfProtection';
  * @see {@link ITokenManager} for token manager interface
  * @see {@link API_CONFIG} for base configuration
  */
-export function createApiInstance(tokenManager?: ITokenManager): AxiosInstance {
+export function createApiInstance(_tokenManager?: ITokenManager): AxiosInstance {
   const instance = axios.create({
     baseURL: API_CONFIG.BASE_URL,
     timeout: API_CONFIG.TIMEOUT,

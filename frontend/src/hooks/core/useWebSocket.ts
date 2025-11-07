@@ -38,8 +38,8 @@ import {
   webSocketService,
   ConnectionState,
   WebSocketEvent
-} from '../services/websocket/WebSocketService';
-import { secureTokenManager } from '../services/security/SecureTokenManager';
+} from '@/services/websocket/WebSocketService';
+import { secureTokenManager } from '@/services/security/SecureTokenManager';
 
 // ==========================================
 // TYPE DEFINITIONS

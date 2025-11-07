@@ -4,23 +4,9 @@
  *
  * TypeScript interfaces and types for vendor management system.
  * Includes vendor data models, contracts, evaluations, filters, and analytics.
+ *
+ * Note: Runtime values (constants) are in vendors.constants.ts
  */
-
-// ==========================================
-// CACHE CONFIGURATION
-// ==========================================
-
-/**
- * Custom cache tags for vendor-related data
- */
-export const VENDOR_CACHE_TAGS = {
-  VENDORS: 'vendors',
-  CONTRACTS: 'vendor-contracts',
-  CERTIFICATIONS: 'vendor-certifications',
-  EVALUATIONS: 'vendor-evaluations',
-  PRODUCTS: 'vendor-products',
-  COMPLIANCE: 'vendor-compliance',
-} as const;
 
 // ==========================================
 // COMMON TYPES

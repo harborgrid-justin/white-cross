@@ -20,7 +20,7 @@ export type {
   MedicationInventory,
 } from './core.types';
 
-export { MedicationSchema } from './core.types';
+export { MedicationSchema } from './core.schemas';
 
 // Administration Types
 export type {
@@ -48,7 +48,7 @@ export {
 } from './api.types';
 
 // Display Utilities
-export { displayUtils } from './display.types';
+export { displayUtils } from './display.utils';
 
 // Mock Data (for development)
 export {

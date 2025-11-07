@@ -26,14 +26,9 @@ import type { IncidentReport } from './incident-report.model';
 import type { Prescription } from './prescription.model';
 import type { ClinicVisit } from './clinic-visit.model';
 
-export enum UserRole {
-  ADMIN = 'ADMIN',
-  NURSE = 'NURSE',
-  SCHOOL_ADMIN = 'SCHOOL_ADMIN',
-  DISTRICT_ADMIN = 'DISTRICT_ADMIN',
-  VIEWER = 'VIEWER',
-  COUNSELOR = 'COUNSELOR',
-}
+// Re-export UserRole from types to maintain backward compatibility
+// and prevent circular dependencies
+export { UserRole, isUserRole, getUserRoleDisplayName } from '../types/user-role.enum';
 
 export interface UserAttributes {
   id: string;

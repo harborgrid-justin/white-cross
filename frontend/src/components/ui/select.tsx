@@ -145,6 +145,13 @@ const SelectSeparator = React.forwardRef<
 ))
 SelectSeparator.displayName = SelectPrimitive.Separator.displayName
 
+// Type definition for select options
+export interface SelectOption {
+  label: string
+  value: string
+  disabled?: boolean
+}
+
 export {
   Select,
   SelectGroup,

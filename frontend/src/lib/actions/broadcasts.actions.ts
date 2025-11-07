@@ -37,7 +37,7 @@ export type {
   BroadcastStats,
 } from './broadcasts.types';
 
-export { BROADCAST_CACHE_TAGS } from './broadcasts.types';
+export { BROADCAST_CACHE_TAGS } from './broadcasts.constants';
 
 // ==========================================
 // CACHE FUNCTIONS

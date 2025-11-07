@@ -141,3 +141,5 @@ export const ConditionModal: React.FC<ConditionModalProps> = ({
     </div>
   )
 }
+// Default export for dynamic imports
+export default ConditionModal

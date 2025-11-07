@@ -35,7 +35,7 @@ import {
   ConnectionQuality,
   ConnectionInfo,
   ConnectionEvent
-} from '../services/offline/ConnectionMonitor';
+} from '@/services/offline/ConnectionMonitor';
 
 // ==========================================
 // TYPE DEFINITIONS

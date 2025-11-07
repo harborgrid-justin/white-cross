@@ -17,7 +17,7 @@
  */
 
 import { TimeoutError } from '../../errors';
-import { logger } from '../..';
+import { logger } from '../../logging/logger.service';
 
 /**
  * Timeout configuration options

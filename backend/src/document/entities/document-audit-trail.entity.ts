@@ -24,7 +24,7 @@ import {
   BelongsTo,
   Index,
 } from 'sequelize-typescript';
-import { Document } from './document.entity';
+import type { Document } from './document.entity';
 import { DocumentAction } from '../enums';
 
 @Table({

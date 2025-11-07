@@ -45,7 +45,7 @@ import {
   SyncResult,
   RequestPriority,
   HttpMethod
-} from '../services/offline/OfflineQueueManager';
+} from '@/services/offline/OfflineQueueManager';
 
 // ==========================================
 // TYPE DEFINITIONS

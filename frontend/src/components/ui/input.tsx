@@ -21,4 +21,20 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
 )
 Input.displayName = "Input"
 
-export { Input }
+// SearchInput component - a specialized Input with search functionality
+const SearchInput = React.forwardRef<
+  HTMLInputElement,
+  React.ComponentProps<"input">
+>(({ className, ...props }, ref) => {
+  return (
+    <Input
+      type="search"
+      className={cn("pl-8", className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
+SearchInput.displayName = "SearchInput"
+
+export { Input, SearchInput }

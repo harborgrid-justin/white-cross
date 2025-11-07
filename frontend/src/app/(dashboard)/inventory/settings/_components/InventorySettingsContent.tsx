@@ -40,7 +40,7 @@ export interface InventorySettings {
  *
  * @returns Rendered settings view
  */
-export default function InventorySettingsContent() {
+function InventorySettingsContent() {
   const [settings, setSettings] = useState<InventorySettings>({
     notifications: {
       lowStockAlerts: true,
@@ -349,3 +349,7 @@ export default function InventorySettingsContent() {
     </div>
   );
 }
+
+// Export both named and default for flexibility
+export { InventorySettingsContent }
+export default InventorySettingsContent

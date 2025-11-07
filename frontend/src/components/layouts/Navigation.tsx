@@ -15,8 +15,8 @@ import {
   Menu, X, Search, Bell, User, LogOut, Settings as SettingsIcon,
   Moon, Sun, ChevronDown, Shield
 } from 'lucide-react'
-import { useAuthContext } from '../../contexts/AuthContext'
-import { useNavigation } from '../../contexts/NavigationContext'
+import { useAuthContext } from '@/identity-access/contexts/AuthContext'
+import { useNavigation } from '@/contexts/NavigationContext'
 import { PROTECTED_ROUTES } from '../../constants/routes'
 
 // ============================================================================

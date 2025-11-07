@@ -354,3 +354,6 @@ export default function ReceiveStockContent() {
     </div>
   );
 }
+
+// Export both named and default for flexibility
+export { ReceiveStockContent }

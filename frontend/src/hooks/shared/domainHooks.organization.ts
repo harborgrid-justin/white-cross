@@ -6,7 +6,7 @@
 
 import { useDispatch } from 'react-redux';
 import type { AppDispatch } from '../reduxStore';
-import { useAppSelector } from './index';
+import { useAppSelector } from './store-hooks-index';
 
 import {
   districtsActions,

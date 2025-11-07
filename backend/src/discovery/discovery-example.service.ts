@@ -15,9 +15,9 @@ import {
   Analytics,
   Domain,
   Cacheable,
-  RateLimit,
   Monitored,
 } from './decorators/metadata.decorator';
+import { RateLimit } from './decorators/rate-limit.decorator';
 import { DiscoveryMetricsService } from './services/discovery-metrics.service';
 import { DiscoveryCacheService } from './services/discovery-cache.service';
 

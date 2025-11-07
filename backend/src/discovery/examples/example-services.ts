@@ -5,9 +5,9 @@ import {
   Analytics,
   Domain,
   Cacheable,
-  RateLimit,
   Monitored,
 } from '../decorators/metadata.decorator';
+import { RateLimit } from '../decorators/rate-limit.decorator';
 
 // Example service with feature flag
 @Injectable()

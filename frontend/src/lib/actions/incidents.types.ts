@@ -1,13 +1,10 @@
 /**
  * Incident Types and Interfaces
  * Shared type definitions for incident management
+ *
+ * Note: Runtime values (constants, functions) are in separate files:
+ * - incidents.constants.ts - Const values like API_BASE
  */
-
-// ==========================================
-// CONSTANTS
-// ==========================================
-
-export const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 // ==========================================
 // INCIDENT TYPES

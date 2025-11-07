@@ -43,7 +43,7 @@ export type {
   ExportStats
 } from './export.types';
 
-export { EXPORT_CACHE_TAGS } from './export.types';
+export { EXPORT_CACHE_TAGS } from './export.constants';
 
 // ==========================================
 // CACHE FUNCTION EXPORTS
