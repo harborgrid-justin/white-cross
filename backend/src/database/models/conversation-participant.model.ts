@@ -13,7 +13,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
-import type { Conversation } from './conversation.model';
+import { Conversation } from './conversation.model';
 
 /**
  * Participant role enumeration

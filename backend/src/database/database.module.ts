@@ -28,8 +28,8 @@ import {
   ModelAuditHelper,
   QueryCacheService,
   QueryLoggerService,
-} from '@/database/services';
-import { SequelizeUnitOfWorkService } from '@/database/uow';
+} from './services';
+import { SequelizeUnitOfWorkService } from './uow';
 
 // Core Models
 // Academic Models

@@ -6,11 +6,20 @@
 // Module
 export { AppointmentModule } from './appointment.module';
 
-// Service
-export { AppointmentService } from './appointment.service';
+// Services
+export { AppointmentReadService } from './services/appointment-read.service';
+export { AppointmentWriteService } from './services/appointment-write.service';
+export { AppointmentStatusService } from './services/appointment-status.service';
+export { AppointmentQueryService } from './services/appointment-query.service';
+export { WaitlistService } from './services/waitlist.service';
+export { ReminderService } from './services/reminder.service';
 
-// Controller
-export { AppointmentController } from './appointment.controller';
+// Controllers
+export { AppointmentCoreController } from './controllers/appointment-core.controller';
+export { AppointmentStatusController } from './controllers/appointment-status.controller';
+export { AppointmentQueryController } from './controllers/appointment-query.controller';
+export { WaitlistController } from './controllers/waitlist.controller';
+export { ReminderController } from './controllers/reminder.controller';
 
 // DTOs
 export { AppointmentStatus, AppointmentType } from './dto';
