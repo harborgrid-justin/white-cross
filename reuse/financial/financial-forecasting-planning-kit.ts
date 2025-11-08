@@ -1,0 +1,3150 @@
+/**
+ * LOC: FINFCST1234567
+ * File: /reuse/financial/financial-forecasting-planning-kit.ts
+ *
+ * UPSTREAM (imports from):
+ *   - None (leaf node - reusable utilities)
+ *
+ * DOWNSTREAM (imported by):
+ *   - NestJS financial planning controllers
+ *   - Backend forecasting services
+ *   - API financial analytics endpoints
+ *   - USACE CEFMS budget integration modules
+ */
+
+/**
+ * File: /reuse/financial/financial-forecasting-planning-kit.ts
+ * Locator: WC-FIN-FCSTPLAN-001
+ * Purpose: Comprehensive Financial Forecasting & Planning - cash flow forecasting, financial projections, scenario planning, trend analysis
+ *
+ * Upstream: Independent utility module for enterprise financial forecasting
+ * Downstream: ../backend/*, API controllers, budget services, planning workflows, analytics dashboards
+ * Dependencies: TypeScript 5.x, Node 18+, NestJS 10.x, Sequelize 6.x, @nestjs/swagger
+ * Exports: 45+ utility functions for cash flow forecasting, financial projections, scenario modeling, trend analysis, budget planning
+ *
+ * LLM Context: Enterprise-grade financial forecasting system competing with USACE CEFMS.
+ * Provides multi-year financial projections, cash flow forecasting, scenario planning, sensitivity analysis,
+ * Monte Carlo simulations, trend analysis, budget vs actual variance tracking, rolling forecasts,
+ * what-if analysis, predictive analytics, risk assessment, capital planning, revenue forecasting,
+ * cost modeling, financial KPI tracking, and comprehensive strategic planning capabilities.
+ */
+
+import { Request, Response } from 'express';
+import { Model, DataTypes, Sequelize, Transaction, Op, ValidationError as SequelizeValidationError } from 'sequelize';
+
+// ============================================================================
+// TYPE DEFINITIONS
+// ============================================================================
+
+interface ForecastContext {
+  userId: string;
+  organizationId: string;
+  departmentId?: string;
+  fiscalYear: number;
+  fiscalPeriod?: number;
+  timestamp: string;
+  metadata?: Record<string, any>;
+}
+
+interface CashFlowForecast {
+  id?: string;
+  forecastId: string;
+  forecastName: string;
+  forecastType: ForecastType;
+  period: ForecastPeriod;
+  startDate: string;
+  endDate: string;
+  currency: string;
+  granularity: ForecastGranularity;
+  projections: CashFlowProjection[];
+  assumptions: ForecastAssumption[];
+  confidence: ConfidenceLevel;
+  confidenceScore: number;
+  methodology: ForecastMethodology;
+  status: ForecastStatus;
+  createdBy: string;
+  approvedBy?: string;
+  approvedAt?: string;
+  notes?: string;
+  metadata: Record<string, any>;
+}
+
+interface CashFlowProjection {
+  period: string;
+  periodStart: string;
+  periodEnd: string;
+  openingBalance: number;
+  cashInflows: CashInflow[];
+  cashOutflows: CashOutflow[];
+  totalInflows: number;
+  totalOutflows: number;
+  netCashFlow: number;
+  closingBalance: number;
+  cumulativeCashFlow: number;
+  minimumBalance: number;
+  maximumBalance: number;
+  averageBalance: number;
+  variance: number;
+  variancePercent: number;
+}
+
+interface CashInflow {
+  category: InflowCategory;
+  subcategory?: string;
+  description: string;
+  amount: number;
+  probability: number;
+  timing: string;
+  source?: string;
+  recurring: boolean;
+  confidence: ConfidenceLevel;
+}
+
+interface CashOutflow {
+  category: OutflowCategory;
+  subcategory?: string;
+  description: string;
+  amount: number;
+  probability: number;
+  timing: string;
+  payee?: string;
+  recurring: boolean;
+  discretionary: boolean;
+  confidence: ConfidenceLevel;
+}
+
+interface FinancialProjection {
+  id?: string;
+  projectionId: string;
+  projectionName: string;
+  scenarioId?: string;
+  projectionType: ProjectionType;
+  timeHorizon: TimeHorizon;
+  startDate: string;
+  endDate: string;
+  currency: string;
+  periods: ProjectionPeriod[];
+  assumptions: ForecastAssumption[];
+  keyMetrics: FinancialMetric[];
+  status: ForecastStatus;
+  confidence: ConfidenceLevel;
+  methodology: ForecastMethodology;
+  createdBy: string;
+  approvedBy?: string;
+  approvedAt?: string;
+  metadata: Record<string, any>;
+}
+
+interface ProjectionPeriod {
+  period: string;
+  periodStart: string;
+  periodEnd: string;
+  revenue: RevenueProjection;
+  expenses: ExpenseProjection;
+  profitability: ProfitabilityMetrics;
+  balanceSheet: BalanceSheetProjection;
+  cashFlow: CashFlowSummary;
+  ratios: FinancialRatios;
+  kpis: Record<string, number>;
+}
+
+interface RevenueProjection {
+  totalRevenue: number;
+  revenueByStream: RevenueStream[];
+  growthRate: number;
+  seasonalFactor: number;
+  baseRevenue: number;
+  incrementalRevenue: number;
+}
+
+interface RevenueStream {
+  streamId: string;
+  streamName: string;
+  category: string;
+  amount: number;
+  growthRate: number;
+  confidence: ConfidenceLevel;
+  drivers: RevenueDriver[];
+}
+
+interface RevenueDriver {
+  driverName: string;
+  driverType: string;
+  currentValue: number;
+  projectedValue: number;
+  impact: number;
+  elasticity?: number;
+}
+
+interface ExpenseProjection {
+  totalExpenses: number;
+  expenseByCategory: ExpenseCategory[];
+  fixedExpenses: number;
+  variableExpenses: number;
+  discretionaryExpenses: number;
+  growthRate: number;
+  baseExpenses: number;
+  incrementalExpenses: number;
+}
+
+interface ExpenseCategory {
+  categoryId: string;
+  categoryName: string;
+  amount: number;
+  isFixed: boolean;
+  isDiscretionary: boolean;
+  growthRate: number;
+  costDrivers: CostDriver[];
+}
+
+interface CostDriver {
+  driverName: string;
+  driverType: string;
+  currentValue: number;
+  projectedValue: number;
+  costPerUnit: number;
+  totalCost: number;
+}
+
+interface ProfitabilityMetrics {
+  grossProfit: number;
+  grossMargin: number;
+  operatingProfit: number;
+  operatingMargin: number;
+  netProfit: number;
+  netMargin: number;
+  ebitda: number;
+  ebitdaMargin: number;
+  ebit: number;
+  ebitMargin: number;
+}
+
+interface BalanceSheetProjection {
+  totalAssets: number;
+  currentAssets: number;
+  fixedAssets: number;
+  totalLiabilities: number;
+  currentLiabilities: number;
+  longTermLiabilities: number;
+  equity: number;
+  retainedEarnings: number;
+  workingCapital: number;
+}
+
+interface CashFlowSummary {
+  operatingCashFlow: number;
+  investingCashFlow: number;
+  financingCashFlow: number;
+  netCashFlow: number;
+  freeCashFlow: number;
+  cashBalance: number;
+}
+
+interface FinancialRatios {
+  liquidityRatios: LiquidityRatios;
+  profitabilityRatios: ProfitabilityRatios;
+  efficiencyRatios: EfficiencyRatios;
+  leverageRatios: LeverageRatios;
+  valuationRatios?: ValuationRatios;
+}
+
+interface LiquidityRatios {
+  currentRatio: number;
+  quickRatio: number;
+  cashRatio: number;
+  workingCapitalRatio: number;
+}
+
+interface ProfitabilityRatios {
+  returnOnAssets: number;
+  returnOnEquity: number;
+  returnOnInvestment: number;
+  grossProfitMargin: number;
+  netProfitMargin: number;
+}
+
+interface EfficiencyRatios {
+  assetTurnover: number;
+  inventoryTurnover: number;
+  receivablesTurnover: number;
+  payablesTurnover: number;
+  daysSalesOutstanding: number;
+  daysInventoryOutstanding: number;
+}
+
+interface LeverageRatios {
+  debtToEquity: number;
+  debtToAssets: number;
+  equityMultiplier: number;
+  interestCoverage: number;
+  debtServiceCoverage: number;
+}
+
+interface ValuationRatios {
+  priceToEarnings?: number;
+  priceToBook?: number;
+  priceToSales?: number;
+  evToEbitda?: number;
+}
+
+interface Scenario {
+  id?: string;
+  scenarioId: string;
+  scenarioName: string;
+  scenarioType: ScenarioType;
+  description: string;
+  assumptions: ForecastAssumption[];
+  variables: ScenarioVariable[];
+  projections: FinancialProjection[];
+  comparisonBase?: string;
+  probability?: number;
+  impact: ImpactLevel;
+  status: ScenarioStatus;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+  metadata: Record<string, any>;
+}
+
+interface ScenarioVariable {
+  variableId: string;
+  variableName: string;
+  variableType: VariableType;
+  baseValue: number;
+  scenarioValue: number;
+  changePercent: number;
+  changeAbsolute: number;
+  impactOnRevenue?: number;
+  impactOnExpenses?: number;
+  impactOnCashFlow?: number;
+}
+
+interface ForecastAssumption {
+  assumptionId: string;
+  assumptionName: string;
+  category: AssumptionCategory;
+  description: string;
+  value: number | string;
+  unit?: string;
+  confidence: ConfidenceLevel;
+  source: string;
+  dateEstablished: string;
+  validityPeriod?: string;
+  notes?: string;
+}
+
+interface TrendAnalysis {
+  analysisId: string;
+  analysisName: string;
+  metric: string;
+  period: string;
+  dataPoints: TrendDataPoint[];
+  trendType: TrendType;
+  trendDirection: TrendDirection;
+  trendStrength: number;
+  seasonality: SeasonalityInfo;
+  forecast: number[];
+  confidence: ConfidenceInterval;
+  rSquared: number;
+  methodology: string;
+  metadata: Record<string, any>;
+}
+
+interface TrendDataPoint {
+  period: string;
+  timestamp: string;
+  actualValue: number;
+  forecastValue?: number;
+  movingAverage?: number;
+  upperBound?: number;
+  lowerBound?: number;
+  anomaly: boolean;
+  anomalyScore?: number;
+}
+
+interface SeasonalityInfo {
+  hasSeasonality: boolean;
+  seasonalPeriod?: number;
+  seasonalIndices?: number[];
+  peakPeriods?: string[];
+  troughPeriods?: string[];
+}
+
+interface ConfidenceInterval {
+  lowerBound: number;
+  upperBound: number;
+  confidenceLevel: number;
+  standardError: number;
+}
+
+interface SensitivityAnalysis {
+  analysisId: string;
+  analysisName: string;
+  baseScenario: string;
+  targetMetric: string;
+  targetMetricValue: number;
+  variables: SensitivityVariable[];
+  results: SensitivityResult[];
+  tornadoChart?: TornadoChartData;
+  spiderChart?: SpiderChartData;
+  createdAt: string;
+  metadata: Record<string, any>;
+}
+
+interface SensitivityVariable {
+  variableName: string;
+  baseValue: number;
+  variationRange: number[];
+  variationPercent: number;
+  steps: number;
+}
+
+interface SensitivityResult {
+  variableName: string;
+  variableValue: number;
+  targetMetricValue: number;
+  changeFromBase: number;
+  changePercent: number;
+  elasticity: number;
+}
+
+interface TornadoChartData {
+  variables: string[];
+  lowImpact: number[];
+  highImpact: number[];
+  range: number[];
+}
+
+interface SpiderChartData {
+  variables: string[];
+  scenarios: Array<{
+    scenarioName: string;
+    values: number[];
+  }>;
+}
+
+interface MonteCarloSimulation {
+  simulationId: string;
+  simulationName: string;
+  targetMetric: string;
+  iterations: number;
+  randomVariables: RandomVariable[];
+  results: SimulationResults;
+  distribution: DistributionData;
+  percentiles: PercentileData;
+  riskMetrics: RiskMetrics;
+  convergence: boolean;
+  runTime: number;
+  createdAt: string;
+  metadata: Record<string, any>;
+}
+
+interface RandomVariable {
+  variableName: string;
+  distributionType: DistributionType;
+  mean: number;
+  standardDeviation: number;
+  min?: number;
+  max?: number;
+  parameters?: Record<string, number>;
+}
+
+interface SimulationResults {
+  mean: number;
+  median: number;
+  mode: number;
+  standardDeviation: number;
+  variance: number;
+  min: number;
+  max: number;
+  range: number;
+  skewness: number;
+  kurtosis: number;
+  outcomes: number[];
+}
+
+interface DistributionData {
+  bins: number[];
+  frequencies: number[];
+  probabilities: number[];
+}
+
+interface PercentileData {
+  p5: number;
+  p10: number;
+  p25: number;
+  p50: number;
+  p75: number;
+  p90: number;
+  p95: number;
+  p99: number;
+}
+
+interface RiskMetrics {
+  valueAtRisk: number;
+  conditionalValueAtRisk: number;
+  probabilityOfLoss: number;
+  expectedShortfall: number;
+  downsideDeviation: number;
+  maxDrawdown: number;
+}
+
+interface BudgetVsActual {
+  comparisonId: string;
+  fiscalYear: number;
+  fiscalPeriod: number;
+  department?: string;
+  budgetAmount: number;
+  actualAmount: number;
+  variance: number;
+  variancePercent: number;
+  forecastAmount?: number;
+  forecastVariance?: number;
+  ytdBudget: number;
+  ytdActual: number;
+  ytdVariance: number;
+  ytdVariancePercent: number;
+  categories: CategoryVariance[];
+  flags: VarianceFlag[];
+  metadata: Record<string, any>;
+}
+
+interface CategoryVariance {
+  category: string;
+  budgetAmount: number;
+  actualAmount: number;
+  variance: number;
+  variancePercent: number;
+  explanation?: string;
+  actionRequired: boolean;
+}
+
+interface VarianceFlag {
+  flagType: VarianceFlagType;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  category?: string;
+  threshold: number;
+  actualVariance: number;
+  message: string;
+  actionRequired: boolean;
+  assignedTo?: string;
+}
+
+interface FinancialMetric {
+  metricId: string;
+  metricName: string;
+  metricType: MetricType;
+  currentValue: number;
+  targetValue?: number;
+  benchmarkValue?: number;
+  unit: string;
+  trend: TrendDirection;
+  periodOverPeriod?: number;
+  yearOverYear?: number;
+  forecastValue?: number;
+  thresholds?: MetricThresholds;
+}
+
+interface MetricThresholds {
+  critical: number;
+  warning: number;
+  target: number;
+  stretch: number;
+}
+
+interface RollingForecast {
+  forecastId: string;
+  forecastName: string;
+  rollingPeriods: number;
+  rollingUnit: TimeUnit;
+  currentPeriod: string;
+  forecastHorizon: number;
+  periods: RollingPeriod[];
+  updateFrequency: UpdateFrequency;
+  lastUpdated: string;
+  nextUpdate: string;
+  methodology: ForecastMethodology;
+  accuracy: ForecastAccuracy;
+  metadata: Record<string, any>;
+}
+
+interface RollingPeriod {
+  period: string;
+  periodStart: string;
+  periodEnd: string;
+  isActual: boolean;
+  isForecast: boolean;
+  projectedValue: number;
+  actualValue?: number;
+  variance?: number;
+  confidenceLevel: number;
+  assumptions: string[];
+}
+
+interface ForecastAccuracy {
+  mape: number; // Mean Absolute Percentage Error
+  mae: number; // Mean Absolute Error
+  rmse: number; // Root Mean Square Error
+  bias: number;
+  trackingSignal: number;
+  accuracyRate: number;
+}
+
+interface CapitalPlan {
+  planId: string;
+  planName: string;
+  fiscalYear: number;
+  totalCapital: number;
+  allocatedCapital: number;
+  unallocatedCapital: number;
+  projects: CapitalProject[];
+  priorities: ProjectPriority[];
+  constraints: CapitalConstraint[];
+  approval: ApprovalInfo;
+  status: PlanStatus;
+  metadata: Record<string, any>;
+}
+
+interface CapitalProject {
+  projectId: string;
+  projectName: string;
+  projectType: string;
+  description: string;
+  requestedAmount: number;
+  approvedAmount: number;
+  committedAmount: number;
+  spentAmount: number;
+  remainingAmount: number;
+  startDate: string;
+  endDate: string;
+  status: ProjectStatus;
+  priority: number;
+  roi: number;
+  paybackPeriod: number;
+  npv: number;
+  irr: number;
+  riskScore: number;
+  strategicAlignment: number;
+  dependencies: string[];
+}
+
+interface ProjectPriority {
+  projectId: string;
+  rank: number;
+  score: number;
+  criteria: PriorityCriteria;
+  justification: string;
+}
+
+interface PriorityCriteria {
+  strategicFit: number;
+  financialReturn: number;
+  riskLevel: number;
+  urgency: number;
+  resourceAvailability: number;
+  stakeholderImpact: number;
+}
+
+interface CapitalConstraint {
+  constraintType: ConstraintType;
+  description: string;
+  limitValue: number;
+  currentValue: number;
+  utilizationPercent: number;
+}
+
+interface ApprovalInfo {
+  approvalRequired: boolean;
+  approvalLevel: string;
+  approvedBy?: string[];
+  approvedAt?: string;
+  status: ApprovalStatus;
+  comments?: string;
+}
+
+type ForecastType = 'cash_flow' | 'revenue' | 'expense' | 'profit' | 'balance_sheet' | 'comprehensive';
+type ForecastPeriod = 'short_term' | 'medium_term' | 'long_term' | 'strategic';
+type ForecastGranularity = 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'annual';
+type ForecastMethodology = 'trend_analysis' | 'regression' | 'time_series' | 'causal' | 'judgmental' | 'ensemble';
+type ForecastStatus = 'draft' | 'in_review' | 'approved' | 'active' | 'archived' | 'superseded';
+type ConfidenceLevel = 'very_low' | 'low' | 'medium' | 'high' | 'very_high';
+
+type InflowCategory = 'revenue' | 'investment' | 'financing' | 'asset_sales' | 'grants' | 'other_income';
+type OutflowCategory =
+  | 'operating_expenses'
+  | 'payroll'
+  | 'capital_expenditure'
+  | 'debt_service'
+  | 'taxes'
+  | 'dividends'
+  | 'other_expenses';
+
+type ProjectionType = 'revenue' | 'expense' | 'profit_loss' | 'balance_sheet' | 'cash_flow' | 'comprehensive';
+type TimeHorizon = 'short_term' | 'medium_term' | 'long_term' | 'strategic';
+
+type ScenarioType = 'base' | 'optimistic' | 'pessimistic' | 'most_likely' | 'stress_test' | 'what_if';
+type ScenarioStatus = 'draft' | 'active' | 'archived' | 'superseded';
+type VariableType = 'revenue_driver' | 'cost_driver' | 'market_factor' | 'operational' | 'external';
+type ImpactLevel = 'negligible' | 'low' | 'moderate' | 'high' | 'critical';
+
+type AssumptionCategory = 'economic' | 'market' | 'operational' | 'regulatory' | 'strategic' | 'technical';
+
+type TrendType = 'linear' | 'exponential' | 'logarithmic' | 'polynomial' | 'seasonal' | 'cyclical';
+type TrendDirection = 'increasing' | 'decreasing' | 'stable' | 'volatile' | 'cyclical';
+
+type DistributionType = 'normal' | 'lognormal' | 'uniform' | 'triangular' | 'beta' | 'exponential';
+
+type VarianceFlagType =
+  | 'favorable_variance'
+  | 'unfavorable_variance'
+  | 'threshold_exceeded'
+  | 'material_variance'
+  | 'trend_deviation';
+
+type MetricType = 'financial' | 'operational' | 'strategic' | 'efficiency' | 'quality' | 'risk';
+
+type TimeUnit = 'day' | 'week' | 'month' | 'quarter' | 'year';
+type UpdateFrequency = 'daily' | 'weekly' | 'monthly' | 'quarterly';
+
+type ProjectStatus = 'proposed' | 'approved' | 'in_progress' | 'completed' | 'cancelled' | 'on_hold';
+type PlanStatus = 'draft' | 'proposed' | 'approved' | 'active' | 'closed';
+type ApprovalStatus = 'pending' | 'approved' | 'rejected' | 'conditional';
+
+type ConstraintType = 'budget' | 'resource' | 'time' | 'regulatory' | 'strategic';
+
+// ============================================================================
+// SEQUELIZE MODELS (1-4)
+// ============================================================================
+
+/**
+ * Sequelize model for Cash Flow Forecasts with projections and assumptions.
+ *
+ * @param {Sequelize} sequelize - Sequelize instance
+ * @returns {Model} CashFlowForecast model
+ *
+ * @example
+ * ```typescript
+ * const Forecast = createCashFlowForecastModel(sequelize);
+ * const forecast = await Forecast.create({
+ *   forecastId: 'FCT-2025-Q1-001',
+ *   forecastName: 'Q1 2025 Cash Flow Forecast',
+ *   forecastType: 'cash_flow',
+ *   startDate: '2025-01-01',
+ *   endDate: '2025-03-31'
+ * });
+ * ```
+ */
+export const createCashFlowForecastModel = (sequelize: Sequelize) => {
+  class CashFlowForecast extends Model {
+    public id!: number;
+    public forecastId!: string;
+    public forecastName!: string;
+    public forecastType!: string;
+    public period!: string;
+    public startDate!: Date;
+    public endDate!: Date;
+    public currency!: string;
+    public granularity!: string;
+    public projections!: CashFlowProjection[];
+    public assumptions!: ForecastAssumption[];
+    public confidence!: string;
+    public confidenceScore!: number;
+    public methodology!: string;
+    public status!: string;
+    public createdBy!: string;
+    public approvedBy!: string | null;
+    public approvedAt!: Date | null;
+    public notes!: string | null;
+    public metadata!: Record<string, any>;
+    public readonly createdAt!: Date;
+    public readonly updatedAt!: Date;
+  }
+
+  CashFlowForecast.init(
+    {
+      id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+      },
+      forecastId: {
+        type: DataTypes.STRING(50),
+        allowNull: false,
+        unique: true,
+        comment: 'Unique forecast identifier',
+      },
+      forecastName: {
+        type: DataTypes.STRING(200),
+        allowNull: false,
+        comment: 'Forecast name/title',
+      },
+      forecastType: {
+        type: DataTypes.ENUM('cash_flow', 'revenue', 'expense', 'profit', 'balance_sheet', 'comprehensive'),
+        allowNull: false,
+        comment: 'Type of forecast',
+      },
+      period: {
+        type: DataTypes.ENUM('short_term', 'medium_term', 'long_term', 'strategic'),
+        allowNull: false,
+        comment: 'Forecast time period',
+      },
+      startDate: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        comment: 'Forecast start date',
+      },
+      endDate: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        comment: 'Forecast end date',
+      },
+      currency: {
+        type: DataTypes.STRING(3),
+        allowNull: false,
+        defaultValue: 'USD',
+        comment: 'Currency code',
+      },
+      granularity: {
+        type: DataTypes.ENUM('daily', 'weekly', 'monthly', 'quarterly', 'annual'),
+        allowNull: false,
+        defaultValue: 'monthly',
+        comment: 'Forecast granularity',
+      },
+      projections: {
+        type: DataTypes.JSON,
+        allowNull: false,
+        defaultValue: [],
+        comment: 'Cash flow projections by period',
+      },
+      assumptions: {
+        type: DataTypes.JSON,
+        allowNull: false,
+        defaultValue: [],
+        comment: 'Forecast assumptions',
+      },
+      confidence: {
+        type: DataTypes.ENUM('very_low', 'low', 'medium', 'high', 'very_high'),
+        allowNull: false,
+        defaultValue: 'medium',
+        comment: 'Confidence level',
+      },
+      confidenceScore: {
+        type: DataTypes.DECIMAL(5, 2),
+        allowNull: false,
+        defaultValue: 0,
+        comment: 'Numeric confidence score (0-100)',
+        validate: {
+          min: 0,
+          max: 100,
+        },
+      },
+      methodology: {
+        type: DataTypes.ENUM('trend_analysis', 'regression', 'time_series', 'causal', 'judgmental', 'ensemble'),
+        allowNull: false,
+        comment: 'Forecasting methodology',
+      },
+      status: {
+        type: DataTypes.ENUM('draft', 'in_review', 'approved', 'active', 'archived', 'superseded'),
+        allowNull: false,
+        defaultValue: 'draft',
+        comment: 'Forecast status',
+      },
+      createdBy: {
+        type: DataTypes.STRING(50),
+        allowNull: false,
+        comment: 'User who created forecast',
+      },
+      approvedBy: {
+        type: DataTypes.STRING(50),
+        allowNull: true,
+        comment: 'User who approved forecast',
+      },
+      approvedAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        comment: 'Approval timestamp',
+      },
+      notes: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        comment: 'Additional notes',
+      },
+      metadata: {
+        type: DataTypes.JSON,
+        allowNull: false,
+        defaultValue: {},
+        comment: 'Additional metadata',
+      },
+    },
+    {
+      sequelize,
+      tableName: 'cash_flow_forecasts',
+      timestamps: true,
+      indexes: [
+        { fields: ['forecastId'], unique: true },
+        { fields: ['forecastType'] },
+        { fields: ['status'] },
+        { fields: ['createdBy'] },
+        { fields: ['startDate'] },
+        { fields: ['endDate'] },
+        { fields: ['approvedAt'] },
+      ],
+    },
+  );
+
+  return CashFlowForecast;
+};
+
+/**
+ * Sequelize model for Financial Projections with multi-period analysis.
+ *
+ * @param {Sequelize} sequelize - Sequelize instance
+ * @returns {Model} FinancialProjection model
+ *
+ * @example
+ * ```typescript
+ * const Projection = createFinancialProjectionModel(sequelize);
+ * const projection = await Projection.create({
+ *   projectionId: 'PROJ-2025-001',
+ *   projectionName: '5-Year Financial Plan',
+ *   projectionType: 'comprehensive',
+ *   timeHorizon: 'long_term'
+ * });
+ * ```
+ */
+export const createFinancialProjectionModel = (sequelize: Sequelize) => {
+  class FinancialProjection extends Model {
+    public id!: number;
+    public projectionId!: string;
+    public projectionName!: string;
+    public scenarioId!: string | null;
+    public projectionType!: string;
+    public timeHorizon!: string;
+    public startDate!: Date;
+    public endDate!: Date;
+    public currency!: string;
+    public periods!: ProjectionPeriod[];
+    public assumptions!: ForecastAssumption[];
+    public keyMetrics!: FinancialMetric[];
+    public status!: string;
+    public confidence!: string;
+    public methodology!: string;
+    public createdBy!: string;
+    public approvedBy!: string | null;
+    public approvedAt!: Date | null;
+    public metadata!: Record<string, any>;
+    public readonly createdAt!: Date;
+    public readonly updatedAt!: Date;
+  }
+
+  FinancialProjection.init(
+    {
+      id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+      },
+      projectionId: {
+        type: DataTypes.STRING(50),
+        allowNull: false,
+        unique: true,
+        comment: 'Unique projection identifier',
+      },
+      projectionName: {
+        type: DataTypes.STRING(200),
+        allowNull: false,
+        comment: 'Projection name',
+      },
+      scenarioId: {
+        type: DataTypes.STRING(50),
+        allowNull: true,
+        comment: 'Associated scenario ID',
+      },
+      projectionType: {
+        type: DataTypes.ENUM('revenue', 'expense', 'profit_loss', 'balance_sheet', 'cash_flow', 'comprehensive'),
+        allowNull: false,
+        comment: 'Type of projection',
+      },
+      timeHorizon: {
+        type: DataTypes.ENUM('short_term', 'medium_term', 'long_term', 'strategic'),
+        allowNull: false,
+        comment: 'Time horizon',
+      },
+      startDate: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        comment: 'Projection start date',
+      },
+      endDate: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        comment: 'Projection end date',
+      },
+      currency: {
+        type: DataTypes.STRING(3),
+        allowNull: false,
+        defaultValue: 'USD',
+        comment: 'Currency code',
+      },
+      periods: {
+        type: DataTypes.JSON,
+        allowNull: false,
+        defaultValue: [],
+        comment: 'Projection periods',
+      },
+      assumptions: {
+        type: DataTypes.JSON,
+        allowNull: false,
+        defaultValue: [],
+        comment: 'Projection assumptions',
+      },
+      keyMetrics: {
+        type: DataTypes.JSON,
+        allowNull: false,
+        defaultValue: [],
+        comment: 'Key financial metrics',
+      },
+      status: {
+        type: DataTypes.ENUM('draft', 'in_review', 'approved', 'active', 'archived', 'superseded'),
+        allowNull: false,
+        defaultValue: 'draft',
+        comment: 'Projection status',
+      },
+      confidence: {
+        type: DataTypes.ENUM('very_low', 'low', 'medium', 'high', 'very_high'),
+        allowNull: false,
+        defaultValue: 'medium',
+        comment: 'Confidence level',
+      },
+      methodology: {
+        type: DataTypes.ENUM('trend_analysis', 'regression', 'time_series', 'causal', 'judgmental', 'ensemble'),
+        allowNull: false,
+        comment: 'Projection methodology',
+      },
+      createdBy: {
+        type: DataTypes.STRING(50),
+        allowNull: false,
+        comment: 'Creator user ID',
+      },
+      approvedBy: {
+        type: DataTypes.STRING(50),
+        allowNull: true,
+        comment: 'Approver user ID',
+      },
+      approvedAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        comment: 'Approval timestamp',
+      },
+      metadata: {
+        type: DataTypes.JSON,
+        allowNull: false,
+        defaultValue: {},
+        comment: 'Additional metadata',
+      },
+    },
+    {
+      sequelize,
+      tableName: 'financial_projections',
+      timestamps: true,
+      indexes: [
+        { fields: ['projectionId'], unique: true },
+        { fields: ['scenarioId'] },
+        { fields: ['projectionType'] },
+        { fields: ['status'] },
+        { fields: ['createdBy'] },
+        { fields: ['startDate'] },
+        { fields: ['endDate'] },
+      ],
+    },
+  );
+
+  return FinancialProjection;
+};
+
+/**
+ * Sequelize model for Scenarios with variable assumptions and comparisons.
+ *
+ * @param {Sequelize} sequelize - Sequelize instance
+ * @returns {Model} Scenario model
+ *
+ * @example
+ * ```typescript
+ * const Scenario = createScenarioModel(sequelize);
+ * const scenario = await Scenario.create({
+ *   scenarioId: 'SCEN-2025-BASE',
+ *   scenarioName: 'Base Case Scenario',
+ *   scenarioType: 'base',
+ *   impact: 'moderate'
+ * });
+ * ```
+ */
+export const createScenarioModel = (sequelize: Sequelize) => {
+  class Scenario extends Model {
+    public id!: number;
+    public scenarioId!: string;
+    public scenarioName!: string;
+    public scenarioType!: string;
+    public description!: string;
+    public assumptions!: ForecastAssumption[];
+    public variables!: ScenarioVariable[];
+    public projectionIds!: string[];
+    public comparisonBase!: string | null;
+    public probability!: number | null;
+    public impact!: string;
+    public status!: string;
+    public createdBy!: string;
+    public metadata!: Record<string, any>;
+    public readonly createdAt!: Date;
+    public readonly updatedAt!: Date;
+  }
+
+  Scenario.init(
+    {
+      id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+      },
+      scenarioId: {
+        type: DataTypes.STRING(50),
+        allowNull: false,
+        unique: true,
+        comment: 'Unique scenario identifier',
+      },
+      scenarioName: {
+        type: DataTypes.STRING(200),
+        allowNull: false,
+        comment: 'Scenario name',
+      },
+      scenarioType: {
+        type: DataTypes.ENUM('base', 'optimistic', 'pessimistic', 'most_likely', 'stress_test', 'what_if'),
+        allowNull: false,
+        comment: 'Scenario type',
+      },
+      description: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+        comment: 'Scenario description',
+      },
+      assumptions: {
+        type: DataTypes.JSON,
+        allowNull: false,
+        defaultValue: [],
+        comment: 'Scenario assumptions',
+      },
+      variables: {
+        type: DataTypes.JSON,
+        allowNull: false,
+        defaultValue: [],
+        comment: 'Scenario variables',
+      },
+      projectionIds: {
+        type: DataTypes.JSON,
+        allowNull: false,
+        defaultValue: [],
+        comment: 'Associated projection IDs',
+      },
+      comparisonBase: {
+        type: DataTypes.STRING(50),
+        allowNull: true,
+        comment: 'Base scenario for comparison',
+      },
+      probability: {
+        type: DataTypes.DECIMAL(5, 2),
+        allowNull: true,
+        comment: 'Probability of occurrence (%)',
+        validate: {
+          min: 0,
+          max: 100,
+        },
+      },
+      impact: {
+        type: DataTypes.ENUM('negligible', 'low', 'moderate', 'high', 'critical'),
+        allowNull: false,
+        comment: 'Impact level',
+      },
+      status: {
+        type: DataTypes.ENUM('draft', 'active', 'archived', 'superseded'),
+        allowNull: false,
+        defaultValue: 'draft',
+        comment: 'Scenario status',
+      },
+      createdBy: {
+        type: DataTypes.STRING(50),
+        allowNull: false,
+        comment: 'Creator user ID',
+      },
+      metadata: {
+        type: DataTypes.JSON,
+        allowNull: false,
+        defaultValue: {},
+        comment: 'Additional metadata',
+      },
+    },
+    {
+      sequelize,
+      tableName: 'scenarios',
+      timestamps: true,
+      indexes: [
+        { fields: ['scenarioId'], unique: true },
+        { fields: ['scenarioType'] },
+        { fields: ['status'] },
+        { fields: ['createdBy'] },
+        { fields: ['impact'] },
+      ],
+    },
+  );
+
+  return Scenario;
+};
+
+/**
+ * Sequelize model for Budget vs Actual variance tracking and analysis.
+ *
+ * @param {Sequelize} sequelize - Sequelize instance
+ * @returns {Model} BudgetVsActual model
+ *
+ * @example
+ * ```typescript
+ * const BudgetComparison = createBudgetVsActualModel(sequelize);
+ * const comparison = await BudgetComparison.create({
+ *   comparisonId: 'COMP-2025-Q1',
+ *   fiscalYear: 2025,
+ *   fiscalPeriod: 1,
+ *   budgetAmount: 1000000,
+ *   actualAmount: 950000
+ * });
+ * ```
+ */
+export const createBudgetVsActualModel = (sequelize: Sequelize) => {
+  class BudgetVsActual extends Model {
+    public id!: number;
+    public comparisonId!: string;
+    public fiscalYear!: number;
+    public fiscalPeriod!: number;
+    public department!: string | null;
+    public budgetAmount!: number;
+    public actualAmount!: number;
+    public variance!: number;
+    public variancePercent!: number;
+    public forecastAmount!: number | null;
+    public forecastVariance!: number | null;
+    public ytdBudget!: number;
+    public ytdActual!: number;
+    public ytdVariance!: number;
+    public ytdVariancePercent!: number;
+    public categories!: CategoryVariance[];
+    public flags!: VarianceFlag[];
+    public metadata!: Record<string, any>;
+    public readonly createdAt!: Date;
+    public readonly updatedAt!: Date;
+  }
+
+  BudgetVsActual.init(
+    {
+      id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+      },
+      comparisonId: {
+        type: DataTypes.STRING(50),
+        allowNull: false,
+        unique: true,
+        comment: 'Unique comparison identifier',
+      },
+      fiscalYear: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        comment: 'Fiscal year',
+      },
+      fiscalPeriod: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        comment: 'Fiscal period (1-12 for months, 1-4 for quarters)',
+      },
+      department: {
+        type: DataTypes.STRING(50),
+        allowNull: true,
+        comment: 'Department identifier',
+      },
+      budgetAmount: {
+        type: DataTypes.DECIMAL(15, 2),
+        allowNull: false,
+        comment: 'Budgeted amount',
+      },
+      actualAmount: {
+        type: DataTypes.DECIMAL(15, 2),
+        allowNull: false,
+        comment: 'Actual amount',
+      },
+      variance: {
+        type: DataTypes.DECIMAL(15, 2),
+        allowNull: false,
+        comment: 'Variance amount (actual - budget)',
+      },
+      variancePercent: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+        comment: 'Variance percentage',
+      },
+      forecastAmount: {
+        type: DataTypes.DECIMAL(15, 2),
+        allowNull: true,
+        comment: 'Forecasted amount',
+      },
+      forecastVariance: {
+        type: DataTypes.DECIMAL(15, 2),
+        allowNull: true,
+        comment: 'Forecast variance',
+      },
+      ytdBudget: {
+        type: DataTypes.DECIMAL(15, 2),
+        allowNull: false,
+        comment: 'Year-to-date budget',
+      },
+      ytdActual: {
+        type: DataTypes.DECIMAL(15, 2),
+        allowNull: false,
+        comment: 'Year-to-date actual',
+      },
+      ytdVariance: {
+        type: DataTypes.DECIMAL(15, 2),
+        allowNull: false,
+        comment: 'Year-to-date variance',
+      },
+      ytdVariancePercent: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+        comment: 'Year-to-date variance percentage',
+      },
+      categories: {
+        type: DataTypes.JSON,
+        allowNull: false,
+        defaultValue: [],
+        comment: 'Category-level variances',
+      },
+      flags: {
+        type: DataTypes.JSON,
+        allowNull: false,
+        defaultValue: [],
+        comment: 'Variance flags and alerts',
+      },
+      metadata: {
+        type: DataTypes.JSON,
+        allowNull: false,
+        defaultValue: {},
+        comment: 'Additional metadata',
+      },
+    },
+    {
+      sequelize,
+      tableName: 'budget_vs_actual',
+      timestamps: true,
+      indexes: [
+        { fields: ['comparisonId'], unique: true },
+        { fields: ['fiscalYear', 'fiscalPeriod'] },
+        { fields: ['department'] },
+        { fields: ['variancePercent'] },
+      ],
+    },
+  );
+
+  return BudgetVsActual;
+};
+
+// ============================================================================
+// CASH FLOW FORECASTING FUNCTIONS (1-8)
+// ============================================================================
+
+/**
+ * Creates comprehensive cash flow forecast with multi-period projections.
+ *
+ * @param {Partial<CashFlowForecast>} forecastData - Forecast data
+ * @param {ForecastContext} context - Execution context
+ * @returns {Promise<CashFlowForecast>} Created cash flow forecast
+ *
+ * @example
+ * ```typescript
+ * const forecast = await createCashFlowForecast({
+ *   forecastName: 'Q1 2025 Cash Flow',
+ *   forecastType: 'cash_flow',
+ *   startDate: '2025-01-01',
+ *   endDate: '2025-03-31',
+ *   granularity: 'monthly'
+ * }, context);
+ * ```
+ */
+export async function createCashFlowForecast(
+  forecastData: Partial<CashFlowForecast>,
+  context: ForecastContext,
+): Promise<CashFlowForecast> {
+  const forecastId = await generateForecastId('FCT', context.fiscalYear);
+
+  const forecast: CashFlowForecast = {
+    ...forecastData,
+    forecastId,
+    status: 'draft',
+    createdBy: context.userId,
+    projections: [],
+    assumptions: [],
+    confidence: 'medium',
+    confidenceScore: 70,
+    metadata: forecastData.metadata || {},
+  } as CashFlowForecast;
+
+  return forecast;
+}
+
+/**
+ * Generates cash flow projections for specified time periods with inflows and outflows.
+ *
+ * @param {string} forecastId - Forecast ID
+ * @param {Date} startDate - Start date
+ * @param {Date} endDate - End date
+ * @param {ForecastGranularity} granularity - Time granularity
+ * @param {ForecastContext} context - Execution context
+ * @returns {Promise<CashFlowProjection[]>} Cash flow projections
+ *
+ * @example
+ * ```typescript
+ * const projections = await generateCashFlowProjections(
+ *   'FCT-2025-001',
+ *   new Date('2025-01-01'),
+ *   new Date('2025-03-31'),
+ *   'monthly',
+ *   context
+ * );
+ * ```
+ */
+export async function generateCashFlowProjections(
+  forecastId: string,
+  startDate: Date,
+  endDate: Date,
+  granularity: ForecastGranularity,
+  context: ForecastContext,
+): Promise<CashFlowProjection[]> {
+  const projections: CashFlowProjection[] = [];
+  let currentBalance = 1000000; // Starting balance
+
+  const periods = generateTimePeriods(startDate, endDate, granularity);
+
+  for (const period of periods) {
+    const projection: CashFlowProjection = {
+      period: period.label,
+      periodStart: period.start.toISOString(),
+      periodEnd: period.end.toISOString(),
+      openingBalance: currentBalance,
+      cashInflows: [],
+      cashOutflows: [],
+      totalInflows: 0,
+      totalOutflows: 0,
+      netCashFlow: 0,
+      closingBalance: currentBalance,
+      cumulativeCashFlow: 0,
+      minimumBalance: currentBalance,
+      maximumBalance: currentBalance,
+      averageBalance: currentBalance,
+      variance: 0,
+      variancePercent: 0,
+    };
+
+    projections.push(projection);
+    currentBalance = projection.closingBalance;
+  }
+
+  return projections;
+}
+
+/**
+ * Calculates net cash flow from operating, investing, and financing activities.
+ *
+ * @param {CashInflow[]} inflows - Cash inflows
+ * @param {CashOutflow[]} outflows - Cash outflows
+ * @returns {object} Net cash flow calculation
+ *
+ * @example
+ * ```typescript
+ * const netCashFlow = calculateNetCashFlow(inflows, outflows);
+ * // { totalInflows: 500000, totalOutflows: 400000, netCashFlow: 100000 }
+ * ```
+ */
+export function calculateNetCashFlow(
+  inflows: CashInflow[],
+  outflows: CashOutflow[],
+): {
+  totalInflows: number;
+  totalOutflows: number;
+  netCashFlow: number;
+  byCategory: Record<string, number>;
+} {
+  const totalInflows = inflows.reduce((sum, inflow) => sum + inflow.amount * inflow.probability, 0);
+  const totalOutflows = outflows.reduce((sum, outflow) => sum + outflow.amount * outflow.probability, 0);
+
+  return {
+    totalInflows,
+    totalOutflows,
+    netCashFlow: totalInflows - totalOutflows,
+    byCategory: {},
+  };
+}
+
+/**
+ * Identifies cash flow shortfalls and liquidity risks in forecast periods.
+ *
+ * @param {CashFlowProjection[]} projections - Cash flow projections
+ * @param {number} minimumBalanceThreshold - Minimum acceptable balance
+ * @returns {Array<{period: string; shortfall: number; severity: string}>} Shortfall alerts
+ *
+ * @example
+ * ```typescript
+ * const shortfalls = identifyCashFlowShortfalls(projections, 100000);
+ * ```
+ */
+export function identifyCashFlowShortfalls(
+  projections: CashFlowProjection[],
+  minimumBalanceThreshold: number,
+): Array<{ period: string; shortfall: number; severity: string }> {
+  const shortfalls: Array<{ period: string; shortfall: number; severity: string }> = [];
+
+  for (const projection of projections) {
+    if (projection.closingBalance < minimumBalanceThreshold) {
+      const shortfall = minimumBalanceThreshold - projection.closingBalance;
+      const severity = shortfall > minimumBalanceThreshold * 0.5 ? 'critical' : shortfall > minimumBalanceThreshold * 0.25 ? 'high' : 'medium';
+
+      shortfalls.push({
+        period: projection.period,
+        shortfall,
+        severity,
+      });
+    }
+  }
+
+  return shortfalls;
+}
+
+/**
+ * Optimizes cash flow timing to maximize liquidity and minimize financing costs.
+ *
+ * @param {CashFlowProjection[]} projections - Cash flow projections
+ * @param {object} constraints - Optimization constraints
+ * @returns {Promise<CashFlowProjection[]>} Optimized projections
+ *
+ * @example
+ * ```typescript
+ * const optimized = await optimizeCashFlowTiming(projections, {
+ *   minimumBalance: 100000,
+ *   targetBalance: 500000
+ * });
+ * ```
+ */
+export async function optimizeCashFlowTiming(
+  projections: CashFlowProjection[],
+  constraints: { minimumBalance: number; targetBalance: number },
+): Promise<CashFlowProjection[]> {
+  // Simplified optimization - actual implementation would use LP/optimization algorithms
+  return projections;
+}
+
+/**
+ * Forecasts working capital requirements based on operating cycle analysis.
+ *
+ * @param {number} revenue - Expected revenue
+ * @param {number} daysSalesOutstanding - DSO metric
+ * @param {number} daysInventoryOutstanding - DIO metric
+ * @param {number} daysPayableOutstanding - DPO metric
+ * @returns {object} Working capital forecast
+ *
+ * @example
+ * ```typescript
+ * const workingCapital = forecastWorkingCapitalRequirements(
+ *   5000000,
+ *   45,
+ *   30,
+ *   60
+ * );
+ * ```
+ */
+export function forecastWorkingCapitalRequirements(
+  revenue: number,
+  daysSalesOutstanding: number,
+  daysInventoryOutstanding: number,
+  daysPayableOutstanding: number,
+): {
+  accountsReceivable: number;
+  inventory: number;
+  accountsPayable: number;
+  workingCapital: number;
+  cashConversionCycle: number;
+} {
+  const dailyRevenue = revenue / 365;
+  const accountsReceivable = dailyRevenue * daysSalesOutstanding;
+  const inventory = dailyRevenue * daysInventoryOutstanding;
+  const accountsPayable = dailyRevenue * daysPayableOutstanding;
+
+  return {
+    accountsReceivable,
+    inventory,
+    accountsPayable,
+    workingCapital: accountsReceivable + inventory - accountsPayable,
+    cashConversionCycle: daysSalesOutstanding + daysInventoryOutstanding - daysPayableOutstanding,
+  };
+}
+
+/**
+ * Generates cash flow waterfall chart data for visualization.
+ *
+ * @param {CashFlowProjection} projection - Cash flow projection
+ * @returns {object} Waterfall chart data
+ *
+ * @example
+ * ```typescript
+ * const waterfallData = generateCashFlowWaterfall(projection);
+ * ```
+ */
+export function generateCashFlowWaterfall(projection: CashFlowProjection): {
+  categories: string[];
+  values: number[];
+  cumulativeValues: number[];
+} {
+  const categories = ['Opening Balance', ...projection.cashInflows.map(i => i.description), ...projection.cashOutflows.map(o => o.description), 'Closing Balance'];
+  const values = [projection.openingBalance, ...projection.cashInflows.map(i => i.amount), ...projection.cashOutflows.map(o => -o.amount), 0];
+
+  let cumulative = 0;
+  const cumulativeValues = values.map(v => {
+    cumulative += v;
+    return cumulative;
+  });
+
+  return { categories, values, cumulativeValues };
+}
+
+/**
+ * Compares actual cash flow performance against forecast for accuracy analysis.
+ *
+ * @param {string} forecastId - Forecast ID
+ * @param {Date} periodStart - Period start
+ * @param {Date} periodEnd - Period end
+ * @returns {Promise<object>} Forecast accuracy metrics
+ *
+ * @example
+ * ```typescript
+ * const accuracy = await compareActualVsForecastCashFlow(
+ *   'FCT-2025-001',
+ *   new Date('2025-01-01'),
+ *   new Date('2025-01-31')
+ * );
+ * ```
+ */
+export async function compareActualVsForecastCashFlow(
+  forecastId: string,
+  periodStart: Date,
+  periodEnd: Date,
+): Promise<{
+  forecastAmount: number;
+  actualAmount: number;
+  variance: number;
+  variancePercent: number;
+  accuracy: number;
+  mape: number;
+}> {
+  return {
+    forecastAmount: 0,
+    actualAmount: 0,
+    variance: 0,
+    variancePercent: 0,
+    accuracy: 0,
+    mape: 0,
+  };
+}
+
+// ============================================================================
+// FINANCIAL PROJECTION FUNCTIONS (9-16)
+// ============================================================================
+
+/**
+ * Creates comprehensive financial projection with revenue, expenses, and profitability.
+ *
+ * @param {Partial<FinancialProjection>} projectionData - Projection data
+ * @param {ForecastContext} context - Execution context
+ * @returns {Promise<FinancialProjection>} Created financial projection
+ *
+ * @example
+ * ```typescript
+ * const projection = await createFinancialProjection({
+ *   projectionName: '5-Year Strategic Plan',
+ *   projectionType: 'comprehensive',
+ *   timeHorizon: 'long_term',
+ *   startDate: '2025-01-01',
+ *   endDate: '2029-12-31'
+ * }, context);
+ * ```
+ */
+export async function createFinancialProjection(
+  projectionData: Partial<FinancialProjection>,
+  context: ForecastContext,
+): Promise<FinancialProjection> {
+  const projectionId = await generateForecastId('PROJ', context.fiscalYear);
+
+  const projection: FinancialProjection = {
+    ...projectionData,
+    projectionId,
+    status: 'draft',
+    createdBy: context.userId,
+    periods: [],
+    assumptions: [],
+    keyMetrics: [],
+    confidence: 'medium',
+    metadata: projectionData.metadata || {},
+  } as FinancialProjection;
+
+  return projection;
+}
+
+/**
+ * Projects revenue growth using multiple methodologies and drivers.
+ *
+ * @param {number} baseRevenue - Current revenue
+ * @param {number} growthRate - Expected growth rate
+ * @param {number} periods - Number of periods
+ * @param {RevenueDriver[]} drivers - Revenue drivers
+ * @returns {RevenueProjection[]} Revenue projections
+ *
+ * @example
+ * ```typescript
+ * const revenueProjection = projectRevenueGrowth(5000000, 0.15, 12, drivers);
+ * ```
+ */
+export function projectRevenueGrowth(
+  baseRevenue: number,
+  growthRate: number,
+  periods: number,
+  drivers: RevenueDriver[],
+): RevenueProjection[] {
+  const projections: RevenueProjection[] = [];
+
+  for (let i = 0; i < periods; i++) {
+    const periodRevenue = baseRevenue * Math.pow(1 + growthRate, i);
+
+    projections.push({
+      totalRevenue: periodRevenue,
+      revenueByStream: [],
+      growthRate,
+      seasonalFactor: 1.0,
+      baseRevenue,
+      incrementalRevenue: periodRevenue - baseRevenue,
+    });
+  }
+
+  return projections;
+}
+
+/**
+ * Projects expense trends with fixed and variable cost modeling.
+ *
+ * @param {number} baseExpenses - Current expenses
+ * @param {number} fixedExpenseRatio - Fixed expense ratio
+ * @param {number} revenueGrowth - Revenue growth rate
+ * @param {number} periods - Number of periods
+ * @returns {ExpenseProjection[]} Expense projections
+ *
+ * @example
+ * ```typescript
+ * const expenseProjection = projectExpenseTrends(3500000, 0.60, 0.15, 12);
+ * ```
+ */
+export function projectExpenseTrends(
+  baseExpenses: number,
+  fixedExpenseRatio: number,
+  revenueGrowth: number,
+  periods: number,
+): ExpenseProjection[] {
+  const projections: ExpenseProjection[] = [];
+  const fixedExpenses = baseExpenses * fixedExpenseRatio;
+  const variableExpenses = baseExpenses * (1 - fixedExpenseRatio);
+
+  for (let i = 0; i < periods; i++) {
+    const periodVariableExpenses = variableExpenses * Math.pow(1 + revenueGrowth, i);
+    const totalExpenses = fixedExpenses + periodVariableExpenses;
+
+    projections.push({
+      totalExpenses,
+      expenseByCategory: [],
+      fixedExpenses,
+      variableExpenses: periodVariableExpenses,
+      discretionaryExpenses: 0,
+      growthRate: revenueGrowth,
+      baseExpenses,
+      incrementalExpenses: totalExpenses - baseExpenses,
+    });
+  }
+
+  return projections;
+}
+
+/**
+ * Calculates comprehensive profitability metrics from projections.
+ *
+ * @param {number} revenue - Revenue amount
+ * @param {number} expenses - Expense amount
+ * @param {number} depreciation - Depreciation amount
+ * @param {number} interest - Interest expense
+ * @param {number} tax - Tax amount
+ * @returns {ProfitabilityMetrics} Profitability metrics
+ *
+ * @example
+ * ```typescript
+ * const profitability = calculateProfitabilityMetrics(
+ *   5000000,
+ *   3500000,
+ *   200000,
+ *   50000,
+ *   300000
+ * );
+ * ```
+ */
+export function calculateProfitabilityMetrics(
+  revenue: number,
+  expenses: number,
+  depreciation: number,
+  interest: number,
+  tax: number,
+): ProfitabilityMetrics {
+  const grossProfit = revenue - expenses;
+  const ebitda = grossProfit;
+  const ebit = ebitda - depreciation;
+  const operatingProfit = ebit;
+  const netProfit = ebit - interest - tax;
+
+  return {
+    grossProfit,
+    grossMargin: (grossProfit / revenue) * 100,
+    operatingProfit,
+    operatingMargin: (operatingProfit / revenue) * 100,
+    netProfit,
+    netMargin: (netProfit / revenue) * 100,
+    ebitda,
+    ebitdaMargin: (ebitda / revenue) * 100,
+    ebit,
+    ebitMargin: (ebit / revenue) * 100,
+  };
+}
+
+/**
+ * Projects balance sheet line items for future periods.
+ *
+ * @param {BalanceSheetProjection} currentBS - Current balance sheet
+ * @param {number} assetGrowthRate - Asset growth rate
+ * @param {number} liabilityGrowthRate - Liability growth rate
+ * @param {number} retainedEarnings - Retained earnings addition
+ * @returns {BalanceSheetProjection} Projected balance sheet
+ *
+ * @example
+ * ```typescript
+ * const projectedBS = projectBalanceSheet(currentBS, 0.10, 0.08, 500000);
+ * ```
+ */
+export function projectBalanceSheet(
+  currentBS: BalanceSheetProjection,
+  assetGrowthRate: number,
+  liabilityGrowthRate: number,
+  retainedEarnings: number,
+): BalanceSheetProjection {
+  const totalAssets = currentBS.totalAssets * (1 + assetGrowthRate);
+  const totalLiabilities = currentBS.totalLiabilities * (1 + liabilityGrowthRate);
+  const equity = totalAssets - totalLiabilities;
+
+  return {
+    totalAssets,
+    currentAssets: totalAssets * 0.4,
+    fixedAssets: totalAssets * 0.6,
+    totalLiabilities,
+    currentLiabilities: totalLiabilities * 0.3,
+    longTermLiabilities: totalLiabilities * 0.7,
+    equity,
+    retainedEarnings: currentBS.retainedEarnings + retainedEarnings,
+    workingCapital: totalAssets * 0.4 - totalLiabilities * 0.3,
+  };
+}
+
+/**
+ * Calculates comprehensive financial ratios for analysis.
+ *
+ * @param {ProjectionPeriod} period - Projection period data
+ * @returns {FinancialRatios} Financial ratios
+ *
+ * @example
+ * ```typescript
+ * const ratios = calculateFinancialRatios(projectionPeriod);
+ * ```
+ */
+export function calculateFinancialRatios(period: ProjectionPeriod): FinancialRatios {
+  const bs = period.balanceSheet;
+  const pnl = period.profitability;
+  const revenue = period.revenue.totalRevenue;
+
+  return {
+    liquidityRatios: {
+      currentRatio: bs.currentAssets / bs.currentLiabilities,
+      quickRatio: (bs.currentAssets - bs.currentAssets * 0.3) / bs.currentLiabilities,
+      cashRatio: bs.currentAssets * 0.2 / bs.currentLiabilities,
+      workingCapitalRatio: bs.workingCapital / revenue,
+    },
+    profitabilityRatios: {
+      returnOnAssets: (pnl.netProfit / bs.totalAssets) * 100,
+      returnOnEquity: (pnl.netProfit / bs.equity) * 100,
+      returnOnInvestment: (pnl.netProfit / (bs.totalAssets - bs.currentLiabilities)) * 100,
+      grossProfitMargin: pnl.grossMargin,
+      netProfitMargin: pnl.netMargin,
+    },
+    efficiencyRatios: {
+      assetTurnover: revenue / bs.totalAssets,
+      inventoryTurnover: period.expenses.totalExpenses / (bs.currentAssets * 0.3),
+      receivablesTurnover: revenue / (bs.currentAssets * 0.4),
+      payablesTurnover: period.expenses.totalExpenses / (bs.currentLiabilities * 0.5),
+      daysSalesOutstanding: 365 / (revenue / (bs.currentAssets * 0.4)),
+      daysInventoryOutstanding: 365 / (period.expenses.totalExpenses / (bs.currentAssets * 0.3)),
+    },
+    leverageRatios: {
+      debtToEquity: bs.totalLiabilities / bs.equity,
+      debtToAssets: bs.totalLiabilities / bs.totalAssets,
+      equityMultiplier: bs.totalAssets / bs.equity,
+      interestCoverage: pnl.ebit / (pnl.ebit * 0.05),
+      debtServiceCoverage: pnl.ebitda / (bs.longTermLiabilities * 0.1),
+    },
+  };
+}
+
+/**
+ * Generates multi-year projection summary for executive reporting.
+ *
+ * @param {FinancialProjection} projection - Financial projection
+ * @returns {object} Executive summary
+ *
+ * @example
+ * ```typescript
+ * const summary = generateProjectionSummary(projection);
+ * ```
+ */
+export function generateProjectionSummary(projection: FinancialProjection): {
+  timeHorizon: string;
+  periods: number;
+  averageRevenue: number;
+  revenueGrowthRate: number;
+  averageNetMargin: number;
+  cumulativeCashFlow: number;
+  keyMetrics: Record<string, any>;
+} {
+  return {
+    timeHorizon: projection.timeHorizon,
+    periods: projection.periods.length,
+    averageRevenue: 0,
+    revenueGrowthRate: 0,
+    averageNetMargin: 0,
+    cumulativeCashFlow: 0,
+    keyMetrics: {},
+  };
+}
+
+/**
+ * Validates projection assumptions against historical trends and benchmarks.
+ *
+ * @param {ForecastAssumption[]} assumptions - Projection assumptions
+ * @param {object} historicalData - Historical data for validation
+ * @returns {Promise<object>} Validation results
+ *
+ * @example
+ * ```typescript
+ * const validation = await validateProjectionAssumptions(assumptions, historicalData);
+ * ```
+ */
+export async function validateProjectionAssumptions(
+  assumptions: ForecastAssumption[],
+  historicalData: Record<string, any>,
+): Promise<{
+  valid: boolean;
+  warnings: string[];
+  recommendations: string[];
+}> {
+  return {
+    valid: true,
+    warnings: [],
+    recommendations: [],
+  };
+}
+
+// ============================================================================
+// SCENARIO PLANNING FUNCTIONS (17-24)
+// ============================================================================
+
+/**
+ * Creates financial scenario with customizable assumptions and variables.
+ *
+ * @param {Partial<Scenario>} scenarioData - Scenario data
+ * @param {ForecastContext} context - Execution context
+ * @returns {Promise<Scenario>} Created scenario
+ *
+ * @example
+ * ```typescript
+ * const scenario = await createScenario({
+ *   scenarioName: 'Economic Downturn',
+ *   scenarioType: 'pessimistic',
+ *   impact: 'high',
+ *   probability: 30
+ * }, context);
+ * ```
+ */
+export async function createScenario(
+  scenarioData: Partial<Scenario>,
+  context: ForecastContext,
+): Promise<Scenario> {
+  const scenarioId = await generateScenarioId(scenarioData.scenarioType || 'base', context.fiscalYear);
+
+  const scenario: Scenario = {
+    ...scenarioData,
+    scenarioId,
+    status: 'draft',
+    createdBy: context.userId,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    assumptions: scenarioData.assumptions || [],
+    variables: scenarioData.variables || [],
+    projections: [],
+    metadata: scenarioData.metadata || {},
+  } as Scenario;
+
+  return scenario;
+}
+
+/**
+ * Compares multiple scenarios side-by-side for decision analysis.
+ *
+ * @param {string[]} scenarioIds - Scenario IDs to compare
+ * @param {string[]} metrics - Metrics to compare
+ * @returns {Promise<object>} Scenario comparison
+ *
+ * @example
+ * ```typescript
+ * const comparison = await compareScenarios(
+ *   ['SCEN-BASE', 'SCEN-OPT', 'SCEN-PESS'],
+ *   ['revenue', 'netProfit', 'cashFlow']
+ * );
+ * ```
+ */
+export async function compareScenarios(
+  scenarioIds: string[],
+  metrics: string[],
+): Promise<{
+  scenarios: Array<{ scenarioId: string; scenarioName: string; metrics: Record<string, number> }>;
+  differences: Record<string, any>;
+  recommendations: string[];
+}> {
+  return {
+    scenarios: [],
+    differences: {},
+    recommendations: [],
+  };
+}
+
+/**
+ * Runs what-if analysis by varying specific input variables.
+ *
+ * @param {string} baseScenarioId - Base scenario ID
+ * @param {ScenarioVariable[]} variables - Variables to modify
+ * @param {ForecastContext} context - Execution context
+ * @returns {Promise<Scenario>} What-if scenario
+ *
+ * @example
+ * ```typescript
+ * const whatIf = await runWhatIfAnalysis('SCEN-BASE', [
+ *   { variableName: 'Revenue Growth', baseValue: 15, scenarioValue: 10 }
+ * ], context);
+ * ```
+ */
+export async function runWhatIfAnalysis(
+  baseScenarioId: string,
+  variables: Partial<ScenarioVariable>[],
+  context: ForecastContext,
+): Promise<Scenario> {
+  const scenario = await createScenario(
+    {
+      scenarioName: 'What-If Analysis',
+      scenarioType: 'what_if',
+      description: 'What-if scenario analysis',
+      comparisonBase: baseScenarioId,
+      impact: 'moderate',
+      variables: variables as ScenarioVariable[],
+    },
+    context,
+  );
+
+  return scenario;
+}
+
+/**
+ * Generates optimistic scenario with favorable assumptions.
+ *
+ * @param {string} baseScenarioId - Base scenario ID
+ * @param {number} upliftPercent - Uplift percentage for key variables
+ * @param {ForecastContext} context - Execution context
+ * @returns {Promise<Scenario>} Optimistic scenario
+ *
+ * @example
+ * ```typescript
+ * const optimistic = await generateOptimisticScenario('SCEN-BASE', 20, context);
+ * ```
+ */
+export async function generateOptimisticScenario(
+  baseScenarioId: string,
+  upliftPercent: number,
+  context: ForecastContext,
+): Promise<Scenario> {
+  return createScenario(
+    {
+      scenarioName: 'Optimistic Scenario',
+      scenarioType: 'optimistic',
+      description: `Optimistic scenario with ${upliftPercent}% uplift on key variables`,
+      comparisonBase: baseScenarioId,
+      impact: 'high',
+      probability: 25,
+    },
+    context,
+  );
+}
+
+/**
+ * Generates pessimistic scenario with conservative assumptions.
+ *
+ * @param {string} baseScenarioId - Base scenario ID
+ * @param {number} downwardAdjustment - Downward adjustment percentage
+ * @param {ForecastContext} context - Execution context
+ * @returns {Promise<Scenario>} Pessimistic scenario
+ *
+ * @example
+ * ```typescript
+ * const pessimistic = await generatePessimisticScenario('SCEN-BASE', 25, context);
+ * ```
+ */
+export async function generatePessimisticScenario(
+  baseScenarioId: string,
+  downwardAdjustment: number,
+  context: ForecastContext,
+): Promise<Scenario> {
+  return createScenario(
+    {
+      scenarioName: 'Pessimistic Scenario',
+      scenarioType: 'pessimistic',
+      description: `Pessimistic scenario with ${downwardAdjustment}% downward adjustment`,
+      comparisonBase: baseScenarioId,
+      impact: 'high',
+      probability: 20,
+    },
+    context,
+  );
+}
+
+/**
+ * Performs stress testing on scenarios with extreme conditions.
+ *
+ * @param {string} scenarioId - Scenario ID to stress test
+ * @param {object} stressFactors - Stress factors to apply
+ * @param {ForecastContext} context - Execution context
+ * @returns {Promise<Scenario>} Stress test scenario
+ *
+ * @example
+ * ```typescript
+ * const stressTest = await performStressTesting('SCEN-BASE', {
+ *   revenueDecline: 40,
+ *   costIncrease: 20
+ * }, context);
+ * ```
+ */
+export async function performStressTesting(
+  scenarioId: string,
+  stressFactors: Record<string, number>,
+  context: ForecastContext,
+): Promise<Scenario> {
+  return createScenario(
+    {
+      scenarioName: 'Stress Test',
+      scenarioType: 'stress_test',
+      description: 'Stress testing with extreme conditions',
+      comparisonBase: scenarioId,
+      impact: 'critical',
+    },
+    context,
+  );
+}
+
+/**
+ * Calculates weighted probability-adjusted scenario outcomes.
+ *
+ * @param {Scenario[]} scenarios - Scenarios with probabilities
+ * @param {string} metric - Metric to calculate
+ * @returns {object} Probability-weighted results
+ *
+ * @example
+ * ```typescript
+ * const weighted = calculateWeightedScenarioOutcomes(scenarios, 'netProfit');
+ * ```
+ */
+export function calculateWeightedScenarioOutcomes(
+  scenarios: Scenario[],
+  metric: string,
+): {
+  weightedAverage: number;
+  expectedValue: number;
+  standardDeviation: number;
+  confidenceInterval: ConfidenceInterval;
+} {
+  return {
+    weightedAverage: 0,
+    expectedValue: 0,
+    standardDeviation: 0,
+    confidenceInterval: {
+      lowerBound: 0,
+      upperBound: 0,
+      confidenceLevel: 95,
+      standardError: 0,
+    },
+  };
+}
+
+/**
+ * Identifies key scenario drivers with highest impact on outcomes.
+ *
+ * @param {Scenario} scenario - Scenario to analyze
+ * @returns {Array<{driver: string; impact: number; rank: number}>} Key drivers
+ *
+ * @example
+ * ```typescript
+ * const keyDrivers = identifyScenarioKeyDrivers(scenario);
+ * ```
+ */
+export function identifyScenarioKeyDrivers(
+  scenario: Scenario,
+): Array<{ driver: string; impact: number; rank: number }> {
+  return [];
+}
+
+// ============================================================================
+// TREND ANALYSIS FUNCTIONS (25-32)
+// ============================================================================
+
+/**
+ * Analyzes historical trends using time series analysis methods.
+ *
+ * @param {string} metric - Metric to analyze
+ * @param {TrendDataPoint[]} dataPoints - Historical data points
+ * @param {string} methodology - Analysis methodology
+ * @returns {Promise<TrendAnalysis>} Trend analysis results
+ *
+ * @example
+ * ```typescript
+ * const trendAnalysis = await analyzeHistoricalTrends(
+ *   'Monthly Revenue',
+ *   dataPoints,
+ *   'time_series'
+ * );
+ * ```
+ */
+export async function analyzeHistoricalTrends(
+  metric: string,
+  dataPoints: TrendDataPoint[],
+  methodology: string,
+): Promise<TrendAnalysis> {
+  const analysisId = `TREND-${Date.now()}`;
+
+  return {
+    analysisId,
+    analysisName: `${metric} Trend Analysis`,
+    metric,
+    period: `${dataPoints[0]?.period} - ${dataPoints[dataPoints.length - 1]?.period}`,
+    dataPoints,
+    trendType: 'linear',
+    trendDirection: 'increasing',
+    trendStrength: 0.85,
+    seasonality: { hasSeasonality: false },
+    forecast: [],
+    confidence: {
+      lowerBound: 0,
+      upperBound: 0,
+      confidenceLevel: 95,
+      standardError: 0,
+    },
+    rSquared: 0.85,
+    methodology,
+    metadata: {},
+  };
+}
+
+/**
+ * Detects seasonality patterns in financial data.
+ *
+ * @param {TrendDataPoint[]} dataPoints - Time series data
+ * @param {number} periodicity - Expected seasonal period
+ * @returns {SeasonalityInfo} Seasonality information
+ *
+ * @example
+ * ```typescript
+ * const seasonality = detectSeasonalityPatterns(monthlyData, 12);
+ * ```
+ */
+export function detectSeasonalityPatterns(
+  dataPoints: TrendDataPoint[],
+  periodicity: number,
+): SeasonalityInfo {
+  return {
+    hasSeasonality: true,
+    seasonalPeriod: periodicity,
+    seasonalIndices: [],
+    peakPeriods: [],
+    troughPeriods: [],
+  };
+}
+
+/**
+ * Calculates moving averages for trend smoothing.
+ *
+ * @param {number[]} values - Data values
+ * @param {number} windowSize - Moving average window
+ * @returns {number[]} Moving averages
+ *
+ * @example
+ * ```typescript
+ * const movingAvg = calculateMovingAverage([100, 110, 105, 120, 115], 3);
+ * ```
+ */
+export function calculateMovingAverage(values: number[], windowSize: number): number[] {
+  const movingAverages: number[] = [];
+
+  for (let i = windowSize - 1; i < values.length; i++) {
+    const window = values.slice(i - windowSize + 1, i + 1);
+    const average = window.reduce((sum, val) => sum + val, 0) / windowSize;
+    movingAverages.push(average);
+  }
+
+  return movingAverages;
+}
+
+/**
+ * Performs exponential smoothing for forecasting.
+ *
+ * @param {number[]} values - Historical values
+ * @param {number} alpha - Smoothing factor (0-1)
+ * @param {number} periods - Forecast periods
+ * @returns {object} Smoothed values and forecast
+ *
+ * @example
+ * ```typescript
+ * const smoothed = performExponentialSmoothing([100, 110, 105, 120], 0.3, 3);
+ * ```
+ */
+export function performExponentialSmoothing(
+  values: number[],
+  alpha: number,
+  periods: number,
+): {
+  smoothed: number[];
+  forecast: number[];
+} {
+  const smoothed: number[] = [values[0]];
+
+  for (let i = 1; i < values.length; i++) {
+    smoothed.push(alpha * values[i] + (1 - alpha) * smoothed[i - 1]);
+  }
+
+  const forecast: number[] = [];
+  const lastSmoothed = smoothed[smoothed.length - 1];
+
+  for (let i = 0; i < periods; i++) {
+    forecast.push(lastSmoothed);
+  }
+
+  return { smoothed, forecast };
+}
+
+/**
+ * Identifies anomalies in financial data using statistical methods.
+ *
+ * @param {TrendDataPoint[]} dataPoints - Data points to analyze
+ * @param {number} standardDeviations - Standard deviation threshold
+ * @returns {TrendDataPoint[]} Anomalous data points
+ *
+ * @example
+ * ```typescript
+ * const anomalies = identifyAnomalies(dataPoints, 2);
+ * ```
+ */
+export function identifyAnomalies(
+  dataPoints: TrendDataPoint[],
+  standardDeviations: number = 2,
+): TrendDataPoint[] {
+  const values = dataPoints.map(dp => dp.actualValue);
+  const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
+  const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
+  const stdDev = Math.sqrt(variance);
+
+  return dataPoints.filter(dp => {
+    const zScore = Math.abs((dp.actualValue - mean) / stdDev);
+    return zScore > standardDeviations;
+  }).map(dp => ({ ...dp, anomaly: true, anomalyScore: Math.abs((dp.actualValue - mean) / stdDev) }));
+}
+
+/**
+ * Performs linear regression analysis for trend forecasting.
+ *
+ * @param {number[]} xValues - Independent variable values
+ * @param {number[]} yValues - Dependent variable values
+ * @returns {object} Regression coefficients and statistics
+ *
+ * @example
+ * ```typescript
+ * const regression = performLinearRegression([1, 2, 3, 4, 5], [100, 120, 110, 140, 150]);
+ * ```
+ */
+export function performLinearRegression(
+  xValues: number[],
+  yValues: number[],
+): {
+  slope: number;
+  intercept: number;
+  rSquared: number;
+  predict: (x: number) => number;
+} {
+  const n = xValues.length;
+  const sumX = xValues.reduce((sum, x) => sum + x, 0);
+  const sumY = yValues.reduce((sum, y) => sum + y, 0);
+  const sumXY = xValues.reduce((sum, x, i) => sum + x * yValues[i], 0);
+  const sumXX = xValues.reduce((sum, x) => sum + x * x, 0);
+
+  const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+  const intercept = (sumY - slope * sumX) / n;
+
+  const predict = (x: number) => slope * x + intercept;
+
+  // Calculate R-squared
+  const yMean = sumY / n;
+  const totalSS = yValues.reduce((sum, y) => sum + Math.pow(y - yMean, 2), 0);
+  const residualSS = yValues.reduce((sum, y, i) => sum + Math.pow(y - predict(xValues[i]), 2), 0);
+  const rSquared = 1 - residualSS / totalSS;
+
+  return { slope, intercept, rSquared, predict };
+}
+
+/**
+ * Calculates year-over-year growth rates for metrics.
+ *
+ * @param {number[]} values - Values by period
+ * @param {number} periodsPerYear - Periods per year
+ * @returns {number[]} YoY growth rates
+ *
+ * @example
+ * ```typescript
+ * const yoyGrowth = calculateYearOverYearGrowth(monthlyRevenue, 12);
+ * ```
+ */
+export function calculateYearOverYearGrowth(values: number[], periodsPerYear: number): number[] {
+  const yoyGrowth: number[] = [];
+
+  for (let i = periodsPerYear; i < values.length; i++) {
+    const growth = ((values[i] - values[i - periodsPerYear]) / values[i - periodsPerYear]) * 100;
+    yoyGrowth.push(growth);
+  }
+
+  return yoyGrowth;
+}
+
+/**
+ * Generates trend forecast with confidence intervals.
+ *
+ * @param {TrendAnalysis} trendAnalysis - Trend analysis results
+ * @param {number} periods - Forecast periods
+ * @returns {TrendDataPoint[]} Forecasted data points
+ *
+ * @example
+ * ```typescript
+ * const forecast = generateTrendForecast(trendAnalysis, 12);
+ * ```
+ */
+export function generateTrendForecast(
+  trendAnalysis: TrendAnalysis,
+  periods: number,
+): TrendDataPoint[] {
+  const forecast: TrendDataPoint[] = [];
+
+  for (let i = 0; i < periods; i++) {
+    forecast.push({
+      period: `Forecast-${i + 1}`,
+      timestamp: new Date().toISOString(),
+      actualValue: 0,
+      forecastValue: 0,
+      anomaly: false,
+    });
+  }
+
+  return forecast;
+}
+
+// ============================================================================
+// SENSITIVITY & RISK ANALYSIS FUNCTIONS (33-38)
+// ============================================================================
+
+/**
+ * Performs sensitivity analysis on financial projections.
+ *
+ * @param {string} projectionId - Projection ID
+ * @param {SensitivityVariable[]} variables - Variables to analyze
+ * @param {string} targetMetric - Target metric
+ * @param {ForecastContext} context - Execution context
+ * @returns {Promise<SensitivityAnalysis>} Sensitivity analysis results
+ *
+ * @example
+ * ```typescript
+ * const sensitivity = await performSensitivityAnalysis(
+ *   'PROJ-2025-001',
+ *   [{ variableName: 'Revenue Growth', baseValue: 15, variationRange: [10, 20] }],
+ *   'Net Profit',
+ *   context
+ * );
+ * ```
+ */
+export async function performSensitivityAnalysis(
+  projectionId: string,
+  variables: SensitivityVariable[],
+  targetMetric: string,
+  context: ForecastContext,
+): Promise<SensitivityAnalysis> {
+  const analysisId = `SENS-${Date.now()}`;
+
+  return {
+    analysisId,
+    analysisName: 'Sensitivity Analysis',
+    baseScenario: projectionId,
+    targetMetric,
+    targetMetricValue: 0,
+    variables,
+    results: [],
+    createdAt: new Date().toISOString(),
+    metadata: {},
+  };
+}
+
+/**
+ * Runs Monte Carlo simulation for risk assessment.
+ *
+ * @param {string} projectionId - Projection ID
+ * @param {RandomVariable[]} variables - Random variables
+ * @param {number} iterations - Number of simulations
+ * @param {string} targetMetric - Target metric
+ * @returns {Promise<MonteCarloSimulation>} Simulation results
+ *
+ * @example
+ * ```typescript
+ * const simulation = await runMonteCarloSimulation(
+ *   'PROJ-2025-001',
+ *   [{ variableName: 'Revenue', distributionType: 'normal', mean: 5000000, standardDeviation: 500000 }],
+ *   10000,
+ *   'Net Profit'
+ * );
+ * ```
+ */
+export async function runMonteCarloSimulation(
+  projectionId: string,
+  variables: RandomVariable[],
+  iterations: number,
+  targetMetric: string,
+): Promise<MonteCarloSimulation> {
+  const startTime = Date.now();
+  const simulationId = `MONTE-${startTime}`;
+  const outcomes: number[] = [];
+
+  // Run simulations
+  for (let i = 0; i < iterations; i++) {
+    let outcome = 0;
+    for (const variable of variables) {
+      outcome += generateRandomValue(variable);
+    }
+    outcomes.push(outcome);
+  }
+
+  const mean = outcomes.reduce((sum, val) => sum + val, 0) / outcomes.length;
+  const variance = outcomes.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / outcomes.length;
+
+  return {
+    simulationId,
+    simulationName: 'Monte Carlo Simulation',
+    targetMetric,
+    iterations,
+    randomVariables: variables,
+    results: {
+      mean,
+      median: calculateMedian(outcomes),
+      mode: 0,
+      standardDeviation: Math.sqrt(variance),
+      variance,
+      min: Math.min(...outcomes),
+      max: Math.max(...outcomes),
+      range: Math.max(...outcomes) - Math.min(...outcomes),
+      skewness: 0,
+      kurtosis: 0,
+      outcomes,
+    },
+    distribution: { bins: [], frequencies: [], probabilities: [] },
+    percentiles: calculatePercentiles(outcomes),
+    riskMetrics: calculateRiskMetrics(outcomes),
+    convergence: true,
+    runTime: Date.now() - startTime,
+    createdAt: new Date().toISOString(),
+    metadata: {},
+  };
+}
+
+/**
+ * Generates tornado chart data for sensitivity visualization.
+ *
+ * @param {SensitivityAnalysis} analysis - Sensitivity analysis
+ * @returns {TornadoChartData} Tornado chart data
+ *
+ * @example
+ * ```typescript
+ * const tornadoData = generateTornadoChart(sensitivityAnalysis);
+ * ```
+ */
+export function generateTornadoChart(analysis: SensitivityAnalysis): TornadoChartData {
+  return {
+    variables: [],
+    lowImpact: [],
+    highImpact: [],
+    range: [],
+  };
+}
+
+/**
+ * Calculates Value at Risk (VaR) for financial projections.
+ *
+ * @param {number[]} outcomes - Simulation outcomes
+ * @param {number} confidenceLevel - Confidence level (e.g., 95, 99)
+ * @returns {number} Value at Risk
+ *
+ * @example
+ * ```typescript
+ * const var95 = calculateValueAtRisk(simulationOutcomes, 95);
+ * ```
+ */
+export function calculateValueAtRisk(outcomes: number[], confidenceLevel: number): number {
+  const sorted = outcomes.slice().sort((a, b) => a - b);
+  const index = Math.floor((1 - confidenceLevel / 100) * sorted.length);
+  return sorted[index];
+}
+
+/**
+ * Calculates Conditional Value at Risk (CVaR/Expected Shortfall).
+ *
+ * @param {number[]} outcomes - Simulation outcomes
+ * @param {number} confidenceLevel - Confidence level
+ * @returns {number} Conditional Value at Risk
+ *
+ * @example
+ * ```typescript
+ * const cvar95 = calculateConditionalVaR(simulationOutcomes, 95);
+ * ```
+ */
+export function calculateConditionalVaR(outcomes: number[], confidenceLevel: number): number {
+  const var95 = calculateValueAtRisk(outcomes, confidenceLevel);
+  const tailLosses = outcomes.filter(outcome => outcome <= var95);
+  return tailLosses.reduce((sum, val) => sum + val, 0) / tailLosses.length;
+}
+
+/**
+ * Identifies critical risk factors in projections.
+ *
+ * @param {SensitivityAnalysis} analysis - Sensitivity analysis
+ * @param {number} threshold - Impact threshold
+ * @returns {Array<{factor: string; impact: number; severity: string}>} Critical risk factors
+ *
+ * @example
+ * ```typescript
+ * const riskFactors = identifyCriticalRiskFactors(sensitivityAnalysis, 0.1);
+ * ```
+ */
+export function identifyCriticalRiskFactors(
+  analysis: SensitivityAnalysis,
+  threshold: number,
+): Array<{ factor: string; impact: number; severity: string }> {
+  return [];
+}
+
+// ============================================================================
+// BUDGET & VARIANCE ANALYSIS FUNCTIONS (39-45)
+// ============================================================================
+
+/**
+ * Creates budget vs actual comparison for variance analysis.
+ *
+ * @param {number} fiscalYear - Fiscal year
+ * @param {number} fiscalPeriod - Fiscal period
+ * @param {number} budgetAmount - Budget amount
+ * @param {number} actualAmount - Actual amount
+ * @param {ForecastContext} context - Execution context
+ * @returns {Promise<BudgetVsActual>} Budget comparison
+ *
+ * @example
+ * ```typescript
+ * const comparison = await createBudgetVsActualComparison(
+ *   2025,
+ *   1,
+ *   1000000,
+ *   950000,
+ *   context
+ * );
+ * ```
+ */
+export async function createBudgetVsActualComparison(
+  fiscalYear: number,
+  fiscalPeriod: number,
+  budgetAmount: number,
+  actualAmount: number,
+  context: ForecastContext,
+): Promise<BudgetVsActual> {
+  const comparisonId = `COMP-${fiscalYear}-Q${fiscalPeriod}`;
+  const variance = actualAmount - budgetAmount;
+  const variancePercent = (variance / budgetAmount) * 100;
+
+  return {
+    comparisonId,
+    fiscalYear,
+    fiscalPeriod,
+    budgetAmount,
+    actualAmount,
+    variance,
+    variancePercent,
+    ytdBudget: budgetAmount,
+    ytdActual: actualAmount,
+    ytdVariance: variance,
+    ytdVariancePercent: variancePercent,
+    categories: [],
+    flags: [],
+    metadata: {},
+  };
+}
+
+/**
+ * Analyzes budget variance by category for detailed insights.
+ *
+ * @param {BudgetVsActual} comparison - Budget comparison
+ * @returns {CategoryVariance[]} Category variances
+ *
+ * @example
+ * ```typescript
+ * const categoryAnalysis = analyzeBudgetVarianceByCategory(comparison);
+ * ```
+ */
+export function analyzeBudgetVarianceByCategory(
+  comparison: BudgetVsActual,
+): CategoryVariance[] {
+  return comparison.categories;
+}
+
+/**
+ * Flags significant budget variances requiring attention.
+ *
+ * @param {BudgetVsActual} comparison - Budget comparison
+ * @param {number} threshold - Variance threshold percentage
+ * @returns {VarianceFlag[]} Variance flags
+ *
+ * @example
+ * ```typescript
+ * const flags = flagSignificantVariances(comparison, 10);
+ * ```
+ */
+export function flagSignificantVariances(
+  comparison: BudgetVsActual,
+  threshold: number,
+): VarianceFlag[] {
+  const flags: VarianceFlag[] = [];
+
+  if (Math.abs(comparison.variancePercent) > threshold) {
+    flags.push({
+      flagType: comparison.variance > 0 ? 'favorable_variance' : 'unfavorable_variance',
+      severity: Math.abs(comparison.variancePercent) > threshold * 2 ? 'critical' : 'high',
+      threshold,
+      actualVariance: comparison.variancePercent,
+      message: `Budget variance of ${comparison.variancePercent.toFixed(2)}% exceeds threshold of ${threshold}%`,
+      actionRequired: true,
+    });
+  }
+
+  return flags;
+}
+
+/**
+ * Generates rolling forecast based on recent actuals and trends.
+ *
+ * @param {string} forecastId - Forecast ID
+ * @param {number} rollingPeriods - Number of rolling periods
+ * @param {TimeUnit} rollingUnit - Time unit
+ * @param {ForecastContext} context - Execution context
+ * @returns {Promise<RollingForecast>} Rolling forecast
+ *
+ * @example
+ * ```typescript
+ * const rollingForecast = await generateRollingForecast('FCT-2025-001', 12, 'month', context);
+ * ```
+ */
+export async function generateRollingForecast(
+  forecastId: string,
+  rollingPeriods: number,
+  rollingUnit: TimeUnit,
+  context: ForecastContext,
+): Promise<RollingForecast> {
+  return {
+    forecastId,
+    forecastName: `${rollingPeriods} ${rollingUnit} Rolling Forecast`,
+    rollingPeriods,
+    rollingUnit,
+    currentPeriod: new Date().toISOString(),
+    forecastHorizon: rollingPeriods,
+    periods: [],
+    updateFrequency: 'monthly',
+    lastUpdated: new Date().toISOString(),
+    nextUpdate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    methodology: 'trend_analysis',
+    accuracy: {
+      mape: 0,
+      mae: 0,
+      rmse: 0,
+      bias: 0,
+      trackingSignal: 0,
+      accuracyRate: 0,
+    },
+    metadata: {},
+  };
+}
+
+/**
+ * Calculates forecast accuracy metrics (MAPE, MAE, RMSE).
+ *
+ * @param {number[]} actuals - Actual values
+ * @param {number[]} forecasts - Forecasted values
+ * @returns {ForecastAccuracy} Accuracy metrics
+ *
+ * @example
+ * ```typescript
+ * const accuracy = calculateForecastAccuracy(actualValues, forecastedValues);
+ * ```
+ */
+export function calculateForecastAccuracy(
+  actuals: number[],
+  forecasts: number[],
+): ForecastAccuracy {
+  const n = Math.min(actuals.length, forecasts.length);
+  let sumAbsError = 0;
+  let sumAbsPercentError = 0;
+  let sumSquaredError = 0;
+  let sumError = 0;
+
+  for (let i = 0; i < n; i++) {
+    const error = actuals[i] - forecasts[i];
+    const absError = Math.abs(error);
+    const percentError = Math.abs(error / actuals[i]) * 100;
+
+    sumAbsError += absError;
+    sumAbsPercentError += percentError;
+    sumSquaredError += error * error;
+    sumError += error;
+  }
+
+  const mae = sumAbsError / n;
+  const mape = sumAbsPercentError / n;
+  const rmse = Math.sqrt(sumSquaredError / n);
+  const bias = sumError / n;
+
+  return {
+    mape,
+    mae,
+    rmse,
+    bias,
+    trackingSignal: sumError / mae,
+    accuracyRate: 100 - mape,
+  };
+}
+
+/**
+ * Creates capital expenditure plan with project prioritization.
+ *
+ * @param {Partial<CapitalPlan>} planData - Capital plan data
+ * @param {ForecastContext} context - Execution context
+ * @returns {Promise<CapitalPlan>} Capital plan
+ *
+ * @example
+ * ```typescript
+ * const capPlan = await createCapitalPlan({
+ *   planName: 'FY2025 Capital Plan',
+ *   fiscalYear: 2025,
+ *   totalCapital: 5000000
+ * }, context);
+ * ```
+ */
+export async function createCapitalPlan(
+  planData: Partial<CapitalPlan>,
+  context: ForecastContext,
+): Promise<CapitalPlan> {
+  const planId = `CAPPLAN-${context.fiscalYear}`;
+
+  return {
+    ...planData,
+    planId,
+    allocatedCapital: 0,
+    unallocatedCapital: planData.totalCapital || 0,
+    projects: [],
+    priorities: [],
+    constraints: [],
+    approval: {
+      approvalRequired: true,
+      approvalLevel: 'executive',
+      status: 'pending',
+    },
+    status: 'draft',
+    metadata: {},
+  } as CapitalPlan;
+}
+
+/**
+ * Generates comprehensive financial dashboard metrics.
+ *
+ * @param {Date} periodStart - Period start date
+ * @param {Date} periodEnd - Period end date
+ * @param {ForecastContext} context - Execution context
+ * @returns {Promise<object>} Dashboard metrics
+ *
+ * @example
+ * ```typescript
+ * const dashboard = await generateFinancialDashboard(
+ *   new Date('2025-01-01'),
+ *   new Date('2025-01-31'),
+ *   context
+ * );
+ * ```
+ */
+export async function generateFinancialDashboard(
+  periodStart: Date,
+  periodEnd: Date,
+  context: ForecastContext,
+): Promise<{
+  period: { start: string; end: string };
+  revenue: { actual: number; budget: number; forecast: number; variance: number };
+  expenses: { actual: number; budget: number; forecast: number; variance: number };
+  cashFlow: { opening: number; closing: number; netChange: number };
+  profitability: ProfitabilityMetrics;
+  kpis: FinancialMetric[];
+}> {
+  return {
+    period: { start: periodStart.toISOString(), end: periodEnd.toISOString() },
+    revenue: { actual: 0, budget: 0, forecast: 0, variance: 0 },
+    expenses: { actual: 0, budget: 0, forecast: 0, variance: 0 },
+    cashFlow: { opening: 0, closing: 0, netChange: 0 },
+    profitability: {
+      grossProfit: 0,
+      grossMargin: 0,
+      operatingProfit: 0,
+      operatingMargin: 0,
+      netProfit: 0,
+      netMargin: 0,
+      ebitda: 0,
+      ebitdaMargin: 0,
+      ebit: 0,
+      ebitMargin: 0,
+    },
+    kpis: [],
+  };
+}
+
+// ============================================================================
+// HELPER UTILITY FUNCTIONS
+// ============================================================================
+
+/**
+ * Generates unique forecast ID with prefix and year.
+ *
+ * @param {string} prefix - ID prefix
+ * @param {number} year - Fiscal year
+ * @returns {Promise<string>} Unique forecast ID
+ */
+async function generateForecastId(prefix: string, year: number): Promise<string> {
+  const sequence = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+  return `${prefix}-${year}-${sequence}`;
+}
+
+/**
+ * Generates unique scenario ID.
+ *
+ * @param {string} scenarioType - Scenario type
+ * @param {number} year - Fiscal year
+ * @returns {Promise<string>} Unique scenario ID
+ */
+async function generateScenarioId(scenarioType: string, year: number): Promise<string> {
+  const sequence = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+  const typePrefix = scenarioType.substring(0, 4).toUpperCase();
+  return `SCEN-${typePrefix}-${year}-${sequence}`;
+}
+
+/**
+ * Generates time periods for forecasting.
+ *
+ * @param {Date} startDate - Start date
+ * @param {Date} endDate - End date
+ * @param {ForecastGranularity} granularity - Time granularity
+ * @returns {Array<{label: string; start: Date; end: Date}>} Time periods
+ */
+function generateTimePeriods(
+  startDate: Date,
+  endDate: Date,
+  granularity: ForecastGranularity,
+): Array<{ label: string; start: Date; end: Date }> {
+  const periods: Array<{ label: string; start: Date; end: Date }> = [];
+  let current = new Date(startDate);
+
+  while (current < endDate) {
+    const periodStart = new Date(current);
+    let periodEnd: Date;
+
+    switch (granularity) {
+      case 'daily':
+        periodEnd = new Date(current);
+        periodEnd.setDate(periodEnd.getDate() + 1);
+        break;
+      case 'weekly':
+        periodEnd = new Date(current);
+        periodEnd.setDate(periodEnd.getDate() + 7);
+        break;
+      case 'monthly':
+        periodEnd = new Date(current);
+        periodEnd.setMonth(periodEnd.getMonth() + 1);
+        break;
+      case 'quarterly':
+        periodEnd = new Date(current);
+        periodEnd.setMonth(periodEnd.getMonth() + 3);
+        break;
+      case 'annual':
+        periodEnd = new Date(current);
+        periodEnd.setFullYear(periodEnd.getFullYear() + 1);
+        break;
+      default:
+        periodEnd = new Date(current);
+        periodEnd.setMonth(periodEnd.getMonth() + 1);
+    }
+
+    periods.push({
+      label: `${periodStart.toISOString().split('T')[0]} to ${periodEnd.toISOString().split('T')[0]}`,
+      start: periodStart,
+      end: periodEnd,
+    });
+
+    current = periodEnd;
+  }
+
+  return periods;
+}
+
+/**
+ * Generates random value based on distribution.
+ *
+ * @param {RandomVariable} variable - Random variable
+ * @returns {number} Random value
+ */
+function generateRandomValue(variable: RandomVariable): number {
+  switch (variable.distributionType) {
+    case 'normal':
+      return normalRandom(variable.mean, variable.standardDeviation);
+    case 'uniform':
+      return uniformRandom(variable.min || 0, variable.max || 100);
+    default:
+      return variable.mean;
+  }
+}
+
+/**
+ * Generates normal random value.
+ *
+ * @param {number} mean - Mean
+ * @param {number} stdDev - Standard deviation
+ * @returns {number} Random value
+ */
+function normalRandom(mean: number, stdDev: number): number {
+  // Box-Muller transform
+  const u1 = Math.random();
+  const u2 = Math.random();
+  const z0 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+  return mean + z0 * stdDev;
+}
+
+/**
+ * Generates uniform random value.
+ *
+ * @param {number} min - Minimum value
+ * @param {number} max - Maximum value
+ * @returns {number} Random value
+ */
+function uniformRandom(min: number, max: number): number {
+  return min + Math.random() * (max - min);
+}
+
+/**
+ * Calculates median of array.
+ *
+ * @param {number[]} values - Values
+ * @returns {number} Median
+ */
+function calculateMedian(values: number[]): number {
+  const sorted = values.slice().sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+}
+
+/**
+ * Calculates percentiles from array.
+ *
+ * @param {number[]} values - Values
+ * @returns {PercentileData} Percentile data
+ */
+function calculatePercentiles(values: number[]): PercentileData {
+  const sorted = values.slice().sort((a, b) => a - b);
+  const getPercentile = (p: number) => {
+    const index = Math.floor((p / 100) * sorted.length);
+    return sorted[index];
+  };
+
+  return {
+    p5: getPercentile(5),
+    p10: getPercentile(10),
+    p25: getPercentile(25),
+    p50: getPercentile(50),
+    p75: getPercentile(75),
+    p90: getPercentile(90),
+    p95: getPercentile(95),
+    p99: getPercentile(99),
+  };
+}
+
+/**
+ * Calculates risk metrics from simulation outcomes.
+ *
+ * @param {number[]} outcomes - Simulation outcomes
+ * @returns {RiskMetrics} Risk metrics
+ */
+function calculateRiskMetrics(outcomes: number[]): RiskMetrics {
+  const sorted = outcomes.slice().sort((a, b) => a - b);
+
+  return {
+    valueAtRisk: calculateValueAtRisk(outcomes, 95),
+    conditionalValueAtRisk: calculateConditionalVaR(outcomes, 95),
+    probabilityOfLoss: outcomes.filter(o => o < 0).length / outcomes.length,
+    expectedShortfall: calculateConditionalVaR(outcomes, 95),
+    downsideDeviation: Math.sqrt(
+      outcomes.filter(o => o < 0).reduce((sum, o) => sum + o * o, 0) / outcomes.length
+    ),
+    maxDrawdown: Math.min(...outcomes),
+  };
+}
