@@ -28,13 +28,14 @@
  * Upstream: @nestjs/websockets, socket.io, Redis, ioredis, Sequelize, sequelize-typescript
  * Downstream: All WebSocket gateways, chat modules, notification services, real-time dashboards
  * Dependencies: NestJS v11.x, Socket.IO v4.x, Redis v5.x, Sequelize v6.x, Node 18+, TypeScript 5.x
- * Exports: 40 WebSocket utility functions for gateways, rooms, presence, notifications, rate limiting, Sequelize models
+ * Exports: 50+ WebSocket utility functions for gateways, rooms, presence, notifications, rate limiting, offline queues, file transfer, read receipts, Sequelize models
  *
  * LLM Context: Production-grade WebSocket real-time communication toolkit for White Cross healthcare platform.
  * Provides comprehensive utilities for WebSocket gateway setup, room/namespace management, Socket.IO authentication,
  * JWT validation, presence tracking (online/offline/away), typing indicators, message broadcasting, event routing,
- * rate limiting, Redis adapter configuration, connection state management, heartbeat/reconnection logic,
- * WebSocket middleware, notification delivery, and Sequelize models for socket connections, rooms, messages, and presence.
+ * rate limiting, Redis adapter configuration, connection state management, heartbeat/reconnection logic, offline message queues,
+ * event acknowledgments, socket-based file transfer, read receipts tracking, WebSocket middleware, notification delivery,
+ * health checks, and Sequelize models for socket connections, rooms, messages, presence, and offline queues.
  * HIPAA-compliant with secure real-time communication, audit logging, and encrypted message transmission.
  */
 
@@ -225,6 +226,79 @@ export interface WsRedisAdapterConfig {
   keyPrefix?: string;
   requestsTimeout?: number;
   tls?: boolean;
+}
+
+/**
+ * Offline message queue entry
+ */
+export interface WsOfflineMessage {
+  id: string;
+  userId: string;
+  event: string;
+  data: any;
+  priority: number;
+  queuedAt: Date;
+  expiresAt?: Date;
+  attempts: number;
+  maxAttempts: number;
+}
+
+/**
+ * Read receipt information
+ */
+export interface WsReadReceipt {
+  messageId: string;
+  userId: string;
+  readAt: Date;
+  socketId: string;
+}
+
+/**
+ * File transfer metadata
+ */
+export interface WsFileTransfer {
+  transferId: string;
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  senderId: string;
+  recipientId?: string;
+  roomId?: string;
+  chunkSize: number;
+  totalChunks: number;
+  receivedChunks: number;
+  startedAt: Date;
+  completedAt?: Date;
+  status: 'pending' | 'transferring' | 'completed' | 'failed' | 'cancelled';
+}
+
+/**
+ * Health check result
+ */
+export interface WsHealthCheckResult {
+  healthy: boolean;
+  timestamp: Date;
+  metrics: {
+    connectedClients: number;
+    totalRooms: number;
+    averageLatency: number;
+    memoryUsage: number;
+    uptime: number;
+  };
+  issues?: string[];
+}
+
+/**
+ * Connection state tracking
+ */
+export interface WsConnectionState {
+  socketId: string;
+  userId: string;
+  state: 'connecting' | 'connected' | 'reconnecting' | 'disconnected';
+  reconnectAttempts: number;
+  lastConnected?: Date;
+  lastDisconnected?: Date;
+  disconnectReason?: string;
 }
 
 // ============================================================================
@@ -699,6 +773,149 @@ export class SocketNotification extends Model {
     comment: 'Action URL or route',
   })
   actionUrl!: string | null;
+}
+
+/**
+ * Offline message queue model for storing messages for offline users
+ */
+@Table({
+  tableName: 'socket_offline_queue',
+  timestamps: true,
+  indexes: [
+    { fields: ['userId'] },
+    { fields: ['priority'] },
+    { fields: ['queuedAt'] },
+    { fields: ['delivered'] },
+  ],
+})
+export class SocketOfflineQueue extends Model {
+  @PrimaryKey
+  @Default(DataType.UUIDV4)
+  @Column(DataType.UUID)
+  id!: string;
+
+  @Column({
+    type: DataType.UUID,
+    allowNull: false,
+    comment: 'Target user ID',
+  })
+  userId!: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    comment: 'Event name',
+  })
+  event!: string;
+
+  @Column({
+    type: DataType.JSONB,
+    allowNull: false,
+    comment: 'Event data payload',
+  })
+  data!: Record<string, any>;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+    comment: 'Message priority (higher = more urgent)',
+  })
+  priority!: number;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: false,
+    defaultValue: DataType.NOW,
+    comment: 'Queued timestamp',
+  })
+  queuedAt!: Date;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+    comment: 'Expiration timestamp',
+  })
+  expiresAt!: Date | null;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+    comment: 'Delivery attempts',
+  })
+  attempts!: number;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 3,
+    comment: 'Maximum delivery attempts',
+  })
+  maxAttempts!: number;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+    comment: 'Delivery status',
+  })
+  delivered!: boolean;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+    comment: 'Delivered timestamp',
+  })
+  deliveredAt!: Date | null;
+}
+
+/**
+ * Read receipts model for tracking message read status
+ */
+@Table({
+  tableName: 'socket_read_receipts',
+  timestamps: true,
+  indexes: [
+    { fields: ['messageId'] },
+    { fields: ['userId'] },
+    { fields: ['readAt'] },
+  ],
+})
+export class SocketReadReceipt extends Model {
+  @PrimaryKey
+  @Default(DataType.UUIDV4)
+  @Column(DataType.UUID)
+  id!: string;
+
+  @Column({
+    type: DataType.UUID,
+    allowNull: false,
+    comment: 'Message ID',
+  })
+  messageId!: string;
+
+  @Column({
+    type: DataType.UUID,
+    allowNull: false,
+    comment: 'User who read the message',
+  })
+  userId!: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    comment: 'Socket ID when message was read',
+  })
+  socketId!: string;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: false,
+    defaultValue: DataType.NOW,
+    comment: 'Read timestamp',
+  })
+  readAt!: Date;
 }
 
 // ============================================================================
@@ -1905,12 +2122,371 @@ export async function getWsConnectionQuality(client: Socket): Promise<{
   };
 }
 
+/**
+ * 34. Tracks connection state transitions.
+ *
+ * @param {string} socketId - Socket ID
+ * @param {string} userId - User ID
+ * @param {Map<string, WsConnectionState>} stateStore - Connection state store
+ * @returns {WsConnectionState} Connection state
+ *
+ * @example
+ * ```typescript
+ * const state = trackWsConnectionState(client.id, userId, this.stateStore);
+ * ```
+ */
+export function trackWsConnectionState(
+  socketId: string,
+  userId: string,
+  stateStore: Map<string, WsConnectionState>,
+): WsConnectionState {
+  const existing = stateStore.get(socketId);
+
+  if (existing) {
+    existing.state = 'connected';
+    existing.reconnectAttempts = 0;
+    existing.lastConnected = new Date();
+    return existing;
+  }
+
+  const state: WsConnectionState = {
+    socketId,
+    userId,
+    state: 'connected',
+    reconnectAttempts: 0,
+    lastConnected: new Date(),
+  };
+
+  stateStore.set(socketId, state);
+  return state;
+}
+
+/**
+ * 35. Calculates exponential backoff for reconnection.
+ *
+ * @param {number} attempt - Current attempt number
+ * @param {WsReconnectionConfig} config - Reconnection configuration
+ * @returns {number} Delay in milliseconds
+ *
+ * @example
+ * ```typescript
+ * const delay = calculateWsReconnectionDelay(3, {
+ *   enabled: true,
+ *   maxAttempts: 5,
+ *   delay: 1000,
+ *   delayMultiplier: 2,
+ *   maxDelay: 30000
+ * });
+ * ```
+ */
+export function calculateWsReconnectionDelay(
+  attempt: number,
+  config: WsReconnectionConfig,
+): number {
+  const exponentialDelay = Math.min(
+    config.delay * Math.pow(config.delayMultiplier, attempt - 1),
+    config.maxDelay,
+  );
+
+  // Add jitter ±25%
+  const jitter = exponentialDelay * 0.25 * (Math.random() * 2 - 1);
+  return Math.floor(exponentialDelay + jitter);
+}
+
+// ============================================================================
+// OFFLINE MESSAGE QUEUE
+// ============================================================================
+
+/**
+ * 36. Queues message for offline user.
+ *
+ * @param {string} userId - User ID
+ * @param {string} event - Event name
+ * @param {any} data - Event data
+ * @param {Partial<WsOfflineMessage>} options - Queue options
+ * @returns {Promise<SocketOfflineQueue>} Queued message
+ *
+ * @example
+ * ```typescript
+ * const queued = await queueWsOfflineMessage('user-123', 'notification', data, {
+ *   priority: 5,
+ *   expiresAt: new Date(Date.now() + 86400000)
+ * });
+ * ```
+ */
+export async function queueWsOfflineMessage(
+  userId: string,
+  event: string,
+  data: any,
+  options?: Partial<WsOfflineMessage>,
+): Promise<SocketOfflineQueue> {
+  return await SocketOfflineQueue.create({
+    userId,
+    event,
+    data,
+    priority: options?.priority || 0,
+    expiresAt: options?.expiresAt || null,
+    maxAttempts: options?.maxAttempts || 3,
+  });
+}
+
+/**
+ * 37. Retrieves queued messages for user.
+ *
+ * @param {string} userId - User ID
+ * @param {number} limit - Maximum messages to retrieve
+ * @returns {Promise<SocketOfflineQueue[]>} Queued messages
+ *
+ * @example
+ * ```typescript
+ * const messages = await getWsQueuedMessages('user-123', 50);
+ * for (const msg of messages) {
+ *   socket.emit(msg.event, msg.data);
+ * }
+ * ```
+ */
+export async function getWsQueuedMessages(
+  userId: string,
+  limit: number = 50,
+): Promise<SocketOfflineQueue[]> {
+  return await SocketOfflineQueue.findAll({
+    where: {
+      userId,
+      delivered: false,
+    },
+    order: [
+      ['priority', 'DESC'],
+      ['queuedAt', 'ASC'],
+    ],
+    limit,
+  });
+}
+
+/**
+ * 38. Marks queued message as delivered.
+ *
+ * @param {string} messageId - Message ID
+ * @returns {Promise<boolean>} True if updated successfully
+ *
+ * @example
+ * ```typescript
+ * await markWsQueuedMessageDelivered(msg.id);
+ * ```
+ */
+export async function markWsQueuedMessageDelivered(messageId: string): Promise<boolean> {
+  const [updated] = await SocketOfflineQueue.update(
+    { delivered: true, deliveredAt: new Date() },
+    { where: { id: messageId } },
+  );
+
+  return updated > 0;
+}
+
+/**
+ * 39. Cleans up expired queued messages.
+ *
+ * @returns {Promise<number>} Number of deleted messages
+ *
+ * @example
+ * ```typescript
+ * const deleted = await cleanupWsExpiredQueue();
+ * console.log(`Cleaned up ${deleted} expired messages`);
+ * ```
+ */
+export async function cleanupWsExpiredQueue(): Promise<number> {
+  const now = new Date();
+  return await SocketOfflineQueue.destroy({
+    where: {
+      expiresAt: {
+        [Sequelize.Op.lt]: now,
+      },
+    },
+  });
+}
+
+// ============================================================================
+// READ RECEIPTS
+// ============================================================================
+
+/**
+ * 40. Creates read receipt for message.
+ *
+ * @param {string} messageId - Message ID
+ * @param {string} userId - User ID
+ * @param {string} socketId - Socket ID
+ * @returns {Promise<SocketReadReceipt>} Created receipt
+ *
+ * @example
+ * ```typescript
+ * const receipt = await createWsReadReceipt('msg-123', 'user-456', client.id);
+ * ```
+ */
+export async function createWsReadReceipt(
+  messageId: string,
+  userId: string,
+  socketId: string,
+): Promise<SocketReadReceipt> {
+  return await SocketReadReceipt.create({
+    messageId,
+    userId,
+    socketId,
+  });
+}
+
+/**
+ * 41. Gets all read receipts for a message.
+ *
+ * @param {string} messageId - Message ID
+ * @returns {Promise<WsReadReceipt[]>} Read receipts
+ *
+ * @example
+ * ```typescript
+ * const receipts = await getWsMessageReadReceipts('msg-123');
+ * console.log(`Message read by ${receipts.length} users`);
+ * ```
+ */
+export async function getWsMessageReadReceipts(messageId: string): Promise<WsReadReceipt[]> {
+  const receipts = await SocketReadReceipt.findAll({
+    where: { messageId },
+    order: [['readAt', 'ASC']],
+  });
+
+  return receipts.map((r) => ({
+    messageId: r.messageId,
+    userId: r.userId,
+    socketId: r.socketId,
+    readAt: r.readAt,
+  }));
+}
+
+/**
+ * 42. Broadcasts read receipt to room.
+ *
+ * @param {Server} server - Socket.IO server
+ * @param {string} roomId - Room ID
+ * @param {WsReadReceipt} receipt - Read receipt
+ * @returns {void}
+ *
+ * @example
+ * ```typescript
+ * broadcastWsReadReceipt(this.server, 'room-123', receipt);
+ * ```
+ */
+export function broadcastWsReadReceipt(
+  server: Server,
+  roomId: string,
+  receipt: WsReadReceipt,
+): void {
+  server.to(roomId).emit('message:read', receipt);
+}
+
+// ============================================================================
+// FILE TRANSFER
+// ============================================================================
+
+/**
+ * 43. Initiates file transfer session.
+ *
+ * @param {object} options - File transfer options
+ * @returns {WsFileTransfer} File transfer metadata
+ *
+ * @example
+ * ```typescript
+ * const transfer = initiateWsFileTransfer({
+ *   fileName: 'report.pdf',
+ *   fileSize: 1024000,
+ *   mimeType: 'application/pdf',
+ *   senderId: 'user-123',
+ *   recipientId: 'user-456',
+ *   chunkSize: 64000
+ * });
+ * ```
+ */
+export function initiateWsFileTransfer(options: {
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  senderId: string;
+  recipientId?: string;
+  roomId?: string;
+  chunkSize?: number;
+}): WsFileTransfer {
+  const chunkSize = options.chunkSize || 64000; // 64KB
+  const totalChunks = Math.ceil(options.fileSize / chunkSize);
+
+  return {
+    transferId: generateTransferId(),
+    fileName: options.fileName,
+    fileSize: options.fileSize,
+    mimeType: options.mimeType,
+    senderId: options.senderId,
+    recipientId: options.recipientId,
+    roomId: options.roomId,
+    chunkSize,
+    totalChunks,
+    receivedChunks: 0,
+    startedAt: new Date(),
+    status: 'pending',
+  };
+}
+
+/**
+ * 44. Handles file chunk transfer.
+ *
+ * @param {WsFileTransfer} transfer - Transfer metadata
+ * @param {number} chunkIndex - Chunk index
+ * @param {Buffer} chunkData - Chunk data
+ * @returns {WsFileTransfer} Updated transfer metadata
+ *
+ * @example
+ * ```typescript
+ * const updated = handleWsFileChunk(transfer, 5, chunkBuffer);
+ * client.emit('file:progress', {
+ *   transferId: updated.transferId,
+ *   progress: (updated.receivedChunks / updated.totalChunks) * 100
+ * });
+ * ```
+ */
+export function handleWsFileChunk(
+  transfer: WsFileTransfer,
+  chunkIndex: number,
+  chunkData: Buffer,
+): WsFileTransfer {
+  transfer.receivedChunks++;
+  transfer.status = 'transferring';
+
+  if (transfer.receivedChunks >= transfer.totalChunks) {
+    transfer.status = 'completed';
+    transfer.completedAt = new Date();
+  }
+
+  return transfer;
+}
+
+/**
+ * 45. Cancels file transfer.
+ *
+ * @param {WsFileTransfer} transfer - Transfer metadata
+ * @returns {WsFileTransfer} Updated transfer metadata
+ *
+ * @example
+ * ```typescript
+ * const cancelled = cancelWsFileTransfer(transfer);
+ * client.emit('file:cancelled', { transferId: cancelled.transferId });
+ * ```
+ */
+export function cancelWsFileTransfer(transfer: WsFileTransfer): WsFileTransfer {
+  transfer.status = 'cancelled';
+  transfer.completedAt = new Date();
+  return transfer;
+}
+
 // ============================================================================
 // NOTIFICATION DELIVERY
 // ============================================================================
 
 /**
- * 34. Creates and persists a WebSocket notification.
+ * 46. Creates and persists a WebSocket notification.
  *
  * @param {string} userId - Target user ID
  * @param {string} type - Notification type
@@ -1951,7 +2527,7 @@ export async function createWsNotification(
 }
 
 /**
- * 35. Delivers real-time notification to user.
+ * 47. Delivers real-time notification to user.
  *
  * @param {Server} server - Socket.IO server instance
  * @param {WsNotification} notification - Notification to deliver
@@ -1968,7 +2544,7 @@ export function deliverWsNotification(server: Server, notification: WsNotificati
 }
 
 /**
- * 36. Marks notification as read.
+ * 48. Marks notification as read.
  *
  * @param {string} notificationId - Notification ID
  * @returns {Promise<boolean>} True if updated successfully
@@ -1988,7 +2564,7 @@ export async function markWsNotificationRead(notificationId: string): Promise<bo
 }
 
 /**
- * 37. Gets unread notifications for user.
+ * 49. Gets unread notifications for user.
  *
  * @param {string} userId - User identifier
  * @param {number} limit - Maximum number of notifications
@@ -2015,7 +2591,7 @@ export async function getWsUnreadNotifications(
 // ============================================================================
 
 /**
- * 38. Creates event routing middleware for conditional message delivery.
+ * 50. Creates event routing middleware for conditional message delivery.
  *
  * @param {WsEventRoutingRule[]} rules - Routing rules
  * @returns {(client: Socket, event: string, data: any) => void} Routing middleware
@@ -2072,7 +2648,7 @@ export function createWsEventRouter(
 }
 
 /**
- * 39. Creates WebSocket middleware for request validation and logging.
+ * 51. Creates WebSocket middleware for request validation and logging.
  *
  * @param {(client: Socket, data: any) => Promise<boolean>} validator - Validation function
  * @param {Logger} logger - Logger instance
@@ -2119,7 +2695,7 @@ export function createWsMiddleware(
 // ============================================================================
 
 /**
- * 40. Creates Redis adapter configuration for horizontal scaling.
+ * 52. Creates Redis adapter configuration for horizontal scaling.
  *
  * @param {Partial<WsRedisAdapterConfig>} options - Redis adapter options
  * @returns {WsRedisAdapterConfig} Complete Redis adapter configuration
@@ -2149,6 +2725,113 @@ export function createWsRedisAdapterConfig(
 }
 
 // ============================================================================
+// HEALTH CHECKS
+// ============================================================================
+
+/**
+ * 53. Performs comprehensive WebSocket health check.
+ *
+ * @param {Server} server - Socket.IO server
+ * @param {Map<string, WsConnectionMetadata>} connectionsStore - Connections store
+ * @returns {Promise<WsHealthCheckResult>} Health check result
+ *
+ * @example
+ * ```typescript
+ * const health = await performWsHealthCheck(this.server, this.connections);
+ * if (!health.healthy) {
+ *   logger.warn('WebSocket health issues:', health.issues);
+ * }
+ * ```
+ */
+export async function performWsHealthCheck(
+  server: Server,
+  connectionsStore: Map<string, WsConnectionMetadata>,
+): Promise<WsHealthCheckResult> {
+  const issues: string[] = [];
+  const metrics = {
+    connectedClients: server.sockets.sockets.size,
+    totalRooms: server.sockets.adapter.rooms.size,
+    averageLatency: 0,
+    memoryUsage: process.memoryUsage().heapUsed,
+    uptime: process.uptime(),
+  };
+
+  // Calculate average latency
+  const latencies: number[] = [];
+  for (const [socketId] of server.sockets.sockets) {
+    const socket = server.sockets.sockets.get(socketId);
+    if (socket && (socket as any).__latency) {
+      latencies.push((socket as any).__latency);
+    }
+  }
+
+  metrics.averageLatency =
+    latencies.length > 0 ? latencies.reduce((a, b) => a + b, 0) / latencies.length : 0;
+
+  // Check for issues
+  if (metrics.connectedClients === 0) {
+    issues.push('No active connections');
+  }
+
+  if (metrics.memoryUsage > 1073741824) {
+    // 1GB
+    issues.push('High memory usage detected');
+  }
+
+  if (metrics.averageLatency > 1000) {
+    issues.push('High average latency');
+  }
+
+  return {
+    healthy: issues.length === 0,
+    timestamp: new Date(),
+    metrics,
+    issues: issues.length > 0 ? issues : undefined,
+  };
+}
+
+/**
+ * 54. Checks individual socket connection health.
+ *
+ * @param {Socket} client - Socket client
+ * @returns {Promise<object>} Connection health metrics
+ *
+ * @example
+ * ```typescript
+ * const health = await checkWsSocketHealth(client);
+ * if (health.latency > 500) {
+ *   logger.warn('High latency detected');
+ * }
+ * ```
+ */
+export async function checkWsSocketHealth(client: Socket): Promise<{
+  healthy: boolean;
+  latency: number;
+  connected: boolean;
+  transport: string;
+}> {
+  try {
+    const start = Date.now();
+    await sendWsWithAck(client, 'health:ping', {}, 2000);
+    const latency = Date.now() - start;
+
+    return {
+      healthy: latency < 1000,
+      latency,
+      connected: client.connected,
+      transport: client.conn.transport.name,
+    };
+  } catch (error) {
+    return {
+      healthy: false,
+      latency: -1,
+      connected: client.connected,
+      transport: client.conn.transport.name,
+    };
+  }
+}
+
+// ============================================================================
 // UTILITY FUNCTIONS
 // ============================================================================
 
@@ -2157,6 +2840,13 @@ export function createWsRedisAdapterConfig(
  */
 function generateEventId(): string {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
+/**
+ * Generates a unique transfer ID for file transfers
+ */
+function generateTransferId(): string {
+  return `transfer-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
 /**
@@ -2200,7 +2890,7 @@ export function disconnectWsClient(client: Socket, reason: string): void {
 // ============================================================================
 
 export default {
-  // Gateway Configuration & Initialization
+  // Gateway Configuration & Initialization (6)
   createWsGatewayConfig,
   initializeWsGateway,
   handleWsConnection,
@@ -2208,14 +2898,14 @@ export default {
   persistWsConnection,
   removePersistedWsConnection,
 
-  // Authentication & Authorization
+  // Authentication & Authorization (5)
   extractWsAuthToken,
   validateWsJwtAuth,
   checkWsRole,
   checkWsPermission,
   validateWsTenantAccess,
 
-  // Room Management
+  // Room Management (6)
   joinWsRoom,
   leaveWsRoom,
   getWsRoomMembers,
@@ -2223,46 +2913,68 @@ export default {
   createWsRoom,
   closeWsRoom,
 
-  // Message Broadcasting
+  // Message Broadcasting (5)
   broadcastToWsRoom,
   broadcastToAllWs,
   sendToWsUser,
   sendWsWithAck,
   persistWsMessage,
 
-  // Presence Tracking
+  // Presence Tracking (5)
   setWsUserOnline,
   setWsUserOffline,
   getWsUserPresence,
   getWsOnlineUsers,
   broadcastWsPresenceUpdate,
 
-  // Typing Indicators
+  // Typing Indicators (2)
   startWsTypingIndicator,
   stopWsTypingIndicator,
 
-  // Rate Limiting
+  // Rate Limiting (1)
   createWsRateLimiter,
 
-  // Heartbeat & Reconnection
+  // Heartbeat & Reconnection (4)
   setupWsHeartbeat,
   handleWsReconnection,
   getWsConnectionQuality,
+  trackWsConnectionState,
+  calculateWsReconnectionDelay,
 
-  // Notification Delivery
+  // Offline Message Queue (4)
+  queueWsOfflineMessage,
+  getWsQueuedMessages,
+  markWsQueuedMessageDelivered,
+  cleanupWsExpiredQueue,
+
+  // Read Receipts (3)
+  createWsReadReceipt,
+  getWsMessageReadReceipts,
+  broadcastWsReadReceipt,
+
+  // File Transfer (3)
+  initiateWsFileTransfer,
+  handleWsFileChunk,
+  cancelWsFileTransfer,
+
+  // Notification Delivery (4)
   createWsNotification,
   deliverWsNotification,
   markWsNotificationRead,
   getWsUnreadNotifications,
 
-  // Event Routing & Middleware
+  // Event Routing & Middleware (2)
   createWsEventRouter,
   createWsMiddleware,
 
-  // Redis Adapter & Scaling
+  // Redis Adapter & Scaling (1)
   createWsRedisAdapterConfig,
 
-  // Utilities
+  // Health Checks (2)
+  performWsHealthCheck,
+  checkWsSocketHealth,
+
+  // Utilities (2)
   getWsGatewayStats,
   disconnectWsClient,
 
@@ -2272,4 +2984,6 @@ export default {
   SocketMessage,
   SocketPresence,
   SocketNotification,
+  SocketOfflineQueue,
+  SocketReadReceipt,
 };

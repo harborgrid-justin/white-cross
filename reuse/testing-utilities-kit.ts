@@ -1728,3 +1728,971 @@ export const waitForAsync = (ms: number = 100): Promise<void> => {
 export const flushPromises = (): Promise<void> => {
   return new Promise((resolve) => setImmediate(resolve));
 };
+
+// ============================================================================
+// WEBSOCKET TESTING HELPERS
+// ============================================================================
+
+/**
+ * Creates mock WebSocket client
+ *
+ * @returns {any} Mock WebSocket client
+ *
+ * @example
+ * ```typescript
+ * const ws = mockWebSocketClient();
+ * ws.emit.mockImplementation((event, data) => { ... });
+ * ```
+ */
+export const mockWebSocketClient = (): any => {
+  return {
+    emit: jest.fn(),
+    on: jest.fn(),
+    once: jest.fn(),
+    off: jest.fn(),
+    send: jest.fn(),
+    close: jest.fn(),
+    connect: jest.fn(),
+    disconnect: jest.fn(),
+    id: crypto.randomUUID(),
+    connected: true,
+    auth: {},
+    handshake: {
+      headers: {},
+      query: {},
+    },
+    join: jest.fn(),
+    leave: jest.fn(),
+    to: jest.fn().mockReturnThis(),
+    broadcast: {
+      emit: jest.fn(),
+      to: jest.fn().mockReturnThis(),
+    },
+  };
+};
+
+/**
+ * Creates mock WebSocket server
+ *
+ * @returns {any} Mock WebSocket server
+ *
+ * @example
+ * ```typescript
+ * const wss = mockWebSocketServer();
+ * wss.emit.mockImplementation((event, data) => { ... });
+ * ```
+ */
+export const mockWebSocketServer = (): any => {
+  const sockets = new Map();
+
+  return {
+    emit: jest.fn(),
+    to: jest.fn().mockReturnThis(),
+    in: jest.fn().mockReturnThis(),
+    sockets: {
+      sockets: sockets,
+      adapter: {
+        rooms: new Map(),
+      },
+    },
+    on: jest.fn(),
+    off: jest.fn(),
+    use: jest.fn(),
+    close: jest.fn(),
+  };
+};
+
+/**
+ * Simulates WebSocket connection
+ *
+ * @param {any} server - WebSocket server
+ * @param {any} [clientData] - Client data
+ * @returns {any} Connected client
+ *
+ * @example
+ * ```typescript
+ * const client = simulateWebSocketConnection(wss, {
+ *   userId: 'user-123',
+ *   token: 'auth-token'
+ * });
+ * ```
+ */
+export const simulateWebSocketConnection = (server: any, clientData?: any): any => {
+  const client = mockWebSocketClient();
+
+  if (clientData) {
+    client.auth = clientData;
+  }
+
+  server.sockets.sockets.set(client.id, client);
+
+  return client;
+};
+
+/**
+ * Waits for WebSocket event
+ *
+ * @param {any} socket - WebSocket client or server
+ * @param {string} event - Event name
+ * @param {number} [timeout=5000] - Timeout in milliseconds
+ * @returns {Promise<any>} Event data
+ *
+ * @example
+ * ```typescript
+ * const data = await waitForWebSocketEvent(client, 'user:created', 3000);
+ * expect(data.userId).toBeDefined();
+ * ```
+ */
+export const waitForWebSocketEvent = async (
+  socket: any,
+  event: string,
+  timeout: number = 5000,
+): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`Timeout waiting for event: ${event}`));
+    }, timeout);
+
+    socket.once(event, (data: any) => {
+      clearTimeout(timer);
+      resolve(data);
+    });
+  });
+};
+
+/**
+ * Asserts WebSocket event was emitted
+ *
+ * @param {any} socket - WebSocket client or server
+ * @param {string} event - Event name
+ * @param {any} [expectedData] - Expected event data
+ * @returns {void}
+ *
+ * @example
+ * ```typescript
+ * assertWebSocketEventEmitted(client, 'message:sent', { text: 'Hello' });
+ * ```
+ */
+export const assertWebSocketEventEmitted = (socket: any, event: string, expectedData?: any): void => {
+  expect(socket.emit).toHaveBeenCalled();
+
+  const calls = socket.emit.mock.calls;
+  const eventCall = calls.find((call: any[]) => call[0] === event);
+
+  expect(eventCall).toBeDefined();
+
+  if (expectedData) {
+    expect(eventCall[1]).toMatchObject(expectedData);
+  }
+};
+
+// ============================================================================
+// GRAPHQL QUERY TEST UTILITIES
+// ============================================================================
+
+/**
+ * Creates GraphQL test query
+ *
+ * @param {string} query - GraphQL query string
+ * @param {Record<string, any>} [variables] - Query variables
+ * @returns {object} GraphQL request
+ *
+ * @example
+ * ```typescript
+ * const query = createGraphQLQuery(`
+ *   query GetUser($id: ID!) {
+ *     user(id: $id) { id email name }
+ *   }
+ * `, { id: '123' });
+ * ```
+ */
+export const createGraphQLQuery = (
+  query: string,
+  variables?: Record<string, any>,
+): { query: string; variables?: Record<string, any> } => {
+  return {
+    query: query.trim(),
+    variables,
+  };
+};
+
+/**
+ * Creates GraphQL test mutation
+ *
+ * @param {string} mutation - GraphQL mutation string
+ * @param {Record<string, any>} [variables] - Mutation variables
+ * @returns {object} GraphQL request
+ *
+ * @example
+ * ```typescript
+ * const mutation = createGraphQLMutation(`
+ *   mutation CreateUser($input: CreateUserInput!) {
+ *     createUser(input: $input) { id email }
+ *   }
+ * `, { input: { email: 'test@example.com' } });
+ * ```
+ */
+export const createGraphQLMutation = (
+  mutation: string,
+  variables?: Record<string, any>,
+): { query: string; variables?: Record<string, any> } => {
+  return createGraphQLQuery(mutation, variables);
+};
+
+/**
+ * Executes GraphQL query in tests
+ *
+ * @param {INestApplication} app - Test application
+ * @param {object} query - GraphQL query
+ * @param {string} [token] - Auth token
+ * @returns {Promise<any>} Query result
+ *
+ * @example
+ * ```typescript
+ * const result = await executeGraphQLQuery(app, query, authToken);
+ * expect(result.data.user).toBeDefined();
+ * ```
+ */
+export const executeGraphQLQuery = async (
+  app: INestApplication,
+  query: { query: string; variables?: Record<string, any> },
+  token?: string,
+): Promise<any> => {
+  const req = request(app.getHttpServer()).post('/graphql').send(query);
+
+  if (token) {
+    req.set('Authorization', `Bearer ${token}`);
+  }
+
+  const response = await req;
+  return response.body;
+};
+
+/**
+ * Asserts GraphQL response structure
+ *
+ * @param {any} response - GraphQL response
+ * @param {string[]} [expectedFields] - Expected data fields
+ * @returns {void}
+ *
+ * @example
+ * ```typescript
+ * assertGraphQLResponse(response, ['user.id', 'user.email']);
+ * ```
+ */
+export const assertGraphQLResponse = (response: any, expectedFields?: string[]): void => {
+  expect(response).toHaveProperty('data');
+  expect(response).not.toHaveProperty('errors');
+
+  if (expectedFields) {
+    expectedFields.forEach((field) => {
+      const parts = field.split('.');
+      let current = response.data;
+
+      for (const part of parts) {
+        expect(current).toHaveProperty(part);
+        current = current[part];
+      }
+    });
+  }
+};
+
+/**
+ * Asserts GraphQL error response
+ *
+ * @param {any} response - GraphQL response
+ * @param {string} [expectedMessage] - Expected error message
+ * @returns {void}
+ *
+ * @example
+ * ```typescript
+ * assertGraphQLError(response, 'User not found');
+ * ```
+ */
+export const assertGraphQLError = (response: any, expectedMessage?: string): void => {
+  expect(response).toHaveProperty('errors');
+  expect(Array.isArray(response.errors)).toBe(true);
+  expect(response.errors.length).toBeGreaterThan(0);
+
+  if (expectedMessage) {
+    const errorMessages = response.errors.map((e: any) => e.message).join(' ');
+    expect(errorMessages).toContain(expectedMessage);
+  }
+};
+
+/**
+ * Mock GraphQL resolver
+ *
+ * @param {any} [returnValue] - Default return value
+ * @returns {jest.Mock} Mock resolver function
+ *
+ * @example
+ * ```typescript
+ * const resolver = mockGraphQLResolver({ user: { id: '123' } });
+ * ```
+ */
+export const mockGraphQLResolver = (returnValue?: any): jest.Mock => {
+  return jest.fn().mockResolvedValue(returnValue);
+};
+
+// ============================================================================
+// PERFORMANCE TEST HELPERS
+// ============================================================================
+
+/**
+ * Measures function execution time
+ *
+ * @param {() => Promise<any>} fn - Function to measure
+ * @returns {Promise<{ result: any; duration: number }>} Result and duration
+ *
+ * @example
+ * ```typescript
+ * const { result, duration } = await measureExecutionTime(async () => {
+ *   return await service.heavyOperation();
+ * });
+ * expect(duration).toBeLessThan(1000);
+ * ```
+ */
+export const measureExecutionTime = async (
+  fn: () => Promise<any>,
+): Promise<{ result: any; duration: number }> => {
+  const start = performance.now();
+  const result = await fn();
+  const duration = performance.now() - start;
+
+  return { result, duration };
+};
+
+/**
+ * Benchmarks function with multiple iterations
+ *
+ * @param {() => Promise<any>} fn - Function to benchmark
+ * @param {number} [iterations=100] - Number of iterations
+ * @returns {Promise<object>} Benchmark statistics
+ *
+ * @example
+ * ```typescript
+ * const stats = await benchmarkFunction(async () => {
+ *   return await service.processData();
+ * }, 100);
+ * expect(stats.avg).toBeLessThan(50);
+ * ```
+ */
+export const benchmarkFunction = async (
+  fn: () => Promise<any>,
+  iterations: number = 100,
+): Promise<{
+  min: number;
+  max: number;
+  avg: number;
+  median: number;
+  p95: number;
+  p99: number;
+}> => {
+  const durations: number[] = [];
+
+  for (let i = 0; i < iterations; i++) {
+    const { duration } = await measureExecutionTime(fn);
+    durations.push(duration);
+  }
+
+  const sorted = durations.sort((a, b) => a - b);
+  const sum = durations.reduce((a, b) => a + b, 0);
+
+  return {
+    min: sorted[0],
+    max: sorted[sorted.length - 1],
+    avg: sum / iterations,
+    median: sorted[Math.floor(iterations / 2)],
+    p95: sorted[Math.floor(iterations * 0.95)],
+    p99: sorted[Math.floor(iterations * 0.99)],
+  };
+};
+
+/**
+ * Asserts performance threshold
+ *
+ * @param {() => Promise<any>} fn - Function to test
+ * @param {number} maxDuration - Maximum allowed duration in ms
+ * @returns {Promise<void>}
+ *
+ * @example
+ * ```typescript
+ * await assertPerformanceThreshold(async () => {
+ *   return await service.quickOperation();
+ * }, 100);
+ * ```
+ */
+export const assertPerformanceThreshold = async (
+  fn: () => Promise<any>,
+  maxDuration: number,
+): Promise<void> => {
+  const { duration } = await measureExecutionTime(fn);
+  expect(duration).toBeLessThan(maxDuration);
+};
+
+/**
+ * Measures memory usage
+ *
+ * @param {() => Promise<any>} fn - Function to measure
+ * @returns {Promise<{ result: any; heapUsed: number }>} Result and memory usage
+ *
+ * @example
+ * ```typescript
+ * const { result, heapUsed } = await measureMemoryUsage(async () => {
+ *   return await service.loadLargeDataset();
+ * });
+ * ```
+ */
+export const measureMemoryUsage = async (
+  fn: () => Promise<any>,
+): Promise<{ result: any; heapUsed: number }> => {
+  if (global.gc) {
+    global.gc();
+  }
+
+  const before = process.memoryUsage().heapUsed;
+  const result = await fn();
+  const after = process.memoryUsage().heapUsed;
+  const heapUsed = after - before;
+
+  return { result, heapUsed };
+};
+
+/**
+ * Profiles async operations
+ *
+ * @param {string} label - Profile label
+ * @param {() => Promise<any>} fn - Function to profile
+ * @returns {Promise<any>} Function result
+ *
+ * @example
+ * ```typescript
+ * const result = await profileAsyncOperation('database-query', async () => {
+ *   return await repository.find();
+ * });
+ * ```
+ */
+export const profileAsyncOperation = async (label: string, fn: () => Promise<any>): Promise<any> => {
+  console.time(label);
+  const result = await fn();
+  console.timeEnd(label);
+  return result;
+};
+
+// ============================================================================
+// LOAD TESTING UTILITIES
+// ============================================================================
+
+/**
+ * Simulates concurrent requests
+ *
+ * @param {() => Promise<any>} fn - Function to execute
+ * @param {number} concurrency - Number of concurrent executions
+ * @returns {Promise<any[]>} Results array
+ *
+ * @example
+ * ```typescript
+ * const results = await simulateConcurrentRequests(async () => {
+ *   return await request(app.getHttpServer()).get('/users');
+ * }, 50);
+ * ```
+ */
+export const simulateConcurrentRequests = async (
+  fn: () => Promise<any>,
+  concurrency: number,
+): Promise<any[]> => {
+  const promises = Array.from({ length: concurrency }, () => fn());
+  return Promise.all(promises);
+};
+
+/**
+ * Load test with ramping users
+ *
+ * @param {() => Promise<any>} fn - Function to execute
+ * @param {object} config - Load test configuration
+ * @returns {Promise<object>} Load test results
+ *
+ * @example
+ * ```typescript
+ * const results = await loadTestWithRamping(async () => {
+ *   return await service.handleRequest();
+ * }, {
+ *   startUsers: 10,
+ *   endUsers: 100,
+ *   rampDuration: 30000,
+ *   holdDuration: 60000
+ * });
+ * ```
+ */
+export const loadTestWithRamping = async (
+  fn: () => Promise<any>,
+  config: {
+    startUsers: number;
+    endUsers: number;
+    rampDuration: number;
+    holdDuration: number;
+  },
+): Promise<{
+  totalRequests: number;
+  successfulRequests: number;
+  failedRequests: number;
+  avgResponseTime: number;
+  requestsPerSecond: number;
+}> => {
+  const results: { success: boolean; duration: number }[] = [];
+  const startTime = Date.now();
+
+  // Ramp up
+  const rampStep = config.rampDuration / (config.endUsers - config.startUsers);
+
+  for (let users = config.startUsers; users <= config.endUsers; users++) {
+    await waitForAsync(rampStep);
+
+    const promises = Array.from({ length: users }, async () => {
+      try {
+        const { duration } = await measureExecutionTime(fn);
+        return { success: true, duration };
+      } catch (error) {
+        return { success: false, duration: 0 };
+      }
+    });
+
+    const batchResults = await Promise.all(promises);
+    results.push(...batchResults);
+  }
+
+  // Hold at peak
+  const holdStart = Date.now();
+  while (Date.now() - holdStart < config.holdDuration) {
+    const promises = Array.from({ length: config.endUsers }, async () => {
+      try {
+        const { duration } = await measureExecutionTime(fn);
+        return { success: true, duration };
+      } catch (error) {
+        return { success: false, duration: 0 };
+      }
+    });
+
+    const batchResults = await Promise.all(promises);
+    results.push(...batchResults);
+    await waitForAsync(1000);
+  }
+
+  const totalDuration = (Date.now() - startTime) / 1000;
+  const successfulResults = results.filter((r) => r.success);
+  const avgDuration =
+    successfulResults.reduce((sum, r) => sum + r.duration, 0) / successfulResults.length;
+
+  return {
+    totalRequests: results.length,
+    successfulRequests: successfulResults.length,
+    failedRequests: results.filter((r) => !r.success).length,
+    avgResponseTime: avgDuration,
+    requestsPerSecond: results.length / totalDuration,
+  };
+};
+
+/**
+ * Stress test until failure
+ *
+ * @param {() => Promise<any>} fn - Function to stress test
+ * @param {number} [maxUsers=1000] - Maximum concurrent users
+ * @param {number} [step=10] - User increment step
+ * @returns {Promise<number>} Breaking point (number of users)
+ *
+ * @example
+ * ```typescript
+ * const breakingPoint = await stressTestUntilFailure(async () => {
+ *   return await service.handleRequest();
+ * }, 500, 20);
+ * ```
+ */
+export const stressTestUntilFailure = async (
+  fn: () => Promise<any>,
+  maxUsers: number = 1000,
+  step: number = 10,
+): Promise<number> => {
+  let users = step;
+  let failures = 0;
+
+  while (users <= maxUsers) {
+    const results = await simulateConcurrentRequests(
+      async () => {
+        try {
+          await fn();
+          return { success: true };
+        } catch (error) {
+          return { success: false };
+        }
+      },
+      users,
+    );
+
+    failures = results.filter((r: any) => !r.success).length;
+    const failureRate = failures / users;
+
+    if (failureRate > 0.1) {
+      // 10% failure rate threshold
+      return users;
+    }
+
+    users += step;
+  }
+
+  return maxUsers;
+};
+
+/**
+ * Measures throughput (requests per second)
+ *
+ * @param {() => Promise<any>} fn - Function to measure
+ * @param {number} [duration=10000] - Duration in milliseconds
+ * @returns {Promise<number>} Requests per second
+ *
+ * @example
+ * ```typescript
+ * const rps = await measureThroughput(async () => {
+ *   return await service.handleRequest();
+ * }, 5000);
+ * expect(rps).toBeGreaterThan(100);
+ * ```
+ */
+export const measureThroughput = async (
+  fn: () => Promise<any>,
+  duration: number = 10000,
+): Promise<number> => {
+  const startTime = Date.now();
+  let requestCount = 0;
+
+  while (Date.now() - startTime < duration) {
+    await fn();
+    requestCount++;
+  }
+
+  const actualDuration = (Date.now() - startTime) / 1000;
+  return requestCount / actualDuration;
+};
+
+// ============================================================================
+// ADVANCED ASSERTION UTILITIES
+// ============================================================================
+
+/**
+ * Custom assertion: valid UUID
+ *
+ * @param {any} value - Value to check
+ * @returns {boolean} True if valid UUID
+ *
+ * @example
+ * ```typescript
+ * expect(assertValidUUID(user.id)).toBe(true);
+ * ```
+ */
+export const assertValidUUID = (value: any): boolean => {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const isValid = typeof value === 'string' && uuidRegex.test(value);
+  expect(isValid).toBe(true);
+  return isValid;
+};
+
+/**
+ * Custom assertion: valid email
+ *
+ * @param {any} value - Value to check
+ * @returns {boolean} True if valid email
+ *
+ * @example
+ * ```typescript
+ * expect(assertValidEmail(user.email)).toBe(true);
+ * ```
+ */
+export const assertValidEmail = (value: any): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const isValid = typeof value === 'string' && emailRegex.test(value);
+  expect(isValid).toBe(true);
+  return isValid;
+};
+
+/**
+ * Custom assertion: valid phone number
+ *
+ * @param {any} value - Value to check
+ * @returns {boolean} True if valid phone
+ *
+ * @example
+ * ```typescript
+ * expect(assertValidPhoneNumber(user.phone)).toBe(true);
+ * ```
+ */
+export const assertValidPhoneNumber = (value: any): boolean => {
+  const phoneRegex = /^\+?[\d\s\-()]+$/;
+  const isValid =
+    typeof value === 'string' && phoneRegex.test(value) && value.replace(/\D/g, '').length >= 10;
+  expect(isValid).toBe(true);
+  return isValid;
+};
+
+/**
+ * Custom assertion: date format
+ *
+ * @param {any} value - Value to check
+ * @param {string} [format='ISO'] - Expected format
+ * @returns {boolean} True if matches format
+ *
+ * @example
+ * ```typescript
+ * expect(assertDateFormat(user.createdAt, 'ISO')).toBe(true);
+ * ```
+ */
+export const assertDateFormat = (value: any, format: string = 'ISO'): boolean => {
+  if (format === 'ISO') {
+    const isoRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/;
+    const isValid =
+      typeof value === 'string'
+        ? isoRegex.test(value)
+        : value instanceof Date && !isNaN(value.getTime());
+    expect(isValid).toBe(true);
+    return isValid;
+  }
+
+  return false;
+};
+
+/**
+ * Custom assertion: nested property
+ *
+ * @param {any} obj - Object to check
+ * @param {string} path - Property path (dot notation)
+ * @returns {boolean} True if property exists
+ *
+ * @example
+ * ```typescript
+ * expect(assertNestedProperty(user, 'address.city')).toBe(true);
+ * ```
+ */
+export const assertNestedProperty = (obj: any, path: string): boolean => {
+  const parts = path.split('.');
+  let current = obj;
+
+  for (const part of parts) {
+    if (!current || typeof current !== 'object' || !(part in current)) {
+      expect(false).toBe(true);
+      return false;
+    }
+    current = current[part];
+  }
+
+  expect(true).toBe(true);
+  return true;
+};
+
+/**
+ * Asserts async function throws
+ *
+ * @param {() => Promise<any>} fn - Async function
+ * @param {any} [errorType] - Expected error type/message
+ * @returns {Promise<void>}
+ *
+ * @example
+ * ```typescript
+ * await assertAsyncThrows(async () => {
+ *   await service.invalidOperation();
+ * }, NotFoundException);
+ * ```
+ */
+export const assertAsyncThrows = async (fn: () => Promise<any>, errorType?: any): Promise<void> => {
+  let error: any;
+
+  try {
+    await fn();
+  } catch (e) {
+    error = e;
+  }
+
+  expect(error).toBeDefined();
+
+  if (errorType) {
+    if (typeof errorType === 'string') {
+      expect(error.message).toContain(errorType);
+    } else {
+      expect(error).toBeInstanceOf(errorType);
+    }
+  }
+};
+
+/**
+ * Asserts array contains object matching criteria
+ *
+ * @param {any[]} array - Array to check
+ * @param {Record<string, any>} criteria - Match criteria
+ * @returns {void}
+ *
+ * @example
+ * ```typescript
+ * assertArrayContainsObject(users, { email: 'test@example.com' });
+ * ```
+ */
+export const assertArrayContainsObject = (array: any[], criteria: Record<string, any>): void => {
+  const match = array.find((item) =>
+    Object.entries(criteria).every(([key, value]) => item[key] === value),
+  );
+
+  expect(match).toBeDefined();
+};
+
+// ============================================================================
+// TEST ENVIRONMENT CONFIGURATORS
+// ============================================================================
+
+/**
+ * Configures test environment variables
+ *
+ * @param {Record<string, string>} envVars - Environment variables
+ * @returns {() => void} Cleanup function
+ *
+ * @example
+ * ```typescript
+ * const cleanup = configureTestEnvironment({
+ *   NODE_ENV: 'test',
+ *   DATABASE_URL: 'sqlite::memory:'
+ * });
+ * // ... run tests ...
+ * cleanup();
+ * ```
+ */
+export const configureTestEnvironment = (envVars: Record<string, string>): (() => void) => {
+  const originalEnv = { ...process.env };
+
+  Object.entries(envVars).forEach(([key, value]) => {
+    process.env[key] = value;
+  });
+
+  return () => {
+    Object.keys(envVars).forEach((key) => {
+      if (originalEnv[key] === undefined) {
+        delete process.env[key];
+      } else {
+        process.env[key] = originalEnv[key];
+      }
+    });
+  };
+};
+
+/**
+ * Sets up test timeout
+ *
+ * @param {number} timeout - Timeout in milliseconds
+ * @returns {void}
+ *
+ * @example
+ * ```typescript
+ * setupTestTimeout(30000); // 30 seconds
+ * ```
+ */
+export const setupTestTimeout = (timeout: number): void => {
+  jest.setTimeout(timeout);
+};
+
+/**
+ * Creates isolated test context
+ *
+ * @param {() => Promise<void>} setup - Setup function
+ * @param {() => Promise<void>} teardown - Teardown function
+ * @returns {object} Test context manager
+ *
+ * @example
+ * ```typescript
+ * const context = createIsolatedTestContext(
+ *   async () => { await setupDatabase(); },
+ *   async () => { await cleanupDatabase(); }
+ * );
+ * beforeEach(context.setup);
+ * afterEach(context.teardown);
+ * ```
+ */
+export const createIsolatedTestContext = (
+  setup: () => Promise<void>,
+  teardown: () => Promise<void>,
+): {
+  setup: () => Promise<void>;
+  teardown: () => Promise<void>;
+  reset: () => Promise<void>;
+} => {
+  return {
+    setup,
+    teardown,
+    reset: async () => {
+      await teardown();
+      await setup();
+    },
+  };
+};
+
+/**
+ * Mocks system time
+ *
+ * @param {Date | string | number} date - Mock date
+ * @returns {() => void} Restore function
+ *
+ * @example
+ * ```typescript
+ * const restore = mockSystemTime('2024-01-01T00:00:00Z');
+ * // ... tests with fixed time ...
+ * restore();
+ * ```
+ */
+export const mockSystemTime = (date: Date | string | number): (() => void) => {
+  const mockDate = new Date(date);
+  jest.useFakeTimers();
+  jest.setSystemTime(mockDate);
+
+  return () => {
+    jest.useRealTimers();
+  };
+};
+
+/**
+ * Creates test transaction wrapper
+ *
+ * @param {Sequelize} sequelize - Sequelize instance
+ * @returns {object} Transaction manager
+ *
+ * @example
+ * ```typescript
+ * const txManager = createTestTransaction(sequelize);
+ * const tx = await txManager.start();
+ * // ... run test operations ...
+ * await txManager.rollback();
+ * ```
+ */
+export const createTestTransaction = (
+  sequelize: Sequelize,
+): {
+  start: () => Promise<Transaction>;
+  commit: () => Promise<void>;
+  rollback: () => Promise<void>;
+  current: Transaction | null;
+} => {
+  let currentTransaction: Transaction | null = null;
+
+  return {
+    start: async () => {
+      currentTransaction = await sequelize.transaction();
+      return currentTransaction;
+    },
+    commit: async () => {
+      if (currentTransaction) {
+        await currentTransaction.commit();
+        currentTransaction = null;
+      }
+    },
+    rollback: async () => {
+      if (currentTransaction) {
+        await currentTransaction.rollback();
+        currentTransaction = null;
+      }
+    },
+    current: currentTransaction,
+  };
+};
