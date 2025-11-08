@@ -981,9 +981,21 @@ export const traverseHierarchy = async (
 ): Promise<Model[]> => {
   const results: Model[] = config.includeRoot ? [instance] : [];
   const maxDepth = config.maxDepth || 10;
+  const visited = new Set<string>();
 
   const traverse = async (node: Model, depth: number): Promise<void> => {
     if (depth >= maxDepth) return;
+
+    // Create unique key for cycle detection
+    const nodeKey = `${node.constructor.name}:${(node as any).id}`;
+    
+    // Check for circular reference
+    if (visited.has(nodeKey)) {
+      return;
+    }
+    
+    // Mark node as visited
+    visited.add(nodeKey);
 
     const children = await (node as any)[`get${capitalize(config.association)}`]();
 
