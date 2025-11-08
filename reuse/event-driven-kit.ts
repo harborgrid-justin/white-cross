@@ -27,6 +27,8 @@
  * building HIPAA-compliant event-driven healthcare microservices with full audit trails and event traceability.
  */
 
+import * as crypto from 'crypto';
+
 // ============================================================================
 // TYPE DEFINITIONS
 // ============================================================================
@@ -1592,17 +1594,17 @@ export const generateAuditTrail = (event: DomainEvent, audits: EventAudit[]): ob
 // ============================================================================
 
 /**
- * Generates unique event ID.
+ * Generates unique event ID using crypto for guaranteed uniqueness.
  */
 const generateEventId = (): string => {
-  return `evt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  return `evt-${Date.now()}-${crypto.randomUUID()}`;
 };
 
 /**
- * Generates correlation ID.
+ * Generates correlation ID using crypto for guaranteed uniqueness.
  */
 const generateCorrelationId = (): string => {
-  return `corr-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  return `corr-${Date.now()}-${crypto.randomUUID()}`;
 };
 
 /**

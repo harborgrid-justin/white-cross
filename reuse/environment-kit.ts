@@ -1827,7 +1827,7 @@ const deepMerge = (
 };
 
 /**
- * Hashes a string for consistent randomization.
+ * Hashes a string for consistent randomization using SHA-256.
  */
 const hashString = (str: string): string => {
   return crypto.createHash('sha256').update(str).digest('hex');

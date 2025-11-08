@@ -910,7 +910,8 @@ export const createJSONScalar = (): GraphQLScalarType => {
  * ```
  */
 export const createEmailScalar = (): GraphQLScalarType => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // RFC 5322 compliant email regex (simplified but more comprehensive)
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
   return new GraphQLScalarType({
     name: 'Email',
