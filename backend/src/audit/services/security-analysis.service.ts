@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { literal, Op } from 'sequelize';
 import { AuditLog } from '@/database';
-import { SecurityReport, SuspiciousLoginDetection } from '../types';
+import { SecurityReport, SuspiciousLoginDetection } from '../types/audit.types';
 
 /**
  * SecurityAnalysisService - Security monitoring and threat detection

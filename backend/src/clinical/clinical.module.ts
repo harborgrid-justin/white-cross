@@ -16,30 +16,26 @@ import {
 } from '@/database';
 
 // Services
-import {
-  ClinicalNoteService,
-  ClinicalProtocolService,
-  ClinicVisitService,
-  DrugInteractionService,
-  FollowUpService,
-  PrescriptionService,
-  TreatmentPlanService,
-  VitalSignsService,
-} from '@/clinical/services';
+import { ClinicalNoteService } from './services/clinical-note.service';
+import { ClinicalProtocolService } from './services/clinical-protocol.service';
+import { ClinicVisitService } from './services/clinic-visit.service';
+import { DrugInteractionService } from './services/drug-interaction.service';
+import { FollowUpService } from './services/follow-up.service';
+import { PrescriptionService } from './services/prescription.service';
+import { TreatmentPlanService } from './services/treatment-plan.service';
+import { VitalSignsService } from './services/vital-signs.service';
 
 // Controllers
-import {
-  ClinicalNoteController,
-  ClinicalProtocolController,
-  ClinicVisitController,
-  DrugInteractionController,
-  FollowUpController,
-  MedicationAdministrationController,
-  PrescriptionAliasController,
-  PrescriptionController,
-  TreatmentPlanController,
-  VitalSignsController,
-} from '@/clinical/controllers';
+import { ClinicalNoteController } from './controllers/clinical-note.controller';
+import { ClinicalProtocolController } from './controllers/clinical-protocol.controller';
+import { ClinicVisitController } from './controllers/clinic-visit.controller';
+import { DrugInteractionController } from './controllers/drug-interaction.controller';
+import { FollowUpController } from './controllers/follow-up.controller';
+import { MedicationAdministrationController } from './controllers/medication-administration.controller';
+import { PrescriptionAliasController } from './controllers/prescription-alias.controller';
+import { PrescriptionController } from './controllers/prescription.controller';
+import { TreatmentPlanController } from './controllers/treatment-plan.controller';
+import { VitalSignsController } from './controllers/vital-signs.controller';
 
 /**
  * Clinical Module

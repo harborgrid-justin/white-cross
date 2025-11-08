@@ -1,9 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { IpRestrictionEntity } from '../entities';
-import { IpRestrictionType } from '../enums';
-import { IPCheckResult, IPRestrictionRule } from '../interfaces';
-import { SecurityCreateIpRestrictionDto, UpdateIpRestrictionDto } from '../dto';
+import { IpRestrictionEntity } from '../entities/ip-restriction.entity';
+import { IpRestrictionType } from '../enums/ip-restriction-type.enum';
+import { IPCheckResult } from '../interfaces/ip-check-result.interface';
+import { IPRestrictionRule } from '../interfaces/ip-restriction-rule.interface';
+import { SecurityCreateIpRestrictionDto } from '../dto/ip-restriction.dto';
+import { UpdateIpRestrictionDto } from '../dto/ip-restriction.dto';
 
 /**
  * IP Restriction Service

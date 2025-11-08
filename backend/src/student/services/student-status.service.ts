@@ -7,7 +7,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Student } from '@/database';
-import { TransferStudentDto } from '../dto';
+import { TransferStudentDto } from '../dto/transfer-student.dto';
 
 /**
  * Student Status Service

@@ -3,7 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-google-oauth20';
 import { ConfigService } from '@nestjs/config';
 import { OAuthProfile } from '../dto/oauth.dto';
-import { GooglePassportProfile } from '../types';
+import { GooglePassportProfile } from '../types/auth.types';
 
 /**
  * Google OAuth2 Strategy

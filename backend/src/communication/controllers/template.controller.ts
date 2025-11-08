@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, Req } from '@nestjs/common';
-import { AuthenticatedRequest } from '../types';
+import { AuthenticatedRequest } from '../types/index';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { TemplateService } from '../services/template.service';
 import { CreateTemplateDto, UpdateTemplateDto } from '../dto/create-template.dto';

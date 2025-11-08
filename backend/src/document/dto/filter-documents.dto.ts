@@ -6,7 +6,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsArray, IsEnum, IsInt, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
 import { Type } from 'class-transformer';
-import { DocumentCategory, DocumentStatus } from '../enums';
+import { DocumentCategory, DocumentStatus } from '../enums/document.enums';
 
 export class FilterDocumentsDto {
   @ApiPropertyOptional({

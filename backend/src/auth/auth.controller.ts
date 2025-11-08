@@ -2,35 +2,24 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query, UseGuards, Va
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
-import {
-  AuthChangePasswordDto,
-  AuthResponseDto,
-  EmailVerificationResponseDto,
-  ForgotPasswordDto,
-  LoginDto,
-  MfaDisableDto,
-  MfaEnableDto,
-  MfaRegenerateBackupCodesDto,
-  MfaSetupResponseDto,
-  MfaStatusDto,
-  MfaVerifyDto,
-  OAuthLoginDto,
-  RefreshTokenDto,
-  RegisterDto,
-  ResendVerificationDto,
-  ResetPasswordDto,
-  ResetPasswordResponseDto,
-  VerifyEmailDto,
-} from './dto';
-import { JwtAuthGuard } from '@/auth/guards';
-import { AuthToken, CurrentUser, Public } from './decorators';
-import {
-  EmailVerificationService,
-  MfaService,
-  OAuthService,
-  PasswordResetService,
-  TokenBlacklistService,
-} from '@/auth/services';
+import { AuthChangePasswordDto } from './dto/change-password.dto';
+import { AuthResponseDto } from './dto/auth-response.dto';
+import { EmailVerificationResponseDto, ResendVerificationDto, VerifyEmailDto } from './dto/email-verification.dto';
+import { ForgotPasswordDto, ResetPasswordDto, ResetPasswordResponseDto } from './dto/password-reset.dto';
+import { LoginDto } from './dto/login.dto';
+import { MfaDisableDto, MfaEnableDto, MfaRegenerateBackupCodesDto, MfaSetupResponseDto, MfaStatusDto, MfaVerifyDto } from './dto/mfa.dto';
+import { OAuthLoginDto } from './dto/oauth.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { RegisterDto } from './dto/register.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { AuthToken } from './decorators/auth-token.decorator';
+import { CurrentUser } from './decorators/current-user.decorator';
+import { Public } from './decorators/public.decorator';
+import { EmailVerificationService } from './services/email-verification.service';
+import { MfaService } from './services/mfa.service';
+import { OAuthService } from './services/oauth.service';
+import { PasswordResetService } from './services/password-reset.service';
+import { TokenBlacklistService } from './services/token-blacklist.service';
 
 @ApiTags('Authentication')
 @Controller('auth')

@@ -1,4 +1,4 @@
-import { TrendDirection } from '../enums';
+import { TrendDirection } from '../enums/trend-direction.enum';
 
 /**
  * Health Metric

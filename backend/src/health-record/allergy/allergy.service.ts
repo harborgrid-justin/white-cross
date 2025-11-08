@@ -10,7 +10,9 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { Allergy, AllergySeverity, AllergyType } from '../../database/models/allergy.model';
 import { Student } from '../../database/models/student.model';
-import { AllergyFilterDto, CreateAllergyDto, UpdateAllergyDto } from './dto';
+import { AllergyFilterDto } from './dto/allergy-filter.dto';
+import { CreateAllergyDto } from './dto/create-allergy.dto';
+import { UpdateAllergyDto } from './dto/update-allergy.dto';
 import { AuthenticatedUser } from '../../shared/types';
 
 @Injectable()

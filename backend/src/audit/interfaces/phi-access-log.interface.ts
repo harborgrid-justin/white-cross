@@ -1,5 +1,6 @@
 import { IAuditLogEntry } from './audit-log-entry.interface';
-import { PHIAccessType, PHIDataCategory } from '../enums';
+import { PHIAccessType } from '../enums/phi-access-type.enum';
+import { PHIDataCategory } from '../enums/phi-data-category.enum';
 
 /**
  * Interface for PHI (Protected Health Information) access logs

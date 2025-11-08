@@ -2,26 +2,14 @@ import { Body, Controller, Get, Param, Post, Query, Request, UseInterceptors } f
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AnalyticsService } from './analytics.service';
-import {
-  AnalyticsGenerateCustomReportDto,
-  GetAdminDashboardQueryDto,
-  GetAppointmentTrendsQueryDto,
-  GetHealthMetricsQueryDto,
-  GetHealthTrendsQueryDto,
-  GetIncidentsByLocationQueryDto,
-  GetIncidentTrendsQueryDto,
-  GetMedicationAdherenceQueryDto,
-  GetMedicationUsageQueryDto,
-  GetNoShowRateQueryDto,
-  GetNurseDashboardQueryDto,
-  GetPlatformSummaryQueryDto,
-  GetReportParamDto,
-  GetReportQueryDto,
-  GetSchoolMetricsParamDto,
-  GetSchoolMetricsQueryDto,
-  GetStudentHealthMetricsParamDto,
-  GetStudentHealthMetricsQueryDto,
-} from './dto';
+import { AnalyticsGenerateCustomReportDto } from './dto/custom-reports.dto';
+import { GetAdminDashboardQueryDto, GetNurseDashboardQueryDto, GetPlatformSummaryQueryDto } from './dto/dashboard.dto';
+import { GetAppointmentTrendsQueryDto, GetNoShowRateQueryDto } from './dto/appointment-analytics.dto';
+import { GetHealthMetricsQueryDto, GetSchoolMetricsParamDto, GetSchoolMetricsQueryDto, GetStudentHealthMetricsParamDto, GetStudentHealthMetricsQueryDto } from './dto/health-metrics.dto';
+import { GetHealthTrendsQueryDto } from './dto/analytics-query.dto';
+import { GetIncidentsByLocationQueryDto, GetIncidentTrendsQueryDto } from './dto/incident-analytics.dto';
+import { GetMedicationAdherenceQueryDto, GetMedicationUsageQueryDto } from './dto/medication-analytics.dto';
+import { GetReportParamDto, GetReportQueryDto } from './dto/report-generation.dto';
 
 /**
  * Analytics Controller

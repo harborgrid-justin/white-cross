@@ -15,7 +15,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { DocumentAccessLevel, DocumentStatus } from '../enums';
+import { DocumentAccessLevel, DocumentStatus } from '../enums/document.enums';
 
 export class UpdateDocumentDto {
   @ApiPropertyOptional({

@@ -1,5 +1,6 @@
 import { IsArray, IsBoolean, IsEnum, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
-import { MessageCategory, MessageType } from '../enums';
+import { MessageCategory } from '../enums/message-category.enum';
+import { MessageType } from '../enums/message-type.enum';
 
 export class CreateMessageTemplateDto {
   @IsString()

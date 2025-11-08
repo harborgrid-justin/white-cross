@@ -21,12 +21,10 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { EmergencyContactService } from './emergency-contact.service';
-import {
-  EmergencyContactCreateDto,
-  EmergencyContactUpdateDto,
-  EmergencyVerifyContactDto,
-  NotificationDto,
-} from './dto';
+import { EmergencyContactCreateDto } from './dto/create-emergency-contact.dto';
+import { EmergencyContactUpdateDto } from './dto/update-emergency-contact.dto';
+import { EmergencyVerifyContactDto } from './dto/verify-contact.dto';
+import { NotificationDto } from './dto/notification.dto';
 
 @ApiTags('Emergency Contacts')
 @ApiBearerAuth()

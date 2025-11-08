@@ -18,10 +18,14 @@ import { AppointmentStatusController } from './controllers/appointment-status.co
 import { AppointmentQueryController } from './controllers/appointment-query.controller';
 import { WaitlistController } from './controllers/waitlist.controller';
 import { ReminderController } from './controllers/reminder.controller';
+import { AppointmentService } from './appointment.service';
 import { AppointmentReadService } from './services/appointment-read.service';
 import { AppointmentWriteService } from './services/appointment-write.service';
 import { AppointmentStatusService } from './services/appointment-status.service';
 import { AppointmentQueryService } from './services/appointment-query.service';
+import { AppointmentSchedulingService } from './services/appointment-scheduling.service';
+import { AppointmentStatisticsService } from './services/appointment-statistics.service';
+import { AppointmentRecurringService } from './services/appointment-recurring.service';
 import { WaitlistService } from './services/waitlist.service';
 import { ReminderService } from './services/reminder.service';
 import { Appointment } from '../database/models/appointment.model';
@@ -81,19 +85,32 @@ import { AppConfigService } from '../config/app-config.service';
     ReminderController,
   ],
   providers: [
+    // Main facade service
+    AppointmentService,
+    // Specialized services
     AppointmentReadService,
     AppointmentWriteService,
     AppointmentStatusService,
     AppointmentQueryService,
+    AppointmentSchedulingService,
+    AppointmentStatisticsService,
+    AppointmentRecurringService,
     WaitlistService,
     ReminderService,
+    // Configuration
     AppConfigService,
   ],
   exports: [
+    // Main facade service for backward compatibility
+    AppointmentService,
+    // Specialized services for direct use if needed
     AppointmentReadService,
     AppointmentWriteService,
     AppointmentStatusService,
     AppointmentQueryService,
+    AppointmentSchedulingService,
+    AppointmentStatisticsService,
+    AppointmentRecurringService,
     WaitlistService,
     ReminderService,
   ], // Export for use in other modules

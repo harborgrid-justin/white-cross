@@ -33,7 +33,7 @@ import {
 } from 'sequelize-typescript';
 import type { DocumentSignature } from './document-signature.entity';
 import type { DocumentAuditTrail } from './document-audit-trail.entity';
-import { DocumentAccessLevel, DocumentCategory, DocumentStatus } from '../enums';
+import { DocumentAccessLevel, DocumentCategory, DocumentStatus } from '../enums/document.enums';
 
 @Table({
   tableName: 'documents',

@@ -24,27 +24,25 @@ import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '@/auth';
 import { HealthRecordAuditInterceptor } from '@/health-record/interceptors';
 import { StudentService } from './student.service';
-import type { PaginatedResponse, StudentDataExport, StudentStatistics } from './dto';
-import {
-  AcademicHistoryDto,
-  AddWaitlistDto,
-  BulkGradeTransitionDto,
-  CreateStudentDto,
-  GraduatingStudentsDto,
-  ImportTranscriptDto,
-  MentalHealthRecordsDto,
-  PerformanceTrendsDto,
-  SearchPhotoDto,
-  StudentBulkUpdateDto,
-  StudentFilterDto,
-  StudentHealthRecordsDto,
-  StudentScanBarcodeDto,
-  TransferStudentDto,
-  UpdateStudentDto,
-  UploadPhotoDto,
-  VerifyMedicationDto,
-  WaitlistStatusDto,
-} from './dto';
+import type { PaginatedResponse, StudentDataExport, StudentStatistics } from './types';
+import { AcademicHistoryDto } from './dto/academic-history.dto';
+import { AddWaitlistDto } from './dto/add-waitlist.dto';
+import { BulkGradeTransitionDto } from './dto/bulk-grade-transition.dto';
+import { CreateStudentDto } from './dto/create-student.dto';
+import { GraduatingStudentsDto } from './dto/graduating-students.dto';
+import { ImportTranscriptDto } from './dto/import-transcript.dto';
+import { MentalHealthRecordsDto } from './dto/mental-health-records.dto';
+import { PerformanceTrendsDto } from './dto/performance-trends.dto';
+import { SearchPhotoDto } from './dto/search-photo.dto';
+import { StudentBulkUpdateDto } from './dto/bulk-update.dto';
+import { StudentFilterDto } from './dto/student-filter.dto';
+import { StudentHealthRecordsDto } from './dto/student-health-records.dto';
+import { StudentScanBarcodeDto } from './dto/scan-barcode.dto';
+import { TransferStudentDto } from './dto/transfer-student.dto';
+import { UpdateStudentDto } from './dto/update-student.dto';
+import { UploadPhotoDto } from './dto/upload-photo.dto';
+import { VerifyMedicationDto } from './dto/verify-medication.dto';
+import { WaitlistStatusDto } from './dto/waitlist-status.dto';
 import { Student } from '@/database';
 
 /**

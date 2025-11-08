@@ -15,22 +15,22 @@ import {
 } from '@/database';
 
 // Models
-import { ReportExecution, ReportSchedule, ReportTemplate } from '@/report/models';
+import { ReportExecution } from './models/report-execution.model';
+import { ReportSchedule } from './models/report-schedule.model';
+import { ReportTemplate } from './models/report-template.model';
 
 // Services
-import {
-  AttendanceReportsService,
-  ComplianceReportsService,
-  DashboardService,
-  HealthReportsService,
-  IncidentReportsService,
-  MedicationReportsService,
-  ReportExportService,
-  ReportGenerationService,
-} from '@/report/services';
+import { AttendanceReportsService } from './services/attendance-reports.service';
+import { ComplianceReportsService } from './services/compliance-reports.service';
+import { DashboardService } from './services/dashboard.service';
+import { HealthReportsService } from './services/health-reports.service';
+import { IncidentReportsService } from './services/incident-reports.service';
+import { MedicationReportsService } from './services/medication-reports.service';
+import { ReportExportService } from './services/report-export.service';
+import { ReportGenerationService } from './services/report-generation.service';
 
 // Controllers
-import { ReportsController } from '@/report/controllers';
+import { ReportsController } from './controllers/reports.controller';
 
 /**
  * Report Module

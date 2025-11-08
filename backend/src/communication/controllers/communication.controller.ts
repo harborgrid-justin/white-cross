@@ -1,13 +1,11 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CommunicationService } from '../services/communication.service';
-import {
-  BroadcastMessageDto,
-  CreateMessageDto,
-  CreateMessageTemplateDto,
-  EmergencyAlertDto,
-  UpdateMessageTemplateDto,
-} from '../dto';
+import { BroadcastMessageDto } from '../dto/broadcast-message.dto';
+import { CreateMessageDto } from '../dto/create-message.dto';
+import { CreateMessageTemplateDto } from '../dto/create-message-template.dto';
+import { EmergencyAlertDto } from '../dto/emergency-alert.dto';
+import { UpdateMessageTemplateDto } from '../dto/update-message-template.dto';
 
 @ApiTags('Communication')
 @ApiBearerAuth()

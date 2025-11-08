@@ -10,21 +10,12 @@ import { AuditService } from './services/audit.service';
 import { BackupService } from './services/backup.service';
 
 // Import DTOs
-import {
-  AuditQueryDto,
-  BackupQueryDto,
-  ConfigurationDto,
-  CreateBackupDto,
-  CreateDistrictDto,
-  CreateLicenseDto,
-  CreateSchoolDto,
-  DistrictQueryDto,
-  LicenseQueryDto,
-  SchoolQueryDto,
-  UpdateDistrictDto,
-  UpdateLicenseDto,
-  UpdateSchoolDto,
-} from './dto';
+import { AuditQueryDto } from './dto/audit.dto';
+import { BackupQueryDto, CreateBackupDto } from './dto/backup.dto';
+import { ConfigurationDto } from './dto/configuration.dto';
+import { CreateDistrictDto, DistrictQueryDto, UpdateDistrictDto } from './dto/district.dto';
+import { CreateLicenseDto, LicenseQueryDto, UpdateLicenseDto } from './dto/license.dto';
+import { CreateSchoolDto, SchoolQueryDto, UpdateSchoolDto } from './dto/school.dto';
 
 /**
  * AdministrationController

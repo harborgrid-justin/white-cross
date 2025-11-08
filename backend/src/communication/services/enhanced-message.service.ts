@@ -10,7 +10,7 @@ import { ConversationParticipant } from '../../database/models/conversation-part
 import { EncryptionService } from '../../infrastructure/encryption/encryption.service';
 import { MessageQueueService } from '../../infrastructure/queue/message-queue.service';
 import { QueueIntegrationHelper } from '../helpers/queue-integration.helper';
-import { MarkAsReadResult, UnreadCountResult } from '../types';
+import { MarkAsReadResult, UnreadCountResult } from '../types/index';
 import { SendDirectMessageDto } from '../dto/send-direct-message.dto';
 import { SendGroupMessageDto } from '../dto/send-group-message.dto';
 import { EditMessageDto } from '../dto/edit-message.dto';

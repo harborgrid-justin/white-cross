@@ -16,7 +16,10 @@ import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, 
 import { Throttle } from '@nestjs/throttler';
 import { HealthRecordAuditInterceptor } from '../health-record/interceptors/health-record-audit.interceptor';
 import { MedicationService } from './services/medication.service';
-import { CreateMedicationDto, DeactivateMedicationDto, ListMedicationsQueryDto, UpdateMedicationDto } from './dto';
+import { CreateMedicationDto } from './dto/create-medication.dto';
+import { DeactivateMedicationDto } from './dto/deactivate-medication.dto';
+import { ListMedicationsQueryDto } from './dto/list-medications-query.dto';
+import { UpdateMedicationDto } from './dto/update-medication.dto';
 
 /**
  * Medication Controller

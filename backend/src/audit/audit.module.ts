@@ -3,16 +3,14 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { AuditService } from './audit.service';
 import { AuditController } from './audit.controller';
 import { AuditLog } from '@/database';
-import {
-  AuditLogService,
-  AuditQueryService,
-  AuditStatisticsService,
-  AuditUtilsService,
-  ComplianceReportingService,
-  PHIAccessService,
-  SecurityAnalysisService,
-} from './services';
-import { AuditInterceptor } from './interceptors';
+import { AuditLogService } from './services/audit-log.service';
+import { AuditQueryService } from './services/audit-query.service';
+import { AuditStatisticsService } from './services/audit-statistics.service';
+import { AuditUtilsService } from './services/audit-utils.service';
+import { ComplianceReportingService } from './services/compliance-reporting.service';
+import { PHIAccessService } from './services/phi-access.service';
+import { SecurityAnalysisService } from './services/security-analysis.service';
+import { AuditInterceptor } from './interceptors/audit.interceptor';
 
 /**
  * Audit Module

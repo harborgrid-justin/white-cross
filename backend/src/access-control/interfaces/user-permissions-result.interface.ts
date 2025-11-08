@@ -1,4 +1,4 @@
-import { PermissionModel, RoleModel } from '../types';
+import { PermissionModel, RoleModel } from '../types/sequelize-models.types';
 
 /**
  * Interface for user permissions result

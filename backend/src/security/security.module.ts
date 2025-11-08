@@ -9,7 +9,10 @@ import {
 } from '@/security/services';
 import { IpRestrictionGuard, SecurityPolicyGuard } from '@/security/guards';
 import { SecurityLoggingInterceptor } from '@/security/interceptors';
-import { IpRestrictionEntity, LoginAttemptEntity, SecurityIncidentEntity, SessionEntity } from './entities';
+import { IpRestrictionEntity } from './entities/ip-restriction.entity';
+import { LoginAttemptEntity } from './entities/login-attempt.entity';
+import { SecurityIncidentEntity } from './entities/security-incident.entity';
+import { SessionEntity } from './entities/session.entity';
 
 /**
  * Security Module

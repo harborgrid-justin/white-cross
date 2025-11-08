@@ -1,7 +1,8 @@
 import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { AuditLogFilterDto } from './audit-log-filter.dto';
-import { PHIAccessType, PHIDataCategory } from '../enums';
+import { PHIAccessType } from '../enums/phi-access-type.enum';
+import { PHIDataCategory } from '../enums/phi-data-category.enum';
 
 /**
  * DTO for filtering PHI access logs

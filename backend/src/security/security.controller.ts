@@ -6,14 +6,12 @@ import {
   SessionManagementService,
   ThreatDetectionService,
 } from '@/security/services';
-import {
-  IncidentFilterDto,
-  IpCheckDto,
-  SecurityCreateIncidentDto,
-  SecurityCreateIpRestrictionDto,
-  UpdateIncidentStatusDto,
-  UpdateIpRestrictionDto,
-} from './dto';
+import { IncidentFilterDto } from './dto/security-incident.dto';
+import { SecurityCreateIncidentDto } from './dto/security-incident.dto';
+import { UpdateIncidentStatusDto } from './dto/security-incident.dto';
+import { IpCheckDto } from './dto/ip-restriction.dto';
+import { SecurityCreateIpRestrictionDto } from './dto/ip-restriction.dto';
+import { UpdateIpRestrictionDto } from './dto/ip-restriction.dto';
 
 /**
  * Security Controller

@@ -13,7 +13,7 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { AuthenticatedRequest } from '../types';
+import { AuthenticatedRequest } from '../types/index';
 import {
   ApiBearerAuth,
   ApiBody,

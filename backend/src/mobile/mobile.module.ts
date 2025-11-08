@@ -1,8 +1,17 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { NotificationService, OfflineSyncService } from '@/mobile/services';
-import { DeviceController, NotificationController, SyncController } from '@/mobile/controllers';
-import { DeviceToken, PushNotification, SyncConflict, SyncQueueItem } from '@/database';
+import {
+  NotificationService,
+  NotificationPlatformService,
+  NotificationTemplateService,
+  NotificationDeliveryService,
+  NotificationSchedulerService,
+  NotificationAnalyticsService,
+  DeviceTokenService,
+  OfflineSyncService,
+} from './services';
+import { DeviceController, NotificationController, SyncController } from './controllers';
+import { DeviceToken, PushNotification, SyncConflict, SyncQueueItem } from './entities';
 import { AuthModule } from '@/auth';
 
 /**
@@ -26,7 +35,19 @@ import { AuthModule } from '@/auth';
       SyncConflict,
     ]),
   ],
-  providers: [NotificationService, OfflineSyncService],
+  providers: [
+    // Main orchestration service
+    NotificationService,
+    // Specialized notification services
+    NotificationPlatformService,
+    NotificationTemplateService,
+    NotificationDeliveryService,
+    NotificationSchedulerService,
+    NotificationAnalyticsService,
+    DeviceTokenService,
+    // Sync service
+    OfflineSyncService,
+  ],
   controllers: [NotificationController, DeviceController, SyncController],
   exports: [NotificationService, OfflineSyncService],
 })

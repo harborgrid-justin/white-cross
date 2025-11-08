@@ -1,14 +1,12 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ChronicConditionService } from './chronic-condition.service';
-import {
-  ChronicConditionCreateDto,
-  ChronicConditionFiltersDto,
-  ChronicConditionUpdateDto,
-  PaginationDto,
-  UpdateCarePlanDto,
-} from './dto';
-import { AccommodationType } from './enums';
+import { ChronicConditionCreateDto } from './dto/create-chronic-condition.dto';
+import { ChronicConditionFiltersDto } from './dto/chronic-condition-filters.dto';
+import { ChronicConditionUpdateDto } from './dto/update-chronic-condition.dto';
+import { PaginationDto } from './dto/pagination.dto';
+import { UpdateCarePlanDto } from './dto/update-care-plan.dto';
+import { AccommodationType } from './enums/accommodation-type.enum';
 
 /**
  * ChronicConditionController

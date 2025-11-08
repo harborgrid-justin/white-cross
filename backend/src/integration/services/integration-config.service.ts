@@ -2,7 +2,8 @@ import { BadRequestException, Injectable, Logger, NotFoundException } from '@nes
 import { InjectModel } from '@nestjs/sequelize';
 import { IntegrationConfig, IntegrationStatus } from '../../database/models/integration-config.model';
 import { IntegrationLog } from '../../database/models/integration-log.model';
-import { CreateIntegrationDto, UpdateIntegrationDto } from '../dto';
+import { CreateIntegrationDto } from '../dto/create-integration.dto';
+import { UpdateIntegrationDto } from '../dto/update-integration.dto';
 import { IntegrationValidationService } from './integration-validation.service';
 import { IntegrationEncryptionService } from './integration-encryption.service';
 import { IntegrationLogService } from './integration-log.service';

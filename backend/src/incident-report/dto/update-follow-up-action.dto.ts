@@ -2,7 +2,7 @@ import { PartialType } from '@nestjs/swagger';
 import { CreateFollowUpActionDto } from './create-follow-up-action.dto';
 import { IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { ActionStatus } from '../enums';
+import { ActionStatus } from '../enums/action-status.enum';
 
 export class UpdateFollowUpActionDto extends PartialType(CreateFollowUpActionDto) {
   @ApiPropertyOptional({

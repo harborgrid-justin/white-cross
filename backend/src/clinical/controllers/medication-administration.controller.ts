@@ -1,19 +1,10 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import {
-  AdministrationHistoryFiltersDto,
-  CalculateDoseDto,
-  CheckSafetyDto,
-  FiveRightsVerificationResultDto,
-  InitiateAdministrationDto,
-  RecordAdministrationDto,
-  RecordHeldMedicationDto,
-  RecordMissedDoseDto,
-  RecordRefusalDto,
-  RequestWitnessSignatureDto,
-  SubmitWitnessSignatureDto,
-  VerifyFiveRightsDto,
-} from '../dto/administration';
+import { AdministrationHistoryFiltersDto, CalculateDoseDto, CheckSafetyDto } from '../dto/administration/administration-filters.dto';
+import { FiveRightsVerificationResultDto, VerifyFiveRightsDto } from '../dto/administration/five-rights-verification.dto';
+import { InitiateAdministrationDto, RecordAdministrationDto } from '../dto/administration/record-administration.dto';
+import { RecordHeldMedicationDto, RecordMissedDoseDto, RecordRefusalDto } from '../dto/administration/record-refusal.dto';
+import { RequestWitnessSignatureDto, SubmitWitnessSignatureDto } from '../dto/administration/witness-signature.dto';
 
 /**
  * Medication Administration Controller

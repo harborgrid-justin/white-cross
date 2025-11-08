@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { AuditAction } from '@/audit';
+import { AuditAction } from '../enums/audit-action.enum';
 import { PHIAccessType } from '../enums/phi-access-type.enum';
 import { PHIDataCategory } from '../enums/phi-data-category.enum';
-import { ValidationResult, AuditRequest, SanitizableData } from '../types';
-import { IAuditLogEntry, IPHIAccessLog } from '../interfaces';
+import { ValidationResult, AuditRequest, SanitizableData } from '../types/audit.types';
+import { IAuditLogEntry } from '../interfaces/audit-log-entry.interface';
+import { IPHIAccessLog } from '../interfaces/phi-access-log.interface';
 
 /**
  * AuditUtilsService - Utility functions and helpers for audit operations

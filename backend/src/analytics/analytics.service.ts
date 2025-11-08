@@ -1,26 +1,24 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { ComplianceReportGeneratorService, HealthTrendAnalyticsService } from '@/analytics/services';
-import { TimePeriod } from './enums';
+import { TimePeriod } from './enums/time-period.enum';
 import { Appointment, HealthRecord, IncidentReport, MedicationLog } from '@/database';
 import { Op } from 'sequelize';
-import {
-  AnalyticsGenerateCustomReportDto,
-  GetAdminDashboardQueryDto,
-  GetAppointmentTrendsQueryDto,
-  GetHealthMetricsQueryDto,
-  GetHealthTrendsQueryDto,
-  GetIncidentsByLocationQueryDto,
-  GetIncidentTrendsQueryDto,
-  GetMedicationAdherenceQueryDto,
-  GetMedicationUsageQueryDto,
-  GetNoShowRateQueryDto,
-  GetNurseDashboardQueryDto,
-  GetPlatformSummaryQueryDto,
-  GetReportQueryDto,
-  GetSchoolMetricsQueryDto,
-  GetStudentHealthMetricsQueryDto,
-} from './dto';
+import { AnalyticsGenerateCustomReportDto } from './dto/custom-reports.dto';
+import { GetAdminDashboardQueryDto } from './dto/dashboard.dto';
+import { GetAppointmentTrendsQueryDto } from './dto/appointment-analytics.dto';
+import { GetHealthMetricsQueryDto } from './dto/health-metrics.dto';
+import { GetHealthTrendsQueryDto } from './dto/analytics-query.dto';
+import { GetIncidentsByLocationQueryDto } from './dto/incident-analytics.dto';
+import { GetIncidentTrendsQueryDto } from './dto/incident-analytics.dto';
+import { GetMedicationAdherenceQueryDto } from './dto/medication-analytics.dto';
+import { GetMedicationUsageQueryDto } from './dto/medication-analytics.dto';
+import { GetNoShowRateQueryDto } from './dto/appointment-analytics.dto';
+import { GetNurseDashboardQueryDto } from './dto/dashboard.dto';
+import { GetPlatformSummaryQueryDto } from './dto/dashboard.dto';
+import { GetReportQueryDto } from './dto/report-generation.dto';
+import { GetSchoolMetricsQueryDto } from './dto/health-metrics.dto';
+import { GetStudentHealthMetricsQueryDto } from './dto/health-metrics.dto';
 
 /**
  * Analytics Service

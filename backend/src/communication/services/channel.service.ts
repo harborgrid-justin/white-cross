@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MessageType } from '../enums';
-import { ChannelSendData, ChannelSendResult } from '../interfaces';
+import { MessageType } from '../enums/message-type.enum';
+import { ChannelSendData, ChannelSendResult } from '../interfaces/index';
 
 @Injectable()
 export class ChannelService {

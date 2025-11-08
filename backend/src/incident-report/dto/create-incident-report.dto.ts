@@ -10,7 +10,9 @@ import {
   MinLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ComplianceStatus, IncidentSeverity, IncidentType } from '../enums';
+import { ComplianceStatus } from '../enums/compliance-status.enum';
+import { IncidentSeverity } from '../enums/incident-severity.enum';
+import { IncidentType } from '../enums/incident-type.enum';
 
 export class CreateIncidentReportDto {
   @ApiProperty({ description: 'Student ID', example: 'uuid' })

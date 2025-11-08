@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import type { IntegrationTestDetails } from '../types';
+import type { IntegrationTestDetails } from '../types/test-details.types';
 
 export class IntegrationTestResultDto {
   @ApiProperty({ description: 'Whether the test was successful' })

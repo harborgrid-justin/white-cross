@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { literal, Op } from 'sequelize';
 import { AuditLog } from '@/database';
-import { ComplianceReport, PHIAccessSummary } from '../types';
+import { ComplianceReport, PHIAccessSummary } from '../types/audit.types';
 
 /**
  * ComplianceReportingService - HIPAA compliance reporting

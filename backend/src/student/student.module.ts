@@ -10,8 +10,17 @@ import { StudentService } from './student.service';
 import { StudentController } from './student.controller';
 import { StudentCoreController } from './controllers/student-core.controller';
 import { StudentStatusController } from './controllers/student-status.controller';
-import { StudentCrudService } from './services/student-crud.service';
-import { StudentStatusService } from './services/student-status.service';
+import {
+  StudentCrudService,
+  StudentQueryService,
+  StudentHealthRecordsService,
+  StudentAcademicService,
+  StudentPhotoService,
+  StudentBarcodeService,
+  StudentWaitlistService,
+  StudentValidationService,
+  StudentStatusService,
+} from './services';
 import { HealthRecord, MentalHealthRecord, Student, User } from '@/database';
 import { AcademicTranscriptModule } from '@/academic-transcript';
 
@@ -45,13 +54,27 @@ import { AcademicTranscriptModule } from '@/academic-transcript';
     StudentStatusController,
   ],
   providers: [
-    StudentService, // Keep original for backward compatibility
+    StudentService, // Main facade service for backward compatibility
     StudentCrudService,
+    StudentQueryService,
+    StudentHealthRecordsService,
+    StudentAcademicService,
+    StudentPhotoService,
+    StudentBarcodeService,
+    StudentWaitlistService,
+    StudentValidationService,
     StudentStatusService,
   ],
   exports: [
-    StudentService, // Keep original for backward compatibility
+    StudentService, // Main facade service for backward compatibility
     StudentCrudService,
+    StudentQueryService,
+    StudentHealthRecordsService,
+    StudentAcademicService,
+    StudentPhotoService,
+    StudentBarcodeService,
+    StudentWaitlistService,
+    StudentValidationService,
     StudentStatusService,
   ],
 })

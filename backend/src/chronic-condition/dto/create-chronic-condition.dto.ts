@@ -10,7 +10,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { ConditionStatus } from '../enums';
+import { ConditionStatus } from '../enums/condition-status.enum';
 
 /**
  * DTO for creating a new chronic condition record.

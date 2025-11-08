@@ -1,4 +1,4 @@
-import { AuditAction } from '@/audit';
+import { AuditAction } from '../enums/audit-action.enum';
 
 /**
  * Interface for creating audit log entries

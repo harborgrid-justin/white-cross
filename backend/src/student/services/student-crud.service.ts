@@ -20,14 +20,12 @@ import { User, UserRole } from '../../database/models/user.model';
 import { QueryCacheService } from '../../database/services/query-cache.service';
 import { RequestContextService } from '../../shared/context/request-context.service';
 import { BaseService } from '../../shared/base/base.service';
-import {
-  CreateStudentDto,
-  PaginatedResponse,
-  StudentBulkUpdateDto,
-  StudentFilterDto,
-  TransferStudentDto,
-  UpdateStudentDto,
-} from '../dto';
+import { CreateStudentDto } from '../dto/create-student.dto';
+import { StudentBulkUpdateDto } from '../dto/bulk-update.dto';
+import { StudentFilterDto } from '../dto/student-filter.dto';
+import { TransferStudentDto } from '../dto/transfer-student.dto';
+import { UpdateStudentDto } from '../dto/update-student.dto';
+import { PaginatedResponse } from '../types';
 
 /**
  * Student CRUD Service

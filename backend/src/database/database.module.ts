@@ -21,6 +21,13 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 // Services
 import {
   AuditService,
+  AuditLoggingService,
+  AuditQueryService,
+  AuditStatisticsService,
+  AuditComplianceService,
+  AuditExportService,
+  AuditRetentionService,
+  AuditHelperService,
   CacheMonitoringService,
   CacheService,
   ConnectionMonitorService,
@@ -488,6 +495,13 @@ import {
 
     // Audit Services
     AuditService,
+    AuditHelperService,
+    AuditLoggingService,
+    AuditQueryService,
+    AuditStatisticsService,
+    AuditComplianceService,
+    AuditExportService,
+    AuditRetentionService,
     ModelAuditHelper,
 
     // Performance Monitoring Services
@@ -534,6 +548,13 @@ import {
 
     // Export audit services
     AuditService,
+    AuditHelperService,
+    AuditLoggingService,
+    AuditQueryService,
+    AuditStatisticsService,
+    AuditComplianceService,
+    AuditExportService,
+    AuditRetentionService,
     ModelAuditHelper,
 
     // Export performance monitoring services

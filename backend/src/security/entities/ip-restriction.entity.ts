@@ -1,5 +1,5 @@
 import { Column, DataType, Default, Model, PrimaryKey, Table } from 'sequelize-typescript';
-import { IpRestrictionType } from '../enums';
+import { IpRestrictionType } from '../enums/ip-restriction-type.enum';
 
 /**
  * IP Restriction Entity

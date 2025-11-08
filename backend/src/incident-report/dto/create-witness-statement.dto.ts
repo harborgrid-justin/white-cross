@@ -1,6 +1,6 @@
 import { IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { WitnessType } from '../enums';
+import { WitnessType } from '../enums/witness-type.enum';
 
 export class CreateWitnessStatementDto {
   @ApiProperty({

@@ -1,7 +1,7 @@
 import { IsArray, IsDate, IsEnum, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { TimePeriod } from '../enums';
+import { TimePeriod } from '../enums/time-period.enum';
 
 /**
  * Get Population Summary DTO

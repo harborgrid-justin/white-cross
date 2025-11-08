@@ -1,5 +1,5 @@
 import { IsEmail, IsEnum, IsOptional, IsString, Matches } from 'class-validator';
-import { RecipientType } from '../enums';
+import { RecipientType } from '../enums/recipient-type.enum';
 
 export class RecipientDto {
   @IsEnum(RecipientType)

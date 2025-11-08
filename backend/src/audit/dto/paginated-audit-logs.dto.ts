@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { AuditLog } from '../entities';
+import { AuditLog } from '../entities/audit-log.entity';
 
 class PaginationMeta {
   @ApiProperty()

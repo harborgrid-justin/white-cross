@@ -15,7 +15,8 @@ import { getModelToken } from '@nestjs/sequelize';
 import { EmergencyContact, Student } from '../../database';
 import { ContactPriority, NotificationChannel, VerificationStatus } from '../../contact';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { EmergencyContactCreateDto, NotificationDto, NotificationPriority, NotificationType } from '../dto';
+import { EmergencyContactCreateDto } from '../dto/create-emergency-contact.dto';
+import { NotificationDto, NotificationPriority, NotificationType } from '../dto/notification.dto';
 
 describe('EmergencyContactService (CRITICAL HEALTHCARE)', () => {
   let service: EmergencyContactService;

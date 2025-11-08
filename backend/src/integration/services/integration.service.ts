@@ -4,7 +4,8 @@ import { IntegrationTestService } from './integration-test.service';
 import { IntegrationSyncService } from './integration-sync.service';
 import { IntegrationLogService } from './integration-log.service';
 import { IntegrationStatisticsService } from './integration-statistics.service';
-import { CreateIntegrationDto, UpdateIntegrationDto } from '../dto';
+import { CreateIntegrationDto } from '../dto/create-integration.dto';
+import { UpdateIntegrationDto } from '../dto/update-integration.dto';
 
 /**
  * Main Integration Service (Facade Pattern)

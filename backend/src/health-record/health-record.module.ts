@@ -23,6 +23,15 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { HealthRecordService } from './health-record.service';
 import { HealthRecordController } from './health-record.controller';
 
+// Specialized Services (Refactored from main service)
+import { HealthRecordCrudService } from './services/health-record-crud.service';
+import { HealthRecordAllergyService } from './services/health-record-allergy.service';
+import { HealthRecordChronicConditionService } from './services/health-record-chronic-condition.service';
+import { HealthRecordVaccinationService } from './services/health-record-vaccination.service';
+import { HealthRecordVitalsService } from './services/health-record-vitals.service';
+import { HealthRecordSummaryService } from './services/health-record-summary.service';
+import { HealthRecordBatchService } from './services/health-record-batch.service';
+
 // Enterprise Pattern Services
 import { PHIAccessLogger } from './services/phi-access-logger.service';
 import { HealthRecordMetricsService } from './services/health-record-metrics.service';
@@ -114,6 +123,15 @@ import { CacheEntry } from '../database/models/cache-entry.model';
   providers: [
     // Core Service
     HealthRecordService,
+
+    // Specialized Services (Refactored from main service)
+    HealthRecordCrudService,
+    HealthRecordAllergyService,
+    HealthRecordChronicConditionService,
+    HealthRecordVaccinationService,
+    HealthRecordVitalsService,
+    HealthRecordSummaryService,
+    HealthRecordBatchService,
 
     // Enterprise Pattern Services
     PHIAccessLogger,

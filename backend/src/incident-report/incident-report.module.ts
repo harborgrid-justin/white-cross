@@ -4,17 +4,15 @@ import { IncidentReportController } from './incident-report.controller';
 import { IncidentCoreController } from './controllers/incident-core.controller';
 import { IncidentStatusController } from './controllers/incident-status.controller';
 import { IncidentQueryController } from './controllers/incident-query.controller';
-import {
-  IncidentCoreService,
-  IncidentFollowUpService,
-  IncidentNotificationService,
-  IncidentStatisticsService,
-  IncidentValidationService,
-  IncidentWitnessService,
-  IncidentReadService,
-  IncidentWriteService,
-  IncidentStatusService,
-} from './services';
+import { IncidentCoreService } from './services/incident-core.service';
+import { IncidentFollowUpService } from './services/incident-follow-up.service';
+import { IncidentNotificationService } from './services/incident-notification.service';
+import { IncidentStatisticsService } from './services/incident-statistics.service';
+import { IncidentValidationService } from './services/incident-validation.service';
+import { IncidentWitnessService } from './services/incident-witness.service';
+import { IncidentReadService } from './services/incident-read.service';
+import { IncidentWriteService } from './services/incident-write.service';
+import { IncidentStatusService } from './services/incident-status.service';
 import { IncidentReport } from '../database/models/incident-report.model';
 import { FollowUpAction } from '../database/models/follow-up-action.model';
 import { WitnessStatement } from '../database/models/witness-statement.model';

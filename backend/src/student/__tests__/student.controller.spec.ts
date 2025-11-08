@@ -18,13 +18,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { StudentController } from '../student.controller';
 import { StudentService } from '../student.service';
-import {
-  CreateStudentDto,
-  StudentBulkUpdateDto,
-  StudentFilterDto,
-  TransferStudentDto,
-  UpdateStudentDto,
-} from '../dto';
+import { CreateStudentDto } from '../dto/create-student.dto';
+import { StudentBulkUpdateDto } from '../dto/bulk-update.dto';
+import { StudentFilterDto } from '../dto/student-filter.dto';
+import { TransferStudentDto } from '../dto/transfer-student.dto';
+import { UpdateStudentDto } from '../dto/update-student.dto';
 
 describe('StudentController', () => {
   let controller: StudentController;

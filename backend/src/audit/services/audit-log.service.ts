@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { AuditAction, AuditLog, AuditSeverity, ComplianceType } from '@/database';
-import { IAuditLogEntry } from '@/audit';
+import { IAuditLogEntry } from '../interfaces/audit-log-entry.interface';
 
 /**
  * AuditLogService - Core audit logging functionality

@@ -1,7 +1,7 @@
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/sequelize';
-import { DecodedToken } from '../types';
+import { DecodedToken } from '../types/auth.types';
 import { User, UserCreationAttributes, UserRole } from '../../database/models/user.model';
 import { JwtService } from '@nestjs/jwt';
 import { OAuthProfile } from '../dto/oauth.dto';

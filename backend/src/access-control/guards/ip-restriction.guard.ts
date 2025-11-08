@@ -1,4 +1,4 @@
-import { RequestWithConnection } from '../types';
+import { RequestWithConnection } from '../types/user-context.types';
 
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';

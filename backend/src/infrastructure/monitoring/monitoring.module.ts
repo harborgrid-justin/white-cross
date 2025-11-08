@@ -11,6 +11,11 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { MonitoringService } from './monitoring.service';
 import { HealthController } from './health.controller';
 import { MonitoringController } from './monitoring.controller';
+import { HealthCheckService } from './health-check.service';
+import { MetricsCollectionService } from './metrics-collection.service';
+import { AlertManagementService } from './alert-management.service';
+import { PerformanceTrackingService } from './performance-tracking.service';
+import { LogAggregationService } from './log-aggregation.service';
 
 /**
  * MonitoringModule
@@ -140,24 +145,24 @@ import { MonitoringController } from './monitoring.controller';
   ],
   controllers: [HealthController, MonitoringController],
   providers: [
+    // Core monitoring service (orchestrates all other services)
     MonitoringService,
-    // Add new performance monitoring services
-    {
-      provide: 'QueryMonitorService',
-      useFactory: async () => {
-        const { QueryMonitorService } = await import('./query-monitor.service');
-        return QueryMonitorService;
-      },
-    },
-    {
-      provide: 'PerformanceMetricsService',
-      useFactory: async () => {
-        const { PerformanceMetricsService } = await import('./performance-metrics.service');
-        return PerformanceMetricsService;
-      },
-    },
+
+    // Specialized monitoring services
+    HealthCheckService,
+    MetricsCollectionService,
+    AlertManagementService,
+    PerformanceTrackingService,
+    LogAggregationService,
   ],
-  exports: [MonitoringService, 'QueryMonitorService', 'PerformanceMetricsService'],
+  exports: [
+    MonitoringService,
+    HealthCheckService,
+    MetricsCollectionService,
+    AlertManagementService,
+    PerformanceTrackingService,
+    LogAggregationService,
+  ],
 })
 export class MonitoringModule {}
 

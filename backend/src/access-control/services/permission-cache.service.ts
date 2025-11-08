@@ -1,5 +1,5 @@
-import { UserPermissionsResult } from '../interfaces';
-import { CacheEntry, CacheStatisticsResult } from '../types';
+import { UserPermissionsResult } from '../interfaces/user-permissions-result.interface';
+import { CacheEntry, CacheStatisticsResult } from '../types/user-context.types';
 
 import { Injectable, Logger } from '@nestjs/common';
 

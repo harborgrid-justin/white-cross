@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { IntegrationType } from '../entities/integration-config.entity';
-import { CreateIntegrationDto } from '../dto';
+import { CreateIntegrationDto } from '../dto/create-integration.dto';
 
 @Injectable()
 export class IntegrationValidationService {

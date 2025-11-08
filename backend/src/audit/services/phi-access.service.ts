@@ -2,8 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { literal, Op, WhereOptions } from 'sequelize';
 import { AuditAction, AuditLog } from '@/database';
-import { IPaginatedResult, IPHIAccessLog } from '@/audit';
-import { PHIAccessLogFilters } from '../types';
+import { IPaginatedResult } from '../interfaces/paginated-result.interface';
+import { IPHIAccessLog } from '../interfaces/phi-access-log.interface';
+import { PHIAccessLogFilters } from '../types/audit.types';
 
 /**
  * PHIAccessService - HIPAA compliant PHI access logging

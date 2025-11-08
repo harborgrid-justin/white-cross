@@ -216,4 +216,32 @@ export class WaitlistService {
 
     return entry;
   }
+
+  /**
+   * Clean up expired waitlist entries
+   * Called periodically to mark expired entries
+   */
+  async cleanupExpiredEntries(): Promise<void> {
+    try {
+      const now = new Date();
+      const result = await this.waitlistModel.update(
+        { status: WaitlistStatus.EXPIRED },
+        {
+          where: {
+            expiresAt: { [Op.lt]: now },
+            status: WaitlistStatus.WAITING,
+          },
+        },
+      );
+
+      if (result[0] > 0) {
+        this.logger.log(`Cleaned up ${result[0]} expired waitlist entries`);
+      }
+    } catch (error) {
+      this.logger.error(
+        `Error cleaning up expired waitlist entries: ${error.message}`,
+        error.stack,
+      );
+    }
+  }
 }

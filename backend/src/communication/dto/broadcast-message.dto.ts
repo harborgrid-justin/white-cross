@@ -9,7 +9,9 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { MessageCategory, MessagePriority, MessageType } from '../enums';
+import { MessageCategory } from '../enums/message-category.enum';
+import { MessagePriority } from '../enums/message-priority.enum';
+import { MessageType } from '../enums/message-type.enum';
 
 class BroadcastAudienceDto {
   @IsOptional()

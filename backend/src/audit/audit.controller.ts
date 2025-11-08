@@ -1,7 +1,11 @@
 import { Controller, Get, HttpException, HttpStatus, Param, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuditService } from './audit.service';
-import { AuditLogFilterDto, AuditLogSearchDto, DateRangeDto, PaginatedAuditLogsDto, PHIAccessFilterDto } from './dto';
+import { AuditLogFilterDto } from './dto/audit-log-filter.dto';
+import { AuditLogSearchDto } from './dto/audit-log-search.dto';
+import { DateRangeDto } from './dto/date-range.dto';
+import { PaginatedAuditLogsDto } from './dto/paginated-audit-logs.dto';
+import { PHIAccessFilterDto } from './dto/phi-access-filter.dto';
 
 /**
  * Audit Controller

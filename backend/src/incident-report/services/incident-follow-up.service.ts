@@ -5,7 +5,8 @@ import { FollowUpAction, IncidentReport } from '@/database';
 import { CreateFollowUpActionDto } from '../dto/create-follow-up-action.dto';
 import { UpdateFollowUpActionDto } from '../dto/update-follow-up-action.dto';
 import { IncidentValidationService } from './incident-validation.service';
-import { ActionPriority, ActionStatus } from '../enums';
+import { ActionPriority } from '../enums/action-priority.enum';
+import { ActionStatus } from '../enums/action-status.enum';
 
 @Injectable()
 export class IncidentFollowUpService {

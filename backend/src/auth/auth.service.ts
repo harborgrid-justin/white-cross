@@ -15,10 +15,13 @@ import { InjectModel } from '@nestjs/sequelize';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { User, UserCreationAttributes, UserRole } from '@/database';
-import { AuthChangePasswordDto, AuthResponseDto, LoginDto, RegisterDto } from './dto';
-import { JwtPayload } from '@/auth/strategies';
-import { TokenBlacklistService } from '@/auth/services';
-import { SafeUser } from './types';
+import { AuthChangePasswordDto } from './dto/change-password.dto';
+import { AuthResponseDto } from './dto/auth-response.dto';
+import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
+import { JwtPayload } from './strategies/jwt.strategy';
+import { TokenBlacklistService } from './services/token-blacklist.service';
+import { SafeUser } from './types/auth.types';
 
 @Injectable()
 export class AuthService {

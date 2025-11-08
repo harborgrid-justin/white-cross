@@ -1,4 +1,4 @@
-import { RoleModel } from '../types';
+import { RoleModel } from '../types/sequelize-models.types';
 
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';

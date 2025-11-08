@@ -14,12 +14,26 @@ import {
 } from '@/database';
 import { AnalyticsController } from './analytics.controller';
 import { AnalyticsService } from './analytics.service';
-import { ComplianceReportGeneratorService, HealthTrendAnalyticsService } from '@/analytics/services';
+import {
+  ComplianceReportGeneratorService,
+  HealthTrendAnalyticsService,
+  DateRangeService,
+  TrendCalculationService,
+  ConditionAnalyticsService,
+  HealthMetricsAnalyzerService,
+  IncidentAnalyticsService,
+  PredictiveInsightsService,
+} from '@/analytics/services';
 import {
   HealthRecordRepository,
   IncidentReportRepository,
   MedicationLogRepository,
 } from '@/database/repositories/impl';
+import { ComplianceDataCollectorService } from './services/compliance-data-collector.service';
+import { ComplianceMetricsCalculatorService } from './services/compliance-metrics-calculator.service';
+import { ComplianceReportBuilderService } from './services/compliance-report-builder.service';
+import { ComplianceReportExporterService } from './services/compliance-report-exporter.service';
+import { ComplianceReportPersistenceService } from './services/compliance-report-persistence.service';
 
 /**
  * Analytics Module
@@ -65,6 +79,19 @@ import {
     AnalyticsService, // Main orchestration service
     HealthTrendAnalyticsService, // Health trend analysis and population health
     ComplianceReportGeneratorService, // Report generation service with export capabilities
+    // Compliance report specialized services
+    ComplianceDataCollectorService, // Data collection for compliance reports
+    ComplianceMetricsCalculatorService, // Metrics calculation for compliance reports
+    ComplianceReportBuilderService, // Report structure building
+    ComplianceReportExporterService, // Format exports (PDF, CSV, Excel, JSON)
+    ComplianceReportPersistenceService, // Database and caching operations
+    // Supporting analytics services
+    DateRangeService, // Date and period calculations
+    TrendCalculationService, // Statistical analysis and trend detection
+    ConditionAnalyticsService, // Condition normalization and categorization
+    HealthMetricsAnalyzerService, // Population health metrics aggregation
+    IncidentAnalyticsService, // Incident analysis and reporting
+    PredictiveInsightsService, // Predictive analytics and outbreak detection
     // Repository providers
     AppointmentRepository,
     HealthRecordRepository,
@@ -75,6 +102,13 @@ import {
     AnalyticsService,
     HealthTrendAnalyticsService,
     ComplianceReportGeneratorService,
+    // Supporting analytics services
+    DateRangeService,
+    TrendCalculationService,
+    ConditionAnalyticsService,
+    HealthMetricsAnalyzerService,
+    IncidentAnalyticsService,
+    PredictiveInsightsService,
     // Export repositories for dependent modules
     AppointmentRepository,
     HealthRecordRepository,

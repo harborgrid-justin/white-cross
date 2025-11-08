@@ -1,7 +1,8 @@
 import { Body, Controller, Delete, Get, Param, Post, Request, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ApiKeyAuthService } from './api-key-auth.service';
-import { ApiKeyResponseDto, CreateApiKeyDto } from './dto';
+import { ApiKeyResponseDto } from './dto/api-key-response.dto';
+import { CreateApiKeyDto } from './dto/create-api-key.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';

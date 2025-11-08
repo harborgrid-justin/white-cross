@@ -2,7 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { IncidentReport } from '@/database';
-import { IncidentSeverity, IncidentType } from '../enums';
+import { IncidentSeverity } from '../enums/incident-severity.enum';
+import { IncidentType } from '../enums/incident-type.enum';
 
 @Injectable()
 export class IncidentStatisticsService {

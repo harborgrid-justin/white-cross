@@ -14,7 +14,9 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { DocumentService } from './document.service';
-import { CreateDocumentDto, SignDocumentDto, UpdateDocumentDto } from './dto';
+import { CreateDocumentDto } from './dto/create-document.dto';
+import { SignDocumentDto } from './dto/sign-document.dto';
+import { UpdateDocumentDto } from './dto/update-document.dto';
 import { CurrentUser, IpAddress } from '@/auth/decorators';
 
 /**

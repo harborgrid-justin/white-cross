@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { SessionEntity } from '../entities';
+import { SessionEntity } from '../entities/session.entity';
 import { randomBytes } from 'crypto';
 
 /**

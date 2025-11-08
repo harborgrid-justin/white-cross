@@ -1,9 +1,9 @@
 import { ExecutionContext, Injectable, UnauthorizedException, Optional } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Reflector } from '@nestjs/core';
-import { IS_PUBLIC_KEY } from '@/auth/decorators';
-import { TokenBlacklistService } from '@/auth';
-import { DecodedToken, RequestWithAuth, SafeUser } from '@/auth/types';
+import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+import { TokenBlacklistService } from '../services/token-blacklist.service';
+import { DecodedToken, RequestWithAuth, SafeUser } from '../types/auth.types';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {

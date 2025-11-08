@@ -1,6 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { BroadcastMessageDto, CreateMessageDto, CreateMessageTemplateDto, EmergencyAlertDto } from '../dto';
-import { MessageDeliveryStatusResult } from '../interfaces';
+import { BroadcastMessageDto } from '../dto/broadcast-message.dto';
+import { CreateMessageDto } from '../dto/create-message.dto';
+import { CreateMessageTemplateDto } from '../dto/create-message-template.dto';
+import { EmergencyAlertDto } from '../dto/emergency-alert.dto';
+import { MessageDeliveryStatusResult } from '../interfaces/index';
 
 @Injectable()
 export class CommunicationService {

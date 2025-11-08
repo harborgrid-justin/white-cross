@@ -1,7 +1,8 @@
 import { IsBoolean, IsDateString, IsEnum, IsInt, IsOptional, IsUUID, Max, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IncidentSeverity, IncidentType } from '../enums';
+import { IncidentSeverity } from '../enums/incident-severity.enum';
+import { IncidentType } from '../enums/incident-type.enum';
 
 export class IncidentFiltersDto {
   @ApiPropertyOptional({ description: 'Student ID filter' })

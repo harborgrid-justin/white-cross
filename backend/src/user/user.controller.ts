@@ -23,16 +23,14 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
-import {
-  AdminResetPasswordDto,
-  CreateUserDto,
-  UpdateUserDto,
-  UserChangePasswordDto,
-  UserFiltersDto,
-  UserListResponseDto,
-  UserResponseDto,
-  UserStatisticsDto,
-} from './dto';
+import { AdminResetPasswordDto } from './dto/reset-password.dto';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { UserChangePasswordDto } from './dto/change-password.dto';
+import { UserFiltersDto } from './dto/user-filters.dto';
+import { UserListResponseDto } from './dto/user-response.dto';
+import { UserResponseDto } from './dto/user-response.dto';
+import { UserStatisticsDto } from './dto/user-statistics.dto';
 import { UserRole } from '@/user/enums';
 
 @ApiTags('users')

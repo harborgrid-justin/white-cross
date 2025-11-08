@@ -1,6 +1,10 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { CreateFollowUpActionDto, CreateIncidentReportDto, CreateWitnessStatementDto } from '@/incident-report';
-import { ActionPriority, ActionStatus, IncidentType } from '../enums';
+import { CreateFollowUpActionDto } from '../dto/create-follow-up-action.dto';
+import { CreateIncidentReportDto } from '../dto/create-incident-report.dto';
+import { CreateWitnessStatementDto } from '../dto/create-witness-statement.dto';
+import { ActionPriority } from '../enums/action-priority.enum';
+import { ActionStatus } from '../enums/action-status.enum';
+import { IncidentType } from '../enums/incident-type.enum';
 
 @Injectable()
 export class IncidentValidationService {

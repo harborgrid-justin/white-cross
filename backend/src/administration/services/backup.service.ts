@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { BackupQueryDto, CreateBackupDto } from '../dto';
+import { BackupQueryDto, CreateBackupDto } from '../dto/backup.dto';
 import { BackupStatus, BackupType } from '../enums/administration.enums';
 
 export interface BackupLog {

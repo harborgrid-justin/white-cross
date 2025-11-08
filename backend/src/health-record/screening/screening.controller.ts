@@ -7,13 +7,11 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ScreeningService } from './screening.service';
-import {
-  BatchScreeningDto,
-  CreateReferralDto,
-  OverdueScreeningsQueryDto,
-  ScreeningScheduleQueryDto,
-  ScreeningStatisticsQueryDto,
-} from './dto';
+import { BatchScreeningDto } from './dto/screening.dto';
+import { CreateReferralDto } from './dto/screening.dto';
+import { OverdueScreeningsQueryDto } from './dto/screening.dto';
+import { ScreeningScheduleQueryDto } from './dto/screening.dto';
+import { ScreeningStatisticsQueryDto } from './dto/screening.dto';
 
 @ApiTags('health-records-screenings')
 @Controller('health-records/screenings')

@@ -1,10 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { IpRestrictionEntity, SecurityIncidentEntity } from '../entities';
-import { IncidentSeverity, IncidentStatus, IpRestrictionType } from '../enums';
-import { IncidentResponse } from '../interfaces';
-import { IncidentFilterDto, SecurityCreateIncidentDto, UpdateIncidentStatusDto } from '../dto';
+import { IpRestrictionEntity } from '../entities/ip-restriction.entity';
+import { SecurityIncidentEntity } from '../entities/security-incident.entity';
+import { IncidentSeverity } from '../enums/incident-severity.enum';
+import { IncidentStatus } from '../enums/incident-status.enum';
+import { IpRestrictionType } from '../enums/ip-restriction-type.enum';
+import { IncidentResponse } from '../interfaces/incident-response.interface';
+import { IncidentFilterDto } from '../dto/security-incident.dto';
+import { SecurityCreateIncidentDto } from '../dto/security-incident.dto';
+import { UpdateIncidentStatusDto } from '../dto/security-incident.dto';
 
 /**
  * Security Incident Service

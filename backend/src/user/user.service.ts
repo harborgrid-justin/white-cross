@@ -11,7 +11,11 @@ import { ConflictException, Injectable, Logger, NotFoundException, UnauthorizedE
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { User } from '@/user/entities';
-import { CreateUserDto, UpdateUserDto, UserChangePasswordDto, UserFiltersDto, UserStatisticsDto } from './dto';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { UserChangePasswordDto } from './dto/change-password.dto';
+import { UserFiltersDto } from './dto/user-filters.dto';
+import { UserStatisticsDto } from './dto/user-statistics.dto';
 import { UserRole } from '@/user/enums';
 import { QueryCacheService } from '@/database/services';
 

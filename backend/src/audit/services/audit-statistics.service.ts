@@ -8,7 +8,7 @@ import {
   AuditStatistics,
   EntityTypeDistributionQueryResult,
   UniqueUsersQueryResult,
-} from '../types';
+} from '../types/audit.types';
 
 /**
  * AuditStatisticsService - Statistical analysis for audit data

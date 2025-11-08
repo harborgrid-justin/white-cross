@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { IsArray, IsDateString, IsEnum, IsIP, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { IpRestrictionType } from '../enums';
+import { IpRestrictionType } from '../enums/ip-restriction-type.enum';
 
 /**
  * DTO for creating IP restriction rules

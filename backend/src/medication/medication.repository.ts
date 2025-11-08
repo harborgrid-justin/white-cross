@@ -4,7 +4,7 @@ import { Op } from 'sequelize';
 import { StudentMedication, StudentMedicationAttributes } from '../database/models/student-medication.model';
 import { Student } from '../database/models/student.model';
 import { Medication } from '../database/models/medication.model';
-import { ListMedicationsQueryDto } from './dto';
+import { ListMedicationsQueryDto } from './dto/list-medications-query.dto';
 import { QueryCacheService } from '../database/services/query-cache.service';
 
 /**

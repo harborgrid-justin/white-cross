@@ -25,7 +25,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import type { Document } from './document.entity';
-import { DocumentAction } from '../enums';
+import { DocumentAction } from '../enums/document.enums';
 
 @Table({
   tableName: 'document_audit_trails',

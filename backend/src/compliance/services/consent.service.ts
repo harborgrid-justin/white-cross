@@ -9,7 +9,7 @@ import { Sequelize } from 'sequelize-typescript';
 import { ConsentForm, ConsentType } from '../../database/models/consent-form.model';
 import { ConsentSignature } from '../../database/models/consent-signature.model';
 import { SignConsentFormDto } from '../dto/sign-consent-form.dto';
-import { COMPLIANCE_ERRORS, ComplianceUtils } from '../utils';
+import { COMPLIANCE_ERRORS, ComplianceUtils } from '../utils/index';
 
 export interface CreateConsentFormData {
   type: ConsentType;

@@ -1,7 +1,8 @@
 import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor, Optional } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { AuditAction, AuditService } from '@/audit';
+import { AuditAction } from '../enums/audit-action.enum';
+import { AuditService } from '../audit.service';
 
 /**
  * Audit Interceptor

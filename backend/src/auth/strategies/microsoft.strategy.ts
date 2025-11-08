@@ -3,7 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-microsoft';
 import { ConfigService } from '@nestjs/config';
 import { OAuthProfile } from '../dto/oauth.dto';
-import { MicrosoftPassportProfile, OAuthDoneCallback } from '../types';
+import { MicrosoftPassportProfile, OAuthDoneCallback } from '../types/auth.types';
 
 /**
  * Microsoft OAuth2 Strategy

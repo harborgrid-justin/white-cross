@@ -3,7 +3,8 @@ import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, 
 import { IntegrationService } from './services/integration.service';
 import { CircuitBreakerService } from './services/circuit-breaker.service';
 import { RateLimiterService } from './services/rate-limiter.service';
-import { CreateIntegrationDto, UpdateIntegrationDto } from './dto';
+import { CreateIntegrationDto } from './dto/create-integration.dto';
+import { UpdateIntegrationDto } from './dto/update-integration.dto';
 
 @ApiTags('Integrations')
 @ApiBearerAuth()

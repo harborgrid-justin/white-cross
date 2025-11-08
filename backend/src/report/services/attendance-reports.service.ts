@@ -3,8 +3,8 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { QueryTypes } from 'sequelize';
 import { ChronicCondition, Student } from '@/database';
-import { AttendanceCorrelationReport } from '@/report/interfaces';
-import { AttendanceCorrelationDto } from '@/report';
+import { AttendanceCorrelationReport } from '../interfaces/report-types.interface';
+import { AttendanceCorrelationDto } from '../dto/attendance-correlation.dto';
 
 /**
  * Attendance Reports Service

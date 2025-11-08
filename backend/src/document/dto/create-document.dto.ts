@@ -20,7 +20,7 @@ import {
   Min,
   MinLength,
 } from 'class-validator';
-import { DocumentAccessLevel, DocumentCategory } from '../enums';
+import { DocumentAccessLevel, DocumentCategory } from '../enums/document.enums';
 
 export class CreateDocumentDto {
   @ApiProperty({

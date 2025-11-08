@@ -1,7 +1,7 @@
 import { IsDateString, IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { AuditAction } from '../enums';
+import { AuditAction } from '../enums/audit-action.enum';
 
 /**
  * DTO for filtering audit logs

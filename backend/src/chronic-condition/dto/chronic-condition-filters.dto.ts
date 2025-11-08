@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBoolean, IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
-import { ConditionStatus } from '../enums';
+import { ConditionStatus } from '../enums/condition-status.enum';
 
 /**
  * DTO for filtering chronic condition search queries.

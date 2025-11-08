@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { LoginAttemptEntity } from '../entities';
+import { LoginAttemptEntity } from '../entities/login-attempt.entity';
 
 /**
  * Threat Detection Service

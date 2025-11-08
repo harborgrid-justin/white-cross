@@ -8,6 +8,17 @@
  * - Contact verification workflows
  * - Statistics and reporting
  *
+ * Architecture:
+ * This module follows a service-oriented architecture with separation of concerns.
+ * The main EmergencyContactService acts as a facade, delegating to specialized services:
+ * - ContactValidationService: Data validation and integrity checks
+ * - ContactManagementService: CRUD operations and business rules
+ * - NotificationDeliveryService: Multi-channel message delivery
+ * - NotificationOrchestrationService: Notification workflow coordination
+ * - ContactVerificationService: Contact verification workflows
+ * - ContactStatisticsService: Statistics and batch operations
+ * - NotificationQueueService: Queue processing and lifecycle management
+ *
  * @module EmergencyContactModule
  */
 import { Module } from '@nestjs/common';
@@ -17,8 +28,17 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { EmergencyContact } from '../database/models/emergency-contact.model';
 import { Student } from '../database/models/student.model';
 
-// Services
+// Main Service (Facade)
 import { EmergencyContactService } from './emergency-contact.service';
+
+// Specialized Services
+import { ContactValidationService } from './services/contact-validation.service';
+import { ContactManagementService } from './services/contact-management.service';
+import { NotificationDeliveryService } from './services/notification-delivery.service';
+import { NotificationOrchestrationService } from './services/notification-orchestration.service';
+import { ContactVerificationService } from './services/contact-verification.service';
+import { ContactStatisticsService } from './services/contact-statistics.service';
+import { NotificationQueueService } from './services/notification-queue.service';
 
 // Controllers
 import { EmergencyContactController } from './emergency-contact.controller';
@@ -31,7 +51,22 @@ import { EmergencyContactController } from './emergency-contact.controller';
     ]),
   ],
   controllers: [EmergencyContactController],
-  providers: [EmergencyContactService],
-  exports: [EmergencyContactService], // Export for use in other modules
+  providers: [
+    // Main facade service
+    EmergencyContactService,
+
+    // Specialized services (dependencies)
+    ContactValidationService,
+    ContactManagementService,
+    NotificationDeliveryService,
+    NotificationOrchestrationService,
+    ContactVerificationService,
+    ContactStatisticsService,
+    NotificationQueueService,
+  ],
+  exports: [
+    EmergencyContactService, // Main service export for other modules
+    ContactStatisticsService, // Export statistics service for DataLoader support
+  ],
 })
 export class EmergencyContactModule {}

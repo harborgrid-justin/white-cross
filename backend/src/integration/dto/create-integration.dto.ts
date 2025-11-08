@@ -12,7 +12,8 @@ import {
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IntegrationType } from '../entities/integration-config.entity';
-import type { AuthenticationConfig, IntegrationSettings } from '../types';
+import type { AuthenticationConfig } from '../types/authentication.types';
+import type { IntegrationSettings } from '../types/integration-settings.types';
 
 export class CreateIntegrationDto {
   @ApiProperty({

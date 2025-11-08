@@ -7,7 +7,7 @@ import { IncidentFiltersDto } from '../dto/incident-filters.dto';
 import { UpdateIncidentReportDto } from '../dto/update-incident-report.dto';
 import { IncidentNotificationService } from './incident-notification.service';
 import { IncidentValidationService } from './incident-validation.service';
-import { IncidentSeverity } from '../enums';
+import { IncidentSeverity } from '../enums/incident-severity.enum';
 
 @Injectable()
 export class IncidentCoreService {

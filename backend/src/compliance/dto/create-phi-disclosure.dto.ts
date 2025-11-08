@@ -16,7 +16,7 @@ import {
   MinLength,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { DisclosureMethod, DisclosurePurpose, DisclosureType, RecipientType } from '../enums';
+import { DisclosureMethod, DisclosurePurpose, DisclosureType, RecipientType } from '../enums/index';
 
 export class CreatePhiDisclosureDto {
   @ApiProperty({

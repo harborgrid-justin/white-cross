@@ -1,6 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsArray, IsDateString, IsEnum, IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
-import { IncidentSeverity, IncidentStatus, SecurityIncidentType } from '../enums';
+import { IncidentSeverity } from '../enums/incident-severity.enum';
+import { IncidentStatus } from '../enums/incident-status.enum';
+import { SecurityIncidentType } from '../enums/incident-type.enum';
 
 /**
  * DTO for creating security incidents
