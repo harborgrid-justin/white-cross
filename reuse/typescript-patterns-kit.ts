@@ -15,17 +15,19 @@
 /**
  * File: /reuse/typescript-patterns-kit.ts
  * Locator: WC-UTL-PAT-001
- * Purpose: TypeScript Design Patterns Utilities - Comprehensive pattern implementations
+ * Purpose: Advanced TypeScript Patterns & Type Utilities - Comprehensive pattern implementations with advanced type system features
  *
- * Upstream: Independent utility module for design patterns
+ * Upstream: Independent utility module for design patterns and type utilities
  * Downstream: ../backend/*, ../frontend/*, Service implementations, DDD modules
  * Dependencies: TypeScript 5.x, Node 18+
- * Exports: 45 design pattern utilities including singleton, factory, builder, observer, strategy, DI helpers
+ * Exports: 45+ design pattern utilities including branded types, conditional types, mapped types, template literals,
+ *          singleton, factory, builder, observer, strategy, DI helpers, type guards, decorators, and proxies
  *
  * LLM Context: Production-grade TypeScript design pattern implementations for White Cross.
  * Provides comprehensive patterns: Singleton, Factory, Abstract Factory, Builder, Prototype, Observer,
  * Strategy, Command, State, Chain of Responsibility, Decorator, Proxy, Facade, Adapter, Dependency Injection,
- * Repository, Unit of Work, Specification, and advanced type utilities with type guards and predicates.
+ * Repository, Unit of Work, Specification, and advanced type utilities with branded types, conditional types,
+ * mapped types, template literal types, deep readonly/partial utilities, type guards and predicates.
  * Essential for clean architecture and maintainable enterprise applications.
  */
 
@@ -103,6 +105,603 @@ export type Middleware<T = any> = (
   context: T,
   next: () => Promise<any> | any
 ) => Promise<any> | any;
+
+// ============================================================================
+// BRANDED TYPES
+// ============================================================================
+
+/**
+ * Brand interface for creating nominal types
+ */
+export interface Brand<K, T> {
+  __brand: K;
+  __value: T;
+}
+
+/**
+ * Branded type utility for creating nominal types
+ * Prevents mixing of semantically different primitive types
+ *
+ * @template T - Base type
+ * @template K - Brand key
+ *
+ * @example
+ * ```typescript
+ * type UserId = Branded<string, 'UserId'>;
+ * type ProductId = Branded<string, 'ProductId'>;
+ *
+ * const userId: UserId = brand('123');
+ * const productId: ProductId = brand('456');
+ *
+ * // Type error: cannot assign UserId to ProductId
+ * // const id: ProductId = userId;
+ * ```
+ */
+export type Branded<T, K extends string> = T & Brand<K, T>;
+
+/**
+ * Creates a branded value
+ *
+ * @template T - Value type
+ * @template K - Brand key
+ * @param {T} value - Value to brand
+ * @returns {Branded<T, K>} Branded value
+ *
+ * @example
+ * ```typescript
+ * type Email = Branded<string, 'Email'>;
+ *
+ * const email = brand<string, 'Email'>('user@example.com');
+ * ```
+ */
+export function brand<T, K extends string>(value: T): Branded<T, K> {
+  return value as Branded<T, K>;
+}
+
+/**
+ * Extracts the underlying value from a branded type
+ *
+ * @template T - Branded type
+ * @param {T} branded - Branded value
+ * @returns {any} Underlying value
+ *
+ * @example
+ * ```typescript
+ * type UserId = Branded<string, 'UserId'>;
+ * const userId: UserId = brand('123');
+ * const rawValue = unbrand(userId); // '123'
+ * ```
+ */
+export function unbrand<T extends Branded<any, any>>(branded: T): T extends Branded<infer U, any> ? U : never {
+  return branded as any;
+}
+
+/**
+ * Creates a validator for branded types
+ *
+ * @template T - Base type
+ * @template K - Brand key
+ * @param {(value: T) => boolean} validator - Validation function
+ * @returns {(value: T) => Branded<T, K> | null} Branded value validator
+ *
+ * @example
+ * ```typescript
+ * type PositiveNumber = Branded<number, 'PositiveNumber'>;
+ *
+ * const createPositive = createBrandValidator<number, 'PositiveNumber'>(
+ *   (n) => n > 0
+ * );
+ *
+ * const positive = createPositive(5); // PositiveNumber
+ * const invalid = createPositive(-5); // null
+ * ```
+ */
+export function createBrandValidator<T, K extends string>(
+  validator: (value: T) => boolean
+): (value: T) => Branded<T, K> | null {
+  return (value: T): Branded<T, K> | null => {
+    return validator(value) ? brand<T, K>(value) : null;
+  };
+}
+
+/**
+ * Type-safe nominal type for UUIDs
+ */
+export type UUID = Branded<string, 'UUID'>;
+
+/**
+ * Type-safe nominal type for email addresses
+ */
+export type Email = Branded<string, 'Email'>;
+
+/**
+ * Type-safe nominal type for URLs
+ */
+export type URL = Branded<string, 'URL'>;
+
+/**
+ * Type-safe nominal type for positive numbers
+ */
+export type PositiveNumber = Branded<number, 'PositiveNumber'>;
+
+/**
+ * Type-safe nominal type for timestamps
+ */
+export type Timestamp = Branded<number, 'Timestamp'>;
+
+// ============================================================================
+// CONDITIONAL TYPE HELPERS
+// ============================================================================
+
+/**
+ * Extracts promise resolved type
+ *
+ * @example
+ * ```typescript
+ * type UserPromise = Promise<User>;
+ * type User = Awaited<UserPromise>; // User type
+ * ```
+ */
+export type Awaited<T> = T extends Promise<infer U> ? U : T;
+
+/**
+ * Extracts function return type, unwrapping promises
+ *
+ * @example
+ * ```typescript
+ * async function getUser() { return { id: '123' }; }
+ * type User = UnwrapPromise<ReturnType<typeof getUser>>; // { id: string }
+ * ```
+ */
+export type UnwrapPromise<T> = T extends Promise<infer U> ? U : T;
+
+/**
+ * Extracts array element type
+ *
+ * @example
+ * ```typescript
+ * type Users = User[];
+ * type User = ArrayElement<Users>; // User
+ * ```
+ */
+export type ArrayElement<T> = T extends (infer U)[] ? U : T;
+
+/**
+ * Makes type nullable
+ *
+ * @example
+ * ```typescript
+ * type User = { id: string };
+ * type NullableUser = Nullable<User>; // User | null
+ * ```
+ */
+export type Nullable<T> = T | null;
+
+/**
+ * Makes type optional
+ *
+ * @example
+ * ```typescript
+ * type User = { id: string };
+ * type OptionalUser = Optional<User>; // User | undefined
+ * ```
+ */
+export type Optional<T> = T | undefined;
+
+/**
+ * Makes type nullable and optional
+ *
+ * @example
+ * ```typescript
+ * type User = { id: string };
+ * type MaybeUser = Maybe<User>; // User | null | undefined
+ * ```
+ */
+export type Maybe<T> = T | null | undefined;
+
+/**
+ * Removes null and undefined from type
+ *
+ * @example
+ * ```typescript
+ * type MaybeString = string | null | undefined;
+ * type String = NonNullable<MaybeString>; // string
+ * ```
+ */
+export type NonNullable<T> = T extends null | undefined ? never : T;
+
+/**
+ * Extracts non-function properties from type
+ *
+ * @example
+ * ```typescript
+ * type User = {
+ *   id: string;
+ *   getName(): string;
+ * };
+ * type UserData = NonFunctionKeys<User>; // 'id'
+ * ```
+ */
+export type NonFunctionKeys<T> = {
+  [K in keyof T]: T[K] extends Function ? never : K;
+}[keyof T];
+
+/**
+ * Extracts function properties from type
+ *
+ * @example
+ * ```typescript
+ * type User = {
+ *   id: string;
+ *   getName(): string;
+ * };
+ * type UserMethods = FunctionKeys<User>; // 'getName'
+ * ```
+ */
+export type FunctionKeys<T> = {
+  [K in keyof T]: T[K] extends Function ? K : never;
+}[keyof T];
+
+/**
+ * Creates union of object values
+ *
+ * @example
+ * ```typescript
+ * const Colors = {
+ *   RED: 'red',
+ *   GREEN: 'green',
+ *   BLUE: 'blue'
+ * } as const;
+ *
+ * type Color = ValueOf<typeof Colors>; // 'red' | 'green' | 'blue'
+ * ```
+ */
+export type ValueOf<T> = T[keyof T];
+
+/**
+ * Conditional type that returns TrueType if Condition extends true, otherwise FalseType
+ *
+ * @example
+ * ```typescript
+ * type IsString<T> = If<T extends string, 'yes', 'no'>;
+ * type Result = IsString<string>; // 'yes'
+ * ```
+ */
+export type If<Condition extends boolean, TrueType, FalseType> = Condition extends true
+  ? TrueType
+  : FalseType;
+
+/**
+ * Checks if two types are equal
+ *
+ * @example
+ * ```typescript
+ * type IsEqual = Equals<string, string>; // true
+ * type NotEqual = Equals<string, number>; // false
+ * ```
+ */
+export type Equals<X, Y> = (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2
+  ? true
+  : false;
+
+// ============================================================================
+// MAPPED TYPE UTILITIES
+// ============================================================================
+
+/**
+ * Makes specified keys optional
+ *
+ * @example
+ * ```typescript
+ * interface User {
+ *   id: string;
+ *   name: string;
+ *   email: string;
+ * }
+ *
+ * type PartialUser = PartialBy<User, 'email'>;
+ * // { id: string; name: string; email?: string }
+ * ```
+ */
+export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
+/**
+ * Makes specified keys required
+ *
+ * @example
+ * ```typescript
+ * interface User {
+ *   id?: string;
+ *   name?: string;
+ * }
+ *
+ * type RequiredUser = RequiredBy<User, 'id'>;
+ * // { id: string; name?: string }
+ * ```
+ */
+export type RequiredBy<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
+
+/**
+ * Makes all properties readonly recursively
+ *
+ * @example
+ * ```typescript
+ * interface User {
+ *   id: string;
+ *   profile: {
+ *     name: string;
+ *   };
+ * }
+ *
+ * type ImmutableUser = DeepReadonly<User>;
+ * // { readonly id: string; readonly profile: { readonly name: string } }
+ * ```
+ */
+export type DeepReadonly<T> = {
+  readonly [K in keyof T]: T[K] extends object ? DeepReadonly<T[K]> : T[K];
+};
+
+/**
+ * Makes all properties optional recursively
+ *
+ * @example
+ * ```typescript
+ * interface User {
+ *   id: string;
+ *   profile: {
+ *     name: string;
+ *   };
+ * }
+ *
+ * type PartialUser = DeepPartial<User>;
+ * // { id?: string; profile?: { name?: string } }
+ * ```
+ */
+export type DeepPartial<T> = {
+  [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K];
+};
+
+/**
+ * Makes all properties required recursively
+ *
+ * @example
+ * ```typescript
+ * interface User {
+ *   id?: string;
+ *   profile?: {
+ *     name?: string;
+ *   };
+ * }
+ *
+ * type RequiredUser = DeepRequired<User>;
+ * // { id: string; profile: { name: string } }
+ * ```
+ */
+export type DeepRequired<T> = {
+  [K in keyof T]-?: T[K] extends object ? DeepRequired<T[K]> : T[K];
+};
+
+/**
+ * Makes all properties mutable (removes readonly)
+ *
+ * @example
+ * ```typescript
+ * interface User {
+ *   readonly id: string;
+ *   readonly name: string;
+ * }
+ *
+ * type MutableUser = Mutable<User>;
+ * // { id: string; name: string }
+ * ```
+ */
+export type Mutable<T> = {
+  -readonly [K in keyof T]: T[K];
+};
+
+/**
+ * Makes all properties mutable recursively
+ *
+ * @example
+ * ```typescript
+ * interface User {
+ *   readonly id: string;
+ *   readonly profile: {
+ *     readonly name: string;
+ *   };
+ * }
+ *
+ * type MutableUser = DeepMutable<User>;
+ * // { id: string; profile: { name: string } }
+ * ```
+ */
+export type DeepMutable<T> = {
+  -readonly [K in keyof T]: T[K] extends object ? DeepMutable<T[K]> : T[K];
+};
+
+/**
+ * Merges two types, with second type taking precedence
+ *
+ * @example
+ * ```typescript
+ * type A = { a: string; b: number };
+ * type B = { b: string; c: boolean };
+ * type C = Merge<A, B>; // { a: string; b: string; c: boolean }
+ * ```
+ */
+export type Merge<T, U> = Omit<T, keyof U> & U;
+
+/**
+ * Creates a type with only specified keys
+ *
+ * @example
+ * ```typescript
+ * interface User {
+ *   id: string;
+ *   name: string;
+ *   email: string;
+ * }
+ *
+ * type PublicUser = PickByValue<User, string>;
+ * // { id: string; name: string; email: string }
+ * ```
+ */
+export type PickByValue<T, ValueType> = Pick<
+  T,
+  { [K in keyof T]: T[K] extends ValueType ? K : never }[keyof T]
+>;
+
+/**
+ * Omits keys by value type
+ *
+ * @example
+ * ```typescript
+ * interface User {
+ *   id: string;
+ *   age: number;
+ *   isActive: boolean;
+ * }
+ *
+ * type StringUser = OmitByValue<User, number | boolean>;
+ * // { id: string }
+ * ```
+ */
+export type OmitByValue<T, ValueType> = Omit<
+  T,
+  { [K in keyof T]: T[K] extends ValueType ? K : never }[keyof T]
+>;
+
+/**
+ * Makes specified keys readonly
+ *
+ * @example
+ * ```typescript
+ * interface User {
+ *   id: string;
+ *   name: string;
+ * }
+ *
+ * type UserWithReadonlyId = ReadonlyBy<User, 'id'>;
+ * // { readonly id: string; name: string }
+ * ```
+ */
+export type ReadonlyBy<T, K extends keyof T> = Omit<T, K> & Readonly<Pick<T, K>>;
+
+// ============================================================================
+// TEMPLATE LITERAL TYPES
+// ============================================================================
+
+/**
+ * Converts string literal to uppercase
+ *
+ * @example
+ * ```typescript
+ * type UpperHello = Uppercase<'hello'>; // 'HELLO'
+ * ```
+ */
+export type Uppercase<T extends string> = Intrinsic;
+
+/**
+ * Converts string literal to lowercase
+ *
+ * @example
+ * ```typescript
+ * type LowerHello = Lowercase<'HELLO'>; // 'hello'
+ * ```
+ */
+export type Lowercase<T extends string> = Intrinsic;
+
+/**
+ * Capitalizes first character of string literal
+ *
+ * @example
+ * ```typescript
+ * type CapitalHello = Capitalize<'hello'>; // 'Hello'
+ * ```
+ */
+export type Capitalize<T extends string> = Intrinsic;
+
+/**
+ * Uncapitalizes first character of string literal
+ *
+ * @example
+ * ```typescript
+ * type UncapitalHello = Uncapitalize<'Hello'>; // 'hello'
+ * ```
+ */
+export type Uncapitalize<T extends string> = Intrinsic;
+
+/**
+ * Creates event name from entity and action
+ *
+ * @example
+ * ```typescript
+ * type UserCreated = EventName<'user', 'created'>; // 'user:created'
+ * type UserUpdated = EventName<'user', 'updated'>; // 'user:updated'
+ * ```
+ */
+export type EventName<Entity extends string, Action extends string> = `${Entity}:${Action}`;
+
+/**
+ * Creates getter name from property name
+ *
+ * @example
+ * ```typescript
+ * type GetName = GetterName<'name'>; // 'getName'
+ * type GetEmail = GetterName<'email'>; // 'getEmail'
+ * ```
+ */
+export type GetterName<T extends string> = `get${Capitalize<T>}`;
+
+/**
+ * Creates setter name from property name
+ *
+ * @example
+ * ```typescript
+ * type SetName = SetterName<'name'>; // 'setName'
+ * type SetEmail = SetterName<'email'>; // 'setEmail'
+ * ```
+ */
+export type SetterName<T extends string> = `set${Capitalize<T>}`;
+
+/**
+ * Creates handler name from event name
+ *
+ * @example
+ * ```typescript
+ * type OnClick = HandlerName<'click'>; // 'onClick'
+ * type OnSubmit = HandlerName<'submit'>; // 'onSubmit'
+ * ```
+ */
+export type HandlerName<T extends string> = `on${Capitalize<T>}`;
+
+/**
+ * Converts camelCase to snake_case
+ *
+ * @example
+ * ```typescript
+ * type SnakeName = CamelToSnake<'userName'>; // 'user_name'
+ * type SnakeEmail = CamelToSnake<'userEmail'>; // 'user_email'
+ * ```
+ */
+export type CamelToSnake<S extends string> = S extends `${infer T}${infer U}`
+  ? `${T extends Capitalize<T> ? '_' : ''}${Lowercase<T>}${CamelToSnake<U>}`
+  : S;
+
+/**
+ * Extracts route parameters from path
+ *
+ * @example
+ * ```typescript
+ * type Params = RouteParams<'/users/:id/posts/:postId'>;
+ * // { id: string; postId: string }
+ * ```
+ */
+export type RouteParams<T extends string> = T extends `${infer _Start}:${infer Param}/${infer Rest}`
+  ? { [K in Param | keyof RouteParams<`/${Rest}`>]: string }
+  : T extends `${infer _Start}:${infer Param}`
+  ? { [K in Param]: string }
+  : {};
 
 // ============================================================================
 // SINGLETON PATTERN
@@ -248,6 +847,7 @@ export function createFactory<T>(
  * Abstract factory for creating families of related objects.
  *
  * @template T - Product family type
+ * @param {Record<string, Constructor<T>>} factories - Map of factory names to constructors
  * @returns {AbstractFactory<T>} Abstract factory instance
  *
  * @example
@@ -809,50 +1409,8 @@ export function createDIContainer(): {
   };
 }
 
-/**
- * Injectable decorator for classes.
- *
- * @param {string} token - Injection token
- * @returns {ClassDecorator} Class decorator
- *
- * @example
- * ```typescript
- * @Injectable('userService')
- * class UserService {
- *   getUsers() { return []; }
- * }
- * ```
- */
-export function Injectable(token: string): ClassDecorator {
-  return function (target: any): any {
-    Reflect.defineMetadata('injectable:token', token, target);
-    return target;
-  };
-}
-
-/**
- * Inject decorator for constructor parameters.
- *
- * @param {string} token - Injection token
- * @returns {ParameterDecorator} Parameter decorator
- *
- * @example
- * ```typescript
- * class UserController {
- *   constructor(@Inject('userService') private userService: UserService) {}
- * }
- * ```
- */
-export function Inject(token: string): ParameterDecorator {
-  return function (target: any, propertyKey: string | symbol | undefined, parameterIndex: number) {
-    const existingTokens: string[] = Reflect.getMetadata('injectable:params', target) || [];
-    existingTokens[parameterIndex] = token;
-    Reflect.defineMetadata('injectable:params', existingTokens, target);
-  };
-}
-
 // ============================================================================
-// DECORATOR PATTERN
+// DECORATOR PATTERN & DECORATOR FACTORIES
 // ============================================================================
 
 /**
@@ -919,6 +1477,154 @@ export function LogExecutionTime(): MethodDecorator {
     };
 
     return descriptor;
+  };
+}
+
+/**
+ * Method decorator for caching results.
+ *
+ * @param {number} ttl - Time to live in milliseconds
+ * @returns {MethodDecorator} Method decorator
+ *
+ * @example
+ * ```typescript
+ * class DataService {
+ *   @Cached(5000)
+ *   async fetchUser(id: string) {
+ *     return await api.getUser(id);
+ *   }
+ * }
+ * ```
+ */
+export function Cached(ttl: number = 60000): MethodDecorator {
+  const cache = new Map<string, { value: any; expiry: number }>();
+
+  return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
+    const originalMethod = descriptor.value;
+
+    descriptor.value = async function (...args: any[]) {
+      const cacheKey = `${String(propertyKey)}:${JSON.stringify(args)}`;
+      const now = Date.now();
+
+      const cached = cache.get(cacheKey);
+      if (cached && cached.expiry > now) {
+        return cached.value;
+      }
+
+      const result = await originalMethod.apply(this, args);
+      cache.set(cacheKey, { value: result, expiry: now + ttl });
+      return result;
+    };
+
+    return descriptor;
+  };
+}
+
+/**
+ * Method decorator for retry logic.
+ *
+ * @param {number} maxAttempts - Maximum retry attempts
+ * @param {number} delay - Delay between retries in milliseconds
+ * @returns {MethodDecorator} Method decorator
+ *
+ * @example
+ * ```typescript
+ * class ApiService {
+ *   @Retry(3, 1000)
+ *   async fetchData() {
+ *     return await fetch('/api/data');
+ *   }
+ * }
+ * ```
+ */
+export function Retry(maxAttempts: number = 3, delay: number = 1000): MethodDecorator {
+  return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
+    const originalMethod = descriptor.value;
+
+    descriptor.value = async function (...args: any[]) {
+      let lastError: Error;
+
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          return await originalMethod.apply(this, args);
+        } catch (error) {
+          lastError = error as Error;
+          if (attempt < maxAttempts) {
+            await new Promise((resolve) => setTimeout(resolve, delay * attempt));
+          }
+        }
+      }
+
+      throw lastError!;
+    };
+
+    return descriptor;
+  };
+}
+
+/**
+ * Method decorator for rate limiting.
+ *
+ * @param {number} maxCalls - Maximum calls allowed
+ * @param {number} windowMs - Time window in milliseconds
+ * @returns {MethodDecorator} Method decorator
+ *
+ * @example
+ * ```typescript
+ * class ApiService {
+ *   @RateLimit(10, 60000)
+ *   async fetchData() {
+ *     return await fetch('/api/data');
+ *   }
+ * }
+ * ```
+ */
+export function RateLimit(maxCalls: number, windowMs: number): MethodDecorator {
+  const calls: number[] = [];
+
+  return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
+    const originalMethod = descriptor.value;
+
+    descriptor.value = async function (...args: any[]) {
+      const now = Date.now();
+      const windowStart = now - windowMs;
+
+      // Remove calls outside the window
+      while (calls.length > 0 && calls[0] < windowStart) {
+        calls.shift();
+      }
+
+      if (calls.length >= maxCalls) {
+        throw new Error(`Rate limit exceeded for ${String(propertyKey)}`);
+      }
+
+      calls.push(now);
+      return await originalMethod.apply(this, args);
+    };
+
+    return descriptor;
+  };
+}
+
+/**
+ * Property decorator for readonly enforcement.
+ *
+ * @returns {PropertyDecorator} Property decorator
+ *
+ * @example
+ * ```typescript
+ * class User {
+ *   @Readonly()
+ *   id: string = '123';
+ * }
+ * ```
+ */
+export function Readonly(): PropertyDecorator {
+  return function (target: any, propertyKey: string | symbol) {
+    Object.defineProperty(target, propertyKey, {
+      writable: false,
+      configurable: false,
+    });
   };
 }
 
@@ -1011,6 +1717,43 @@ export function createCachingProxy<T extends object>(target: T): T {
   });
 }
 
+/**
+ * Creates a validation proxy that validates property assignments.
+ *
+ * @template T - Target type
+ * @param {T} target - Target object
+ * @param {(prop: string, value: any) => boolean} validator - Validation function
+ * @returns {T} Validation proxy
+ *
+ * @example
+ * ```typescript
+ * const user = createValidationProxy(
+ *   { age: 0 },
+ *   (prop, value) => {
+ *     if (prop === 'age') return value >= 0 && value <= 150;
+ *     return true;
+ *   }
+ * );
+ *
+ * user.age = 25; // OK
+ * user.age = -5; // Throws error
+ * ```
+ */
+export function createValidationProxy<T extends object>(
+  target: T,
+  validator: (prop: string, value: any) => boolean
+): T {
+  return new Proxy(target, {
+    set(obj, prop, value) {
+      if (!validator(String(prop), value)) {
+        throw new Error(`Invalid value for property ${String(prop)}: ${value}`);
+      }
+      (obj as any)[prop] = value;
+      return true;
+    },
+  });
+}
+
 // ============================================================================
 // CHAIN OF RESPONSIBILITY
 // ============================================================================
@@ -1058,7 +1801,7 @@ export function createMiddlewareChain<T>(
 }
 
 // ============================================================================
-// TYPE GUARDS
+// TYPE GUARDS & NARROWING
 // ============================================================================
 
 /**
@@ -1157,81 +1900,124 @@ export function isInstanceOf<T>(value: any, constructor: Constructor<T>): value 
   return value instanceof constructor;
 }
 
-// ============================================================================
-// UTILITY TYPES HELPERS
-// ============================================================================
-
 /**
- * Extracts promise resolved type.
+ * Type guard to check if value is a string.
+ *
+ * @param {any} value - Value to check
+ * @returns {boolean} True if value is a string
  *
  * @example
  * ```typescript
- * type UserPromise = Promise<User>;
- * type User = Awaited<UserPromise>; // User type
- * ```
- */
-export type Awaited<T> = T extends Promise<infer U> ? U : T;
-
-/**
- * Makes specified keys optional.
- *
- * @example
- * ```typescript
- * interface User {
- *   id: string;
- *   name: string;
- *   email: string;
+ * if (isString(value)) {
+ *   console.log(value.toUpperCase());
  * }
- *
- * type PartialUser = PartialBy<User, 'email'>;
- * // { id: string; name: string; email?: string }
  * ```
  */
-export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+export function isString(value: any): value is string {
+  return typeof value === 'string';
+}
 
 /**
- * Makes specified keys required.
+ * Type guard to check if value is a number.
+ *
+ * @param {any} value - Value to check
+ * @returns {boolean} True if value is a number
  *
  * @example
  * ```typescript
- * interface User {
- *   id?: string;
- *   name?: string;
+ * if (isNumber(value)) {
+ *   console.log(value.toFixed(2));
  * }
- *
- * type RequiredUser = RequiredBy<User, 'id'>;
- * // { id: string; name?: string }
  * ```
  */
-export type RequiredBy<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
+export function isNumber(value: any): value is number {
+  return typeof value === 'number' && !isNaN(value);
+}
 
 /**
- * Creates union of object values.
+ * Type guard to check if value is a boolean.
+ *
+ * @param {any} value - Value to check
+ * @returns {boolean} True if value is a boolean
  *
  * @example
  * ```typescript
- * const Colors = {
- *   RED: 'red',
- *   GREEN: 'green',
- *   BLUE: 'blue'
- * } as const;
- *
- * type Color = ValueOf<typeof Colors>; // 'red' | 'green' | 'blue'
+ * if (isBoolean(value)) {
+ *   console.log(value ? 'yes' : 'no');
+ * }
  * ```
  */
-export type ValueOf<T> = T[keyof T];
+export function isBoolean(value: any): value is boolean {
+  return typeof value === 'boolean';
+}
 
 /**
- * Merges two types.
+ * Type guard to check if value is an array.
+ *
+ * @param {any} value - Value to check
+ * @returns {boolean} True if value is an array
  *
  * @example
  * ```typescript
- * type A = { a: string; b: number };
- * type B = { b: string; c: boolean };
- * type C = Merge<A, B>; // { a: string; b: string; c: boolean }
+ * if (isArray(value)) {
+ *   console.log(value.length);
+ * }
  * ```
  */
-export type Merge<T, U> = Omit<T, keyof U> & U;
+export function isArray<T = any>(value: any): value is T[] {
+  return Array.isArray(value);
+}
+
+/**
+ * Type guard to check if value is an object.
+ *
+ * @param {any} value - Value to check
+ * @returns {boolean} True if value is an object
+ *
+ * @example
+ * ```typescript
+ * if (isObject(value)) {
+ *   console.log(Object.keys(value));
+ * }
+ * ```
+ */
+export function isObject(value: any): value is Record<string, any> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Type guard to check if value is null.
+ *
+ * @param {any} value - Value to check
+ * @returns {boolean} True if value is null
+ *
+ * @example
+ * ```typescript
+ * if (isNull(value)) {
+ *   console.log('Value is null');
+ * }
+ * ```
+ */
+export function isNull(value: any): value is null {
+  return value === null;
+}
+
+/**
+ * Type guard to check if value is undefined.
+ *
+ * @param {any} value - Value to check
+ * @returns {boolean} True if value is undefined
+ *
+ * @example
+ * ```typescript
+ * if (isUndefined(value)) {
+ *   console.log('Value is undefined');
+ * }
+ * ```
+ */
+export function isUndefined(value: any): value is undefined {
+  return value === undefined;
+}
 
 // ============================================================================
 // UTILITY FUNCTIONS
@@ -1380,11 +2166,83 @@ export async function retry<T>(
   throw lastError;
 }
 
+/**
+ * Creates a deep clone of an object.
+ *
+ * @template T - Object type
+ * @param {T} obj - Object to clone
+ * @returns {T} Cloned object
+ *
+ * @example
+ * ```typescript
+ * const original = { user: { name: 'John', age: 30 } };
+ * const cloned = deepClone(original);
+ * cloned.user.name = 'Jane';
+ * console.log(original.user.name); // 'John'
+ * ```
+ */
+export function deepClone<T>(obj: T): T {
+  if (obj === null || typeof obj !== 'object') {
+    return obj;
+  }
+
+  if (obj instanceof Date) {
+    return new Date(obj.getTime()) as any;
+  }
+
+  if (obj instanceof Array) {
+    return obj.map((item) => deepClone(item)) as any;
+  }
+
+  if (obj instanceof Object) {
+    const cloned: any = {};
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        cloned[key] = deepClone((obj as any)[key]);
+      }
+    }
+    return cloned;
+  }
+
+  return obj;
+}
+
+/**
+ * Deep freezes an object making it immutable.
+ *
+ * @template T - Object type
+ * @param {T} obj - Object to freeze
+ * @returns {DeepReadonly<T>} Frozen object
+ *
+ * @example
+ * ```typescript
+ * const config = deepFreeze({ api: { url: 'https://api.example.com' } });
+ * config.api.url = 'https://hack.com'; // Throws error in strict mode
+ * ```
+ */
+export function deepFreeze<T extends object>(obj: T): DeepReadonly<T> {
+  Object.freeze(obj);
+
+  Object.getOwnPropertyNames(obj).forEach((prop) => {
+    const value = (obj as any)[prop];
+    if (value && typeof value === 'object' && !Object.isFrozen(value)) {
+      deepFreeze(value);
+    }
+  });
+
+  return obj as DeepReadonly<T>;
+}
+
 // ============================================================================
 // EXPORTS
 // ============================================================================
 
 export default {
+  // Branded Types
+  brand,
+  unbrand,
+  createBrandValidator,
+
   // Singleton
   createSingleton,
   Singleton,
@@ -1417,16 +2275,19 @@ export default {
 
   // Dependency Injection
   createDIContainer,
-  Injectable,
-  Inject,
 
   // Decorator
   createDecorator,
   LogExecutionTime,
+  Cached,
+  Retry,
+  RateLimit,
+  Readonly,
 
   // Proxy
   createLazyProxy,
   createCachingProxy,
+  createValidationProxy,
 
   // Chain of Responsibility
   createMiddlewareChain,
@@ -1437,10 +2298,19 @@ export default {
   isPromise,
   hasProperty,
   isInstanceOf,
+  isString,
+  isNumber,
+  isBoolean,
+  isArray,
+  isObject,
+  isNull,
+  isUndefined,
 
   // Utility Functions
   memoize,
   debounce,
   throttle,
   retry,
+  deepClone,
+  deepFreeze,
 };
