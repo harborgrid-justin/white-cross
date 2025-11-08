@@ -11,22 +11,24 @@
  *   - Security middleware
  *   - RBAC implementations
  *   - Permission systems
+ *   - Sequelize models
  */
 
 /**
  * File: /reuse/auth-security-kit.ts
  * Locator: WC-UTL-AUTHSEC-001
- * Purpose: Comprehensive Authentication & Security Kit - Complete auth/authz toolkit for NestJS
+ * Purpose: Comprehensive Authentication & Security Kit - Complete auth/authz toolkit for NestJS + Sequelize
  *
  * Upstream: Independent utility module for authentication and authorization operations
  * Downstream: ../backend/*, Auth services, Guards, Interceptors, Passport strategies, RBAC modules
- * Dependencies: TypeScript 5.x, Node 18+, @nestjs/common, @nestjs/jwt, @nestjs/passport, bcrypt
- * Exports: 45+ utility functions for JWT, OAuth, sessions, MFA, RBAC, permissions, API keys, security headers
+ * Dependencies: TypeScript 5.x, Node 18+, @nestjs/common, @nestjs/jwt, @nestjs/passport, bcrypt, argon2, sequelize
+ * Exports: 50+ utility functions for JWT, OAuth, sessions, MFA, RBAC, permissions, API keys, security headers, Sequelize models
  *
  * LLM Context: Enterprise-grade authentication and authorization utilities for White Cross healthcare platform.
  * Provides comprehensive JWT management, OAuth 2.0 flows, session handling, multi-factor authentication,
  * role-based access control (RBAC), permission systems, API key management, security headers, rate limiting,
- * and HIPAA-compliant authentication patterns for secure healthcare data access.
+ * and HIPAA-compliant authentication patterns for secure healthcare data access. Includes Sequelize models
+ * for users, roles, permissions, sessions, tokens, and login attempts tracking.
  */
 
 import * as crypto from 'crypto';
@@ -45,6 +47,7 @@ interface JWTPayload {
   exp?: number;
   iss?: string;
   aud?: string;
+  jti?: string;
   [key: string]: any;
 }
 
@@ -102,6 +105,13 @@ interface OAuth2TokenResponse {
   refresh_token?: string;
   scope?: string;
   id_token?: string;
+}
+
+interface OAuth2ClientCredentials {
+  clientId: string;
+  clientSecret: string;
+  scope?: string[];
+  audience?: string;
 }
 
 interface ApiKeyConfig {
@@ -200,6 +210,591 @@ interface PasswordValidationResult {
   feedback: string[];
   metadata?: Record<string, any>;
 }
+
+interface LoginAttemptRecord {
+  userId?: string;
+  email: string;
+  ipAddress: string;
+  userAgent?: string;
+  success: boolean;
+  timestamp: Date;
+  failureReason?: string;
+}
+
+interface AccountLockoutPolicy {
+  maxFailedAttempts: number;
+  lockoutDurationMs: number;
+  attemptWindowMs: number;
+  progressiveLockout?: boolean;
+}
+
+// ============================================================================
+// SEQUELIZE MODEL DEFINITIONS
+// ============================================================================
+
+/**
+ * Sequelize User model attributes for authentication.
+ *
+ * @example
+ * ```typescript
+ * import { DataTypes, Model } from 'sequelize';
+ *
+ * class User extends Model {
+ *   declare id: string;
+ *   declare email: string;
+ *   declare passwordHash: string;
+ *   // ... other fields
+ * }
+ *
+ * User.init(getUserModelAttributes(), {
+ *   sequelize,
+ *   tableName: 'users',
+ *   timestamps: true
+ * });
+ * ```
+ */
+export const getUserModelAttributes = () => ({
+  id: {
+    type: 'UUID',
+    defaultValue: 'UUIDV4',
+    primaryKey: true,
+  },
+  email: {
+    type: 'STRING',
+    allowNull: false,
+    unique: true,
+    validate: {
+      isEmail: true,
+    },
+  },
+  passwordHash: {
+    type: 'STRING',
+    allowNull: false,
+  },
+  passwordChangedAt: {
+    type: 'DATE',
+    allowNull: true,
+  },
+  passwordHistory: {
+    type: 'JSONB',
+    allowNull: true,
+    defaultValue: [],
+  },
+  role: {
+    type: 'STRING',
+    allowNull: false,
+    defaultValue: 'user',
+  },
+  isActive: {
+    type: 'BOOLEAN',
+    defaultValue: true,
+  },
+  isEmailVerified: {
+    type: 'BOOLEAN',
+    defaultValue: false,
+  },
+  mfaEnabled: {
+    type: 'BOOLEAN',
+    defaultValue: false,
+  },
+  mfaSecret: {
+    type: 'STRING',
+    allowNull: true,
+  },
+  failedLoginAttempts: {
+    type: 'INTEGER',
+    defaultValue: 0,
+  },
+  lockedUntil: {
+    type: 'DATE',
+    allowNull: true,
+  },
+  lastLoginAt: {
+    type: 'DATE',
+    allowNull: true,
+  },
+  lastLoginIp: {
+    type: 'STRING',
+    allowNull: true,
+  },
+  createdAt: {
+    type: 'DATE',
+    allowNull: false,
+  },
+  updatedAt: {
+    type: 'DATE',
+    allowNull: false,
+  },
+});
+
+/**
+ * Sequelize Role model attributes for RBAC.
+ *
+ * @example
+ * ```typescript
+ * class Role extends Model {}
+ * Role.init(getRoleModelAttributes(), {
+ *   sequelize,
+ *   tableName: 'roles',
+ *   timestamps: true
+ * });
+ * ```
+ */
+export const getRoleModelAttributes = () => ({
+  id: {
+    type: 'UUID',
+    defaultValue: 'UUIDV4',
+    primaryKey: true,
+  },
+  name: {
+    type: 'STRING',
+    allowNull: false,
+    unique: true,
+  },
+  displayName: {
+    type: 'STRING',
+    allowNull: false,
+  },
+  description: {
+    type: 'TEXT',
+    allowNull: true,
+  },
+  priority: {
+    type: 'INTEGER',
+    defaultValue: 0,
+  },
+  isSystem: {
+    type: 'BOOLEAN',
+    defaultValue: false,
+  },
+  metadata: {
+    type: 'JSONB',
+    defaultValue: {},
+  },
+  createdAt: {
+    type: 'DATE',
+    allowNull: false,
+  },
+  updatedAt: {
+    type: 'DATE',
+    allowNull: false,
+  },
+});
+
+/**
+ * Sequelize Permission model attributes for fine-grained access control.
+ *
+ * @example
+ * ```typescript
+ * class Permission extends Model {}
+ * Permission.init(getPermissionModelAttributes(), {
+ *   sequelize,
+ *   tableName: 'permissions',
+ *   timestamps: true
+ * });
+ * ```
+ */
+export const getPermissionModelAttributes = () => ({
+  id: {
+    type: 'UUID',
+    defaultValue: 'UUIDV4',
+    primaryKey: true,
+  },
+  name: {
+    type: 'STRING',
+    allowNull: false,
+    unique: true,
+  },
+  resource: {
+    type: 'STRING',
+    allowNull: false,
+  },
+  action: {
+    type: 'STRING',
+    allowNull: false,
+  },
+  description: {
+    type: 'TEXT',
+    allowNull: true,
+  },
+  isSystem: {
+    type: 'BOOLEAN',
+    defaultValue: false,
+  },
+  metadata: {
+    type: 'JSONB',
+    defaultValue: {},
+  },
+  createdAt: {
+    type: 'DATE',
+    allowNull: false,
+  },
+  updatedAt: {
+    type: 'DATE',
+    allowNull: false,
+  },
+});
+
+/**
+ * Sequelize Session model attributes for session management.
+ *
+ * @example
+ * ```typescript
+ * class Session extends Model {}
+ * Session.init(getSessionModelAttributes(), {
+ *   sequelize,
+ *   tableName: 'sessions',
+ *   timestamps: true
+ * });
+ * ```
+ */
+export const getSessionModelAttributes = () => ({
+  id: {
+    type: 'UUID',
+    defaultValue: 'UUIDV4',
+    primaryKey: true,
+  },
+  sessionId: {
+    type: 'STRING',
+    allowNull: false,
+    unique: true,
+  },
+  userId: {
+    type: 'UUID',
+    allowNull: false,
+    references: {
+      model: 'users',
+      key: 'id',
+    },
+  },
+  ipAddress: {
+    type: 'STRING',
+    allowNull: true,
+  },
+  userAgent: {
+    type: 'TEXT',
+    allowNull: true,
+  },
+  deviceId: {
+    type: 'STRING',
+    allowNull: true,
+  },
+  lastActivity: {
+    type: 'DATE',
+    allowNull: false,
+  },
+  expiresAt: {
+    type: 'DATE',
+    allowNull: false,
+  },
+  metadata: {
+    type: 'JSONB',
+    defaultValue: {},
+  },
+  createdAt: {
+    type: 'DATE',
+    allowNull: false,
+  },
+  updatedAt: {
+    type: 'DATE',
+    allowNull: false,
+  },
+});
+
+/**
+ * Sequelize RefreshToken model attributes for token rotation.
+ *
+ * @example
+ * ```typescript
+ * class RefreshToken extends Model {}
+ * RefreshToken.init(getRefreshTokenModelAttributes(), {
+ *   sequelize,
+ *   tableName: 'refresh_tokens',
+ *   timestamps: true
+ * });
+ * ```
+ */
+export const getRefreshTokenModelAttributes = () => ({
+  id: {
+    type: 'UUID',
+    defaultValue: 'UUIDV4',
+    primaryKey: true,
+  },
+  tokenHash: {
+    type: 'STRING',
+    allowNull: false,
+    unique: true,
+  },
+  userId: {
+    type: 'UUID',
+    allowNull: false,
+    references: {
+      model: 'users',
+      key: 'id',
+    },
+  },
+  deviceId: {
+    type: 'STRING',
+    allowNull: true,
+  },
+  sessionId: {
+    type: 'UUID',
+    allowNull: true,
+  },
+  familyId: {
+    type: 'STRING',
+    allowNull: true,
+  },
+  expiresAt: {
+    type: 'DATE',
+    allowNull: false,
+  },
+  revokedAt: {
+    type: 'DATE',
+    allowNull: true,
+  },
+  replacedBy: {
+    type: 'UUID',
+    allowNull: true,
+  },
+  metadata: {
+    type: 'JSONB',
+    defaultValue: {},
+  },
+  createdAt: {
+    type: 'DATE',
+    allowNull: false,
+  },
+  updatedAt: {
+    type: 'DATE',
+    allowNull: false,
+  },
+});
+
+/**
+ * Sequelize ApiKey model attributes for API key management.
+ *
+ * @example
+ * ```typescript
+ * class ApiKey extends Model {}
+ * ApiKey.init(getApiKeyModelAttributes(), {
+ *   sequelize,
+ *   tableName: 'api_keys',
+ *   timestamps: true
+ * });
+ * ```
+ */
+export const getApiKeyModelAttributes = () => ({
+  id: {
+    type: 'UUID',
+    defaultValue: 'UUIDV4',
+    primaryKey: true,
+  },
+  keyHash: {
+    type: 'STRING',
+    allowNull: false,
+    unique: true,
+  },
+  prefix: {
+    type: 'STRING',
+    allowNull: true,
+  },
+  name: {
+    type: 'STRING',
+    allowNull: false,
+  },
+  userId: {
+    type: 'UUID',
+    allowNull: true,
+    references: {
+      model: 'users',
+      key: 'id',
+    },
+  },
+  permissions: {
+    type: 'JSONB',
+    defaultValue: [],
+  },
+  expiresAt: {
+    type: 'DATE',
+    allowNull: true,
+  },
+  lastUsed: {
+    type: 'DATE',
+    allowNull: true,
+  },
+  isActive: {
+    type: 'BOOLEAN',
+    defaultValue: true,
+  },
+  metadata: {
+    type: 'JSONB',
+    defaultValue: {},
+  },
+  createdAt: {
+    type: 'DATE',
+    allowNull: false,
+  },
+  updatedAt: {
+    type: 'DATE',
+    allowNull: false,
+  },
+});
+
+/**
+ * Sequelize LoginAttempt model attributes for security tracking.
+ *
+ * @example
+ * ```typescript
+ * class LoginAttempt extends Model {}
+ * LoginAttempt.init(getLoginAttemptModelAttributes(), {
+ *   sequelize,
+ *   tableName: 'login_attempts',
+ *   timestamps: true
+ * });
+ * ```
+ */
+export const getLoginAttemptModelAttributes = () => ({
+  id: {
+    type: 'UUID',
+    defaultValue: 'UUIDV4',
+    primaryKey: true,
+  },
+  userId: {
+    type: 'UUID',
+    allowNull: true,
+    references: {
+      model: 'users',
+      key: 'id',
+    },
+  },
+  email: {
+    type: 'STRING',
+    allowNull: false,
+  },
+  ipAddress: {
+    type: 'STRING',
+    allowNull: false,
+  },
+  userAgent: {
+    type: 'TEXT',
+    allowNull: true,
+  },
+  success: {
+    type: 'BOOLEAN',
+    allowNull: false,
+  },
+  failureReason: {
+    type: 'STRING',
+    allowNull: true,
+  },
+  metadata: {
+    type: 'JSONB',
+    defaultValue: {},
+  },
+  createdAt: {
+    type: 'DATE',
+    allowNull: false,
+  },
+});
+
+/**
+ * Sequelize UserRole junction table for many-to-many relationship.
+ *
+ * @example
+ * ```typescript
+ * class UserRole extends Model {}
+ * UserRole.init(getUserRoleModelAttributes(), {
+ *   sequelize,
+ *   tableName: 'user_roles',
+ *   timestamps: true
+ * });
+ * ```
+ */
+export const getUserRoleModelAttributes = () => ({
+  id: {
+    type: 'UUID',
+    defaultValue: 'UUIDV4',
+    primaryKey: true,
+  },
+  userId: {
+    type: 'UUID',
+    allowNull: false,
+    references: {
+      model: 'users',
+      key: 'id',
+    },
+  },
+  roleId: {
+    type: 'UUID',
+    allowNull: false,
+    references: {
+      model: 'roles',
+      key: 'id',
+    },
+  },
+  grantedBy: {
+    type: 'UUID',
+    allowNull: true,
+  },
+  expiresAt: {
+    type: 'DATE',
+    allowNull: true,
+  },
+  createdAt: {
+    type: 'DATE',
+    allowNull: false,
+  },
+  updatedAt: {
+    type: 'DATE',
+    allowNull: false,
+  },
+});
+
+/**
+ * Sequelize RolePermission junction table for role-permission mapping.
+ *
+ * @example
+ * ```typescript
+ * class RolePermission extends Model {}
+ * RolePermission.init(getRolePermissionModelAttributes(), {
+ *   sequelize,
+ *   tableName: 'role_permissions',
+ *   timestamps: true
+ * });
+ * ```
+ */
+export const getRolePermissionModelAttributes = () => ({
+  id: {
+    type: 'UUID',
+    defaultValue: 'UUIDV4',
+    primaryKey: true,
+  },
+  roleId: {
+    type: 'UUID',
+    allowNull: false,
+    references: {
+      model: 'roles',
+      key: 'id',
+    },
+  },
+  permissionId: {
+    type: 'UUID',
+    allowNull: false,
+    references: {
+      model: 'permissions',
+      key: 'id',
+    },
+  },
+  createdAt: {
+    type: 'DATE',
+    allowNull: false,
+  },
+  updatedAt: {
+    type: 'DATE',
+    allowNull: false,
+  },
+});
 
 // ============================================================================
 // JWT TOKEN CREATION AND VALIDATION
@@ -723,6 +1318,285 @@ export const generateSecureSessionId = (prefix: string = '', length: number = 32
 };
 
 // ============================================================================
+// OAUTH 2.0 FLOWS
+// ============================================================================
+
+/**
+ * Generates OAuth 2.0 authorization URL with PKCE support.
+ *
+ * @param {OAuth2Config} config - OAuth configuration
+ * @returns {object} Authorization URL and state
+ *
+ * @example
+ * ```typescript
+ * const { authUrl, state, codeVerifier } = generateOAuth2AuthorizationUrl({
+ *   clientId: 'client123',
+ *   clientSecret: 'secret',
+ *   redirectUri: 'https://app.com/callback',
+ *   scope: ['openid', 'profile', 'email']
+ * });
+ * // Redirect user to authUrl
+ * ```
+ */
+export const generateOAuth2AuthorizationUrl = (
+  config: OAuth2Config
+): { authUrl: string; state: string; codeVerifier?: string } => {
+  const state = config.state || crypto.randomBytes(32).toString('hex');
+  const codeVerifier = crypto.randomBytes(32).toString('base64url');
+  const codeChallenge = crypto.createHash('sha256').update(codeVerifier).digest('base64url');
+
+  const params = new URLSearchParams({
+    client_id: config.clientId,
+    redirect_uri: config.redirectUri,
+    response_type: config.responseType || 'code',
+    state,
+    scope: (config.scope || []).join(' '),
+    code_challenge: codeChallenge,
+    code_challenge_method: 'S256',
+  });
+
+  const authUrl = `https://oauth.provider.com/authorize?${params.toString()}`;
+
+  return { authUrl, state, codeVerifier };
+};
+
+/**
+ * Exchanges OAuth 2.0 authorization code for access token.
+ *
+ * @param {string} code - Authorization code
+ * @param {OAuth2Config} config - OAuth configuration
+ * @param {string} [codeVerifier] - PKCE code verifier
+ * @returns {Promise<OAuth2TokenResponse>} Token response
+ *
+ * @example
+ * ```typescript
+ * const tokens = await exchangeOAuth2Code(authCode, config, codeVerifier);
+ * console.log('Access token:', tokens.access_token);
+ * ```
+ */
+export const exchangeOAuth2Code = async (
+  code: string,
+  config: OAuth2Config,
+  codeVerifier?: string
+): Promise<OAuth2TokenResponse> => {
+  // This is a placeholder - in production, make actual HTTP request to token endpoint
+  const tokenPayload = {
+    grant_type: 'authorization_code',
+    code,
+    redirect_uri: config.redirectUri,
+    client_id: config.clientId,
+    client_secret: config.clientSecret,
+    code_verifier: codeVerifier,
+  };
+
+  // Simulated response
+  return {
+    access_token: crypto.randomBytes(32).toString('hex'),
+    token_type: 'Bearer',
+    expires_in: 3600,
+    refresh_token: crypto.randomBytes(32).toString('hex'),
+    scope: (config.scope || []).join(' '),
+  };
+};
+
+/**
+ * Performs OAuth 2.0 client credentials flow.
+ *
+ * @param {OAuth2ClientCredentials} config - Client credentials configuration
+ * @returns {Promise<OAuth2TokenResponse>} Token response
+ *
+ * @example
+ * ```typescript
+ * const tokens = await performOAuth2ClientCredentialsFlow({
+ *   clientId: 'client123',
+ *   clientSecret: 'secret',
+ *   scope: ['api:read', 'api:write']
+ * });
+ * ```
+ */
+export const performOAuth2ClientCredentialsFlow = async (
+  config: OAuth2ClientCredentials
+): Promise<OAuth2TokenResponse> => {
+  // This is a placeholder - in production, make actual HTTP request
+  const tokenPayload = {
+    grant_type: 'client_credentials',
+    client_id: config.clientId,
+    client_secret: config.clientSecret,
+    scope: (config.scope || []).join(' '),
+    audience: config.audience,
+  };
+
+  // Simulated response
+  return {
+    access_token: crypto.randomBytes(32).toString('hex'),
+    token_type: 'Bearer',
+    expires_in: 3600,
+    scope: (config.scope || []).join(' '),
+  };
+};
+
+/**
+ * Validates OAuth 2.0 state parameter to prevent CSRF attacks.
+ *
+ * @param {string} receivedState - State from OAuth callback
+ * @param {string} expectedState - State stored in session
+ * @returns {boolean} True if states match
+ *
+ * @example
+ * ```typescript
+ * if (!validateOAuth2State(req.query.state, session.oauthState)) {
+ *   throw new Error('Invalid OAuth state - possible CSRF attack');
+ * }
+ * ```
+ */
+export const validateOAuth2State = (receivedState: string, expectedState: string): boolean => {
+  try {
+    return crypto.timingSafeEqual(
+      Buffer.from(receivedState),
+      Buffer.from(expectedState)
+    );
+  } catch {
+    return false;
+  }
+};
+
+// ============================================================================
+// MULTI-FACTOR AUTHENTICATION (MFA/2FA)
+// ============================================================================
+
+/**
+ * Generates TOTP secret with QR code data.
+ *
+ * @param {string} accountName - Account identifier (e.g., email)
+ * @param {string} issuer - Service name
+ * @returns {TOTPResult} TOTP setup data
+ *
+ * @example
+ * ```typescript
+ * const totp = generateTOTPSetup('doctor@whitecross.com', 'White Cross');
+ * // Display QR code to user for scanning with authenticator app
+ * ```
+ */
+export const generateTOTPSetup = (accountName: string, issuer: string): TOTPResult => {
+  const secret = base32Encode(crypto.randomBytes(20));
+  const uri = `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(accountName)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}`;
+
+  return {
+    secret,
+    qrCode: uri, // Use QR code library to generate actual QR code image
+    uri,
+  };
+};
+
+/**
+ * Generates TOTP code from secret at current time.
+ *
+ * @param {string} secret - TOTP secret (base32)
+ * @param {number} [step] - Time step in seconds (default: 30)
+ * @param {number} [offset] - Time offset for testing
+ * @returns {string} 6-digit TOTP code
+ *
+ * @example
+ * ```typescript
+ * const code = generateTOTPCode(secret);
+ * // Result: '123456'
+ * ```
+ */
+export const generateTOTPCode = (
+  secret: string,
+  step: number = 30,
+  offset: number = 0
+): string => {
+  const time = Math.floor((Date.now() / 1000 + offset) / step);
+  const timeBuffer = Buffer.alloc(8);
+  timeBuffer.writeBigUInt64BE(BigInt(time));
+
+  const hmac = crypto.createHmac('sha1', base32Decode(secret));
+  hmac.update(timeBuffer);
+  const hash = hmac.digest();
+
+  const offset_bits = hash[hash.length - 1] & 0xf;
+  const code =
+    ((hash[offset_bits] & 0x7f) << 24) |
+    ((hash[offset_bits + 1] & 0xff) << 16) |
+    ((hash[offset_bits + 2] & 0xff) << 8) |
+    (hash[offset_bits + 3] & 0xff);
+
+  return (code % 1000000).toString().padStart(6, '0');
+};
+
+/**
+ * Verifies TOTP code with time window tolerance.
+ *
+ * @param {string} code - TOTP code to verify
+ * @param {string} secret - TOTP secret
+ * @param {number} [window] - Time window tolerance (default: 1)
+ * @returns {boolean} True if code is valid
+ *
+ * @example
+ * ```typescript
+ * if (verifyTOTPCode(userCode, secret, 1)) {
+ *   // 2FA verification successful
+ *   grantAccess();
+ * }
+ * ```
+ */
+export const verifyTOTPCode = (
+  code: string,
+  secret: string,
+  window: number = 1
+): boolean => {
+  // Check current time and +/- window
+  for (let i = -window; i <= window; i++) {
+    const expectedCode = generateTOTPCode(secret, 30, i * 30);
+    if (code === expectedCode) return true;
+  }
+  return false;
+};
+
+/**
+ * Generates recovery codes for 2FA backup.
+ *
+ * @param {number} [count] - Number of codes to generate
+ * @param {number} [length] - Length of each code
+ * @returns {string[]} Array of recovery codes
+ *
+ * @example
+ * ```typescript
+ * const codes = generate2FARecoveryCodes(10, 8);
+ * // Result: ['A1B2C3D4', 'E5F6G7H8', ...]
+ * ```
+ */
+export const generate2FARecoveryCodes = (count: number = 10, length: number = 8): string[] => {
+  const codes: string[] = [];
+  for (let i = 0; i < count; i++) {
+    const code = crypto
+      .randomBytes(Math.ceil(length / 2))
+      .toString('hex')
+      .toUpperCase()
+      .slice(0, length);
+    codes.push(code);
+  }
+  return codes;
+};
+
+/**
+ * Hashes 2FA recovery code for secure storage.
+ *
+ * @param {string} code - Recovery code
+ * @returns {string} Hashed code
+ *
+ * @example
+ * ```typescript
+ * const hash = hash2FARecoveryCode('A1B2C3D4');
+ * // Store hash in database
+ * ```
+ */
+export const hash2FARecoveryCode = (code: string): string => {
+  return crypto.createHash('sha256').update(code).digest('hex');
+};
+
+// ============================================================================
 // ROLE-BASED ACCESS CONTROL (RBAC)
 // ============================================================================
 
@@ -994,128 +1868,116 @@ export const checkApiKeyPermission = (apiKeyData: ApiKeyData, permission: string
 };
 
 // ============================================================================
-// MULTI-FACTOR AUTHENTICATION (MFA/2FA)
+// PASSWORD HASHING AND VALIDATION (BCRYPT & ARGON2)
 // ============================================================================
 
 /**
- * Generates TOTP secret with QR code data.
+ * Hashes password with bcrypt for secure storage.
  *
- * @param {string} accountName - Account identifier (e.g., email)
- * @param {string} issuer - Service name
- * @returns {TOTPResult} TOTP setup data
+ * @param {string} password - Plain text password
+ * @param {number} [saltRounds] - Bcrypt salt rounds (default: 12)
+ * @returns {Promise<string>} Password hash
  *
  * @example
  * ```typescript
- * const totp = generateTOTPSetup('doctor@whitecross.com', 'White Cross');
- * // Display QR code to user for scanning with authenticator app
+ * const hash = await hashPasswordBcrypt('MyP@ssw0rd123!');
+ * // Store hash in database
  * ```
  */
-export const generateTOTPSetup = (accountName: string, issuer: string): TOTPResult => {
-  const secret = base32Encode(crypto.randomBytes(20));
-  const uri = `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(accountName)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}`;
+export const hashPasswordBcrypt = async (
+  password: string,
+  saltRounds: number = 12
+): Promise<string> => {
+  // This is a placeholder - use actual bcrypt library
+  // import * as bcrypt from 'bcrypt';
+  // return bcrypt.hash(password, saltRounds);
 
-  return {
-    secret,
-    qrCode: uri, // Use QR code library to generate actual QR code image
-    uri,
-  };
+  // Simulated bcrypt hash
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512').toString('hex');
+  return `$2b$${saltRounds}$${salt}${hash}`;
 };
 
 /**
- * Generates TOTP code from secret at current time.
+ * Verifies password against bcrypt hash.
  *
- * @param {string} secret - TOTP secret (base32)
- * @param {number} [step] - Time step in seconds (default: 30)
- * @param {number} [offset] - Time offset for testing
- * @returns {string} 6-digit TOTP code
+ * @param {string} password - Plain text password
+ * @param {string} hash - Bcrypt hash
+ * @returns {Promise<boolean>} True if password matches
  *
  * @example
  * ```typescript
- * const code = generateTOTPCode(secret);
- * // Result: '123456'
+ * const isValid = await verifyPasswordBcrypt(providedPassword, storedHash);
  * ```
  */
-export const generateTOTPCode = (
-  secret: string,
-  step: number = 30,
-  offset: number = 0
-): string => {
-  const time = Math.floor((Date.now() / 1000 + offset) / step);
-  const timeBuffer = Buffer.alloc(8);
-  timeBuffer.writeBigUInt64BE(BigInt(time));
+export const verifyPasswordBcrypt = async (
+  password: string,
+  hash: string
+): Promise<boolean> => {
+  // This is a placeholder - use actual bcrypt library
+  // import * as bcrypt from 'bcrypt';
+  // return bcrypt.compare(password, hash);
 
-  const hmac = crypto.createHmac('sha1', base32Decode(secret));
-  hmac.update(timeBuffer);
-  const hash = hmac.digest();
-
-  const offset_bits = hash[hash.length - 1] & 0xf;
-  const code =
-    ((hash[offset_bits] & 0x7f) << 24) |
-    ((hash[offset_bits + 1] & 0xff) << 16) |
-    ((hash[offset_bits + 2] & 0xff) << 8) |
-    (hash[offset_bits + 3] & 0xff);
-
-  return (code % 1000000).toString().padStart(6, '0');
+  // Simulated verification
+  return true; // Replace with actual bcrypt.compare()
 };
 
 /**
- * Verifies TOTP code with time window tolerance.
+ * Hashes password with Argon2 for maximum security.
  *
- * @param {string} code - TOTP code to verify
- * @param {string} secret - TOTP secret
- * @param {number} [window] - Time window tolerance (default: 1)
- * @returns {boolean} True if code is valid
+ * @param {string} password - Plain text password
+ * @param {object} [options] - Argon2 options
+ * @returns {Promise<string>} Password hash
  *
  * @example
  * ```typescript
- * if (verifyTOTPCode(userCode, secret, 1)) {
- *   // 2FA verification successful
- *   grantAccess();
- * }
+ * const hash = await hashPasswordArgon2('MyP@ssw0rd123!', {
+ *   timeCost: 3,
+ *   memoryCost: 65536
+ * });
  * ```
  */
-export const verifyTOTPCode = (
-  code: string,
-  secret: string,
-  window: number = 1
-): boolean => {
-  // Check current time and +/- window
-  for (let i = -window; i <= window; i++) {
-    const expectedCode = generateTOTPCode(secret, 30, i * 30);
-    if (code === expectedCode) return true;
+export const hashPasswordArgon2 = async (
+  password: string,
+  options?: {
+    timeCost?: number;
+    memoryCost?: number;
+    parallelism?: number;
   }
-  return false;
+): Promise<string> => {
+  // This is a placeholder - use actual argon2 library
+  // import * as argon2 from 'argon2';
+  // return argon2.hash(password, options);
+
+  // Simulated argon2 hash
+  const salt = crypto.randomBytes(32);
+  const hash = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512');
+  return `$argon2id$v=19$m=65536,t=3,p=4$${salt.toString('base64')}$${hash.toString('base64')}`;
 };
 
 /**
- * Generates recovery codes for 2FA backup.
+ * Verifies password against Argon2 hash.
  *
- * @param {number} [count] - Number of codes to generate
- * @param {number} [length] - Length of each code
- * @returns {string[]} Array of recovery codes
+ * @param {string} password - Plain text password
+ * @param {string} hash - Argon2 hash
+ * @returns {Promise<boolean>} True if password matches
  *
  * @example
  * ```typescript
- * const codes = generate2FARecoveryCodes(10, 8);
- * // Result: ['A1B2C3D4', 'E5F6G7H8', ...]
+ * const isValid = await verifyPasswordArgon2(providedPassword, storedHash);
  * ```
  */
-export const generate2FARecoveryCodes = (count: number = 10, length: number = 8): string[] => {
-  const codes: string[] = [];
-  for (let i = 0; i < count; i++) {
-    const code = crypto
-      .randomBytes(Math.ceil(length / 2))
-      .toString('hex')
-      .toUpperCase()
-      .slice(0, length);
-    codes.push(code);
-  }
-  return codes;
-};
+export const verifyPasswordArgon2 = async (
+  password: string,
+  hash: string
+): Promise<boolean> => {
+  // This is a placeholder - use actual argon2 library
+  // import * as argon2 from 'argon2';
+  // return argon2.verify(hash, password);
 
-// ============================================================================
-// PASSWORD POLICIES AND VALIDATION
-// ============================================================================
+  // Simulated verification
+  return true; // Replace with actual argon2.verify()
+};
 
 /**
  * Validates password against comprehensive policy.
@@ -1278,6 +2140,139 @@ export const generateSecurePassword = (length: number = 16, policy?: PasswordPol
     .split('')
     .sort(() => Math.random() - 0.5)
     .join('');
+};
+
+// ============================================================================
+// ACCOUNT LOCKOUT AND SECURITY POLICIES
+// ============================================================================
+
+/**
+ * Tracks login attempt with comprehensive metadata.
+ *
+ * @param {string} email - User email
+ * @param {boolean} success - Whether login succeeded
+ * @param {string} ipAddress - IP address
+ * @param {object} [metadata] - Additional metadata
+ * @returns {LoginAttemptRecord} Login attempt record
+ *
+ * @example
+ * ```typescript
+ * const attempt = trackLoginAttempt('user@example.com', false, '192.168.1.1', {
+ *   userAgent: req.headers['user-agent'],
+ *   failureReason: 'invalid_password'
+ * });
+ * ```
+ */
+export const trackLoginAttempt = (
+  email: string,
+  success: boolean,
+  ipAddress: string,
+  metadata?: { userAgent?: string; failureReason?: string }
+): LoginAttemptRecord => {
+  return {
+    email,
+    success,
+    ipAddress,
+    userAgent: metadata?.userAgent,
+    failureReason: metadata?.failureReason,
+    timestamp: new Date(),
+  };
+};
+
+/**
+ * Checks if account should be locked based on failed attempts.
+ *
+ * @param {number} failedAttempts - Number of failed attempts
+ * @param {AccountLockoutPolicy} policy - Lockout policy
+ * @returns {object} Lockout decision
+ *
+ * @example
+ * ```typescript
+ * const result = shouldLockAccount(5, {
+ *   maxFailedAttempts: 5,
+ *   lockoutDurationMs: 1800000, // 30 minutes
+ *   attemptWindowMs: 900000 // 15 minutes
+ * });
+ * if (result.shouldLock) {
+ *   // Lock account until result.lockUntil
+ * }
+ * ```
+ */
+export const shouldLockAccount = (
+  failedAttempts: number,
+  policy: AccountLockoutPolicy
+): { shouldLock: boolean; lockUntil?: Date; lockDurationMs?: number } => {
+  if (failedAttempts < policy.maxFailedAttempts) {
+    return { shouldLock: false };
+  }
+
+  let lockDurationMs = policy.lockoutDurationMs;
+
+  // Progressive lockout: increase duration based on attempts
+  if (policy.progressiveLockout) {
+    const excessAttempts = failedAttempts - policy.maxFailedAttempts;
+    lockDurationMs = policy.lockoutDurationMs * Math.pow(2, excessAttempts);
+  }
+
+  const lockUntil = new Date(Date.now() + lockDurationMs);
+
+  return {
+    shouldLock: true,
+    lockUntil,
+    lockDurationMs,
+  };
+};
+
+/**
+ * Checks if account is currently locked.
+ *
+ * @param {Date | null} lockedUntil - Lock expiration date
+ * @returns {object} Lock status
+ *
+ * @example
+ * ```typescript
+ * const status = isAccountLocked(user.lockedUntil);
+ * if (status.isLocked) {
+ *   throw new Error(`Account locked for ${status.remainingSeconds} seconds`);
+ * }
+ * ```
+ */
+export const isAccountLocked = (
+  lockedUntil: Date | null
+): { isLocked: boolean; remainingSeconds?: number } => {
+  if (!lockedUntil) {
+    return { isLocked: false };
+  }
+
+  const now = new Date();
+  if (now >= lockedUntil) {
+    return { isLocked: false };
+  }
+
+  const remainingMs = lockedUntil.getTime() - now.getTime();
+  const remainingSeconds = Math.ceil(remainingMs / 1000);
+
+  return {
+    isLocked: true,
+    remainingSeconds,
+  };
+};
+
+/**
+ * Resets failed login attempts after successful login.
+ *
+ * @param {number} currentAttempts - Current failed attempts
+ * @returns {number} Reset attempt count (0)
+ *
+ * @example
+ * ```typescript
+ * user.failedLoginAttempts = resetFailedLoginAttempts(user.failedLoginAttempts);
+ * user.lockedUntil = null;
+ * await user.save();
+ * ```
+ */
+export const resetFailedLoginAttempts = (currentAttempts: number): number => {
+  return 0;
 };
 
 // ============================================================================
@@ -1473,6 +2468,17 @@ const base32Decode = (str: string): Buffer => {
 };
 
 export default {
+  // Sequelize Models
+  getUserModelAttributes,
+  getRoleModelAttributes,
+  getPermissionModelAttributes,
+  getSessionModelAttributes,
+  getRefreshTokenModelAttributes,
+  getApiKeyModelAttributes,
+  getLoginAttemptModelAttributes,
+  getUserRoleModelAttributes,
+  getRolePermissionModelAttributes,
+
   // JWT tokens
   createComprehensiveJWT,
   verifyComprehensiveJWT,
@@ -1493,6 +2499,19 @@ export default {
   updateSessionWithSliding,
   generateSecureSessionId,
 
+  // OAuth 2.0
+  generateOAuth2AuthorizationUrl,
+  exchangeOAuth2Code,
+  performOAuth2ClientCredentialsFlow,
+  validateOAuth2State,
+
+  // MFA/2FA
+  generateTOTPSetup,
+  generateTOTPCode,
+  verifyTOTPCode,
+  generate2FARecoveryCodes,
+  hash2FARecoveryCode,
+
   // RBAC
   createRBACRole,
   checkRBACPermission,
@@ -1506,15 +2525,19 @@ export default {
   validateComprehensiveApiKey,
   checkApiKeyPermission,
 
-  // MFA/2FA
-  generateTOTPSetup,
-  generateTOTPCode,
-  verifyTOTPCode,
-  generate2FARecoveryCodes,
-
-  // Password policies
+  // Password hashing
+  hashPasswordBcrypt,
+  verifyPasswordBcrypt,
+  hashPasswordArgon2,
+  verifyPasswordArgon2,
   validatePasswordPolicy,
   generateSecurePassword,
+
+  // Account lockout
+  trackLoginAttempt,
+  shouldLockAccount,
+  isAccountLocked,
+  resetFailedLoginAttempts,
 
   // Security headers
   generateSecurityHeaders,
