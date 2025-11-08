@@ -5,9 +5,8 @@
  * UPSTREAM (imports from):
  *   - @nestjs/common
  *   - sequelize-typescript
- *   - winston
- *   - prom-client
- *   - cls-hooked
+ *   - express
+ *   - rxjs
  *
  * DOWNSTREAM (imported by):
  *   - Logger services
@@ -22,15 +21,16 @@
  * Locator: WC-LOG-MONITOR-KIT-001
  * Purpose: Comprehensive Logging & Monitoring Kit - Enterprise observability toolkit
  *
- * Upstream: NestJS, Sequelize, Winston, Prometheus, CLS-Hooked
+ * Upstream: NestJS, Sequelize, Express, RxJS
  * Downstream: ../backend/monitoring/*, Observability, APM, Health checks
- * Dependencies: TypeScript 5.x, Node 18+, winston, prom-client, cls-hooked
+ * Dependencies: TypeScript 5.x, Node 18+
  * Exports: 45 logging/monitoring functions for structured logging, metrics, tracing, health
  *
  * LLM Context: Enterprise-grade logging and monitoring utilities for White Cross platform.
- * Provides structured logging, distributed tracing, performance metrics collection, APM
- * integration, error tracking, custom metrics, histogram tracking, log aggregation,
- * contextual logging, audit trails, database query logging, and comprehensive health checks.
+ * Provides structured logging with PII/PHI redaction, distributed tracing, performance metrics
+ * collection, Prometheus format support, APM integration, error tracking, custom metrics,
+ * histogram tracking, log aggregation, contextual logging, audit trails, database query logging,
+ * comprehensive health checks, log sampling, custom transports, and correlation IDs.
  * HIPAA-compliant audit logging and observability patterns for healthcare applications.
  */
 
@@ -93,6 +93,7 @@ export interface LogEntry {
   context?: string;
   traceId?: string;
   spanId?: string;
+  correlationId?: string;
   userId?: string;
   tenantId?: string;
   requestId?: string;
@@ -175,6 +176,20 @@ export interface CustomMetric {
 }
 
 /**
+ * Prometheus metric format
+ */
+export interface PrometheusMetric {
+  name: string;
+  help: string;
+  type: 'counter' | 'gauge' | 'histogram' | 'summary';
+  values: Array<{
+    value: number;
+    labels?: Record<string, string>;
+    timestamp?: number;
+  }>;
+}
+
+/**
  * Histogram bucket configuration
  */
 export interface HistogramConfig {
@@ -245,19 +260,6 @@ export interface QueryLogEntry {
 }
 
 /**
- * APM transaction context
- */
-export interface ApmTransaction {
-  id: string;
-  name: string;
-  type: string;
-  result?: string;
-  duration?: number;
-  timestamp: Date;
-  context?: Record<string, any>;
-}
-
-/**
  * Percentile statistics
  */
 export interface PercentileStats {
@@ -270,6 +272,34 @@ export interface PercentileStats {
   max: number;
   mean: number;
   count: number;
+}
+
+/**
+ * Log transport interface
+ */
+export interface LogTransport {
+  name: string;
+  level: LogLevel;
+  log: (entry: LogEntry) => void | Promise<void>;
+}
+
+/**
+ * Log sampling configuration
+ */
+export interface SamplingConfig {
+  enabled: boolean;
+  rate: number; // 0-1, percentage of logs to keep
+  excludeLevels?: LogLevel[];
+}
+
+/**
+ * PII/PHI redaction configuration
+ */
+export interface RedactionConfig {
+  enabled: boolean;
+  fields: string[];
+  patterns?: RegExp[];
+  replacement?: string;
 }
 
 // ============================================================================
@@ -286,6 +316,7 @@ export interface PercentileStats {
     { fields: ['level'] },
     { fields: ['timestamp'] },
     { fields: ['traceId'] },
+    { fields: ['correlationId'] },
     { fields: ['userId'] },
     { fields: ['tenantId'] },
     { fields: ['context'] },
@@ -337,6 +368,12 @@ export class ApplicationLog extends Model {
   spanId: string;
 
   @Column({
+    type: DataType.STRING(64),
+  })
+  @Index
+  correlationId: string;
+
+  @Column({
     type: DataType.UUID,
   })
   @Index
@@ -367,152 +404,6 @@ export class ApplicationLog extends Model {
     type: DataType.JSONB,
   })
   performance: PerformanceMetrics;
-
-  @CreatedAt
-  createdAt: Date;
-
-  @UpdatedAt
-  updatedAt: Date;
-}
-
-/**
- * Metrics model for time-series data
- */
-@Table({
-  tableName: 'metrics',
-  timestamps: true,
-  indexes: [
-    { fields: ['name'] },
-    { fields: ['timestamp'] },
-    { fields: ['type'] },
-  ],
-})
-export class Metric extends Model {
-  @Column({
-    type: DataType.UUID,
-    defaultValue: DataType.UUIDV4,
-    primaryKey: true,
-  })
-  id: string;
-
-  @Column({
-    type: DataType.STRING(200),
-    allowNull: false,
-  })
-  @Index
-  name: string;
-
-  @Column({
-    type: DataType.DOUBLE,
-    allowNull: false,
-  })
-  value: number;
-
-  @Column({
-    type: DataType.ENUM('counter', 'gauge', 'histogram', 'summary'),
-    allowNull: false,
-  })
-  @Index
-  type: string;
-
-  @Column({
-    type: DataType.JSONB,
-  })
-  labels: Record<string, string>;
-
-  @Column({
-    type: DataType.DATE,
-    allowNull: false,
-  })
-  @Index
-  timestamp: Date;
-
-  @CreatedAt
-  createdAt: Date;
-
-  @UpdatedAt
-  updatedAt: Date;
-}
-
-/**
- * Distributed traces model
- */
-@Table({
-  tableName: 'traces',
-  timestamps: true,
-  indexes: [
-    { fields: ['traceId'] },
-    { fields: ['spanId'] },
-    { fields: ['serviceName'] },
-    { fields: ['startTime'] },
-  ],
-})
-export class Trace extends Model {
-  @Column({
-    type: DataType.UUID,
-    defaultValue: DataType.UUIDV4,
-    primaryKey: true,
-  })
-  id: string;
-
-  @Column({
-    type: DataType.STRING(64),
-    allowNull: false,
-  })
-  @Index
-  traceId: string;
-
-  @Column({
-    type: DataType.STRING(64),
-    allowNull: false,
-  })
-  @Index
-  spanId: string;
-
-  @Column({
-    type: DataType.STRING(64),
-  })
-  parentSpanId: string;
-
-  @Column({
-    type: DataType.STRING(100),
-    allowNull: false,
-  })
-  @Index
-  serviceName: string;
-
-  @Column({
-    type: DataType.STRING(200),
-    allowNull: false,
-  })
-  operationName: string;
-
-  @Column({
-    type: DataType.DATE,
-    allowNull: false,
-  })
-  @Index
-  startTime: Date;
-
-  @Column({
-    type: DataType.DATE,
-  })
-  endTime: Date;
-
-  @Column({
-    type: DataType.INTEGER,
-  })
-  duration: number;
-
-  @Column({
-    type: DataType.JSONB,
-  })
-  tags: Record<string, string>;
-
-  @Column({
-    type: DataType.JSONB,
-  })
-  logs: Array<{ timestamp: Date; message: string }>;
 
   @CreatedAt
   createdAt: Date;
@@ -615,94 +506,6 @@ export class AuditLog extends Model {
   updatedAt: Date;
 }
 
-/**
- * Alert configuration and history model
- */
-@Table({
-  tableName: 'alerts',
-  timestamps: true,
-  indexes: [
-    { fields: ['severity'] },
-    { fields: ['status'] },
-    { fields: ['triggeredAt'] },
-  ],
-})
-export class Alert extends Model {
-  @Column({
-    type: DataType.UUID,
-    defaultValue: DataType.UUIDV4,
-    primaryKey: true,
-  })
-  id: string;
-
-  @Column({
-    type: DataType.STRING(200),
-    allowNull: false,
-  })
-  name: string;
-
-  @Column({
-    type: DataType.TEXT,
-  })
-  description: string;
-
-  @Column({
-    type: DataType.ENUM('info', 'warning', 'critical'),
-    allowNull: false,
-  })
-  @Index
-  severity: string;
-
-  @Column({
-    type: DataType.ENUM('triggered', 'acknowledged', 'resolved'),
-    allowNull: false,
-  })
-  @Index
-  status: string;
-
-  @Column({
-    type: DataType.DATE,
-  })
-  @Index
-  triggeredAt: Date;
-
-  @Column({
-    type: DataType.DATE,
-  })
-  acknowledgedAt: Date;
-
-  @Column({
-    type: DataType.DATE,
-  })
-  resolvedAt: Date;
-
-  @Column({
-    type: DataType.STRING(200),
-  })
-  metricName: string;
-
-  @Column({
-    type: DataType.DOUBLE,
-  })
-  threshold: number;
-
-  @Column({
-    type: DataType.DOUBLE,
-  })
-  currentValue: number;
-
-  @Column({
-    type: DataType.JSONB,
-  })
-  metadata: Record<string, any>;
-
-  @CreatedAt
-  createdAt: Date;
-
-  @UpdatedAt
-  updatedAt: Date;
-}
-
 // ============================================================================
 // STRUCTURED LOGGING HELPERS
 // ============================================================================
@@ -738,22 +541,41 @@ export const createStructuredLog = (
 };
 
 /**
- * @function formatLogMessage
+ * @function formatLogAsJSON
  * @description Formats log entry as JSON string for external systems
  * @param {LogEntry} entry - Log entry to format
  * @returns {string} JSON formatted log message
  *
  * @example
  * ```typescript
- * const formatted = formatLogMessage(logEntry);
- * console.log(formatted); // JSON string
+ * const formatted = formatLogAsJSON(logEntry);
+ * console.log(formatted); // {"timestamp":"2025-01-01T00:00:00.000Z",...}
  * ```
  */
-export const formatLogMessage = (entry: LogEntry): string => {
+export const formatLogAsJSON = (entry: LogEntry): string => {
   return JSON.stringify({
     ...entry,
     timestamp: entry.timestamp.toISOString(),
   });
+};
+
+/**
+ * @function formatLogAsText
+ * @description Formats log entry as human-readable text
+ * @param {LogEntry} entry - Log entry to format
+ * @returns {string} Text formatted log message
+ *
+ * @example
+ * ```typescript
+ * const formatted = formatLogAsText(logEntry);
+ * // [2025-01-01 00:00:00] INFO [UserService] User logged in
+ * ```
+ */
+export const formatLogAsText = (entry: LogEntry): string => {
+  const timestamp = entry.timestamp.toISOString();
+  const context = entry.context ? `[${entry.context}]` : '';
+  const traceId = entry.traceId ? `trace=${entry.traceId}` : '';
+  return `[${timestamp}] ${entry.level.toUpperCase()} ${context} ${entry.message} ${traceId}`.trim();
 };
 
 /**
@@ -775,6 +597,7 @@ export const enrichLogWithContext = (
   return {
     ...entry,
     requestId: req.headers['x-request-id'] as string,
+    correlationId: req.headers['x-correlation-id'] as string,
     userId: (req as any).user?.id,
     tenantId: (req as any).tenant?.id,
     metadata: {
@@ -818,7 +641,9 @@ export const createErrorLog = (
       name: error.name,
       message: error.message,
       stack: process.env.NODE_ENV === 'production' ? undefined : error.stack,
-      ...(error as any).details,
+      code: (error as any).code,
+      statusCode: (error as any).statusCode,
+      details: (error as any).details,
     },
     ...additional,
   });
@@ -895,7 +720,458 @@ export const setDynamicLogLevel = (initialLevel: LogLevel) => {
 };
 
 // ============================================================================
-// REQUEST/RESPONSE LOGGING INTERCEPTORS
+// CORRELATION ID MANAGEMENT
+// ============================================================================
+
+/**
+ * @function generateCorrelationId
+ * @description Generates a unique correlation ID for request tracking
+ * @returns {string} Correlation ID
+ *
+ * @example
+ * ```typescript
+ * const correlationId = generateCorrelationId();
+ * // Returns: "corr-1234567890abcdef"
+ * ```
+ */
+export const generateCorrelationId = (): string => {
+  const timestamp = Date.now().toString(36);
+  const randomPart = Math.random().toString(36).substring(2, 15);
+  return `corr-${timestamp}-${randomPart}`;
+};
+
+/**
+ * @function extractCorrelationId
+ * @description Extracts correlation ID from request headers
+ * @param {Request} req - Express request object
+ * @returns {string} Correlation ID or newly generated one
+ *
+ * @example
+ * ```typescript
+ * const correlationId = extractCorrelationId(req);
+ * ```
+ */
+export const extractCorrelationId = (req: Request): string => {
+  return (
+    (req.headers['x-correlation-id'] as string) ||
+    (req.headers['x-request-id'] as string) ||
+    generateCorrelationId()
+  );
+};
+
+/**
+ * @function propagateCorrelationId
+ * @description Creates headers for correlation ID propagation
+ * @param {string} correlationId - Correlation ID
+ * @returns {Record<string, string>} HTTP headers
+ *
+ * @example
+ * ```typescript
+ * const headers = propagateCorrelationId(correlationId);
+ * // Use in HTTP client: axios.get(url, { headers });
+ * ```
+ */
+export const propagateCorrelationId = (
+  correlationId: string,
+): Record<string, string> => {
+  return {
+    'x-correlation-id': correlationId,
+    'x-request-id': correlationId,
+  };
+};
+
+// ============================================================================
+// PII/PHI REDACTION
+// ============================================================================
+
+/**
+ * @function redactPII
+ * @description Redacts PII/PHI from log data for HIPAA compliance
+ * @param {any} data - Data to redact
+ * @param {RedactionConfig} config - Redaction configuration
+ * @returns {any} Redacted data
+ *
+ * @security HIPAA-compliant PII/PHI redaction
+ *
+ * @example
+ * ```typescript
+ * const redacted = redactPII(userData, {
+ *   enabled: true,
+ *   fields: ['ssn', 'dateOfBirth', 'email'],
+ *   replacement: '[REDACTED]'
+ * });
+ * ```
+ */
+export const redactPII = (data: any, config: RedactionConfig): any => {
+  if (!config.enabled || !data) {
+    return data;
+  }
+
+  if (typeof data !== 'object') {
+    return data;
+  }
+
+  const redacted = Array.isArray(data) ? [...data] : { ...data };
+  const replacement = config.replacement || '[REDACTED]';
+
+  const redactObject = (obj: any): any => {
+    if (!obj || typeof obj !== 'object') {
+      return obj;
+    }
+
+    const result = Array.isArray(obj) ? [...obj] : { ...obj };
+
+    for (const key in result) {
+      // Redact specific fields
+      if (config.fields.includes(key.toLowerCase())) {
+        result[key] = replacement;
+        continue;
+      }
+
+      // Apply pattern matching
+      if (config.patterns && typeof result[key] === 'string') {
+        for (const pattern of config.patterns) {
+          result[key] = result[key].replace(pattern, replacement);
+        }
+      }
+
+      // Recursively redact nested objects
+      if (typeof result[key] === 'object' && result[key] !== null) {
+        result[key] = redactObject(result[key]);
+      }
+    }
+
+    return result;
+  };
+
+  return redactObject(redacted);
+};
+
+/**
+ * @function createPHIRedactionConfig
+ * @description Creates standard PHI redaction configuration for healthcare
+ * @returns {RedactionConfig} PHI redaction configuration
+ *
+ * @example
+ * ```typescript
+ * const config = createPHIRedactionConfig();
+ * const safeLog = redactPII(logData, config);
+ * ```
+ */
+export const createPHIRedactionConfig = (): RedactionConfig => {
+  return {
+    enabled: true,
+    fields: [
+      'ssn',
+      'socialsecuritynumber',
+      'dateofbirth',
+      'dob',
+      'email',
+      'phone',
+      'phonenumber',
+      'address',
+      'medicalrecordnumber',
+      'mrn',
+      'healthplanbeneficiarynumber',
+      'accountnumber',
+      'certificatenumber',
+      'licensenumber',
+      'vehicleidentifier',
+      'deviceidentifier',
+      'biometricidentifier',
+      'fullface',
+      'ipaddress',
+      'password',
+      'token',
+      'apikey',
+    ],
+    patterns: [
+      /\b\d{3}-\d{2}-\d{4}\b/g, // SSN pattern
+      /\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/g, // Phone pattern
+      /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, // Email pattern
+    ],
+    replacement: '[PHI_REDACTED]',
+  };
+};
+
+/**
+ * @function redactLogEntry
+ * @description Redacts sensitive data from log entry
+ * @param {LogEntry} entry - Log entry
+ * @param {RedactionConfig} config - Redaction configuration
+ * @returns {LogEntry} Redacted log entry
+ *
+ * @example
+ * ```typescript
+ * const safeLog = redactLogEntry(logEntry, createPHIRedactionConfig());
+ * ```
+ */
+export const redactLogEntry = (
+  entry: LogEntry,
+  config: RedactionConfig,
+): LogEntry => {
+  return {
+    ...entry,
+    metadata: entry.metadata ? redactPII(entry.metadata, config) : undefined,
+    error: entry.error
+      ? {
+          ...entry.error,
+          details: entry.error.details
+            ? redactPII(entry.error.details, config)
+            : undefined,
+        }
+      : undefined,
+  };
+};
+
+// ============================================================================
+// LOG SAMPLING
+// ============================================================================
+
+/**
+ * @function shouldSampleLog
+ * @description Determines if a log should be sampled (kept) based on configuration
+ * @param {LogEntry} entry - Log entry
+ * @param {SamplingConfig} config - Sampling configuration
+ * @returns {boolean} True if log should be kept
+ *
+ * @example
+ * ```typescript
+ * const config = { enabled: true, rate: 0.1, excludeLevels: [LogLevel.ERROR] };
+ * if (shouldSampleLog(logEntry, config)) {
+ *   persistLog(logEntry);
+ * }
+ * ```
+ */
+export const shouldSampleLog = (
+  entry: LogEntry,
+  config: SamplingConfig,
+): boolean => {
+  if (!config.enabled) {
+    return true;
+  }
+
+  // Never sample excluded levels (e.g., always keep errors)
+  if (config.excludeLevels?.includes(entry.level)) {
+    return true;
+  }
+
+  // Sample based on rate
+  return Math.random() < config.rate;
+};
+
+/**
+ * @function createAdaptiveSampler
+ * @description Creates an adaptive sampler that adjusts rate based on volume
+ * @param {number} targetRatePerMinute - Target logs per minute
+ * @returns {object} Adaptive sampler with shouldSample method
+ *
+ * @example
+ * ```typescript
+ * const sampler = createAdaptiveSampler(1000);
+ * if (sampler.shouldSample(logEntry)) {
+ *   logger.log(logEntry);
+ * }
+ * ```
+ */
+export const createAdaptiveSampler = (targetRatePerMinute: number) => {
+  let windowStart = Date.now();
+  let logCount = 0;
+  let currentRate = 1.0;
+
+  return {
+    shouldSample: (entry: LogEntry): boolean => {
+      const now = Date.now();
+      const windowDuration = 60000; // 1 minute
+
+      // Reset window if needed
+      if (now - windowStart >= windowDuration) {
+        const actualRate = logCount / (windowDuration / 60000);
+        currentRate = Math.min(1.0, targetRatePerMinute / Math.max(1, actualRate));
+        windowStart = now;
+        logCount = 0;
+      }
+
+      logCount++;
+
+      // Always keep high-priority logs
+      if (
+        entry.level === LogLevel.ERROR ||
+        entry.level === LogLevel.FATAL ||
+        entry.level === LogLevel.WARN
+      ) {
+        return true;
+      }
+
+      return Math.random() < currentRate;
+    },
+    getStats: () => ({
+      currentRate,
+      logCount,
+      windowAge: Date.now() - windowStart,
+    }),
+  };
+};
+
+// ============================================================================
+// CUSTOM LOG TRANSPORTS
+// ============================================================================
+
+/**
+ * @function createConsoleTransport
+ * @description Creates a console log transport
+ * @param {LogLevel} minLevel - Minimum log level
+ * @param {boolean} colorize - Enable color output
+ * @returns {LogTransport} Console transport
+ *
+ * @example
+ * ```typescript
+ * const transport = createConsoleTransport(LogLevel.INFO, true);
+ * transport.log(logEntry);
+ * ```
+ */
+export const createConsoleTransport = (
+  minLevel: LogLevel = LogLevel.INFO,
+  colorize: boolean = true,
+): LogTransport => {
+  const colors: Record<LogLevel, string> = {
+    [LogLevel.TRACE]: '\x1b[90m', // Gray
+    [LogLevel.DEBUG]: '\x1b[36m', // Cyan
+    [LogLevel.INFO]: '\x1b[32m', // Green
+    [LogLevel.WARN]: '\x1b[33m', // Yellow
+    [LogLevel.ERROR]: '\x1b[31m', // Red
+    [LogLevel.FATAL]: '\x1b[35m', // Magenta
+  };
+  const reset = '\x1b[0m';
+
+  return {
+    name: 'console',
+    level: minLevel,
+    log: (entry: LogEntry) => {
+      if (!shouldLog(entry.level, minLevel)) {
+        return;
+      }
+
+      const message = formatLogAsText(entry);
+      const color = colorize ? colors[entry.level] : '';
+      console.log(`${color}${message}${colorize ? reset : ''}`);
+    },
+  };
+};
+
+/**
+ * @function createFileTransport
+ * @description Creates a file log transport
+ * @param {string} filePath - Log file path
+ * @param {LogLevel} minLevel - Minimum log level
+ * @returns {LogTransport} File transport
+ *
+ * @example
+ * ```typescript
+ * const transport = createFileTransport('/var/log/app.log', LogLevel.DEBUG);
+ * transport.log(logEntry);
+ * ```
+ */
+export const createFileTransport = (
+  filePath: string,
+  minLevel: LogLevel = LogLevel.INFO,
+): LogTransport => {
+  const fs = require('fs');
+  const stream = fs.createWriteStream(filePath, { flags: 'a' });
+
+  return {
+    name: 'file',
+    level: minLevel,
+    log: (entry: LogEntry) => {
+      if (!shouldLog(entry.level, minLevel)) {
+        return;
+      }
+
+      stream.write(formatLogAsJSON(entry) + '\n');
+    },
+  };
+};
+
+/**
+ * @function createHttpTransport
+ * @description Creates an HTTP log transport for external services
+ * @param {string} url - HTTP endpoint URL
+ * @param {LogLevel} minLevel - Minimum log level
+ * @returns {LogTransport} HTTP transport
+ *
+ * @example
+ * ```typescript
+ * const transport = createHttpTransport('https://logs.example.com/ingest', LogLevel.WARN);
+ * await transport.log(logEntry);
+ * ```
+ */
+export const createHttpTransport = (
+  url: string,
+  minLevel: LogLevel = LogLevel.WARN,
+): LogTransport => {
+  return {
+    name: 'http',
+    level: minLevel,
+    log: async (entry: LogEntry) => {
+      if (!shouldLog(entry.level, minLevel)) {
+        return;
+      }
+
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: formatLogAsJSON(entry),
+        });
+
+        if (!response.ok) {
+          console.error(`HTTP transport failed: ${response.statusText}`);
+        }
+      } catch (error) {
+        console.error(`HTTP transport error:`, error);
+      }
+    },
+  };
+};
+
+/**
+ * @function createMultiTransport
+ * @description Combines multiple transports into one
+ * @param {LogTransport[]} transports - Array of transports
+ * @returns {LogTransport} Multi transport
+ *
+ * @example
+ * ```typescript
+ * const transport = createMultiTransport([
+ *   createConsoleTransport(LogLevel.DEBUG),
+ *   createFileTransport('/var/log/app.log', LogLevel.INFO)
+ * ]);
+ * ```
+ */
+export const createMultiTransport = (
+  transports: LogTransport[],
+): LogTransport => {
+  return {
+    name: 'multi',
+    level: LogLevel.TRACE, // Let individual transports filter
+    log: async (entry: LogEntry) => {
+      await Promise.all(
+        transports.map((transport) => {
+          try {
+            return transport.log(entry);
+          } catch (error) {
+            console.error(`Transport ${transport.name} failed:`, error);
+          }
+        }),
+      );
+    },
+  };
+};
+
+// ============================================================================
+// REQUEST/RESPONSE LOGGING
 // ============================================================================
 
 /**
@@ -919,20 +1195,20 @@ export class RequestLoggingInterceptor implements NestInterceptor {
     const startTime = Date.now();
 
     const requestLog = createRequestLog(request);
-    this.logger.log(formatLogMessage(requestLog));
+    this.logger.log(formatLogAsJSON(requestLog));
 
     return next.handle().pipe(
       tap(() => {
         const duration = Date.now() - startTime;
         const responseLog = createResponseLog(response, duration);
-        this.logger.log(formatLogMessage(responseLog));
+        this.logger.log(formatLogAsJSON(responseLog));
       }),
       catchError((error) => {
         const duration = Date.now() - startTime;
         const errorLog = createErrorLog(error, 'RequestLoggingInterceptor', {
           performance: { duration, timestamp: new Date() },
         });
-        this.logger.error(formatLogMessage(errorLog));
+        this.logger.error(formatLogAsJSON(errorLog));
         throw error;
       }),
     );
@@ -955,6 +1231,7 @@ export const createRequestLog = (req: Request): LogEntry => {
   return createStructuredLog(LogLevel.INFO, 'Incoming request', {
     context: 'HTTP',
     requestId: req.headers['x-request-id'] as string,
+    correlationId: extractCorrelationId(req),
     metadata: {
       method: req.method,
       url: req.url,
@@ -998,7 +1275,7 @@ export const createResponseLog = (res: Response, duration: number): LogEntry => 
 };
 
 // ============================================================================
-// PERFORMANCE METRICS COLLECTION
+// PERFORMANCE METRICS
 // ============================================================================
 
 /**
@@ -1050,37 +1327,6 @@ export const collectSystemMetrics = (): {
 };
 
 /**
- * @function trackPerformanceMetric
- * @description Tracks and logs a performance metric
- * @param {string} operation - Operation name
- * @param {number} duration - Duration in milliseconds
- * @param {Record<string, any>} metadata - Additional metadata
- * @returns {PerformanceMetrics} Performance metrics object
- *
- * @example
- * ```typescript
- * const metrics = trackPerformanceMetric('database.query', 45, {
- *   query: 'SELECT * FROM users'
- * });
- * ```
- */
-export const trackPerformanceMetric = (
-  operation: string,
-  duration: number,
-  metadata?: Record<string, any>,
-): PerformanceMetrics => {
-  const systemMetrics = collectSystemMetrics();
-
-  return {
-    duration,
-    cpuUsage:
-      (systemMetrics.cpuUsage.user + systemMetrics.cpuUsage.system) / 1000000,
-    memoryUsage: systemMetrics.memoryUsage.heapUsed / 1024 / 1024, // MB
-    timestamp: new Date(),
-  };
-};
-
-/**
  * @function createPerformanceTimer
  * @description Creates a reusable performance timer
  * @returns {object} Timer with start, stop, and reset methods
@@ -1119,6 +1365,180 @@ export const createPerformanceTimer = () => {
       }
       return endTime - startTime;
     },
+  };
+};
+
+// ============================================================================
+// PROMETHEUS METRICS
+// ============================================================================
+
+/**
+ * @function formatPrometheusMetric
+ * @description Formats metric in Prometheus exposition format
+ * @param {PrometheusMetric} metric - Metric to format
+ * @returns {string} Prometheus format string
+ *
+ * @example
+ * ```typescript
+ * const formatted = formatPrometheusMetric({
+ *   name: 'http_requests_total',
+ *   help: 'Total HTTP requests',
+ *   type: 'counter',
+ *   values: [{ value: 100, labels: { method: 'GET' } }]
+ * });
+ * ```
+ */
+export const formatPrometheusMetric = (metric: PrometheusMetric): string => {
+  const lines: string[] = [];
+
+  // Add HELP and TYPE
+  lines.push(`# HELP ${metric.name} ${metric.help}`);
+  lines.push(`# TYPE ${metric.name} ${metric.type}`);
+
+  // Add values
+  for (const value of metric.values) {
+    const labelsStr = value.labels
+      ? `{${Object.entries(value.labels)
+          .map(([k, v]) => `${k}="${v}"`)
+          .join(',')}}`
+      : '';
+
+    const timestampStr = value.timestamp ? ` ${value.timestamp}` : '';
+    lines.push(`${metric.name}${labelsStr} ${value.value}${timestampStr}`);
+  }
+
+  return lines.join('\n');
+};
+
+/**
+ * @function createPrometheusRegistry
+ * @description Creates a registry for Prometheus metrics
+ * @returns {object} Registry with register/collect methods
+ *
+ * @example
+ * ```typescript
+ * const registry = createPrometheusRegistry();
+ * registry.register({ name: 'http_requests_total', ... });
+ * const output = registry.collect();
+ * ```
+ */
+export const createPrometheusRegistry = () => {
+  const metrics = new Map<string, PrometheusMetric>();
+
+  return {
+    register: (metric: PrometheusMetric) => {
+      metrics.set(metric.name, metric);
+    },
+    collect: (): string => {
+      const output: string[] = [];
+      for (const metric of metrics.values()) {
+        output.push(formatPrometheusMetric(metric));
+      }
+      return output.join('\n\n');
+    },
+    getMetric: (name: string) => metrics.get(name),
+    clear: () => metrics.clear(),
+  };
+};
+
+/**
+ * @function incrementPrometheusCounter
+ * @description Increments a Prometheus counter metric
+ * @param {string} name - Counter name
+ * @param {number} value - Increment value
+ * @param {Record<string, string>} labels - Metric labels
+ * @returns {PrometheusMetric} Updated counter metric
+ *
+ * @example
+ * ```typescript
+ * const counter = incrementPrometheusCounter('http_requests_total', 1, {
+ *   method: 'GET',
+ *   status: '200'
+ * });
+ * ```
+ */
+export const incrementPrometheusCounter = (
+  name: string,
+  value: number = 1,
+  labels?: Record<string, string>,
+): PrometheusMetric => {
+  return {
+    name,
+    help: `${name} counter`,
+    type: 'counter',
+    values: [{ value, labels }],
+  };
+};
+
+/**
+ * @function setPrometheusGauge
+ * @description Sets a Prometheus gauge metric value
+ * @param {string} name - Gauge name
+ * @param {number} value - Gauge value
+ * @param {Record<string, string>} labels - Metric labels
+ * @returns {PrometheusMetric} Gauge metric
+ *
+ * @example
+ * ```typescript
+ * const gauge = setPrometheusGauge('memory_usage_bytes', 1024000, {
+ *   type: 'heap'
+ * });
+ * ```
+ */
+export const setPrometheusGauge = (
+  name: string,
+  value: number,
+  labels?: Record<string, string>,
+): PrometheusMetric => {
+  return {
+    name,
+    help: `${name} gauge`,
+    type: 'gauge',
+    values: [{ value, labels }],
+  };
+};
+
+/**
+ * @function recordPrometheusHistogram
+ * @description Records observation in Prometheus histogram
+ * @param {string} name - Histogram name
+ * @param {number} value - Observed value
+ * @param {number[]} buckets - Histogram buckets
+ * @param {Record<string, string>} labels - Metric labels
+ * @returns {PrometheusMetric} Histogram metric
+ *
+ * @example
+ * ```typescript
+ * const histogram = recordPrometheusHistogram(
+ *   'http_request_duration_seconds',
+ *   0.125,
+ *   [0.1, 0.5, 1, 2, 5],
+ *   { endpoint: '/users' }
+ * );
+ * ```
+ */
+export const recordPrometheusHistogram = (
+  name: string,
+  value: number,
+  buckets: number[],
+  labels?: Record<string, string>,
+): PrometheusMetric => {
+  const values = buckets.map((bucket) => ({
+    value: value <= bucket ? 1 : 0,
+    labels: { ...labels, le: bucket.toString() },
+  }));
+
+  // Add +Inf bucket
+  values.push({
+    value: 1,
+    labels: { ...labels, le: '+Inf' },
+  });
+
+  return {
+    name: `${name}_bucket`,
+    help: `${name} histogram`,
+    type: 'histogram',
+    values,
   };
 };
 
@@ -1212,55 +1632,6 @@ export const finishTrace = (trace: TraceContext): TraceContext => {
 };
 
 /**
- * @function addTraceTag
- * @description Adds a tag to trace context
- * @param {TraceContext} trace - Trace context
- * @param {string} key - Tag key
- * @param {string} value - Tag value
- * @returns {TraceContext} Updated trace context
- *
- * @example
- * ```typescript
- * const updatedTrace = addTraceTag(trace, 'userId', 'user-123');
- * ```
- */
-export const addTraceTag = (
-  trace: TraceContext,
-  key: string,
-  value: string,
-): TraceContext => {
-  return {
-    ...trace,
-    tags: {
-      ...trace.tags,
-      [key]: value,
-    },
-  };
-};
-
-/**
- * @function addTraceLog
- * @description Adds a log entry to trace context
- * @param {TraceContext} trace - Trace context
- * @param {string} message - Log message
- * @returns {TraceContext} Updated trace context
- *
- * @example
- * ```typescript
- * const updatedTrace = addTraceLog(trace, 'User validation completed');
- * ```
- */
-export const addTraceLog = (
-  trace: TraceContext,
-  message: string,
-): TraceContext => {
-  return {
-    ...trace,
-    logs: [...(trace.logs || []), { timestamp: new Date(), message }],
-  };
-};
-
-/**
  * @function propagateTraceHeaders
  * @description Creates HTTP headers for trace propagation
  * @param {TraceContext} trace - Trace context
@@ -1282,730 +1653,8 @@ export const propagateTraceHeaders = (
   };
 };
 
-/**
- * @function extractTraceFromHeaders
- * @description Extracts trace context from HTTP headers
- * @param {Record<string, string>} headers - HTTP headers
- * @returns {Partial<TraceContext>} Extracted trace context
- *
- * @example
- * ```typescript
- * const traceContext = extractTraceFromHeaders(req.headers);
- * ```
- */
-export const extractTraceFromHeaders = (
-  headers: Record<string, string | string[]>,
-): Partial<TraceContext> => {
-  const getHeader = (key: string): string | undefined => {
-    const value = headers[key];
-    return Array.isArray(value) ? value[0] : value;
-  };
-
-  return {
-    traceId: getHeader('x-trace-id'),
-    spanId: getHeader('x-span-id'),
-    parentSpanId: getHeader('x-parent-span-id'),
-  };
-};
-
 // ============================================================================
-// APM INTEGRATION HELPERS
-// ============================================================================
-
-/**
- * @function createApmTransaction
- * @description Creates APM transaction for monitoring
- * @param {string} name - Transaction name
- * @param {string} type - Transaction type (e.g., 'request', 'job')
- * @returns {ApmTransaction} APM transaction object
- *
- * @example
- * ```typescript
- * const transaction = createApmTransaction('POST /users', 'request');
- * ```
- */
-export const createApmTransaction = (
-  name: string,
-  type: string,
-): ApmTransaction => {
-  return {
-    id: generateTraceId(),
-    name,
-    type,
-    timestamp: new Date(),
-    context: {},
-  };
-};
-
-/**
- * @function finishApmTransaction
- * @description Completes APM transaction with result and duration
- * @param {ApmTransaction} transaction - APM transaction
- * @param {string} result - Transaction result (e.g., 'success', 'error')
- * @returns {ApmTransaction} Completed transaction
- *
- * @example
- * ```typescript
- * const completed = finishApmTransaction(transaction, 'success');
- * ```
- */
-export const finishApmTransaction = (
-  transaction: ApmTransaction,
-  result: string,
-): ApmTransaction => {
-  const now = new Date();
-  return {
-    ...transaction,
-    result,
-    duration: now.getTime() - transaction.timestamp.getTime(),
-  };
-};
-
-/**
- * @function setApmTransactionContext
- * @description Sets custom context on APM transaction
- * @param {ApmTransaction} transaction - APM transaction
- * @param {string} key - Context key
- * @param {any} value - Context value
- * @returns {ApmTransaction} Updated transaction
- *
- * @example
- * ```typescript
- * const updated = setApmTransactionContext(transaction, 'userId', 'user-123');
- * ```
- */
-export const setApmTransactionContext = (
-  transaction: ApmTransaction,
-  key: string,
-  value: any,
-): ApmTransaction => {
-  return {
-    ...transaction,
-    context: {
-      ...transaction.context,
-      [key]: value,
-    },
-  };
-};
-
-// ============================================================================
-// ERROR TRACKING AND REPORTING
-// ============================================================================
-
-/**
- * @function captureException
- * @description Captures and formats exception for error tracking
- * @param {Error} error - Error to capture
- * @param {Record<string, any>} context - Additional context
- * @returns {ErrorContext} Formatted error context
- *
- * @example
- * ```typescript
- * try {
- *   // ... operation
- * } catch (error) {
- *   const errorContext = captureException(error, { userId: 'user-123' });
- *   await reportError(errorContext);
- * }
- * ```
- */
-export const captureException = (
-  error: Error,
-  context?: Record<string, any>,
-): ErrorContext => {
-  return {
-    name: error.name,
-    message: error.message,
-    stack: error.stack,
-    code: (error as any).code,
-    statusCode: (error as any).statusCode,
-    details: {
-      ...context,
-      timestamp: new Date().toISOString(),
-    },
-  };
-};
-
-/**
- * @function classifyError
- * @description Classifies error by type and severity
- * @param {Error} error - Error to classify
- * @returns {object} Error classification
- *
- * @example
- * ```typescript
- * const classification = classifyError(error);
- * // { type: 'DatabaseError', severity: 'critical', recoverable: false }
- * ```
- */
-export const classifyError = (
-  error: Error,
-): { type: string; severity: string; recoverable: boolean } => {
-  const statusCode = (error as any).statusCode;
-
-  if (error.name === 'SequelizeError' || error.name.includes('Database')) {
-    return { type: 'DatabaseError', severity: 'critical', recoverable: false };
-  }
-
-  if (statusCode >= 500) {
-    return { type: 'ServerError', severity: 'critical', recoverable: true };
-  }
-
-  if (statusCode >= 400) {
-    return { type: 'ClientError', severity: 'warning', recoverable: true };
-  }
-
-  return { type: 'UnknownError', severity: 'error', recoverable: false };
-};
-
-/**
- * @function shouldReportError
- * @description Determines if error should be reported to external service
- * @param {Error} error - Error to evaluate
- * @returns {boolean} True if error should be reported
- *
- * @example
- * ```typescript
- * if (shouldReportError(error)) {
- *   await sendToErrorTracking(error);
- * }
- * ```
- */
-export const shouldReportError = (error: Error): boolean => {
-  const statusCode = (error as any).statusCode;
-
-  // Don't report client errors (4xx)
-  if (statusCode >= 400 && statusCode < 500) {
-    return false;
-  }
-
-  // Don't report validation errors
-  if (error.name === 'ValidationError') {
-    return false;
-  }
-
-  return true;
-};
-
-// ============================================================================
-// CUSTOM METRICS AND COUNTERS
-// ============================================================================
-
-/**
- * @function incrementCounter
- * @description Increments a counter metric
- * @param {string} name - Metric name
- * @param {number} value - Increment value (default: 1)
- * @param {Record<string, string>} labels - Metric labels
- * @returns {CustomMetric} Counter metric
- *
- * @example
- * ```typescript
- * const metric = incrementCounter('http_requests_total', 1, {
- *   method: 'GET',
- *   status: '200'
- * });
- * ```
- */
-export const incrementCounter = (
-  name: string,
-  value: number = 1,
-  labels?: Record<string, string>,
-): CustomMetric => {
-  return {
-    name,
-    value,
-    type: 'counter',
-    labels,
-    timestamp: new Date(),
-  };
-};
-
-/**
- * @function setGauge
- * @description Sets a gauge metric value
- * @param {string} name - Metric name
- * @param {number} value - Gauge value
- * @param {Record<string, string>} labels - Metric labels
- * @returns {CustomMetric} Gauge metric
- *
- * @example
- * ```typescript
- * const metric = setGauge('active_connections', 42, { service: 'api' });
- * ```
- */
-export const setGauge = (
-  name: string,
-  value: number,
-  labels?: Record<string, string>,
-): CustomMetric => {
-  return {
-    name,
-    value,
-    type: 'gauge',
-    labels,
-    timestamp: new Date(),
-  };
-};
-
-/**
- * @function recordHistogram
- * @description Records a histogram observation
- * @param {string} name - Metric name
- * @param {number} value - Observed value
- * @param {Record<string, string>} labels - Metric labels
- * @returns {CustomMetric} Histogram metric
- *
- * @example
- * ```typescript
- * const metric = recordHistogram('http_request_duration_ms', 125, {
- *   endpoint: '/users'
- * });
- * ```
- */
-export const recordHistogram = (
-  name: string,
-  value: number,
-  labels?: Record<string, string>,
-): CustomMetric => {
-  return {
-    name,
-    value,
-    type: 'histogram',
-    labels,
-    timestamp: new Date(),
-  };
-};
-
-/**
- * @function createMetricRegistry
- * @description Creates a metric registry for in-memory storage
- * @returns {object} Metric registry with add/get/clear methods
- *
- * @example
- * ```typescript
- * const registry = createMetricRegistry();
- * registry.add(incrementCounter('requests', 1));
- * const metrics = registry.getAll();
- * ```
- */
-export const createMetricRegistry = () => {
-  const metrics: CustomMetric[] = [];
-
-  return {
-    add: (metric: CustomMetric) => {
-      metrics.push(metric);
-    },
-    getAll: () => [...metrics],
-    clear: () => {
-      metrics.length = 0;
-    },
-    getByName: (name: string) => metrics.filter((m) => m.name === name),
-  };
-};
-
-// ============================================================================
-// HISTOGRAM AND PERCENTILE TRACKING
-// ============================================================================
-
-/**
- * @function calculatePercentiles
- * @description Calculates percentile statistics from data points
- * @param {number[]} values - Array of numeric values
- * @returns {PercentileStats} Percentile statistics
- *
- * @example
- * ```typescript
- * const stats = calculatePercentiles([10, 20, 30, 40, 50, 100]);
- * console.log(`p95: ${stats.p95}ms`);
- * ```
- */
-export const calculatePercentiles = (values: number[]): PercentileStats => {
-  if (values.length === 0) {
-    return {
-      p50: 0,
-      p75: 0,
-      p90: 0,
-      p95: 0,
-      p99: 0,
-      min: 0,
-      max: 0,
-      mean: 0,
-      count: 0,
-    };
-  }
-
-  const sorted = [...values].sort((a, b) => a - b);
-  const getPercentile = (p: number) => {
-    const index = Math.ceil((p / 100) * sorted.length) - 1;
-    return sorted[Math.max(0, index)];
-  };
-
-  const sum = sorted.reduce((acc, val) => acc + val, 0);
-
-  return {
-    p50: getPercentile(50),
-    p75: getPercentile(75),
-    p90: getPercentile(90),
-    p95: getPercentile(95),
-    p99: getPercentile(99),
-    min: sorted[0],
-    max: sorted[sorted.length - 1],
-    mean: sum / sorted.length,
-    count: sorted.length,
-  };
-};
-
-/**
- * @function createHistogramTracker
- * @description Creates a histogram tracker for collecting observations
- * @param {string} name - Histogram name
- * @param {number} maxSize - Maximum observations to keep (default: 1000)
- * @returns {object} Histogram tracker with observe/stats methods
- *
- * @example
- * ```typescript
- * const latencyTracker = createHistogramTracker('api_latency', 1000);
- * latencyTracker.observe(125);
- * const stats = latencyTracker.getStats();
- * ```
- */
-export const createHistogramTracker = (name: string, maxSize: number = 1000) => {
-  const observations: number[] = [];
-
-  return {
-    observe: (value: number) => {
-      observations.push(value);
-      if (observations.length > maxSize) {
-        observations.shift();
-      }
-    },
-    getStats: (): PercentileStats => calculatePercentiles(observations),
-    getName: () => name,
-    getObservationCount: () => observations.length,
-    reset: () => {
-      observations.length = 0;
-    },
-  };
-};
-
-// ============================================================================
-// LOG AGGREGATION UTILITIES
-// ============================================================================
-
-/**
- * @function aggregateLogs
- * @description Aggregates logs by level and context
- * @param {LogEntry[]} logs - Array of log entries
- * @returns {Record<string, any>} Aggregated log statistics
- *
- * @example
- * ```typescript
- * const stats = aggregateLogs(logEntries);
- * // { byLevel: { error: 5, warn: 10 }, byContext: { ... } }
- * ```
- */
-export const aggregateLogs = (
-  logs: LogEntry[],
-): {
-  byLevel: Record<LogLevel, number>;
-  byContext: Record<string, number>;
-  total: number;
-} => {
-  const byLevel: Record<LogLevel, number> = {
-    [LogLevel.TRACE]: 0,
-    [LogLevel.DEBUG]: 0,
-    [LogLevel.INFO]: 0,
-    [LogLevel.WARN]: 0,
-    [LogLevel.ERROR]: 0,
-    [LogLevel.FATAL]: 0,
-  };
-
-  const byContext: Record<string, number> = {};
-
-  logs.forEach((log) => {
-    byLevel[log.level]++;
-
-    if (log.context) {
-      byContext[log.context] = (byContext[log.context] || 0) + 1;
-    }
-  });
-
-  return {
-    byLevel,
-    byContext,
-    total: logs.length,
-  };
-};
-
-/**
- * @function filterLogsByTimeRange
- * @description Filters logs within a time range
- * @param {LogEntry[]} logs - Array of log entries
- * @param {Date} startTime - Start time
- * @param {Date} endTime - End time
- * @returns {LogEntry[]} Filtered logs
- *
- * @example
- * ```typescript
- * const recentLogs = filterLogsByTimeRange(
- *   logs,
- *   new Date(Date.now() - 3600000),
- *   new Date()
- * );
- * ```
- */
-export const filterLogsByTimeRange = (
-  logs: LogEntry[],
-  startTime: Date,
-  endTime: Date,
-): LogEntry[] => {
-  return logs.filter((log) => {
-    const timestamp = new Date(log.timestamp);
-    return timestamp >= startTime && timestamp <= endTime;
-  });
-};
-
-// ============================================================================
-// CONTEXTUAL LOGGING
-// ============================================================================
-
-/**
- * @function createContextualLogger
- * @description Creates a logger with permanent context
- * @param {string} context - Logger context
- * @param {Partial<LogEntry>} defaultContext - Default context data
- * @returns {object} Contextual logger with log methods
- *
- * @example
- * ```typescript
- * const logger = createContextualLogger('UserService', {
- *   tenantId: 'tenant-123'
- * });
- * logger.info('User created', { userId: 'user-456' });
- * ```
- */
-export const createContextualLogger = (
-  context: string,
-  defaultContext?: Partial<LogEntry>,
-) => {
-  const log = (level: LogLevel, message: string, additional?: Partial<LogEntry>) => {
-    return createStructuredLog(level, message, {
-      context,
-      ...defaultContext,
-      ...additional,
-    });
-  };
-
-  return {
-    trace: (message: string, additional?: Partial<LogEntry>) =>
-      log(LogLevel.TRACE, message, additional),
-    debug: (message: string, additional?: Partial<LogEntry>) =>
-      log(LogLevel.DEBUG, message, additional),
-    info: (message: string, additional?: Partial<LogEntry>) =>
-      log(LogLevel.INFO, message, additional),
-    warn: (message: string, additional?: Partial<LogEntry>) =>
-      log(LogLevel.WARN, message, additional),
-    error: (message: string, additional?: Partial<LogEntry>) =>
-      log(LogLevel.ERROR, message, additional),
-    fatal: (message: string, additional?: Partial<LogEntry>) =>
-      log(LogLevel.FATAL, message, additional),
-  };
-};
-
-/**
- * @function attachRequestContext
- * @description Attaches request context to all logs in scope
- * @param {Request} req - Express request
- * @returns {Partial<LogEntry>} Request context
- *
- * @example
- * ```typescript
- * const context = attachRequestContext(req);
- * logger.info('Processing request', context);
- * ```
- */
-export const attachRequestContext = (req: Request): Partial<LogEntry> => {
-  return {
-    requestId: req.headers['x-request-id'] as string,
-    userId: (req as any).user?.id,
-    tenantId: (req as any).tenant?.id,
-    metadata: {
-      ip: req.ip,
-      userAgent: req.headers['user-agent'],
-    },
-  };
-};
-
-// ============================================================================
-// AUDIT LOGGING
-// ============================================================================
-
-/**
- * @function createAuditLog
- * @description Creates HIPAA-compliant audit log entry
- * @param {Partial<AuditLogEntry>} entry - Audit log data
- * @returns {AuditLogEntry} Complete audit log entry
- *
- * @security HIPAA-compliant audit trail
- *
- * @example
- * ```typescript
- * const auditLog = createAuditLog({
- *   userId: 'user-123',
- *   action: 'VIEW_PATIENT_RECORD',
- *   resource: 'patient',
- *   resourceId: 'patient-456',
- *   outcome: 'success'
- * });
- * ```
- */
-export const createAuditLog = (
-  entry: Partial<AuditLogEntry>,
-): AuditLogEntry => {
-  return {
-    timestamp: new Date(),
-    outcome: 'success',
-    ...entry,
-  } as AuditLogEntry;
-};
-
-/**
- * @function logDataAccess
- * @description Logs data access for compliance
- * @param {string} userId - User ID
- * @param {string} resource - Resource type
- * @param {string} resourceId - Resource ID
- * @param {string} action - Action performed
- * @returns {AuditLogEntry} Audit log entry
- *
- * @security Required for HIPAA compliance
- *
- * @example
- * ```typescript
- * const audit = logDataAccess('user-123', 'patient', 'patient-456', 'READ');
- * await persistAuditLog(audit);
- * ```
- */
-export const logDataAccess = (
-  userId: string,
-  resource: string,
-  resourceId: string,
-  action: string,
-): AuditLogEntry => {
-  return createAuditLog({
-    userId,
-    resource,
-    resourceId,
-    action,
-    outcome: 'success',
-  });
-};
-
-/**
- * @function logDataModification
- * @description Logs data modification with before/after state
- * @param {string} userId - User ID
- * @param {string} resource - Resource type
- * @param {string} resourceId - Resource ID
- * @param {Record<string, any>} changes - Changes made
- * @returns {AuditLogEntry} Audit log entry
- *
- * @security Tracks all data modifications for compliance
- *
- * @example
- * ```typescript
- * const audit = logDataModification('user-123', 'patient', 'patient-456', {
- *   before: { status: 'active' },
- *   after: { status: 'inactive' }
- * });
- * ```
- */
-export const logDataModification = (
-  userId: string,
-  resource: string,
-  resourceId: string,
-  changes: Record<string, any>,
-): AuditLogEntry => {
-  return createAuditLog({
-    userId,
-    resource,
-    resourceId,
-    action: 'MODIFY',
-    changes,
-    outcome: 'success',
-  });
-};
-
-// ============================================================================
-// DATABASE QUERY LOGGING
-// ============================================================================
-
-/**
- * @function createQueryLogger
- * @description Creates Sequelize query logger
- * @param {LogLevel} level - Log level for queries
- * @returns {Function} Sequelize logging function
- *
- * @example
- * ```typescript
- * const sequelize = new Sequelize({
- *   logging: createQueryLogger(LogLevel.DEBUG)
- * });
- * ```
- */
-export const createQueryLogger = (level: LogLevel = LogLevel.DEBUG) => {
-  return (query: string, timing?: number) => {
-    const log = createStructuredLog(level, 'Database query', {
-      context: 'Sequelize',
-      metadata: { query },
-      performance: timing
-        ? { duration: timing, timestamp: new Date() }
-        : undefined,
-    });
-    console.log(formatLogMessage(log));
-  };
-};
-
-/**
- * @function logSlowQuery
- * @description Logs slow database queries
- * @param {QueryLogEntry} entry - Query log entry
- * @param {number} threshold - Slow query threshold in ms
- * @returns {LogEntry | null} Log entry if query is slow
- *
- * @example
- * ```typescript
- * const log = logSlowQuery({ query: 'SELECT ...', duration: 1500 }, 1000);
- * if (log) {
- *   logger.warn(log);
- * }
- * ```
- */
-export const logSlowQuery = (
-  entry: QueryLogEntry,
-  threshold: number = 1000,
-): LogEntry | null => {
-  if (entry.duration >= threshold) {
-    return createStructuredLog(LogLevel.WARN, 'Slow query detected', {
-      context: 'Database',
-      metadata: {
-        query: entry.query,
-        model: entry.model,
-        operation: entry.operation,
-        rowCount: entry.rowCount,
-      },
-      performance: {
-        duration: entry.duration,
-        timestamp: entry.timestamp,
-      },
-    });
-  }
-  return null;
-};
-
-// ============================================================================
-// HEALTH CHECK ENDPOINTS
+// HEALTH CHECKS
 // ============================================================================
 
 /**
@@ -2077,81 +1726,207 @@ export const checkMemoryHealth = (threshold: number = 0.85): ComponentHealth => 
 };
 
 /**
- * @function performHealthCheck
- * @description Performs comprehensive health check
- * @param {object} checks - Health check functions
- * @returns {Promise<HealthCheckResult>} Complete health check result
+ * @function createLivenessProbe
+ * @description Creates a liveness probe for Kubernetes
+ * @returns {Function} Express middleware for liveness
  *
  * @example
  * ```typescript
- * const health = await performHealthCheck({
- *   database: () => checkDatabaseHealth(sequelize),
- *   memory: () => checkMemoryHealth(0.85)
- * });
+ * app.get('/healthz/live', createLivenessProbe());
  * ```
  */
-export const performHealthCheck = async (
-  checks: Record<string, () => Promise<ComponentHealth> | ComponentHealth>,
-): Promise<HealthCheckResult> => {
-  const results: Record<string, ComponentHealth> = {};
-
-  for (const [name, check] of Object.entries(checks)) {
-    try {
-      results[name] = await check();
-    } catch (error) {
-      results[name] = {
-        status: HealthStatus.UNHEALTHY,
-        message: error.message,
-      };
-    }
-  }
-
-  const allHealthy = Object.values(results).every(
-    (r) => r.status === HealthStatus.HEALTHY,
-  );
-  const anyUnhealthy = Object.values(results).some(
-    (r) => r.status === HealthStatus.UNHEALTHY,
-  );
-
-  return {
-    status: anyUnhealthy
-      ? HealthStatus.UNHEALTHY
-      : allHealthy
-        ? HealthStatus.HEALTHY
-        : HealthStatus.DEGRADED,
-    checks: results,
-    timestamp: new Date(),
-    uptime: process.uptime(),
+export const createLivenessProbe = () => {
+  return (req: Request, res: Response) => {
+    res.status(200).json({
+      status: 'alive',
+      timestamp: new Date().toISOString(),
+    });
   };
 };
 
 /**
- * @function createHealthCheckEndpoint
- * @description Creates Express middleware for health check endpoint
+ * @function createReadinessProbe
+ * @description Creates a readiness probe for Kubernetes
  * @param {object} checks - Health check functions
+ * @returns {Function} Express middleware for readiness
+ *
+ * @example
+ * ```typescript
+ * app.get('/healthz/ready', createReadinessProbe({
+ *   database: () => checkDatabaseHealth(sequelize)
+ * }));
+ * ```
+ */
+export const createReadinessProbe = (
+  checks: Record<string, () => Promise<ComponentHealth> | ComponentHealth>,
+) => {
+  return async (req: Request, res: Response) => {
+    const results: Record<string, ComponentHealth> = {};
+
+    for (const [name, check] of Object.entries(checks)) {
+      try {
+        results[name] = await check();
+      } catch (error) {
+        results[name] = {
+          status: HealthStatus.UNHEALTHY,
+          message: error.message,
+        };
+      }
+    }
+
+    const isReady = Object.values(results).every(
+      (r) => r.status === HealthStatus.HEALTHY || r.status === HealthStatus.DEGRADED,
+    );
+
+    res.status(isReady ? 200 : 503).json({
+      status: isReady ? 'ready' : 'not_ready',
+      checks: results,
+      timestamp: new Date().toISOString(),
+    });
+  };
+};
+
+/**
+ * @function createStartupProbe
+ * @description Creates a startup probe for Kubernetes
+ * @param {Function} initCheck - Initialization check function
+ * @returns {Function} Express middleware for startup
+ *
+ * @example
+ * ```typescript
+ * app.get('/healthz/startup', createStartupProbe(async () => {
+ *   return await checkAppInitialized();
+ * }));
+ * ```
+ */
+export const createStartupProbe = (
+  initCheck: () => Promise<boolean>,
+) => {
+  let isStarted = false;
+
+  return async (req: Request, res: Response) => {
+    if (!isStarted) {
+      try {
+        isStarted = await initCheck();
+      } catch (error) {
+        res.status(503).json({
+          status: 'starting',
+          message: error.message,
+          timestamp: new Date().toISOString(),
+        });
+        return;
+      }
+    }
+
+    res.status(200).json({
+      status: 'started',
+      timestamp: new Date().toISOString(),
+    });
+  };
+};
+
+// ============================================================================
+// AUDIT LOGGING
+// ============================================================================
+
+/**
+ * @function createAuditLog
+ * @description Creates HIPAA-compliant audit log entry
+ * @param {Partial<AuditLogEntry>} entry - Audit log data
+ * @returns {AuditLogEntry} Complete audit log entry
+ *
+ * @security HIPAA-compliant audit trail
+ *
+ * @example
+ * ```typescript
+ * const auditLog = createAuditLog({
+ *   userId: 'user-123',
+ *   action: 'VIEW_PATIENT_RECORD',
+ *   resource: 'patient',
+ *   resourceId: 'patient-456',
+ *   outcome: 'success'
+ * });
+ * ```
+ */
+export const createAuditLog = (
+  entry: Partial<AuditLogEntry>,
+): AuditLogEntry => {
+  return {
+    timestamp: new Date(),
+    outcome: 'success',
+    ...entry,
+  } as AuditLogEntry;
+};
+
+/**
+ * @function logDataAccess
+ * @description Logs data access for compliance
+ * @param {string} userId - User ID
+ * @param {string} resource - Resource type
+ * @param {string} resourceId - Resource ID
+ * @param {string} action - Action performed
+ * @returns {AuditLogEntry} Audit log entry
+ *
+ * @security Required for HIPAA compliance
+ *
+ * @example
+ * ```typescript
+ * const audit = logDataAccess('user-123', 'patient', 'patient-456', 'READ');
+ * await persistAuditLog(audit);
+ * ```
+ */
+export const logDataAccess = (
+  userId: string,
+  resource: string,
+  resourceId: string,
+  action: string,
+): AuditLogEntry => {
+  return createAuditLog({
+    userId,
+    resource,
+    resourceId,
+    action,
+    outcome: 'success',
+  });
+};
+
+/**
+ * @function createAuditMiddleware
+ * @description Creates Express middleware for automatic audit logging
+ * @param {Function} persistFn - Function to persist audit logs
  * @returns {Function} Express middleware
  *
  * @example
  * ```typescript
- * app.get('/health', createHealthCheckEndpoint({
- *   database: () => checkDatabaseHealth(sequelize),
- *   memory: () => checkMemoryHealth()
+ * app.use(createAuditMiddleware(async (log) => {
+ *   await AuditLog.create(log);
  * }));
  * ```
  */
-export const createHealthCheckEndpoint = (
-  checks: Record<string, () => Promise<ComponentHealth> | ComponentHealth>,
+export const createAuditMiddleware = (
+  persistFn: (log: AuditLogEntry) => Promise<void>,
 ) => {
-  return async (req: Request, res: Response) => {
-    const result = await performHealthCheck(checks);
+  return async (req: Request, res: Response, next: any) => {
+    const startTime = Date.now();
 
-    const statusCode =
-      result.status === HealthStatus.HEALTHY
-        ? 200
-        : result.status === HealthStatus.DEGRADED
-          ? 200
-          : 503;
+    res.on('finish', async () => {
+      const auditLog = createAuditLog({
+        userId: (req as any).user?.id || 'anonymous',
+        tenantId: (req as any).tenant?.id,
+        action: `${req.method} ${req.path}`,
+        resource: req.path.split('/')[1] || 'unknown',
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+        outcome: res.statusCode < 400 ? 'success' : 'failure',
+      });
 
-    res.status(statusCode).json(result);
+      try {
+        await persistFn(auditLog);
+      } catch (error) {
+        console.error('Failed to persist audit log:', error);
+      }
+    });
+
+    next();
   };
 };

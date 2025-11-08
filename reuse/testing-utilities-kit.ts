@@ -1,2119 +1,1730 @@
 /**
- * TESTING UTILITIES KIT
+ * @fileoverview Testing Utilities Kit - Comprehensive NestJS testing utilities
+ * @module reuse/testing-utilities-kit
+ * @description Complete testing toolkit for NestJS applications with utilities for
+ * unit testing, integration testing, E2E testing, mocking, fixtures, and test data
+ * generation. Provides reusable patterns for building robust, maintainable tests.
  *
- * Comprehensive testing utility library for NestJS applications with Sequelize ORM and Jest.
- * Provides 45 specialized testing helper functions covering:
- * - Test database setup and teardown with isolation
- * - Factory functions for realistic test data generation
- * - Mock generators for services, repositories, and external APIs
- * - API testing helpers with enhanced supertest wrappers
- * - Authentication and authorization test utilities
- * - Database transaction rollback strategies
- * - Test fixtures and intelligent seeders
- * - Snapshot testing and comparison helpers
- * - Integration test orchestration utilities
- * - E2E test workflow helpers
- * - Performance and load testing tools
- * - Mock data generators with Faker integration
- * - Test coverage analysis and reporting
- * - Custom assertion utilities for healthcare data
- * - HIPAA-compliant test data sanitization
+ * Key Features:
+ * - Test module builders and configuration
+ * - Mock factory patterns for services and repositories
+ * - Database seeding and cleanup utilities
+ * - Request/response mocking helpers
+ * - E2E test utilities with authentication
+ * - Integration test helpers for multi-module scenarios
+ * - Unit test patterns and best practices
+ * - Spy and stub creators for dependencies
+ * - Test data generators with Faker integration
+ * - Fixture management and loading
+ * - Test cleanup and teardown utilities
+ * - Coverage helpers and reporting
+ * - Snapshot testing utilities
+ * - HIPAA-compliant test data generation
+ * - Healthcare-specific test scenarios
  *
- * @module TestingUtilitiesKit
- * @version 1.0.0
- * @requires @nestjs/testing ^11.1.8
- * @requires @nestjs/common ^11.1.8
- * @requires @nestjs/sequelize ^10.0.1
- * @requires sequelize ^6.37.5
- * @requires sequelize-typescript ^2.1.6
- * @requires jest ^30.2.0
- * @requires supertest ^7.1.4
- * @requires @faker-js/faker ^9.4.0
- * @requires Node.js 18+
- * @requires TypeScript 5.x
+ * @target NestJS v10.x, Jest v29.x, Node 18+, TypeScript 5.x
  *
- * @security HIPAA compliant - synthetic test data with PHI sanitization
- * @example
+ * @security
+ * - No real PHI in test data (HIPAA compliance)
+ * - Encrypted test data patterns
+ * - Secure mock credentials
+ * - Test isolation and cleanup
+ * - Safe database state management
+ * - Audit log verification in tests
+ *
+ * @example Basic test module setup
  * ```typescript
- * import {
- *   setupTestDatabase,
- *   createTestFactory,
- *   mockAuthenticatedRequest,
- *   performanceTest
- * } from './testing-utilities-kit';
+ * import { createTestingModuleBuilder, mockRepository } from './testing-utilities-kit';
  *
- * describe('Patient API Tests', () => {
- *   let db: TestDatabase;
- *   let factory: TestFactory;
+ * describe('UserService', () => {
+ *   let service: UserService;
+ *   let repository: Repository<User>;
  *
- *   beforeAll(async () => {
- *     db = await setupTestDatabase({ isolate: true });
- *     factory = createTestFactory(db.sequelize);
- *   });
+ *   beforeEach(async () => {
+ *     const module = await createTestingModuleBuilder()
+ *       .addProvider(UserService)
+ *       .addMockRepository(User)
+ *       .compile();
  *
- *   afterAll(async () => {
- *     await teardownTestDatabase(db);
- *   });
- *
- *   it('should create patient with performance metrics', async () => {
- *     const metrics = await performanceTest(async () => {
- *       const patient = await factory.create('Patient', { firstName: 'John' });
- *       return patient;
- *     });
- *     expect(metrics.duration).toBeLessThan(100);
+ *     service = module.get<UserService>(UserService);
+ *     repository = module.get(getRepositoryToken(User));
  *   });
  * });
  * ```
+ *
+ * @example E2E testing with authentication
+ * ```typescript
+ * import { createE2ETestApp, authenticateUser, cleanupE2E } from './testing-utilities-kit';
+ *
+ * describe('Auth E2E', () => {
+ *   let app: INestApplication;
+ *   let authToken: string;
+ *
+ *   beforeAll(async () => {
+ *     app = await createE2ETestApp();
+ *     authToken = await authenticateUser(app, { email: 'test@example.com' });
+ *   });
+ *
+ *   afterAll(() => cleanupE2E(app));
+ * });
+ * ```
+ *
+ * @example Mock data generation
+ * ```typescript
+ * import { generateMockUser, generateMockPatient, seedDatabase } from './testing-utilities-kit';
+ *
+ * const user = generateMockUser({ role: 'doctor' });
+ * const patient = generateMockPatient({ hasInsurance: true });
+ *
+ * await seedDatabase(sequelize, {
+ *   users: [user],
+ *   patients: [patient]
+ * });
+ * ```
+ *
+ * LOC: TEST-UTIL-001
+ * UPSTREAM: @nestjs/testing, jest, @faker-js/faker, supertest
+ * DOWNSTREAM: test suites, spec files, E2E tests
+ *
+ * @version 1.0.0
+ * @since 2025-11-08
  */
 
-import { Test, TestingModule } from '@nestjs/testing';
-import {
-  INestApplication,
-  Type,
-  Provider,
-  ValidationPipe,
-  HttpStatus,
-  CallHandler,
-  ExecutionContext,
-} from '@nestjs/common';
-import { getModelToken } from '@nestjs/sequelize';
-import {
-  Sequelize,
-  Model,
-  ModelStatic,
-  Transaction,
-  WhereOptions,
-  FindOptions,
-  CreateOptions,
-  Attributes,
-  Op,
-  QueryTypes,
-} from 'sequelize';
-import { SequelizeModule } from '@nestjs/sequelize';
-import * as request from 'supertest';
+import { Test, TestingModule, TestingModuleBuilder } from '@nestjs/testing';
+import { INestApplication, Type, ValidationPipe } from '@nestjs/common';
+import { getRepositoryToken, getModelToken } from '@nestjs/typeorm';
+import { Sequelize, Model, Repository as SequelizeRepository, Transaction } from 'sequelize';
 import { faker } from '@faker-js/faker';
-import { Observable } from 'rxjs';
+import * as request from 'supertest';
+import * as crypto from 'crypto';
 
 // ============================================================================
 // TYPE DEFINITIONS
 // ============================================================================
 
 /**
- * Test database configuration and instance
+ * @enum TestType
+ * @description Types of tests for categorization
  */
-export interface TestDatabase {
-  /** Sequelize instance */
-  sequelize: Sequelize;
-  /** Database name */
-  name: string;
-  /** Cleanup function */
-  cleanup: () => Promise<void>;
-  /** Transaction for test isolation */
-  transaction?: Transaction;
-  /** Models registered */
-  models: ModelStatic<any>[];
+export enum TestType {
+  UNIT = 'UNIT',
+  INTEGRATION = 'INTEGRATION',
+  E2E = 'E2E',
+  PERFORMANCE = 'PERFORMANCE',
+  SECURITY = 'SECURITY',
 }
 
 /**
- * Test database setup options
+ * @enum MockStrategy
+ * @description Strategies for mocking dependencies
  */
-export interface TestDatabaseOptions {
-  /** Use in-memory SQLite database */
-  inMemory?: boolean;
-  /** Database dialect */
-  dialect?: 'sqlite' | 'postgres' | 'mysql' | 'mariadb' | 'mssql';
-  /** Models to register */
-  models?: ModelStatic<any>[];
-  /** Enable query logging */
-  logging?: boolean;
-  /** Synchronize schema on setup */
-  sync?: boolean;
-  /** Isolate each test in transaction */
-  isolate?: boolean;
-  /** Database name prefix */
-  namePrefix?: string;
-  /** Connection pool configuration */
-  pool?: {
-    max?: number;
-    min?: number;
-    idle?: number;
-  };
+export enum MockStrategy {
+  FULL = 'FULL',           // Mock all methods
+  PARTIAL = 'PARTIAL',     // Mock only specified methods
+  SPY = 'SPY',            // Use spies on real implementation
+  NONE = 'NONE',          // No mocking
 }
 
 /**
- * Test factory configuration
+ * @interface TestModuleConfig
+ * @description Configuration for test module creation
  */
-export interface FactoryDefinition<T = any> {
-  /** Model class */
-  model: ModelStatic<Model>;
-  /** Default attributes generator */
-  defaults: () => Partial<T>;
-  /** Associated factories */
-  associations?: Record<string, string>;
-  /** Post-creation hook */
-  afterCreate?: (instance: Model) => Promise<void> | void;
-  /** Traits for variations */
-  traits?: Record<string, Partial<T> | (() => Partial<T>)>;
+export interface TestModuleConfig {
+  imports?: any[];
+  providers?: any[];
+  controllers?: any[];
+  mockStrategy?: MockStrategy;
+  databaseType?: 'sqlite' | 'postgres' | 'mysql';
+  enableLogging?: boolean;
 }
 
 /**
- * Test factory interface
+ * @interface MockRepositoryOptions
+ * @description Options for creating mock repositories
  */
-export interface TestFactory {
-  /** Define a new factory */
-  define<T>(name: string, definition: FactoryDefinition<T>): void;
-  /** Create model instance */
-  create<T = any>(name: string, overrides?: Partial<T>): Promise<Model>;
-  /** Create multiple instances */
-  createMany<T = any>(
-    name: string,
-    count: number,
-    overrides?: Partial<T>,
-  ): Promise<Model[]>;
-  /** Build instance without saving */
-  build<T = any>(name: string, overrides?: Partial<T>): Model;
-  /** Build multiple instances */
-  buildMany<T = any>(name: string, count: number, overrides?: Partial<T>): Model[];
-  /** Create with trait */
-  createWithTrait<T = any>(
-    name: string,
-    trait: string,
-    overrides?: Partial<T>,
-  ): Promise<Model>;
-  /** Create with associations */
-  createWithAssociations<T = any>(
-    name: string,
-    associations: Record<string, any>,
-    overrides?: Partial<T>,
-  ): Promise<Model>;
-}
-
-/**
- * Mock service generator options
- */
-export interface MockServiceOptions {
-  /** Methods to mock */
-  methods?: string[];
-  /** Default return values */
-  returnValues?: Record<string, any>;
-  /** Auto-mock all methods */
-  autoMock?: boolean;
-}
-
-/**
- * Mock repository configuration
- */
-export interface MockRepositoryConfig<T = any> {
-  /** Mock data to return */
-  data?: T[];
-  /** Enable automatic CRUD mocks */
-  autoCrud?: boolean;
-  /** Custom method implementations */
+export interface MockRepositoryOptions {
+  findOne?: jest.Mock;
+  find?: jest.Mock;
+  save?: jest.Mock;
+  create?: jest.Mock;
+  update?: jest.Mock;
+  delete?: jest.Mock;
+  remove?: jest.Mock;
+  count?: jest.Mock;
   customMethods?: Record<string, jest.Mock>;
 }
 
 /**
- * API test request builder
+ * @interface TestDataOptions
+ * @description Options for generating test data
  */
-export interface ApiTestRequest {
-  /** HTTP method */
-  method: 'get' | 'post' | 'put' | 'patch' | 'delete';
-  /** Request path */
-  path: string;
-  /** Request body */
-  body?: any;
-  /** Query parameters */
-  query?: Record<string, any>;
-  /** Headers */
-  headers?: Record<string, string>;
-  /** Authentication token */
-  token?: string;
-  /** Expected status code */
-  expectedStatus?: number;
-  /** Timeout in ms */
-  timeout?: number;
+export interface TestDataOptions {
+  count?: number;
+  overrides?: Record<string, any>;
+  locale?: string;
+  seed?: number;
+  hipaaCompliant?: boolean;
 }
 
 /**
- * Authentication test context
+ * @interface E2ETestConfig
+ * @description Configuration for E2E tests
  */
-export interface AuthTestContext {
-  /** Access token */
-  token: string;
-  /** Refresh token */
-  refreshToken?: string;
-  /** User information */
-  user: any;
-  /** Expires at timestamp */
-  expiresAt?: Date;
-  /** Role/permissions */
-  roles?: string[];
+export interface E2ETestConfig {
+  moduleFixture?: TestingModule;
+  enableValidation?: boolean;
+  enableCors?: boolean;
+  globalPrefix?: string;
+  customSetup?: (app: INestApplication) => Promise<void>;
 }
 
 /**
- * Performance test metrics
+ * @interface AuthTokenPayload
+ * @description Payload for authentication tokens in tests
  */
-export interface PerformanceMetrics {
-  /** Duration in milliseconds */
-  duration: number;
-  /** Memory usage before test */
-  memoryBefore: number;
-  /** Memory usage after test */
-  memoryAfter: number;
-  /** Memory delta */
-  memoryDelta: number;
-  /** Timestamp */
-  timestamp: Date;
-  /** Custom metrics */
-  custom?: Record<string, any>;
+export interface AuthTokenPayload {
+  userId: string;
+  email: string;
+  role?: string;
+  permissions?: string[];
 }
 
 /**
- * Load test configuration
+ * @interface DatabaseSeedData
+ * @description Structure for database seeding
  */
-export interface LoadTestConfig {
-  /** Number of concurrent requests */
-  concurrency: number;
-  /** Total number of requests */
-  totalRequests: number;
-  /** Request factory function */
-  requestFactory: () => Promise<any>;
-  /** Ramp-up time in ms */
-  rampUp?: number;
-  /** Timeout per request */
-  timeout?: number;
+export interface DatabaseSeedData {
+  [entityName: string]: any[];
 }
 
 /**
- * Load test results
- */
-export interface LoadTestResults {
-  /** Total requests completed */
-  completed: number;
-  /** Total requests failed */
-  failed: number;
-  /** Average response time */
-  averageTime: number;
-  /** Min response time */
-  minTime: number;
-  /** Max response time */
-  maxTime: number;
-  /** Requests per second */
-  requestsPerSecond: number;
-  /** Error details */
-  errors: Array<{ error: Error; timestamp: Date }>;
-  /** Percentiles */
-  percentiles: {
-    p50: number;
-    p75: number;
-    p90: number;
-    p95: number;
-    p99: number;
-  };
-}
-
-/**
- * Snapshot comparison options
- */
-export interface SnapshotOptions {
-  /** Snapshot name */
-  name?: string;
-  /** Properties to exclude */
-  exclude?: string[];
-  /** Property matcher functions */
-  matchers?: Record<string, (value: any) => boolean>;
-  /** Update snapshots */
-  update?: boolean;
-}
-
-/**
- * Test fixture data
+ * @interface TestFixture
+ * @description Generic test fixture structure
  */
 export interface TestFixture<T = any> {
-  /** Fixture identifier */
-  id: string;
-  /** Model name */
-  model: string;
-  /** Fixture data */
-  data: T | T[];
-  /** Dependencies (other fixture IDs) */
-  dependencies?: string[];
-  /** Order for loading */
-  order?: number;
+  name: string;
+  data: T;
+  metadata?: Record<string, any>;
+  teardown?: () => Promise<void>;
 }
 
 /**
- * Seeder configuration
+ * @interface SnapshotOptions
+ * @description Options for snapshot testing
  */
-export interface SeederConfig {
-  /** Truncate tables before seeding */
-  truncate?: boolean;
-  /** Use transaction */
-  transaction?: boolean;
-  /** Cascade on truncate */
-  cascade?: boolean;
-  /** Fixtures to seed */
-  fixtures: TestFixture[];
-  /** Callback after seeding */
-  afterSeed?: () => Promise<void> | void;
+export interface SnapshotOptions {
+  sanitize?: boolean;
+  excludeFields?: string[];
+  sortArrays?: boolean;
+  customSerializer?: (data: any) => any;
 }
 
 /**
- * Coverage report options
+ * @interface MockRequestOptions
+ * @description Options for creating mock HTTP requests
  */
-export interface CoverageOptions {
-  /** Minimum coverage threshold */
-  threshold?: {
-    statements?: number;
-    branches?: number;
-    functions?: number;
-    lines?: number;
-  };
-  /** Include patterns */
-  include?: string[];
-  /** Exclude patterns */
-  exclude?: string[];
-  /** Report format */
-  reporters?: Array<'text' | 'html' | 'json' | 'lcov'>;
+export interface MockRequestOptions {
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  path: string;
+  body?: any;
+  query?: Record<string, any>;
+  headers?: Record<string, string>;
+  params?: Record<string, string>;
+  user?: any;
 }
 
 /**
- * Healthcare-specific test data options
+ * @interface AssertionHelpers
+ * @description Custom assertion helpers for tests
  */
-export interface HealthcareTestDataOptions {
-  /** Patient demographics */
-  patientType?: 'adult' | 'pediatric' | 'geriatric';
-  /** Medical record number format */
-  mrnFormat?: string;
-  /** Diagnosis codes to include */
-  diagnosisCodes?: string[];
-  /** Medication names */
-  medications?: string[];
-  /** PHI sanitization level */
-  sanitization?: 'none' | 'partial' | 'full';
+export interface AssertionHelpers {
+  toBeValidUUID: (value: any) => boolean;
+  toBeValidEmail: (value: any) => boolean;
+  toBeValidPhoneNumber: (value: any) => boolean;
+  toMatchDateFormat: (value: any, format: string) => boolean;
+  toHaveProperty: (obj: any, path: string) => boolean;
 }
 
 // ============================================================================
-// TEST DATABASE SETUP AND TEARDOWN
+// TEST MODULE BUILDERS
 // ============================================================================
 
 /**
- * Sets up an isolated test database with optional transaction rollback
+ * Creates a test module builder with common configuration
  *
- * @param options - Database configuration options
- * @returns Test database instance with cleanup utilities
+ * @param {TestModuleConfig} [config] - Module configuration
+ * @returns {TestingModuleBuilder} Configured module builder
  *
  * @example
  * ```typescript
- * const db = await setupTestDatabase({
- *   inMemory: true,
- *   models: [User, Patient],
- *   isolate: true,
- *   sync: true
- * });
+ * const module = await createTestingModuleBuilder({
+ *   providers: [UserService],
+ *   mockStrategy: MockStrategy.FULL
+ * }).compile();
  * ```
  */
-export async function setupTestDatabase(
-  options: TestDatabaseOptions = {},
-): Promise<TestDatabase> {
-  const {
-    inMemory = true,
-    dialect = 'sqlite',
-    models = [],
-    logging = false,
-    sync = true,
-    isolate = false,
-    namePrefix = 'test_db',
-    pool = { max: 5, min: 0, idle: 10000 },
-  } = options;
-
-  const dbName = `${namePrefix}_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-  const storage = inMemory ? ':memory:' : `./test/${dbName}.sqlite`;
-
-  const sequelize = new Sequelize({
-    dialect,
-    storage: dialect === 'sqlite' ? storage : undefined,
-    database: dialect !== 'sqlite' ? dbName : undefined,
-    logging: logging ? console.log : false,
-    pool,
-    define: {
-      timestamps: true,
-      underscored: true,
-    },
+export const createTestingModuleBuilder = (
+  config: TestModuleConfig = {},
+): TestingModuleBuilder => {
+  const builder = Test.createTestingModule({
+    imports: config.imports || [],
+    controllers: config.controllers || [],
+    providers: config.providers || [],
   });
 
-  // Register models
-  if (models.length > 0) {
-    sequelize.addModels(models);
-  }
-
-  // Synchronize schema
-  if (sync) {
-    await sequelize.sync({ force: true });
-  }
-
-  let transaction: Transaction | undefined;
-  if (isolate) {
-    transaction = await sequelize.transaction();
-  }
-
-  const cleanup = async () => {
-    if (transaction) {
-      await transaction.rollback();
-    }
-    await sequelize.close();
-  };
-
-  return {
-    sequelize,
-    name: dbName,
-    cleanup,
-    transaction,
-    models,
-  };
-}
+  return builder;
+};
 
 /**
- * Tears down test database and cleans up resources
+ * Creates a test module with in-memory database
  *
- * @param db - Test database instance
+ * @param {Type<any>[]} entities - Database entities
+ * @param {any[]} [providers] - Additional providers
+ * @param {'sqlite' | 'postgres' | 'mysql'} [dbType='sqlite'] - Database type
+ * @returns {Promise<TestingModule>} Compiled test module
  *
  * @example
  * ```typescript
- * afterAll(async () => {
- *   await teardownTestDatabase(db);
- * });
- * ```
- */
-export async function teardownTestDatabase(db: TestDatabase): Promise<void> {
-  await db.cleanup();
-}
-
-/**
- * Creates a transaction context for test isolation
- *
- * @param sequelize - Sequelize instance
- * @returns Transaction that can be rolled back
- *
- * @example
- * ```typescript
- * const tx = await createTestTransaction(sequelize);
- * await Model.create({ data }, { transaction: tx });
- * await rollbackTestTransaction(tx);
- * ```
- */
-export async function createTestTransaction(
-  sequelize: Sequelize,
-): Promise<Transaction> {
-  return await sequelize.transaction();
-}
-
-/**
- * Rolls back a test transaction
- *
- * @param transaction - Transaction to rollback
- *
- * @example
- * ```typescript
- * await rollbackTestTransaction(tx);
- * ```
- */
-export async function rollbackTestTransaction(
-  transaction: Transaction,
-): Promise<void> {
-  if (!transaction.finished) {
-    await transaction.rollback();
-  }
-}
-
-/**
- * Truncates all tables in test database
- *
- * @param sequelize - Sequelize instance
- * @param options - Truncation options
- *
- * @example
- * ```typescript
- * await truncateAllTables(sequelize, { cascade: true });
- * ```
- */
-export async function truncateAllTables(
-  sequelize: Sequelize,
-  options: { cascade?: boolean; restartIdentity?: boolean } = {},
-): Promise<void> {
-  const { cascade = true, restartIdentity = true } = options;
-
-  const models = Object.values(sequelize.models);
-
-  // Disable foreign key checks for SQLite
-  if (sequelize.getDialect() === 'sqlite') {
-    await sequelize.query('PRAGMA foreign_keys = OFF');
-  }
-
-  for (const model of models) {
-    await model.truncate({ cascade, restartIdentity });
-  }
-
-  // Re-enable foreign key checks
-  if (sequelize.getDialect() === 'sqlite') {
-    await sequelize.query('PRAGMA foreign_keys = ON');
-  }
-}
-
-/**
- * Resets database to clean state between tests
- *
- * @param db - Test database instance
- * @param options - Reset options
- *
- * @example
- * ```typescript
- * beforeEach(async () => {
- *   await resetTestDatabase(db, { resync: true });
- * });
- * ```
- */
-export async function resetTestDatabase(
-  db: TestDatabase,
-  options: { truncate?: boolean; resync?: boolean } = {},
-): Promise<void> {
-  const { truncate = true, resync = false } = options;
-
-  if (resync) {
-    await db.sequelize.sync({ force: true });
-  } else if (truncate) {
-    await truncateAllTables(db.sequelize);
-  }
-}
-
-// ============================================================================
-// FACTORY FUNCTIONS FOR TEST DATA
-// ============================================================================
-
-/**
- * Creates a test factory for generating model instances
- *
- * @param sequelize - Sequelize instance
- * @returns Test factory interface
- *
- * @example
- * ```typescript
- * const factory = createTestFactory(sequelize);
- * factory.define('User', {
- *   model: User,
- *   defaults: () => ({
- *     email: faker.internet.email(),
- *     firstName: faker.person.firstName()
- *   })
- * });
- * const user = await factory.create('User');
- * ```
- */
-export function createTestFactory(sequelize: Sequelize): TestFactory {
-  const definitions = new Map<string, FactoryDefinition>();
-
-  return {
-    define<T>(name: string, definition: FactoryDefinition<T>): void {
-      definitions.set(name, definition);
-    },
-
-    async create<T = any>(name: string, overrides: Partial<T> = {}): Promise<Model> {
-      const definition = definitions.get(name);
-      if (!definition) {
-        throw new Error(`Factory definition not found: ${name}`);
-      }
-
-      const defaults =
-        typeof definition.defaults === 'function'
-          ? definition.defaults()
-          : definition.defaults;
-
-      const attributes = { ...defaults, ...overrides };
-      const instance = await definition.model.create(attributes);
-
-      if (definition.afterCreate) {
-        await definition.afterCreate(instance);
-      }
-
-      return instance;
-    },
-
-    async createMany<T = any>(
-      name: string,
-      count: number,
-      overrides: Partial<T> = {},
-    ): Promise<Model[]> {
-      const instances: Model[] = [];
-      for (let i = 0; i < count; i++) {
-        instances.push(await this.create(name, overrides));
-      }
-      return instances;
-    },
-
-    build<T = any>(name: string, overrides: Partial<T> = {}): Model {
-      const definition = definitions.get(name);
-      if (!definition) {
-        throw new Error(`Factory definition not found: ${name}`);
-      }
-
-      const defaults =
-        typeof definition.defaults === 'function'
-          ? definition.defaults()
-          : definition.defaults;
-
-      const attributes = { ...defaults, ...overrides };
-      return definition.model.build(attributes);
-    },
-
-    buildMany<T = any>(
-      name: string,
-      count: number,
-      overrides: Partial<T> = {},
-    ): Model[] {
-      const instances: Model[] = [];
-      for (let i = 0; i < count; i++) {
-        instances.push(this.build(name, overrides));
-      }
-      return instances;
-    },
-
-    async createWithTrait<T = any>(
-      name: string,
-      trait: string,
-      overrides: Partial<T> = {},
-    ): Promise<Model> {
-      const definition = definitions.get(name);
-      if (!definition) {
-        throw new Error(`Factory definition not found: ${name}`);
-      }
-
-      if (!definition.traits || !definition.traits[trait]) {
-        throw new Error(`Trait not found: ${trait} in factory ${name}`);
-      }
-
-      const traitData =
-        typeof definition.traits[trait] === 'function'
-          ? (definition.traits[trait] as Function)()
-          : definition.traits[trait];
-
-      return this.create(name, { ...traitData, ...overrides });
-    },
-
-    async createWithAssociations<T = any>(
-      name: string,
-      associations: Record<string, any>,
-      overrides: Partial<T> = {},
-    ): Promise<Model> {
-      const instance = await this.create(name, overrides);
-
-      for (const [assocName, assocData] of Object.entries(associations)) {
-        const setterName = `set${assocName.charAt(0).toUpperCase()}${assocName.slice(1)}`;
-        if (typeof (instance as any)[setterName] === 'function') {
-          await (instance as any)[setterName](assocData);
-        }
-      }
-
-      return instance;
-    },
-  };
-}
-
-/**
- * Generates realistic patient test data
- *
- * @param options - Healthcare data options
- * @returns Patient data object
- *
- * @example
- * ```typescript
- * const patient = generatePatientData({ patientType: 'adult' });
- * ```
- */
-export function generatePatientData(
-  options: HealthcareTestDataOptions = {},
-): any {
-  const { patientType = 'adult', mrnFormat = 'MRN-######', sanitization = 'full' } =
-    options;
-
-  const baseData = {
-    mrn: mrnFormat.replace(/#+/g, (match) =>
-      faker.string.numeric(match.length),
-    ),
-    firstName: sanitization === 'full' ? faker.person.firstName() : 'TEST',
-    lastName: sanitization === 'full' ? faker.person.lastName() : 'PATIENT',
-    dateOfBirth: faker.date.birthdate({
-      min: patientType === 'pediatric' ? 0 : patientType === 'geriatric' ? 65 : 18,
-      max: patientType === 'pediatric' ? 17 : patientType === 'geriatric' ? 100 : 64,
-      mode: 'age',
-    }),
-    gender: faker.helpers.arrayElement(['M', 'F', 'O']),
-    email: sanitization === 'full' ? faker.internet.email() : 'test@example.com',
-    phone: sanitization === 'full' ? faker.phone.number() : '555-0100',
-    address: {
-      street: sanitization === 'full' ? faker.location.streetAddress() : '123 Test St',
-      city: sanitization === 'full' ? faker.location.city() : 'Test City',
-      state: sanitization === 'full' ? faker.location.state() : 'TS',
-      zipCode: sanitization === 'full' ? faker.location.zipCode() : '00000',
-    },
-  };
-
-  return baseData;
-}
-
-/**
- * Generates medical record test data
- *
- * @param patientId - Associated patient ID
- * @param options - Healthcare data options
- * @returns Medical record data
- *
- * @example
- * ```typescript
- * const record = generateMedicalRecordData(patient.id, {
- *   diagnosisCodes: ['Z00.00', 'E11.9']
- * });
- * ```
- */
-export function generateMedicalRecordData(
-  patientId: string,
-  options: HealthcareTestDataOptions = {},
-): any {
-  const { diagnosisCodes = [], medications = [] } = options;
-
-  return {
-    patientId,
-    visitDate: faker.date.recent({ days: 30 }),
-    chiefComplaint: faker.helpers.arrayElement([
-      'Annual physical',
-      'Follow-up visit',
-      'Routine checkup',
-      'Medication review',
-    ]),
-    diagnosis: diagnosisCodes.length
-      ? diagnosisCodes
-      : [faker.string.alphanumeric(6).toUpperCase()],
-    medications: medications.length
-      ? medications
-      : [faker.helpers.arrayElement(['Aspirin', 'Ibuprofen', 'Acetaminophen'])],
-    vitalSigns: {
-      temperature: faker.number.float({ min: 36.1, max: 37.2, fractionDigits: 1 }),
-      heartRate: faker.number.int({ min: 60, max: 100 }),
-      bloodPressure: {
-        systolic: faker.number.int({ min: 110, max: 130 }),
-        diastolic: faker.number.int({ min: 70, max: 85 }),
-      },
-      respiratoryRate: faker.number.int({ min: 12, max: 20 }),
-      oxygenSaturation: faker.number.int({ min: 95, max: 100 }),
-    },
-    notes: faker.lorem.paragraph(),
-  };
-}
-
-/**
- * Generates appointment test data
- *
- * @param patientId - Associated patient ID
- * @param providerId - Associated provider ID
- * @returns Appointment data
- *
- * @example
- * ```typescript
- * const appointment = generateAppointmentData(patient.id, provider.id);
- * ```
- */
-export function generateAppointmentData(
-  patientId: string,
-  providerId: string,
-): any {
-  const appointmentDate = faker.date.future({ years: 0.1 });
-
-  return {
-    patientId,
-    providerId,
-    appointmentDate,
-    appointmentType: faker.helpers.arrayElement([
-      'consultation',
-      'follow-up',
-      'procedure',
-      'screening',
-    ]),
-    status: faker.helpers.arrayElement([
-      'scheduled',
-      'confirmed',
-      'checked-in',
-      'completed',
-      'cancelled',
-    ]),
-    durationMinutes: faker.helpers.arrayElement([15, 30, 45, 60]),
-    reason: faker.lorem.sentence(),
-    notes: faker.lorem.paragraph(),
-  };
-}
-
-// ============================================================================
-// MOCK GENERATORS
-// ============================================================================
-
-/**
- * Creates a mock service with specified methods
- *
- * @param serviceName - Name of service for debugging
- * @param options - Mock configuration options
- * @returns Mocked service object
- *
- * @example
- * ```typescript
- * const mockUserService = createMockService('UserService', {
- *   methods: ['findById', 'create', 'update'],
- *   returnValues: { findById: { id: 1, name: 'Test' } }
- * });
- * ```
- */
-export function createMockService(
-  serviceName: string,
-  options: MockServiceOptions = {},
-): any {
-  const { methods = [], returnValues = {}, autoMock = true } = options;
-
-  const mockService: any = {};
-
-  if (autoMock && methods.length === 0) {
-    // Create a Proxy to auto-mock any method call
-    return new Proxy(
-      {},
-      {
-        get: (target, prop) => {
-          const propStr = String(prop);
-          if (!target[propStr]) {
-            target[propStr] = jest
-              .fn()
-              .mockResolvedValue(returnValues[propStr] || null);
-          }
-          return target[propStr];
-        },
-      },
-    );
-  }
-
-  methods.forEach((method) => {
-    mockService[method] = jest
-      .fn()
-      .mockResolvedValue(returnValues[method] || null);
-  });
-
-  return mockService;
-}
-
-/**
- * Creates a mock Sequelize repository with CRUD operations
- *
- * @param config - Repository mock configuration
- * @returns Mocked repository
- *
- * @example
- * ```typescript
- * const mockRepo = createMockRepository({
- *   data: [{ id: 1, name: 'Test' }],
- *   autoCrud: true
- * });
- * ```
- */
-export function createMockRepository<T = any>(
-  config: MockRepositoryConfig<T> = {},
-): any {
-  const { data = [], autoCrud = true, customMethods = {} } = config;
-
-  const mockRepo: any = {
-    ...customMethods,
-  };
-
-  if (autoCrud) {
-    mockRepo.findOne = jest.fn().mockResolvedValue(data[0] || null);
-    mockRepo.findAll = jest.fn().mockResolvedValue(data);
-    mockRepo.findByPk = jest.fn((id: any) => {
-      const item = data.find((d: any) => d.id === id);
-      return Promise.resolve(item || null);
-    });
-    mockRepo.findAndCountAll = jest.fn().mockResolvedValue({
-      rows: data,
-      count: data.length,
-    });
-    mockRepo.create = jest.fn((attrs: any) =>
-      Promise.resolve({ id: Date.now(), ...attrs }),
-    );
-    mockRepo.update = jest.fn().mockResolvedValue([1]);
-    mockRepo.destroy = jest.fn().mockResolvedValue(1);
-    mockRepo.count = jest.fn().mockResolvedValue(data.length);
-    mockRepo.bulkCreate = jest.fn((items: any[]) => Promise.resolve(items));
-  }
-
-  return mockRepo;
-}
-
-/**
- * Creates a mock HTTP client for external API calls
- *
- * @param responses - Map of URL patterns to mock responses
- * @returns Mocked HTTP client
- *
- * @example
- * ```typescript
- * const mockHttp = createMockHttpClient({
- *   '/api/users': { data: [{ id: 1, name: 'User' }] },
- *   '/api/posts': { data: [{ id: 1, title: 'Post' }] }
- * });
- * ```
- */
-export function createMockHttpClient(
-  responses: Record<string, any> = {},
-): any {
-  return {
-    get: jest.fn((url: string) => {
-      const response = responses[url] || { data: null };
-      return Promise.resolve(response);
-    }),
-    post: jest.fn((url: string, data: any) => {
-      const response = responses[url] || { data };
-      return Promise.resolve(response);
-    }),
-    put: jest.fn((url: string, data: any) => {
-      const response = responses[url] || { data };
-      return Promise.resolve(response);
-    }),
-    patch: jest.fn((url: string, data: any) => {
-      const response = responses[url] || { data };
-      return Promise.resolve(response);
-    }),
-    delete: jest.fn((url: string) => {
-      const response = responses[url] || { data: { success: true } };
-      return Promise.resolve(response);
-    }),
-  };
-}
-
-/**
- * Creates a mock NestJS guard
- *
- * @param shouldActivate - Whether guard should allow access
- * @returns Mock guard
- *
- * @example
- * ```typescript
- * const mockAuthGuard = createMockGuard(true);
- * ```
- */
-export function createMockGuard(shouldActivate: boolean = true): any {
-  return {
-    canActivate: jest.fn(() => shouldActivate),
-  };
-}
-
-/**
- * Creates a mock NestJS interceptor
- *
- * @param transformFn - Optional transformation function
- * @returns Mock interceptor
- *
- * @example
- * ```typescript
- * const mockInterceptor = createMockInterceptor((data) => ({ wrapped: data }));
- * ```
- */
-export function createMockInterceptor(
-  transformFn?: (data: any) => any,
-): any {
-  return {
-    intercept: jest.fn(
-      (context: ExecutionContext, next: CallHandler): Observable<any> => {
-        if (transformFn) {
-          return next.handle().pipe();
-        }
-        return next.handle();
-      },
-    ),
-  };
-}
-
-// ============================================================================
-// API TESTING HELPERS
-// ============================================================================
-
-/**
- * Executes an API test request with enhanced error handling
- *
- * @param app - NestJS application instance
- * @param config - Request configuration
- * @returns Supertest response
- *
- * @example
- * ```typescript
- * const response = await apiTestRequest(app, {
- *   method: 'post',
- *   path: '/api/users',
- *   body: { name: 'John' },
- *   token: 'Bearer xyz',
- *   expectedStatus: 201
- * });
- * ```
- */
-export async function apiTestRequest(
-  app: INestApplication,
-  config: ApiTestRequest,
-): Promise<request.Response> {
-  const {
-    method,
-    path,
-    body,
-    query,
-    headers = {},
-    token,
-    expectedStatus,
-    timeout = 5000,
-  } = config;
-
-  let req = request(app.getHttpServer())[method](path);
-
-  if (token) {
-    req = req.set('Authorization', token);
-  }
-
-  if (headers) {
-    Object.entries(headers).forEach(([key, value]) => {
-      req = req.set(key, value);
-    });
-  }
-
-  if (query) {
-    req = req.query(query);
-  }
-
-  if (body) {
-    req = req.send(body);
-  }
-
-  req = req.timeout(timeout);
-
-  if (expectedStatus) {
-    req = req.expect(expectedStatus);
-  }
-
-  return await req;
-}
-
-/**
- * Creates a reusable API test client with common configuration
- *
- * @param app - NestJS application instance
- * @param defaultHeaders - Default headers for all requests
- * @returns API test client
- *
- * @example
- * ```typescript
- * const client = createApiTestClient(app, { 'X-API-Version': 'v1' });
- * await client.get('/users');
- * await client.post('/users', { name: 'John' });
- * ```
- */
-export function createApiTestClient(
-  app: INestApplication,
-  defaultHeaders: Record<string, string> = {},
-): any {
-  const client = {
-    get: (path: string, options: Partial<ApiTestRequest> = {}) =>
-      apiTestRequest(app, {
-        method: 'get',
-        path,
-        headers: { ...defaultHeaders, ...options.headers },
-        ...options,
-      }),
-    post: (path: string, body?: any, options: Partial<ApiTestRequest> = {}) =>
-      apiTestRequest(app, {
-        method: 'post',
-        path,
-        body,
-        headers: { ...defaultHeaders, ...options.headers },
-        ...options,
-      }),
-    put: (path: string, body?: any, options: Partial<ApiTestRequest> = {}) =>
-      apiTestRequest(app, {
-        method: 'put',
-        path,
-        body,
-        headers: { ...defaultHeaders, ...options.headers },
-        ...options,
-      }),
-    patch: (path: string, body?: any, options: Partial<ApiTestRequest> = {}) =>
-      apiTestRequest(app, {
-        method: 'patch',
-        path,
-        body,
-        headers: { ...defaultHeaders, ...options.headers },
-        ...options,
-      }),
-    delete: (path: string, options: Partial<ApiTestRequest> = {}) =>
-      apiTestRequest(app, {
-        method: 'delete',
-        path,
-        headers: { ...defaultHeaders, ...options.headers },
-        ...options,
-      }),
-  };
-
-  return client;
-}
-
-/**
- * Tests API pagination functionality
- *
- * @param app - NestJS application instance
- * @param endpoint - API endpoint to test
- * @param token - Optional auth token
- * @returns Pagination test results
- *
- * @example
- * ```typescript
- * const results = await testApiPagination(app, '/api/users', token);
- * expect(results.hasNextPage).toBe(true);
- * ```
- */
-export async function testApiPagination(
-  app: INestApplication,
-  endpoint: string,
-  token?: string,
-): Promise<{
-  firstPage: any;
-  secondPage: any;
-  hasNextPage: boolean;
-  totalCount: number;
-}> {
-  const firstPageRes = await apiTestRequest(app, {
-    method: 'get',
-    path: endpoint,
-    query: { page: 1, limit: 10 },
-    token,
-  });
-
-  const secondPageRes = await apiTestRequest(app, {
-    method: 'get',
-    path: endpoint,
-    query: { page: 2, limit: 10 },
-    token,
-  });
-
-  return {
-    firstPage: firstPageRes.body,
-    secondPage: secondPageRes.body,
-    hasNextPage: firstPageRes.body.hasNextPage || false,
-    totalCount: firstPageRes.body.totalCount || 0,
-  };
-}
-
-// ============================================================================
-// AUTHENTICATION TEST UTILITIES
-// ============================================================================
-
-/**
- * Creates an authenticated test context with valid tokens
- *
- * @param app - NestJS application instance
- * @param credentials - Login credentials
- * @returns Authentication context
- *
- * @example
- * ```typescript
- * const auth = await mockAuthenticatedRequest(app, {
- *   email: 'test@example.com',
- *   password: 'password123'
- * });
- * const response = await apiTestRequest(app, {
- *   method: 'get',
- *   path: '/api/profile',
- *   token: auth.token
- * });
- * ```
- */
-export async function mockAuthenticatedRequest(
-  app: INestApplication,
-  credentials: { email?: string; username?: string; password: string },
-): Promise<AuthTestContext> {
-  const loginRes = await apiTestRequest(app, {
-    method: 'post',
-    path: '/auth/login',
-    body: credentials,
-    expectedStatus: HttpStatus.OK,
-  });
-
-  return {
-    token: loginRes.body.accessToken,
-    refreshToken: loginRes.body.refreshToken,
-    user: loginRes.body.user,
-    expiresAt: loginRes.body.expiresAt
-      ? new Date(loginRes.body.expiresAt)
-      : undefined,
-    roles: loginRes.body.user?.roles || [],
-  };
-}
-
-/**
- * Generates a mock JWT token for testing
- *
- * @param payload - Token payload
- * @param secret - Secret key (optional)
- * @returns JWT token string
- *
- * @example
- * ```typescript
- * const token = generateMockJwtToken({ userId: 1, role: 'admin' });
- * ```
- */
-export function generateMockJwtToken(
-  payload: Record<string, any>,
-  secret: string = 'test-secret',
-): string {
-  // Simple base64 encoding for testing (not secure, only for tests)
-  const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString(
-    'base64',
-  );
-  const body = Buffer.from(JSON.stringify(payload)).toString('base64');
-  const signature = Buffer.from('test-signature').toString('base64');
-  return `${header}.${body}.${signature}`;
-}
-
-/**
- * Tests role-based access control for an endpoint
- *
- * @param app - NestJS application instance
- * @param endpoint - API endpoint
- * @param roles - Roles to test
- * @returns Access results per role
- *
- * @example
- * ```typescript
- * const results = await testRoleBasedAccess(app, '/api/admin', ['admin', 'user']);
- * expect(results.admin.status).toBe(200);
- * expect(results.user.status).toBe(403);
- * ```
- */
-export async function testRoleBasedAccess(
-  app: INestApplication,
-  endpoint: string,
-  roles: string[],
-): Promise<Record<string, { status: number; body: any }>> {
-  const results: Record<string, { status: number; body: any }> = {};
-
-  for (const role of roles) {
-    const token = generateMockJwtToken({ role });
-    const response = await apiTestRequest(app, {
-      method: 'get',
-      path: endpoint,
-      token: `Bearer ${token}`,
-    });
-
-    results[role] = {
-      status: response.status,
-      body: response.body,
-    };
-  }
-
-  return results;
-}
-
-// ============================================================================
-// TEST FIXTURES AND SEEDERS
-// ============================================================================
-
-/**
- * Seeds database with test fixtures
- *
- * @param sequelize - Sequelize instance
- * @param config - Seeder configuration
- *
- * @example
- * ```typescript
- * await seedTestFixtures(sequelize, {
- *   truncate: true,
- *   fixtures: [
- *     { id: 'users', model: 'User', data: [{ name: 'John' }] },
- *     { id: 'posts', model: 'Post', data: [{ title: 'Test' }], dependencies: ['users'] }
- *   ]
- * });
- * ```
- */
-export async function seedTestFixtures(
-  sequelize: Sequelize,
-  config: SeederConfig,
-): Promise<void> {
-  const { truncate = false, transaction = true, cascade = true, fixtures, afterSeed } = config;
-
-  const tx = transaction ? await sequelize.transaction() : undefined;
-
-  try {
-    if (truncate) {
-      await truncateAllTables(sequelize, { cascade });
-    }
-
-    // Sort fixtures by dependencies and order
-    const sortedFixtures = [...fixtures].sort((a, b) => {
-      const aOrder = a.order || 0;
-      const bOrder = b.order || 0;
-      return aOrder - bOrder;
-    });
-
-    const createdData: Record<string, any> = {};
-
-    for (const fixture of sortedFixtures) {
-      const model = sequelize.models[fixture.model];
-      if (!model) {
-        throw new Error(`Model not found: ${fixture.model}`);
-      }
-
-      const dataArray = Array.isArray(fixture.data)
-        ? fixture.data
-        : [fixture.data];
-
-      const created = await model.bulkCreate(dataArray, { transaction: tx });
-      createdData[fixture.id] = created;
-    }
-
-    if (afterSeed) {
-      await afterSeed();
-    }
-
-    if (tx) {
-      await tx.commit();
-    }
-  } catch (error) {
-    if (tx) {
-      await tx.rollback();
-    }
-    throw error;
-  }
-}
-
-/**
- * Loads fixtures from JSON files
- *
- * @param fixturesPath - Path to fixtures directory
- * @returns Array of test fixtures
- *
- * @example
- * ```typescript
- * const fixtures = await loadFixturesFromFiles('./test/fixtures');
- * await seedTestFixtures(sequelize, { fixtures });
- * ```
- */
-export async function loadFixturesFromFiles(
-  fixturesPath: string,
-): Promise<TestFixture[]> {
-  const fs = require('fs').promises;
-  const path = require('path');
-
-  const fixtures: TestFixture[] = [];
-  const files = await fs.readdir(fixturesPath);
-
-  for (const file of files) {
-    if (file.endsWith('.json')) {
-      const filePath = path.join(fixturesPath, file);
-      const content = await fs.readFile(filePath, 'utf-8');
-      const fixtureData = JSON.parse(content);
-      fixtures.push(fixtureData);
-    }
-  }
-
-  return fixtures;
-}
-
-/**
- * Creates a fixture builder for complex test scenarios
- *
- * @param sequelize - Sequelize instance
- * @returns Fixture builder
- *
- * @example
- * ```typescript
- * const builder = createFixtureBuilder(sequelize);
- * await builder
- *   .add('User', [{ name: 'John' }, { name: 'Jane' }])
- *   .add('Post', [{ title: 'Test', userId: 1 }])
- *   .build();
- * ```
- */
-export function createFixtureBuilder(sequelize: Sequelize): any {
-  const fixtures: TestFixture[] = [];
-  let order = 0;
-
-  return {
-    add(model: string, data: any | any[], dependencies: string[] = []) {
-      fixtures.push({
-        id: `${model}_${order}`,
-        model,
-        data,
-        dependencies,
-        order: order++,
-      });
-      return this;
-    },
-
-    async build(options: Partial<SeederConfig> = {}) {
-      await seedTestFixtures(sequelize, {
-        ...options,
-        fixtures,
-      });
-      return fixtures;
-    },
-
-    clear() {
-      fixtures.length = 0;
-      order = 0;
-      return this;
-    },
-  };
-}
-
-// ============================================================================
-// SNAPSHOT TESTING HELPERS
-// ============================================================================
-
-/**
- * Creates a sanitized snapshot for comparison
- *
- * @param data - Data to snapshot
- * @param options - Snapshot options
- * @returns Sanitized data for snapshot
- *
- * @example
- * ```typescript
- * const snapshot = createTestSnapshot(response.body, {
- *   exclude: ['createdAt', 'updatedAt'],
- *   matchers: { id: (v) => typeof v === 'number' }
- * });
- * expect(snapshot).toMatchSnapshot();
- * ```
- */
-export function createTestSnapshot(
-  data: any,
-  options: SnapshotOptions = {},
-): any {
-  const { exclude = [], matchers = {} } = options;
-
-  const sanitize = (obj: any): any => {
-    if (obj === null || obj === undefined) {
-      return obj;
-    }
-
-    if (Array.isArray(obj)) {
-      return obj.map(sanitize);
-    }
-
-    if (typeof obj === 'object') {
-      const sanitized: any = {};
-
-      for (const [key, value] of Object.entries(obj)) {
-        if (exclude.includes(key)) {
-          continue;
-        }
-
-        if (matchers[key]) {
-          sanitized[key] = matchers[key](value) ? expect.any(Object) : value;
-        } else {
-          sanitized[key] = sanitize(value);
-        }
-      }
-
-      return sanitized;
-    }
-
-    return obj;
-  };
-
-  return sanitize(data);
-}
-
-/**
- * Compares two objects and returns differences
- *
- * @param expected - Expected object
- * @param actual - Actual object
- * @param path - Current path (for recursion)
- * @returns Array of differences
- *
- * @example
- * ```typescript
- * const diffs = compareSnapshots(expected, actual);
- * expect(diffs).toHaveLength(0);
- * ```
- */
-export function compareSnapshots(
-  expected: any,
-  actual: any,
-  path: string = '',
-): Array<{ path: string; expected: any; actual: any }> {
-  const differences: Array<{ path: string; expected: any; actual: any }> = [];
-
-  const compare = (exp: any, act: any, currentPath: string) => {
-    if (typeof exp !== typeof act) {
-      differences.push({
-        path: currentPath,
-        expected: exp,
-        actual: act,
-      });
-      return;
-    }
-
-    if (Array.isArray(exp) && Array.isArray(act)) {
-      if (exp.length !== act.length) {
-        differences.push({
-          path: currentPath,
-          expected: `Array(${exp.length})`,
-          actual: `Array(${act.length})`,
-        });
-      }
-
-      const maxLength = Math.max(exp.length, act.length);
-      for (let i = 0; i < maxLength; i++) {
-        compare(exp[i], act[i], `${currentPath}[${i}]`);
-      }
-      return;
-    }
-
-    if (typeof exp === 'object' && exp !== null && act !== null) {
-      const expKeys = Object.keys(exp);
-      const actKeys = Object.keys(act);
-
-      const allKeys = new Set([...expKeys, ...actKeys]);
-
-      for (const key of allKeys) {
-        const newPath = currentPath ? `${currentPath}.${key}` : key;
-        compare(exp[key], act[key], newPath);
-      }
-      return;
-    }
-
-    if (exp !== act) {
-      differences.push({
-        path: currentPath,
-        expected: exp,
-        actual: act,
-      });
-    }
-  };
-
-  compare(expected, actual, path);
-  return differences;
-}
-
-// ============================================================================
-// PERFORMANCE AND LOAD TESTING
-// ============================================================================
-
-/**
- * Measures performance of a test function
- *
- * @param fn - Function to measure
- * @param iterations - Number of iterations (default: 1)
- * @returns Performance metrics
- *
- * @example
- * ```typescript
- * const metrics = await performanceTest(async () => {
- *   await service.findAll();
- * }, 100);
- * expect(metrics.duration).toBeLessThan(1000);
- * ```
- */
-export async function performanceTest(
-  fn: () => Promise<any>,
-  iterations: number = 1,
-): Promise<PerformanceMetrics> {
-  const memoryBefore = process.memoryUsage().heapUsed;
-  const startTime = Date.now();
-
-  for (let i = 0; i < iterations; i++) {
-    await fn();
-  }
-
-  const endTime = Date.now();
-  const memoryAfter = process.memoryUsage().heapUsed;
-
-  return {
-    duration: endTime - startTime,
-    memoryBefore,
-    memoryAfter,
-    memoryDelta: memoryAfter - memoryBefore,
-    timestamp: new Date(),
-    custom: {
-      iterations,
-      averageDuration: (endTime - startTime) / iterations,
-    },
-  };
-}
-
-/**
- * Executes load testing with concurrent requests
- *
- * @param config - Load test configuration
- * @returns Load test results
- *
- * @example
- * ```typescript
- * const results = await loadTest({
- *   concurrency: 10,
- *   totalRequests: 100,
- *   requestFactory: async () => {
- *     return await apiTestRequest(app, {
- *       method: 'get',
- *       path: '/api/users'
- *     });
- *   }
- * });
- * expect(results.failed).toBe(0);
- * ```
- */
-export async function loadTest(
-  config: LoadTestConfig,
-): Promise<LoadTestResults> {
-  const {
-    concurrency,
-    totalRequests,
-    requestFactory,
-    rampUp = 0,
-    timeout = 30000,
-  } = config;
-
-  const results: number[] = [];
-  const errors: Array<{ error: Error; timestamp: Date }> = [];
-  let completed = 0;
-  let failed = 0;
-
-  const executeRequest = async (): Promise<number> => {
-    const startTime = Date.now();
-    try {
-      await requestFactory();
-      const duration = Date.now() - startTime;
-      completed++;
-      return duration;
-    } catch (error) {
-      failed++;
-      errors.push({ error: error as Error, timestamp: new Date() });
-      throw error;
-    }
-  };
-
-  const batches = Math.ceil(totalRequests / concurrency);
-  const startTime = Date.now();
-
-  for (let batch = 0; batch < batches; batch++) {
-    const batchSize = Math.min(
-      concurrency,
-      totalRequests - batch * concurrency,
-    );
-    const promises: Promise<number>[] = [];
-
-    for (let i = 0; i < batchSize; i++) {
-      promises.push(executeRequest().catch(() => -1));
-    }
-
-    const batchResults = await Promise.all(promises);
-    results.push(...batchResults.filter((r) => r >= 0));
-
-    // Ramp-up delay
-    if (rampUp && batch < batches - 1) {
-      await new Promise((resolve) => setTimeout(resolve, rampUp));
-    }
-  }
-
-  const totalTime = Date.now() - startTime;
-  const validResults = results.filter((r) => r >= 0);
-
-  validResults.sort((a, b) => a - b);
-
-  const percentile = (p: number) => {
-    const index = Math.ceil((validResults.length * p) / 100) - 1;
-    return validResults[index] || 0;
-  };
-
-  return {
-    completed,
-    failed,
-    averageTime:
-      validResults.reduce((a, b) => a + b, 0) / validResults.length || 0,
-    minTime: Math.min(...validResults) || 0,
-    maxTime: Math.max(...validResults) || 0,
-    requestsPerSecond: (completed / totalTime) * 1000,
-    errors,
-    percentiles: {
-      p50: percentile(50),
-      p75: percentile(75),
-      p90: percentile(90),
-      p95: percentile(95),
-      p99: percentile(99),
-    },
-  };
-}
-
-/**
- * Benchmarks database query performance
- *
- * @param sequelize - Sequelize instance
- * @param query - SQL query string
- * @param iterations - Number of iterations
- * @returns Query performance metrics
- *
- * @example
- * ```typescript
- * const metrics = await benchmarkQuery(
- *   sequelize,
- *   'SELECT * FROM users WHERE active = true',
- *   1000
+ * const module = await createTestModuleWithDatabase(
+ *   [User, Patient],
+ *   [UserService, PatientService],
+ *   'sqlite'
  * );
- * expect(metrics.averageDuration).toBeLessThan(10);
  * ```
  */
-export async function benchmarkQuery(
-  sequelize: Sequelize,
-  query: string,
-  iterations: number = 100,
-): Promise<{
-  averageDuration: number;
-  minDuration: number;
-  maxDuration: number;
-  totalDuration: number;
-}> {
-  const durations: number[] = [];
+export const createTestModuleWithDatabase = async (
+  entities: Type<any>[],
+  providers: any[] = [],
+  dbType: 'sqlite' | 'postgres' | 'mysql' = 'sqlite',
+): Promise<TestingModule> => {
+  const { TypeOrmModule } = require('@nestjs/typeorm');
 
-  for (let i = 0; i < iterations; i++) {
-    const startTime = Date.now();
-    await sequelize.query(query, { type: QueryTypes.SELECT });
-    const duration = Date.now() - startTime;
-    durations.push(duration);
-  }
-
-  return {
-    averageDuration: durations.reduce((a, b) => a + b, 0) / durations.length,
-    minDuration: Math.min(...durations),
-    maxDuration: Math.max(...durations),
-    totalDuration: durations.reduce((a, b) => a + b, 0),
+  const databaseConfig = {
+    sqlite: {
+      type: 'sqlite',
+      database: ':memory:',
+      synchronize: true,
+      logging: false,
+      dropSchema: true,
+    },
+    postgres: {
+      type: 'postgres',
+      host: 'localhost',
+      port: 5432,
+      database: 'test_db',
+      synchronize: true,
+      logging: false,
+      dropSchema: true,
+    },
+    mysql: {
+      type: 'mysql',
+      host: 'localhost',
+      port: 3306,
+      database: 'test_db',
+      synchronize: true,
+      logging: false,
+      dropSchema: true,
+    },
   };
-}
+
+  return Test.createTestingModule({
+    imports: [
+      TypeOrmModule.forRoot({
+        ...databaseConfig[dbType],
+        entities,
+      }),
+      TypeOrmModule.forFeature(entities),
+    ],
+    providers,
+  }).compile();
+};
+
+/**
+ * Creates isolated test module for unit testing
+ *
+ * @param {Type<any>} serviceClass - Service class to test
+ * @param {any[]} [mockDependencies] - Mock dependencies
+ * @returns {Promise<TestingModule>} Compiled test module
+ *
+ * @example
+ * ```typescript
+ * const module = await createIsolatedTestModule(UserService, [
+ *   { provide: UserRepository, useValue: mockRepository() }
+ * ]);
+ * ```
+ */
+export const createIsolatedTestModule = async (
+  serviceClass: Type<any>,
+  mockDependencies: any[] = [],
+): Promise<TestingModule> => {
+  return Test.createTestingModule({
+    providers: [serviceClass, ...mockDependencies],
+  }).compile();
+};
+
+/**
+ * Adds mock repository to module builder
+ *
+ * @param {TestingModuleBuilder} builder - Module builder
+ * @param {Type<any>} entity - Entity class
+ * @param {Partial<MockRepositoryOptions>} [methods] - Custom mock methods
+ * @returns {TestingModuleBuilder} Updated builder
+ *
+ * @example
+ * ```typescript
+ * const builder = Test.createTestingModule({});
+ * addMockRepository(builder, User, { findOne: jest.fn().mockResolvedValue(mockUser) });
+ * ```
+ */
+export const addMockRepository = (
+  builder: TestingModuleBuilder,
+  entity: Type<any>,
+  methods: Partial<MockRepositoryOptions> = {},
+): TestingModuleBuilder => {
+  const mockRepo = mockRepository(methods);
+  return builder.overrideProvider(getRepositoryToken(entity)).useValue(mockRepo);
+};
+
+/**
+ * Creates test module with custom providers
+ *
+ * @param {any[]} providers - Providers to include
+ * @param {any[]} [overrides] - Provider overrides
+ * @returns {Promise<TestingModule>} Compiled test module
+ *
+ * @example
+ * ```typescript
+ * const module = await createTestModuleWithProviders(
+ *   [UserService, EmailService],
+ *   [{ provide: EmailService, useValue: mockEmailService }]
+ * );
+ * ```
+ */
+export const createTestModuleWithProviders = async (
+  providers: any[],
+  overrides: any[] = [],
+): Promise<TestingModule> => {
+  let builder = Test.createTestingModule({ providers });
+
+  overrides.forEach((override) => {
+    builder = builder.overrideProvider(override.provide).useValue(override.useValue);
+  });
+
+  return builder.compile();
+};
 
 // ============================================================================
-// INTEGRATION AND E2E TEST HELPERS
+// MOCK FACTORY PATTERNS
 // ============================================================================
 
 /**
- * Creates a full NestJS application instance for E2E testing
+ * Creates a mock TypeORM repository
  *
- * @param moduleClass - Application module class
- * @param config - Additional configuration
- * @returns Initialized NestJS application
+ * @param {Partial<MockRepositoryOptions>} [methods] - Custom mock methods
+ * @returns {any} Mock repository
+ *
+ * @example
+ * ```typescript
+ * const repo = mockRepository({
+ *   findOne: jest.fn().mockResolvedValue(user)
+ * });
+ * ```
+ */
+export const mockRepository = (methods: Partial<MockRepositoryOptions> = {}): any => {
+  return {
+    find: methods.find || jest.fn().mockResolvedValue([]),
+    findOne: methods.findOne || jest.fn().mockResolvedValue(null),
+    findOneBy: methods.findOne || jest.fn().mockResolvedValue(null),
+    save: methods.save || jest.fn().mockImplementation((entity) => Promise.resolve(entity)),
+    create: methods.create || jest.fn().mockImplementation((dto) => dto),
+    update: methods.update || jest.fn().mockResolvedValue({ affected: 1 }),
+    delete: methods.delete || jest.fn().mockResolvedValue({ affected: 1 }),
+    remove: methods.remove || jest.fn().mockImplementation((entity) => Promise.resolve(entity)),
+    count: methods.count || jest.fn().mockResolvedValue(0),
+    findAndCount: jest.fn().mockResolvedValue([[], 0]),
+    createQueryBuilder: jest.fn().mockReturnValue({
+      where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
+      orWhere: jest.fn().mockReturnThis(),
+      leftJoin: jest.fn().mockReturnThis(),
+      leftJoinAndSelect: jest.fn().mockReturnThis(),
+      orderBy: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(),
+      take: jest.fn().mockReturnThis(),
+      getOne: jest.fn().mockResolvedValue(null),
+      getMany: jest.fn().mockResolvedValue([]),
+      getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
+      execute: jest.fn().mockResolvedValue(undefined),
+    }),
+    ...methods.customMethods,
+  };
+};
+
+/**
+ * Creates a mock Sequelize model
+ *
+ * @param {any} [mockData] - Default mock data
+ * @returns {any} Mock Sequelize model
+ *
+ * @example
+ * ```typescript
+ * const UserModel = mockSequelizeModel({ id: 1, email: 'test@example.com' });
+ * ```
+ */
+export const mockSequelizeModel = (mockData: any = {}): any => {
+  return {
+    findAll: jest.fn().mockResolvedValue([]),
+    findOne: jest.fn().mockResolvedValue(mockData),
+    findByPk: jest.fn().mockResolvedValue(mockData),
+    create: jest.fn().mockResolvedValue(mockData),
+    update: jest.fn().mockResolvedValue([1, [mockData]]),
+    destroy: jest.fn().mockResolvedValue(1),
+    bulkCreate: jest.fn().mockResolvedValue([mockData]),
+    count: jest.fn().mockResolvedValue(0),
+    findAndCountAll: jest.fn().mockResolvedValue({ rows: [], count: 0 }),
+    build: jest.fn().mockReturnValue(mockData),
+    upsert: jest.fn().mockResolvedValue([mockData, true]),
+  };
+};
+
+/**
+ * Creates mock service with common methods
+ *
+ * @param {string[]} [methods] - Method names to mock
+ * @returns {any} Mock service
+ *
+ * @example
+ * ```typescript
+ * const mockEmailService = mockService(['sendEmail', 'sendWelcome']);
+ * mockEmailService.sendEmail.mockResolvedValue(true);
+ * ```
+ */
+export const mockService = (methods: string[] = []): any => {
+  const mock: any = {};
+  methods.forEach((method) => {
+    mock[method] = jest.fn();
+  });
+  return mock;
+};
+
+/**
+ * Creates mock HTTP service for external API calls
+ *
+ * @param {any} [defaultResponse] - Default response data
+ * @returns {any} Mock HTTP service
+ *
+ * @example
+ * ```typescript
+ * const httpService = mockHttpService({ data: { success: true } });
+ * ```
+ */
+export const mockHttpService = (defaultResponse: any = {}): any => {
+  return {
+    get: jest.fn().mockResolvedValue({ data: defaultResponse }),
+    post: jest.fn().mockResolvedValue({ data: defaultResponse }),
+    put: jest.fn().mockResolvedValue({ data: defaultResponse }),
+    patch: jest.fn().mockResolvedValue({ data: defaultResponse }),
+    delete: jest.fn().mockResolvedValue({ data: defaultResponse }),
+    request: jest.fn().mockResolvedValue({ data: defaultResponse }),
+  };
+};
+
+/**
+ * Creates mock ConfigService
+ *
+ * @param {Record<string, any>} [config] - Configuration values
+ * @returns {any} Mock ConfigService
+ *
+ * @example
+ * ```typescript
+ * const configService = mockConfigService({
+ *   JWT_SECRET: 'test-secret',
+ *   DATABASE_URL: 'sqlite::memory:'
+ * });
+ * ```
+ */
+export const mockConfigService = (config: Record<string, any> = {}): any => {
+  return {
+    get: jest.fn((key: string, defaultValue?: any) => config[key] ?? defaultValue),
+    getOrThrow: jest.fn((key: string) => {
+      if (!(key in config)) throw new Error(`Config key ${key} not found`);
+      return config[key];
+    }),
+  };
+};
+
+/**
+ * Creates mock JWT service
+ *
+ * @param {string} [secret='test-secret'] - JWT secret
+ * @returns {any} Mock JwtService
+ *
+ * @example
+ * ```typescript
+ * const jwtService = mockJwtService('my-secret');
+ * ```
+ */
+export const mockJwtService = (secret: string = 'test-secret'): any => {
+  return {
+    sign: jest.fn((payload: any) => `mock-token-${JSON.stringify(payload)}`),
+    verify: jest.fn((token: string) => JSON.parse(token.replace('mock-token-', ''))),
+    decode: jest.fn((token: string) => JSON.parse(token.replace('mock-token-', ''))),
+  };
+};
+
+/**
+ * Creates mock event emitter
+ *
+ * @returns {any} Mock EventEmitter2
+ *
+ * @example
+ * ```typescript
+ * const eventEmitter = mockEventEmitter();
+ * eventEmitter.emit.mockImplementation((event, payload) => { ... });
+ * ```
+ */
+export const mockEventEmitter = (): any => {
+  return {
+    emit: jest.fn().mockResolvedValue(undefined),
+    emitAsync: jest.fn().mockResolvedValue([]),
+    on: jest.fn(),
+    once: jest.fn(),
+    removeListener: jest.fn(),
+    removeAllListeners: jest.fn(),
+  };
+};
+
+/**
+ * Creates mock logger
+ *
+ * @returns {any} Mock Logger
+ *
+ * @example
+ * ```typescript
+ * const logger = mockLogger();
+ * expect(logger.log).toHaveBeenCalledWith('User created');
+ * ```
+ */
+export const mockLogger = (): any => {
+  return {
+    log: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    verbose: jest.fn(),
+    setContext: jest.fn(),
+  };
+};
+
+// ============================================================================
+// DATABASE SEEDING AND CLEANUP
+// ============================================================================
+
+/**
+ * Seeds database with test data
+ *
+ * @param {Sequelize} sequelize - Sequelize instance
+ * @param {DatabaseSeedData} seedData - Seed data by entity
+ * @param {boolean} [truncate=true] - Truncate before seeding
+ * @returns {Promise<void>}
+ *
+ * @example
+ * ```typescript
+ * await seedDatabase(sequelize, {
+ *   users: [{ email: 'test@example.com', name: 'Test User' }],
+ *   patients: [{ firstName: 'John', lastName: 'Doe' }]
+ * });
+ * ```
+ */
+export const seedDatabase = async (
+  sequelize: Sequelize,
+  seedData: DatabaseSeedData,
+  truncate: boolean = true,
+): Promise<void> => {
+  if (truncate) {
+    await sequelize.truncate({ cascade: true, restartIdentity: true });
+  }
+
+  for (const [tableName, records] of Object.entries(seedData)) {
+    if (records && records.length > 0) {
+      const model = sequelize.model(tableName);
+      await model.bulkCreate(records);
+    }
+  }
+};
+
+/**
+ * Cleans up database after tests
+ *
+ * @param {Sequelize} sequelize - Sequelize instance
+ * @param {string[]} [tableNames] - Specific tables to clean (all if omitted)
+ * @returns {Promise<void>}
+ *
+ * @example
+ * ```typescript
+ * await cleanupDatabase(sequelize, ['users', 'sessions']);
+ * ```
+ */
+export const cleanupDatabase = async (
+  sequelize: Sequelize,
+  tableNames?: string[],
+): Promise<void> => {
+  if (tableNames) {
+    for (const tableName of tableNames) {
+      await sequelize.model(tableName).destroy({ where: {}, truncate: true });
+    }
+  } else {
+    await sequelize.truncate({ cascade: true, restartIdentity: true });
+  }
+};
+
+/**
+ * Creates database snapshot for rollback
+ *
+ * @param {Sequelize} sequelize - Sequelize instance
+ * @param {string[]} [tableNames] - Tables to snapshot
+ * @returns {Promise<DatabaseSeedData>} Snapshot data
+ *
+ * @example
+ * ```typescript
+ * const snapshot = await createDatabaseSnapshot(sequelize, ['users']);
+ * // ... run tests ...
+ * await restoreDatabaseSnapshot(sequelize, snapshot);
+ * ```
+ */
+export const createDatabaseSnapshot = async (
+  sequelize: Sequelize,
+  tableNames?: string[],
+): Promise<DatabaseSeedData> => {
+  const snapshot: DatabaseSeedData = {};
+  const tables = tableNames || Object.keys(sequelize.models);
+
+  for (const tableName of tables) {
+    const model = sequelize.model(tableName);
+    const records = await model.findAll({ raw: true });
+    snapshot[tableName] = records;
+  }
+
+  return snapshot;
+};
+
+/**
+ * Restores database from snapshot
+ *
+ * @param {Sequelize} sequelize - Sequelize instance
+ * @param {DatabaseSeedData} snapshot - Snapshot data
+ * @returns {Promise<void>}
+ *
+ * @example
+ * ```typescript
+ * await restoreDatabaseSnapshot(sequelize, snapshot);
+ * ```
+ */
+export const restoreDatabaseSnapshot = async (
+  sequelize: Sequelize,
+  snapshot: DatabaseSeedData,
+): Promise<void> => {
+  await seedDatabase(sequelize, snapshot, true);
+};
+
+/**
+ * Resets database to clean state
+ *
+ * @param {Sequelize} sequelize - Sequelize instance
+ * @returns {Promise<void>}
+ *
+ * @example
+ * ```typescript
+ * await resetDatabase(sequelize);
+ * ```
+ */
+export const resetDatabase = async (sequelize: Sequelize): Promise<void> => {
+  await sequelize.drop();
+  await sequelize.sync({ force: true });
+};
+
+// ============================================================================
+// TEST DATA GENERATORS
+// ============================================================================
+
+/**
+ * Generates mock user data
+ *
+ * @param {Partial<any>} [overrides] - Property overrides
+ * @param {boolean} [hipaaCompliant=true] - Use HIPAA-compliant data
+ * @returns {any} Mock user
+ *
+ * @example
+ * ```typescript
+ * const user = generateMockUser({ role: 'doctor', email: 'doctor@hospital.com' });
+ * ```
+ */
+export const generateMockUser = (
+  overrides: Partial<any> = {},
+  hipaaCompliant: boolean = true,
+): any => {
+  return {
+    id: crypto.randomUUID(),
+    email: hipaaCompliant ? faker.internet.email() : overrides.email || faker.internet.email(),
+    username: faker.internet.userName(),
+    firstName: faker.person.firstName(),
+    lastName: faker.person.lastName(),
+    role: 'user',
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+};
+
+/**
+ * Generates mock patient data (HIPAA-compliant)
+ *
+ * @param {Partial<any>} [overrides] - Property overrides
+ * @returns {any} Mock patient
+ *
+ * @example
+ * ```typescript
+ * const patient = generateMockPatient({ hasInsurance: true });
+ * ```
+ */
+export const generateMockPatient = (overrides: Partial<any> = {}): any => {
+  const mrn = `MRN${faker.string.numeric(8)}`;
+  return {
+    id: crypto.randomUUID(),
+    mrn,
+    firstName: faker.person.firstName(),
+    lastName: faker.person.lastName(),
+    dateOfBirth: faker.date.past({ years: 50 }),
+    gender: faker.helpers.arrayElement(['Male', 'Female', 'Other']),
+    phoneNumber: faker.phone.number(),
+    email: faker.internet.email(),
+    address: {
+      street: faker.location.streetAddress(),
+      city: faker.location.city(),
+      state: faker.location.state(),
+      zipCode: faker.location.zipCode(),
+    },
+    emergencyContact: {
+      name: faker.person.fullName(),
+      relationship: faker.helpers.arrayElement(['Spouse', 'Parent', 'Sibling', 'Friend']),
+      phone: faker.phone.number(),
+    },
+    hasInsurance: faker.datatype.boolean(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+};
+
+/**
+ * Generates mock appointment data
+ *
+ * @param {Partial<any>} [overrides] - Property overrides
+ * @returns {any} Mock appointment
+ *
+ * @example
+ * ```typescript
+ * const appointment = generateMockAppointment({
+ *   patientId: 'patient-123',
+ *   doctorId: 'doctor-456'
+ * });
+ * ```
+ */
+export const generateMockAppointment = (overrides: Partial<any> = {}): any => {
+  const startTime = faker.date.future();
+  const endTime = new Date(startTime.getTime() + 30 * 60000); // 30 minutes
+
+  return {
+    id: crypto.randomUUID(),
+    patientId: crypto.randomUUID(),
+    doctorId: crypto.randomUUID(),
+    startTime,
+    endTime,
+    status: faker.helpers.arrayElement(['scheduled', 'confirmed', 'completed', 'cancelled']),
+    type: faker.helpers.arrayElement(['consultation', 'follow-up', 'emergency', 'routine']),
+    notes: faker.lorem.sentence(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+};
+
+/**
+ * Generates mock medication data
+ *
+ * @param {Partial<any>} [overrides] - Property overrides
+ * @returns {any} Mock medication
+ *
+ * @example
+ * ```typescript
+ * const medication = generateMockMedication({ name: 'Aspirin' });
+ * ```
+ */
+export const generateMockMedication = (overrides: Partial<any> = {}): any => {
+  return {
+    id: crypto.randomUUID(),
+    name: faker.helpers.arrayElement(['Aspirin', 'Ibuprofen', 'Acetaminophen', 'Metformin']),
+    dosage: `${faker.number.int({ min: 100, max: 1000 })}mg`,
+    frequency: faker.helpers.arrayElement(['Once daily', 'Twice daily', 'Three times daily', 'As needed']),
+    prescribedBy: crypto.randomUUID(),
+    patientId: crypto.randomUUID(),
+    startDate: faker.date.recent(),
+    endDate: faker.date.future(),
+    instructions: faker.lorem.sentence(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+};
+
+/**
+ * Generates array of mock data
+ *
+ * @param {(overrides?: Partial<any>) => any} generator - Generator function
+ * @param {TestDataOptions} [options] - Generation options
+ * @returns {any[]} Array of mock data
+ *
+ * @example
+ * ```typescript
+ * const users = generateMockArray(generateMockUser, { count: 10 });
+ * ```
+ */
+export const generateMockArray = (
+  generator: (overrides?: Partial<any>) => any,
+  options: TestDataOptions = {},
+): any[] => {
+  const count = options.count || 5;
+  const items: any[] = [];
+
+  if (options.seed) {
+    faker.seed(options.seed);
+  }
+
+  for (let i = 0; i < count; i++) {
+    items.push(generator(options.overrides));
+  }
+
+  return items;
+};
+
+/**
+ * Generates realistic test email
+ *
+ * @param {string} [domain='example.com'] - Email domain
+ * @returns {string} Test email
+ *
+ * @example
+ * ```typescript
+ * const email = generateTestEmail('hospital.com'); // test.user.123@hospital.com
+ * ```
+ */
+export const generateTestEmail = (domain: string = 'example.com'): string => {
+  const username = `test.${faker.internet.userName().toLowerCase()}.${Date.now()}`;
+  return `${username}@${domain}`;
+};
+
+/**
+ * Generates test phone number
+ *
+ * @param {string} [format='US'] - Phone format
+ * @returns {string} Test phone number
+ *
+ * @example
+ * ```typescript
+ * const phone = generateTestPhone(); // +1-555-123-4567
+ * ```
+ */
+export const generateTestPhone = (format: string = 'US'): string => {
+  if (format === 'US') {
+    return `+1-555-${faker.string.numeric(3)}-${faker.string.numeric(4)}`;
+  }
+  return faker.phone.number();
+};
+
+// ============================================================================
+// REQUEST MOCKING
+// ============================================================================
+
+/**
+ * Creates mock HTTP request object
+ *
+ * @param {MockRequestOptions} options - Request options
+ * @returns {any} Mock request
+ *
+ * @example
+ * ```typescript
+ * const req = mockRequest({
+ *   method: 'POST',
+ *   path: '/users',
+ *   body: { email: 'test@example.com' },
+ *   user: { id: '123' }
+ * });
+ * ```
+ */
+export const mockRequest = (options: MockRequestOptions): any => {
+  return {
+    method: options.method || 'GET',
+    path: options.path,
+    url: options.path,
+    body: options.body || {},
+    query: options.query || {},
+    params: options.params || {},
+    headers: {
+      'content-type': 'application/json',
+      ...options.headers,
+    },
+    user: options.user,
+    ip: '127.0.0.1',
+    get: jest.fn((header: string) => options.headers?.[header.toLowerCase()]),
+  };
+};
+
+/**
+ * Creates mock HTTP response object
+ *
+ * @returns {any} Mock response
+ *
+ * @example
+ * ```typescript
+ * const res = mockResponse();
+ * await controller.getUser(req, res);
+ * expect(res.status).toHaveBeenCalledWith(200);
+ * ```
+ */
+export const mockResponse = (): any => {
+  const res: any = {
+    status: jest.fn().mockReturnThis(),
+    json: jest.fn().mockReturnThis(),
+    send: jest.fn().mockReturnThis(),
+    sendStatus: jest.fn().mockReturnThis(),
+    redirect: jest.fn().mockReturnThis(),
+    render: jest.fn().mockReturnThis(),
+    set: jest.fn().mockReturnThis(),
+    header: jest.fn().mockReturnThis(),
+    cookie: jest.fn().mockReturnThis(),
+    clearCookie: jest.fn().mockReturnThis(),
+    end: jest.fn(),
+  };
+  return res;
+};
+
+/**
+ * Creates mock next function for middleware
+ *
+ * @returns {jest.Mock} Mock next function
+ *
+ * @example
+ * ```typescript
+ * const next = mockNext();
+ * await middleware.use(req, res, next);
+ * expect(next).toHaveBeenCalled();
+ * ```
+ */
+export const mockNext = (): jest.Mock => {
+  return jest.fn();
+};
+
+/**
+ * Creates authenticated request mock
+ *
+ * @param {AuthTokenPayload} user - User payload
+ * @param {Partial<MockRequestOptions>} [options] - Additional options
+ * @returns {any} Authenticated mock request
+ *
+ * @example
+ * ```typescript
+ * const req = mockAuthenticatedRequest({
+ *   userId: '123',
+ *   email: 'user@example.com',
+ *   role: 'admin'
+ * });
+ * ```
+ */
+export const mockAuthenticatedRequest = (
+  user: AuthTokenPayload,
+  options: Partial<MockRequestOptions> = {},
+): any => {
+  return mockRequest({
+    ...options,
+    path: options.path || '/',
+    user,
+    headers: {
+      authorization: `Bearer mock-token-${user.userId}`,
+      ...options.headers,
+    },
+  });
+};
+
+// ============================================================================
+// E2E TEST UTILITIES
+// ============================================================================
+
+/**
+ * Creates E2E test application
+ *
+ * @param {any} AppModule - Application module
+ * @param {E2ETestConfig} [config] - E2E configuration
+ * @returns {Promise<INestApplication>} Test application
  *
  * @example
  * ```typescript
  * const app = await createE2ETestApp(AppModule, {
  *   enableValidation: true,
- *   enableCors: true
+ *   globalPrefix: 'api'
  * });
  * ```
  */
-export async function createE2ETestApp(
-  moduleClass: Type<any>,
-  config: {
-    enableValidation?: boolean;
-    enableCors?: boolean;
-    globalPrefix?: string;
-  } = {},
-): Promise<INestApplication> {
-  const { enableValidation = true, enableCors = false, globalPrefix } = config;
-
-  const moduleFixture: TestingModule = await Test.createTestingModule({
-    imports: [moduleClass],
-  }).compile();
+export const createE2ETestApp = async (
+  AppModule: any,
+  config: E2ETestConfig = {},
+): Promise<INestApplication> => {
+  const moduleFixture =
+    config.moduleFixture ||
+    (await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile());
 
   const app = moduleFixture.createNestApplication();
 
-  if (enableValidation) {
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        forbidNonWhitelisted: true,
-        transform: true,
-      }),
-    );
+  if (config.enableValidation !== false) {
+    app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
   }
 
-  if (enableCors) {
-    app.enableCors();
+  if (config.globalPrefix) {
+    app.setGlobalPrefix(config.globalPrefix);
   }
 
-  if (globalPrefix) {
-    app.setGlobalPrefix(globalPrefix);
+  if (config.customSetup) {
+    await config.customSetup(app);
   }
 
   await app.init();
   return app;
-}
+};
 
 /**
- * Executes a complete E2E workflow test
+ * Authenticates user for E2E tests
  *
- * @param app - NestJS application
- * @param workflow - Array of test steps
- * @returns Workflow execution results
+ * @param {INestApplication} app - Test application
+ * @param {Partial<any>} credentials - Login credentials
+ * @returns {Promise<string>} Auth token
  *
  * @example
  * ```typescript
- * const results = await executeE2EWorkflow(app, [
- *   { name: 'Register', request: { method: 'post', path: '/auth/register', body: userData } },
- *   { name: 'Login', request: { method: 'post', path: '/auth/login', body: credentials } },
- *   { name: 'GetProfile', request: { method: 'get', path: '/profile' } }
- * ]);
+ * const token = await authenticateUser(app, {
+ *   email: 'test@example.com',
+ *   password: 'password123'
+ * });
  * ```
  */
-export async function executeE2EWorkflow(
+export const authenticateUser = async (
   app: INestApplication,
-  workflow: Array<{
-    name: string;
-    request: ApiTestRequest;
-    validate?: (response: any) => void | Promise<void>;
-  }>,
-): Promise<
-  Array<{
-    name: string;
-    response: request.Response;
-    duration: number;
-    success: boolean;
-  }>
-> {
-  const results: Array<{
-    name: string;
-    response: request.Response;
-    duration: number;
-    success: boolean;
-  }> = [];
+  credentials: Partial<any>,
+): Promise<string> => {
+  const response = await request(app.getHttpServer())
+    .post('/auth/login')
+    .send(credentials)
+    .expect(200);
 
-  let context: any = {};
-
-  for (const step of workflow) {
-    const startTime = Date.now();
-    let success = false;
-
-    try {
-      // Replace context variables in request
-      const processedRequest = JSON.parse(
-        JSON.stringify(step.request),
-        (key, value) => {
-          if (typeof value === 'string' && value.startsWith('$context.')) {
-            const contextKey = value.substring(9);
-            return context[contextKey];
-          }
-          return value;
-        },
-      );
-
-      const response = await apiTestRequest(app, processedRequest);
-
-      // Store response data in context for next steps
-      context[step.name] = response.body;
-
-      if (step.validate) {
-        await step.validate(response);
-      }
-
-      success = true;
-      const duration = Date.now() - startTime;
-
-      results.push({
-        name: step.name,
-        response,
-        duration,
-        success,
-      });
-    } catch (error) {
-      const duration = Date.now() - startTime;
-      results.push({
-        name: step.name,
-        response: null as any,
-        duration,
-        success,
-      });
-      throw error;
-    }
-  }
-
-  return results;
-}
-
-// ============================================================================
-// ASSERTION UTILITIES
-// ============================================================================
+  return response.body.accessToken || response.body.token;
+};
 
 /**
- * Asserts that object matches expected shape
+ * Performs authenticated E2E request
  *
- * @param actual - Actual object
- * @param expected - Expected shape with matchers
+ * @param {INestApplication} app - Test application
+ * @param {'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'} method - HTTP method
+ * @param {string} path - Request path
+ * @param {string} token - Auth token
+ * @param {any} [body] - Request body
+ * @returns {request.Test} Supertest request
  *
  * @example
  * ```typescript
- * assertObjectShape(response.body, {
- *   id: expect.any(Number),
- *   email: expect.stringContaining('@'),
- *   createdAt: expect.any(String)
+ * const response = await authenticatedRequest(app, 'GET', '/users', token);
+ * expect(response.status).toBe(200);
+ * ```
+ */
+export const authenticatedRequest = (
+  app: INestApplication,
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
+  path: string,
+  token: string,
+  body?: any,
+): request.Test => {
+  const req = request(app.getHttpServer())[method.toLowerCase()](path).set(
+    'Authorization',
+    `Bearer ${token}`,
+  );
+
+  if (body) {
+    return req.send(body);
+  }
+
+  return req;
+};
+
+/**
+ * Cleans up E2E test application
+ *
+ * @param {INestApplication} app - Test application
+ * @returns {Promise<void>}
+ *
+ * @example
+ * ```typescript
+ * afterAll(async () => {
+ *   await cleanupE2E(app);
  * });
  * ```
  */
-export function assertObjectShape(actual: any, expected: any): void {
-  expect(actual).toMatchObject(expected);
-}
-
-/**
- * Asserts HIPAA compliance for test data
- *
- * @param data - Data to validate
- * @throws Error if PHI is detected
- *
- * @example
- * ```typescript
- * assertHipaaCompliance(testData);
- * ```
- */
-export function assertHipaaCompliance(data: any): void {
-  const phiPatterns = [
-    /\b\d{3}-\d{2}-\d{4}\b/, // SSN
-    /\b[A-Z]{2}\d{6}\b/, // Real driver's license pattern
-    /\b\d{16}\b/, // Credit card
-  ];
-
-  const dataStr = JSON.stringify(data);
-
-  for (const pattern of phiPatterns) {
-    if (pattern.test(dataStr)) {
-      throw new Error(
-        'HIPAA Compliance Violation: Potential PHI detected in test data',
-      );
-    }
+export const cleanupE2E = async (app: INestApplication): Promise<void> => {
+  if (app) {
+    await app.close();
   }
-}
+};
 
 /**
- * Asserts that response follows API standards
+ * Seeds database for E2E tests
  *
- * @param response - API response object
- * @param standards - Expected standards
+ * @param {INestApplication} app - Test application
+ * @param {DatabaseSeedData} seedData - Seed data
+ * @returns {Promise<void>}
  *
  * @example
  * ```typescript
- * assertApiStandards(response.body, {
- *   hasData: true,
- *   hasMeta: true,
- *   hasTimestamp: true
+ * await seedE2EDatabase(app, {
+ *   users: [generateMockUser()],
+ *   patients: generateMockArray(generateMockPatient, { count: 5 })
  * });
  * ```
  */
-export function assertApiStandards(
+export const seedE2EDatabase = async (
+  app: INestApplication,
+  seedData: DatabaseSeedData,
+): Promise<void> => {
+  const sequelize = app.get(Sequelize);
+  await seedDatabase(sequelize, seedData);
+};
+
+// ============================================================================
+// RESPONSE ASSERTION HELPERS
+// ============================================================================
+
+/**
+ * Asserts response status and structure
+ *
+ * @param {any} response - HTTP response
+ * @param {number} expectedStatus - Expected status code
+ * @param {string[]} [requiredFields] - Required response fields
+ * @returns {void}
+ *
+ * @example
+ * ```typescript
+ * assertResponse(response, 200, ['id', 'email', 'createdAt']);
+ * ```
+ */
+export const assertResponse = (
   response: any,
-  standards: {
-    hasData?: boolean;
-    hasMeta?: boolean;
-    hasTimestamp?: boolean;
-    hasStatus?: boolean;
-  } = {},
-): void {
-  const { hasData = true, hasMeta = false, hasTimestamp = false, hasStatus = false } =
-    standards;
+  expectedStatus: number,
+  requiredFields?: string[],
+): void => {
+  expect(response.status).toBe(expectedStatus);
 
-  if (hasData) {
-    expect(response).toHaveProperty('data');
+  if (requiredFields) {
+    requiredFields.forEach((field) => {
+      expect(response.body).toHaveProperty(field);
+    });
   }
-
-  if (hasMeta) {
-    expect(response).toHaveProperty('meta');
-  }
-
-  if (hasTimestamp) {
-    expect(response).toHaveProperty('timestamp');
-  }
-
-  if (hasStatus) {
-    expect(response).toHaveProperty('status');
-  }
-}
+};
 
 /**
- * Asserts database state matches expectations
+ * Asserts paginated response structure
  *
- * @param model - Sequelize model
- * @param conditions - Query conditions
- * @param expectations - Expected state
+ * @param {any} response - HTTP response
+ * @param {number} [expectedStatus=200] - Expected status code
+ * @returns {void}
  *
  * @example
  * ```typescript
- * await assertDatabaseState(User, { email: 'test@example.com' }, {
- *   exists: true,
- *   count: 1,
- *   attributes: { active: true }
+ * assertPaginatedResponse(response);
+ * expect(response.body.items).toHaveLength(10);
+ * ```
+ */
+export const assertPaginatedResponse = (response: any, expectedStatus: number = 200): void => {
+  expect(response.status).toBe(expectedStatus);
+  expect(response.body).toHaveProperty('items');
+  expect(response.body).toHaveProperty('total');
+  expect(response.body).toHaveProperty('page');
+  expect(response.body).toHaveProperty('limit');
+  expect(Array.isArray(response.body.items)).toBe(true);
+};
+
+/**
+ * Asserts error response structure
+ *
+ * @param {any} response - HTTP response
+ * @param {number} expectedStatus - Expected error status
+ * @param {string} [expectedMessage] - Expected error message
+ * @returns {void}
+ *
+ * @example
+ * ```typescript
+ * assertErrorResponse(response, 404, 'User not found');
+ * ```
+ */
+export const assertErrorResponse = (
+  response: any,
+  expectedStatus: number,
+  expectedMessage?: string,
+): void => {
+  expect(response.status).toBe(expectedStatus);
+  expect(response.body).toHaveProperty('message');
+
+  if (expectedMessage) {
+    expect(response.body.message).toContain(expectedMessage);
+  }
+};
+
+/**
+ * Asserts validation error response
+ *
+ * @param {any} response - HTTP response
+ * @param {string[]} [expectedFields] - Expected validation fields
+ * @returns {void}
+ *
+ * @example
+ * ```typescript
+ * assertValidationError(response, ['email', 'password']);
+ * ```
+ */
+export const assertValidationError = (response: any, expectedFields?: string[]): void => {
+  expect(response.status).toBe(400);
+  expect(response.body).toHaveProperty('message');
+
+  if (expectedFields) {
+    expectedFields.forEach((field) => {
+      expect(JSON.stringify(response.body.message)).toContain(field);
+    });
+  }
+};
+
+/**
+ * Asserts array response
+ *
+ * @param {any} response - HTTP response
+ * @param {number} [expectedLength] - Expected array length
+ * @param {string[]} [itemFields] - Required fields in each item
+ * @returns {void}
+ *
+ * @example
+ * ```typescript
+ * assertArrayResponse(response, 5, ['id', 'name']);
+ * ```
+ */
+export const assertArrayResponse = (
+  response: any,
+  expectedLength?: number,
+  itemFields?: string[],
+): void => {
+  expect(response.status).toBe(200);
+  expect(Array.isArray(response.body)).toBe(true);
+
+  if (expectedLength !== undefined) {
+    expect(response.body).toHaveLength(expectedLength);
+  }
+
+  if (itemFields && response.body.length > 0) {
+    itemFields.forEach((field) => {
+      expect(response.body[0]).toHaveProperty(field);
+    });
+  }
+};
+
+// ============================================================================
+// FIXTURE MANAGEMENT
+// ============================================================================
+
+/**
+ * Loads test fixture from object
+ *
+ * @param {string} name - Fixture name
+ * @param {any} data - Fixture data
+ * @returns {TestFixture} Test fixture
+ *
+ * @example
+ * ```typescript
+ * const userFixture = loadFixture('testUser', {
+ *   email: 'test@example.com',
+ *   role: 'admin'
  * });
  * ```
  */
-export async function assertDatabaseState(
-  model: ModelStatic<Model>,
-  conditions: WhereOptions,
-  expectations: {
-    exists?: boolean;
-    count?: number;
-    attributes?: Record<string, any>;
-  },
-): Promise<void> {
-  const { exists, count, attributes } = expectations;
-
-  if (exists !== undefined) {
-    const record = await model.findOne({ where: conditions });
-    if (exists) {
-      expect(record).not.toBeNull();
-    } else {
-      expect(record).toBeNull();
-    }
-  }
-
-  if (count !== undefined) {
-    const actualCount = await model.count({ where: conditions });
-    expect(actualCount).toBe(count);
-  }
-
-  if (attributes) {
-    const record = await model.findOne({ where: conditions });
-    expect(record).not.toBeNull();
-    if (record) {
-      for (const [key, value] of Object.entries(attributes)) {
-        expect(record.get(key)).toBe(value);
-      }
-    }
-  }
-}
+export const loadFixture = <T = any>(name: string, data: T): TestFixture<T> => {
+  return {
+    name,
+    data,
+    metadata: {
+      loadedAt: new Date(),
+    },
+  };
+};
 
 /**
- * Asserts that async function throws specific error
+ * Creates fixture with teardown
  *
- * @param fn - Function to test
- * @param errorClass - Expected error class
- * @param errorMessage - Expected error message (optional)
+ * @param {string} name - Fixture name
+ * @param {any} data - Fixture data
+ * @param {() => Promise<void>} teardown - Teardown function
+ * @returns {TestFixture} Test fixture with teardown
  *
  * @example
  * ```typescript
- * await assertThrowsAsync(
- *   async () => await service.findById('invalid'),
- *   NotFoundException,
- *   'User not found'
- * );
+ * const fixture = createFixtureWithTeardown('user', user, async () => {
+ *   await userRepository.delete(user.id);
+ * });
  * ```
  */
-export async function assertThrowsAsync(
-  fn: () => Promise<any>,
-  errorClass: any,
-  errorMessage?: string,
-): Promise<void> {
-  await expect(fn()).rejects.toThrow(errorClass);
-  if (errorMessage) {
-    await expect(fn()).rejects.toThrow(errorMessage);
+export const createFixtureWithTeardown = (
+  name: string,
+  data: any,
+  teardown: () => Promise<void>,
+): TestFixture => {
+  return {
+    name,
+    data,
+    teardown,
+  };
+};
+
+/**
+ * Manages multiple fixtures
+ *
+ * @returns {FixtureManager} Fixture manager
+ *
+ * @example
+ * ```typescript
+ * const manager = createFixtureManager();
+ * manager.add('user', userData);
+ * const user = manager.get('user');
+ * await manager.teardownAll();
+ * ```
+ */
+export const createFixtureManager = () => {
+  const fixtures = new Map<string, TestFixture>();
+
+  return {
+    add: (name: string, data: any, teardown?: () => Promise<void>) => {
+      fixtures.set(name, { name, data, teardown });
+    },
+    get: <T = any>(name: string): T | undefined => {
+      return fixtures.get(name)?.data;
+    },
+    has: (name: string): boolean => {
+      return fixtures.has(name);
+    },
+    remove: async (name: string): Promise<void> => {
+      const fixture = fixtures.get(name);
+      if (fixture?.teardown) {
+        await fixture.teardown();
+      }
+      fixtures.delete(name);
+    },
+    teardownAll: async (): Promise<void> => {
+      for (const [name, fixture] of fixtures.entries()) {
+        if (fixture.teardown) {
+          await fixture.teardown();
+        }
+      }
+      fixtures.clear();
+    },
+    clear: (): void => {
+      fixtures.clear();
+    },
+    list: (): string[] => {
+      return Array.from(fixtures.keys());
+    },
+  };
+};
+
+// ============================================================================
+// SNAPSHOT TESTING
+// ============================================================================
+
+/**
+ * Sanitizes data for snapshot testing
+ *
+ * @param {any} data - Data to sanitize
+ * @param {SnapshotOptions} [options] - Sanitization options
+ * @returns {any} Sanitized data
+ *
+ * @example
+ * ```typescript
+ * const sanitized = sanitizeSnapshot(response, {
+ *   excludeFields: ['id', 'createdAt'],
+ *   sortArrays: true
+ * });
+ * expect(sanitized).toMatchSnapshot();
+ * ```
+ */
+export const sanitizeSnapshot = (data: any, options: SnapshotOptions = {}): any => {
+  if (options.customSerializer) {
+    return options.customSerializer(data);
   }
-}
+
+  let result = JSON.parse(JSON.stringify(data));
+
+  // Exclude fields
+  if (options.excludeFields) {
+    const exclude = (obj: any): any => {
+      if (Array.isArray(obj)) {
+        return obj.map(exclude);
+      } else if (obj && typeof obj === 'object') {
+        const cleaned: any = {};
+        for (const [key, value] of Object.entries(obj)) {
+          if (!options.excludeFields?.includes(key)) {
+            cleaned[key] = exclude(value);
+          }
+        }
+        return cleaned;
+      }
+      return obj;
+    };
+    result = exclude(result);
+  }
+
+  // Sort arrays
+  if (options.sortArrays && Array.isArray(result)) {
+    result.sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
+  }
+
+  return result;
+};
+
+/**
+ * Creates inline snapshot matcher
+ *
+ * @param {any} received - Received value
+ * @param {any} expected - Expected snapshot
+ * @param {SnapshotOptions} [options] - Options
+ * @returns {boolean} Match result
+ *
+ * @example
+ * ```typescript
+ * const match = matchSnapshot(response.body, expectedSnapshot, {
+ *   excludeFields: ['timestamp']
+ * });
+ * expect(match).toBe(true);
+ * ```
+ */
+export const matchSnapshot = (
+  received: any,
+  expected: any,
+  options: SnapshotOptions = {},
+): boolean => {
+  const sanitizedReceived = sanitizeSnapshot(received, options);
+  const sanitizedExpected = sanitizeSnapshot(expected, options);
+  return JSON.stringify(sanitizedReceived) === JSON.stringify(sanitizedExpected);
+};
+
+// ============================================================================
+// SPY AND STUB CREATORS
+// ============================================================================
+
+/**
+ * Creates spy on object method
+ *
+ * @param {any} object - Object to spy on
+ * @param {string} method - Method name
+ * @returns {jest.SpyInstance} Jest spy
+ *
+ * @example
+ * ```typescript
+ * const spy = createSpy(userService, 'findById');
+ * spy.mockResolvedValue(mockUser);
+ * ```
+ */
+export const createSpy = (object: any, method: string): jest.SpyInstance => {
+  return jest.spyOn(object, method);
+};
+
+/**
+ * Creates multiple spies on object
+ *
+ * @param {any} object - Object to spy on
+ * @param {string[]} methods - Method names
+ * @returns {Record<string, jest.SpyInstance>} Spies by method name
+ *
+ * @example
+ * ```typescript
+ * const spies = createSpies(userService, ['findById', 'create', 'update']);
+ * spies.findById.mockResolvedValue(mockUser);
+ * ```
+ */
+export const createSpies = (object: any, methods: string[]): Record<string, jest.SpyInstance> => {
+  const spies: Record<string, jest.SpyInstance> = {};
+  methods.forEach((method) => {
+    spies[method] = jest.spyOn(object, method);
+  });
+  return spies;
+};
+
+/**
+ * Creates stub function with default implementation
+ *
+ * @param {any} [defaultReturn] - Default return value
+ * @returns {jest.Mock} Mock function
+ *
+ * @example
+ * ```typescript
+ * const stub = createStub({ success: true });
+ * await someFunction(stub);
+ * expect(stub).toHaveBeenCalled();
+ * ```
+ */
+export const createStub = (defaultReturn?: any): jest.Mock => {
+  return jest.fn().mockResolvedValue(defaultReturn);
+};
+
+/**
+ * Restores all spies
+ *
+ * @param {Record<string, jest.SpyInstance>} spies - Spies to restore
+ * @returns {void}
+ *
+ * @example
+ * ```typescript
+ * afterEach(() => {
+ *   restoreSpies(spies);
+ * });
+ * ```
+ */
+export const restoreSpies = (spies: Record<string, jest.SpyInstance>): void => {
+  Object.values(spies).forEach((spy) => spy.mockRestore());
+};
+
+// ============================================================================
+// COVERAGE HELPERS
+// ============================================================================
+
+/**
+ * Generates coverage report summary
+ *
+ * @param {any} coverageMap - Jest coverage map
+ * @returns {any} Coverage summary
+ *
+ * @example
+ * ```typescript
+ * const summary = generateCoverageSummary(global.__coverage__);
+ * console.log(`Line coverage: ${summary.lines.pct}%`);
+ * ```
+ */
+export const generateCoverageSummary = (coverageMap: any): any => {
+  // Implementation would use istanbul or jest coverage APIs
+  return {
+    lines: { pct: 0, covered: 0, total: 0 },
+    statements: { pct: 0, covered: 0, total: 0 },
+    functions: { pct: 0, covered: 0, total: 0 },
+    branches: { pct: 0, covered: 0, total: 0 },
+  };
+};
+
+/**
+ * Validates coverage thresholds
+ *
+ * @param {any} coverage - Coverage data
+ * @param {any} thresholds - Threshold requirements
+ * @returns {boolean} True if thresholds met
+ *
+ * @example
+ * ```typescript
+ * const passed = validateCoverageThresholds(coverage, {
+ *   lines: 90,
+ *   functions: 95,
+ *   branches: 85
+ * });
+ * ```
+ */
+export const validateCoverageThresholds = (coverage: any, thresholds: any): boolean => {
+  const checks = ['lines', 'statements', 'functions', 'branches'];
+  return checks.every((check) => {
+    if (thresholds[check] === undefined) return true;
+    return coverage[check]?.pct >= thresholds[check];
+  });
+};
+
+// ============================================================================
+// TEST CLEANUP UTILITIES
+// ============================================================================
+
+/**
+ * Creates cleanup function for afterEach
+ *
+ * @returns {() => void} Cleanup function
+ *
+ * @example
+ * ```typescript
+ * afterEach(createAfterEachCleanup());
+ * ```
+ */
+export const createAfterEachCleanup = (): (() => void) => {
+  return () => {
+    jest.clearAllMocks();
+    jest.restoreAllMocks();
+  };
+};
+
+/**
+ * Creates comprehensive test teardown
+ *
+ * @param {any[]} resources - Resources to clean up
+ * @returns {() => Promise<void>} Teardown function
+ *
+ * @example
+ * ```typescript
+ * afterAll(createTestTeardown([app, sequelize, redisClient]));
+ * ```
+ */
+export const createTestTeardown = (resources: any[]): (() => Promise<void>) => {
+  return async () => {
+    for (const resource of resources) {
+      if (resource?.close) await resource.close();
+      if (resource?.disconnect) await resource.disconnect();
+      if (resource?.destroy) await resource.destroy();
+    }
+    jest.clearAllMocks();
+  };
+};
+
+/**
+ * Waits for async operations to complete
+ *
+ * @param {number} [ms=100] - Milliseconds to wait
+ * @returns {Promise<void>}
+ *
+ * @example
+ * ```typescript
+ * await eventEmitter.emit('user.created', user);
+ * await waitForAsync(200);
+ * expect(emailService.sendWelcome).toHaveBeenCalled();
+ * ```
+ */
+export const waitForAsync = (ms: number = 100): Promise<void> => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};
+
+/**
+ * Flushes all pending promises
+ *
+ * @returns {Promise<void>}
+ *
+ * @example
+ * ```typescript
+ * await triggerAsyncOperation();
+ * await flushPromises();
+ * expect(result).toBeDefined();
+ * ```
+ */
+export const flushPromises = (): Promise<void> => {
+  return new Promise((resolve) => setImmediate(resolve));
+};
