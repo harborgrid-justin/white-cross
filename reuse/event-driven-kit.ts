@@ -18,7 +18,7 @@
  *
  * Upstream: Independent utility module for event-driven patterns
  * Downstream: ../backend/*, event handlers, saga orchestrators, event store implementations
- * Dependencies: TypeScript 5.x, Node 18+, NestJS 10.x, @nestjs/event-emitter, RabbitMQ, Kafka, Redis
+ * Dependencies: TypeScript 5.x, Node 18+, Hapi.js 21.x, amqplib (RabbitMQ), kafkajs (Kafka), ioredis (Redis)
  * Exports: 45 utility functions for event sourcing, CQRS, saga orchestration, event bus, event replay, versioning, auditing
  *
  * LLM Context: Production-ready event-driven utilities for White Cross healthcare platform. Provides comprehensive tools for
