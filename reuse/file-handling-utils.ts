@@ -115,7 +115,8 @@ export const readFileAsync = async (
   try {
     return await fsPromises.readFile(filePath, encoding);
   } catch (error) {
-    throw new Error(`Failed to read file ${filePath}: ${error.message}`);
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to read file ${filePath}: ${message}`);
   }
 };
 
@@ -139,7 +140,8 @@ export const readFileSync = (
   try {
     return fs.readFileSync(filePath, encoding);
   } catch (error) {
-    throw new Error(`Failed to read file ${filePath}: ${error.message}`);
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to read file ${filePath}: ${message}`);
   }
 };
 
@@ -159,7 +161,8 @@ export const readFileAsBuffer = async (filePath: string): Promise<Buffer> => {
   try {
     return await fsPromises.readFile(filePath);
   } catch (error) {
-    throw new Error(`Failed to read file buffer ${filePath}: ${error.message}`);
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to read file buffer ${filePath}: ${message}`);
   }
 };
 
@@ -182,7 +185,8 @@ export const readJsonFile = async <T>(filePath: string): Promise<T> => {
     const content = await readFileAsync(filePath);
     return JSON.parse(content) as T;
   } catch (error) {
-    throw new Error(`Failed to read JSON file ${filePath}: ${error.message}`);
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to read JSON file ${filePath}: ${message}`);
   }
 };
 
@@ -249,7 +253,8 @@ export const writeFileAsync = async (
   try {
     await fsPromises.writeFile(filePath, content, encoding);
   } catch (error) {
-    throw new Error(`Failed to write file ${filePath}: ${error.message}`);
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to write file ${filePath}: ${message}`);
   }
 };
 
@@ -274,7 +279,8 @@ export const writeFileSync = (
   try {
     fs.writeFileSync(filePath, content, encoding);
   } catch (error) {
-    throw new Error(`Failed to write file ${filePath}: ${error.message}`);
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to write file ${filePath}: ${message}`);
   }
 };
 
@@ -293,14 +299,15 @@ export const writeFileSync = (
  */
 export const writeJsonFile = async (
   filePath: string,
-  data: any,
+  data: unknown,
   pretty: boolean = true,
 ): Promise<void> => {
   try {
     const content = pretty ? JSON.stringify(data, null, 2) : JSON.stringify(data);
     await writeFileAsync(filePath, content);
   } catch (error) {
-    throw new Error(`Failed to write JSON file ${filePath}: ${error.message}`);
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to write JSON file ${filePath}: ${message}`);
   }
 };
 
@@ -327,7 +334,8 @@ export const writeFileAtomic = async (
     await fsPromises.rename(tempPath, filePath);
   } catch (error) {
     await fsPromises.unlink(tempPath).catch(() => {});
-    throw new Error(`Failed to write file atomically ${filePath}: ${error.message}`);
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to write file atomically ${filePath}: ${message}`);
   }
 };
 
@@ -610,12 +618,32 @@ export const joinPath = (...segments: string[]): string => {
  * ```
  */
 export const sanitizeFilename = (filename: string, replacement: string = '-'): string => {
+  // Remove path separators and null bytes
+  let sanitized = filename
+    .replace(/[\\/\0]/g, '')
+    .replace(/^\.+/, ''); // Remove leading dots
+
   // Remove potentially dangerous characters
-  return filename
+  sanitized = sanitized
     .replace(/[^a-zA-Z0-9._-]/g, replacement)
     .replace(/\.{2,}/g, '.')
     .replace(new RegExp(`${replacement}{2,}`, 'g'), replacement)
     .trim();
+
+  // Ensure filename is not empty after sanitization
+  if (sanitized.length === 0) {
+    sanitized = 'unnamed';
+  }
+
+  // Limit filename length to prevent filesystem issues
+  const maxLength = 255;
+  if (sanitized.length > maxLength) {
+    const ext = path.extname(sanitized);
+    const nameWithoutExt = sanitized.slice(0, maxLength - ext.length);
+    sanitized = nameWithoutExt + ext;
+  }
+
+  return sanitized;
 };
 
 // ============================================================================

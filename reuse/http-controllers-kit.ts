@@ -114,7 +114,7 @@ export type FilterOperation = 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte' | 'like'
 export interface FilterCriteria {
   field: string;
   operation: FilterOperation;
-  value: any;
+  value: unknown;
 }
 
 /**
@@ -179,9 +179,9 @@ export interface ContentNegotiationOptions {
 /**
  * Bulk operation result
  */
-export interface BulkOperationResult<T = any> {
+export interface BulkOperationResult<T = unknown> {
   success: T[];
-  failed: Array<{ item: any; error: string }>;
+  failed: Array<{ item: unknown; error: string }>;
   total: number;
   successCount: number;
   failedCount: number;
@@ -331,9 +331,9 @@ export async function validateBulkItems<T extends object>(
 /**
  * Sanitizes request input by removing dangerous characters.
  *
- * @param {any} input - Input to sanitize
+ * @param {unknown} input - Input to sanitize
  * @param {object} options - Sanitization options
- * @returns {any} Sanitized input
+ * @returns {unknown} Sanitized input
  *
  * @example
  * ```typescript
@@ -344,20 +344,25 @@ export async function validateBulkItems<T extends object>(
  * ```
  */
 export function sanitizeInput(
-  input: any,
+  input: unknown,
   options: {
     removeScriptTags?: boolean;
     trimStrings?: boolean;
     removeNullBytes?: boolean;
   } = {},
-): any {
+): unknown {
   const { removeScriptTags = true, trimStrings = true, removeNullBytes = true } = options;
 
   if (typeof input === 'string') {
     let sanitized = input;
 
     if (removeScriptTags) {
+      // Remove script tags - more comprehensive regex to prevent XSS
       sanitized = sanitized.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+      // Also remove javascript: protocol
+      sanitized = sanitized.replace(/javascript:/gi, '');
+      // Remove on* event handlers
+      sanitized = sanitized.replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, '');
     }
 
     if (removeNullBytes) {
@@ -376,8 +381,8 @@ export function sanitizeInput(
   }
 
   if (input !== null && typeof input === 'object') {
-    const sanitized: any = {};
-    for (const [key, value] of Object.entries(input)) {
+    const sanitized: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(input as Record<string, unknown>)) {
       sanitized[key] = sanitizeInput(value, options);
     }
     return sanitized;
@@ -389,20 +394,26 @@ export function sanitizeInput(
 /**
  * Validates query string parameters against allowed fields.
  *
- * @param {any} query - Query object
+ * @param {unknown} query - Query object
  * @param {string[]} allowedFields - Allowed field names
- * @throws {BadRequestException} If invalid fields present
+ * @throws {BadRequestException} If invalid fields present or query is not an object
  *
  * @example
  * ```typescript
  * @Get('patients')
- * async getPatients(@Query() query: any) {
+ * async getPatients(@Query() query: unknown) {
  *   validateQueryFields(query, ['page', 'limit', 'search', 'status']);
  *   return this.patientsService.findAll(query);
  * }
  * ```
  */
-export function validateQueryFields(query: any, allowedFields: string[]): void {
+export function validateQueryFields(query: unknown, allowedFields: string[]): void {
+  if (typeof query !== 'object' || query === null) {
+    throw new BadRequestException({
+      message: 'Invalid query: must be an object',
+    });
+  }
+
   const queryFields = Object.keys(query);
   const invalidFields = queryFields.filter((field) => !allowedFields.includes(field));
 
@@ -498,7 +509,7 @@ export function wrapErrorResponse(
  * Transforms response using DTO class with serialization options.
  *
  * @template T - DTO type
- * @param {any} data - Raw data
+ * @param {unknown} data - Raw data
  * @param {ClassConstructor<T>} dtoClass - DTO class
  * @param {DtoTransformOptions} options - Transform options
  * @returns {T | T[]} Transformed DTO instance(s)
@@ -516,7 +527,7 @@ export function wrapErrorResponse(
  * ```
  */
 export function transformResponse<T>(
-  data: any,
+  data: unknown,
   dtoClass: ClassConstructor<T>,
   options?: DtoTransformOptions,
 ): T | T[] {
@@ -531,9 +542,9 @@ export function transformResponse<T>(
 /**
  * Serializes DTO instance to plain object for response.
  *
- * @param {any} dto - DTO instance
+ * @param {unknown} dto - DTO instance
  * @param {DtoTransformOptions} options - Serialization options
- * @returns {any} Plain object
+ * @returns {unknown} Plain object
  *
  * @example
  * ```typescript
@@ -542,7 +553,7 @@ export function transformResponse<T>(
  * const plain = serializeDto(dto, { groups: ['public'] });
  * ```
  */
-export function serializeDto(dto: any, options?: DtoTransformOptions): any {
+export function serializeDto(dto: unknown, options?: DtoTransformOptions): unknown {
   return instanceToPlain(dto, {
     excludeExtraneousValues: options?.excludeExtraneousValues,
     groups: options?.groups,
@@ -553,9 +564,9 @@ export function serializeDto(dto: any, options?: DtoTransformOptions): any {
 /**
  * Removes sensitive fields from response object.
  *
- * @param {any} data - Data object
+ * @param {unknown} data - Data object
  * @param {string[]} sensitiveFields - Fields to remove
- * @returns {any} Sanitized data
+ * @returns {unknown} Sanitized data
  *
  * @example
  * ```typescript
@@ -563,16 +574,18 @@ export function serializeDto(dto: any, options?: DtoTransformOptions): any {
  * return removeSensitiveFields(user, ['password', 'ssn', 'bankAccount']);
  * ```
  */
-export function removeSensitiveFields(data: any, sensitiveFields: string[]): any {
+export function removeSensitiveFields(data: unknown, sensitiveFields: string[]): unknown {
   if (Array.isArray(data)) {
     return data.map((item) => removeSensitiveFields(item, sensitiveFields));
   }
 
   if (data !== null && typeof data === 'object') {
-    const sanitized: any = {};
-    for (const [key, value] of Object.entries(data)) {
+    const sanitized: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
       if (!sensitiveFields.includes(key)) {
-        sanitized[key] = typeof value === 'object' ? removeSensitiveFields(value, sensitiveFields) : value;
+        sanitized[key] = typeof value === 'object' && value !== null
+          ? removeSensitiveFields(value, sensitiveFields)
+          : value;
       }
     }
     return sanitized;
@@ -655,26 +668,34 @@ export function calculatePaginationOffset(page: number, limit: number): number {
 /**
  * Parses pagination parameters from request query.
  *
- * @param {any} query - Request query object
+ * @param {unknown} query - Request query object
  * @param {object} defaults - Default pagination values
  * @returns {PaginationQuery} Parsed pagination query
  *
  * @example
  * ```typescript
  * @Get('patients')
- * async getPatients(@Query() query: any) {
+ * async getPatients(@Query() query: unknown) {
  *   const pagination = parsePaginationQuery(query, { page: 1, limit: 20 });
  *   return this.patientsService.findAll(pagination);
  * }
  * ```
  */
 export function parsePaginationQuery(
-  query: any,
+  query: unknown,
   defaults: { page?: number; limit?: number } = {},
 ): PaginationQuery {
-  const page = parseInt(query.page) || defaults.page || 1;
-  const limit = parseInt(query.limit) || defaults.limit || 10;
-  const offset = query.offset ? parseInt(query.offset) : calculatePaginationOffset(page, limit);
+  const queryObj = (typeof query === 'object' && query !== null) ? query as Record<string, unknown> : {};
+
+  const pageValue = typeof queryObj.page === 'string' ? parseInt(queryObj.page, 10) : queryObj.page;
+  const limitValue = typeof queryObj.limit === 'string' ? parseInt(queryObj.limit, 10) : queryObj.limit;
+  const offsetValue = typeof queryObj.offset === 'string' ? parseInt(queryObj.offset, 10) : queryObj.offset;
+
+  const page = (typeof pageValue === 'number' && !isNaN(pageValue)) ? pageValue : (defaults.page || 1);
+  const limit = (typeof limitValue === 'number' && !isNaN(limitValue)) ? limitValue : (defaults.limit || 10);
+  const offset = (typeof offsetValue === 'number' && !isNaN(offsetValue))
+    ? offsetValue
+    : calculatePaginationOffset(page, limit);
 
   return {
     page: Math.max(1, page),
@@ -690,10 +711,11 @@ export function parsePaginationQuery(
 /**
  * Parses sort parameters from query string.
  *
- * @param {any} query - Request query object
+ * @param {unknown} query - Request query object
  * @param {string} defaultSortBy - Default sort field
  * @param {string[]} allowedFields - Allowed sort fields
  * @returns {SortQuery} Sort query object
+ * @throws {BadRequestException} If sort field is invalid
  *
  * @example
  * ```typescript
@@ -702,12 +724,21 @@ export function parsePaginationQuery(
  * ```
  */
 export function parseSortQuery(
-  query: any,
+  query: unknown,
   defaultSortBy?: string,
   allowedFields?: string[],
 ): SortQuery {
-  let sortBy = query.sortBy || query.sort || defaultSortBy;
-  const sortOrder = (query.sortOrder || query.order || 'DESC').toUpperCase() as 'ASC' | 'DESC';
+  if (typeof query !== 'object' || query === null) {
+    return { sortBy: defaultSortBy, sortOrder: 'DESC' };
+  }
+
+  const queryObj = query as Record<string, unknown>;
+  const sortByValue = queryObj.sortBy || queryObj.sort;
+  let sortBy = typeof sortByValue === 'string' ? sortByValue : defaultSortBy;
+
+  const sortOrderValue = queryObj.sortOrder || queryObj.order;
+  const sortOrderStr = typeof sortOrderValue === 'string' ? sortOrderValue.toUpperCase() : 'DESC';
+  const sortOrder = (sortOrderStr === 'ASC' || sortOrderStr === 'DESC') ? sortOrderStr : 'DESC';
 
   if (allowedFields && sortBy && !allowedFields.includes(sortBy)) {
     throw new BadRequestException({
@@ -723,7 +754,7 @@ export function parseSortQuery(
 /**
  * Builds filter criteria from query parameters.
  *
- * @param {any} query - Request query object
+ * @param {unknown} query - Request query object
  * @param {string[]} filterableFields - Fields that can be filtered
  * @returns {FilterCriteria[]} Array of filter criteria
  *
@@ -735,14 +766,23 @@ export function parseSortQuery(
  * //  { field: 'age', operation: 'gte', value: 18 }]
  * ```
  */
-export function buildFilterCriteria(query: any, filterableFields: string[]): FilterCriteria[] {
+export function buildFilterCriteria(query: unknown, filterableFields: string[]): FilterCriteria[] {
   const filters: FilterCriteria[] = [];
+
+  if (typeof query !== 'object' || query === null) {
+    return filters;
+  }
+
+  const validOperations: FilterOperation[] = ['eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'like', 'in', 'between'];
 
   for (const [key, value] of Object.entries(query)) {
     // Parse field and operation (e.g., "age__gte" -> field: "age", op: "gte")
     const parts = key.split('__');
     const field = parts[0];
-    const operation = (parts[1] || 'eq') as FilterOperation;
+    const operationStr = parts[1] || 'eq';
+    const operation = validOperations.includes(operationStr as FilterOperation)
+      ? (operationStr as FilterOperation)
+      : 'eq';
 
     if (filterableFields.includes(field)) {
       filters.push({ field, operation, value });
@@ -755,14 +795,14 @@ export function buildFilterCriteria(query: any, filterableFields: string[]): Fil
 /**
  * Builds complete query options from request query.
  *
- * @param {any} query - Request query object
+ * @param {unknown} query - Request query object
  * @param {object} config - Query builder configuration
  * @returns {QueryBuilderOptions} Complete query options
  *
  * @example
  * ```typescript
  * @Get('patients')
- * async getPatients(@Query() query: any) {
+ * async getPatients(@Query() query: unknown) {
  *   const options = buildQueryOptions(query, {
  *     defaultSort: 'createdAt',
  *     allowedSortFields: ['name', 'createdAt'],
@@ -773,7 +813,7 @@ export function buildFilterCriteria(query: any, filterableFields: string[]): Fil
  * ```
  */
 export function buildQueryOptions(
-  query: any,
+  query: unknown,
   config: {
     defaultSort?: string;
     allowedSortFields?: string[];
@@ -784,7 +824,10 @@ export function buildQueryOptions(
   const pagination = parsePaginationQuery(query);
   const sort = parseSortQuery(query, config.defaultSort, config.allowedSortFields);
   const filters = config.filterableFields ? buildFilterCriteria(query, config.filterableFields) : [];
-  const search = query.search || query.q;
+
+  const queryObj = (typeof query === 'object' && query !== null) ? query as Record<string, unknown> : {};
+  const searchValue = queryObj.search || queryObj.q;
+  const search = typeof searchValue === 'string' ? searchValue : undefined;
 
   return {
     pagination,
@@ -809,12 +852,17 @@ export function buildQueryOptions(
  * ```
  */
 export function queryOptionsToSql(options: QueryBuilderOptions): {
-  where?: any;
-  order?: any;
+  where?: Record<string, unknown>;
+  order?: Array<[string, string]>;
   limit?: number;
   offset?: number;
 } {
-  const result: any = {};
+  const result: {
+    where?: Record<string, unknown>;
+    order?: Array<[string, string]>;
+    limit?: number;
+    offset?: number;
+  } = {};
 
   // Build WHERE clause
   if (options.filters && options.filters.length > 0) {

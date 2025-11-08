@@ -32,63 +32,63 @@
 // TYPE DEFINITIONS
 // ============================================================================
 
-interface ProviderConfig {
-  provide: string | symbol | any;
-  useClass?: any;
-  useValue?: any;
-  useFactory?: (...args: any[]) => any;
-  useExisting?: any;
-  inject?: any[];
+interface ProviderConfig<T = unknown> {
+  provide: string | symbol | Function;
+  useClass?: new (...args: unknown[]) => T;
+  useValue?: T;
+  useFactory?: (...args: unknown[]) => T | Promise<T>;
+  useExisting?: string | symbol | Function;
+  inject?: Array<string | symbol | Function>;
   scope?: 'DEFAULT' | 'REQUEST' | 'TRANSIENT';
 }
 
 interface DynamicModuleConfig {
-  module: any;
-  providers?: any[];
-  imports?: any[];
-  exports?: any[];
-  controllers?: any[];
+  module: Function;
+  providers?: Array<ProviderConfig | Function>;
+  imports?: Array<Function | DynamicModuleConfig>;
+  exports?: Array<string | symbol | Function>;
+  controllers?: Function[];
   global?: boolean;
 }
 
 interface ModuleOptions {
   isGlobal?: boolean;
-  providers?: any[];
-  imports?: any[];
-  exports?: any[];
-  controllers?: any[];
+  providers?: Array<ProviderConfig | Function>;
+  imports?: Array<Function | DynamicModuleConfig>;
+  exports?: Array<string | symbol | Function>;
+  controllers?: Function[];
 }
 
-interface ForwardRefConfig {
-  type: any;
-  forwardRef: () => any;
+interface ForwardRefConfig<T = unknown> {
+  type: Function;
+  forwardRef: () => T;
 }
 
-interface OptionalDependencyConfig {
+interface OptionalDependencyConfig<T = unknown> {
   token: string | symbol;
-  defaultValue?: any;
+  defaultValue?: T;
   required?: boolean;
 }
 
-interface MultiProviderConfig {
+interface MultiProviderConfig<T = unknown> {
   provide: string | symbol;
-  useClass?: any;
-  useValue?: any;
-  useFactory?: (...args: any[]) => any;
+  useClass?: new (...args: unknown[]) => T;
+  useValue?: T;
+  useFactory?: (...args: unknown[]) => T | Promise<T>;
   multi?: boolean;
-  inject?: any[];
+  inject?: Array<string | symbol | Function>;
 }
 
-interface CircularRefResolution {
+interface CircularRefResolution<T = unknown> {
   token: string | symbol;
-  resolver: () => any;
+  resolver: () => T;
 }
 
-interface ScopedProviderConfig {
+interface ScopedProviderConfig<T = unknown> {
   provide: string | symbol;
   scope: 'DEFAULT' | 'REQUEST' | 'TRANSIENT';
-  useClass?: any;
-  useFactory?: (...args: any[]) => any;
+  useClass?: new (...args: unknown[]) => T;
+  useFactory?: (...args: unknown[]) => T | Promise<T>;
 }
 
 // ============================================================================
@@ -109,7 +109,15 @@ interface ScopedProviderConfig {
  * ```
  */
 export const createInjectionToken = (name: string, namespace?: string): symbol => {
-  const fullName = namespace ? `${namespace}:${name}` : name;
+  if (!name || typeof name !== 'string' || name.trim().length === 0) {
+    throw new Error('Token name must be a non-empty string');
+  }
+  if (namespace !== undefined && (typeof namespace !== 'string' || namespace.trim().length === 0)) {
+    throw new Error('Namespace must be undefined or a non-empty string');
+  }
+
+  const sanitizedName = name.trim();
+  const fullName = namespace ? `${namespace.trim()}:${sanitizedName}` : sanitizedName;
   return Symbol.for(fullName);
 };
 
@@ -126,7 +134,10 @@ export const createInjectionToken = (name: string, namespace?: string): symbol =
  * ```
  */
 export const createStringToken = (name: string): string => {
-  return `__${name.toUpperCase()}__`;
+  if (!name || typeof name !== 'string' || name.trim().length === 0) {
+    throw new Error('Token name must be a non-empty string');
+  }
+  return `__${name.trim().toUpperCase()}__`;
 };
 
 /**
@@ -142,9 +153,12 @@ export const createStringToken = (name: string): string => {
  * ```
  */
 export const createTypedToken = <T>(name: string): { token: symbol; type: T } => {
+  if (!name || typeof name !== 'string' || name.trim().length === 0) {
+    throw new Error('Token name must be a non-empty string');
+  }
   return {
-    token: Symbol.for(name),
-    type: null as any as T,
+    token: Symbol.for(name.trim()),
+    type: undefined as unknown as T,
   };
 };
 
@@ -169,7 +183,17 @@ export const createTokenFamily = (
   namespace: string,
   names: string[],
 ): Record<string, symbol> => {
+  if (!namespace || typeof namespace !== 'string' || namespace.trim().length === 0) {
+    throw new Error('Namespace must be a non-empty string');
+  }
+  if (!Array.isArray(names) || names.length === 0) {
+    throw new Error('Names must be a non-empty array');
+  }
+
   return names.reduce((acc, name) => {
+    if (!name || typeof name !== 'string' || name.trim().length === 0) {
+      throw new Error('Each name in the array must be a non-empty string');
+    }
     acc[name] = createInjectionToken(name, namespace);
     return acc;
   }, {} as Record<string, symbol>);
@@ -187,10 +211,15 @@ export const createTokenFamily = (
  * const token = getRequestToken(); // Unique per request
  * ```
  */
-export const createRequestToken = (baseName: string) => {
+export const createRequestToken = (baseName: string): (() => symbol) => {
+  if (!baseName || typeof baseName !== 'string' || baseName.trim().length === 0) {
+    throw new Error('Base name must be a non-empty string');
+  }
+
+  const sanitizedBaseName = baseName.trim();
   let counter = 0;
   return (): symbol => {
-    return Symbol.for(`${baseName}:${Date.now()}:${counter++}`);
+    return Symbol.for(`${sanitizedBaseName}:${Date.now()}:${counter++}`);
   };
 };
 
@@ -202,7 +231,7 @@ export const createRequestToken = (baseName: string) => {
  * Creates a class provider with optional scope configuration.
  *
  * @param {string | symbol} token - Injection token
- * @param {any} useClass - Class to instantiate
+ * @param {Function} useClass - Class to instantiate
  * @param {string} [scope='DEFAULT'] - Provider scope
  * @returns {ProviderConfig} Provider configuration
  *
@@ -215,11 +244,18 @@ export const createRequestToken = (baseName: string) => {
  * );
  * ```
  */
-export const createClassProvider = (
+export const createClassProvider = <T>(
   token: string | symbol,
-  useClass: any,
+  useClass: new (...args: unknown[]) => T,
   scope: 'DEFAULT' | 'REQUEST' | 'TRANSIENT' = 'DEFAULT',
-): ProviderConfig => {
+): ProviderConfig<T> => {
+  if (!token || (typeof token !== 'string' && typeof token !== 'symbol')) {
+    throw new Error('Token must be a non-empty string or symbol');
+  }
+  if (typeof useClass !== 'function') {
+    throw new Error('useClass must be a constructor function');
+  }
+
   return {
     provide: token,
     useClass,
@@ -231,7 +267,7 @@ export const createClassProvider = (
  * Creates a value provider for constants and configuration.
  *
  * @param {string | symbol} token - Injection token
- * @param {any} value - Value to provide
+ * @param {T} value - Value to provide
  * @returns {ProviderConfig} Provider configuration
  *
  * @example
@@ -243,10 +279,17 @@ export const createClassProvider = (
  * });
  * ```
  */
-export const createValueProvider = (
+export const createValueProvider = <T>(
   token: string | symbol,
-  value: any,
-): ProviderConfig => {
+  value: T,
+): ProviderConfig<T> => {
+  if (!token || (typeof token !== 'string' && typeof token !== 'symbol')) {
+    throw new Error('Token must be a non-empty string or symbol');
+  }
+  if (value === undefined) {
+    throw new Error('Value cannot be undefined (use null if needed)');
+  }
+
   return {
     provide: token,
     useValue: value,

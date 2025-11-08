@@ -51,7 +51,7 @@ import { Logger } from '@nestjs/common';
 // TYPE DEFINITIONS
 // ============================================================================
 
-interface N1DetectionResult {
+export interface N1DetectionResult {
   detected: boolean;
   queryCount: number;
   suspiciousPatterns: string[];
@@ -59,7 +59,7 @@ interface N1DetectionResult {
   severity: 'low' | 'medium' | 'high' | 'critical';
 }
 
-interface QueryOptimizationResult {
+export interface QueryOptimizationResult {
   originalQuery: string;
   optimizedQuery?: string;
   estimatedImprovement: number;
@@ -68,7 +68,7 @@ interface QueryOptimizationResult {
   warnings: string[];
 }
 
-interface ExplainPlanResult {
+export interface ExplainPlanResult {
   planSteps: ExplainPlanStep[];
   totalCost: number;
   estimatedRows: number;
@@ -119,7 +119,7 @@ interface IndexRecommendation {
   createStatement: string;
 }
 
-interface ConnectionPoolMetrics {
+export interface ConnectionPoolMetrics {
   activeConnections: number;
   idleConnections: number;
   waitingRequests: number;
@@ -138,7 +138,7 @@ interface CacheConfig {
   invalidateOn?: string[];
 }
 
-interface CacheStats {
+export interface CacheStats {
   hits: number;
   misses: number;
   hitRate: number;
@@ -217,7 +217,7 @@ interface QueryHint {
   risks: string[];
 }
 
-interface DatabaseStatistics {
+export interface DatabaseStatistics {
   tableStats: TableStats[];
   indexStats: IndexStats[];
   queryStats: QueryStats;
@@ -253,12 +253,12 @@ interface QueryStats {
   p99Duration: number;
 }
 
-interface PerformanceAlert {
+export interface PerformanceAlert {
   type: string;
   severity: 'info' | 'warning' | 'critical';
   message: string;
   timestamp: Date;
-  metrics: any;
+  metrics: Record<string, unknown>;
   recommendations: string[];
 }
 
@@ -276,12 +276,12 @@ interface LazyLoadingConfig {
   fetchStrategy?: 'immediate' | 'batched' | 'deferred';
 }
 
-interface BulkOperationResult {
+export interface BulkOperationResult {
   processed: number;
   succeeded: number;
   failed: number;
   duration: number;
-  errors: any[];
+  errors: Array<{ batch?: unknown; error: Error | unknown }>;
 }
 
 interface QueryBatchResult {
@@ -310,6 +310,7 @@ interface PreparedStatementCache {
  * @param {Sequelize} sequelize - Sequelize instance
  * @param {number} threshold - Number of similar queries to trigger detection (default: 5)
  * @returns {Promise<N1DetectionResult>} Detection results with recommendations
+ * @throws {Error} When threshold is invalid
  *
  * @example
  * ```typescript
@@ -323,12 +324,18 @@ export const detectN1Queries = async (
   sequelize: Sequelize,
   threshold: number = 5,
 ): Promise<N1DetectionResult> => {
+  if (threshold < 1) {
+    throw new Error('Threshold must be at least 1');
+  }
+
   const queryLog: Map<string, number> = new Map();
   const suspiciousPatterns: string[] = [];
 
   const beforeHook = (options: any) => {
-    const querySignature = normalizeQuery(options.sql);
-    queryLog.set(querySignature, (queryLog.get(querySignature) || 0) + 1);
+    if (options?.sql) {
+      const querySignature = normalizeQuery(options.sql);
+      queryLog.set(querySignature, (queryLog.get(querySignature) || 0) + 1);
+    }
   };
 
   sequelize.addHook('beforeQuery', beforeHook);
@@ -349,7 +356,7 @@ export const detectN1Queries = async (
     }
   }
 
-  const severity =
+  const severity: N1DetectionResult['severity'] =
     maxCount >= 50 ? 'critical' : maxCount >= 20 ? 'high' : maxCount >= 10 ? 'medium' : 'low';
 
   return {
@@ -1509,10 +1516,17 @@ export const processBulkOperation = async <T>(
   operation: (batch: T[]) => Promise<void>,
   config: BatchProcessingConfig,
 ): Promise<BulkOperationResult> => {
+  if (config.batchSize < 1) {
+    throw new Error('Batch size must be at least 1');
+  }
+  if (config.concurrency && config.concurrency < 1) {
+    throw new Error('Concurrency must be at least 1');
+  }
+
   const startTime = Date.now();
   let processed = 0;
   let succeeded = 0;
-  const errors: any[] = [];
+  const errors: Array<{ batch?: T[]; error: Error | unknown }> = [];
 
   const batches: T[][] = [];
   for (let i = 0; i < items.length; i += config.batchSize) {
@@ -1522,7 +1536,7 @@ export const processBulkOperation = async <T>(
   const concurrency = config.concurrency || 1;
 
   for (let i = 0; i < batches.length; i += concurrency) {
-    const batchPromises = batches.slice(i, i + concurrency).map(async batch => {
+    const batchPromises = batches.slice(i, i + concurrency).map(async (batch) => {
       try {
         await operation(batch);
         processed += batch.length;
@@ -1543,7 +1557,7 @@ export const processBulkOperation = async <T>(
 
     await Promise.all(batchPromises);
 
-    if (config.delayBetweenBatches) {
+    if (config.delayBetweenBatches && config.delayBetweenBatches > 0) {
       await new Promise(resolve => setTimeout(resolve, config.delayBetweenBatches));
     }
   }

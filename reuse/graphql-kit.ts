@@ -57,13 +57,13 @@ import * as GraphQLUpload from 'graphql-upload';
 // ============================================================================
 
 interface GraphQLContext {
-  req: any;
-  res: any;
-  user?: any;
-  dataloaders: Map<string, DataLoader<any, any>>;
+  req: Express.Request;
+  res: Express.Response;
+  user?: Record<string, unknown>;
+  dataloaders: Map<string, DataLoader<unknown, unknown>>;
   pubsub?: PubSub;
   requestId?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface ResolverFactory<TSource, TContext, TArgs, TResult> {
@@ -82,12 +82,12 @@ interface FieldResolverConfig {
 interface AuthorizationRule {
   roles?: string[];
   permissions?: string[];
-  customCheck?: (context: GraphQLContext, parent: any, args: any) => boolean | Promise<boolean>;
+  customCheck?: (context: GraphQLContext, parent: unknown, args: Record<string, unknown>) => boolean | Promise<boolean>;
 }
 
 interface CacheConfig {
   ttl: number;
-  keyGenerator?: (parent: any, args: any, context: any) => string;
+  keyGenerator?: (parent: unknown, args: Record<string, unknown>, context: GraphQLContext) => string;
 }
 
 interface DataLoaderOptions {
@@ -103,6 +103,18 @@ interface PaginationArgs {
   limit?: number;
   page?: number;
   perPage?: number;
+}
+
+// Add Express namespace for type safety
+declare namespace Express {
+  interface Request {
+    user?: Record<string, unknown>;
+    ip?: string;
+    id?: string;
+  }
+  interface Response {
+    // Standard Express response
+  }
 }
 
 interface RelayPaginationArgs {
@@ -911,7 +923,8 @@ export const createJSONScalar = (): GraphQLScalarType => {
  */
 export const createEmailScalar = (): GraphQLScalarType => {
   // RFC 5322 compliant email regex (simplified but more comprehensive)
-  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+  // Escaped forward slash for consistency
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
   return new GraphQLScalarType({
     name: 'Email',
@@ -1471,22 +1484,24 @@ export const createFilterBuilder = (
   filterArgs: FilterArgs,
   searchableFields?: string[],
 ): WhereOptions => {
-  const where: any = {};
+  const where: Record<string, unknown> = {};
 
   // Apply direct where conditions
   if (filterArgs.where) {
     Object.assign(where, filterArgs.where);
   }
 
-  // Apply search across multiple fields
+  // Apply search across multiple fields with sanitization
   if (filterArgs.search && searchableFields && searchableFields.length > 0) {
+    // Sanitize search input to prevent SQL injection
+    const sanitizedSearch = filterArgs.search.replace(/[%_\\]/g, '\\$&');
     const searchConditions = searchableFields.map((field) => ({
-      [field]: { [Op.iLike]: `%${filterArgs.search}%` },
+      [field]: { [Op.iLike]: `%${sanitizedSearch}%` },
     }));
     where[Op.or] = searchConditions;
   }
 
-  return where;
+  return where as WhereOptions;
 };
 
 /**

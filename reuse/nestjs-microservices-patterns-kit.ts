@@ -31,55 +31,55 @@
 // TYPE DEFINITIONS
 // ============================================================================
 
-interface MessagePattern {
+interface MessagePattern<TData = unknown> {
   pattern: string;
-  data: any;
-  metadata?: Record<string, any>;
+  data: TData;
+  metadata?: Record<string, unknown>;
   correlationId?: string;
   timestamp?: Date;
 }
 
-interface EventPattern {
+interface EventPattern<TPayload = unknown> {
   eventType: string;
   aggregateId: string;
-  payload: any;
+  payload: TPayload;
   version: number;
   timestamp: Date;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
-interface CommandMessage {
+interface CommandMessage<TPayload = unknown> {
   commandId: string;
   commandType: string;
   aggregateId: string;
-  payload: any;
+  payload: TPayload;
   timestamp: Date;
   userId?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 interface QueryMessage {
   queryId: string;
   queryType: string;
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
   timestamp: Date;
   userId?: string;
 }
 
-interface SagaStep {
+interface SagaStep<TData = unknown, TResult = unknown> {
   stepId: string;
   stepName: string;
-  execute: (data: any) => Promise<any>;
-  compensate: (data: any) => Promise<void>;
+  execute: (data: TData) => Promise<TResult>;
+  compensate: (data: TData) => Promise<void>;
   timeout?: number;
 }
 
-interface SagaExecution {
+interface SagaExecution<TData = unknown> {
   sagaId: string;
-  steps: SagaStep[];
+  steps: SagaStep<TData, unknown>[];
   currentStep: number;
   status: 'pending' | 'running' | 'completed' | 'failed' | 'compensating';
-  data: any;
+  data: TData;
   completedSteps: string[];
   error?: Error;
 }
@@ -107,7 +107,7 @@ interface ServiceInstance {
   port: number;
   protocol: 'tcp' | 'http' | 'grpc' | 'amqp';
   status: 'healthy' | 'unhealthy' | 'unknown';
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   lastHeartbeat?: Date;
 }
 
@@ -122,7 +122,7 @@ interface HealthCheckResult {
   status: 'healthy' | 'degraded' | 'unhealthy';
   timestamp: Date;
   responseTime?: number;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   dependencies?: HealthCheckResult[];
 }
 
@@ -146,32 +146,32 @@ interface DistributedTraceContext {
   serviceName: string;
   operation: string;
   startTime: Date;
-  tags?: Record<string, any>;
+  tags?: Record<string, unknown>;
 }
 
-interface RabbitMQMessage {
+interface RabbitMQMessage<TData = unknown> {
   pattern: string;
-  data: any;
+  data: TData;
   replyTo?: string;
   correlationId?: string;
   expiration?: number;
   priority?: number;
-  headers?: Record<string, any>;
+  headers?: Record<string, unknown>;
 }
 
-interface KafkaMessage {
+interface KafkaMessage<TValue = unknown> {
   topic: string;
   partition?: number;
   key?: string;
-  value: any;
+  value: TValue;
   headers?: Record<string, string>;
   timestamp?: string;
 }
 
-interface RedisChannel {
+interface RedisChannel<TMessage = unknown> {
   channel: string;
   pattern?: boolean;
-  handler: (message: any) => void | Promise<void>;
+  handler: (message: TMessage) => void | Promise<void>;
 }
 
 interface GrpcServiceDefinition {
@@ -214,10 +214,12 @@ interface ServiceMeshConfig {
 /**
  * Creates a standardized message pattern with metadata and correlation ID.
  *
+ * @template TData - Type of message data
  * @param {string} pattern - Message pattern identifier
- * @param {any} data - Message payload
- * @param {Record<string, any>} [metadata] - Optional metadata
- * @returns {MessagePattern} Formatted message pattern
+ * @param {TData} data - Message payload
+ * @param {Record<string, unknown>} [metadata] - Optional metadata
+ * @returns {MessagePattern<TData>} Formatted message pattern
+ * @throws {Error} If pattern is empty or data is undefined
  *
  * @example
  * ```typescript
@@ -225,13 +227,20 @@ interface ServiceMeshConfig {
  * // Result: { pattern: 'user.created', data: {...}, correlationId: 'uuid', timestamp: Date }
  * ```
  */
-export const createMessagePattern = (
+export const createMessagePattern = <TData = unknown>(
   pattern: string,
-  data: any,
-  metadata?: Record<string, any>,
-): MessagePattern => {
+  data: TData,
+  metadata?: Record<string, unknown>,
+): MessagePattern<TData> => {
+  if (!pattern || pattern.trim().length === 0) {
+    throw new Error('Message pattern cannot be empty');
+  }
+  if (data === undefined) {
+    throw new Error('Message data cannot be undefined');
+  }
+
   return {
-    pattern,
+    pattern: pattern.trim(),
     data,
     metadata: metadata || {},
     correlationId: generateCorrelationId(),
@@ -565,8 +574,11 @@ export const executeNextSagaStep = async (saga: SagaExecution): Promise<SagaExec
 /**
  * Compensates saga by executing rollback steps in reverse order.
  *
- * @param {SagaExecution} saga - Failed saga execution
- * @returns {Promise<SagaExecution>} Compensated saga
+ * @template TData - Type of saga data
+ * @param {SagaExecution<TData>} saga - Failed saga execution
+ * @param {(error: Error, stepId: string) => void} [errorLogger] - Optional error logger
+ * @returns {Promise<SagaExecution<TData>>} Compensated saga
+ * @throws {Error} If compensation fails critically
  *
  * @example
  * ```typescript
@@ -574,8 +586,13 @@ export const executeNextSagaStep = async (saga: SagaExecution): Promise<SagaExec
  * // Result: Saga with compensating status and rolled back steps
  * ```
  */
-export const compensateSaga = async (saga: SagaExecution): Promise<SagaExecution> => {
+export const compensateSaga = async <TData = unknown>(
+  saga: SagaExecution<TData>,
+  errorLogger?: (error: Error, stepId: string) => void,
+): Promise<SagaExecution<TData>> => {
   saga.status = 'compensating';
+
+  const compensationErrors: Array<{ stepId: string; error: Error }> = [];
 
   for (let i = saga.completedSteps.length - 1; i >= 0; i--) {
     const stepId = saga.completedSteps[i];
@@ -585,9 +602,18 @@ export const compensateSaga = async (saga: SagaExecution): Promise<SagaExecution
       try {
         await step.compensate(saga.data);
       } catch (error) {
-        console.error(`Compensation failed for step ${stepId}:`, error);
+        const err = error instanceof Error ? error : new Error(String(error));
+        compensationErrors.push({ stepId, error: err });
+        if (errorLogger) {
+          errorLogger(err, stepId);
+        }
       }
     }
+  }
+
+  if (compensationErrors.length > 0) {
+    const errorMessage = `Compensation failed for steps: ${compensationErrors.map(e => e.stepId).join(', ')}`;
+    throw new Error(errorMessage);
   }
 
   return { ...saga, status: 'failed', completedSteps: [] };
@@ -596,11 +622,14 @@ export const compensateSaga = async (saga: SagaExecution): Promise<SagaExecution
 /**
  * Creates a saga step with execute and compensate functions.
  *
+ * @template TData - Type of input data
+ * @template TResult - Type of execution result
  * @param {string} stepName - Step identifier
- * @param {Function} execute - Execute function
- * @param {Function} compensate - Compensation function
+ * @param {(data: TData) => Promise<TResult>} execute - Execute function
+ * @param {(data: TData) => Promise<void>} compensate - Compensation function
  * @param {number} [timeout] - Step timeout in ms
- * @returns {SagaStep} Saga step definition
+ * @returns {SagaStep<TData, TResult>} Saga step definition
+ * @throws {Error} If stepName is empty
  *
  * @example
  * ```typescript
@@ -611,15 +640,19 @@ export const compensateSaga = async (saga: SagaExecution): Promise<SagaExecution
  * );
  * ```
  */
-export const createSagaStep = (
+export const createSagaStep = <TData = unknown, TResult = unknown>(
   stepName: string,
-  execute: (data: any) => Promise<any>,
-  compensate: (data: any) => Promise<void>,
+  execute: (data: TData) => Promise<TResult>,
+  compensate: (data: TData) => Promise<void>,
   timeout?: number,
-): SagaStep => {
+): SagaStep<TData, TResult> => {
+  if (!stepName || stepName.trim().length === 0) {
+    throw new Error('Step name cannot be empty');
+  }
+
   return {
-    stepId: `step-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    stepName,
+    stepId: `step-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+    stepName: stepName.trim(),
     execute,
     compensate,
     timeout,
@@ -677,10 +710,12 @@ export const createCircuitBreaker = (config: CircuitBreakerConfig): CircuitBreak
 /**
  * Executes function with circuit breaker protection.
  *
- * @param {Function} fn - Function to execute
+ * @template TResult - Type of function result
+ * @param {() => Promise<TResult>} fn - Function to execute
  * @param {CircuitBreakerState} state - Circuit breaker state
  * @param {CircuitBreakerConfig} config - Configuration
- * @returns {Promise<any>} Function result
+ * @returns {Promise<TResult>} Function result
+ * @throws {Error} If circuit breaker is OPEN or function fails
  *
  * @example
  * ```typescript
@@ -691,14 +726,15 @@ export const createCircuitBreaker = (config: CircuitBreakerConfig): CircuitBreak
  * );
  * ```
  */
-export const executeWithCircuitBreaker = async (
-  fn: Function,
+export const executeWithCircuitBreaker = async <TResult = unknown>(
+  fn: () => Promise<TResult>,
   state: CircuitBreakerState,
   config: CircuitBreakerConfig,
-): Promise<any> => {
+): Promise<TResult> => {
   if (state.state === 'OPEN') {
     if (Date.now() < state.nextAttempt) {
-      throw new Error('Circuit breaker is OPEN');
+      const waitTime = Math.ceil((state.nextAttempt - Date.now()) / 1000);
+      throw new Error(`Circuit breaker is OPEN. Retry after ${waitTime} seconds`);
     }
     state.state = 'HALF_OPEN';
     state.successes = 0;
@@ -724,7 +760,7 @@ export const executeWithCircuitBreaker = async (
       state.nextAttempt = Date.now() + config.resetTimeout;
     }
 
-    throw error;
+    throw error instanceof Error ? error : new Error(String(error));
   }
 };
 
@@ -1565,56 +1601,56 @@ export const calculateBackoffDelay = (
  * Generates unique correlation ID for distributed tracing.
  */
 const generateCorrelationId = (): string => {
-  return `corr-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  return `corr-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 };
 
 /**
  * Generates unique event ID.
  */
 const generateEventId = (): string => {
-  return `evt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  return `evt-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 };
 
 /**
  * Generates unique command ID.
  */
 const generateCommandId = (): string => {
-  return `cmd-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  return `cmd-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 };
 
 /**
  * Generates unique query ID.
  */
 const generateQueryId = (): string => {
-  return `qry-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  return `qry-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 };
 
 /**
  * Generates unique service ID.
  */
 const generateServiceId = (): string => {
-  return `svc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  return `svc-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 };
 
 /**
  * Generates unique trace ID.
  */
 const generateTraceId = (): string => {
-  return `trace-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  return `trace-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 };
 
 /**
  * Generates unique span ID.
  */
 const generateSpanId = (): string => {
-  return `span-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  return `span-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 };
 
 /**
  * Generates unique message ID.
  */
 const generateMessageId = (): string => {
-  return `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  return `msg-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 };
 
 /**

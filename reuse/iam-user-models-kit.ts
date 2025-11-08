@@ -79,8 +79,8 @@ export interface IUser extends Model {
   mustChangePassword: boolean;
   twoFactorEnabled: boolean;
   twoFactorSecret?: string;
-  metadata?: any;
-  preferences?: any;
+  metadata?: Record<string, unknown>;
+  preferences?: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date;
@@ -95,7 +95,7 @@ export interface IUserProfile extends Model {
   bio?: string;
   dateOfBirth?: Date;
   gender?: string;
-  address?: any;
+  address?: Record<string, unknown>;
   timezone?: string;
   locale?: string;
   occupation?: string;
@@ -105,9 +105,9 @@ export interface IUserProfile extends Model {
   employeeId?: string;
   licenseNumber?: string;
   specializations?: string[];
-  certifications?: any[];
-  socialLinks?: any;
-  emergencyContact?: any;
+  certifications?: Array<Record<string, unknown>>;
+  socialLinks?: Record<string, string>;
+  emergencyContact?: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -117,7 +117,7 @@ export interface IUserProfile extends Model {
  */
 export interface UserAttributeConfig {
   key: string;
-  value: any;
+  value: unknown;
   type: 'string' | 'number' | 'boolean' | 'json' | 'encrypted';
   category?: string;
   isPublic?: boolean;
@@ -157,8 +157,8 @@ export interface UserExportOptions {
 export interface UserImportResult {
   success: number;
   failed: number;
-  errors: Array<{ row: number; error: string; data: any }>;
-  created: any[];
+  errors: Array<{ row: number; error: string; data: Partial<IUser> }>;
+  created: Array<Record<string, unknown>>;
 }
 
 /**
@@ -168,7 +168,7 @@ export interface UserLifecycleEvent {
   eventType: 'created' | 'updated' | 'deleted' | 'activated' | 'deactivated' | 'locked' | 'unlocked';
   userId: string;
   triggeredBy?: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   timestamp: Date;
 }
 
@@ -219,8 +219,8 @@ export function createUserModel(sequelize: Sequelize): ModelStatic<IUser> {
     public mustChangePassword!: boolean;
     public twoFactorEnabled!: boolean;
     public twoFactorSecret?: string;
-    public metadata?: any;
-    public preferences?: any;
+    public metadata?: Record<string, unknown>;
+    public preferences?: Record<string, unknown>;
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
     public readonly deletedAt?: Date;
@@ -596,12 +596,12 @@ export function defineUserAssociations(
  * ```
  */
 export async function setUserAttribute(user: IUser, config: UserAttributeConfig): Promise<IUser> {
-  const metadata = user.metadata || {};
+  const metadata = (user.metadata as Record<string, any>) || {};
   const attributes = metadata.attributes || {};
 
-  let storedValue = config.value;
+  let storedValue: unknown = config.value;
   if (config.type === 'encrypted') {
-    storedValue = encryptValue(config.value);
+    storedValue = encryptValue(String(config.value));
   }
 
   attributes[config.key] = {
@@ -623,15 +623,15 @@ export async function setUserAttribute(user: IUser, config: UserAttributeConfig)
  *
  * @param {IUser} user - User instance
  * @param {string} key - Attribute key
- * @returns {any} Attribute value
+ * @returns {unknown} Attribute value
  *
  * @example
  * ```typescript
  * const ssn = getUserAttribute(user, 'ssn');
  * ```
  */
-export function getUserAttribute(user: IUser, key: string): any {
-  const attributes = user.metadata?.attributes || {};
+export function getUserAttribute(user: IUser, key: string): unknown {
+  const attributes = (user.metadata as Record<string, any>)?.attributes || {};
   const attr = attributes[key];
 
   if (!attr) return null;
@@ -657,7 +657,7 @@ export function getUserAttribute(user: IUser, key: string): any {
  * ```
  */
 export async function removeUserAttribute(user: IUser, key: string): Promise<IUser> {
-  const metadata = user.metadata || {};
+  const metadata = (user.metadata as Record<string, any>) || {};
   const attributes = metadata.attributes || {};
 
   delete attributes[key];
@@ -684,7 +684,7 @@ export function listUserAttributes(
   user: IUser,
   filters?: { category?: string; isPublic?: boolean },
 ): UserAttributeConfig[] {
-  const attributes = user.metadata?.attributes || {};
+  const attributes = (user.metadata as Record<string, any>)?.attributes || {};
   const result: UserAttributeConfig[] = [];
 
   for (const [key, attr] of Object.entries(attributes)) {
@@ -866,10 +866,10 @@ export function addLoginTrackingHook(User: ModelStatic<IUser>): void {
  */
 export async function activateUserAccount(user: IUser, activatedBy?: string): Promise<IUser> {
   user.status = 'active';
-  user.lockedUntil = null;
+  user.lockedUntil = undefined;
   user.failedLoginAttempts = 0;
 
-  const metadata = user.metadata || {};
+  const metadata = (user.metadata as Record<string, any>) || {};
   metadata.activatedBy = activatedBy;
   metadata.activatedAt = new Date();
   user.metadata = metadata;
@@ -898,7 +898,7 @@ export async function suspendUserAccount(
 ): Promise<IUser> {
   user.status = 'suspended';
 
-  const metadata = user.metadata || {};
+  const metadata = (user.metadata as Record<string, any>) || {};
   metadata.suspensionReason = reason;
   metadata.suspendedBy = suspendedBy;
   metadata.suspendedAt = new Date();
@@ -929,7 +929,7 @@ export async function lockUserAccount(
   user.status = 'locked';
   user.lockedUntil = new Date(Date.now() + durationMinutes * 60 * 1000);
 
-  const metadata = user.metadata || {};
+  const metadata = (user.metadata as Record<string, any>) || {};
   metadata.lockReason = reason;
   metadata.lockedAt = new Date();
   user.metadata = metadata;
@@ -952,10 +952,10 @@ export async function lockUserAccount(
  */
 export async function unlockUserAccount(user: IUser, unlockedBy?: string): Promise<IUser> {
   user.status = 'active';
-  user.lockedUntil = null;
+  user.lockedUntil = undefined;
   user.failedLoginAttempts = 0;
 
-  const metadata = user.metadata || {};
+  const metadata = (user.metadata as Record<string, any>) || {};
   metadata.unlockedBy = unlockedBy;
   metadata.unlockedAt = new Date();
   delete metadata.lockReason;
@@ -1032,16 +1032,16 @@ export async function incrementFailedLoginAttempts(
  * await setUserPreference(user, 'theme', 'dark');
  * ```
  */
-export async function setUserPreference(user: IUser, key: string, value: any): Promise<IUser> {
-  const preferences = user.preferences || {};
+export async function setUserPreference(user: IUser, key: string, value: unknown): Promise<IUser> {
+  const preferences = (user.preferences as Record<string, any>) || {};
   const keys = key.split('.');
-  let current = preferences;
+  let current: Record<string, any> = preferences;
 
   for (let i = 0; i < keys.length - 1; i++) {
     if (!current[keys[i]]) {
       current[keys[i]] = {};
     }
-    current = current[keys[i]];
+    current = current[keys[i]] as Record<string, any>;
   }
 
   current[keys[keys.length - 1]] = value;
@@ -1065,10 +1065,10 @@ export async function setUserPreference(user: IUser, key: string, value: any): P
  * const theme = getUserPreference(user, 'theme', 'light');
  * ```
  */
-export function getUserPreference(user: IUser, key: string, defaultValue?: any): any {
-  const preferences = user.preferences || {};
+export function getUserPreference<T = unknown>(user: IUser, key: string, defaultValue?: T): T | undefined {
+  const preferences = (user.preferences as Record<string, any>) || {};
   const keys = key.split('.');
-  let current = preferences;
+  let current: any = preferences;
 
   for (const k of keys) {
     if (current[k] === undefined) {
@@ -1077,7 +1077,7 @@ export function getUserPreference(user: IUser, key: string, defaultValue?: any):
     current = current[k];
   }
 
-  return current;
+  return current as T;
 }
 
 /**
@@ -1094,15 +1094,15 @@ export function getUserPreference(user: IUser, key: string, defaultValue?: any):
  * ```
  */
 export async function removeUserPreference(user: IUser, key: string): Promise<IUser> {
-  const preferences = user.preferences || {};
+  const preferences = (user.preferences as Record<string, any>) || {};
   const keys = key.split('.');
-  let current = preferences;
+  let current: Record<string, any> = preferences;
 
   for (let i = 0; i < keys.length - 1; i++) {
     if (!current[keys[i]]) {
       return user;
     }
-    current = current[keys[i]];
+    current = current[keys[i]] as Record<string, any>;
   }
 
   delete current[keys[keys.length - 1]];
@@ -1123,8 +1123,8 @@ export async function removeUserPreference(user: IUser, key: string): Promise<IU
  * const allPrefs = getAllUserPreferences(user);
  * ```
  */
-export function getAllUserPreferences(user: IUser): any {
-  return user.preferences || {};
+export function getAllUserPreferences(user: IUser): Record<string, unknown> {
+  return (user.preferences as Record<string, unknown>) || {};
 }
 
 /**
@@ -1141,8 +1141,8 @@ export function getAllUserPreferences(user: IUser): any {
  * ```
  */
 export async function resetUserPreferences(user: IUser, preserve?: string[]): Promise<IUser> {
-  const currentPrefs = user.preferences || {};
-  const newPrefs: any = {};
+  const currentPrefs = (user.preferences as Record<string, any>) || {};
+  const newPrefs: Record<string, unknown> = {};
 
   if (preserve) {
     for (const key of preserve) {
@@ -1800,7 +1800,7 @@ export async function mergeDuplicateUsers(
   primaryUserId: string,
   duplicateUserId: string,
   transaction?: Transaction,
-): Promise<any> {
+): Promise<IUser> {
   const primary = await User.findByPk(primaryUserId, { transaction });
   const duplicate = await User.findByPk(duplicateUserId, { transaction });
 
@@ -1809,9 +1809,9 @@ export async function mergeDuplicateUsers(
   }
 
   // Merge metadata
-  const mergedMetadata = {
-    ...duplicate.metadata,
-    ...primary.metadata,
+  const mergedMetadata: Record<string, unknown> = {
+    ...(duplicate.metadata as Record<string, unknown>),
+    ...(primary.metadata as Record<string, unknown>),
     merged: {
       from: duplicateUserId,
       at: new Date(),
@@ -1841,7 +1841,7 @@ export async function anonymizeUserData(user: IUser): Promise<IUser> {
   user.email = `anonymized-${user.id}@anonymized.local`;
   user.firstName = 'Anonymized';
   user.lastName = 'User';
-  user.phoneNumber = null;
+  user.phoneNumber = undefined;
   user.metadata = { anonymized: true, anonymizedAt: new Date() };
   user.preferences = {};
 

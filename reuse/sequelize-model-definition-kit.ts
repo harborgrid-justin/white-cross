@@ -726,8 +726,8 @@ export const buildEmailValidation = (): object => {
 export const buildPhoneValidation = (): object => {
   return {
     is: {
-      args: /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/,
-      msg: 'Must be a valid phone number',
+      args: /^[\+]?[(]?[0-9]{1,4}[)]?[-\s.]?[(]?[0-9]{1,4}[)]?[-\s.]?[0-9]{1,4}[-\s.]?[0-9]{1,9}$/,
+      msg: 'Must be a valid phone number (supports international formats)',
     },
   };
 };
@@ -756,7 +756,7 @@ export const buildPasswordValidation = (): object => {
       msg: 'Password must be between 12 and 128 characters',
     },
     is: {
-      args: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+      args: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{12,}$/,
       msg: 'Password must contain uppercase, lowercase, number, and special character',
     },
   };
