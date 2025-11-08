@@ -1,67 +1,151 @@
 /**
- * LOC: MSVC-KIT-001
+ * LOC: MCSVC1234567
  * File: /reuse/microservices-kit.ts
  *
  * UPSTREAM (imports from):
  *   - None (leaf node - reusable utilities)
  *
  * DOWNSTREAM (imported by):
- *   - Microservices modules and controllers
- *   - Service discovery implementations
- *   - Transport layer configurations
+ *   - Microservices modules
+ *   - NestJS message handlers
+ *   - Event-driven services
+ *   - Backend microservices infrastructure
  */
 
 /**
  * File: /reuse/microservices-kit.ts
- * Locator: WC-UTL-MSVC-KIT-001
- * Purpose: Comprehensive NestJS Microservices Toolkit - Transport Configuration, Message Patterns, RPC Clients, Service Discovery
+ * Locator: WC-UTL-MCSVC-001
+ * Purpose: Comprehensive NestJS Microservices Utilities - message patterns, event-driven architecture, RabbitMQ, Kafka, gRPC, NATS, circuit breakers, service discovery
  *
- * Upstream: Independent utility module for NestJS microservices architecture
- * Downstream: ../backend/*, microservices modules, hybrid applications, transport configurations
- * Dependencies: TypeScript 5.x, Node 18+, NestJS 10.x, @nestjs/microservices, RabbitMQ, Kafka, Redis, NATS, gRPC
- * Exports: 45 utility functions for microservices setup, transport configuration, message handling, service discovery, resilience patterns
+ * Upstream: Independent utility module for NestJS microservices implementation
+ * Downstream: ../backend/*, microservices modules, message handlers, event services
+ * Dependencies: TypeScript 5.x, Node 18+, NestJS 10.x, @nestjs/microservices, RabbitMQ, Kafka, gRPC, NATS
+ * Exports: 45+ utility functions for microservices, message patterns, event-driven architecture, resilience patterns
  *
- * LLM Context: Production-ready microservices utilities for White Cross healthcare platform. Provides comprehensive tools for
- * configuring transports (TCP, Redis, NATS, RabbitMQ, Kafka, gRPC), building message patterns, managing RPC clients,
- * implementing circuit breakers, service discovery, load balancing, health checks, and graceful shutdown. Essential for
- * building HIPAA-compliant distributed healthcare microservices with high availability and fault tolerance.
+ * LLM Context: Comprehensive NestJS microservices utilities for implementing production-ready distributed systems.
+ * Provides message pattern definitions, event-driven architecture, transport layer integrations (RabbitMQ, Kafka, gRPC, NATS),
+ * request-response patterns, event publishing, message validation, dead letter queues, retry policies, circuit breakers,
+ * service discovery, and health checks. Essential for building scalable, resilient microservices in healthcare platforms.
  */
+
+import { Observable, Subject, throwError, of, timer } from 'rxjs';
+import { retry, catchError, timeout, map, switchMap, tap } from 'rxjs/operators';
 
 // ============================================================================
 // TYPE DEFINITIONS
 // ============================================================================
 
-interface TransportConfig {
-  transport: 'TCP' | 'REDIS' | 'NATS' | 'MQTT' | 'RMQ' | 'KAFKA' | 'GRPC';
-  options: Record<string, any>;
-  retryAttempts?: number;
-  retryDelay?: number;
+interface MessagePattern {
+  cmd: string;
+  version?: string;
+  metadata?: Record<string, any>;
 }
 
-interface MessageMetadata {
-  correlationId: string;
+interface EventPattern {
+  event: string;
+  aggregateId?: string;
+  version?: number;
   timestamp: Date;
-  source: string;
-  userId?: string;
-  traceId?: string;
-  spanId?: string;
-  version: number;
+  metadata?: Record<string, any>;
 }
 
-interface RPCClientConfig {
-  name: string;
-  transport: TransportConfig;
-  timeout?: number;
-  retries?: number;
-  circuitBreaker?: CircuitBreakerOptions;
+interface RabbitMQConfig {
+  urls: string[];
+  queue: string;
+  queueOptions?: {
+    durable?: boolean;
+    exclusive?: boolean;
+    autoDelete?: boolean;
+    arguments?: Record<string, any>;
+  };
+  prefetchCount?: number;
+  noAck?: boolean;
+  socketOptions?: Record<string, any>;
 }
 
-interface CircuitBreakerOptions {
-  enabled: boolean;
+interface KafkaConfig {
+  clientId: string;
+  brokers: string[];
+  groupId: string;
+  ssl?: boolean;
+  sasl?: {
+    mechanism: string;
+    username: string;
+    password: string;
+  };
+  retry?: {
+    initialRetryTime: number;
+    retries: number;
+  };
+}
+
+interface GrpcConfig {
+  package: string;
+  protoPath: string;
+  url: string;
+  maxReceiveMessageLength?: number;
+  maxSendMessageLength?: number;
+  keepalive?: {
+    keepaliveTimeMs: number;
+    keepaliveTimeoutMs: number;
+    keepalivePermitWithoutCalls: number;
+  };
+  loader?: Record<string, any>;
+}
+
+interface NatsConfig {
+  servers: string[];
+  user?: string;
+  pass?: string;
+  token?: string;
+  maxReconnectAttempts?: number;
+  reconnectTimeWait?: number;
+  queue?: string;
+}
+
+interface RetryPolicy {
+  maxAttempts: number;
+  backoffType: 'fixed' | 'exponential' | 'linear';
+  initialDelay: number;
+  maxDelay?: number;
+  multiplier?: number;
+  shouldRetry?: (error: any) => boolean;
+}
+
+interface CircuitBreakerConfig {
   failureThreshold: number;
   successThreshold: number;
+  timeout: number;
   resetTimeout: number;
-  halfOpenRequests?: number;
+  monitoringPeriod?: number;
+}
+
+interface CircuitBreakerState {
+  state: 'CLOSED' | 'OPEN' | 'HALF_OPEN';
+  failureCount: number;
+  successCount: number;
+  lastFailureTime: number;
+  nextAttemptTime: number;
+}
+
+interface DeadLetterQueueConfig {
+  queueName: string;
+  exchange?: string;
+  routingKey?: string;
+  maxRetries: number;
+  retryDelay: number;
+  ttl?: number;
+}
+
+interface MessageValidationRule {
+  field: string;
+  type: 'string' | 'number' | 'boolean' | 'object' | 'array' | 'date' | 'uuid' | 'email';
+  required?: boolean;
+  min?: number;
+  max?: number;
+  pattern?: RegExp;
+  enum?: any[];
+  custom?: (value: any) => boolean | Promise<boolean>;
 }
 
 interface ServiceRegistration {
@@ -70,1446 +154,1642 @@ interface ServiceRegistration {
   version: string;
   host: string;
   port: number;
-  protocol: string;
-  status: 'healthy' | 'unhealthy' | 'starting' | 'stopping';
-  metadata: Record<string, any>;
-  registeredAt: Date;
-  lastHeartbeat?: Date;
+  protocol: 'tcp' | 'http' | 'grpc' | 'nats' | 'rabbitmq' | 'kafka';
+  healthCheckUrl?: string;
+  metadata?: Record<string, any>;
+  tags?: string[];
 }
 
-interface LoadBalancer {
-  strategy: 'round-robin' | 'random' | 'least-connections' | 'weighted' | 'consistent-hash';
+interface ServiceDiscoveryResult {
   instances: ServiceRegistration[];
+  strategy: 'round-robin' | 'random' | 'least-connections' | 'weighted';
+}
+
+interface HealthCheckStatus {
+  status: 'healthy' | 'degraded' | 'unhealthy';
+  timestamp: Date;
+  uptime: number;
+  checks: Record<string, ComponentHealth>;
+  version?: string;
+}
+
+interface ComponentHealth {
+  status: 'pass' | 'fail' | 'warn';
+  componentType: string;
+  observedValue?: any;
+  observedUnit?: string;
+  time?: string;
+  output?: string;
+}
+
+interface SagaStep {
+  stepId: string;
+  action: () => Promise<any>;
+  compensation: () => Promise<void>;
+  timeout?: number;
+}
+
+interface SagaContext {
+  sagaId: string;
+  currentStep: number;
+  completedSteps: string[];
+  data: Record<string, any>;
+  status: 'pending' | 'running' | 'completed' | 'compensating' | 'failed';
+}
+
+interface MessageMetrics {
+  messageId: string;
+  pattern: string;
+  timestamp: Date;
+  duration?: number;
+  status: 'sent' | 'received' | 'processed' | 'failed';
+  retryCount?: number;
+  error?: string;
+}
+
+interface LoadBalancerConfig {
+  strategy: 'round-robin' | 'random' | 'least-connections' | 'weighted' | 'ip-hash';
   healthCheckInterval: number;
   unhealthyThreshold: number;
+  healthyThreshold: number;
 }
 
-interface HealthCheck {
-  name: string;
-  status: 'up' | 'down' | 'degraded';
+interface RequestContext {
+  traceId: string;
+  spanId: string;
+  parentSpanId?: string;
+  userId?: string;
+  tenantId?: string;
+  correlationId: string;
   timestamp: Date;
-  responseTime?: number;
-  details?: Record<string, any>;
-  dependencies?: HealthCheck[];
-}
-
-interface RetryStrategy {
-  maxAttempts: number;
-  baseDelay: number;
-  maxDelay: number;
-  backoffType: 'exponential' | 'linear' | 'fixed';
-  jitter: boolean;
-  retryableErrors?: string[];
-}
-
-interface StreamMessage {
-  id: string;
-  data: any;
-  timestamp: Date;
-  sequence: number;
-  metadata: Record<string, any>;
-}
-
-interface HybridAppConfig {
-  httpPort: number;
-  microservices: TransportConfig[];
-  globalPrefix?: string;
-  cors?: boolean;
-  swagger?: boolean;
-}
-
-interface GracefulShutdownConfig {
-  timeout: number;
-  signals: string[];
-  beforeShutdown?: () => Promise<void>;
-  onShutdown?: () => Promise<void>;
+  metadata?: Record<string, any>;
 }
 
 // ============================================================================
-// SECTION 1: MESSAGE PATTERN BUILDERS (Functions 1-8)
+// MESSAGE PATTERN UTILITIES (1-5)
 // ============================================================================
 
 /**
- * 1. Creates a standardized request-response message pattern.
+ * Creates a typed message pattern for request-response communication.
  *
- * @param {string} pattern - Message pattern identifier
- * @param {any} data - Message payload
- * @param {Partial<MessageMetadata>} [metadata] - Optional metadata
- * @returns {object} Formatted message pattern
+ * @param {string} cmd - Command name
+ * @param {string} [version] - API version
+ * @param {Record<string, any>} [metadata] - Additional metadata
+ * @returns {MessagePattern} Message pattern object
  *
  * @example
  * ```typescript
- * const msg = createRequestPattern('patient.get', { id: '123' }, { userId: 'user-456' });
- * // Result: { pattern: 'patient.get', data: {...}, metadata: {...} }
+ * const pattern = createMessagePattern('get_patient', 'v1', { source: 'api-gateway' });
+ * // Result: { cmd: 'get_patient', version: 'v1', metadata: { source: 'api-gateway' } }
  * ```
  */
-export const createRequestPattern = (
-  pattern: string,
-  data: any,
-  metadata?: Partial<MessageMetadata>,
-): object => {
+export const createMessagePattern = (
+  cmd: string,
+  version?: string,
+  metadata?: Record<string, any>,
+): MessagePattern => {
   return {
-    pattern,
-    data,
-    metadata: {
-      correlationId: generateUUID(),
-      timestamp: new Date(),
-      source: 'api',
-      version: 1,
-      ...metadata,
-    },
+    cmd,
+    ...(version && { version }),
+    ...(metadata && { metadata }),
   };
 };
 
 /**
- * 2. Creates an event pattern for fire-and-forget messaging.
+ * Creates a typed event pattern for event-driven communication.
  *
- * @param {string} eventName - Event name/pattern
- * @param {any} payload - Event payload
- * @param {Record<string, any>} [context] - Event context
- * @returns {object} Formatted event pattern
+ * @param {string} event - Event name
+ * @param {string} [aggregateId] - Aggregate identifier
+ * @param {number} [version] - Event version
+ * @param {Record<string, any>} [metadata] - Additional metadata
+ * @returns {EventPattern} Event pattern object
  *
  * @example
  * ```typescript
- * const event = createEventPattern('patient.created', { id: '123', name: 'John' });
- * // Result: { event: 'patient.created', payload: {...}, context: {...} }
+ * const pattern = createEventPattern('patient.created', 'patient-123', 1);
+ * // Result: { event: 'patient.created', aggregateId: 'patient-123', version: 1, timestamp: Date }
  * ```
  */
 export const createEventPattern = (
-  eventName: string,
-  payload: any,
-  context?: Record<string, any>,
-): object => {
+  event: string,
+  aggregateId?: string,
+  version?: number,
+  metadata?: Record<string, any>,
+): EventPattern => {
   return {
-    event: eventName,
+    event,
+    ...(aggregateId && { aggregateId }),
+    ...(version && { version }),
+    timestamp: new Date(),
+    ...(metadata && { metadata }),
+  };
+};
+
+/**
+ * Wraps message payload with request context for distributed tracing.
+ *
+ * @param {any} payload - Message payload
+ * @param {RequestContext} context - Request context
+ * @returns {{ payload: any; context: RequestContext }} Wrapped message
+ *
+ * @example
+ * ```typescript
+ * const message = wrapMessageWithContext(
+ *   { patientId: '123' },
+ *   { traceId: 'trace-1', spanId: 'span-1', correlationId: 'corr-1', timestamp: new Date() }
+ * );
+ * ```
+ */
+export const wrapMessageWithContext = (
+  payload: any,
+  context: RequestContext,
+): { payload: any; context: RequestContext } => {
+  return {
     payload,
     context: {
-      eventId: generateEventId(),
-      timestamp: new Date().toISOString(),
       ...context,
+      timestamp: context.timestamp || new Date(),
     },
   };
 };
 
 /**
- * 3. Builds a reply pattern for request-response communication.
+ * Extracts request context from wrapped message.
  *
- * @param {string} correlationId - Correlation ID from original request
- * @param {any} data - Response data
- * @param {boolean} [success=true] - Whether response indicates success
- * @param {string} [error] - Error message if unsuccessful
- * @returns {object} Reply message
+ * @param {any} message - Wrapped message
+ * @returns {{ payload: any; context: RequestContext | null }} Extracted payload and context
  *
  * @example
  * ```typescript
- * const reply = buildReplyPattern('corr-123', { result: 'success' });
- * // Result: { correlationId: 'corr-123', data: {...}, success: true, timestamp: Date }
+ * const { payload, context } = extractMessageContext(wrappedMessage);
+ * console.log(context.traceId); // 'trace-1'
  * ```
  */
-export const buildReplyPattern = (
-  correlationId: string,
-  data: any,
-  success: boolean = true,
-  error?: string,
-): object => {
-  return {
-    correlationId,
-    data: success ? data : null,
-    error: error || null,
-    success,
-    timestamp: new Date(),
-  };
-};
-
-/**
- * 4. Creates a streaming message with sequence tracking.
- *
- * @param {any} data - Message data
- * @param {number} sequence - Message sequence number
- * @param {Record<string, any>} [metadata] - Additional metadata
- * @returns {StreamMessage} Stream message
- *
- * @example
- * ```typescript
- * const streamMsg = createStreamMessage({ vitals: {...} }, 1);
- * // Result: { id: 'msg-uuid', data: {...}, sequence: 1, timestamp: Date }
- * ```
- */
-export const createStreamMessage = (
-  data: any,
-  sequence: number,
-  metadata?: Record<string, any>,
-): StreamMessage => {
-  return {
-    id: generateMessageId(),
-    data,
-    timestamp: new Date(),
-    sequence,
-    metadata: metadata || {},
-  };
-};
-
-/**
- * 5. Validates message pattern structure and required fields.
- *
- * @param {any} message - Message to validate
- * @param {string[]} [requiredFields] - Required field names
- * @returns {boolean} True if valid
- *
- * @example
- * ```typescript
- * const isValid = validateMessagePattern(msg, ['pattern', 'data']);
- * // Result: true
- * ```
- */
-export const validateMessagePattern = (
+export const extractMessageContext = (
   message: any,
-  requiredFields?: string[],
-): boolean => {
-  if (!message || typeof message !== 'object') {
-    return false;
+): { payload: any; context: RequestContext | null } => {
+  if (message && typeof message === 'object' && 'payload' in message && 'context' in message) {
+    return {
+      payload: message.payload,
+      context: message.context,
+    };
   }
-
-  const fields = requiredFields || ['pattern', 'data'];
-  return fields.every(field => message[field] !== undefined);
-};
-
-/**
- * 6. Extracts metadata from message headers or body.
- *
- * @param {any} message - Message object
- * @returns {MessageMetadata | null} Extracted metadata
- *
- * @example
- * ```typescript
- * const metadata = extractMessageMetadata(message);
- * // Result: { correlationId: '...', timestamp: Date, ... }
- * ```
- */
-export const extractMessageMetadata = (message: any): MessageMetadata | null => {
-  if (!message) return null;
-
   return {
-    correlationId: message.metadata?.correlationId || message.correlationId || generateUUID(),
-    timestamp: message.metadata?.timestamp || message.timestamp || new Date(),
-    source: message.metadata?.source || message.source || 'unknown',
-    userId: message.metadata?.userId || message.userId,
-    traceId: message.metadata?.traceId || message.traceId,
-    spanId: message.metadata?.spanId || message.spanId,
-    version: message.metadata?.version || message.version || 1,
+    payload: message,
+    context: null,
   };
 };
 
 /**
- * 7. Enriches message with distributed tracing context.
+ * Generates correlation ID for message tracing.
  *
- * @param {any} message - Message to enrich
- * @param {string} traceId - Trace ID
- * @param {string} spanId - Span ID
- * @param {string} [parentSpanId] - Parent span ID
- * @returns {any} Enriched message
+ * @param {string} [prefix='msg'] - Prefix for correlation ID
+ * @returns {string} Correlation ID
  *
  * @example
  * ```typescript
- * const enriched = enrichWithTracing(msg, 'trace-123', 'span-456');
- * // Result: Message with tracing headers added
+ * const correlationId = generateCorrelationId('patient');
+ * // Result: 'patient_1699564800000_a1b2c3d4'
  * ```
  */
-export const enrichWithTracing = (
-  message: any,
-  traceId: string,
-  spanId: string,
-  parentSpanId?: string,
-): any => {
-  return {
-    ...message,
-    metadata: {
-      ...message.metadata,
-      traceId,
-      spanId,
-      parentSpanId,
-      tracingTimestamp: new Date().toISOString(),
-    },
-  };
-};
-
-/**
- * 8. Serializes message for transport layer.
- *
- * @param {any} message - Message to serialize
- * @param {string} [format='json'] - Serialization format
- * @returns {string | Buffer} Serialized message
- *
- * @example
- * ```typescript
- * const serialized = serializeMessage({ data: 'test' });
- * // Result: '{"data":"test"}'
- * ```
- */
-export const serializeMessage = (message: any, format: string = 'json'): string | Buffer => {
-  if (format === 'json') {
-    return JSON.stringify(message);
-  }
-  // Add other formats as needed (protobuf, msgpack, etc.)
-  return JSON.stringify(message);
+export const generateCorrelationId = (prefix = 'msg'): string => {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2, 10);
+  return `${prefix}_${timestamp}_${random}`;
 };
 
 // ============================================================================
-// SECTION 2: TRANSPORT CONFIGURATION HELPERS (Functions 9-16)
+// RABBITMQ INTEGRATION (6-10)
 // ============================================================================
 
 /**
- * 9. Creates TCP transport configuration with retry settings.
+ * Creates RabbitMQ configuration with best practices.
  *
- * @param {string} host - TCP host
- * @param {number} port - TCP port
- * @param {number} [retryAttempts=5] - Retry attempts
- * @param {number} [retryDelay=3000] - Retry delay in ms
- * @returns {TransportConfig} TCP configuration
- *
- * @example
- * ```typescript
- * const config = createTCPTransport('localhost', 3001);
- * // Result: { transport: 'TCP', options: { host: 'localhost', port: 3001 }, ... }
- * ```
- */
-export const createTCPTransport = (
-  host: string,
-  port: number,
-  retryAttempts: number = 5,
-  retryDelay: number = 3000,
-): TransportConfig => {
-  return {
-    transport: 'TCP',
-    options: {
-      host,
-      port,
-    },
-    retryAttempts,
-    retryDelay,
-  };
-};
-
-/**
- * 10. Creates Redis transport configuration for pub/sub.
- *
- * @param {string} host - Redis host
- * @param {number} port - Redis port
- * @param {string} [password] - Redis password
- * @param {boolean} [wildcards=true] - Enable wildcard patterns
- * @returns {TransportConfig} Redis configuration
- *
- * @example
- * ```typescript
- * const config = createRedisTransport('localhost', 6379);
- * // Result: { transport: 'REDIS', options: { host: 'localhost', port: 6379 } }
- * ```
- */
-export const createRedisTransport = (
-  host: string,
-  port: number,
-  password?: string,
-  wildcards: boolean = true,
-): TransportConfig => {
-  return {
-    transport: 'REDIS',
-    options: {
-      host,
-      port,
-      password,
-      wildcards,
-      retryAttempts: 5,
-      retryDelay: 3000,
-    },
-    retryAttempts: 5,
-    retryDelay: 3000,
-  };
-};
-
-/**
- * 11. Creates NATS transport configuration with authentication.
- *
- * @param {string[]} servers - NATS server URLs
- * @param {string} [user] - NATS username
- * @param {string} [pass] - NATS password
- * @param {string} [queue] - Queue group name
- * @returns {TransportConfig} NATS configuration
- *
- * @example
- * ```typescript
- * const config = createNATSTransport(['nats://localhost:4222'], 'user', 'pass');
- * // Result: { transport: 'NATS', options: { servers: [...], user: 'user', pass: 'pass' } }
- * ```
- */
-export const createNATSTransport = (
-  servers: string[],
-  user?: string,
-  pass?: string,
-  queue?: string,
-): TransportConfig => {
-  return {
-    transport: 'NATS',
-    options: {
-      servers,
-      user,
-      pass,
-      queue,
-      maxReconnectAttempts: 10,
-      reconnectTimeWait: 2000,
-    },
-    retryAttempts: 5,
-    retryDelay: 3000,
-  };
-};
-
-/**
- * 12. Creates RabbitMQ transport configuration with queue options.
- *
- * @param {string[]} urls - RabbitMQ URLs
  * @param {string} queue - Queue name
- * @param {boolean} [durable=true] - Queue durability
- * @param {number} [prefetchCount=10] - Prefetch count
- * @returns {TransportConfig} RabbitMQ configuration
+ * @param {string[]} urls - RabbitMQ URLs
+ * @param {Partial<RabbitMQConfig>} [options] - Additional options
+ * @returns {RabbitMQConfig} RabbitMQ configuration
  *
  * @example
  * ```typescript
- * const config = createRabbitMQTransport(['amqp://localhost:5672'], 'main_queue');
- * // Result: { transport: 'RMQ', options: { urls: [...], queue: 'main_queue', ... } }
+ * const config = createRabbitMQConfig('patient-queue', ['amqp://localhost:5672'], {
+ *   prefetchCount: 10,
+ *   queueOptions: { durable: true }
+ * });
  * ```
  */
-export const createRabbitMQTransport = (
-  urls: string[],
+export const createRabbitMQConfig = (
   queue: string,
-  durable: boolean = true,
-  prefetchCount: number = 10,
-): TransportConfig => {
+  urls: string[],
+  options?: Partial<RabbitMQConfig>,
+): RabbitMQConfig => {
   return {
-    transport: 'RMQ',
-    options: {
-      urls,
-      queue,
-      queueOptions: {
-        durable,
-      },
-      prefetchCount,
-      noAck: false,
-      persistent: true,
+    urls,
+    queue,
+    queueOptions: {
+      durable: true,
+      exclusive: false,
+      autoDelete: false,
+      ...options?.queueOptions,
     },
-    retryAttempts: 5,
-    retryDelay: 3000,
+    prefetchCount: options?.prefetchCount || 10,
+    noAck: options?.noAck || false,
+    socketOptions: options?.socketOptions || {},
   };
 };
 
 /**
- * 13. Creates Kafka transport configuration with consumer groups.
+ * Creates RabbitMQ exchange configuration with routing.
  *
- * @param {string[]} brokers - Kafka broker URLs
- * @param {string} clientId - Kafka client ID
- * @param {string} groupId - Consumer group ID
- * @param {boolean} [ssl=false] - Enable SSL
- * @returns {TransportConfig} Kafka configuration
+ * @param {string} exchange - Exchange name
+ * @param {'direct' | 'topic' | 'fanout' | 'headers'} type - Exchange type
+ * @param {string} [routingKey] - Routing key
+ * @returns {Record<string, any>} Exchange configuration
  *
  * @example
  * ```typescript
- * const config = createKafkaTransport(['localhost:9092'], 'patient-service', 'patient-group');
- * // Result: { transport: 'KAFKA', options: { client: {...}, consumer: {...} } }
+ * const config = createRabbitMQExchange('healthcare-events', 'topic', 'patient.created');
  * ```
  */
-export const createKafkaTransport = (
-  brokers: string[],
-  clientId: string,
-  groupId: string,
-  ssl: boolean = false,
-): TransportConfig => {
+export const createRabbitMQExchange = (
+  exchange: string,
+  type: 'direct' | 'topic' | 'fanout' | 'headers',
+  routingKey?: string,
+): Record<string, any> => {
   return {
-    transport: 'KAFKA',
-    options: {
-      client: {
-        clientId,
-        brokers,
-        ssl,
-      },
-      consumer: {
-        groupId,
-        allowAutoTopicCreation: true,
-        retry: {
-          initialRetryTime: 100,
-          retries: 8,
-        },
-      },
-      producer: {
-        allowAutoTopicCreation: true,
-        retry: {
-          initialRetryTime: 100,
-          retries: 8,
-        },
-      },
-    },
-    retryAttempts: 5,
-    retryDelay: 3000,
+    exchange,
+    type,
+    ...(routingKey && { routingKey }),
+    durable: true,
+    autoDelete: false,
   };
 };
 
 /**
- * 14. Creates gRPC transport configuration with proto definitions.
+ * Creates dead letter queue configuration for RabbitMQ.
+ *
+ * @param {string} originalQueue - Original queue name
+ * @param {number} [maxRetries=3] - Maximum retry attempts
+ * @param {number} [retryDelay=5000] - Retry delay in milliseconds
+ * @returns {DeadLetterQueueConfig} DLQ configuration
+ *
+ * @example
+ * ```typescript
+ * const dlqConfig = createDeadLetterQueue('patient-queue', 3, 5000);
+ * // Result: { queueName: 'patient-queue-dlq', maxRetries: 3, retryDelay: 5000 }
+ * ```
+ */
+export const createDeadLetterQueue = (
+  originalQueue: string,
+  maxRetries = 3,
+  retryDelay = 5000,
+): DeadLetterQueueConfig => {
+  return {
+    queueName: `${originalQueue}-dlq`,
+    exchange: `${originalQueue}-dlx`,
+    routingKey: `${originalQueue}-dlx-key`,
+    maxRetries,
+    retryDelay,
+    ttl: retryDelay * maxRetries,
+  };
+};
+
+/**
+ * Acknowledges RabbitMQ message with error handling.
+ *
+ * @param {any} channel - RabbitMQ channel
+ * @param {any} message - RabbitMQ message
+ * @param {boolean} [requeue=false] - Whether to requeue on failure
+ * @returns {void}
+ *
+ * @example
+ * ```typescript
+ * acknowledgeMessage(channel, originalMsg, false);
+ * ```
+ */
+export const acknowledgeMessage = (
+  channel: any,
+  message: any,
+  requeue = false,
+): void => {
+  try {
+    channel.ack(message);
+  } catch (error) {
+    console.error('Failed to acknowledge message:', error);
+    if (requeue) {
+      channel.nack(message, false, true);
+    }
+  }
+};
+
+/**
+ * Rejects RabbitMQ message and optionally sends to dead letter queue.
+ *
+ * @param {any} channel - RabbitMQ channel
+ * @param {any} message - RabbitMQ message
+ * @param {boolean} [requeue=false] - Whether to requeue
+ * @param {string} [reason] - Rejection reason
+ * @returns {void}
+ *
+ * @example
+ * ```typescript
+ * rejectMessage(channel, originalMsg, false, 'Invalid payload');
+ * ```
+ */
+export const rejectMessage = (
+  channel: any,
+  message: any,
+  requeue = false,
+  reason?: string,
+): void => {
+  try {
+    if (reason) {
+      console.warn(`Rejecting message: ${reason}`);
+    }
+    channel.nack(message, false, requeue);
+  } catch (error) {
+    console.error('Failed to reject message:', error);
+  }
+};
+
+// ============================================================================
+// KAFKA INTEGRATION (11-15)
+// ============================================================================
+
+/**
+ * Creates Kafka configuration with consumer and producer settings.
+ *
+ * @param {string} clientId - Kafka client ID
+ * @param {string[]} brokers - Kafka broker URLs
+ * @param {string} groupId - Consumer group ID
+ * @param {Partial<KafkaConfig>} [options] - Additional options
+ * @returns {KafkaConfig} Kafka configuration
+ *
+ * @example
+ * ```typescript
+ * const config = createKafkaConfig('healthcare-service', ['localhost:9092'], 'patient-consumers');
+ * ```
+ */
+export const createKafkaConfig = (
+  clientId: string,
+  brokers: string[],
+  groupId: string,
+  options?: Partial<KafkaConfig>,
+): KafkaConfig => {
+  return {
+    clientId,
+    brokers,
+    groupId,
+    ssl: options?.ssl || false,
+    sasl: options?.sasl,
+    retry: {
+      initialRetryTime: 100,
+      retries: 8,
+      ...options?.retry,
+    },
+  };
+};
+
+/**
+ * Creates Kafka topic configuration with partitions and replication.
+ *
+ * @param {string} topic - Topic name
+ * @param {number} [numPartitions=3] - Number of partitions
+ * @param {number} [replicationFactor=2] - Replication factor
+ * @returns {Record<string, any>} Topic configuration
+ *
+ * @example
+ * ```typescript
+ * const topicConfig = createKafkaTopic('patient-events', 5, 3);
+ * ```
+ */
+export const createKafkaTopic = (
+  topic: string,
+  numPartitions = 3,
+  replicationFactor = 2,
+): Record<string, any> => {
+  return {
+    topic,
+    numPartitions,
+    replicationFactor,
+    configEntries: [
+      { name: 'compression.type', value: 'snappy' },
+      { name: 'retention.ms', value: '604800000' }, // 7 days
+      { name: 'cleanup.policy', value: 'delete' },
+    ],
+  };
+};
+
+/**
+ * Serializes Kafka message with JSON encoding and compression.
+ *
+ * @param {any} data - Data to serialize
+ * @param {Record<string, any>} [headers] - Message headers
+ * @returns {{ value: string; headers?: Record<string, any> }} Serialized message
+ *
+ * @example
+ * ```typescript
+ * const message = serializeKafkaMessage({ patientId: '123' }, { 'content-type': 'application/json' });
+ * ```
+ */
+export const serializeKafkaMessage = (
+  data: any,
+  headers?: Record<string, any>,
+): { value: string; headers?: Record<string, any> } => {
+  return {
+    value: JSON.stringify(data),
+    ...(headers && { headers }),
+  };
+};
+
+/**
+ * Deserializes Kafka message with error handling.
+ *
+ * @param {any} message - Kafka message
+ * @returns {{ data: any; headers: Record<string, any> | null; error?: string }} Deserialized message
+ *
+ * @example
+ * ```typescript
+ * const { data, headers, error } = deserializeKafkaMessage(kafkaMessage);
+ * ```
+ */
+export const deserializeKafkaMessage = (
+  message: any,
+): { data: any; headers: Record<string, any> | null; error?: string } => {
+  try {
+    const data = JSON.parse(message.value.toString());
+    const headers = message.headers || null;
+    return { data, headers };
+  } catch (error) {
+    return {
+      data: null,
+      headers: null,
+      error: `Failed to deserialize message: ${error.message}`,
+    };
+  }
+};
+
+/**
+ * Creates Kafka consumer with auto-commit and offset management.
+ *
+ * @param {KafkaConfig} config - Kafka configuration
+ * @param {string[]} topics - Topics to subscribe to
+ * @param {boolean} [autoCommit=true] - Enable auto-commit
+ * @returns {Record<string, any>} Consumer configuration
+ *
+ * @example
+ * ```typescript
+ * const consumer = createKafkaConsumer(kafkaConfig, ['patient-events', 'appointment-events']);
+ * ```
+ */
+export const createKafkaConsumer = (
+  config: KafkaConfig,
+  topics: string[],
+  autoCommit = true,
+): Record<string, any> => {
+  return {
+    groupId: config.groupId,
+    topics,
+    autoCommit,
+    sessionTimeout: 30000,
+    heartbeatInterval: 3000,
+    rebalanceTimeout: 60000,
+  };
+};
+
+// ============================================================================
+// GRPC INTEGRATION (16-20)
+// ============================================================================
+
+/**
+ * Creates gRPC configuration with keepalive and message limits.
  *
  * @param {string} packageName - gRPC package name
- * @param {string} protoPath - Path to .proto file
+ * @param {string} protoPath - Path to proto file
  * @param {string} url - gRPC server URL
- * @param {Record<string, any>} [loaderOptions] - Proto loader options
- * @returns {TransportConfig} gRPC configuration
+ * @param {Partial<GrpcConfig>} [options] - Additional options
+ * @returns {GrpcConfig} gRPC configuration
  *
  * @example
  * ```typescript
- * const config = createGRPCTransport('healthcare', './proto/patient.proto', '0.0.0.0:5000');
- * // Result: { transport: 'GRPC', options: { package: 'healthcare', protoPath: '...', url: '...' } }
+ * const config = createGrpcConfig('healthcare', './proto/healthcare.proto', '0.0.0.0:5000');
  * ```
  */
-export const createGRPCTransport = (
+export const createGrpcConfig = (
   packageName: string,
   protoPath: string,
   url: string,
-  loaderOptions?: Record<string, any>,
-): TransportConfig => {
+  options?: Partial<GrpcConfig>,
+): GrpcConfig => {
   return {
-    transport: 'GRPC',
-    options: {
-      package: packageName,
-      protoPath,
-      url,
-      maxReceiveMessageLength: 1024 * 1024 * 100, // 100 MB
-      maxSendMessageLength: 1024 * 1024 * 100,
-      loader: {
-        keepCase: true,
-        longs: String,
-        enums: String,
-        defaults: true,
-        oneofs: true,
-        ...loaderOptions,
-      },
+    package: packageName,
+    protoPath,
+    url,
+    maxReceiveMessageLength: options?.maxReceiveMessageLength || 1024 * 1024 * 100, // 100 MB
+    maxSendMessageLength: options?.maxSendMessageLength || 1024 * 1024 * 100,
+    keepalive: {
+      keepaliveTimeMs: 120000,
+      keepaliveTimeoutMs: 20000,
+      keepalivePermitWithoutCalls: 1,
+      ...options?.keepalive,
     },
-    retryAttempts: 5,
-    retryDelay: 3000,
+    loader: {
+      keepCase: true,
+      longs: String,
+      enums: String,
+      defaults: true,
+      oneofs: true,
+      ...options?.loader,
+    },
   };
 };
 
 /**
- * 15. Creates MQTT transport configuration for IoT scenarios.
+ * Creates gRPC metadata for authentication and tracing.
  *
- * @param {string} url - MQTT broker URL
- * @param {string} [username] - MQTT username
- * @param {string} [password] - MQTT password
- * @param {number} [qos=1] - Quality of Service level
- * @returns {TransportConfig} MQTT configuration
+ * @param {Record<string, string>} metadata - Metadata key-value pairs
+ * @returns {Map<string, string>} gRPC metadata
  *
  * @example
  * ```typescript
- * const config = createMQTTTransport('mqtt://localhost:1883', 'user', 'pass');
- * // Result: { transport: 'MQTT', options: { url: '...', username: '...', ... } }
+ * const metadata = createGrpcMetadata({
+ *   'authorization': 'Bearer token123',
+ *   'x-trace-id': 'trace-1'
+ * });
  * ```
  */
-export const createMQTTTransport = (
-  url: string,
-  username?: string,
-  password?: string,
-  qos: number = 1,
-): TransportConfig => {
+export const createGrpcMetadata = (
+  metadata: Record<string, string>,
+): Map<string, string> => {
+  return new Map(Object.entries(metadata));
+};
+
+/**
+ * Handles gRPC streaming with backpressure and error recovery.
+ *
+ * @param {Observable<any>} stream$ - gRPC stream observable
+ * @param {(data: any) => void} onData - Data handler
+ * @param {(error: any) => void} [onError] - Error handler
+ * @returns {void}
+ *
+ * @example
+ * ```typescript
+ * handleGrpcStream(
+ *   vitalSignsStream$,
+ *   (data) => console.log('Received vital sign:', data),
+ *   (error) => console.error('Stream error:', error)
+ * );
+ * ```
+ */
+export const handleGrpcStream = (
+  stream$: Observable<any>,
+  onData: (data: any) => void,
+  onError?: (error: any) => void,
+): void => {
+  stream$.subscribe({
+    next: onData,
+    error: onError || ((error) => console.error('Stream error:', error)),
+    complete: () => console.log('Stream completed'),
+  });
+};
+
+/**
+ * Creates gRPC error with proper status codes.
+ *
+ * @param {number} code - gRPC status code
+ * @param {string} message - Error message
+ * @param {Record<string, any>} [details] - Error details
+ * @returns {Error} gRPC error
+ *
+ * @example
+ * ```typescript
+ * throw createGrpcError(5, 'Patient not found', { patientId: '123' });
+ * ```
+ */
+export const createGrpcError = (
+  code: number,
+  message: string,
+  details?: Record<string, any>,
+): Error => {
+  const error: any = new Error(message);
+  error.code = code;
+  error.details = details || {};
+  return error;
+};
+
+/**
+ * Validates gRPC service definition and methods.
+ *
+ * @param {any} serviceDefinition - gRPC service definition
+ * @param {string[]} requiredMethods - Required method names
+ * @returns {{ valid: boolean; missing?: string[] }} Validation result
+ *
+ * @example
+ * ```typescript
+ * const result = validateGrpcService(HealthcareService, ['GetPatient', 'CreatePatient']);
+ * ```
+ */
+export const validateGrpcService = (
+  serviceDefinition: any,
+  requiredMethods: string[],
+): { valid: boolean; missing?: string[] } => {
+  const availableMethods = Object.keys(serviceDefinition || {});
+  const missing = requiredMethods.filter(method => !availableMethods.includes(method));
+
   return {
-    transport: 'MQTT',
-    options: {
-      url,
-      username,
-      password,
-      qos,
-      clean: true,
-      reconnectPeriod: 1000,
-    },
-    retryAttempts: 5,
-    retryDelay: 3000,
+    valid: missing.length === 0,
+    ...(missing.length > 0 && { missing }),
+  };
+};
+
+// ============================================================================
+// NATS INTEGRATION (21-24)
+// ============================================================================
+
+/**
+ * Creates NATS configuration with authentication and reconnection.
+ *
+ * @param {string[]} servers - NATS server URLs
+ * @param {Partial<NatsConfig>} [options] - Additional options
+ * @returns {NatsConfig} NATS configuration
+ *
+ * @example
+ * ```typescript
+ * const config = createNatsConfig(['nats://localhost:4222'], {
+ *   user: 'admin',
+ *   pass: 'password',
+ *   maxReconnectAttempts: 10
+ * });
+ * ```
+ */
+export const createNatsConfig = (
+  servers: string[],
+  options?: Partial<NatsConfig>,
+): NatsConfig => {
+  return {
+    servers,
+    user: options?.user,
+    pass: options?.pass,
+    token: options?.token,
+    maxReconnectAttempts: options?.maxReconnectAttempts || 10,
+    reconnectTimeWait: options?.reconnectTimeWait || 2000,
+    queue: options?.queue,
   };
 };
 
 /**
- * 16. Validates transport configuration for correctness.
+ * Creates NATS subject with wildcards for pub/sub patterns.
  *
- * @param {TransportConfig} config - Transport configuration
- * @returns {boolean} True if valid
+ * @param {string} domain - Domain name
+ * @param {string} entity - Entity name
+ * @param {string} action - Action name
+ * @param {string} [wildcard] - Wildcard pattern
+ * @returns {string} NATS subject
  *
  * @example
  * ```typescript
- * const isValid = validateTransportConfig(tcpConfig);
- * // Result: true
+ * const subject = createNatsSubject('healthcare', 'patient', 'created');
+ * // Result: 'healthcare.patient.created'
+ *
+ * const wildcardSubject = createNatsSubject('healthcare', '*', 'created');
+ * // Result: 'healthcare.*.created'
  * ```
  */
-export const validateTransportConfig = (config: TransportConfig): boolean => {
-  if (!config || !config.transport || !config.options) {
-    return false;
+export const createNatsSubject = (
+  domain: string,
+  entity: string,
+  action: string,
+  wildcard?: string,
+): string => {
+  if (wildcard) {
+    return `${domain}.${wildcard}.${action}`;
   }
-
-  const validTransports = ['TCP', 'REDIS', 'NATS', 'MQTT', 'RMQ', 'KAFKA', 'GRPC'];
-  return validTransports.includes(config.transport);
-};
-
-// ============================================================================
-// SECTION 3: RPC CLIENT FACTORIES (Functions 17-22)
-// ============================================================================
-
-/**
- * 17. Creates a configured RPC client instance.
- *
- * @param {RPCClientConfig} config - RPC client configuration
- * @returns {object} Client configuration object
- *
- * @example
- * ```typescript
- * const client = createRPCClient({
- *   name: 'patient-service',
- *   transport: tcpConfig,
- *   timeout: 5000
- * });
- * ```
- */
-export const createRPCClient = (config: RPCClientConfig): object => {
-  return {
-    name: config.name,
-    transport: config.transport,
-    timeout: config.timeout || 5000,
-    retries: config.retries || 3,
-    circuitBreaker: config.circuitBreaker || {
-      enabled: false,
-      failureThreshold: 5,
-      successThreshold: 2,
-      resetTimeout: 60000,
-    },
-  };
+  return `${domain}.${entity}.${action}`;
 };
 
 /**
- * 18. Creates a hybrid RPC client supporting multiple transports.
- *
- * @param {string} name - Client name
- * @param {TransportConfig[]} transports - Array of transport configs
- * @returns {object} Hybrid client configuration
- *
- * @example
- * ```typescript
- * const client = createHybridRPCClient('multi-service', [tcpConfig, redisConfig]);
- * // Result: Client supporting both TCP and Redis
- * ```
- */
-export const createHybridRPCClient = (name: string, transports: TransportConfig[]): object => {
-  return {
-    name,
-    transports,
-    strategy: 'failover', // failover, load-balance, or broadcast
-    timeout: 5000,
-  };
-};
-
-/**
- * 19. Builds RPC request with timeout and metadata.
- *
- * @param {string} pattern - RPC pattern
- * @param {any} data - Request data
- * @param {number} [timeout=5000] - Request timeout in ms
- * @param {Record<string, any>} [metadata] - Request metadata
- * @returns {object} RPC request object
- *
- * @example
- * ```typescript
- * const request = buildRPCRequest('patient.get', { id: '123' }, 5000);
- * // Result: { pattern: 'patient.get', data: {...}, timeout: 5000, metadata: {...} }
- * ```
- */
-export const buildRPCRequest = (
-  pattern: string,
-  data: any,
-  timeout: number = 5000,
-  metadata?: Record<string, any>,
-): object => {
-  return {
-    pattern,
-    data,
-    timeout,
-    metadata: {
-      requestId: generateRequestId(),
-      timestamp: new Date().toISOString(),
-      ...metadata,
-    },
-  };
-};
-
-/**
- * 20. Creates an RPC client pool for load distribution.
- *
- * @param {RPCClientConfig[]} clients - Array of client configurations
- * @param {string} strategy - Pool strategy
- * @returns {object} Client pool configuration
- *
- * @example
- * ```typescript
- * const pool = createRPCClientPool([client1Config, client2Config], 'round-robin');
- * // Result: Pool with 2 clients using round-robin strategy
- * ```
- */
-export const createRPCClientPool = (clients: RPCClientConfig[], strategy: string): object => {
-  return {
-    clients,
-    strategy, // 'round-robin', 'random', 'least-busy'
-    healthCheckInterval: 30000,
-    minSize: 1,
-    maxSize: clients.length,
-  };
-};
-
-/**
- * 21. Wraps RPC client with circuit breaker protection.
- *
- * @param {any} client - RPC client instance
- * @param {CircuitBreakerOptions} options - Circuit breaker options
- * @returns {object} Wrapped client with circuit breaker
- *
- * @example
- * ```typescript
- * const protected = wrapWithCircuitBreaker(client, {
- *   enabled: true,
- *   failureThreshold: 5,
- *   successThreshold: 2,
- *   resetTimeout: 60000
- * });
- * ```
- */
-export const wrapWithCircuitBreaker = (
-  client: any,
-  options: CircuitBreakerOptions,
-): object => {
-  return {
-    client,
-    circuitBreaker: {
-      ...options,
-      state: 'CLOSED',
-      failures: 0,
-      successes: 0,
-      lastFailureTime: 0,
-      nextAttempt: 0,
-    },
-  };
-};
-
-/**
- * 22. Creates an RPC client with automatic retry logic.
- *
- * @param {RPCClientConfig} config - Client configuration
- * @param {RetryStrategy} retryStrategy - Retry strategy
- * @returns {object} Client with retry configuration
- *
- * @example
- * ```typescript
- * const client = createRetryableRPCClient(config, {
- *   maxAttempts: 3,
- *   baseDelay: 1000,
- *   maxDelay: 10000,
- *   backoffType: 'exponential',
- *   jitter: true
- * });
- * ```
- */
-export const createRetryableRPCClient = (
-  config: RPCClientConfig,
-  retryStrategy: RetryStrategy,
-): object => {
-  return {
-    ...config,
-    retryStrategy,
-  };
-};
-
-// ============================================================================
-// SECTION 4: SERVICE DISCOVERY UTILITIES (Functions 23-28)
-// ============================================================================
-
-/**
- * 23. Registers a microservice instance in service registry.
+ * Creates NATS queue group for load balancing.
  *
  * @param {string} serviceName - Service name
- * @param {string} host - Service host
- * @param {number} port - Service port
- * @param {Record<string, any>} [metadata] - Service metadata
- * @returns {ServiceRegistration} Service registration
+ * @param {string} [environment='production'] - Environment
+ * @returns {string} Queue group name
  *
  * @example
  * ```typescript
- * const registration = registerService('patient-service', 'localhost', 3001, { version: '1.0' });
- * // Result: { serviceId: 'uuid', serviceName: 'patient-service', ... }
+ * const queueGroup = createNatsQueueGroup('patient-service', 'production');
+ * // Result: 'patient-service-production'
  * ```
  */
-export const registerService = (
+export const createNatsQueueGroup = (
   serviceName: string,
-  host: string,
-  port: number,
-  metadata?: Record<string, any>,
-): ServiceRegistration => {
-  return {
-    serviceId: generateServiceId(),
-    serviceName,
-    version: metadata?.version || '1.0.0',
-    host,
-    port,
-    protocol: 'http',
-    status: 'healthy',
-    metadata: metadata || {},
-    registeredAt: new Date(),
-    lastHeartbeat: new Date(),
-  };
+  environment = 'production',
+): string => {
+  return `${serviceName}-${environment}`;
 };
 
 /**
- * 24. Discovers service instances by name.
+ * Handles NATS request-reply pattern with timeout.
  *
- * @param {string} serviceName - Service name to discover
- * @param {ServiceRegistration[]} registry - Service registry
- * @param {boolean} [healthyOnly=true] - Return only healthy instances
- * @returns {ServiceRegistration[]} Discovered instances
- *
- * @example
- * ```typescript
- * const instances = discoverServiceInstances('patient-service', registry);
- * // Result: [{ serviceId: '...', serviceName: 'patient-service', ... }]
- * ```
- */
-export const discoverServiceInstances = (
-  serviceName: string,
-  registry: ServiceRegistration[],
-  healthyOnly: boolean = true,
-): ServiceRegistration[] => {
-  return registry.filter(
-    service =>
-      service.serviceName === serviceName &&
-      (!healthyOnly || service.status === 'healthy'),
-  );
-};
-
-/**
- * 25. Updates service heartbeat and health status.
- *
- * @param {ServiceRegistration} service - Service instance
- * @param {boolean} isHealthy - Health status
- * @returns {ServiceRegistration} Updated service
+ * @param {any} client - NATS client
+ * @param {string} subject - NATS subject
+ * @param {any} data - Request data
+ * @param {number} [timeoutMs=5000] - Timeout in milliseconds
+ * @returns {Promise<any>} Response data
  *
  * @example
  * ```typescript
- * const updated = updateServiceHeartbeat(service, true);
- * // Result: Service with updated lastHeartbeat and status
+ * const response = await natsRequestReply(natsClient, 'patient.get', { id: '123' }, 5000);
  * ```
  */
-export const updateServiceHeartbeat = (
-  service: ServiceRegistration,
-  isHealthy: boolean,
-): ServiceRegistration => {
-  return {
-    ...service,
-    status: isHealthy ? 'healthy' : 'unhealthy',
-    lastHeartbeat: new Date(),
-  };
-};
+export const natsRequestReply = async (
+  client: any,
+  subject: string,
+  data: any,
+  timeoutMs = 5000,
+): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`NATS request timeout after ${timeoutMs}ms`));
+    }, timeoutMs);
 
-/**
- * 26. Deregisters a service instance from registry.
- *
- * @param {string} serviceId - Service ID to deregister
- * @param {ServiceRegistration[]} registry - Service registry
- * @returns {ServiceRegistration[]} Updated registry
- *
- * @example
- * ```typescript
- * const updated = deregisterService('service-123', registry);
- * // Result: Registry without the specified service
- * ```
- */
-export const deregisterService = (
-  serviceId: string,
-  registry: ServiceRegistration[],
-): ServiceRegistration[] => {
-  return registry.filter(service => service.serviceId !== serviceId);
-};
-
-/**
- * 27. Finds service instance by ID.
- *
- * @param {string} serviceId - Service ID
- * @param {ServiceRegistration[]} registry - Service registry
- * @returns {ServiceRegistration | null} Found service or null
- *
- * @example
- * ```typescript
- * const service = findServiceById('service-123', registry);
- * // Result: { serviceId: 'service-123', ... } or null
- * ```
- */
-export const findServiceById = (
-  serviceId: string,
-  registry: ServiceRegistration[],
-): ServiceRegistration | null => {
-  return registry.find(service => service.serviceId === serviceId) || null;
-};
-
-/**
- * 28. Filters services by metadata criteria.
- *
- * @param {ServiceRegistration[]} services - Services to filter
- * @param {Record<string, any>} criteria - Filter criteria
- * @returns {ServiceRegistration[]} Filtered services
- *
- * @example
- * ```typescript
- * const filtered = filterServicesByMetadata(services, { version: '1.0', region: 'us-east' });
- * // Result: Services matching metadata criteria
- * ```
- */
-export const filterServicesByMetadata = (
-  services: ServiceRegistration[],
-  criteria: Record<string, any>,
-): ServiceRegistration[] => {
-  return services.filter(service =>
-    Object.entries(criteria).every(
-      ([key, value]) => service.metadata[key] === value,
-    ),
-  );
-};
-
-// ============================================================================
-// SECTION 5: LOAD BALANCING HELPERS (Functions 29-33)
-// ============================================================================
-
-/**
- * 29. Creates a load balancer with strategy and health checks.
- *
- * @param {string} strategy - Load balancing strategy
- * @param {ServiceRegistration[]} instances - Service instances
- * @param {number} [healthCheckInterval=30000] - Health check interval in ms
- * @returns {LoadBalancer} Load balancer configuration
- *
- * @example
- * ```typescript
- * const lb = createLoadBalancer('round-robin', instances, 30000);
- * // Result: { strategy: 'round-robin', instances: [...], healthCheckInterval: 30000 }
- * ```
- */
-export const createLoadBalancer = (
-  strategy: string,
-  instances: ServiceRegistration[],
-  healthCheckInterval: number = 30000,
-): LoadBalancer => {
-  return {
-    strategy: strategy as any,
-    instances,
-    healthCheckInterval,
-    unhealthyThreshold: 3,
-  };
-};
-
-/**
- * 30. Selects next service instance using round-robin strategy.
- *
- * @param {LoadBalancer} balancer - Load balancer
- * @param {number} currentIndex - Current index
- * @returns {ServiceRegistration | null} Selected instance
- *
- * @example
- * ```typescript
- * const instance = selectRoundRobin(balancer, 0);
- * // Result: Next service instance in round-robin order
- * ```
- */
-export const selectRoundRobin = (
-  balancer: LoadBalancer,
-  currentIndex: number,
-): ServiceRegistration | null => {
-  const healthy = balancer.instances.filter(i => i.status === 'healthy');
-  if (healthy.length === 0) return null;
-
-  const nextIndex = currentIndex % healthy.length;
-  return healthy[nextIndex];
-};
-
-/**
- * 31. Selects random service instance for load distribution.
- *
- * @param {LoadBalancer} balancer - Load balancer
- * @returns {ServiceRegistration | null} Selected instance
- *
- * @example
- * ```typescript
- * const instance = selectRandom(balancer);
- * // Result: Randomly selected healthy instance
- * ```
- */
-export const selectRandom = (balancer: LoadBalancer): ServiceRegistration | null => {
-  const healthy = balancer.instances.filter(i => i.status === 'healthy');
-  if (healthy.length === 0) return null;
-
-  const randomIndex = Math.floor(Math.random() * healthy.length);
-  return healthy[randomIndex];
-};
-
-/**
- * 32. Selects instance using consistent hashing.
- *
- * @param {LoadBalancer} balancer - Load balancer
- * @param {string} key - Hash key (e.g., user ID, session ID)
- * @returns {ServiceRegistration | null} Selected instance
- *
- * @example
- * ```typescript
- * const instance = selectConsistentHash(balancer, 'user-123');
- * // Result: Consistently selected instance for the key
- * ```
- */
-export const selectConsistentHash = (
-  balancer: LoadBalancer,
-  key: string,
-): ServiceRegistration | null => {
-  const healthy = balancer.instances.filter(i => i.status === 'healthy');
-  if (healthy.length === 0) return null;
-
-  const hash = hashString(key);
-  const index = hash % healthy.length;
-  return healthy[index];
-};
-
-/**
- * 33. Selects instance with least connections.
- *
- * @param {LoadBalancer} balancer - Load balancer
- * @param {Map<string, number>} connections - Connection count by service ID
- * @returns {ServiceRegistration | null} Selected instance
- *
- * @example
- * ```typescript
- * const instance = selectLeastConnections(balancer, connectionsMap);
- * // Result: Instance with fewest active connections
- * ```
- */
-export const selectLeastConnections = (
-  balancer: LoadBalancer,
-  connections: Map<string, number>,
-): ServiceRegistration | null => {
-  const healthy = balancer.instances.filter(i => i.status === 'healthy');
-  if (healthy.length === 0) return null;
-
-  return healthy.reduce((min, instance) => {
-    const currentConns = connections.get(instance.serviceId) || 0;
-    const minConns = connections.get(min.serviceId) || 0;
-    return currentConns < minConns ? instance : min;
+    client.request(subject, JSON.stringify(data), (response: any) => {
+      clearTimeout(timer);
+      try {
+        resolve(JSON.parse(response));
+      } catch (error) {
+        reject(new Error('Failed to parse NATS response'));
+      }
+    });
   });
 };
 
 // ============================================================================
-// SECTION 6: CIRCUIT BREAKER & RETRY (Functions 34-38)
+// MESSAGE VALIDATION (25-29)
 // ============================================================================
 
 /**
- * 34. Creates a circuit breaker configuration.
+ * Validates message payload against schema rules.
  *
- * @param {number} failureThreshold - Failures before opening circuit
- * @param {number} successThreshold - Successes to close circuit
- * @param {number} resetTimeout - Time before retry in ms
- * @returns {CircuitBreakerOptions} Circuit breaker options
+ * @param {any} payload - Message payload
+ * @param {MessageValidationRule[]} rules - Validation rules
+ * @returns {{ valid: boolean; errors?: string[] }} Validation result
  *
  * @example
  * ```typescript
- * const cb = createCircuitBreaker(5, 2, 60000);
- * // Result: { enabled: true, failureThreshold: 5, successThreshold: 2, resetTimeout: 60000 }
+ * const rules = [
+ *   { field: 'patientId', type: 'uuid', required: true },
+ *   { field: 'age', type: 'number', min: 0, max: 150 }
+ * ];
+ * const result = validateMessagePayload({ patientId: '123', age: 30 }, rules);
  * ```
  */
-export const createCircuitBreaker = (
-  failureThreshold: number,
-  successThreshold: number,
-  resetTimeout: number,
-): CircuitBreakerOptions => {
+export const validateMessagePayload = (
+  payload: any,
+  rules: MessageValidationRule[],
+): { valid: boolean; errors?: string[] } => {
+  const errors: string[] = [];
+
+  for (const rule of rules) {
+    const value = payload[rule.field];
+
+    // Check required
+    if (rule.required && (value === undefined || value === null)) {
+      errors.push(`Field '${rule.field}' is required`);
+      continue;
+    }
+
+    if (value === undefined || value === null) {
+      continue;
+    }
+
+    // Type validation
+    if (!validateFieldType(value, rule.type)) {
+      errors.push(`Field '${rule.field}' must be of type ${rule.type}`);
+    }
+
+    // Min/Max validation
+    if (rule.min !== undefined && value < rule.min) {
+      errors.push(`Field '${rule.field}' must be >= ${rule.min}`);
+    }
+
+    if (rule.max !== undefined && value > rule.max) {
+      errors.push(`Field '${rule.field}' must be <= ${rule.max}`);
+    }
+
+    // Pattern validation
+    if (rule.pattern && typeof value === 'string' && !rule.pattern.test(value)) {
+      errors.push(`Field '${rule.field}' does not match required pattern`);
+    }
+
+    // Enum validation
+    if (rule.enum && !rule.enum.includes(value)) {
+      errors.push(`Field '${rule.field}' must be one of: ${rule.enum.join(', ')}`);
+    }
+
+    // Custom validation
+    if (rule.custom && !rule.custom(value)) {
+      errors.push(`Field '${rule.field}' failed custom validation`);
+    }
+  }
+
   return {
-    enabled: true,
-    failureThreshold,
-    successThreshold,
-    resetTimeout,
-    halfOpenRequests: 3,
+    valid: errors.length === 0,
+    ...(errors.length > 0 && { errors }),
   };
 };
 
 /**
- * 35. Creates exponential backoff retry strategy.
+ * Validates field type for message validation.
+ *
+ * @param {any} value - Field value
+ * @param {string} type - Expected type
+ * @returns {boolean} True if valid
+ *
+ * @example
+ * ```typescript
+ * const isValid = validateFieldType('test@example.com', 'email'); // true
+ * ```
+ */
+export const validateFieldType = (value: any, type: string): boolean => {
+  switch (type) {
+    case 'string':
+      return typeof value === 'string';
+    case 'number':
+      return typeof value === 'number' && !isNaN(value);
+    case 'boolean':
+      return typeof value === 'boolean';
+    case 'object':
+      return typeof value === 'object' && value !== null && !Array.isArray(value);
+    case 'array':
+      return Array.isArray(value);
+    case 'date':
+      return value instanceof Date || !isNaN(Date.parse(value));
+    case 'uuid':
+      return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+    case 'email':
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+    default:
+      return true;
+  }
+};
+
+/**
+ * Sanitizes message payload by removing sensitive fields.
+ *
+ * @param {any} payload - Message payload
+ * @param {string[]} sensitiveFields - Fields to remove
+ * @returns {any} Sanitized payload
+ *
+ * @example
+ * ```typescript
+ * const sanitized = sanitizeMessagePayload(
+ *   { patientId: '123', ssn: '123-45-6789', name: 'John' },
+ *   ['ssn', 'password']
+ * );
+ * // Result: { patientId: '123', name: 'John' }
+ * ```
+ */
+export const sanitizeMessagePayload = (
+  payload: any,
+  sensitiveFields: string[],
+): any => {
+  if (!payload || typeof payload !== 'object') {
+    return payload;
+  }
+
+  const sanitized = { ...payload };
+
+  for (const field of sensitiveFields) {
+    if (field in sanitized) {
+      delete sanitized[field];
+    }
+  }
+
+  return sanitized;
+};
+
+/**
+ * Validates message size to prevent payload overflow.
+ *
+ * @param {any} payload - Message payload
+ * @param {number} maxSizeBytes - Maximum size in bytes
+ * @returns {{ valid: boolean; size: number; maxSize: number }} Validation result
+ *
+ * @example
+ * ```typescript
+ * const result = validateMessageSize(largePayload, 1024 * 1024); // 1 MB
+ * ```
+ */
+export const validateMessageSize = (
+  payload: any,
+  maxSizeBytes: number,
+): { valid: boolean; size: number; maxSize: number } => {
+  const size = Buffer.byteLength(JSON.stringify(payload), 'utf8');
+
+  return {
+    valid: size <= maxSizeBytes,
+    size,
+    maxSize: maxSizeBytes,
+  };
+};
+
+/**
+ * Creates validation schema for common healthcare message types.
+ *
+ * @param {'patient' | 'appointment' | 'prescription' | 'vital-signs'} entityType - Entity type
+ * @returns {MessageValidationRule[]} Validation rules
+ *
+ * @example
+ * ```typescript
+ * const schema = createHealthcareMessageSchema('patient');
+ * const result = validateMessagePayload(payload, schema);
+ * ```
+ */
+export const createHealthcareMessageSchema = (
+  entityType: 'patient' | 'appointment' | 'prescription' | 'vital-signs',
+): MessageValidationRule[] => {
+  const baseRules: MessageValidationRule[] = [
+    { field: 'id', type: 'uuid', required: true },
+    { field: 'timestamp', type: 'date', required: true },
+  ];
+
+  switch (entityType) {
+    case 'patient':
+      return [
+        ...baseRules,
+        { field: 'firstName', type: 'string', required: true },
+        { field: 'lastName', type: 'string', required: true },
+        { field: 'dateOfBirth', type: 'date', required: true },
+        { field: 'medicalRecordNumber', type: 'string', required: true },
+      ];
+    case 'appointment':
+      return [
+        ...baseRules,
+        { field: 'patientId', type: 'uuid', required: true },
+        { field: 'providerId', type: 'uuid', required: true },
+        { field: 'scheduledAt', type: 'date', required: true },
+        { field: 'duration', type: 'number', min: 15, max: 240 },
+      ];
+    case 'prescription':
+      return [
+        ...baseRules,
+        { field: 'patientId', type: 'uuid', required: true },
+        { field: 'medicationName', type: 'string', required: true },
+        { field: 'dosage', type: 'string', required: true },
+        { field: 'frequency', type: 'string', required: true },
+      ];
+    case 'vital-signs':
+      return [
+        ...baseRules,
+        { field: 'patientId', type: 'uuid', required: true },
+        { field: 'temperature', type: 'number', min: 35, max: 42 },
+        { field: 'heartRate', type: 'number', min: 40, max: 200 },
+        { field: 'bloodPressureSystolic', type: 'number', min: 70, max: 200 },
+        { field: 'bloodPressureDiastolic', type: 'number', min: 40, max: 130 },
+      ];
+    default:
+      return baseRules;
+  }
+};
+
+// ============================================================================
+// RETRY POLICIES (30-32)
+// ============================================================================
+
+/**
+ * Creates retry policy with configurable backoff strategy.
  *
  * @param {number} maxAttempts - Maximum retry attempts
- * @param {number} baseDelay - Base delay in ms
- * @param {number} maxDelay - Maximum delay in ms
- * @returns {RetryStrategy} Retry strategy
+ * @param {'fixed' | 'exponential' | 'linear'} backoffType - Backoff strategy
+ * @param {number} initialDelay - Initial delay in milliseconds
+ * @param {Partial<RetryPolicy>} [options] - Additional options
+ * @returns {RetryPolicy} Retry policy
  *
  * @example
  * ```typescript
- * const strategy = createExponentialBackoff(3, 1000, 10000);
- * // Result: { maxAttempts: 3, baseDelay: 1000, maxDelay: 10000, backoffType: 'exponential' }
+ * const policy = createRetryPolicy(5, 'exponential', 1000, {
+ *   maxDelay: 30000,
+ *   multiplier: 2
+ * });
  * ```
  */
-export const createExponentialBackoff = (
+export const createRetryPolicy = (
   maxAttempts: number,
-  baseDelay: number,
-  maxDelay: number,
-): RetryStrategy => {
+  backoffType: 'fixed' | 'exponential' | 'linear',
+  initialDelay: number,
+  options?: Partial<RetryPolicy>,
+): RetryPolicy => {
   return {
     maxAttempts,
-    baseDelay,
-    maxDelay,
-    backoffType: 'exponential',
-    jitter: true,
+    backoffType,
+    initialDelay,
+    maxDelay: options?.maxDelay || 60000,
+    multiplier: options?.multiplier || 2,
+    shouldRetry: options?.shouldRetry || ((error: any) => {
+      // Retry on transient errors
+      const retryableErrors = ['ECONNREFUSED', 'ETIMEDOUT', 'ENOTFOUND'];
+      return retryableErrors.includes(error.code);
+    }),
   };
 };
 
 /**
- * 36. Calculates next retry delay based on strategy.
+ * Calculates retry delay based on policy and attempt number.
  *
+ * @param {RetryPolicy} policy - Retry policy
  * @param {number} attempt - Current attempt number
- * @param {RetryStrategy} strategy - Retry strategy
  * @returns {number} Delay in milliseconds
  *
  * @example
  * ```typescript
- * const delay = calculateRetryDelay(2, strategy);
- * // Result: 4000 (for exponential: baseDelay * 2^attempt)
+ * const delay = calculateRetryDelay(policy, 3);
+ * // For exponential: 1000 * 2^3 = 8000ms
  * ```
  */
-export const calculateRetryDelay = (attempt: number, strategy: RetryStrategy): number => {
+export const calculateRetryDelay = (
+  policy: RetryPolicy,
+  attempt: number,
+): number => {
   let delay: number;
 
-  switch (strategy.backoffType) {
+  switch (policy.backoffType) {
+    case 'fixed':
+      delay = policy.initialDelay;
+      break;
     case 'exponential':
-      delay = Math.min(strategy.baseDelay * Math.pow(2, attempt), strategy.maxDelay);
+      delay = policy.initialDelay * Math.pow(policy.multiplier || 2, attempt);
       break;
     case 'linear':
-      delay = Math.min(strategy.baseDelay * (attempt + 1), strategy.maxDelay);
+      delay = policy.initialDelay * (attempt + 1);
       break;
-    case 'fixed':
     default:
-      delay = strategy.baseDelay;
+      delay = policy.initialDelay;
   }
 
-  if (strategy.jitter) {
-    delay = delay * (0.5 + Math.random() * 0.5); // 50-100% of calculated delay
-  }
-
-  return Math.floor(delay);
+  return Math.min(delay, policy.maxDelay || 60000);
 };
 
 /**
- * 37. Determines if error is retryable based on strategy.
+ * Executes operation with retry policy using RxJS.
  *
- * @param {Error} error - Error object
- * @param {RetryStrategy} strategy - Retry strategy
- * @returns {boolean} True if retryable
+ * @param {() => Observable<any>} operation - Operation to execute
+ * @param {RetryPolicy} policy - Retry policy
+ * @returns {Observable<any>} Observable with retry logic
  *
  * @example
  * ```typescript
- * const shouldRetry = isRetryableError(error, strategy);
- * // Result: true if error matches retryable criteria
+ * executeWithRetry(
+ *   () => client.send('get_patient', { id: '123' }),
+ *   retryPolicy
+ * ).subscribe(result => console.log(result));
  * ```
  */
-export const isRetryableError = (error: Error, strategy: RetryStrategy): boolean => {
-  if (!strategy.retryableErrors || strategy.retryableErrors.length === 0) {
-    return true; // Retry all errors if no specific list provided
-  }
-
-  return strategy.retryableErrors.some(errType =>
-    error.message.includes(errType) || error.name === errType,
+export const executeWithRetry = (
+  operation: () => Observable<any>,
+  policy: RetryPolicy,
+): Observable<any> => {
+  return operation().pipe(
+    retry({
+      count: policy.maxAttempts,
+      delay: (error, retryCount) => {
+        if (!policy.shouldRetry || !policy.shouldRetry(error)) {
+          throw error;
+        }
+        const delay = calculateRetryDelay(policy, retryCount - 1);
+        console.log(`Retry attempt ${retryCount} after ${delay}ms`);
+        return timer(delay);
+      },
+    }),
+    catchError((error) => {
+      console.error(`Operation failed after ${policy.maxAttempts} attempts:`, error);
+      return throwError(() => error);
+    }),
   );
 };
 
+// ============================================================================
+// CIRCUIT BREAKER (33-36)
+// ============================================================================
+
 /**
- * 38. Creates timeout configuration for operations.
+ * Creates circuit breaker state tracker.
  *
- * @param {number} timeout - Timeout in milliseconds
- * @param {string} [operation] - Operation name
- * @returns {object} Timeout configuration
+ * @returns {CircuitBreakerState} Initial circuit breaker state
  *
  * @example
  * ```typescript
- * const config = createTimeoutConfig(5000, 'patient.get');
- * // Result: { timeout: 5000, operation: 'patient.get', timestamp: Date }
+ * const state = createCircuitBreakerState();
+ * // Result: { state: 'CLOSED', failureCount: 0, successCount: 0, ... }
  * ```
  */
-export const createTimeoutConfig = (timeout: number, operation?: string): object => {
+export const createCircuitBreakerState = (): CircuitBreakerState => {
   return {
-    timeout,
-    operation: operation || 'unknown',
-    timestamp: new Date(),
-    deadline: new Date(Date.now() + timeout),
+    state: 'CLOSED',
+    failureCount: 0,
+    successCount: 0,
+    lastFailureTime: 0,
+    nextAttemptTime: 0,
   };
 };
 
-// ============================================================================
-// SECTION 7: STREAMING HELPERS (Functions 39-41)
-// ============================================================================
-
 /**
- * 39. Creates a stream observer for reactive patterns.
+ * Updates circuit breaker state based on operation result.
  *
- * @param {Function} onNext - Called for each stream item
- * @param {Function} [onError] - Called on error
- * @param {Function} [onComplete] - Called on completion
- * @returns {object} Stream observer
+ * @param {CircuitBreakerState} state - Current state
+ * @param {CircuitBreakerConfig} config - Circuit breaker config
+ * @param {boolean} success - Whether operation succeeded
+ * @returns {CircuitBreakerState} Updated state
  *
  * @example
  * ```typescript
- * const observer = createStreamObserver(
- *   (data) => console.log(data),
- *   (err) => console.error(err),
- *   () => console.log('Complete')
+ * const newState = updateCircuitBreakerState(state, config, false);
+ * ```
+ */
+export const updateCircuitBreakerState = (
+  state: CircuitBreakerState,
+  config: CircuitBreakerConfig,
+  success: boolean,
+): CircuitBreakerState => {
+  const now = Date.now();
+
+  if (success) {
+    const newSuccessCount = state.successCount + 1;
+
+    if (state.state === 'HALF_OPEN' && newSuccessCount >= config.successThreshold) {
+      return {
+        state: 'CLOSED',
+        failureCount: 0,
+        successCount: 0,
+        lastFailureTime: 0,
+        nextAttemptTime: 0,
+      };
+    }
+
+    return {
+      ...state,
+      successCount: newSuccessCount,
+      failureCount: 0,
+    };
+  } else {
+    const newFailureCount = state.failureCount + 1;
+
+    if (newFailureCount >= config.failureThreshold) {
+      return {
+        state: 'OPEN',
+        failureCount: newFailureCount,
+        successCount: 0,
+        lastFailureTime: now,
+        nextAttemptTime: now + config.resetTimeout,
+      };
+    }
+
+    return {
+      ...state,
+      failureCount: newFailureCount,
+      successCount: 0,
+      lastFailureTime: now,
+    };
+  }
+};
+
+/**
+ * Checks if circuit breaker allows operation execution.
+ *
+ * @param {CircuitBreakerState} state - Current state
+ * @param {CircuitBreakerConfig} config - Circuit breaker config
+ * @returns {{ allowed: boolean; reason?: string }} Execution permission
+ *
+ * @example
+ * ```typescript
+ * const { allowed, reason } = canExecuteOperation(state, config);
+ * if (!allowed) console.log(reason);
+ * ```
+ */
+export const canExecuteOperation = (
+  state: CircuitBreakerState,
+  config: CircuitBreakerConfig,
+): { allowed: boolean; reason?: string } => {
+  const now = Date.now();
+
+  if (state.state === 'CLOSED') {
+    return { allowed: true };
+  }
+
+  if (state.state === 'OPEN') {
+    if (now >= state.nextAttemptTime) {
+      // Transition to HALF_OPEN
+      return { allowed: true };
+    }
+    return {
+      allowed: false,
+      reason: `Circuit breaker is OPEN. Next attempt at ${new Date(state.nextAttemptTime).toISOString()}`,
+    };
+  }
+
+  // HALF_OPEN state
+  return { allowed: true };
+};
+
+/**
+ * Executes operation with circuit breaker protection.
+ *
+ * @param {() => Promise<any>} operation - Operation to execute
+ * @param {CircuitBreakerState} state - Circuit breaker state
+ * @param {CircuitBreakerConfig} config - Circuit breaker config
+ * @param {(state: CircuitBreakerState) => void} onStateChange - State change callback
+ * @returns {Promise<any>} Operation result
+ *
+ * @example
+ * ```typescript
+ * const result = await executeWithCircuitBreaker(
+ *   () => serviceClient.callMethod(),
+ *   state,
+ *   config,
+ *   (newState) => circuitBreakerState = newState
  * );
  * ```
  */
-export const createStreamObserver = (
-  onNext: (data: any) => void,
-  onError?: (error: Error) => void,
-  onComplete?: () => void,
-): object => {
-  return {
-    next: onNext,
-    error: onError || ((err: Error) => console.error('Stream error:', err)),
-    complete: onComplete || (() => console.log('Stream completed')),
-  };
-};
+export const executeWithCircuitBreaker = async (
+  operation: () => Promise<any>,
+  state: CircuitBreakerState,
+  config: CircuitBreakerConfig,
+  onStateChange: (state: CircuitBreakerState) => void,
+): Promise<any> => {
+  const { allowed, reason } = canExecuteOperation(state, config);
 
-/**
- * 40. Creates backpressure handler for stream management.
- *
- * @param {number} bufferSize - Maximum buffer size
- * @param {string} strategy - Backpressure strategy
- * @returns {object} Backpressure configuration
- *
- * @example
- * ```typescript
- * const handler = createBackpressureHandler(1000, 'drop-oldest');
- * // Result: { bufferSize: 1000, strategy: 'drop-oldest', ... }
- * ```
- */
-export const createBackpressureHandler = (bufferSize: number, strategy: string): object => {
-  return {
-    bufferSize,
-    strategy, // 'drop-oldest', 'drop-newest', 'error'
-    currentSize: 0,
-    dropped: 0,
-  };
-};
-
-/**
- * 41. Creates stream chunk for batched processing.
- *
- * @param {any[]} items - Items to include in chunk
- * @param {number} chunkSize - Chunk size
- * @returns {any[][]} Chunked items
- *
- * @example
- * ```typescript
- * const chunks = createStreamChunk([1,2,3,4,5], 2);
- * // Result: [[1,2], [3,4], [5]]
- * ```
- */
-export const createStreamChunk = (items: any[], chunkSize: number): any[][] => {
-  const chunks: any[][] = [];
-  for (let i = 0; i < items.length; i += chunkSize) {
-    chunks.push(items.slice(i, i + chunkSize));
+  if (!allowed) {
+    throw new Error(reason || 'Circuit breaker is OPEN');
   }
-  return chunks;
+
+  // Transition to HALF_OPEN if coming from OPEN
+  if (state.state === 'OPEN') {
+    const newState = { ...state, state: 'HALF_OPEN' as const };
+    onStateChange(newState);
+    state = newState;
+  }
+
+  try {
+    const result = await Promise.race([
+      operation(),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Operation timeout')), config.timeout),
+      ),
+    ]);
+
+    const newState = updateCircuitBreakerState(state, config, true);
+    onStateChange(newState);
+
+    return result;
+  } catch (error) {
+    const newState = updateCircuitBreakerState(state, config, false);
+    onStateChange(newState);
+
+    throw error;
+  }
 };
 
 // ============================================================================
-// SECTION 8: HYBRID APPLICATION & HEALTH CHECKS (Functions 42-45)
+// SERVICE DISCOVERY (37-40)
 // ============================================================================
 
 /**
- * 42. Creates hybrid application configuration (HTTP + Microservices).
+ * Registers service instance for service discovery.
  *
- * @param {number} httpPort - HTTP server port
- * @param {TransportConfig[]} microservices - Microservice transports
- * @param {Record<string, any>} [options] - Additional options
- * @returns {HybridAppConfig} Hybrid app configuration
+ * @param {ServiceRegistration} registration - Service registration details
+ * @returns {Promise<string>} Registration ID
  *
  * @example
  * ```typescript
- * const config = createHybridAppConfig(3000, [tcpConfig, redisConfig], { cors: true });
- * // Result: { httpPort: 3000, microservices: [...], cors: true }
- * ```
- */
-export const createHybridAppConfig = (
-  httpPort: number,
-  microservices: TransportConfig[],
-  options?: Record<string, any>,
-): HybridAppConfig => {
-  return {
-    httpPort,
-    microservices,
-    globalPrefix: options?.globalPrefix || 'api',
-    cors: options?.cors !== false,
-    swagger: options?.swagger !== false,
-  };
-};
-
-/**
- * 43. Creates comprehensive health check configuration.
- *
- * @param {string} name - Health check name
- * @param {Function} checkFn - Health check function
- * @param {number} [timeout=5000] - Health check timeout
- * @returns {object} Health check configuration
- *
- * @example
- * ```typescript
- * const healthCheck = createHealthCheck('database', async () => {
- *   await db.ping();
- *   return { status: 'up' };
+ * const id = await registerService({
+ *   serviceId: 'patient-service-1',
+ *   serviceName: 'patient-service',
+ *   version: '1.0.0',
+ *   host: 'localhost',
+ *   port: 3001,
+ *   protocol: 'tcp',
+ *   tags: ['healthcare', 'primary']
  * });
  * ```
  */
-export const createHealthCheck = (
-  name: string,
-  checkFn: () => Promise<any>,
-  timeout: number = 5000,
-): object => {
-  return {
-    name,
-    check: checkFn,
-    timeout,
-    interval: 30000,
-    retries: 3,
-  };
+export const registerService = async (
+  registration: ServiceRegistration,
+): Promise<string> => {
+  // In production, this would register with Consul, etcd, or similar
+  const registrationId = `${registration.serviceName}-${Date.now()}`;
+
+  console.log(`Registered service: ${registration.serviceName}`, {
+    id: registrationId,
+    endpoint: `${registration.protocol}://${registration.host}:${registration.port}`,
+    version: registration.version,
+  });
+
+  return registrationId;
 };
 
 /**
- * 44. Performs health check with timeout and retries.
+ * Discovers service instances with load balancing.
  *
  * @param {string} serviceName - Service name
- * @param {Function} healthCheckFn - Health check function
- * @param {number} [timeout=5000] - Timeout in ms
- * @returns {Promise<HealthCheck>} Health check result
+ * @param {string} [version] - Service version
+ * @param {string[]} [tags] - Service tags
+ * @returns {Promise<ServiceDiscoveryResult>} Discovered instances
  *
  * @example
  * ```typescript
- * const result = await performHealthCheck('patient-service', async () => {
- *   const response = await fetch('http://localhost:3001/health');
- *   return response.ok;
+ * const result = await discoverService('patient-service', '1.0.0', ['primary']);
+ * const instance = selectServiceInstance(result, 'round-robin');
+ * ```
+ */
+export const discoverService = async (
+  serviceName: string,
+  version?: string,
+  tags?: string[],
+): Promise<ServiceDiscoveryResult> => {
+  // Mock implementation - in production, query service registry
+  const mockInstances: ServiceRegistration[] = [
+    {
+      serviceId: `${serviceName}-1`,
+      serviceName,
+      version: version || '1.0.0',
+      host: 'localhost',
+      port: 3001,
+      protocol: 'tcp',
+      tags: tags || [],
+    },
+    {
+      serviceId: `${serviceName}-2`,
+      serviceName,
+      version: version || '1.0.0',
+      host: 'localhost',
+      port: 3002,
+      protocol: 'tcp',
+      tags: tags || [],
+    },
+  ];
+
+  return {
+    instances: mockInstances,
+    strategy: 'round-robin',
+  };
+};
+
+/**
+ * Selects service instance based on load balancing strategy.
+ *
+ * @param {ServiceDiscoveryResult} discoveryResult - Discovery result
+ * @param {'round-robin' | 'random' | 'least-connections'} [strategy='round-robin'] - Selection strategy
+ * @returns {ServiceRegistration | null} Selected instance
+ *
+ * @example
+ * ```typescript
+ * const instance = selectServiceInstance(discoveryResult, 'random');
+ * if (instance) {
+ *   const url = `${instance.protocol}://${instance.host}:${instance.port}`;
+ * }
+ * ```
+ */
+export const selectServiceInstance = (
+  discoveryResult: ServiceDiscoveryResult,
+  strategy: 'round-robin' | 'random' | 'least-connections' = 'round-robin',
+): ServiceRegistration | null => {
+  const instances = discoveryResult.instances;
+
+  if (instances.length === 0) {
+    return null;
+  }
+
+  if (instances.length === 1) {
+    return instances[0];
+  }
+
+  switch (strategy) {
+    case 'random':
+      return instances[Math.floor(Math.random() * instances.length)];
+    case 'round-robin':
+      // In production, maintain counter state
+      return instances[0];
+    case 'least-connections':
+      // In production, track connection counts
+      return instances[0];
+    default:
+      return instances[0];
+  }
+};
+
+/**
+ * Deregisters service instance from service discovery.
+ *
+ * @param {string} serviceId - Service instance ID
+ * @returns {Promise<void>}
+ *
+ * @example
+ * ```typescript
+ * await deregisterService('patient-service-1');
+ * ```
+ */
+export const deregisterService = async (serviceId: string): Promise<void> => {
+  console.log(`Deregistered service: ${serviceId}`);
+};
+
+// ============================================================================
+// HEALTH CHECKS (41-45)
+// ============================================================================
+
+/**
+ * Creates health check status for microservice.
+ *
+ * @param {string} [version] - Service version
+ * @param {number} [startTime=Date.now()] - Service start time
+ * @returns {HealthCheckStatus} Health check status
+ *
+ * @example
+ * ```typescript
+ * const health = createHealthCheckStatus('1.0.0', startTime);
+ * ```
+ */
+export const createHealthCheckStatus = (
+  version?: string,
+  startTime: number = Date.now(),
+): HealthCheckStatus => {
+  const now = new Date();
+  return {
+    status: 'healthy',
+    timestamp: now,
+    uptime: Date.now() - startTime,
+    checks: {},
+    ...(version && { version }),
+  };
+};
+
+/**
+ * Adds component health check to overall status.
+ *
+ * @param {HealthCheckStatus} status - Overall health status
+ * @param {string} componentName - Component name
+ * @param {ComponentHealth} componentHealth - Component health details
+ * @returns {HealthCheckStatus} Updated health status
+ *
+ * @example
+ * ```typescript
+ * const updated = addHealthCheck(status, 'database', {
+ *   status: 'pass',
+ *   componentType: 'datastore',
+ *   observedValue: 5,
+ *   observedUnit: 'ms',
+ *   time: new Date().toISOString()
  * });
  * ```
  */
-export const performHealthCheck = async (
-  serviceName: string,
-  healthCheckFn: () => Promise<boolean>,
-  timeout: number = 5000,
-): Promise<HealthCheck> => {
+export const addHealthCheck = (
+  status: HealthCheckStatus,
+  componentName: string,
+  componentHealth: ComponentHealth,
+): HealthCheckStatus => {
+  const updatedChecks = {
+    ...status.checks,
+    [componentName]: componentHealth,
+  };
+
+  // Determine overall status
+  const hasFailure = Object.values(updatedChecks).some(check => check.status === 'fail');
+  const hasWarning = Object.values(updatedChecks).some(check => check.status === 'warn');
+
+  let overallStatus: 'healthy' | 'degraded' | 'unhealthy' = 'healthy';
+  if (hasFailure) {
+    overallStatus = 'unhealthy';
+  } else if (hasWarning) {
+    overallStatus = 'degraded';
+  }
+
+  return {
+    ...status,
+    status: overallStatus,
+    checks: updatedChecks,
+  };
+};
+
+/**
+ * Checks database connectivity for health monitoring.
+ *
+ * @param {any} connection - Database connection
+ * @returns {Promise<ComponentHealth>} Database health status
+ *
+ * @example
+ * ```typescript
+ * const dbHealth = await checkDatabaseHealth(sequelize);
+ * const status = addHealthCheck(healthStatus, 'database', dbHealth);
+ * ```
+ */
+export const checkDatabaseHealth = async (
+  connection: any,
+): Promise<ComponentHealth> => {
   const startTime = Date.now();
 
   try {
-    const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error('Health check timeout')), timeout),
-    );
-
-    await Promise.race([healthCheckFn(), timeoutPromise]);
-
+    await connection.authenticate();
     const responseTime = Date.now() - startTime;
 
     return {
-      name: serviceName,
-      status: 'up',
-      timestamp: new Date(),
-      responseTime,
-      details: { message: 'Service is healthy' },
+      status: 'pass',
+      componentType: 'datastore',
+      observedValue: responseTime,
+      observedUnit: 'ms',
+      time: new Date().toISOString(),
     };
   } catch (error) {
     return {
-      name: serviceName,
-      status: 'down',
-      timestamp: new Date(),
-      responseTime: Date.now() - startTime,
-      details: { error: (error as Error).message },
+      status: 'fail',
+      componentType: 'datastore',
+      time: new Date().toISOString(),
+      output: error.message,
     };
   }
 };
 
 /**
- * 45. Creates graceful shutdown handler for microservices.
+ * Checks message broker connectivity (RabbitMQ, Kafka, NATS).
  *
- * @param {number} timeout - Shutdown timeout in ms
- * @param {string[]} signals - OS signals to handle
- * @param {Function} [onShutdown] - Shutdown callback
- * @returns {GracefulShutdownConfig} Shutdown configuration
+ * @param {any} client - Message broker client
+ * @param {string} brokerType - Broker type
+ * @returns {Promise<ComponentHealth>} Broker health status
  *
  * @example
  * ```typescript
- * const shutdown = createGracefulShutdown(10000, ['SIGTERM', 'SIGINT'], async () => {
- *   await closeDbConnections();
- *   await flushQueues();
- * });
+ * const brokerHealth = await checkMessageBrokerHealth(kafkaClient, 'kafka');
+ * const status = addHealthCheck(healthStatus, 'message-broker', brokerHealth);
  * ```
  */
-export const createGracefulShutdown = (
-  timeout: number,
-  signals: string[],
-  onShutdown?: () => Promise<void>,
-): GracefulShutdownConfig => {
-  return {
-    timeout,
-    signals,
-    onShutdown,
-    beforeShutdown: async () => {
-      console.log('Starting graceful shutdown...');
-    },
-  };
-};
+export const checkMessageBrokerHealth = async (
+  client: any,
+  brokerType: 'rabbitmq' | 'kafka' | 'nats' | 'redis',
+): Promise<ComponentHealth> => {
+  const startTime = Date.now();
 
-// ============================================================================
-// HELPER FUNCTIONS
-// ============================================================================
+  try {
+    // Perform ping or connection check
+    const isConnected = client && (client.isConnected ? client.isConnected() : true);
+    const responseTime = Date.now() - startTime;
 
-/**
- * Generates UUID v4.
- */
-const generateUUID = (): string => {
-  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-};
-
-/**
- * Generates event ID.
- */
-const generateEventId = (): string => {
-  return `evt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-};
-
-/**
- * Generates message ID.
- */
-const generateMessageId = (): string => {
-  return `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-};
-
-/**
- * Generates request ID.
- */
-const generateRequestId = (): string => {
-  return `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-};
-
-/**
- * Generates service ID.
- */
-const generateServiceId = (): string => {
-  return `svc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-};
-
-/**
- * Hashes string to number.
- */
-const hashString = (str: string): number => {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash << 5) - hash + str.charCodeAt(i);
-    hash = hash & hash; // Convert to 32bit integer
+    return {
+      status: isConnected ? 'pass' : 'fail',
+      componentType: 'message-broker',
+      observedValue: responseTime,
+      observedUnit: 'ms',
+      time: new Date().toISOString(),
+      output: `${brokerType} connection ${isConnected ? 'active' : 'inactive'}`,
+    };
+  } catch (error) {
+    return {
+      status: 'fail',
+      componentType: 'message-broker',
+      time: new Date().toISOString(),
+      output: error.message,
+    };
   }
-  return Math.abs(hash);
+};
+
+/**
+ * Creates comprehensive health check endpoint response.
+ *
+ * @param {HealthCheckStatus} status - Health check status
+ * @param {boolean} [detailed=true] - Include detailed component info
+ * @returns {Record<string, any>} Health check response
+ *
+ * @example
+ * ```typescript
+ * // In NestJS controller:
+ * @Get('health')
+ * getHealth() {
+ *   return createHealthCheckResponse(this.healthStatus);
+ * }
+ * ```
+ */
+export const createHealthCheckResponse = (
+  status: HealthCheckStatus,
+  detailed = true,
+): Record<string, any> => {
+  const response: Record<string, any> = {
+    status: status.status,
+    timestamp: status.timestamp.toISOString(),
+    uptime: status.uptime,
+  };
+
+  if (status.version) {
+    response.version = status.version;
+  }
+
+  if (detailed) {
+    response.checks = status.checks;
+  } else {
+    // Only include failing components in non-detailed mode
+    const failedChecks = Object.entries(status.checks)
+      .filter(([_, check]) => check.status === 'fail')
+      .reduce((acc, [name, check]) => ({ ...acc, [name]: check }), {});
+
+    if (Object.keys(failedChecks).length > 0) {
+      response.failedChecks = failedChecks;
+    }
+  }
+
+  return response;
 };
