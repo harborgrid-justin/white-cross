@@ -19,7 +19,7 @@
  *
  * Upstream: Independent utility module for NestJS configuration operations
  * Downstream: ../backend/*, Config modules, Bootstrap files, Feature modules
- * Dependencies: TypeScript 5.x, Node 18+, @nestjs/config, @nestjs/common, joi, class-validator
+ * Dependencies: TypeScript 5.x, Node 18+, joi, class-validator
  * Exports: 45 utility functions for config module building, validation, namespaces, transformations
  *
  * LLM Context: Enterprise-grade configuration utilities for White Cross healthcare platform.
