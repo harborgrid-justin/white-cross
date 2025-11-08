@@ -19,7 +19,7 @@
  *
  * Upstream: Independent utility module for GraphQL implementation
  * Downstream: ../backend/*, GraphQL resolvers, services, middleware, federation gateway
- * Dependencies: TypeScript 5.x, Node 18+, NestJS 10.x, @nestjs/graphql, graphql, DataLoader, Apollo Federation
+ * Dependencies: TypeScript 5.x, Node 18+, Hapi.js, graphql, DataLoader, Apollo Federation
  * Exports: 50 utility functions for GraphQL resolver factories, field helpers, DataLoader N+1 prevention, middleware, pagination, authorization, federation
  *
  * LLM Context: Comprehensive GraphQL utilities for building production-ready GraphQL APIs in White Cross healthcare system.
@@ -910,7 +910,8 @@ export const createJSONScalar = (): GraphQLScalarType => {
  * ```
  */
 export const createEmailScalar = (): GraphQLScalarType => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // RFC 5322 compliant email regex (simplified but more comprehensive)
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
   return new GraphQLScalarType({
     name: 'Email',

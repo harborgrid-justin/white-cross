@@ -18,7 +18,7 @@
  *
  * Upstream: Independent utility module for event-driven patterns
  * Downstream: ../backend/*, event handlers, saga orchestrators, event store implementations
- * Dependencies: TypeScript 5.x, Node 18+, NestJS 10.x, @nestjs/event-emitter, RabbitMQ, Kafka, Redis
+ * Dependencies: TypeScript 5.x, Node 18+, Hapi.js 21.x, amqplib (RabbitMQ), kafkajs (Kafka), ioredis (Redis)
  * Exports: 45 utility functions for event sourcing, CQRS, saga orchestration, event bus, event replay, versioning, auditing
  *
  * LLM Context: Production-ready event-driven utilities for White Cross healthcare platform. Provides comprehensive tools for
@@ -26,6 +26,8 @@
  * domain event factories, event subscribers, filtering, dead letter queue handling, and event auditing. Essential for
  * building HIPAA-compliant event-driven healthcare microservices with full audit trails and event traceability.
  */
+
+import * as crypto from 'crypto';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -1592,17 +1594,17 @@ export const generateAuditTrail = (event: DomainEvent, audits: EventAudit[]): ob
 // ============================================================================
 
 /**
- * Generates unique event ID.
+ * Generates unique event ID using crypto for guaranteed uniqueness.
  */
 const generateEventId = (): string => {
-  return `evt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  return `evt-${Date.now()}-${crypto.randomUUID()}`;
 };
 
 /**
- * Generates correlation ID.
+ * Generates correlation ID using crypto for guaranteed uniqueness.
  */
 const generateCorrelationId = (): string => {
-  return `corr-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  return `corr-${Date.now()}-${crypto.randomUUID()}`;
 };
 
 /**

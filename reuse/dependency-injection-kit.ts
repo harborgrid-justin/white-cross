@@ -14,17 +14,20 @@
 /**
  * File: /reuse/dependency-injection-kit.ts
  * Locator: WC-UTL-DINJ-001
- * Purpose: Comprehensive Dependency Injection Utilities - Providers, dynamic modules, injection tokens, scope management
+ * Purpose: NestJS Dependency Injection Utilities - Providers, dynamic modules, injection tokens, scope management
+ *
+ * NOTE: This kit is specifically for NestJS-based microservices. The main White Cross backend uses Hapi.js,
+ * which has a different dependency injection pattern. Use this kit only for NestJS microservices components.
  *
  * Upstream: Independent utility module for NestJS dependency injection patterns
- * Downstream: ../backend/*, NestJS modules, providers, dynamic modules, custom factories
+ * Downstream: NestJS microservices modules, providers, dynamic modules, custom factories
  * Dependencies: TypeScript 5.x, Node 18+, NestJS 10.x
  * Exports: 45 utility functions for provider factories, dynamic modules, injection tokens, scope management, circular dependencies
  *
- * LLM Context: Comprehensive dependency injection utilities for implementing production-ready NestJS providers in White Cross system.
+ * LLM Context: Comprehensive dependency injection utilities for implementing production-ready NestJS providers.
  * Provides provider factories, dynamic module builders, async provider helpers, custom injection token creators, scope management,
  * circular dependency resolvers, multi-provider patterns, factory providers, value providers, class provider wrappers,
- * conditional provider registration, and module configuration helpers. Essential for building scalable, maintainable NestJS applications.
+ * conditional provider registration, and module configuration helpers. Essential for building scalable, maintainable NestJS microservices.
  */
 
 import {
