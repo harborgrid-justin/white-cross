@@ -1830,7 +1830,7 @@ const deepMerge = (
  * Hashes a string for consistent randomization.
  */
 const hashString = (str: string): string => {
-  return crypto.createHash('md5').update(str).digest('hex');
+  return crypto.createHash('sha256').update(str).digest('hex');
 };
 
 // ============================================================================
