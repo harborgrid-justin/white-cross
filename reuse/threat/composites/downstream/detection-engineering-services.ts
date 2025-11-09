@@ -28,6 +28,7 @@
  * coverage analysis, continuous integration workflows, and HIPAA-compliant security detection management.
  */
 
+import crypto from 'crypto';
 import {
   Controller,
   Get,
@@ -48,6 +49,7 @@ import {
   BadRequestException,
   NotFoundException,
   ConflictException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -398,6 +400,7 @@ export class CreateDetectionProjectDto {
 @ApiTags('detection-engineering')
 @Controller('api/v1/detection-engineering')
 @ApiBearerAuth()
+@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class DetectionEngineeringController {
   private readonly logger = new Logger(DetectionEngineeringController.name);
 
@@ -416,45 +419,58 @@ export class DetectionEngineeringController {
   @ApiResponse({ status: 201, description: 'Detection rule created successfully' })
   @ApiResponse({ status: 400, description: 'Invalid rule specification' })
   async createDetectionRule(@Body() dto: CreateDetectionRuleDto): Promise<DetectionRule> {
-    this.logger.log(`Creating detection rule: ${dto.name}`);
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Creating detection rule: ${dto.name}`);
+      if (!dto || !dto.name || !dto.query || !dto.severity) {
+        throw new BadRequestException('Invalid rule specification: missing required fields');
+      }
 
-    // Validate rule syntax
-    const syntaxValidation = validateDetectionRuleSyntax({
-      name: dto.name,
-      logic: dto.query,
-      severity: dto.severity,
-      category: dto.category,
-      mitreIds: dto.mitreAttackIds,
-    });
+      // Validate rule syntax
+      const syntaxValidation = validateDetectionRuleSyntax({
+        name: dto.name,
+        logic: dto.query,
+        severity: dto.severity,
+        category: dto.category,
+        mitreIds: dto.mitreAttackIds,
+      });
 
-    if (!syntaxValidation.isValid) {
-      throw new BadRequestException({
-        message: 'Invalid rule syntax',
-        errors: syntaxValidation.errors,
-        warnings: syntaxValidation.warnings,
+      if (!syntaxValidation.isValid) {
+        throw new BadRequestException({
+          message: 'Invalid rule syntax',
+          errors: syntaxValidation.errors,
+          warnings: syntaxValidation.warnings,
+        });
+      }
+
+      const rule = await this.detectionService.createRule({
+        ...dto,
+        status: DetectionRuleStatus.DRAFT,
+        version: '1.0.0',
+      });
+
+      // Generate test cases automatically
+      const testCases = generateTestCasesFromRule(
+        {
+          id: rule.id,
+          name: rule.name,
+          mitreId: dto.mitreAttackIds[0],
+          techniques: dto.mitreAttackIds,
+        },
+        5,
+      );
+
+      this.logger.log(`[${requestId}] Successfully created detection rule: ${rule.id}, generated ${testCases.length} test cases`);
+      return rule;
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to create detection rule: ${error.message}`, error.stack);
+      if (error instanceof BadRequestException) throw error;
+      throw new InternalServerErrorException({
+        message: 'Failed to create detection rule',
+        requestId,
+        error: error.message,
       });
     }
-
-    const rule = await this.detectionService.createRule({
-      ...dto,
-      status: DetectionRuleStatus.DRAFT,
-      version: '1.0.0',
-    });
-
-    // Generate test cases automatically
-    const testCases = generateTestCasesFromRule(
-      {
-        id: rule.id,
-        name: rule.name,
-        mitreId: dto.mitreAttackIds[0],
-        techniques: dto.mitreAttackIds,
-      },
-      5,
-    );
-
-    this.logger.log(`Generated ${testCases.length} test cases for rule ${rule.id}`);
-
-    return rule;
   }
 
   /**
@@ -477,84 +493,100 @@ export class DetectionEngineeringController {
     passed: boolean;
     recommendations: string[];
   }> {
-    this.logger.log(`Validating detection rule: ${ruleId}`);
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Validating detection rule: ${ruleId}`);
+      if (!ruleId || !dto || !dto.mode) {
+        throw new BadRequestException('Rule ID and validation mode are required');
+      }
 
-    const rule = await this.detectionService.getRule(ruleId);
-    if (!rule) {
-      throw new NotFoundException('Detection rule not found');
-    }
+      const rule = await this.detectionService.getRule(ruleId);
+      if (!rule) {
+        throw new NotFoundException('Detection rule not found');
+      }
 
-    // Create validation framework
-    const framework = await createDetectionValidationFramework(
-      {
-        name: `Validation for ${rule.name}`,
-        validationType: dto.mode === 'continuous' ? 'continuous' : 'on_demand',
-        detectionRules: [ruleId],
-        coverageRequirements: {
-          mitreCoveragePct: 80,
-          criticalTechniquesPct: 95,
-          platformCoverage: rule.platforms,
-          assetCoverage: [],
-          minimumDetectionRate: 90,
-          maximumFalsePositiveRate: 5,
+      // Create validation framework
+      const framework = await createDetectionValidationFramework(
+        {
+          name: `Validation for ${rule.name}`,
+          validationType: dto.mode === 'continuous' ? 'continuous' : 'on_demand',
+          detectionRules: [ruleId],
+          coverageRequirements: {
+            mitreCoveragePct: 80,
+            criticalTechniquesPct: 95,
+            platformCoverage: rule.platforms,
+            assetCoverage: [],
+            minimumDetectionRate: 90,
+            maximumFalsePositiveRate: 5,
+          },
         },
-      },
-      this.sequelize,
-    );
-
-    // Generate validation tests
-    const tests = generateTestCasesFromRule(
-      {
-        id: rule.id,
-        name: rule.name,
-        mitreId: rule.mitreAttackIds[0],
-        techniques: rule.mitreAttackIds,
-      },
-      dto.mode === 'quick' ? 3 : 10,
-    );
-
-    // Execute validation suite
-    const validationResults = await executeDetectionValidationSuite(
-      framework.id,
-      tests,
-      this.sequelize,
-    );
-
-    // Calculate quality metrics
-    const qualityMetrics = calculateDetectionQualityMetrics(validationResults);
-
-    // Analyze false positives and negatives
-    const fpAnalysis = await analyzeFalsePositives(
-      validationResults,
-      ruleId,
-      this.sequelize,
-    );
-    const fnAnalysis = await analyzeFalseNegatives(validationResults, this.sequelize);
-
-    // Purple team validation if requested
-    if (dto.includePurpleTeam) {
-      await executePurpleTeamValidationExercise(
-        `Purple Team: ${rule.name}`,
-        [ruleId],
-        rule.mitreAttackIds,
         this.sequelize,
       );
+
+      // Generate validation tests
+      const tests = generateTestCasesFromRule(
+        {
+          id: rule.id,
+          name: rule.name,
+          mitreId: rule.mitreAttackIds[0],
+          techniques: rule.mitreAttackIds,
+        },
+        dto.mode === 'quick' ? 3 : 10,
+      );
+
+      // Execute validation suite
+      const validationResults = await executeDetectionValidationSuite(
+        framework.id,
+        tests,
+        this.sequelize,
+      );
+
+      // Calculate quality metrics
+      const qualityMetrics = calculateDetectionQualityMetrics(validationResults);
+
+      // Analyze false positives and negatives
+      const fpAnalysis = await analyzeFalsePositives(
+        validationResults,
+        ruleId,
+        this.sequelize,
+      );
+      const fnAnalysis = await analyzeFalseNegatives(validationResults, this.sequelize);
+
+      // Purple team validation if requested
+      if (dto.includePurpleTeam) {
+        await executePurpleTeamValidationExercise(
+          `Purple Team: ${rule.name}`,
+          [ruleId],
+          rule.mitreAttackIds,
+          this.sequelize,
+        );
+      }
+
+      const passed = qualityMetrics.f1Score >= 80 && qualityMetrics.falsePositiveRate < 10;
+
+      // Update rule status
+      if (passed) {
+        await this.detectionService.updateRuleStatus(ruleId, DetectionRuleStatus.VALIDATED);
+      }
+
+      this.logger.log(`[${requestId}] Rule validation complete: passed=${passed}, f1Score=${qualityMetrics.f1Score}`);
+      return {
+        ruleId,
+        validationResults,
+        qualityMetrics,
+        passed,
+        recommendations: [...fpAnalysis.recommendations, ...fnAnalysis.recommendations],
+      };
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to validate detection rule ${ruleId}: ${error.message}`, error.stack);
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException({
+        message: 'Failed to validate detection rule',
+        requestId,
+        error: error.message,
+      });
     }
-
-    const passed = qualityMetrics.f1Score >= 80 && qualityMetrics.falsePositiveRate < 10;
-
-    // Update rule status
-    if (passed) {
-      await this.detectionService.updateRuleStatus(ruleId, DetectionRuleStatus.VALIDATED);
-    }
-
-    return {
-      ruleId,
-      validationResults,
-      qualityMetrics,
-      passed,
-      recommendations: [...fpAnalysis.recommendations, ...fnAnalysis.recommendations],
-    };
   }
 
   /**
@@ -572,19 +604,33 @@ export class DetectionEngineeringController {
     trend: 'improving' | 'stable' | 'declining';
     recommendations: string[];
   }> {
-    this.logger.log(`Analyzing effectiveness for rule: ${ruleId}`);
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Analyzing effectiveness for rule: ${ruleId}`);
+      if (!ruleId) throw new BadRequestException('Rule ID is required');
 
-    // Get historical validation results
-    const validationHistory = await this.detectionService.getValidationHistory(ruleId);
+      // Get historical validation results
+      const validationHistory = await this.detectionService.getValidationHistory(ruleId);
 
-    const effectiveness = analyzeDetectionRuleEffectiveness(ruleId, validationHistory);
+      const effectiveness = analyzeDetectionRuleEffectiveness(ruleId, validationHistory);
+      this.logger.log(`[${requestId}] Effectiveness analysis complete: trend=${effectiveness.trend}`);
 
-    return {
-      ruleId,
-      effectiveness,
-      trend: effectiveness.trend,
-      recommendations: effectiveness.recommendations,
-    };
+      return {
+        ruleId,
+        effectiveness,
+        trend: effectiveness.trend,
+        recommendations: effectiveness.recommendations,
+      };
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to analyze rule effectiveness: ${error.message}`, error.stack);
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException({
+        message: 'Failed to analyze rule effectiveness',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -609,19 +655,35 @@ export class DetectionEngineeringController {
     topPerformer: string;
     recommendations: any[];
   }> {
-    this.logger.log(`Comparing ${ruleIds.length} detection rules`);
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Comparing ${ruleIds.length} detection rules`);
+      if (!ruleIds || ruleIds.length === 0) {
+        throw new BadRequestException('At least one rule ID is required for comparison');
+      }
 
-    // Get validation results for all rules
-    const allValidationResults = await this.detectionService.getMultipleRuleValidations(ruleIds);
+      // Get validation results for all rules
+      const allValidationResults = await this.detectionService.getMultipleRuleValidations(ruleIds);
 
-    const comparison = compareDetectionRules(allValidationResults);
-    const tuningRecommendations = generateDetectionTuningRecommendations(allValidationResults);
+      const comparison = compareDetectionRules(allValidationResults);
+      const tuningRecommendations = generateDetectionTuningRecommendations(allValidationResults);
 
-    return {
-      comparison,
-      topPerformer: comparison[0]?.ruleId,
-      recommendations: tuningRecommendations,
-    };
+      this.logger.log(`[${requestId}] Rule comparison complete: topPerformer=${comparison[0]?.ruleId}`);
+
+      return {
+        comparison,
+        topPerformer: comparison[0]?.ruleId,
+        recommendations: tuningRecommendations,
+      };
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to compare detection rules: ${error.message}`, error.stack);
+      if (error instanceof BadRequestException) throw error;
+      throw new InternalServerErrorException({
+        message: 'Failed to compare detection rules',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -633,35 +695,50 @@ export class DetectionEngineeringController {
   @ApiBody({ type: CreateDetectionProjectDto })
   @ApiResponse({ status: 201, description: 'Project created successfully' })
   async createProject(@Body() dto: CreateDetectionProjectDto): Promise<DetectionProject> {
-    this.logger.log(`Creating detection project: ${dto.name}`);
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Creating detection project: ${dto.name}`);
+      if (!dto || !dto.name || !dto.objective || !dto.team) {
+        throw new BadRequestException('Project name, objective, and team are required');
+      }
 
-    const project = await this.detectionService.createProject({
-      ...dto,
-      stage: WorkflowStage.REQUIREMENTS,
-      rules: [],
-      status: 'active',
-      startDate: new Date(),
-      metrics: {
-        totalRules: 0,
-        rulesInProduction: 0,
-        rulesCoveragePct: 0,
-        avgQualityScore: 0,
-        avgValidationScore: 0,
-        teamVelocity: 0,
-      },
-    });
+      const project = await this.detectionService.createProject({
+        ...dto,
+        stage: WorkflowStage.REQUIREMENTS,
+        rules: [],
+        status: 'active',
+        startDate: new Date(),
+        metrics: {
+          totalRules: 0,
+          rulesInProduction: 0,
+          rulesCoveragePct: 0,
+          avgQualityScore: 0,
+          avgValidationScore: 0,
+          teamVelocity: 0,
+        },
+      });
 
-    // Create validation framework for project
-    await createDetectionValidationFramework(
-      {
-        name: `Validation Framework: ${dto.name}`,
-        validationType: 'continuous',
-        detectionRules: [],
-      },
-      this.sequelize,
-    );
+      // Create validation framework for project
+      await createDetectionValidationFramework(
+        {
+          name: `Validation Framework: ${dto.name}`,
+          validationType: 'continuous',
+          detectionRules: [],
+        },
+        this.sequelize,
+      );
 
-    return project;
+      this.logger.log(`[${requestId}] Successfully created detection project: ${project.id}`);
+      return project;
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to create detection project: ${error.message}`, error.stack);
+      if (error instanceof BadRequestException) throw error;
+      throw new InternalServerErrorException({
+        message: 'Failed to create detection project',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -677,12 +754,23 @@ export class DetectionEngineeringController {
     weaknesses: string[];
     roadmap: string[];
   }> {
-    this.logger.log('Generating detection maturity assessment');
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Generating detection maturity assessment`);
 
-    const allValidationHistory = await this.detectionService.getAllValidationHistory();
-    const assessment = generateDetectionMaturityAssessment(allValidationHistory);
+      const allValidationHistory = await this.detectionService.getAllValidationHistory();
+      const assessment = generateDetectionMaturityAssessment(allValidationHistory);
 
-    return assessment;
+      this.logger.log(`[${requestId}] Maturity assessment complete: level=${assessment.maturityLevel}, score=${assessment.score}`);
+      return assessment;
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to generate maturity assessment: ${error.message}`, error.stack);
+      throw new InternalServerErrorException({
+        message: 'Failed to generate maturity assessment',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -709,22 +797,37 @@ export class DetectionEngineeringController {
     phases: any[];
     estimatedCompletion: Date;
   }> {
-    this.logger.log(`Generating coverage roadmap to ${targetCoverage}%`);
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Generating coverage roadmap to ${targetCoverage}%`);
+      if (!targetCoverage || targetCoverage < 0 || targetCoverage > 100) {
+        throw new BadRequestException('Target coverage must be between 0 and 100');
+      }
 
-    // Validate current coverage
-    const currentCoverage = await validateDetectionCoverageAgainstMITRE(
-      await this.detectionService.getAllRuleIds(),
-      targetCoverage,
-      this.sequelize,
-    );
+      // Validate current coverage
+      const currentCoverage = await validateDetectionCoverageAgainstMITRE(
+        await this.detectionService.getAllRuleIds(),
+        targetCoverage,
+        this.sequelize,
+      );
 
-    const roadmap = await generateDetectionCoverageRoadmap(
-      currentCoverage,
-      targetCoverage,
-      this.sequelize,
-    );
+      const roadmap = await generateDetectionCoverageRoadmap(
+        currentCoverage,
+        targetCoverage,
+        this.sequelize,
+      );
 
-    return roadmap;
+      this.logger.log(`[${requestId}] Coverage roadmap generated: current=${roadmap.currentState}%, target=${roadmap.targetState}%, gap=${roadmap.gap}%`);
+      return roadmap;
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to generate coverage roadmap: ${error.message}`, error.stack);
+      if (error instanceof BadRequestException) throw error;
+      throw new InternalServerErrorException({
+        message: 'Failed to generate coverage roadmap',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -761,22 +864,38 @@ export class DetectionEngineeringController {
     lowQualityAlerts: number;
     improvements: any[];
   }> {
-    this.logger.log(`Validating quality of ${alerts.length} alerts`);
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Validating quality of ${alerts.length} alerts`);
+      if (!alerts || alerts.length === 0) {
+        throw new BadRequestException('At least one alert is required for quality validation');
+      }
 
-    const qualityResults = validateDetectionAlertQuality(alerts);
+      const qualityResults = validateDetectionAlertQuality(alerts);
 
-    const avgQualityScore =
-      qualityResults.reduce((sum, r) => sum + r.qualityScore.overallScore, 0) /
-      qualityResults.length;
+      const avgQualityScore =
+        qualityResults.reduce((sum, r) => sum + r.qualityScore.overallScore, 0) /
+        qualityResults.length;
 
-    const lowQualityAlerts = qualityResults.filter((r) => r.qualityScore.overallScore < 70);
+      const lowQualityAlerts = qualityResults.filter((r) => r.qualityScore.overallScore < 70);
 
-    return {
-      totalAlerts: alerts.length,
-      avgQualityScore,
-      lowQualityAlerts: lowQualityAlerts.length,
-      improvements: qualityResults.flatMap((r) => r.improvementSuggestions),
-    };
+      this.logger.log(`[${requestId}] Alert quality validation complete: avgScore=${avgQualityScore.toFixed(2)}, lowQuality=${lowQualityAlerts.length}`);
+
+      return {
+        totalAlerts: alerts.length,
+        avgQualityScore,
+        lowQualityAlerts: lowQualityAlerts.length,
+        improvements: qualityResults.flatMap((r) => r.improvementSuggestions),
+      };
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to validate alert quality: ${error.message}`, error.stack);
+      if (error instanceof BadRequestException) throw error;
+      throw new InternalServerErrorException({
+        message: 'Failed to validate alert quality',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -795,19 +914,30 @@ export class DetectionEngineeringController {
     recommendations: string[];
     detailedFindings: any[];
   }> {
-    this.logger.log('Generating comprehensive validation report');
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Generating comprehensive validation report for framework: ${frameworkId || 'all-rules'}`);
 
-    const validationResults = frameworkId
-      ? await this.detectionService.getFrameworkValidationResults(frameworkId)
-      : await this.detectionService.getAllValidationHistory();
+      const validationResults = frameworkId
+        ? await this.detectionService.getFrameworkValidationResults(frameworkId)
+        : await this.detectionService.getAllValidationHistory();
 
-    const report = await generateDetectionValidationReport(
-      frameworkId || 'all-rules',
-      validationResults,
-      this.sequelize,
-    );
+      const report = await generateDetectionValidationReport(
+        frameworkId || 'all-rules',
+        validationResults,
+        this.sequelize,
+      );
 
-    return report;
+      this.logger.log(`[${requestId}] Validation report generated with ${validationResults.length} validation results`);
+      return report;
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to generate validation report: ${error.message}`, error.stack);
+      throw new InternalServerErrorException({
+        message: 'Failed to generate validation report',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -826,12 +956,27 @@ export class DetectionEngineeringController {
     businessImpact: string;
     investmentRecommendations: string[];
   }> {
-    this.logger.log(`Generating executive briefing for ${timeframe}`);
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Generating executive briefing for ${timeframe}`);
+      if (!timeframe) {
+        throw new BadRequestException('Timeframe is required for executive briefing');
+      }
 
-    const validationResults = await this.detectionService.getAllValidationHistory();
-    const briefing = generateValidationExecutiveBriefing(validationResults, timeframe);
+      const validationResults = await this.detectionService.getAllValidationHistory();
+      const briefing = generateValidationExecutiveBriefing(validationResults, timeframe);
 
-    return briefing;
+      this.logger.log(`[${requestId}] Executive briefing generated successfully for timeframe: ${timeframe}`);
+      return briefing;
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to generate executive briefing: ${error.message}`, error.stack);
+      if (error instanceof BadRequestException) throw error;
+      throw new InternalServerErrorException({
+        message: 'Failed to generate executive briefing',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 }
 

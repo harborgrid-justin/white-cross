@@ -51,6 +51,7 @@ import {
   ApiProperty,
 } from '@nestjs/swagger';
 import { IsString, IsNumber, IsEnum, IsOptional, IsArray, Min, Max, IsBoolean } from 'class-validator';
+import * as crypto from 'crypto';
 
 // Import from threat prediction engine composite
 import * as ThreatPredictionEngine from '../threat-prediction-engine-composite';
@@ -124,10 +125,16 @@ export class PredictiveThreatIntelligenceService {
    * Profiles threat actor with predictive capabilities
    */
   async profileThreatActor(dto: ThreatActorProfilingDto): Promise<any> {
+    const requestId = crypto.randomUUID();
     try {
-      this.logger.log(`Profiling threat actor: ${dto.actorIdentifier}`);
+      if (!dto.actorIdentifier || dto.actorIdentifier.trim() === '') {
+        throw new BadRequestException('Actor identifier is required');
+      }
+
+      this.logger.log(`[${requestId}] Profiling threat actor: ${dto.actorIdentifier}`);
 
       const profile = {
+        requestId,
         actorId: dto.actorIdentifier,
         name: dto.actorIdentifier,
         sophistication: 'HIGH',
@@ -142,10 +149,12 @@ export class PredictiveThreatIntelligenceService {
         lastObserved: new Date(),
       };
 
+      this.logger.log(`[${requestId}] Actor profile generated successfully`);
       return profile;
     } catch (error) {
-      this.logger.error(`Failed to profile threat actor: ${error.message}`);
-      throw new HttpException('Actor profiling failed', HttpStatus.INTERNAL_SERVER_ERROR);
+      this.logger.error(`[${requestId}] Failed to profile threat actor: ${error.message}`, error.stack);
+      if (error instanceof BadRequestException) throw error;
+      throw new InternalServerErrorException('Failed to profile threat actor');
     }
   }
 
