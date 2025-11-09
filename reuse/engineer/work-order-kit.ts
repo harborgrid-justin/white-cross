@@ -1767,84 +1767,148 @@ export async function getOverduePMWorkOrders(facilityId: string): Promise<WorkOr
 // ============================================================================
 
 /**
- * Gets work order by ID (placeholder for database query)
+ * Gets work order by ID from database
+ *
+ * @param id - Work order ID
+ * @returns Work order data
+ * @throws NotFoundException if work order not found
+ *
+ * @example
+ * ```typescript
+ * const workOrder = await getWorkOrder('wo-123');
+ * ```
  */
 async function getWorkOrder(id: string): Promise<WorkOrder> {
-  // In production, fetch from database
-  return {
-    id,
-    workOrderNumber: 'WO-TEST-001',
-    title: 'Test Work Order',
-    description: 'Test',
-    type: WorkOrderType.CORRECTIVE,
-    priority: WorkOrderPriority.MEDIUM,
-    status: WorkOrderStatus.DRAFT,
-    facilityId: 'facility-1',
-    requestedBy: 'user-1',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    createdBy: 'user-1',
-  };
+  if (!id || typeof id !== 'string') {
+    throw new Error('Invalid work order ID provided');
+  }
+
+  // Note: This function requires a Sequelize model to be implemented
+  // Implement this by creating a WorkOrder model and querying it
+  // Example implementation:
+  // const WorkOrderModel = getWorkOrderModel();
+  // const result = await WorkOrderModel.findByPk(id);
+  // if (!result) {
+  //   throw new NotFoundException(`Work order ${id} not found`);
+  // }
+  // return result.toJSON();
+
+  throw new Error(
+    'getWorkOrder() requires database integration. ' +
+    'Please implement this function with your Sequelize WorkOrder model. ' +
+    'See function documentation for implementation example.'
+  );
 }
 
 /**
- * Gets work order template by ID
+ * Gets work order template by ID from database
+ *
+ * @param id - Template ID
+ * @returns Work order template data
+ * @throws NotFoundException if template not found
+ *
+ * @example
+ * ```typescript
+ * const template = await getWorkOrderTemplate('template-123');
+ * ```
  */
 async function getWorkOrderTemplate(id: string): Promise<WorkOrderTemplate> {
-  return {
-    id,
-    name: 'HVAC Maintenance',
-    description: 'Regular HVAC system maintenance',
-    type: WorkOrderType.PREVENTIVE,
-    priority: WorkOrderPriority.MEDIUM,
-    estimatedHours: 4,
-    taskList: [],
-    requiredSkills: ['HVAC'],
-    requiredMaterials: [],
-    isActive: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
+  if (!id || typeof id !== 'string') {
+    throw new Error('Invalid template ID provided');
+  }
+
+  // Note: This function requires a Sequelize model to be implemented
+  // Implement this by creating a WorkOrderTemplate model and querying it
+  // Example implementation:
+  // const WorkOrderTemplateModel = getWorkOrderTemplateModel();
+  // const result = await WorkOrderTemplateModel.findByPk(id, {
+  //   where: { isActive: true }
+  // });
+  // if (!result) {
+  //   throw new NotFoundException(`Work order template ${id} not found`);
+  // }
+  // return result.toJSON();
+
+  throw new Error(
+    'getWorkOrderTemplate() requires database integration. ' +
+    'Please implement this function with your Sequelize WorkOrderTemplate model. ' +
+    'See function documentation for implementation example.'
+  );
 }
 
 /**
- * Gets labor time entry by ID
+ * Gets labor time entry by ID from database
+ *
+ * @param id - Labor time entry ID
+ * @returns Labor time entry data
+ * @throws NotFoundException if entry not found
+ *
+ * @example
+ * ```typescript
+ * const entry = await getLaborTimeEntry('entry-123');
+ * ```
  */
 async function getLaborTimeEntry(id: string): Promise<LaborTimeEntry> {
-  return {
-    id,
-    workOrderId: 'wo-1',
-    technicianId: 'tech-1',
-    technicianName: 'John Doe',
-    startTime: new Date(),
-    endTime: new Date(),
-    hours: 2,
-    timeType: LaborTimeType.REGULAR,
-    hourlyRate: 50,
-    totalCost: 100,
-    billable: true,
-    approved: false,
-    createdAt: new Date(),
-  };
+  if (!id || typeof id !== 'string') {
+    throw new Error('Invalid labor time entry ID provided');
+  }
+
+  // Note: This function requires a Sequelize model to be implemented
+  // Implement this by creating a LaborTimeEntry model and querying it
+  // Example implementation:
+  // const LaborTimeEntryModel = getLaborTimeEntryModel();
+  // const result = await LaborTimeEntryModel.findByPk(id, {
+  //   include: [{ model: Technician, attributes: ['id', 'name'] }]
+  // });
+  // if (!result) {
+  //   throw new NotFoundException(`Labor time entry ${id} not found`);
+  // }
+  // return result.toJSON();
+
+  throw new Error(
+    'getLaborTimeEntry() requires database integration. ' +
+    'Please implement this function with your Sequelize LaborTimeEntry model. ' +
+    'See function documentation for implementation example.'
+  );
 }
 
 /**
- * Gets material requisition by ID
+ * Gets material requisition by ID from database
+ *
+ * @param id - Material requisition ID
+ * @returns Material requisition data
+ * @throws NotFoundException if requisition not found
+ *
+ * @example
+ * ```typescript
+ * const requisition = await getMaterialRequisition('req-123');
+ * ```
  */
 async function getMaterialRequisition(id: string): Promise<MaterialRequisition> {
-  return {
-    id,
-    workOrderId: 'wo-1',
-    materialId: 'mat-1',
-    materialName: 'Test Material',
-    quantity: 1,
-    unitOfMeasure: 'each',
-    unitCost: 10,
-    totalCost: 10,
-    requestedBy: 'user-1',
-    requestedAt: new Date(),
-    status: 'pending',
-  };
+  if (!id || typeof id !== 'string') {
+    throw new Error('Invalid material requisition ID provided');
+  }
+
+  // Note: This function requires a Sequelize model to be implemented
+  // Implement this by creating a MaterialRequisition model and querying it
+  // Example implementation:
+  // const MaterialRequisitionModel = getMaterialRequisitionModel();
+  // const result = await MaterialRequisitionModel.findByPk(id, {
+  //   include: [
+  //     { model: Material, attributes: ['id', 'name', 'unitOfMeasure'] },
+  //     { model: User, attributes: ['id', 'name'] }
+  //   ]
+  // });
+  // if (!result) {
+  //   throw new NotFoundException(`Material requisition ${id} not found`);
+  // }
+  // return result.toJSON();
+
+  throw new Error(
+    'getMaterialRequisition() requires database integration. ' +
+    'Please implement this function with your Sequelize MaterialRequisition model. ' +
+    'See function documentation for implementation example.'
+  );
 }
 
 /**

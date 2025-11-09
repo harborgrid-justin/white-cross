@@ -367,22 +367,371 @@ export const crossReferenceIOCs = async (
     throw new Error('IOCs array cannot be empty');
   }
 
+  if (!sources || sources.length === 0) {
+    throw new Error('Sources array cannot be empty');
+  }
+
   const results: Record<string, string[]> = {};
 
+  // Initialize results for all IOCs
   for (const ioc of iocs) {
     results[ioc] = [];
-    // In production, this would query actual threat intel sources
-    // Simulated cross-referencing logic
-    for (const source of sources) {
-      // Placeholder for actual API calls
-      const found = Math.random() > 0.5; // Simulated
-      if (found) {
-        results[ioc].push(source);
+  }
+
+  // Process each source in parallel for better performance
+  const sourcePromises = sources.map(async (source) => {
+    try {
+      const sourceResults = await queryThreatIntelSource(source, iocs);
+
+      // Merge results
+      for (const ioc of Object.keys(sourceResults)) {
+        if (sourceResults[ioc] && results[ioc]) {
+          results[ioc].push(source);
+        }
       }
+    } catch (error) {
+      console.error(`Failed to query source ${source}:`, error instanceof Error ? error.message : 'Unknown error');
+      // Continue with other sources even if one fails
+    }
+  });
+
+  // Wait for all sources to complete
+  await Promise.allSettled(sourcePromises);
+
+  return results;
+};
+
+/**
+ * Queries a specific threat intelligence source for IOCs.
+ *
+ * @param {string} source - Source identifier
+ * @param {string[]} iocs - Array of IOCs to query
+ * @returns {Promise<Record<string, boolean>>} Map of IOC to found status
+ */
+const queryThreatIntelSource = async (
+  source: string,
+  iocs: string[],
+): Promise<Record<string, boolean>> => {
+  const results: Record<string, boolean> = {};
+
+  // Route to appropriate source handler
+  switch (source.toLowerCase()) {
+    case 'virustotal':
+      return await queryVirusTotal(iocs);
+    case 'alienvault':
+    case 'otx':
+      return await queryAlienVault(iocs);
+    case 'abuseipdb':
+      return await queryAbuseIPDB(iocs);
+    case 'threatcrowd':
+      return await queryThreatCrowd(iocs);
+    case 'circl':
+      return await queryCIRCL(iocs);
+    case 'misp':
+      return await queryMISP(iocs);
+    default:
+      console.warn(`Unknown threat intelligence source: ${source}`);
+      return results;
+  }
+};
+
+/**
+ * Queries VirusTotal API for IOCs.
+ *
+ * @param {string[]} iocs - IOCs to query
+ * @returns {Promise<Record<string, boolean>>} Results
+ */
+const queryVirusTotal = async (iocs: string[]): Promise<Record<string, boolean>> => {
+  const results: Record<string, boolean> = {};
+  const apiKey = process.env.VIRUSTOTAL_API_KEY;
+
+  if (!apiKey) {
+    console.warn('VirusTotal API key not configured');
+    return results;
+  }
+
+  for (const ioc of iocs) {
+    try {
+      const response = await fetch(`https://www.virustotal.com/api/v3/search?query=${encodeURIComponent(ioc)}`, {
+        headers: {
+          'x-apikey': apiKey,
+        },
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        results[ioc] = data.data && data.data.length > 0;
+      } else {
+        results[ioc] = false;
+      }
+
+      // Rate limiting - wait 15 seconds between requests for free tier
+      await new Promise(resolve => setTimeout(resolve, 15000));
+    } catch (error) {
+      console.error(`VirusTotal query failed for ${ioc}:`, error);
+      results[ioc] = false;
     }
   }
 
   return results;
+};
+
+/**
+ * Queries AlienVault OTX for IOCs.
+ *
+ * @param {string[]} iocs - IOCs to query
+ * @returns {Promise<Record<string, boolean>>} Results
+ */
+const queryAlienVault = async (iocs: string[]): Promise<Record<string, boolean>> => {
+  const results: Record<string, boolean> = {};
+  const apiKey = process.env.ALIENVAULT_API_KEY;
+
+  if (!apiKey) {
+    console.warn('AlienVault API key not configured');
+    return results;
+  }
+
+  for (const ioc of iocs) {
+    try {
+      const type = detectIOCTypeForAPI(ioc);
+      const response = await fetch(`https://otx.alienvault.com/api/v1/indicators/${type}/${encodeURIComponent(ioc)}/general`, {
+        headers: {
+          'X-OTX-API-KEY': apiKey,
+        },
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        results[ioc] = data.pulse_info && data.pulse_info.count > 0;
+      } else {
+        results[ioc] = false;
+      }
+
+      // Rate limiting
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } catch (error) {
+      console.error(`AlienVault query failed for ${ioc}:`, error);
+      results[ioc] = false;
+    }
+  }
+
+  return results;
+};
+
+/**
+ * Queries AbuseIPDB for IP addresses.
+ *
+ * @param {string[]} iocs - IOCs to query
+ * @returns {Promise<Record<string, boolean>>} Results
+ */
+const queryAbuseIPDB = async (iocs: string[]): Promise<Record<string, boolean>> => {
+  const results: Record<string, boolean> = {};
+  const apiKey = process.env.ABUSEIPDB_API_KEY;
+
+  if (!apiKey) {
+    console.warn('AbuseIPDB API key not configured');
+    return results;
+  }
+
+  for (const ioc of iocs) {
+    // Only query IPs
+    if (!isIPAddress(ioc)) {
+      results[ioc] = false;
+      continue;
+    }
+
+    try {
+      const response = await fetch(`https://api.abuseipdb.com/api/v2/check?ipAddress=${encodeURIComponent(ioc)}`, {
+        headers: {
+          'Key': apiKey,
+          'Accept': 'application/json',
+        },
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        results[ioc] = data.data && data.data.abuseConfidenceScore > 0;
+      } else {
+        results[ioc] = false;
+      }
+
+      // Rate limiting
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } catch (error) {
+      console.error(`AbuseIPDB query failed for ${ioc}:`, error);
+      results[ioc] = false;
+    }
+  }
+
+  return results;
+};
+
+/**
+ * Queries ThreatCrowd for IOCs.
+ *
+ * @param {string[]} iocs - IOCs to query
+ * @returns {Promise<Record<string, boolean>>} Results
+ */
+const queryThreatCrowd = async (iocs: string[]): Promise<Record<string, boolean>> => {
+  const results: Record<string, boolean> = {};
+
+  for (const ioc of iocs) {
+    try {
+      let endpoint = '';
+      if (isIPAddress(ioc)) {
+        endpoint = `https://www.threatcrowd.org/searchApi/v2/ip/report/?ip=${encodeURIComponent(ioc)}`;
+      } else if (isDomain(ioc)) {
+        endpoint = `https://www.threatcrowd.org/searchApi/v2/domain/report/?domain=${encodeURIComponent(ioc)}`;
+      } else {
+        results[ioc] = false;
+        continue;
+      }
+
+      const response = await fetch(endpoint, {
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        results[ioc] = data.response_code === '1';
+      } else {
+        results[ioc] = false;
+      }
+
+      // Rate limiting - ThreatCrowd has strict limits
+      await new Promise(resolve => setTimeout(resolve, 10000));
+    } catch (error) {
+      console.error(`ThreatCrowd query failed for ${ioc}:`, error);
+      results[ioc] = false;
+    }
+  }
+
+  return results;
+};
+
+/**
+ * Queries CIRCL (CERT.lu) for IOCs.
+ *
+ * @param {string[]} iocs - IOCs to query
+ * @returns {Promise<Record<string, boolean>>} Results
+ */
+const queryCIRCL = async (iocs: string[]): Promise<Record<string, boolean>> => {
+  const results: Record<string, boolean> = {};
+
+  for (const ioc of iocs) {
+    try {
+      const response = await fetch(`https://www.circl.lu/v2/lookup/${encodeURIComponent(ioc)}`, {
+        signal: AbortSignal.timeout(10000),
+      });
+
+      results[ioc] = response.ok;
+
+      // Rate limiting
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } catch (error) {
+      console.error(`CIRCL query failed for ${ioc}:`, error);
+      results[ioc] = false;
+    }
+  }
+
+  return results;
+};
+
+/**
+ * Queries MISP instance for IOCs.
+ *
+ * @param {string[]} iocs - IOCs to query
+ * @returns {Promise<Record<string, boolean>>} Results
+ */
+const queryMISP = async (iocs: string[]): Promise<Record<string, boolean>> => {
+  const results: Record<string, boolean> = {};
+  const mispUrl = process.env.MISP_URL;
+  const mispKey = process.env.MISP_API_KEY;
+
+  if (!mispUrl || !mispKey) {
+    console.warn('MISP URL or API key not configured');
+    return results;
+  }
+
+  for (const ioc of iocs) {
+    try {
+      const response = await fetch(`${mispUrl}/attributes/restSearch`, {
+        method: 'POST',
+        headers: {
+          'Authorization': mispKey,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          returnFormat: 'json',
+          value: ioc,
+        }),
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        results[ioc] = data.response && data.response.Attribute && data.response.Attribute.length > 0;
+      } else {
+        results[ioc] = false;
+      }
+
+      // Rate limiting
+      await new Promise(resolve => setTimeout(resolve, 500));
+    } catch (error) {
+      console.error(`MISP query failed for ${ioc}:`, error);
+      results[ioc] = false;
+    }
+  }
+
+  return results;
+};
+
+/**
+ * Detects IOC type for API routing.
+ *
+ * @param {string} ioc - IOC value
+ * @returns {string} API type string
+ */
+const detectIOCTypeForAPI = (ioc: string): string => {
+  if (isIPAddress(ioc)) return 'IPv4';
+  if (isDomain(ioc)) return 'domain';
+  if (isHash(ioc)) return 'file';
+  return 'general';
+};
+
+/**
+ * Checks if value is an IP address.
+ *
+ * @param {string} value - Value to check
+ * @returns {boolean} True if IP address
+ */
+const isIPAddress = (value: string): boolean => {
+  return /^(\d{1,3}\.){3}\d{1,3}$/.test(value) || /^([0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}$/.test(value);
+};
+
+/**
+ * Checks if value is a domain.
+ *
+ * @param {string} value - Value to check
+ * @returns {boolean} True if domain
+ */
+const isDomain = (value: string): boolean => {
+  return /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]?(\.[a-zA-Z]{2,})+$/.test(value);
+};
+
+/**
+ * Checks if value is a hash.
+ *
+ * @param {string} value - Value to check
+ * @returns {boolean} True if hash
+ */
+const isHash = (value: string): boolean => {
+  const hexOnly = /^[a-fA-F0-9]+$/;
+  return hexOnly.test(value) && [32, 40, 64, 128].includes(value.length);
 };
 
 /**
