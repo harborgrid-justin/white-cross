@@ -55,6 +55,25 @@ import * as crypto from 'crypto';
 
 /**
  * Contract definition
+ *
+ * Core contract entity with lifecycle tracking, obligations, and renewal management.
+ * Supports multi-party contracts with complex terms and performance monitoring.
+ *
+ * @property {string} id - Unique contract identifier
+ * @property {string} name - Contract name or title
+ * @property {ContractType} type - Contract classification type
+ * @property {ContractParty[]} parties - All parties involved in the contract
+ * @property {Date} startDate - Contract effective start date
+ * @property {Date} endDate - Contract expiration date
+ * @property {ContractValue} [value] - Financial value and payment terms
+ * @property {ContractStatus} status - Current contract status
+ * @property {LifecycleStage} currentStage - Current lifecycle stage
+ * @property {Obligation[]} obligations - Contractual obligations and deliverables
+ * @property {Milestone[]} milestones - Contract milestones and checkpoints
+ * @property {RenewalTerms} [renewalTerms] - Renewal configuration if applicable
+ * @property {Record<string, any>} [metadata] - Additional contract metadata
+ * @property {Date} createdAt - Contract creation timestamp
+ * @property {Date} updatedAt - Last update timestamp
  */
 export interface Contract {
   id: string;
@@ -76,6 +95,20 @@ export interface Contract {
 
 /**
  * Contract types
+ *
+ * Standard contract classifications for healthcare and enterprise operations.
+ * Each type has specific lifecycle requirements and compliance obligations.
+ *
+ * @property {string} PROVIDER_AGREEMENT - Healthcare provider service agreements
+ * @property {string} VENDOR_CONTRACT - Vendor and supplier contracts
+ * @property {string} PAYER_AGREEMENT - Insurance payer and reimbursement agreements
+ * @property {string} SERVICE_LEVEL_AGREEMENT - SLA contracts with performance metrics
+ * @property {string} EMPLOYMENT_CONTRACT - Employee and contractor agreements
+ * @property {string} PARTNERSHIP_AGREEMENT - Strategic partnership contracts
+ * @property {string} LICENSE_AGREEMENT - Software and IP licensing agreements
+ * @property {string} LEASE_AGREEMENT - Equipment and facility leases
+ * @property {string} CONFIDENTIALITY_AGREEMENT - NDA and confidentiality agreements
+ * @property {string} CUSTOM - Custom contract types
  */
 export enum ContractType {
   PROVIDER_AGREEMENT = 'PROVIDER_AGREEMENT',
@@ -182,6 +215,18 @@ export enum PaymentFrequency {
 
 /**
  * Contract status
+ *
+ * Lifecycle status values for contract management.
+ * Determines available actions and compliance requirements.
+ *
+ * @property {string} DRAFT - Contract in draft state, not yet finalized
+ * @property {string} PENDING_APPROVAL - Awaiting approval from stakeholders
+ * @property {string} ACTIVE - Contract is currently in effect and enforceable
+ * @property {string} SUSPENDED - Contract temporarily suspended
+ * @property {string} EXPIRED - Contract has reached end date and expired
+ * @property {string} TERMINATED - Contract terminated before expiration
+ * @property {string} RENEWED - Contract successfully renewed
+ * @property {string} AMENDED - Contract has been amended
  */
 export enum ContractStatus {
   DRAFT = 'DRAFT',
@@ -196,6 +241,17 @@ export enum ContractStatus {
 
 /**
  * Contract lifecycle stages
+ *
+ * Standardized contract lifecycle phases for workflow management.
+ * Each stage has specific activities, approval gates, and metrics.
+ *
+ * @property {string} INITIATION - Initial contract request and scoping
+ * @property {string} NEGOTIATION - Terms negotiation and redlining
+ * @property {string} APPROVAL - Approval workflow and sign-off
+ * @property {string} EXECUTION - Contract signing and execution
+ * @property {string} PERFORMANCE - Active contract performance and monitoring
+ * @property {string} RENEWAL - Renewal evaluation and decision
+ * @property {string} CLOSE_OUT - Contract closure and archival
  */
 export enum LifecycleStage {
   INITIATION = 'INITIATION',
@@ -227,6 +283,16 @@ export interface Obligation {
 
 /**
  * Obligation status
+ *
+ * Status tracking for contractual obligations and deliverables.
+ * Critical for compliance monitoring and SLA management.
+ *
+ * @property {string} PENDING - Obligation not yet started
+ * @property {string} IN_PROGRESS - Obligation currently being fulfilled
+ * @property {string} COMPLETED - Obligation successfully completed
+ * @property {string} OVERDUE - Obligation past due date, requires escalation
+ * @property {string} WAIVED - Obligation formally waived by agreement
+ * @property {string} DISPUTED - Obligation disputed, requires resolution
  */
 export enum ObligationStatus {
   PENDING = 'PENDING',
