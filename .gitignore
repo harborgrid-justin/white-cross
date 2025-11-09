@@ -3,3 +3,16 @@ backend/node_modules/
 frontend/node_modules/
 .temp/
 markdowns/
+
+# Testing directories - to be broken off later
+task-management/
+vector-mcp/
+vector-prep/
+vector-db/
+
+# Environment files
+.env
+
+# Testing files
+vector-db.py
+.claude/mcp.json
