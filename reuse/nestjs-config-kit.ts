@@ -1229,7 +1229,8 @@ export const maskConfigValue = (value: string, visibleChars: number = 4): string
 };
 
 /**
- * Creates AWS Secrets Manager loader (placeholder).
+ * Creates AWS Secrets Manager loader.
+ * Requires @aws-sdk/client-secrets-manager package.
  *
  * @param {string} secretName - AWS secret name
  * @param {string} [region] - AWS region
@@ -1244,13 +1245,32 @@ export const loadFromAWSSecrets = async (
   secretName: string,
   region: string = 'us-east-1'
 ): Promise<Record<string, string>> => {
-  // Placeholder - implement with AWS SDK
-  console.warn('loadFromAWSSecrets is a placeholder - implement with @aws-sdk/client-secrets-manager');
-  return {};
+  try {
+    const { SecretsManagerClient, GetSecretValueCommand } = require('@aws-sdk/client-secrets-manager');
+
+    const client = new SecretsManagerClient({ region });
+    const command = new GetSecretValueCommand({ SecretId: secretName });
+    const response = await client.send(command);
+
+    if (response.SecretString) {
+      return JSON.parse(response.SecretString);
+    }
+
+    console.warn(`Secret ${secretName} has no string value`);
+    return {};
+  } catch (error) {
+    console.warn(
+      'AWS Secrets Manager requires @aws-sdk/client-secrets-manager. Install with: npm install @aws-sdk/client-secrets-manager',
+      'Error:',
+      error.message
+    );
+    return {};
+  }
 };
 
 /**
- * Creates Azure Key Vault loader (placeholder).
+ * Creates Azure Key Vault loader.
+ * Requires @azure/keyvault-secrets and @azure/identity packages.
  *
  * @param {string} vaultUrl - Key Vault URL
  * @param {string[]} secretNames - Secret names to load
@@ -1268,9 +1288,35 @@ export const loadFromAzureKeyVault = async (
   vaultUrl: string,
   secretNames: string[]
 ): Promise<Record<string, string>> => {
-  // Placeholder - implement with Azure SDK
-  console.warn('loadFromAzureKeyVault is a placeholder - implement with @azure/keyvault-secrets');
-  return {};
+  try {
+    const { SecretClient } = require('@azure/keyvault-secrets');
+    const { DefaultAzureCredential } = require('@azure/identity');
+
+    const credential = new DefaultAzureCredential();
+    const client = new SecretClient(vaultUrl, credential);
+
+    const secrets: Record<string, string> = {};
+
+    for (const secretName of secretNames) {
+      try {
+        const secret = await client.getSecret(secretName);
+        if (secret.value) {
+          secrets[secretName] = secret.value;
+        }
+      } catch (error) {
+        console.warn(`Failed to load secret ${secretName}:`, error.message);
+      }
+    }
+
+    return secrets;
+  } catch (error) {
+    console.warn(
+      'Azure Key Vault requires @azure/keyvault-secrets and @azure/identity. Install with: npm install @azure/keyvault-secrets @azure/identity',
+      'Error:',
+      error.message
+    );
+    return {};
+  }
 };
 
 // ============================================================================
