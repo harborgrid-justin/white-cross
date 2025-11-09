@@ -48,6 +48,8 @@
  * - Fault tolerance and reconnection strategies
  */
 
+import { gzipSync, gunzipSync } from 'zlib';
+
 // Import from threat intelligence API gateway kit
 import {
   generateRequestId,
@@ -399,8 +401,37 @@ export const handleWebSocketConnection = async (
 }> => {
   const connectionId = generateRequestId();
 
-  // Validate authentication (placeholder)
-  const authenticated = authToken.length > 0;
+  // Validate authentication token
+  // In production, this would verify JWT token or API key:
+  // - JWT: jwt.verify(authToken, publicKey)
+  // - API Key: query database or cache for valid key
+  // - OAuth: verify bearer token with auth provider
+  let authenticated = false;
+
+  try {
+    if (!authToken || authToken.trim().length === 0) {
+      throw new Error('Missing authentication token');
+    }
+
+    // Basic validation checks
+    if (authToken.startsWith('Bearer ')) {
+      const token = authToken.substring(7);
+      // In production: const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      // For now, validate token format (should be base64-encoded JWT)
+      const tokenParts = token.split('.');
+      authenticated = tokenParts.length === 3;
+    } else if (authToken.startsWith('ApiKey ')) {
+      const apiKey = authToken.substring(7);
+      // In production: const valid = await validateApiKey(apiKey);
+      // For now, validate API key format (should be UUID or similar)
+      authenticated = apiKey.length >= 32;
+    } else {
+      throw new Error('Invalid authentication scheme. Use Bearer or ApiKey');
+    }
+  } catch (error) {
+    console.error('Authentication failed:', error);
+    authenticated = false;
+  }
 
   if (!authenticated) {
     return {
@@ -503,12 +534,34 @@ export const broadcastThreatUpdate = async (
   for (const subscription of subscriptions) {
     try {
       if (filterWebSocketMessage(message, subscription)) {
-        // Send message (placeholder - implement actual WebSocket send)
-        sent++;
+        // In production, this would send via actual WebSocket connection:
+        // - ws.send(JSON.stringify(message))
+        // - socket.emit('threat-update', message)
+        // - client.publish(subscription.channel, JSON.stringify(message))
+
+        // Get WebSocket connection from connection registry
+        // In production, maintain a Map of clientId -> WebSocket connection
+        const wsConnection = (global as any).wsConnections?.get(subscription.clientId);
+
+        if (wsConnection && wsConnection.readyState === 1) { // 1 = OPEN
+          // Send message over WebSocket
+          wsConnection.send(JSON.stringify({
+            type: 'threat-update',
+            subscription: subscription.id,
+            timestamp: new Date().toISOString(),
+            data: message,
+          }));
+          sent++;
+        } else {
+          // Connection not available or closed
+          console.warn(`WebSocket connection not available for client ${subscription.clientId}`);
+          errors++;
+        }
       } else {
         filtered++;
       }
     } catch (error) {
+      console.error(`Failed to send message to ${subscription.clientId}:`, error);
       errors++;
     }
   }
@@ -611,16 +664,33 @@ export const compressWebSocketMessage = (message: WebSocketMessage): {
   const serialized = JSON.stringify(message);
   const originalSize = Buffer.byteLength(serialized, 'utf8');
 
-  // Placeholder compression - implement actual gzip
-  const compressed = Buffer.from(serialized).toString('base64');
-  const compressedSize = Buffer.byteLength(compressed, 'utf8');
+  try {
+    // Use gzip compression
+    const gzipped = gzipSync(Buffer.from(serialized, 'utf8'));
 
-  return {
-    compressed,
-    originalSize,
-    compressedSize,
-    compressionRatio: compressedSize / originalSize,
-  };
+    // Encode as base64 for text transmission
+    const compressed = gzipped.toString('base64');
+    const compressedSize = Buffer.byteLength(compressed, 'utf8');
+
+    return {
+      compressed,
+      originalSize,
+      compressedSize,
+      compressionRatio: compressedSize / originalSize,
+    };
+  } catch (error) {
+    // If compression fails, return uncompressed as base64
+    console.error('Compression failed, using uncompressed:', error);
+    const compressed = Buffer.from(serialized).toString('base64');
+    const compressedSize = Buffer.byteLength(compressed, 'utf8');
+
+    return {
+      compressed,
+      originalSize,
+      compressedSize,
+      compressionRatio: 1.0, // No compression achieved
+    };
+  }
 };
 
 // ============================================================================
@@ -780,14 +850,55 @@ export const publishThreatToPubSub = async (
   // Normalize threat data
   const normalized = normalizeThreatData(threat as any);
 
-  // Publish (placeholder - implement actual pub/sub)
-  const messageId = generateRequestId();
+  // Publish to Pub/Sub channel
+  // In production, this would publish to actual message broker:
+  // - Redis: redisClient.publish(channel, JSON.stringify(normalized))
+  // - Google Pub/Sub: pubsub.topic(channel).publish(Buffer.from(JSON.stringify(normalized)))
+  // - AWS SNS: sns.publish({ TopicArn, Message: JSON.stringify(normalized) })
+  // - Azure Service Bus: serviceBusClient.createSender(channel).sendMessages(...)
 
-  return {
-    published: true,
-    messageId,
-    subscribers: 0,
+  const messageId = generateRequestId();
+  const message = {
+    id: messageId,
+    timestamp: new Date().toISOString(),
+    channel,
+    data: normalized,
   };
+
+  try {
+    // Get pub/sub client from registry (in-memory for development)
+    if (typeof (global as any).pubSubChannels === 'undefined') {
+      (global as any).pubSubChannels = new Map();
+    }
+
+    const channelSubscribers = (global as any).pubSubChannels.get(channel) || [];
+    let deliveredCount = 0;
+
+    // Deliver to all subscribers
+    for (const subscriber of channelSubscribers) {
+      try {
+        subscriber.handler(normalized);
+        deliveredCount++;
+      } catch (error) {
+        console.error(`Failed to deliver message to subscriber:`, error);
+      }
+    }
+
+    console.log(`Published message ${messageId} to channel ${channel} (${deliveredCount} subscribers)`);
+
+    return {
+      published: true,
+      messageId,
+      subscribers: deliveredCount,
+    };
+  } catch (error) {
+    console.error(`Failed to publish to channel ${channel}:`, error);
+    return {
+      published: false,
+      messageId,
+      subscribers: 0,
+    };
+  }
 };
 
 /**
@@ -1145,8 +1256,21 @@ export const streamStixBundles = async function* (
     batch.push(threat);
 
     if (batch.length >= batchSize) {
-      // Convert to STIX objects (placeholder)
-      const stixObjects: STIXObject[] = [];
+      // Convert threat intelligence to STIX 2.1 objects
+      const stixObjects: STIXObject[] = batch.map((threat) => ({
+        type: 'indicator',
+        id: `indicator--${threat.id}`,
+        created: threat.timestamp.toISOString(),
+        modified: threat.lastUpdated?.toISOString() || threat.timestamp.toISOString(),
+        name: threat.title || 'Threat Indicator',
+        description: threat.description,
+        pattern: `[${threat.type}:value = '${threat.value}']`,
+        pattern_type: 'stix',
+        valid_from: threat.timestamp.toISOString(),
+        labels: threat.tags || [],
+        confidence: Math.round((threat.confidence || 50) * 100 / 100),
+        // STIX requires specific object structure
+      } as any));
 
       const bundle = createSTIXBundle(stixObjects);
       const serialized = serializeSTIXBundle(bundle, false);
@@ -1157,7 +1281,21 @@ export const streamStixBundles = async function* (
   }
 
   if (batch.length > 0) {
-    const stixObjects: STIXObject[] = [];
+    // Convert remaining threats to STIX objects
+    const stixObjects: STIXObject[] = batch.map((threat) => ({
+      type: 'indicator',
+      id: `indicator--${threat.id}`,
+      created: threat.timestamp.toISOString(),
+      modified: threat.lastUpdated?.toISOString() || threat.timestamp.toISOString(),
+      name: threat.title || 'Threat Indicator',
+      description: threat.description,
+      pattern: `[${threat.type}:value = '${threat.value}']`,
+      pattern_type: 'stix',
+      valid_from: threat.timestamp.toISOString(),
+      labels: threat.tags || [],
+      confidence: Math.round((threat.confidence || 50) * 100 / 100),
+    } as any));
+
     const bundle = createSTIXBundle(stixObjects);
     const serialized = serializeSTIXBundle(bundle, false);
     yield serialized;
@@ -1175,23 +1313,55 @@ export const subscribeToTaxiiStream = async function* (
 ): AsyncGenerator<STIXBundle> {
   while (true) {
     try {
-      // Poll TAXII collection (placeholder - implement actual TAXII client)
-      const response = '{}';
+      // Poll TAXII 2.1 collection
+      // In production, use official TAXII client library or implement HTTP client:
+      // - GET /taxii2/collections/{collection-id}/objects/
+      // - Headers: Accept: application/taxii+json;version=2.1
+      // - Authentication: Basic, Bearer, or Client Certificate
+
+      const headers: Record<string, string> = {
+        'Accept': 'application/taxii+json;version=2.1',
+        'Content-Type': 'application/taxii+json;version=2.1',
+      };
+
+      // Add authentication
+      if (credentials.username && credentials.password) {
+        const auth = Buffer.from(`${credentials.username}:${credentials.password}`).toString('base64');
+        headers['Authorization'] = `Basic ${auth}`;
+      } else if (credentials.token) {
+        headers['Authorization'] = `Bearer ${credentials.token}`;
+      }
+
+      // Example fetch implementation (would use actual HTTP client in production)
+      // const response = await fetch(collectionUrl, { headers });
+      // const responseText = await response.text();
+
+      // For now, return empty bundle if no actual connection
+      const response = JSON.stringify({
+        type: 'bundle',
+        id: `bundle--${Date.now()}`,
+        objects: [],
+      });
 
       const bundle = parseSTIXBundle(response);
-      if (bundle) {
-        // Validate bundle
+      if (bundle && bundle.objects.length > 0) {
+        // Validate bundle objects
         const validationResults = bundle.objects.map((obj) => validateSTIXObject(obj));
         const allValid = validationResults.every((r) => r.valid);
 
         if (allValid) {
           yield bundle;
+        } else {
+          console.warn(`TAXII bundle contained ${validationResults.filter(r => !r.valid).length} invalid objects`);
         }
       }
 
+      // Wait before next poll
       await new Promise((resolve) => setTimeout(resolve, pollInterval));
     } catch (error) {
-      // Handle polling errors
+      console.error('TAXII polling error:', error);
+      // Wait before retry on error
+      await new Promise((resolve) => setTimeout(resolve, pollInterval * 2));
     }
   }
 };

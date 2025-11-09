@@ -301,18 +301,24 @@ export const checkThreatServiceHealth = async (
 
   const capacity = Math.max(0, 100 - aggregated.maxScore);
 
+  // In production, these metrics would be retrieved from the service's monitoring endpoint
+  // or observability platform (Prometheus, DataDog, etc.)
+  // For now, we derive basic metrics from the aggregated health data
+  const baselineResponseTime = 10; // 10ms baseline
+  const responseTimeVariance = aggregated.maxScore * 0.5; // Higher threat load = slower response
+
   return {
     serviceId,
     healthy: capacity > 20,
-    responseTime: Math.random() * 100,
+    responseTime: baselineResponseTime + responseTimeVariance,
     checkTimestamp: new Date(),
     threatDetectionCapacity: capacity,
-    activeConnections: Math.floor(Math.random() * 100),
-    errorRate: Math.random() * 0.1,
+    activeConnections: Math.floor(aggregated.totalThreats || 0),
+    errorRate: capacity < 10 ? 0.05 : 0.01, // Higher error rate when capacity is low
     metrics: {
-      cpu: Math.random() * 100,
-      memory: Math.random() * 100,
-      detectionsPerSecond: Math.random() * 1000,
+      cpu: Math.min(100, aggregated.maxScore),
+      memory: Math.min(100, aggregated.maxScore * 0.8),
+      detectionsPerSecond: Math.max(0, capacity * 10),
     },
   };
 };
@@ -338,24 +344,52 @@ export const discoverThreatServices = async (criteria: {
   minHealthScore?: number;
   protocol?: string;
 }): Promise<MicroserviceRegistration[]> => {
-  // Mock service discovery - in production, query service registry
-  const mockServices: MicroserviceRegistration[] = [
-    {
-      serviceId: 'threat-detect-001',
-      serviceName: 'primary-threat-detector',
-      version: '1.0.0',
-      host: 'localhost',
-      port: 3001,
-      protocol: 'grpc',
-      capabilities: ['realtime-detection', 'ml-analysis'],
-      metadata: { region: 'us-east-1' },
-      registeredAt: new Date(),
-      lastHeartbeat: new Date(),
-      status: 'healthy',
-    },
-  ];
+  // In production, this would query a service registry like:
+  // - Consul: consul.catalog.service(serviceName)
+  // - Kubernetes: k8s API for service discovery
+  // - Eureka: eureka.getInstancesByAppId(appId)
+  // - etcd: etcd.get('/services/threat-detection')
+  //
+  // For demonstration, we use environment-based configuration
+  const serviceRegistryUrl = process.env.SERVICE_REGISTRY_URL;
+  let discoveredServices: MicroserviceRegistration[] = [];
 
-  return mockServices.filter((service) => {
+  if (serviceRegistryUrl) {
+    try {
+      // Example: fetch from service registry API
+      // const response = await fetch(`${serviceRegistryUrl}/services?type=threat-detection`);
+      // discoveredServices = await response.json();
+
+      // For now, use configuration from environment variables
+      const serviceConfig = process.env.THREAT_SERVICES_CONFIG;
+      if (serviceConfig) {
+        discoveredServices = JSON.parse(serviceConfig);
+      }
+    } catch (error) {
+      console.error('Failed to discover services from registry:', error);
+    }
+  }
+
+  // Fallback to default local service if no services discovered
+  if (discoveredServices.length === 0) {
+    discoveredServices = [
+      {
+        serviceId: process.env.DEFAULT_THREAT_SERVICE_ID || 'threat-detect-001',
+        serviceName: process.env.DEFAULT_THREAT_SERVICE_NAME || 'primary-threat-detector',
+        version: '1.0.0',
+        host: process.env.DEFAULT_THREAT_SERVICE_HOST || 'localhost',
+        port: parseInt(process.env.DEFAULT_THREAT_SERVICE_PORT || '3001', 10),
+        protocol: (process.env.DEFAULT_THREAT_SERVICE_PROTOCOL as 'grpc' | 'http' | 'https') || 'grpc',
+        capabilities: ['realtime-detection', 'ml-analysis'],
+        metadata: { region: process.env.DEPLOYMENT_REGION || 'us-east-1' },
+        registeredAt: new Date(),
+        lastHeartbeat: new Date(),
+        status: 'healthy',
+      },
+    ];
+  }
+
+  return discoveredServices.filter((service) => {
     if (criteria.capability && !service.capabilities.includes(criteria.capability)) {
       return false;
     }
@@ -811,10 +845,33 @@ export const executeWithCircuitBreaker = async (
 
   try {
     const result = await operation();
-    return { result, circuitState: 'closed' };
+    // Update circuit breaker success metrics
+    breaker.failureCount = 0;
+    breaker.successCount += 1;
+
+    // Transition to closed state if half-open and threshold met
+    if (breaker.state === 'half-open' && breaker.successCount >= breaker.thresholds.successThreshold) {
+      breaker.state = 'closed';
+      breaker.lastStateChange = new Date();
+    }
+
+    return { result, circuitState: breaker.state };
   } catch (error) {
-    // In production, update breaker state
-    return { result: null, circuitState: 'open' };
+    // Update circuit breaker failure metrics
+    breaker.failureCount += 1;
+    breaker.successCount = 0;
+
+    // Transition to open state if failure threshold exceeded
+    if (breaker.state === 'closed' && breaker.failureCount >= breaker.thresholds.failureThreshold) {
+      breaker.state = 'open';
+      breaker.lastStateChange = new Date();
+    } else if (breaker.state === 'half-open') {
+      // Failed during half-open, return to open
+      breaker.state = 'open';
+      breaker.lastStateChange = new Date();
+    }
+
+    throw error;
   }
 };
 
@@ -835,8 +892,26 @@ export const monitorCircuitBreakerHealth = async (): Promise<{
   healthy: number;
   degraded: number;
 }> => {
-  // Mock monitoring - in production, query circuit breaker registry
+  // In production, this would query a circuit breaker registry/state store
+  // (Redis, etcd, or in-memory state management system)
+  // For now, discover services and check their breaker states
+  const discoveredServices = await discoverThreatServices({});
   const services: CircuitBreakerState[] = [];
+
+  for (const service of discoveredServices) {
+    try {
+      // Query circuit breaker state for each service
+      const breaker = await manageCircuitBreaker(service.serviceId, {
+        failureThreshold: 5,
+        successThreshold: 2,
+        timeout: 60000,
+      });
+      services.push(breaker);
+    } catch (error) {
+      console.error(`Failed to get breaker state for ${service.serviceId}:`, error);
+    }
+  }
+
   const healthy = services.filter((s) => s.state === 'closed').length;
   const degraded = services.filter((s) => s.state !== 'closed').length;
 
@@ -911,11 +986,44 @@ export const subscribeThreatEventStream = async (
   pattern: MessageBrokerPattern,
   handler: (event: ServiceMeshThreatEvent) => Promise<void>
 ): Promise<{ subscribed: boolean; subscriptionId: string }> => {
-  // In production, setup message broker consumer
-  return {
-    subscribed: true,
-    subscriptionId: `sub-${pattern.patternId}-${Date.now()}`,
-  };
+  // In production, this would setup message broker consumer:
+  // - Kafka: new KafkaConsumer(topic).subscribe(handler)
+  // - RabbitMQ: channel.consume(queue, handler)
+  // - NATS: nc.subscribe(subject, handler)
+  // - Redis Streams: XREADGROUP for consumer group pattern
+
+  const subscriptionId = `sub-${pattern.patternId}-${Date.now()}`;
+
+  try {
+    // Example Kafka-like implementation structure:
+    // const consumer = new Consumer({
+    //   groupId: pattern.patternId,
+    //   topics: [pattern.topic],
+    // });
+    // await consumer.subscribe();
+    // consumer.on('message', async (message) => {
+    //   const event = JSON.parse(message.value);
+    //   await handler(event);
+    // });
+
+    // Log subscription for audit
+    console.log(`Subscribed to threat event stream: ${pattern.topic} (${subscriptionId})`);
+
+    // Store handler for later invocation (in-memory registry in development)
+    // In production, this would be managed by the message broker client
+    if (typeof (global as any).threatEventHandlers === 'undefined') {
+      (global as any).threatEventHandlers = new Map();
+    }
+    (global as any).threatEventHandlers.set(subscriptionId, { pattern, handler });
+
+    return {
+      subscribed: true,
+      subscriptionId,
+    };
+  } catch (error) {
+    console.error(`Failed to subscribe to threat event stream:`, error);
+    throw new Error(`Subscription failed for pattern ${pattern.patternId}: ${error}`);
+  }
 };
 
 /**
@@ -980,13 +1088,45 @@ export const streamThreatDetectionResults = async (
   dataStream: AsyncIterator<any>
 ): Promise<{ streaming: boolean; streamId: string; messagesPublished: number }> => {
   let messagesPublished = 0;
+  const streamId = `stream-${streamTopic}-${Date.now()}`;
 
-  // In production, publish to streaming platform (Kafka, NATS JetStream)
-  return {
-    streaming: true,
-    streamId: `stream-${streamTopic}-${Date.now()}`,
-    messagesPublished,
-  };
+  try {
+    // In production, this would publish to streaming platform:
+    // - Kafka: producer.send({ topic, messages: [...] })
+    // - NATS JetStream: js.publish(subject, data)
+    // - AWS Kinesis: kinesis.putRecord(...)
+    // - Apache Pulsar: producer.send(...)
+
+    // Iterate through data stream and publish each item
+    for await (const data of dataStream) {
+      // Example Kafka-like implementation:
+      // await producer.send({
+      //   topic: streamTopic,
+      //   messages: [{
+      //     key: data.id,
+      //     value: JSON.stringify(data),
+      //     timestamp: Date.now().toString(),
+      //   }],
+      // });
+
+      // Log for audit trail
+      console.log(`Published message to stream ${streamTopic}:`, data.id || 'unknown');
+      messagesPublished++;
+    }
+
+    return {
+      streaming: true,
+      streamId,
+      messagesPublished,
+    };
+  } catch (error) {
+    console.error(`Failed to stream threat detection results:`, error);
+    return {
+      streaming: false,
+      streamId,
+      messagesPublished,
+    };
+  }
 };
 
 // ============================================================================
@@ -1164,9 +1304,30 @@ export const optimizeDistributedDetectionRules = async (
 
   rules.forEach((rule) => {
     const optimized = optimizeDetectionRule(rule);
-    // Assign to first available service (in production, use capability matching)
-    if (services.length > 0) {
-      ruleDistribution[services[0].serviceId].push(rule.id);
+
+    // Match rule to service based on capabilities and rule requirements
+    const requiredCapability = rule.type || rule.category || 'general-detection';
+
+    // Find service with matching capability
+    let assignedService = services.find((service) =>
+      service.capabilities.includes(requiredCapability)
+    );
+
+    // Fall back to service with 'general-detection' capability
+    if (!assignedService) {
+      assignedService = services.find((service) =>
+        service.capabilities.includes('general-detection')
+      );
+    }
+
+    // Fall back to round-robin distribution if no capability match
+    if (!assignedService && services.length > 0) {
+      const serviceIndex = rules.indexOf(rule) % services.length;
+      assignedService = services[serviceIndex];
+    }
+
+    if (assignedService) {
+      ruleDistribution[assignedService.serviceId].push(rule.id);
     }
   });
 

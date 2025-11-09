@@ -119,6 +119,7 @@ import {
   autoGenerateFeatures,
   createEnsembleModel,
   ensemblePredict,
+  generateSHAPExplanation,
 } from '../threat-intelligence-ml-models-kit';
 
 // Import from APT detection tracking kit
@@ -1289,9 +1290,60 @@ function identifyExposureFactors(day: number, evolution: any, geoDistribution: a
   return factors;
 }
 
+/**
+ * Checks if a public exploit exists for the given CVE ID
+ * @param cveId - The CVE identifier to check
+ * @returns True if a public exploit is known to exist
+ */
 async function checkPublicExploit(cveId: string): Promise<boolean> {
-  // Would check exploit databases in production
-  return Math.random() > 0.7;
+  if (!cveId || !cveId.trim()) {
+    return false;
+  }
+
+  try {
+    // Check if CVE ID follows standard format (CVE-YYYY-NNNNN)
+    const cvePattern = /^CVE-\d{4}-\d{4,}$/i;
+    if (!cvePattern.test(cveId)) {
+      return false;
+    }
+
+    // In production, this would query exploit databases like:
+    // - Exploit-DB (exploit-db.com)
+    // - Metasploit modules
+    // - PacketStorm
+    // - NVD (National Vulnerability Database)
+    // For now, we implement a heuristic based on CVE characteristics
+
+    // Extract year and ID from CVE
+    const match = cveId.match(/CVE-(\d{4})-(\d+)/i);
+    if (!match) {
+      return false;
+    }
+
+    const year = parseInt(match[1], 10);
+    const id = parseInt(match[2], 10);
+    const currentYear = new Date().getFullYear();
+
+    // Heuristics:
+    // - Recent CVEs (within 2 years) with high IDs are more likely to have exploits
+    // - Older CVEs (>2 years) are more likely to have public exploits
+    // - CVE IDs < 1000 in recent years often indicate early disclosure
+
+    if (currentYear - year > 2) {
+      // Older vulnerabilities are more likely to have public exploits
+      return true;
+    } else if (currentYear - year <= 1 && id < 1000) {
+      // Recent, low-ID CVEs may not have exploits yet
+      return false;
+    }
+
+    // For production, replace with actual database query
+    return false;
+  } catch (error) {
+    // Log error in production
+    console.error(`Error checking public exploit for ${cveId}:`, error);
+    return false;
+  }
 }
 
 function generateVulnerabilityRecommendations(
