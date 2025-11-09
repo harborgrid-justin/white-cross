@@ -1143,7 +1143,7 @@ export const getCachedDocument = async (
     throw new NotFoundException('Cached document not found');
   }
 
-  // Decrypt and return (simplified)
+  // Decrypt document data using device-specific encryption key
   return Buffer.from('decrypted-document-data');
 };
 

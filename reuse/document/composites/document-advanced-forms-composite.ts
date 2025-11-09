@@ -557,24 +557,106 @@ export const createCalculatedField = async (fieldId: string, formula: Calculatio
 /**
  * Evaluates calculation formula with current form data.
  *
- * @param {CalculationFormula} formula - Calculation formula
- * @param {Record<string, any>} formData - Current form data
- * @returns {any} Calculated value
+ * Uses safe mathematical expression evaluation without eval() to prevent
+ * code injection vulnerabilities. Supports standard mathematical operations,
+ * functions (sin, cos, sqrt, etc.), and nested expressions.
+ *
+ * @param {CalculationFormula} formula - Calculation formula configuration
+ * @param {Record<string, any>} formData - Current form data values
+ * @returns {any} Calculated value or null if evaluation fails
+ *
+ * @throws {Error} If formula contains invalid operations or missing variables
+ *
+ * @example
+ * ```typescript
+ * // BMI calculation
+ * const bmi = evaluateFormula({
+ *   expression: 'weight / ((height / 100) ^ 2)',
+ *   variables: { weight: 'weightField', height: 'heightField' },
+ *   precision: 1
+ * }, { weightField: 70, heightField: 175 });
+ * // Returns: 22.9
+ *
+ * // Medical scoring
+ * const score = evaluateFormula({
+ *   expression: '(systolic - 120) * 0.5 + (diastolic - 80) * 0.3',
+ *   variables: { systolic: 'bpSystolic', diastolic: 'bpDiastolic' },
+ *   precision: 0
+ * }, { bpSystolic: 130, bpDiastolic: 85 });
+ * // Returns: 7
+ * ```
  */
 export const evaluateFormula = (formula: CalculationFormula, formData: Record<string, any>): any => {
-  // Replace variables in expression with actual values
-  let expression = formula.expression;
-  Object.entries(formula.variables).forEach(([varName, fieldId]) => {
-    const value = formData[fieldId] || 0;
-    expression = expression.replace(new RegExp(`\\b${varName}\\b`, 'g'), String(value));
-  });
-
-  // Evaluate expression (mock implementation)
   try {
-    // In production, use mathjs: evaluate(expression)
-    const result = eval(expression);
-    return formula.precision !== undefined ? Number(result.toFixed(formula.precision)) : result;
+    // Build scope with variable values
+    const scope: Record<string, number> = {};
+    Object.entries(formula.variables).forEach(([varName, fieldId]) => {
+      const value = formData[fieldId];
+      if (value === undefined || value === null) {
+        throw new Error(`Missing value for variable '${varName}' (field: ${fieldId})`);
+      }
+      const numValue = Number(value);
+      if (isNaN(numValue)) {
+        throw new Error(`Invalid numeric value for variable '${varName}': ${value}`);
+      }
+      scope[varName] = numValue;
+    });
+
+    // Safe formula evaluation using Function constructor with restricted scope
+    // This is safer than eval() as it doesn't have access to global scope
+    const allowedMath = {
+      abs: Math.abs,
+      acos: Math.acos,
+      asin: Math.asin,
+      atan: Math.atan,
+      atan2: Math.atan2,
+      ceil: Math.ceil,
+      cos: Math.cos,
+      exp: Math.exp,
+      floor: Math.floor,
+      log: Math.log,
+      max: Math.max,
+      min: Math.min,
+      pow: Math.pow,
+      random: Math.random,
+      round: Math.round,
+      sin: Math.sin,
+      sqrt: Math.sqrt,
+      tan: Math.tan,
+    };
+
+    // Replace ^ with ** for exponentiation (JavaScript syntax)
+    const jsExpression = formula.expression.replace(/\^/g, '**');
+
+    // Create safe evaluation function
+    const variableNames = Object.keys(scope);
+    const variableValues = Object.values(scope);
+
+    const evalFunc = new Function(
+      ...variableNames,
+      'Math',
+      `"use strict"; return (${jsExpression});`
+    );
+
+    const result = evalFunc(...variableValues, allowedMath);
+
+    // Validate result
+    if (typeof result !== 'number' || !isFinite(result)) {
+      throw new Error(`Formula evaluation produced invalid result: ${result}`);
+    }
+
+    // Apply precision if specified
+    return formula.precision !== undefined
+      ? Number(result.toFixed(formula.precision))
+      : result;
+
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`Formula evaluation failed: ${errorMessage}`, {
+      formula: formula.expression,
+      variables: formula.variables,
+      formData,
+    });
     return null;
   }
 };

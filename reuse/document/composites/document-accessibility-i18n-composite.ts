@@ -63,16 +63,23 @@ import {
 
 /**
  * WCAG conformance levels
+ *
+ * @description Defines Web Content Accessibility Guidelines compliance levels
+ * @see https://www.w3.org/WAI/WCAG21/quickref/
  */
 export type WcagLevel = 'A' | 'AA' | 'AAA';
 
 /**
- * Accessibility issue severity
+ * Accessibility issue severity classification
+ *
+ * @description Categorizes accessibility violations by their impact on users with disabilities
  */
 export type AccessibilitySeverity = 'critical' | 'serious' | 'moderate' | 'minor';
 
 /**
- * Supported languages
+ * Supported languages for internationalization
+ *
+ * @description ISO 639-1 language codes supported by the platform
  */
 export type SupportedLanguage =
   | 'en'
@@ -87,12 +94,22 @@ export type SupportedLanguage =
   | 'hi';
 
 /**
- * Text direction
+ * Text direction for bidirectional text support
+ *
+ * @description Defines text flow direction for proper RTL language rendering
  */
 export type TextDirection = 'ltr' | 'rtl';
 
 /**
  * Accessibility audit result
+ *
+ * @property {boolean} compliant - Whether document meets target WCAG level
+ * @property {WcagLevel} wcagLevel - WCAG conformance level tested against
+ * @property {number} score - Accessibility score (0-100)
+ * @property {Array} violations - Array of accessibility violations found
+ * @property {number} passes - Count of passed accessibility checks
+ * @property {number} incomplete - Count of checks requiring manual review
+ * @property {string[]} recommendations - Actionable remediation suggestions
  */
 export interface AccessibilityAuditResult {
   compliant: boolean;
@@ -112,6 +129,13 @@ export interface AccessibilityAuditResult {
 
 /**
  * Translation configuration
+ *
+ * @property {SupportedLanguage} sourceLanguage - Original document language
+ * @property {SupportedLanguage[]} targetLanguages - Languages to translate into
+ * @property {boolean} translateMetadata - Whether to translate document metadata
+ * @property {boolean} preserveFormatting - Maintain original formatting in translations
+ * @property {boolean} useGlossary - Apply translation glossary for consistency
+ * @property {string} [glossaryId] - Optional ID of custom glossary to use
  */
 export interface TranslationConfig {
   sourceLanguage: SupportedLanguage;
@@ -124,6 +148,15 @@ export interface TranslationConfig {
 
 /**
  * Localization settings
+ *
+ * @property {string} locale - Full locale identifier (e.g., 'en-US', 'es-ES')
+ * @property {SupportedLanguage} language - ISO 639-1 language code
+ * @property {TextDirection} textDirection - Text reading direction
+ * @property {string} dateFormat - Locale-specific date format pattern
+ * @property {string} timeFormat - Locale-specific time format (12h/24h)
+ * @property {string} numberFormat - Number formatting style (e.g., 'European', 'US')
+ * @property {string} [currencyFormat] - Optional currency formatting rules
+ * @property {string} [timezone] - IANA timezone identifier
  */
 export interface LocalizationSettings {
   locale: string;
@@ -138,6 +171,12 @@ export interface LocalizationSettings {
 
 /**
  * Screen reader configuration
+ *
+ * @property {boolean} ariaLabels - Enable ARIA label generation
+ * @property {boolean} landmarks - Add ARIA landmark roles
+ * @property {boolean} skipLinks - Include skip navigation links
+ * @property {boolean} liveRegions - Implement ARIA live regions for dynamic content
+ * @property {boolean} describedBy - Add aria-describedby relationships
  */
 export interface ScreenReaderConfig {
   ariaLabels: boolean;
@@ -149,6 +188,11 @@ export interface ScreenReaderConfig {
 
 /**
  * Keyboard navigation configuration
+ *
+ * @property {boolean} tabOrder - Enforce logical tab order
+ * @property {boolean} focusIndicators - Show visible focus indicators
+ * @property {Array} shortcuts - Keyboard shortcut definitions
+ * @property {boolean} trapFocus - Enable focus trapping in modals
  */
 export interface KeyboardNavigationConfig {
   tabOrder: boolean;
@@ -158,7 +202,12 @@ export interface KeyboardNavigationConfig {
 }
 
 /**
- * Alternative text mapping
+ * Alternative text mapping for images
+ *
+ * @property {string} imageId - Unique image identifier
+ * @property {string} altText - Descriptive alternative text
+ * @property {SupportedLanguage} language - Language of alt text
+ * @property {string} [context] - Optional contextual information
  */
 export interface AltTextMapping {
   imageId: string;
@@ -1296,22 +1345,119 @@ export class AccessibilityI18nCompositeService {
   // ============================================================================
 
   /**
-   * Calculates color contrast ratio.
+   * Calculates color contrast ratio between foreground and background colors.
+   *
+   * Implements WCAG 2.1 contrast ratio formula using relative luminance.
    *
    * @private
+   * @param {string} foreground - Foreground color in hex format
+   * @param {string} background - Background color in hex format
+   * @returns {number} Contrast ratio (1-21)
+   *
+   * @throws {Error} If color format is invalid
+   *
+   * @example
+   * ```typescript
+   * const ratio = this.calculateContrastRatio('#000000', '#FFFFFF');
+   * // Returns: 21 (maximum contrast)
+   * ```
    */
   private calculateContrastRatio(foreground: string, background: string): number {
-    // Simplified contrast calculation
-    return 7.0; // Placeholder
+    try {
+      const getRGB = (hex: string): { r: number; g: number; b: number } => {
+        const cleaned = hex.replace('#', '');
+        if (!/^[0-9A-F]{6}$/i.test(cleaned)) {
+          throw new Error(`Invalid hex color format: ${hex}`);
+        }
+        return {
+          r: parseInt(cleaned.substr(0, 2), 16),
+          g: parseInt(cleaned.substr(2, 2), 16),
+          b: parseInt(cleaned.substr(4, 2), 16),
+        };
+      };
+
+      const getLuminance = (rgb: { r: number; g: number; b: number }): number => {
+        const [r, g, b] = [rgb.r, rgb.g, rgb.b].map((val) => {
+          const normalized = val / 255;
+          return normalized <= 0.03928
+            ? normalized / 12.92
+            : Math.pow((normalized + 0.055) / 1.055, 2.4);
+        });
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      };
+
+      const fgRGB = getRGB(foreground);
+      const bgRGB = getRGB(background);
+      const fgLuminance = getLuminance(fgRGB);
+      const bgLuminance = getLuminance(bgRGB);
+
+      const lighter = Math.max(fgLuminance, bgLuminance);
+      const darker = Math.min(fgLuminance, bgLuminance);
+
+      return Number(((lighter + 0.05) / (darker + 0.05)).toFixed(2));
+    } catch (error) {
+      this.logger.error(`Error calculating contrast ratio: ${error}`);
+      throw new Error(`Failed to calculate contrast ratio: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
 
   /**
-   * Generates accessibility recommendations.
+   * Generates actionable accessibility recommendations from violations.
    *
    * @private
+   * @param {Array<any>} violations - Array of accessibility violations
+   * @returns {string[]} Array of prioritized remediation recommendations
+   *
+   * @example
+   * ```typescript
+   * const recommendations = this.generateRecommendations(violations);
+   * // Returns: [
+   * //   "Critical: Add document language attribute to improve screen reader support",
+   * //   "High: Ensure all images have descriptive alt text",
+   * //   ...
+   * // ]
+   * ```
    */
   private generateRecommendations(violations: Array<any>): string[] {
-    return violations.map((v) => `Fix ${v.id}: ${v.description}`);
+    const priorityPrefix: Record<string, string> = {
+      critical: 'Critical',
+      serious: 'High',
+      moderate: 'Medium',
+      minor: 'Low',
+    };
+
+    return violations.map((v) => {
+      const prefix = priorityPrefix[v.impact] || 'Info';
+      const recommendation = this.getDetailedRecommendation(v.id);
+      return `${prefix}: ${recommendation}`;
+    }).sort((a, b) => {
+      // Sort by priority: Critical > High > Medium > Low
+      const priorityOrder = { Critical: 0, High: 1, Medium: 2, Low: 3, Info: 4 };
+      const aPriority = priorityOrder[a.split(':')[0] as keyof typeof priorityOrder] || 4;
+      const bPriority = priorityOrder[b.split(':')[0] as keyof typeof priorityOrder] || 4;
+      return aPriority - bPriority;
+    });
+  }
+
+  /**
+   * Gets detailed remediation recommendation for specific violation.
+   *
+   * @private
+   * @param {string} violationId - Violation identifier
+   * @returns {string} Detailed recommendation text
+   */
+  private getDetailedRecommendation(violationId: string): string {
+    const recommendations: Record<string, string> = {
+      'document-structure': 'Add proper document structure tags to improve navigation and screen reader support',
+      'document-language': 'Specify document language attribute (lang) to enable correct pronunciation',
+      'missing-alt-text': 'Provide descriptive alternative text for all images and graphics',
+      'low-contrast': 'Increase color contrast to meet WCAG AA standards (minimum 4.5:1 for normal text)',
+      'missing-labels': 'Add labels to all form inputs using <label> or aria-label attributes',
+      'heading-hierarchy': 'Maintain proper heading hierarchy (h1, h2, h3) without skipping levels',
+      'keyboard-access': 'Ensure all interactive elements are keyboard accessible with proper focus indicators',
+    };
+
+    return recommendations[violationId] || `Fix ${violationId} to improve accessibility`;
   }
 }
 
