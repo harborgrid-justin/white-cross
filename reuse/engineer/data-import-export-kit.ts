@@ -1006,47 +1006,221 @@ export function validateCSVStructure(data: any[]): ValidationError[] {
 // ============================================================================
 
 /**
- * Parse Excel file (mock implementation - requires xlsx package)
+ * Parse Excel file using xlsx library
+ *
+ * @param filePath - Path to Excel file
+ * @param options - Excel parsing options
+ * @returns Array of parsed row objects
+ * @throws Error if file doesn't exist or parsing fails
+ *
+ * @example
+ * ```typescript
+ * const data = await parseExcelFile('./data.xlsx', {
+ *   sheetName: 'Sheet1',
+ *   headers: true,
+ *   range: 'A1:D100'
+ * });
+ * ```
  */
 export async function parseExcelFile(
   filePath: string,
   options: ExcelParseOptions = {}
 ): Promise<any[]> {
-  // This is a placeholder - integrate with xlsx package
-  throw new Error('Excel parsing requires xlsx package');
+  try {
+    // Dynamically import xlsx to avoid bundling if not needed
+    const XLSX = await import('xlsx');
+
+    // Read the file
+    const workbook = XLSX.readFile(filePath);
+
+    // Determine which sheet to parse
+    const sheetName = options.sheetName || workbook.SheetNames[options.sheetIndex || 0];
+    const worksheet = workbook.Sheets[sheetName];
+
+    if (!worksheet) {
+      throw new Error(`Sheet "${sheetName}" not found in workbook`);
+    }
+
+    // Parse options
+    const parseOptions: any = {
+      header: options.headers !== false ? 1 : undefined,
+      raw: false,
+      dateNF: options.dateFormat || 'yyyy-mm-dd',
+    };
+
+    if (options.range) {
+      parseOptions.range = options.range;
+    }
+
+    // Convert sheet to JSON
+    const data = XLSX.utils.sheet_to_json(worksheet, parseOptions);
+
+    return data;
+  } catch (error: any) {
+    if (error.code === 'ERR_MODULE_NOT_FOUND' || error.message?.includes('Cannot find module')) {
+      throw new Error(
+        'Excel parsing requires xlsx package. Install it with: npm install xlsx'
+      );
+    }
+    throw new Error(`Failed to parse Excel file: ${error.message}`);
+  }
 }
 
 /**
- * Generate Excel file (mock implementation)
+ * Generate Excel file using xlsx library
+ *
+ * @param data - Array of objects to export
+ * @param filePath - Output file path
+ * @param options - Excel generation options
+ *
+ * @example
+ * ```typescript
+ * await generateExcelFile(users, './users.xlsx', {
+ *   sheetName: 'Users',
+ *   headers: ['ID', 'Name', 'Email'],
+ *   columnWidths: [10, 30, 40],
+ *   autoFilter: true
+ * });
+ * ```
  */
 export async function generateExcelFile(
   data: any[],
   filePath: string,
   options: ExcelGenerateOptions = {}
 ): Promise<void> {
-  // This is a placeholder - integrate with xlsx package
-  throw new Error('Excel generation requires xlsx package');
+  try {
+    // Dynamically import xlsx
+    const XLSX = await import('xlsx');
+
+    // Create a new workbook
+    const workbook = XLSX.utils.book_new();
+
+    // Create worksheet from data
+    const worksheet = XLSX.utils.json_to_sheet(data, {
+      header: options.headers,
+    });
+
+    // Apply column widths if specified
+    if (options.columnWidths && options.columnWidths.length > 0) {
+      worksheet['!cols'] = options.columnWidths.map(width => ({ wch: width }));
+    }
+
+    // Apply auto filter if specified
+    if (options.autoFilter && data.length > 0) {
+      const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+      worksheet['!autofilter'] = { ref: XLSX.utils.encode_range(range) };
+    }
+
+    // Apply freeze pane if specified
+    if (options.freezePane) {
+      worksheet['!freeze'] = {
+        xSplit: options.freezePane.col,
+        ySplit: options.freezePane.row,
+      };
+    }
+
+    // Add worksheet to workbook
+    const sheetName = options.sheetName || 'Sheet1';
+    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+
+    // Write file
+    XLSX.writeFile(workbook, filePath);
+  } catch (error: any) {
+    if (error.code === 'ERR_MODULE_NOT_FOUND' || error.message?.includes('Cannot find module')) {
+      throw new Error(
+        'Excel generation requires xlsx package. Install it with: npm install xlsx'
+      );
+    }
+    throw new Error(`Failed to generate Excel file: ${error.message}`);
+  }
 }
 
 /**
- * Parse Excel with multiple sheets
+ * Parse Excel file with multiple sheets
+ *
+ * @param filePath - Path to Excel file
+ * @returns Map of sheet names to parsed data arrays
+ * @throws Error if file doesn't exist or parsing fails
+ *
+ * @example
+ * ```typescript
+ * const sheets = await parseExcelMultiSheet('./workbook.xlsx');
+ * for (const [sheetName, data] of sheets) {
+ *   console.log(`Sheet ${sheetName} has ${data.length} rows`);
+ * }
+ * ```
  */
 export async function parseExcelMultiSheet(
   filePath: string
 ): Promise<Map<string, any[]>> {
-  // This is a placeholder
-  throw new Error('Multi-sheet Excel parsing requires xlsx package');
+  try {
+    const XLSX = await import('xlsx');
+
+    // Read the workbook
+    const workbook = XLSX.readFile(filePath);
+
+    // Parse all sheets
+    const result = new Map<string, any[]>();
+
+    for (const sheetName of workbook.SheetNames) {
+      const worksheet = workbook.Sheets[sheetName];
+      const data = XLSX.utils.sheet_to_json(worksheet);
+      result.set(sheetName, data);
+    }
+
+    return result;
+  } catch (error: any) {
+    if (error.code === 'ERR_MODULE_NOT_FOUND' || error.message?.includes('Cannot find module')) {
+      throw new Error(
+        'Multi-sheet Excel parsing requires xlsx package. Install it with: npm install xlsx'
+      );
+    }
+    throw new Error(`Failed to parse multi-sheet Excel file: ${error.message}`);
+  }
 }
 
 /**
- * Generate Excel with multiple sheets
+ * Generate Excel file with multiple sheets
+ *
+ * @param sheets - Map of sheet names to data arrays
+ * @param filePath - Output file path
+ *
+ * @example
+ * ```typescript
+ * const sheets = new Map([
+ *   ['Users', usersData],
+ *   ['Products', productsData],
+ *   ['Orders', ordersData]
+ * ]);
+ * await generateExcelMultiSheet(sheets, './report.xlsx');
+ * ```
  */
 export async function generateExcelMultiSheet(
   sheets: Map<string, any[]>,
   filePath: string
 ): Promise<void> {
-  // This is a placeholder
-  throw new Error('Multi-sheet Excel generation requires xlsx package');
+  try {
+    const XLSX = await import('xlsx');
+
+    // Create a new workbook
+    const workbook = XLSX.utils.book_new();
+
+    // Add each sheet
+    for (const [sheetName, data] of sheets) {
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+    }
+
+    // Write file
+    XLSX.writeFile(workbook, filePath);
+  } catch (error: any) {
+    if (error.code === 'ERR_MODULE_NOT_FOUND' || error.message?.includes('Cannot find module')) {
+      throw new Error(
+        'Multi-sheet Excel generation requires xlsx package. Install it with: npm install xlsx'
+      );
+    }
+    throw new Error(`Failed to generate multi-sheet Excel file: ${error.message}`);
+  }
 }
 
 // ============================================================================
