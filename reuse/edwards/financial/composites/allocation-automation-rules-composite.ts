@@ -49,6 +49,51 @@
  */
 
 import { Transaction, Op, fn, col, literal } from 'sequelize';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Query,
+  HttpCode,
+  HttpStatus,
+  ParseIntPipe,
+  ValidationPipe,
+  UsePipes,
+  Injectable,
+  Logger,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBody,
+  ApiParam,
+  ApiQuery,
+  ApiBearerAuth,
+  ApiProperty,
+} from '@nestjs/swagger';
+import {
+  IsString,
+  IsEnum,
+  IsOptional,
+  IsNumber,
+  IsDate,
+  IsArray,
+  IsBoolean,
+  IsInt,
+  ValidateNested,
+  IsNotEmpty,
+  Min,
+  Max,
+} from 'class-validator';
+import { Type } from 'class-transformer';
 
 // Import from allocation engines rules kit
 import {
@@ -137,6 +182,117 @@ import {
   type ChangeTrackingRecord,
   type DataLineageNode,
 } from '../audit-trail-compliance-kit';
+
+// ============================================================================
+// ALLOCATION AUTOMATION TYPE DEFINITIONS - ENUMS
+// ============================================================================
+
+/**
+ * Allocation method types supported by the system
+ */
+export enum AllocationMethodType {
+  DIRECT = 'DIRECT', // Direct allocation
+  STEP_DOWN = 'STEP_DOWN', // Step-down allocation
+  RECIPROCAL = 'RECIPROCAL', // Reciprocal/iterative allocation
+  SIMULTANEOUS = 'SIMULTANEOUS', // Simultaneous equation method
+  ACTIVITY_BASED = 'ACTIVITY_BASED', // Activity-based costing
+}
+
+/**
+ * Allocation driver types
+ */
+export enum AllocationDriverType {
+  HEADCOUNT = 'HEADCOUNT', // Employee headcount
+  SQUARE_FOOTAGE = 'SQUARE_FOOTAGE', // Square footage
+  REVENUE = 'REVENUE', // Revenue-based
+  EXPENSES = 'EXPENSES', // Expense-based
+  PATIENT_DAYS = 'PATIENT_DAYS', // Patient days (healthcare)
+  ADMISSIONS = 'ADMISSIONS', // Number of admissions
+  PROCEDURES = 'PROCEDURES', // Number of procedures
+  VISITS = 'VISITS', // Number of visits
+  HOURS = 'HOURS', // Labor hours
+  UNITS = 'UNITS', // Units produced/consumed
+  PERCENTAGE = 'PERCENTAGE', // Fixed percentage
+  CUSTOM = 'CUSTOM', // Custom driver
+}
+
+/**
+ * Allocation rule types
+ */
+export enum AllocationRuleType {
+  AUTOMATED = 'AUTOMATED', // Fully automated
+  SEMI_AUTOMATED = 'SEMI_AUTOMATED', // Requires approval
+  MANUAL = 'MANUAL', // Manual entry only
+  SCHEDULED = 'SCHEDULED', // Scheduled execution
+  ON_DEMAND = 'ON_DEMAND', // On-demand execution
+}
+
+/**
+ * Allocation schedule types
+ */
+export enum AllocationScheduleType {
+  DAILY = 'DAILY',
+  WEEKLY = 'WEEKLY',
+  MONTHLY = 'MONTHLY',
+  PERIOD_END = 'PERIOD_END',
+  QUARTERLY = 'QUARTERLY',
+  ANNUAL = 'ANNUAL',
+  MANUAL = 'MANUAL',
+}
+
+/**
+ * Allocation execution status
+ */
+export enum AllocationStatus {
+  PENDING = 'PENDING',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
+  PARTIALLY_COMPLETED = 'PARTIALLY_COMPLETED',
+  CANCELLED = 'CANCELLED',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+  REVERSED = 'REVERSED',
+}
+
+/**
+ * Rule validation status
+ */
+export enum RuleValidationStatus {
+  PASSED = 'PASSED',
+  FAILED = 'FAILED',
+  WARNING = 'WARNING',
+  NOT_VALIDATED = 'NOT_VALIDATED',
+}
+
+/**
+ * Reversal approval status
+ */
+export enum ReversalApprovalStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+  AUTO_APPROVED = 'AUTO_APPROVED',
+}
+
+/**
+ * What-if scenario status
+ */
+export enum ScenarioStatus {
+  DRAFT = 'DRAFT',
+  ANALYZING = 'ANALYZING',
+  COMPLETED = 'COMPLETED',
+  ARCHIVED = 'ARCHIVED',
+}
+
+/**
+ * Hierarchy dependency type
+ */
+export enum DependencyType {
+  DIRECT = 'DIRECT',
+  INDIRECT = 'INDIRECT',
+  CIRCULAR = 'CIRCULAR',
+}
 
 // ============================================================================
 // TYPE DEFINITIONS - ALLOCATION AUTOMATION COMPOSITE
@@ -337,6 +493,489 @@ export interface ValidationCheck {
   passed: boolean;
   details: string;
   severity: 'critical' | 'high' | 'medium' | 'low';
+}
+
+// ============================================================================
+// DTO CLASSES FOR NESTJS CONTROLLERS
+// ============================================================================
+
+export class CreateAllocationRuleDto {
+  @ApiProperty({ description: 'Rule code', example: 'ALLOC-HR-001' })
+  @IsString()
+  @IsNotEmpty()
+  ruleCode: string;
+
+  @ApiProperty({ description: 'Rule name', example: 'HR Department Allocation' })
+  @IsString()
+  @IsNotEmpty()
+  ruleName: string;
+
+  @ApiProperty({ description: 'Rule description', required: false })
+  @IsString()
+  @IsOptional()
+  description?: string;
+
+  @ApiProperty({ enum: AllocationMethodType, example: AllocationMethodType.DIRECT })
+  @IsEnum(AllocationMethodType)
+  @IsNotEmpty()
+  allocationMethod: AllocationMethodType;
+
+  @ApiProperty({ enum: AllocationRuleType, example: AllocationRuleType.AUTOMATED })
+  @IsEnum(AllocationRuleType)
+  @IsNotEmpty()
+  ruleType: AllocationRuleType;
+
+  @ApiProperty({ description: 'Source department code', example: 'HR-ADMIN' })
+  @IsString()
+  @IsNotEmpty()
+  sourceDepartment: string;
+
+  @ApiProperty({ description: 'Target department codes', type: [String], example: ['ICU', 'SURGERY', 'EMERGENCY'] })
+  @IsArray()
+  @IsString({ each: true })
+  @IsNotEmpty()
+  targetDepartments: string[];
+
+  @ApiProperty({ description: 'Allocation basis code', example: 'HEADCOUNT' })
+  @IsString()
+  @IsNotEmpty()
+  allocationBasis: string;
+
+  @ApiProperty({ enum: AllocationDriverType, example: AllocationDriverType.HEADCOUNT })
+  @IsEnum(AllocationDriverType)
+  @IsNotEmpty()
+  driverType: AllocationDriverType;
+
+  @ApiProperty({ description: 'Fiscal year', example: 2024 })
+  @IsInt()
+  @Min(2000)
+  @Max(2100)
+  fiscalYear: number;
+
+  @ApiProperty({ description: 'Fiscal period', example: 3 })
+  @IsInt()
+  @Min(1)
+  @Max(12)
+  fiscalPeriod: number;
+
+  @ApiProperty({ description: 'Execution priority', example: 100 })
+  @IsInt()
+  @Min(1)
+  priority: number;
+
+  @ApiProperty({ description: 'Is active', example: true, default: true })
+  @IsBoolean()
+  @IsOptional()
+  isActive?: boolean;
+}
+
+export class UpdateAllocationRuleDto {
+  @ApiProperty({ description: 'Rule name', required: false })
+  @IsString()
+  @IsOptional()
+  ruleName?: string;
+
+  @ApiProperty({ description: 'Description', required: false })
+  @IsString()
+  @IsOptional()
+  description?: string;
+
+  @ApiProperty({ description: 'Target departments', type: [String], required: false })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  targetDepartments?: string[];
+
+  @ApiProperty({ description: 'Allocation basis', required: false })
+  @IsString()
+  @IsOptional()
+  allocationBasis?: string;
+
+  @ApiProperty({ description: 'Priority', required: false })
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  priority?: number;
+
+  @ApiProperty({ description: 'Is active', required: false })
+  @IsBoolean()
+  @IsOptional()
+  isActive?: boolean;
+}
+
+export class CreateAllocationScheduleDto {
+  @ApiProperty({ description: 'Schedule name', example: 'Monthly HR Allocation' })
+  @IsString()
+  @IsNotEmpty()
+  scheduleName: string;
+
+  @ApiProperty({ enum: AllocationScheduleType, example: AllocationScheduleType.MONTHLY })
+  @IsEnum(AllocationScheduleType)
+  @IsNotEmpty()
+  scheduleType: AllocationScheduleType;
+
+  @ApiProperty({ description: 'Rule IDs to execute', type: [Number], example: [101, 102, 103] })
+  @IsArray()
+  @IsInt({ each: true })
+  @IsNotEmpty()
+  ruleIds: number[];
+
+  @ApiProperty({ description: 'Execution time (HH:MM)', example: '23:00' })
+  @IsString()
+  @IsNotEmpty()
+  executionTime: string;
+
+  @ApiProperty({ description: 'Require approval before execution', example: false, default: false })
+  @IsBoolean()
+  @IsOptional()
+  requireApproval?: boolean;
+
+  @ApiProperty({ description: 'Auto-execute when scheduled', example: true, default: true })
+  @IsBoolean()
+  @IsOptional()
+  autoExecute?: boolean;
+
+  @ApiProperty({ description: 'Notification recipients', type: [String], required: false })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  recipients?: string[];
+}
+
+export class ExecuteAllocationDto {
+  @ApiProperty({ description: 'Schedule ID', example: 'SCHED-1699564800000' })
+  @IsString()
+  @IsNotEmpty()
+  scheduleId: string;
+
+  @ApiProperty({ description: 'Fiscal year override', required: false })
+  @IsInt()
+  @Min(2000)
+  @Max(2100)
+  @IsOptional()
+  fiscalYear?: number;
+
+  @ApiProperty({ description: 'Fiscal period override', required: false })
+  @IsInt()
+  @Min(1)
+  @Max(12)
+  @IsOptional()
+  fiscalPeriod?: number;
+
+  @ApiProperty({ description: 'Validate before execution', example: true, default: true })
+  @IsBoolean()
+  @IsOptional()
+  validateBeforeExecution?: boolean;
+}
+
+export class AllocationExecutionResponse {
+  @ApiProperty({ description: 'Execution ID' })
+  executionId: string;
+
+  @ApiProperty({ description: 'Schedule ID' })
+  scheduleId: string;
+
+  @ApiProperty({ description: 'Execution date' })
+  executionDate: Date;
+
+  @ApiProperty({ description: 'Total rules executed' })
+  totalRulesExecuted: number;
+
+  @ApiProperty({ description: 'Total rules failed' })
+  totalRulesFailed: number;
+
+  @ApiProperty({ description: 'Total allocated amount' })
+  totalAllocated: number;
+
+  @ApiProperty({ description: 'Execution duration in milliseconds' })
+  executionDurationMs: number;
+
+  @ApiProperty({ enum: AllocationStatus, description: 'Execution status' })
+  status: AllocationStatus;
+
+  @ApiProperty({ description: 'Errors encountered', type: [String] })
+  errors: string[];
+}
+
+export class CreateReversalRequestDto {
+  @ApiProperty({ description: 'Original execution ID', example: 'EXEC-SCHED-1699564800000-1699565000000' })
+  @IsString()
+  @IsNotEmpty()
+  originalExecutionId: string;
+
+  @ApiProperty({ description: 'Reversal reason', example: 'Incorrect allocation percentages' })
+  @IsString()
+  @IsNotEmpty()
+  reversalReason: string;
+
+  @ApiProperty({ description: 'Reversal date', example: '2024-03-15', required: false })
+  @Type(() => Date)
+  @IsDate()
+  @IsOptional()
+  reversalDate?: Date;
+
+  @ApiProperty({ description: 'Request immediate processing (if no approval required)', example: false, default: false })
+  @IsBoolean()
+  @IsOptional()
+  immediateProcess?: boolean;
+}
+
+export class ProcessReversalDto {
+  @ApiProperty({ description: 'Reversal ID', example: 'REV-EXEC-1699564800000-1699565100000' })
+  @IsString()
+  @IsNotEmpty()
+  reversalId: string;
+
+  @ApiProperty({ description: 'Approver user ID (if approval required)', required: false })
+  @IsString()
+  @IsOptional()
+  approverId?: string;
+
+  @ApiProperty({ description: 'Approval notes', required: false })
+  @IsString()
+  @IsOptional()
+  approvalNotes?: string;
+}
+
+export class AllocationReversalResponse {
+  @ApiProperty({ description: 'Reversal ID' })
+  reversalId: string;
+
+  @ApiProperty({ description: 'Reversal date' })
+  reversalDate: Date;
+
+  @ApiProperty({ description: 'Original execution ID' })
+  originalExecutionId: string;
+
+  @ApiProperty({ description: 'Allocations reversed count' })
+  allocationsReversed: number;
+
+  @ApiProperty({ description: 'Total reversal amount' })
+  totalReversalAmount: number;
+
+  @ApiProperty({ description: 'Journal entries created' })
+  journalEntriesCreated: number;
+
+  @ApiProperty({ description: 'Errors encountered', type: [String] })
+  errors: string[];
+}
+
+export class RuleModificationDto {
+  @ApiProperty({ description: 'Rule ID', example: 101 })
+  @IsInt()
+  @IsNotEmpty()
+  ruleId: number;
+
+  @ApiProperty({ description: 'Modification type', enum: ['change_basis', 'change_percentage', 'change_targets', 'disable', 'enable'] })
+  @IsEnum(['change_basis', 'change_percentage', 'change_targets', 'disable', 'enable'])
+  @IsNotEmpty()
+  modificationType: 'change_basis' | 'change_percentage' | 'change_targets' | 'disable' | 'enable';
+
+  @ApiProperty({ description: 'Modified value' })
+  @IsOptional()
+  modifiedValue?: any;
+}
+
+export class DriverModificationDto {
+  @ApiProperty({ description: 'Driver ID', example: 501 })
+  @IsInt()
+  @IsNotEmpty()
+  driverId: number;
+
+  @ApiProperty({ description: 'Driver code', example: 'HC-ICU' })
+  @IsString()
+  @IsNotEmpty()
+  driverCode: string;
+
+  @ApiProperty({ description: 'Modified value', example: 150 })
+  @IsNumber()
+  @IsNotEmpty()
+  modifiedValue: number;
+
+  @ApiProperty({ description: 'Change percentage', example: 10.5 })
+  @IsNumber()
+  @IsOptional()
+  changePercentage?: number;
+}
+
+export class ExecuteWhatIfScenarioDto {
+  @ApiProperty({ description: 'Scenario name', example: 'Increased ICU Headcount' })
+  @IsString()
+  @IsNotEmpty()
+  scenarioName: string;
+
+  @ApiProperty({ description: 'Scenario description' })
+  @IsString()
+  @IsNotEmpty()
+  description: string;
+
+  @ApiProperty({ description: 'Baseline date', example: '2024-03-01' })
+  @Type(() => Date)
+  @IsDate()
+  @IsNotEmpty()
+  baselineDate: Date;
+
+  @ApiProperty({ description: 'Rule modifications', type: [RuleModificationDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => RuleModificationDto)
+  ruleModifications: RuleModificationDto[];
+
+  @ApiProperty({ description: 'Driver modifications', type: [DriverModificationDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => DriverModificationDto)
+  driverModifications: DriverModificationDto[];
+}
+
+export class WhatIfScenarioResponse {
+  @ApiProperty({ description: 'Scenario ID' })
+  scenarioId: string;
+
+  @ApiProperty({ description: 'Scenario name' })
+  scenarioName: string;
+
+  @ApiProperty({ description: 'Results count' })
+  resultsCount: number;
+
+  @ApiProperty({ description: 'Total variance' })
+  totalVariance: number;
+
+  @ApiProperty({ description: 'Average variance percentage' })
+  avgVariancePercentage: number;
+
+  @ApiProperty({ description: 'Created by' })
+  createdBy: string;
+
+  @ApiProperty({ description: 'Created date' })
+  createdDate: Date;
+}
+
+export class ValidateRulesDto {
+  @ApiProperty({ description: 'Fiscal year', example: 2024 })
+  @IsInt()
+  @Min(2000)
+  @Max(2100)
+  fiscalYear: number;
+
+  @ApiProperty({ description: 'Fiscal period', example: 3 })
+  @IsInt()
+  @Min(1)
+  @Max(12)
+  fiscalPeriod: number;
+
+  @ApiProperty({ description: 'Include warnings', example: true, default: true })
+  @IsBoolean()
+  @IsOptional()
+  includeWarnings?: boolean;
+
+  @ApiProperty({ description: 'Specific rule IDs to validate', type: [Number], required: false })
+  @IsArray()
+  @IsInt({ each: true })
+  @IsOptional()
+  ruleIds?: number[];
+}
+
+export class ValidationReportResponse {
+  @ApiProperty({ description: 'Validation date' })
+  validationDate: Date;
+
+  @ApiProperty({ description: 'Fiscal year' })
+  fiscalYear: number;
+
+  @ApiProperty({ description: 'Fiscal period' })
+  fiscalPeriod: number;
+
+  @ApiProperty({ description: 'Rules validated' })
+  rulesValidated: number;
+
+  @ApiProperty({ description: 'Rules passed' })
+  rulesPassed: number;
+
+  @ApiProperty({ description: 'Rules failed' })
+  rulesFailed: number;
+
+  @ApiProperty({ description: 'Critical issues', type: [String] })
+  criticalIssues: string[];
+
+  @ApiProperty({ description: 'Warnings', type: [String] })
+  warnings: string[];
+
+  @ApiProperty({ description: 'Recommendations', type: [String] })
+  recommendations: string[];
+}
+
+export class BuildHierarchyDto {
+  @ApiProperty({ description: 'Fiscal year', example: 2024 })
+  @IsInt()
+  @Min(2000)
+  @Max(2100)
+  fiscalYear: number;
+
+  @ApiProperty({ description: 'Fiscal period', example: 3 })
+  @IsInt()
+  @Min(1)
+  @Max(12)
+  fiscalPeriod: number;
+
+  @ApiProperty({ description: 'Optimize execution order', example: true, default: false })
+  @IsBoolean()
+  @IsOptional()
+  optimizeOrder?: boolean;
+
+  @ApiProperty({ description: 'Validate for circular dependencies', example: true, default: true })
+  @IsBoolean()
+  @IsOptional()
+  validateCircular?: boolean;
+}
+
+export class HierarchyResponse {
+  @ApiProperty({ description: 'Hierarchy ID' })
+  hierarchyId: string;
+
+  @ApiProperty({ description: 'Hierarchy name' })
+  hierarchyName: string;
+
+  @ApiProperty({ description: 'Total levels' })
+  totalLevels: number;
+
+  @ApiProperty({ description: 'Root rules count' })
+  rootRulesCount: number;
+
+  @ApiProperty({ description: 'Total rules' })
+  totalRules: number;
+
+  @ApiProperty({ description: 'Execution order', type: [Number] })
+  executionOrder: number[];
+
+  @ApiProperty({ description: 'Has circular dependencies' })
+  hasCircularDependencies: boolean;
+
+  @ApiProperty({ description: 'Circular dependencies', type: [String] })
+  circularDependencies: string[];
+}
+
+export class IntegratePeriodEndDto {
+  @ApiProperty({ description: 'Checklist ID', example: 3001 })
+  @IsInt()
+  @IsNotEmpty()
+  checklistId: number;
+
+  @ApiProperty({ description: 'Schedule IDs to execute', type: [String], example: ['SCHED-1001', 'SCHED-1002'] })
+  @IsArray()
+  @IsString({ each: true })
+  @IsNotEmpty()
+  scheduleIds: string[];
+
+  @ApiProperty({ description: 'Execute in parallel', example: false, default: false })
+  @IsBoolean()
+  @IsOptional()
+  executeInParallel?: boolean;
+
+  @ApiProperty({ description: 'Stop on first failure', example: true, default: true })
+  @IsBoolean()
+  @IsOptional()
+  stopOnFailure?: boolean;
 }
 
 // ============================================================================
@@ -1576,6 +2215,799 @@ export const integrateAllocationWithPeriodEndClose = async (
 };
 
 // ============================================================================
+// NESTJS CONTROLLER
+// ============================================================================
+
+@ApiTags('allocation-automation')
+@Controller('api/v1/allocation-automation')
+@ApiBearerAuth()
+export class AllocationAutomationController {
+  private readonly logger = new Logger(AllocationAutomationController.name);
+
+  constructor(
+    private readonly sequelize: any,
+    private readonly allocationService: AllocationAutomationService,
+  ) {}
+
+  /**
+   * Create new allocation rule
+   */
+  @Post('rules')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create new allocation rule' })
+  @ApiResponse({ status: 201, description: 'Rule created successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid rule data' })
+  async createAllocationRule(@Body() dto: CreateAllocationRuleDto): Promise<any> {
+    this.logger.log(`Creating allocation rule: ${dto.ruleCode}`);
+
+    const transaction = await this.sequelize.transaction();
+
+    try {
+      const rule = await createAllocationRule(
+        this.sequelize,
+        dto.ruleCode,
+        dto.ruleName,
+        dto.allocationMethod as any,
+        dto.sourceDepartment,
+        dto.targetDepartments,
+        dto.allocationBasis,
+        dto.fiscalYear,
+        dto.fiscalPeriod,
+        dto.priority,
+        'system', // Would come from auth context
+        transaction,
+      );
+
+      await transaction.commit();
+
+      return {
+        ruleId: rule.ruleId,
+        ruleCode: rule.ruleCode,
+        ruleName: rule.ruleName,
+        created: true,
+        createdAt: rule.createdAt,
+      };
+    } catch (error) {
+      await transaction.rollback();
+      this.logger.error(`Rule creation failed: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all active allocation rules
+   */
+  @Get('rules')
+  @ApiOperation({ summary: 'List active allocation rules' })
+  @ApiQuery({ name: 'fiscalYear', required: true, type: 'number' })
+  @ApiQuery({ name: 'fiscalPeriod', required: true, type: 'number' })
+  @ApiResponse({ status: 200, description: 'Rules retrieved successfully' })
+  async getActiveRules(
+    @Query('fiscalYear', ParseIntPipe) fiscalYear: number,
+    @Query('fiscalPeriod', ParseIntPipe) fiscalPeriod: number,
+  ): Promise<any> {
+    this.logger.log(`Retrieving active rules for FY${fiscalYear} P${fiscalPeriod}`);
+
+    const rules = await getActiveAllocationRules(this.sequelize, fiscalYear, fiscalPeriod);
+
+    return {
+      fiscalYear,
+      fiscalPeriod,
+      rules,
+      count: rules.length,
+    };
+  }
+
+  /**
+   * Get specific allocation rule
+   */
+  @Get('rules/:ruleId')
+  @ApiOperation({ summary: 'Get allocation rule by ID' })
+  @ApiParam({ name: 'ruleId', description: 'Rule ID', type: 'number' })
+  @ApiResponse({ status: 200, description: 'Rule retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Rule not found' })
+  async getRuleById(@Param('ruleId', ParseIntPipe) ruleId: number): Promise<any> {
+    this.logger.log(`Retrieving rule ${ruleId}`);
+
+    const rule = await this.allocationService.getRuleById(ruleId);
+
+    if (!rule) {
+      throw new NotFoundException(`Rule ${ruleId} not found`);
+    }
+
+    return rule;
+  }
+
+  /**
+   * Update allocation rule
+   */
+  @Put('rules/:ruleId')
+  @ApiOperation({ summary: 'Update allocation rule' })
+  @ApiParam({ name: 'ruleId', description: 'Rule ID', type: 'number' })
+  @ApiResponse({ status: 200, description: 'Rule updated successfully' })
+  @ApiResponse({ status: 404, description: 'Rule not found' })
+  async updateRule(
+    @Param('ruleId', ParseIntPipe) ruleId: number,
+    @Body() dto: UpdateAllocationRuleDto,
+  ): Promise<any> {
+    this.logger.log(`Updating rule ${ruleId}`);
+
+    const transaction = await this.sequelize.transaction();
+
+    try {
+      const updatedRule = await updateAllocationRule(
+        this.sequelize,
+        ruleId,
+        dto as any,
+        'system', // Would come from auth context
+        transaction,
+      );
+
+      await transaction.commit();
+
+      return {
+        ruleId: updatedRule.ruleId,
+        updated: true,
+        updatedAt: new Date(),
+      };
+    } catch (error) {
+      await transaction.rollback();
+      this.logger.error(`Rule update failed: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  /**
+   * Deactivate allocation rule
+   */
+  @Delete('rules/:ruleId')
+  @ApiOperation({ summary: 'Deactivate allocation rule' })
+  @ApiParam({ name: 'ruleId', description: 'Rule ID', type: 'number' })
+  @ApiResponse({ status: 200, description: 'Rule deactivated successfully' })
+  async deactivateRule(@Param('ruleId', ParseIntPipe) ruleId: number): Promise<any> {
+    this.logger.log(`Deactivating rule ${ruleId}`);
+
+    const transaction = await this.sequelize.transaction();
+
+    try {
+      await deactivateAllocationRule(this.sequelize, ruleId, 'system', transaction);
+
+      await transaction.commit();
+
+      return {
+        ruleId,
+        deactivated: true,
+        deactivatedAt: new Date(),
+      };
+    } catch (error) {
+      await transaction.rollback();
+      this.logger.error(`Rule deactivation failed: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  /**
+   * Build allocation rule hierarchy
+   */
+  @Post('hierarchy/build')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Build allocation rule hierarchy' })
+  @ApiResponse({ status: 200, description: 'Hierarchy built successfully', type: HierarchyResponse })
+  async buildHierarchy(@Body() dto: BuildHierarchyDto): Promise<HierarchyResponse> {
+    this.logger.log(`Building hierarchy for FY${dto.fiscalYear} P${dto.fiscalPeriod}`);
+
+    const transaction = await this.sequelize.transaction();
+
+    try {
+      let hierarchy = await buildAllocationRuleHierarchy(
+        this.sequelize,
+        dto.fiscalYear,
+        dto.fiscalPeriod,
+        transaction,
+      );
+
+      let circularDeps: string[] = [];
+      let hasCircular = false;
+
+      if (dto.validateCircular) {
+        const validation = await validateRuleHierarchyForCircularDependencies(
+          this.sequelize,
+          dto.fiscalYear,
+          dto.fiscalPeriod,
+          transaction,
+        );
+        hasCircular = !validation.valid;
+        circularDeps = validation.errors;
+      }
+
+      if (dto.optimizeOrder) {
+        const optimization = await optimizeRuleExecutionOrder(
+          this.sequelize,
+          dto.fiscalYear,
+          dto.fiscalPeriod,
+          transaction,
+        );
+        // Use optimized order
+        hierarchy = {
+          ...hierarchy,
+          executionOrder: optimization.optimizedOrder,
+        };
+      }
+
+      await transaction.commit();
+
+      return {
+        hierarchyId: hierarchy.hierarchyId,
+        hierarchyName: hierarchy.hierarchyName,
+        totalLevels: hierarchy.totalLevels,
+        rootRulesCount: hierarchy.rootRules.length,
+        totalRules: hierarchy.executionOrder.length,
+        executionOrder: hierarchy.executionOrder,
+        hasCircularDependencies: hasCircular,
+        circularDependencies: circularDeps,
+      };
+    } catch (error) {
+      await transaction.rollback();
+      this.logger.error(`Hierarchy build failed: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  /**
+   * Validate hierarchy for circular dependencies
+   */
+  @Post('hierarchy/validate')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Validate hierarchy for circular dependencies' })
+  @ApiResponse({ status: 200, description: 'Validation completed' })
+  async validateHierarchy(@Body() dto: BuildHierarchyDto): Promise<any> {
+    this.logger.log(`Validating hierarchy for FY${dto.fiscalYear} P${dto.fiscalPeriod}`);
+
+    const validation = await validateRuleHierarchyForCircularDependencies(
+      this.sequelize,
+      dto.fiscalYear,
+      dto.fiscalPeriod,
+    );
+
+    return {
+      fiscalYear: dto.fiscalYear,
+      fiscalPeriod: dto.fiscalPeriod,
+      valid: validation.valid,
+      circularDependencies: validation.circularDependencies,
+      errors: validation.errors,
+    };
+  }
+
+  /**
+   * Create allocation schedule
+   */
+  @Post('schedules')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create allocation schedule' })
+  @ApiResponse({ status: 201, description: 'Schedule created successfully' })
+  async createSchedule(@Body() dto: CreateAllocationScheduleDto): Promise<any> {
+    this.logger.log(`Creating schedule: ${dto.scheduleName}`);
+
+    const transaction = await this.sequelize.transaction();
+
+    try {
+      const result = await createAllocationScheduleWithWorkflow(
+        this.sequelize,
+        dto.scheduleName,
+        dto.scheduleType as any,
+        dto.ruleIds,
+        dto.executionTime,
+        dto.requireApproval || false,
+        'system', // Would come from auth context
+        transaction,
+      );
+
+      await transaction.commit();
+
+      return {
+        scheduleId: result.schedule.scheduleId,
+        scheduleName: result.schedule.scheduleName,
+        created: true,
+        nextExecution: result.schedule.nextExecution,
+        workflowId: result.workflow?.workflowId,
+      };
+    } catch (error) {
+      await transaction.rollback();
+      this.logger.error(`Schedule creation failed: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  /**
+   * Execute allocation schedule
+   */
+  @Post('schedules/:scheduleId/execute')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Execute allocation schedule' })
+  @ApiParam({ name: 'scheduleId', description: 'Schedule ID', type: 'string' })
+  @ApiResponse({ status: 200, description: 'Execution completed', type: AllocationExecutionResponse })
+  async executeSchedule(
+    @Param('scheduleId') scheduleId: string,
+    @Body() dto: ExecuteAllocationDto,
+  ): Promise<AllocationExecutionResponse> {
+    this.logger.log(`Executing schedule ${scheduleId}`);
+
+    const transaction = await this.sequelize.transaction();
+
+    try {
+      const result = await executeScheduledAllocation(
+        this.sequelize,
+        scheduleId,
+        'system', // Would come from auth context
+        transaction,
+      );
+
+      await transaction.commit();
+
+      return {
+        executionId: result.executionId,
+        scheduleId: result.scheduleId || scheduleId,
+        executionDate: result.executionDate,
+        totalRulesExecuted: result.totalRulesExecuted,
+        totalRulesFailed: result.totalRulesFailed,
+        totalAllocated: result.totalAllocated,
+        executionDurationMs: result.executionDurationMs,
+        status: result.status as AllocationStatus,
+        errors: result.errors,
+      };
+    } catch (error) {
+      await transaction.rollback();
+      this.logger.error(`Schedule execution failed: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  /**
+   * Create reversal request
+   */
+  @Post('reversals')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create allocation reversal request' })
+  @ApiResponse({ status: 201, description: 'Reversal request created' })
+  async createReversal(@Body() dto: CreateReversalRequestDto): Promise<any> {
+    this.logger.log(`Creating reversal for execution ${dto.originalExecutionId}`);
+
+    const transaction = await this.sequelize.transaction();
+
+    try {
+      const result = await createAllocationReversalWithApproval(
+        this.sequelize,
+        dto.originalExecutionId,
+        dto.reversalReason,
+        'system', // Would come from auth context
+        transaction,
+      );
+
+      // If immediate processing requested and no approval required
+      if (dto.immediateProcess && !result.reversal.approvalRequired) {
+        const processResult = await processAllocationReversal(
+          this.sequelize,
+          result.reversal.reversalId,
+          'system',
+          transaction,
+        );
+
+        await transaction.commit();
+
+        return {
+          reversalId: result.reversal.reversalId,
+          created: true,
+          processed: true,
+          allocationsReversed: processResult.allocationsReversed,
+          totalReversalAmount: processResult.totalReversalAmount,
+        };
+      }
+
+      await transaction.commit();
+
+      return {
+        reversalId: result.reversal.reversalId,
+        created: true,
+        approvalRequired: result.reversal.approvalRequired,
+        approvalStatus: result.reversal.approvalStatus,
+        workflowInstanceId: result.workflow?.instanceId,
+      };
+    } catch (error) {
+      await transaction.rollback();
+      this.logger.error(`Reversal creation failed: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  /**
+   * Process reversal
+   */
+  @Post('reversals/:reversalId/process')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Process allocation reversal' })
+  @ApiParam({ name: 'reversalId', description: 'Reversal ID', type: 'string' })
+  @ApiResponse({ status: 200, description: 'Reversal processed', type: AllocationReversalResponse })
+  async processReversal(
+    @Param('reversalId') reversalId: string,
+    @Body() dto: ProcessReversalDto,
+  ): Promise<AllocationReversalResponse> {
+    this.logger.log(`Processing reversal ${reversalId}`);
+
+    const transaction = await this.sequelize.transaction();
+
+    try {
+      const result = await processAllocationReversal(
+        this.sequelize,
+        reversalId,
+        dto.approverId || 'system',
+        transaction,
+      );
+
+      await transaction.commit();
+
+      return {
+        reversalId: result.reversalId,
+        reversalDate: result.reversalDate,
+        originalExecutionId: result.originalExecutionId,
+        allocationsReversed: result.allocationsReversed,
+        totalReversalAmount: result.totalReversalAmount,
+        journalEntriesCreated: result.journalEntriesCreated,
+        errors: result.errors,
+      };
+    } catch (error) {
+      await transaction.rollback();
+      this.logger.error(`Reversal processing failed: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  /**
+   * Execute what-if scenario
+   */
+  @Post('what-if')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Execute what-if scenario analysis' })
+  @ApiResponse({ status: 200, description: 'Scenario executed', type: WhatIfScenarioResponse })
+  async executeWhatIf(@Body() dto: ExecuteWhatIfScenarioDto): Promise<WhatIfScenarioResponse> {
+    this.logger.log(`Executing what-if scenario: ${dto.scenarioName}`);
+
+    const transaction = await this.sequelize.transaction();
+
+    try {
+      const scenario = await executeWhatIfScenario(
+        this.sequelize,
+        dto.scenarioName,
+        dto.description,
+        dto.ruleModifications as any,
+        dto.driverModifications as any,
+        dto.baselineDate,
+        'system', // Would come from auth context
+        transaction,
+      );
+
+      await transaction.commit();
+
+      const totalVariance = scenario.results.reduce((sum, r) => sum + r.variance, 0);
+      const avgVariancePercentage =
+        scenario.results.reduce((sum, r) => sum + r.variancePercentage, 0) / scenario.results.length;
+
+      return {
+        scenarioId: scenario.scenarioId,
+        scenarioName: scenario.scenarioName,
+        resultsCount: scenario.results.length,
+        totalVariance,
+        avgVariancePercentage,
+        createdBy: scenario.createdBy,
+        createdDate: scenario.createdDate,
+      };
+    } catch (error) {
+      await transaction.rollback();
+      this.logger.error(`What-if scenario failed: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  /**
+   * Run comprehensive rule validation
+   */
+  @Post('validation')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Run comprehensive rule validation' })
+  @ApiResponse({ status: 200, description: 'Validation completed', type: ValidationReportResponse })
+  async validateRules(@Body() dto: ValidateRulesDto): Promise<ValidationReportResponse> {
+    this.logger.log(`Validating rules for FY${dto.fiscalYear} P${dto.fiscalPeriod}`);
+
+    const transaction = await this.sequelize.transaction();
+
+    try {
+      const report = await performComprehensiveRuleValidation(
+        this.sequelize,
+        dto.fiscalYear,
+        dto.fiscalPeriod,
+        'system', // Would come from auth context
+        transaction,
+      );
+
+      await transaction.commit();
+
+      return {
+        validationDate: report.validationDate,
+        fiscalYear: report.fiscalYear,
+        fiscalPeriod: report.fiscalPeriod,
+        rulesValidated: report.rulesValidated,
+        rulesPassed: report.rulesPassed,
+        rulesFailed: report.rulesFailed,
+        criticalIssues: report.criticalIssues,
+        warnings: report.warnings,
+        recommendations: report.recommendations,
+      };
+    } catch (error) {
+      await transaction.rollback();
+      this.logger.error(`Rule validation failed: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  /**
+   * Integrate with period-end close
+   */
+  @Post('period-end/integrate')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Integrate allocation with period-end close' })
+  @ApiResponse({ status: 200, description: 'Integration completed' })
+  async integratePeriodEnd(@Body() dto: IntegratePeriodEndDto): Promise<any> {
+    this.logger.log(`Integrating with period-end checklist ${dto.checklistId}`);
+
+    const transaction = await this.sequelize.transaction();
+
+    try {
+      const result = await integrateAllocationWithPeriodEndClose(
+        this.sequelize,
+        dto.checklistId,
+        dto.scheduleIds,
+        'system', // Would come from auth context
+        transaction,
+      );
+
+      await transaction.commit();
+
+      return {
+        checklistId: dto.checklistId,
+        tasksCreated: result.tasks.length,
+        executionsCompleted: result.executionResults.length,
+        totalAllocated: result.executionResults.reduce((sum, r) => sum + r.totalAllocated, 0),
+        allSuccessful: result.executionResults.every((r) => r.status === 'success'),
+      };
+    } catch (error) {
+      await transaction.rollback();
+      this.logger.error(`Period-end integration failed: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  /**
+   * Get allocation dashboard
+   */
+  @Get('dashboard')
+  @ApiOperation({ summary: 'Get allocation automation dashboard' })
+  @ApiResponse({ status: 200, description: 'Dashboard data retrieved' })
+  async getDashboard(): Promise<any> {
+    this.logger.log('Retrieving allocation dashboard');
+
+    const dashboard = await this.allocationService.getDashboardMetrics();
+
+    return dashboard;
+  }
+}
+
+// ============================================================================
+// SERVICE CLASS FOR DEPENDENCY INJECTION
+// ============================================================================
+
+@Injectable()
+export class AllocationAutomationService {
+  private readonly logger = new Logger(AllocationAutomationService.name);
+
+  constructor(private readonly sequelize: any) {}
+
+  /**
+   * Get allocation rule by ID
+   */
+  async getRuleById(ruleId: number): Promise<any> {
+    this.logger.log(`Retrieving rule ${ruleId}`);
+
+    const AllocationRuleModel = createAllocationRuleModel(this.sequelize);
+    const rule = await AllocationRuleModel.findByPk(ruleId);
+
+    return rule ? rule.get({ plain: true }) : null;
+  }
+
+  /**
+   * Get active rules for period
+   */
+  async getActiveRules(fiscalYear: number, fiscalPeriod: number): Promise<any[]> {
+    this.logger.log(`Retrieving active rules for FY${fiscalYear} P${fiscalPeriod}`);
+
+    const rules = await getActiveAllocationRules(this.sequelize, fiscalYear, fiscalPeriod);
+
+    return rules;
+  }
+
+  /**
+   * Calculate rule quality metrics
+   */
+  async calculateRuleQualityMetrics(fiscalYear: number, fiscalPeriod: number): Promise<any> {
+    this.logger.log(`Calculating quality metrics for FY${fiscalYear} P${fiscalPeriod}`);
+
+    const rules = await getActiveAllocationRules(this.sequelize, fiscalYear, fiscalPeriod);
+
+    const executionHistory = await this.sequelize.query(
+      `
+      SELECT
+        rule_id,
+        COUNT(*) as execution_count,
+        AVG(duration_ms) as avg_duration,
+        SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as success_count
+      FROM rule_execution_history
+      WHERE fiscal_year = :fiscalYear AND fiscal_period = :fiscalPeriod
+      GROUP BY rule_id
+      `,
+      {
+        replacements: { fiscalYear, fiscalPeriod },
+        type: 'SELECT',
+      },
+    );
+
+    return {
+      totalRules: rules.length,
+      activeRules: rules.filter((r: any) => r.isActive).length,
+      executionHistory: executionHistory || [],
+      avgSuccessRate:
+        executionHistory && executionHistory.length > 0
+          ? executionHistory.reduce((sum: number, h: any) => sum + (h.success_count / h.execution_count), 0) /
+            executionHistory.length
+          : 0,
+    };
+  }
+
+  /**
+   * Get schedule by ID
+   */
+  async getScheduleById(scheduleId: string): Promise<any> {
+    this.logger.log(`Retrieving schedule ${scheduleId}`);
+
+    const schedules = await this.sequelize.query(
+      `SELECT * FROM allocation_schedules WHERE schedule_id = :scheduleId`,
+      {
+        replacements: { scheduleId },
+        type: 'SELECT',
+      },
+    );
+
+    return schedules && schedules.length > 0 ? schedules[0] : null;
+  }
+
+  /**
+   * Get reversal status
+   */
+  async getReversalStatus(reversalId: string): Promise<any> {
+    this.logger.log(`Retrieving reversal status ${reversalId}`);
+
+    const reversals = await this.sequelize.query(
+      `SELECT * FROM allocation_reversals WHERE reversal_id = :reversalId`,
+      {
+        replacements: { reversalId },
+        type: 'SELECT',
+      },
+    );
+
+    return reversals && reversals.length > 0 ? reversals[0] : null;
+  }
+
+  /**
+   * Get what-if scenarios
+   */
+  async getWhatIfScenarios(limit: number = 10): Promise<any[]> {
+    this.logger.log('Retrieving what-if scenarios');
+
+    const scenarios = await this.sequelize.query(
+      `SELECT * FROM what_if_scenarios ORDER BY created_date DESC LIMIT :limit`,
+      {
+        replacements: { limit },
+        type: 'SELECT',
+      },
+    );
+
+    return scenarios || [];
+  }
+
+  /**
+   * Perform rule impact analysis
+   */
+  async performRuleImpactAnalysis(ruleId: number): Promise<any> {
+    this.logger.log(`Performing impact analysis for rule ${ruleId}`);
+
+    const executionHistory = await this.sequelize.query(
+      `
+      SELECT
+        COUNT(*) as total_executions,
+        SUM(total_allocated) as total_amount_allocated,
+        AVG(duration_ms) as avg_duration,
+        MAX(execution_date) as last_execution
+      FROM rule_execution_history
+      WHERE rule_id = :ruleId
+      `,
+      {
+        replacements: { ruleId },
+        type: 'SELECT',
+      },
+    );
+
+    const affectedDepartments = await this.sequelize.query(
+      `
+      SELECT DISTINCT target_department, SUM(allocation_amount) as total_amount
+      FROM allocation_results
+      WHERE rule_id = :ruleId
+      GROUP BY target_department
+      `,
+      {
+        replacements: { ruleId },
+        type: 'SELECT',
+      },
+    );
+
+    return {
+      ruleId,
+      executionHistory: executionHistory && executionHistory.length > 0 ? executionHistory[0] : null,
+      affectedDepartments: affectedDepartments || [],
+      impactLevel: affectedDepartments && affectedDepartments.length > 10 ? 'HIGH' : 'MEDIUM',
+    };
+  }
+
+  /**
+   * Get dashboard metrics
+   */
+  async getDashboardMetrics(): Promise<any> {
+    this.logger.log('Calculating dashboard metrics');
+
+    const activeRules = await this.sequelize.query(
+      `SELECT COUNT(*) as count FROM allocation_rules WHERE is_active = true`,
+      { type: 'SELECT' },
+    );
+
+    const activeSchedules = await this.sequelize.query(
+      `SELECT COUNT(*) as count FROM allocation_schedules WHERE enabled = true`,
+      { type: 'SELECT' },
+    );
+
+    const recentExecutions = await this.sequelize.query(
+      `
+      SELECT
+        COUNT(*) as total,
+        SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as successful,
+        SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed
+      FROM rule_execution_history
+      WHERE execution_date >= NOW() - INTERVAL '30 days'
+      `,
+      { type: 'SELECT' },
+    );
+
+    const pendingReversals = await this.sequelize.query(
+      `SELECT COUNT(*) as count FROM allocation_reversals WHERE approval_status = 'pending'`,
+      { type: 'SELECT' },
+    );
+
+    return {
+      activeRules: activeRules && activeRules.length > 0 ? (activeRules[0] as any).count : 0,
+      activeSchedules: activeSchedules && activeSchedules.length > 0 ? (activeSchedules[0] as any).count : 0,
+      recentExecutions: recentExecutions && recentExecutions.length > 0 ? recentExecutions[0] : {},
+      pendingReversals: pendingReversals && pendingReversals.length > 0 ? (pendingReversals[0] as any).count : 0,
+      lastUpdated: new Date(),
+    };
+  }
+}
+
+// ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
 
@@ -1631,6 +3063,19 @@ async function checkDepartmentExistence(
 
   return { allExist: missing.length === 0, missing };
 }
+
+// ============================================================================
+// MODULE EXPORT DEFINITION
+// ============================================================================
+
+/**
+ * Export NestJS module definition for Allocation Automation
+ */
+export const AllocationAutomationModule = {
+  controllers: [AllocationAutomationController],
+  providers: [AllocationAutomationService],
+  exports: [AllocationAutomationService],
+};
 
 // ============================================================================
 // EXPORTS
