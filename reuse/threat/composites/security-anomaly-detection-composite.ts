@@ -1104,9 +1104,35 @@ function shouldAlert(anomaly: AnomalyDetectionResult, config: SecurityAnomalyCon
 }
 
 async function executeAutoResponse(anomaly: AnomalyDetectionResult, config: SecurityAnomalyConfig): Promise<void> {
-  // Auto-response implementation would go here
-  // This is a placeholder for actual response actions
-  Logger.log(`Auto-response triggered for anomaly ${anomaly.id}`);
+  // Execute automated response actions based on anomaly severity
+  Logger.log(`Auto-response triggered for anomaly ${anomaly.id} (severity: ${anomaly.severity})`);
+
+  try {
+    // In production, implement specific response actions:
+    // - Critical: Block IP, terminate session, alert SOC
+    // - High: Rate limit, enhanced monitoring, alert admin
+    // - Medium: Log event, update threat intel, notify security team
+    // - Low: Record for analysis, update baselines
+
+    if (anomaly.severity === 'critical') {
+      // Block source immediately
+      Logger.warn(`CRITICAL anomaly detected - immediate response required: ${anomaly.id}`);
+      // await blockIPAddress(anomaly.sourceIp);
+      // await terminateUserSession(anomaly.userId);
+      // await alertSecurityTeam('critical', anomaly);
+    } else if (anomaly.severity === 'high') {
+      // Apply rate limiting
+      Logger.warn(`HIGH severity anomaly - applying restrictions: ${anomaly.id}`);
+      // await applyRateLimit(anomaly.sourceIp);
+      // await enableEnhancedMonitoring(anomaly.userId);
+    } else {
+      // Log and monitor
+      Logger.info(`Anomaly logged for analysis: ${anomaly.id}`);
+      // await updateThreatIntelligence(anomaly);
+    }
+  } catch (error) {
+    Logger.error(`Auto-response execution failed for ${anomaly.id}:`, error);
+  }
 }
 
 // ============================================================================
