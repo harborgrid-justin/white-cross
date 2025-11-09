@@ -1,100 +1,91 @@
-/**
- * File: /reuse/domain-shared/types/validation-dtos.ts
- * Purpose: Common validation DTO base classes and decorators for domain kits
- *
- * Provides reusable DTO base classes and validation patterns used across
- * construction, consulting, and engineer domains.
- *
- * @module DomainShared/ValidationDTOs
- * @version 1.0.0
- */
-
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsString,
-  IsEnum,
-  IsOptional,
-  IsNumber,
-  IsDate,
-  IsArray,
-  IsBoolean,
   IsUUID,
-  IsEmail,
-  IsUrl,
+  IsDate,
+  IsString,
+  IsOptional,
+  IsObject,
+  IsNumber,
   Min,
   Max,
-  MinLength,
-  MaxLength,
-  ValidateNested,
+  IsEmail,
+  IsPhoneNumber,
+  IsUrl,
+  Length,
+  IsArray,
+  IsBoolean,
   IsNotEmpty,
-  IsObject,
   IsInt,
   IsPositive,
   Matches,
 } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
+// ============================================================================
+// BASE DTOs
+// ============================================================================
 
 /**
- * Base DTO with common audit fields
+ * Base DTO for all entities, providing common fields.
  */
-export abstract class BaseDTO {
+export abstract class BaseDto {
   @ApiPropertyOptional({ description: 'Entity UUID' })
-  @IsOptional()
   @IsUUID()
+  @IsOptional()
   id?: string;
 
   @ApiPropertyOptional({ description: 'Creation timestamp' })
-  @IsOptional()
   @IsDate()
+  @IsOptional()
   @Type(() => Date)
   createdAt?: Date;
 
   @ApiPropertyOptional({ description: 'Last update timestamp' })
-  @IsOptional()
   @IsDate()
+  @IsOptional()
   @Type(() => Date)
   updatedAt?: Date;
 
   @ApiPropertyOptional({ description: 'UUID of user who created the entity' })
-  @IsOptional()
   @IsUUID()
+  @IsOptional()
   createdBy?: string;
 
   @ApiPropertyOptional({ description: 'UUID of user who last updated the entity' })
-  @IsOptional()
   @IsUUID()
+  @IsOptional()
   updatedBy?: string;
 }
 
 /**
- * Base create DTO - excludes id and audit timestamps
+ * Base DTO for entities with metadata and notes.
  */
-export abstract class CreateDTO {
+export abstract class BaseMetadataDto extends BaseDto {
   @ApiPropertyOptional({ description: 'Optional metadata as JSON object' })
-  @IsOptional()
   @IsObject()
-  metadata?: Record<string, unknown>;
+  @IsOptional()
+  metadata?: Record<string, any>;
 
   @ApiPropertyOptional({ description: 'Optional notes or comments' })
-  @IsOptional()
   @IsString()
+  @IsOptional()
   @MaxLength(5000)
   notes?: string;
 }
 
 /**
- * Base update DTO - all fields optional except id
+ * DTO for updating a base entity.
  */
-export abstract class UpdateDTO {
+export class UpdateBaseDto {
   @ApiProperty({ description: 'Entity UUID to update' })
   @IsUUID()
   @IsNotEmpty()
-  id: string;
+  id!: string;
 
   @ApiPropertyOptional({ description: 'Optional metadata as JSON object' })
   @IsOptional()
   @IsObject()
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, any>;
 
   @ApiPropertyOptional({ description: 'Optional notes or comments' })
   @IsOptional()
@@ -103,15 +94,19 @@ export abstract class UpdateDTO {
   notes?: string;
 }
 
+// ============================================================================
+// COMMON DATA STRUCTURE DTOs
+// ============================================================================
+
 /**
- * Address validation DTO
+ * DTO for a physical address.
  */
-export class AddressDTO {
+export class AddressDto {
   @ApiProperty({ description: 'Street address line 1' })
   @IsString()
   @IsNotEmpty()
   @MaxLength(255)
-  street1: string;
+  street1!: string;
 
   @ApiPropertyOptional({ description: 'Street address line 2' })
   @IsOptional()
@@ -123,25 +118,25 @@ export class AddressDTO {
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
-  city: string;
+  city!: string;
 
   @ApiProperty({ description: 'State or province' })
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
-  state: string;
+  state!: string;
 
   @ApiProperty({ description: 'Postal or ZIP code' })
   @IsString()
   @IsNotEmpty()
   @MaxLength(20)
-  postalCode: string;
+  postalCode!: string;
 
   @ApiProperty({ description: 'Country' })
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
-  country: string;
+  country!: string;
 
   @ApiPropertyOptional({ description: 'Latitude coordinate' })
   @IsOptional()
@@ -159,9 +154,9 @@ export class AddressDTO {
 }
 
 /**
- * Contact information validation DTO
+ * DTO for contact information.
  */
-export class ContactInfoDTO {
+export class ContactDto {
   @ApiPropertyOptional({ description: 'Email address' })
   @IsOptional()
   @IsEmail()
@@ -191,41 +186,45 @@ export class ContactInfoDTO {
 }
 
 /**
- * Money amount validation DTO
+ * DTO for monetary values.
  */
-export class MoneyAmountDTO {
+export class MoneyDto {
   @ApiProperty({ description: 'Monetary amount' })
   @IsNumber()
   @IsPositive()
-  amount: number;
+  amount!: number;
 
   @ApiProperty({ description: 'ISO 4217 currency code', example: 'USD' })
   @IsString()
   @MinLength(3)
   @MaxLength(3)
   @Matches(/^[A-Z]{3}$/, { message: 'Invalid currency code' })
-  currency: string;
+  currency!: string;
 }
 
 /**
- * Date range validation DTO
+ * DTO for date ranges.
  */
-export class DateRangeDTO {
+export class DateRangeDto {
   @ApiProperty({ description: 'Start date' })
   @IsDate()
   @Type(() => Date)
-  startDate: Date;
+  startDate!: Date;
 
   @ApiProperty({ description: 'End date' })
   @IsDate()
   @Type(() => Date)
-  endDate: Date;
+  endDate!: Date;
 }
 
+// ============================================================================
+// GENERIC DTOs for common API patterns
+// ============================================================================
+
 /**
- * Pagination query DTO
+ * DTO for pagination parameters.
  */
-export class PaginationQueryDTO {
+export class PaginationQueryDto {
   @ApiPropertyOptional({ description: 'Page number (1-indexed)', default: 1, minimum: 1 })
   @IsOptional()
   @Type(() => Number)
@@ -243,9 +242,9 @@ export class PaginationQueryDTO {
 }
 
 /**
- * Sort query DTO
+ * DTO for sorting parameters.
  */
-export class SortQueryDTO {
+export class SortQueryDto {
   @ApiPropertyOptional({ description: 'Field to sort by' })
   @IsOptional()
   @IsString()
@@ -258,20 +257,20 @@ export class SortQueryDTO {
 }
 
 /**
- * Search query DTO
+ * DTO for search parameters.
  */
-export class SearchQueryDTO {
+export class SearchQueryDto {
   @ApiPropertyOptional({ description: 'Search query string' })
   @IsOptional()
   @IsString()
   @MaxLength(255)
-  search?: string;
+  query?: string;
 }
 
 /**
- * Combined list query DTO with pagination, sorting, and search
+ * Combined DTO for APIs supporting pagination, sorting, and searching.
  */
-export class ListQueryDTO extends PaginationQueryDTO {
+export class PaginatedSearchSortQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({ description: 'Field to sort by' })
   @IsOptional()
   @IsString()
@@ -286,33 +285,33 @@ export class ListQueryDTO extends PaginationQueryDTO {
   @IsOptional()
   @IsString()
   @MaxLength(255)
-  search?: string;
+  query?: string;
 }
 
 /**
- * File attachment DTO
+ * DTO for file information.
  */
-export class AttachmentDTO {
+export class FileDto {
   @ApiProperty({ description: 'File name' })
   @IsString()
   @IsNotEmpty()
   @MaxLength(255)
-  fileName: string;
+  fileName!: string;
 
   @ApiProperty({ description: 'File size in bytes' })
   @IsNumber()
   @IsPositive()
-  fileSize: number;
+  fileSize!: number;
 
   @ApiProperty({ description: 'MIME type' })
   @IsString()
   @IsNotEmpty()
-  mimeType: string;
+  mimeType!: string;
 
   @ApiProperty({ description: 'Storage key or path' })
   @IsString()
   @IsNotEmpty()
-  storageKey: string;
+  storageKey!: string;
 
   @ApiPropertyOptional({ description: 'File description' })
   @IsOptional()
@@ -322,22 +321,22 @@ export class AttachmentDTO {
 }
 
 /**
- * Bulk operation DTO
+ * DTO for bulk operations on a list of IDs.
  */
-export class BulkOperationDTO {
+export class BulkIdsDto {
   @ApiProperty({ description: 'Array of entity UUIDs to operate on', type: [String] })
   @IsArray()
   @IsUUID(undefined, { each: true })
   @IsNotEmpty()
-  ids: string[];
+  ids!: string[];
 }
 
 /**
- * Bulk delete DTO
+ * DTO for bulk delete operations.
  */
-export class BulkDeleteDTO extends BulkOperationDTO {
+export class BulkDeleteDto extends BulkIdsDto {
   @ApiPropertyOptional({ description: 'Perform hard delete instead of soft delete', default: false })
   @IsOptional()
   @IsBoolean()
-  hardDelete?: boolean = false;
+  force?: boolean = false;
 }
