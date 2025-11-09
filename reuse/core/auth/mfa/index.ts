@@ -14,10 +14,10 @@ export {
   hashBackupCode,
   verifyBackupCode,
   generateMFAChallenge,
-} from '../authentication-kit';
+} from '../../../authentication-kit';
 
 // Re-export MFA types
 export type {
   TOTPConfig,
   TOTPSetupResult,
-} from '../authentication-kit';
+} from '../../../authentication-kit';
