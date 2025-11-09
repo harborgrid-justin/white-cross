@@ -2645,106 +2645,202 @@ function generateRecommendations(
 }
 
 // =====================================================
-// Model Getters (Placeholder implementations)
+// Model Registry - Production Implementation
 // =====================================================
 
 /**
- * Get Workspace model
- * Note: Replace with actual Sequelize model
+ * Model registry for lazy initialization and dependency injection
+ * This allows the kit to work with any Sequelize model setup
+ */
+interface ModelRegistry {
+  Workspace?: any;
+  User?: any;
+  Activity?: any;
+  WorkspaceMember?: any;
+  Comment?: any;
+  TaskAssignment?: any;
+  Task?: any;
+  DocumentEdit?: any;
+  Document?: any;
+  DocumentSnapshot?: any;
+  Notification?: any;
+}
+
+/**
+ * Global model registry - must be initialized before using collaboration functions
+ */
+let modelRegistry: ModelRegistry = {};
+
+/**
+ * Initialize the model registry with your Sequelize models
+ *
+ * @param models - Object containing all required Sequelize models
+ *
+ * @example
+ * ```typescript
+ * import { initializeCollaborationModels } from './user-collaboration-kit';
+ * import { Workspace, User, Activity, ... } from './models';
+ *
+ * initializeCollaborationModels({
+ *   Workspace,
+ *   User,
+ *   Activity,
+ *   WorkspaceMember,
+ *   Comment,
+ *   TaskAssignment,
+ *   Task,
+ *   DocumentEdit,
+ *   Document,
+ *   DocumentSnapshot,
+ *   Notification
+ * });
+ * ```
+ */
+export function initializeCollaborationModels(models: ModelRegistry): void {
+  modelRegistry = { ...models };
+}
+
+/**
+ * Get Workspace model from registry
+ * @throws Error if model not initialized
  */
 function getWorkspaceModel(): any {
-  // Placeholder - implement with actual model
-  return {} as any;
+  if (!modelRegistry.Workspace) {
+    throw new Error(
+      'Workspace model not initialized. Call initializeCollaborationModels() with your models first.'
+    );
+  }
+  return modelRegistry.Workspace;
 }
 
 /**
- * Get User model
- * Note: Replace with actual Sequelize model
+ * Get User model from registry
+ * @throws Error if model not initialized
  */
 function getUserModel(): any {
-  // Placeholder - implement with actual model
-  return {} as any;
+  if (!modelRegistry.User) {
+    throw new Error(
+      'User model not initialized. Call initializeCollaborationModels() with your models first.'
+    );
+  }
+  return modelRegistry.User;
 }
 
 /**
- * Get Activity model
- * Note: Replace with actual Sequelize model
+ * Get Activity model from registry
+ * @throws Error if model not initialized
  */
 function getActivityModel(): any {
-  // Placeholder - implement with actual model
-  return {} as any;
+  if (!modelRegistry.Activity) {
+    throw new Error(
+      'Activity model not initialized. Call initializeCollaborationModels() with your models first.'
+    );
+  }
+  return modelRegistry.Activity;
 }
 
 /**
- * Get WorkspaceMember model
- * Note: Replace with actual Sequelize model
+ * Get WorkspaceMember model from registry
+ * @throws Error if model not initialized
  */
 function getWorkspaceMemberModel(): any {
-  // Placeholder - implement with actual model
-  return {} as any;
+  if (!modelRegistry.WorkspaceMember) {
+    throw new Error(
+      'WorkspaceMember model not initialized. Call initializeCollaborationModels() with your models first.'
+    );
+  }
+  return modelRegistry.WorkspaceMember;
 }
 
 /**
- * Get Comment model
- * Note: Replace with actual Sequelize model
+ * Get Comment model from registry
+ * @throws Error if model not initialized
  */
 function getCommentModel(): any {
-  // Placeholder - implement with actual model
-  return {} as any;
+  if (!modelRegistry.Comment) {
+    throw new Error(
+      'Comment model not initialized. Call initializeCollaborationModels() with your models first.'
+    );
+  }
+  return modelRegistry.Comment;
 }
 
 /**
- * Get TaskAssignment model
- * Note: Replace with actual Sequelize model
+ * Get TaskAssignment model from registry
+ * @throws Error if model not initialized
  */
 function getTaskAssignmentModel(): any {
-  // Placeholder - implement with actual model
-  return {} as any;
+  if (!modelRegistry.TaskAssignment) {
+    throw new Error(
+      'TaskAssignment model not initialized. Call initializeCollaborationModels() with your models first.'
+    );
+  }
+  return modelRegistry.TaskAssignment;
 }
 
 /**
- * Get Task model
- * Note: Replace with actual Sequelize model
+ * Get Task model from registry
+ * @throws Error if model not initialized
  */
 function getTaskModel(): any {
-  // Placeholder - implement with actual model
-  return {} as any;
+  if (!modelRegistry.Task) {
+    throw new Error(
+      'Task model not initialized. Call initializeCollaborationModels() with your models first.'
+    );
+  }
+  return modelRegistry.Task;
 }
 
 /**
- * Get DocumentEdit model
- * Note: Replace with actual Sequelize model
+ * Get DocumentEdit model from registry
+ * @throws Error if model not initialized
  */
 function getDocumentEditModel(): any {
-  // Placeholder - implement with actual model
-  return {} as any;
+  if (!modelRegistry.DocumentEdit) {
+    throw new Error(
+      'DocumentEdit model not initialized. Call initializeCollaborationModels() with your models first.'
+    );
+  }
+  return modelRegistry.DocumentEdit;
 }
 
 /**
- * Get Document model
- * Note: Replace with actual Sequelize model
+ * Get Document model from registry
+ * @throws Error if model not initialized
  */
 function getDocumentModel(): any {
-  // Placeholder - implement with actual model
-  return {} as any;
+  if (!modelRegistry.Document) {
+    throw new Error(
+      'Document model not initialized. Call initializeCollaborationModels() with your models first.'
+    );
+  }
+  return modelRegistry.Document;
 }
 
 /**
- * Get DocumentSnapshot model
- * Note: Replace with actual Sequelize model
+ * Get DocumentSnapshot model from registry
+ * @throws Error if model not initialized
  */
 function getDocumentSnapshotModel(): any {
-  // Placeholder - implement with actual model
-  return {} as any;
+  if (!modelRegistry.DocumentSnapshot) {
+    throw new Error(
+      'DocumentSnapshot model not initialized. Call initializeCollaborationModels() with your models first.'
+    );
+  }
+  return modelRegistry.DocumentSnapshot;
 }
 
 /**
- * Get Notification model
- * Note: Replace with actual Sequelize model
+ * Get Notification model from registry
+ * @throws Error if model not initialized
  */
 function getNotificationModel(): any {
-  // Placeholder - implement with actual model
-  return {} as any;
+  if (!modelRegistry.Notification) {
+    throw new Error(
+      'Notification model not initialized. Call initializeCollaborationModels() with your models first.'
+    );
+  }
+  return modelRegistry.Notification;
 }
 
 // =====================================================
@@ -2752,6 +2848,9 @@ function getNotificationModel(): any {
 // =====================================================
 
 export default {
+  // Model Initialization (must be called first)
+  initializeCollaborationModels,
+
   // Workspace Management
   createCollaborationWorkspace,
   getWorkspaceWithDetails,

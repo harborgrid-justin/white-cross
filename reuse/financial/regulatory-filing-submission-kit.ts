@@ -1718,7 +1718,14 @@ export function getComplianceMetrics(
     acceptanceRate: (acceptedCount / statuses.length) * 100,
     amendmentRate: (amendedCount / statuses.length) * 100,
     rejectionRate: (rejectedCount / statuses.length) * 100,
-    averageCorrectionTime: 5, // Placeholder
+    averageCorrectionTime: corrections.length > 0
+      ? corrections.reduce((sum: number, c: any) => {
+          const correctionDays = Math.floor(
+            (new Date(c.correctedAt).getTime() - new Date(c.createdAt).getTime()) / 86400000
+          );
+          return sum + correctionDays;
+        }, 0) / corrections.length
+      : 0 // No corrections mean 0 average time
   };
 }
 

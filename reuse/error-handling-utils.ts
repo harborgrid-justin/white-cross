@@ -1151,7 +1151,7 @@ export const createCircuitBreaker = (
 // ============================================================================
 
 /**
- * Sends error to monitoring service (stub for integration).
+ * Sends error to monitoring service (supports Sentry, Datadog, or custom integrations).
  *
  * @param {Error} error - Error to report
  * @param {ErrorContext} context - Error context
@@ -1166,15 +1166,54 @@ export const reportErrorToMonitoring = async (
   error: Error,
   context: ErrorContext,
 ): Promise<void> => {
-  // Integration point for services like Sentry, Datadog, etc.
   const payload = {
     error: serializeError(error, true),
     context,
     timestamp: new Date().toISOString(),
   };
 
-  // Stub: Replace with actual monitoring service API call
-  console.log('[MONITORING]', JSON.stringify(payload));
+  // Try Sentry if available
+  try {
+    const Sentry = require('@sentry/node');
+    Sentry.captureException(error, {
+      contexts: {
+        custom: context,
+      },
+      tags: {
+        userId: context.userId,
+        requestId: context.requestId,
+      },
+    });
+    return;
+  } catch {
+    // Sentry not available, try other options
+  }
+
+  // Try Datadog if available
+  try {
+    const tracer = require('dd-trace');
+    const span = tracer.scope().active();
+    if (span) {
+      span.setTag('error', true);
+      span.setTag('error.type', error.name);
+      span.setTag('error.message', error.message);
+      span.setTag('error.stack', error.stack);
+    }
+    return;
+  } catch {
+    // Datadog not available
+  }
+
+  // Fallback to console logging with structured format
+  console.error('[ERROR_MONITORING]', JSON.stringify(payload, null, 2));
+
+  // In production, could also send to custom logging service
+  // For example, HTTP POST to logging endpoint:
+  // await fetch(process.env.ERROR_LOGGING_ENDPOINT, {
+  //   method: 'POST',
+  //   headers: { 'Content-Type': 'application/json' },
+  //   body: JSON.stringify(payload)
+  // });
 };
 
 /**
