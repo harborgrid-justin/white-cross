@@ -35,6 +35,9 @@ import {
   Injectable,
   Logger,
   ServiceUnavailableException,
+  HttpCode,
+  HttpStatus,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -43,6 +46,7 @@ import {
   ApiProperty,
 } from '@nestjs/swagger';
 import { HealthCheck, HealthCheckService, HealthIndicator, HealthIndicatorResult } from '@nestjs/terminus';
+import * as crypto from 'crypto';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -199,15 +203,23 @@ export class LoadBalancerHealthCheckController {
    * Liveness probe - checks if service is alive
    */
   @Get('live')
-  @ApiOperation({ summary: 'Liveness probe for orchestration systems' })
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Liveness probe for orchestration systems', description: 'Basic liveness check' })
   @ApiResponse({ status: 200, description: 'Service is alive' })
   @ApiResponse({ status: 503, description: 'Service is dead' })
-  getLiveness(): { status: string; timestamp: Date } {
-    // Basic check - service is running
-    return {
-      status: 'alive',
-      timestamp: new Date(),
-    };
+  getLiveness(): { status: string; timestamp: Date; requestId: string } {
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Liveness check passed`);
+      return {
+        status: 'alive',
+        timestamp: new Date(),
+        requestId,
+      };
+    } catch (error) {
+      this.logger.error(`[${requestId}] Liveness check failed: ${error.message}`);
+      throw new ServiceUnavailableException('Service unavailable');
+    }
   }
 
   /**
@@ -215,138 +227,178 @@ export class LoadBalancerHealthCheckController {
    */
   @Get('ready')
   @HealthCheck()
-  @ApiOperation({ summary: 'Readiness probe for load balancers' })
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Readiness probe for load balancers', description: 'Check if service is ready for traffic' })
   @ApiResponse({ status: 200, description: 'Service is ready' })
   @ApiResponse({ status: 503, description: 'Service not ready' })
   async getReadiness() {
-    return this.healthCheckService.check([
-      () => this.threatDetectionHealth.isHealthy('threat_detection'),
-      () => this.intelligenceFeedHealth.isHealthy('intelligence_feeds'),
-      () => this.dataProcessingHealth.isHealthy('data_processing'),
-    ]);
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Readiness check initiated`);
+      return this.healthCheckService.check([
+        () => this.threatDetectionHealth.isHealthy('threat_detection'),
+        () => this.intelligenceFeedHealth.isHealthy('intelligence_feeds'),
+        () => this.dataProcessingHealth.isHealthy('data_processing'),
+      ]);
+    } catch (error) {
+      this.logger.error(`[${requestId}] Readiness check failed: ${error.message}`);
+      throw new ServiceUnavailableException('Service not ready');
+    }
   }
 
   /**
    * Startup probe - checks if service has started successfully
    */
   @Get('startup')
-  @ApiOperation({ summary: 'Startup probe for slow-starting services' })
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Startup probe for slow-starting services', description: 'Check if service has completed initialization' })
   @ApiResponse({ status: 200, description: 'Service started' })
   @ApiResponse({ status: 503, description: 'Service still starting' })
-  async getStartup(): Promise<{ status: string; uptime: number }> {
-    const uptime = Date.now() - this.startTime;
+  async getStartup(): Promise<{ status: string; uptime: number; requestId: string }> {
+    const requestId = crypto.randomUUID();
+    try {
+      const uptime = Date.now() - this.startTime;
 
-    // Consider started after 30 seconds
-    if (uptime < 30000) {
-      throw new ServiceUnavailableException('Service still initializing');
+      if (uptime < 30000) {
+        this.logger.warn(`[${requestId}] Service still initializing - uptime: ${uptime}ms`);
+        throw new ServiceUnavailableException('Service still initializing');
+      }
+
+      this.logger.log(`[${requestId}] Startup check passed - uptime: ${uptime}ms`);
+      return {
+        status: 'started',
+        uptime,
+        requestId,
+      };
+    } catch (error) {
+      this.logger.error(`[${requestId}] Startup check failed: ${error.message}`);
+      throw error;
     }
-
-    return {
-      status: 'started',
-      uptime,
-    };
   }
 
   /**
    * Comprehensive health check
    */
   @Get()
-  @ApiOperation({ summary: 'Comprehensive health check with all dependencies' })
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Comprehensive health check with all dependencies', description: 'Full health status including all dependencies' })
   @ApiResponse({ status: 200, description: 'Full health status' })
+  @ApiResponse({ status: 503, description: 'Service degraded or down' })
   async getHealth(): Promise<HealthCheckResponse> {
-    const checks: HealthCheckResponse['checks'] = {};
-
+    const requestId = crypto.randomUUID();
     try {
-      // Threat detection check
-      const threatResult = await this.threatDetectionHealth.isHealthy('threat_detection');
-      checks.threat_detection = {
-        status: threatResult.threat_detection.status === 'up' ? HealthStatus.UP : HealthStatus.DOWN,
-        responseTime: threatResult.threat_detection.responseTime,
-        details: threatResult.threat_detection,
+      this.logger.log(`[${requestId}] Starting comprehensive health check`);
+      const checks: HealthCheckResponse['checks'] = {};
+
+      try {
+        const threatResult = await this.threatDetectionHealth.isHealthy('threat_detection');
+        checks.threat_detection = {
+          status: threatResult.threat_detection.status === 'up' ? HealthStatus.UP : HealthStatus.DOWN,
+          responseTime: threatResult.threat_detection.responseTime,
+          details: threatResult.threat_detection,
+        };
+      } catch (error) {
+        this.logger.error(`[${requestId}] Threat detection check failed: ${error.message}`);
+        checks.threat_detection = {
+          status: HealthStatus.DOWN,
+          message: error.message,
+        };
+      }
+
+      try {
+        const feedsResult = await this.intelligenceFeedHealth.isHealthy('intelligence_feeds');
+        checks.intelligence_feeds = {
+          status: feedsResult.intelligence_feeds.status === 'up' ? HealthStatus.UP : HealthStatus.DOWN,
+          details: feedsResult.intelligence_feeds,
+        };
+      } catch (error) {
+        this.logger.error(`[${requestId}] Intelligence feeds check failed: ${error.message}`);
+        checks.intelligence_feeds = {
+          status: HealthStatus.DOWN,
+          message: error.message,
+        };
+      }
+
+      try {
+        const processingResult = await this.dataProcessingHealth.isHealthy('data_processing');
+        checks.data_processing = {
+          status: processingResult.data_processing.status === 'up' ? HealthStatus.UP : HealthStatus.DOWN,
+          details: processingResult.data_processing,
+        };
+      } catch (error) {
+        this.logger.error(`[${requestId}] Data processing check failed: ${error.message}`);
+        checks.data_processing = {
+          status: HealthStatus.DOWN,
+          message: error.message,
+        };
+      }
+
+      const allChecks = Object.values(checks);
+      const downCount = allChecks.filter((c) => c.status === HealthStatus.DOWN).length;
+      const degradedCount = allChecks.filter((c) => c.status === HealthStatus.DEGRADED).length;
+
+      let overallStatus: HealthStatus;
+      if (downCount === 0 && degradedCount === 0) {
+        overallStatus = HealthStatus.UP;
+      } else if (downCount > allChecks.length / 2) {
+        overallStatus = HealthStatus.DOWN;
+      } else {
+        overallStatus = HealthStatus.DEGRADED;
+      }
+
+      const result: HealthCheckResponse = {
+        status: overallStatus,
+        timestamp: new Date(),
+        uptime: Date.now() - this.startTime,
+        version: '1.0.0',
+        checks,
+        metadata: {
+          service: 'threat-detection',
+          environment: process.env.NODE_ENV || 'production',
+          requestId,
+        },
       };
+
+      this.logger.log(`[${requestId}] Health check complete - status: ${overallStatus}`);
+      return result;
     } catch (error) {
-      checks.threat_detection = {
-        status: HealthStatus.DOWN,
-        message: error.message,
-      };
+      this.logger.error(`[${requestId}] Health check failed: ${error.message}`, error.stack);
+      throw new InternalServerErrorException('Health check failed');
     }
-
-    try {
-      // Intelligence feeds check
-      const feedsResult = await this.intelligenceFeedHealth.isHealthy('intelligence_feeds');
-      checks.intelligence_feeds = {
-        status: feedsResult.intelligence_feeds.status === 'up' ? HealthStatus.UP : HealthStatus.DOWN,
-        details: feedsResult.intelligence_feeds,
-      };
-    } catch (error) {
-      checks.intelligence_feeds = {
-        status: HealthStatus.DOWN,
-        message: error.message,
-      };
-    }
-
-    try {
-      // Data processing check
-      const processingResult = await this.dataProcessingHealth.isHealthy('data_processing');
-      checks.data_processing = {
-        status: processingResult.data_processing.status === 'up' ? HealthStatus.UP : HealthStatus.DOWN,
-        details: processingResult.data_processing,
-      };
-    } catch (error) {
-      checks.data_processing = {
-        status: HealthStatus.DOWN,
-        message: error.message,
-      };
-    }
-
-    // Determine overall status
-    const allChecks = Object.values(checks);
-    const downCount = allChecks.filter((c) => c.status === HealthStatus.DOWN).length;
-    const degradedCount = allChecks.filter((c) => c.status === HealthStatus.DEGRADED).length;
-
-    let overallStatus: HealthStatus;
-    if (downCount === 0 && degradedCount === 0) {
-      overallStatus = HealthStatus.UP;
-    } else if (downCount > allChecks.length / 2) {
-      overallStatus = HealthStatus.DOWN;
-    } else {
-      overallStatus = HealthStatus.DEGRADED;
-    }
-
-    return {
-      status: overallStatus,
-      timestamp: new Date(),
-      uptime: Date.now() - this.startTime,
-      version: '1.0.0',
-      checks,
-      metadata: {
-        service: 'threat-detection',
-        environment: process.env.NODE_ENV || 'production',
-      },
-    };
   }
 
   /**
    * Metrics endpoint for monitoring
    */
   @Get('metrics')
-  @ApiOperation({ summary: 'Service metrics for monitoring' })
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Service metrics for monitoring', description: 'Get current service performance metrics' })
   @ApiResponse({ status: 200, description: 'Metrics retrieved' })
+  @ApiResponse({ status: 500, description: 'Failed to retrieve metrics' })
   async getMetrics(): Promise<{
     uptime: number;
     memory: NodeJS.MemoryUsage;
     cpu: { user: number; system: number };
     requests: { total: number; rate: number };
+    requestId: string;
   }> {
-    return {
-      uptime: Date.now() - this.startTime,
-      memory: process.memoryUsage(),
-      cpu: process.cpuUsage(),
-      requests: {
-        total: Math.floor(Math.random() * 100000),
-        rate: Math.random() * 1000,
-      },
-    };
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Retrieving metrics`);
+      return {
+        uptime: Date.now() - this.startTime,
+        memory: process.memoryUsage(),
+        cpu: process.cpuUsage(),
+        requests: {
+          total: Math.floor(Math.random() * 100000),
+          rate: Math.random() * 1000,
+        },
+        requestId,
+      };
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to retrieve metrics: ${error.message}`);
+      throw new InternalServerErrorException('Failed to retrieve metrics');
+    }
   }
 }
 

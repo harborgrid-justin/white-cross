@@ -32,6 +32,7 @@
  * through peer deviation analysis.
  */
 
+import crypto from 'crypto';
 import {
   Controller,
   Get,
@@ -52,6 +53,8 @@ import {
   BadRequestException,
   NotFoundException,
   ConflictException,
+  InternalServerErrorException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -466,6 +469,7 @@ export class GenerateBenchmarksDto {
 @ApiTags('peer-group-analysis')
 @Controller('api/v1/peer-group-analysis')
 @ApiBearerAuth()
+@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class PeerGroupAnalysisController {
   private readonly logger = new Logger(PeerGroupAnalysisController.name);
 
@@ -484,8 +488,25 @@ export class PeerGroupAnalysisController {
   @ApiResponse({ status: 201, description: 'Peer group created successfully' })
   @ApiResponse({ status: 400, description: 'Invalid peer group configuration' })
   async createPeerGroup(@Body() dto: CreatePeerGroupDto): Promise<PeerGroup> {
-    this.logger.log(`Creating peer group: ${dto.name}`);
-    return this.peerGroupAnalysisService.createPeerGroup(dto);
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Creating peer group: ${dto.name}`);
+      if (!dto || !dto.name || !dto.description || !dto.criteria) {
+        throw new BadRequestException('Invalid peer group configuration: missing required fields');
+      }
+      const result = await this.peerGroupAnalysisService.createPeerGroup(dto);
+      this.logger.log(`[${requestId}] Successfully created peer group: ${result.id}`);
+      return result;
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to create peer group: ${error.message}`, error.stack);
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof ConflictException) throw error;
+      throw new InternalServerErrorException({
+        message: 'Failed to create peer group',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -503,12 +524,24 @@ export class PeerGroupAnalysisController {
     totalGroups: number;
     groups: PeerGroup[];
   }> {
-    const groups = await this.peerGroupAnalysisService.getPeerGroups(entityType, department);
-
-    return {
-      totalGroups: groups.length,
-      groups,
-    };
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Retrieving peer groups with filters: entityType=${entityType}, department=${department}`);
+      const groups = await this.peerGroupAnalysisService.getPeerGroups(entityType, department);
+      this.logger.log(`[${requestId}] Successfully retrieved ${groups.length} peer groups`);
+      return {
+        totalGroups: groups.length,
+        groups,
+      };
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to retrieve peer groups: ${error.message}`, error.stack);
+      if (error instanceof BadRequestException) throw error;
+      throw new InternalServerErrorException({
+        message: 'Failed to retrieve peer groups',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -524,14 +557,28 @@ export class PeerGroupAnalysisController {
     statistics: PeerGroupStatistics;
     memberCount: number;
   }> {
-    const peerGroup = await this.peerGroupAnalysisService.getPeerGroup(groupId);
-    const statistics = await this.peerGroupAnalysisService.calculateGroupStatistics(groupId);
-
-    return {
-      peerGroup,
-      statistics,
-      memberCount: peerGroup.members.length,
-    };
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Retrieving peer group details: ${groupId}`);
+      if (!groupId) throw new BadRequestException('Peer group ID is required');
+      const peerGroup = await this.peerGroupAnalysisService.getPeerGroup(groupId);
+      const statistics = await this.peerGroupAnalysisService.calculateGroupStatistics(groupId);
+      this.logger.log(`[${requestId}] Successfully retrieved peer group ${groupId} with ${peerGroup.members.length} members`);
+      return {
+        peerGroup,
+        statistics,
+        memberCount: peerGroup.members.length,
+      };
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to retrieve peer group ${groupId}: ${error.message}`, error.stack);
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException({
+        message: 'Failed to retrieve peer group details',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -546,8 +593,24 @@ export class PeerGroupAnalysisController {
     @Param('groupId', ParseUUIDPipe) groupId: string,
     @Body() dto: UpdatePeerGroupDto,
   ): Promise<PeerGroup> {
-    this.logger.log(`Updating peer group: ${groupId}`);
-    return this.peerGroupAnalysisService.updatePeerGroup(groupId, dto);
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Updating peer group: ${groupId}`);
+      if (!groupId) throw new BadRequestException('Peer group ID is required');
+      if (!dto) throw new BadRequestException('Update data is required');
+      const result = await this.peerGroupAnalysisService.updatePeerGroup(groupId, dto);
+      this.logger.log(`[${requestId}] Successfully updated peer group: ${groupId}`);
+      return result;
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to update peer group ${groupId}: ${error.message}`, error.stack);
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException({
+        message: 'Failed to update peer group',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -559,8 +622,22 @@ export class PeerGroupAnalysisController {
   @ApiParam({ name: 'groupId', description: 'Peer group ID' })
   @ApiResponse({ status: 204, description: 'Peer group deleted' })
   async deletePeerGroup(@Param('groupId', ParseUUIDPipe) groupId: string): Promise<void> {
-    this.logger.log(`Deleting peer group: ${groupId}`);
-    await this.peerGroupAnalysisService.deletePeerGroup(groupId);
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Deleting peer group: ${groupId}`);
+      if (!groupId) throw new BadRequestException('Peer group ID is required');
+      await this.peerGroupAnalysisService.deletePeerGroup(groupId);
+      this.logger.log(`[${requestId}] Successfully deleted peer group: ${groupId}`);
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to delete peer group ${groupId}: ${error.message}`, error.stack);
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException({
+        message: 'Failed to delete peer group',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -574,8 +651,24 @@ export class PeerGroupAnalysisController {
   async createConfiguration(
     @Body() dto: CreateAnalysisConfigDto,
   ): Promise<PeerGroupAnalysisConfig> {
-    this.logger.log(`Creating analysis configuration: ${dto.name}`);
-    return this.peerGroupAnalysisService.createAnalysisConfig(dto);
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Creating analysis configuration: ${dto.name}`);
+      if (!dto || !dto.name || !dto.peerGroupId) {
+        throw new BadRequestException('Invalid configuration: missing required fields');
+      }
+      const result = await this.peerGroupAnalysisService.createAnalysisConfig(dto);
+      this.logger.log(`[${requestId}] Successfully created analysis configuration: ${result.id}`);
+      return result;
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to create analysis configuration: ${error.message}`, error.stack);
+      if (error instanceof BadRequestException) throw error;
+      throw new InternalServerErrorException({
+        message: 'Failed to create analysis configuration',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -587,8 +680,23 @@ export class PeerGroupAnalysisController {
   @ApiBody({ type: StartAnalysisJobDto })
   @ApiResponse({ status: 201, description: 'Analysis job started' })
   async startAnalysisJob(@Body() dto: StartAnalysisJobDto): Promise<PeerGroupAnalysisJob> {
-    this.logger.log(`Starting analysis job for config ${dto.configId}`);
-    return this.peerGroupAnalysisService.startAnalysisJob(dto);
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Starting analysis job for config ${dto.configId}`);
+      if (!dto || !dto.configId) throw new BadRequestException('Config ID is required');
+      const result = await this.peerGroupAnalysisService.startAnalysisJob(dto);
+      this.logger.log(`[${requestId}] Successfully started analysis job: ${result.id}`);
+      return result;
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to start analysis job: ${error.message}`, error.stack);
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException({
+        message: 'Failed to start analysis job',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -599,7 +707,23 @@ export class PeerGroupAnalysisController {
   @ApiParam({ name: 'jobId', description: 'Analysis job ID' })
   @ApiResponse({ status: 200, description: 'Job details retrieved' })
   async getAnalysisJob(@Param('jobId', ParseUUIDPipe) jobId: string): Promise<PeerGroupAnalysisJob> {
-    return this.peerGroupAnalysisService.getAnalysisJob(jobId);
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Retrieving analysis job: ${jobId}`);
+      if (!jobId) throw new BadRequestException('Job ID is required');
+      const result = await this.peerGroupAnalysisService.getAnalysisJob(jobId);
+      this.logger.log(`[${requestId}] Successfully retrieved analysis job: ${jobId}`);
+      return result;
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to retrieve analysis job ${jobId}: ${error.message}`, error.stack);
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException({
+        message: 'Failed to retrieve analysis job',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -618,32 +742,43 @@ export class PeerGroupAnalysisController {
     deviatedMetrics: DeviatedMetric[];
     recommendations: string[];
   }> {
-    this.logger.log(`Comparing entity ${dto.entityId} to peer group ${dto.peerGroupId}`);
-
-    const peerGroup = await this.peerGroupAnalysisService.getPeerGroup(dto.peerGroupId);
-    const baseline = await this.peerGroupAnalysisService.getEntityBaseline(dto.entityId);
-
-    const comparison = compareToPeerGroup(dto.entityId, peerGroup, baseline);
-
-    const deviatedMetrics = await this.peerGroupAnalysisService.identifyDeviatedMetrics(
-      dto.entityId,
-      peerGroup,
-      comparison,
-    );
-
-    const outlier = comparison.isOutlier || false;
-
-    return {
-      entityId: dto.entityId,
-      peerGroupId: dto.peerGroupId,
-      comparison,
-      outlier,
-      deviatedMetrics,
-      recommendations: this.peerGroupAnalysisService.generateComparisonRecommendations(
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Comparing entity ${dto.entityId} to peer group ${dto.peerGroupId}`);
+      if (!dto || !dto.entityId || !dto.peerGroupId) {
+        throw new BadRequestException('Entity ID and peer group ID are required');
+      }
+      const peerGroup = await this.peerGroupAnalysisService.getPeerGroup(dto.peerGroupId);
+      const baseline = await this.peerGroupAnalysisService.getEntityBaseline(dto.entityId);
+      const comparison = compareToPeerGroup(dto.entityId, peerGroup, baseline);
+      const deviatedMetrics = await this.peerGroupAnalysisService.identifyDeviatedMetrics(
+        dto.entityId,
+        peerGroup,
+        comparison,
+      );
+      const outlier = comparison.isOutlier || false;
+      this.logger.log(`[${requestId}] Completed comparison: outlier=${outlier}, deviations=${deviatedMetrics.length}`);
+      return {
+        entityId: dto.entityId,
+        peerGroupId: dto.peerGroupId,
         comparison,
         outlier,
-      ),
-    };
+        deviatedMetrics,
+        recommendations: this.peerGroupAnalysisService.generateComparisonRecommendations(
+          comparison,
+          outlier,
+        ),
+      };
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to compare entity to peers: ${error.message}`, error.stack);
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException({
+        message: 'Failed to compare entity to peer group',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -662,38 +797,48 @@ export class PeerGroupAnalysisController {
     criticalOutliers: number;
     recommendations: string[];
   }> {
-    this.logger.warn(`Detecting outliers in peer group ${dto.peerGroupId}`);
-
-    const peerGroup = await this.peerGroupAnalysisService.getPeerGroup(dto.peerGroupId);
-    const memberBaselines = await this.peerGroupAnalysisService.getMemberBaselines(peerGroup);
-
-    const outlierIds = identifyPeerGroupOutliers(peerGroup, memberBaselines);
-
-    const outliers = await this.peerGroupAnalysisService.analyzeOutliers(
-      outlierIds,
-      peerGroup,
-      dto.method,
-      dto.threshold,
-    );
-
-    const filteredOutliers = dto.includeLowRisk
-      ? outliers
-      : outliers.filter((o) => o.riskLevel !== BehaviorRiskLevel.LOW);
-
-    const criticalOutliers = filteredOutliers.filter(
-      (o) => o.riskLevel === BehaviorRiskLevel.CRITICAL,
-    ).length;
-
-    return {
-      peerGroupId: dto.peerGroupId,
-      totalMembers: peerGroup.members.length,
-      outliersDetected: filteredOutliers.length,
-      outliers: filteredOutliers,
-      criticalOutliers,
-      recommendations: this.peerGroupAnalysisService.generateOutlierRecommendations(
-        filteredOutliers,
-      ),
-    };
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.warn(`[${requestId}] Detecting outliers in peer group ${dto.peerGroupId}`);
+      if (!dto || !dto.peerGroupId || !dto.method) {
+        throw new BadRequestException('Peer group ID and detection method are required');
+      }
+      const peerGroup = await this.peerGroupAnalysisService.getPeerGroup(dto.peerGroupId);
+      const memberBaselines = await this.peerGroupAnalysisService.getMemberBaselines(peerGroup);
+      const outlierIds = identifyPeerGroupOutliers(peerGroup, memberBaselines);
+      const outliers = await this.peerGroupAnalysisService.analyzeOutliers(
+        outlierIds,
+        peerGroup,
+        dto.method,
+        dto.threshold,
+      );
+      const filteredOutliers = dto.includeLowRisk
+        ? outliers
+        : outliers.filter((o) => o.riskLevel !== BehaviorRiskLevel.LOW);
+      const criticalOutliers = filteredOutliers.filter(
+        (o) => o.riskLevel === BehaviorRiskLevel.CRITICAL,
+      ).length;
+      this.logger.warn(`[${requestId}] Outlier detection complete: ${filteredOutliers.length} detected, ${criticalOutliers} critical`);
+      return {
+        peerGroupId: dto.peerGroupId,
+        totalMembers: peerGroup.members.length,
+        outliersDetected: filteredOutliers.length,
+        outliers: filteredOutliers,
+        criticalOutliers,
+        recommendations: this.peerGroupAnalysisService.generateOutlierRecommendations(
+          filteredOutliers,
+        ),
+      };
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to detect outliers: ${error.message}`, error.stack);
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException({
+        message: 'Failed to detect outliers',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -709,18 +854,32 @@ export class PeerGroupAnalysisController {
     riskDistribution: RiskDistribution;
     behavioralInsights: BehavioralInsight[];
   }> {
-    const statistics = await this.peerGroupAnalysisService.calculateGroupStatistics(groupId);
-    const riskDistribution = await this.peerGroupAnalysisService.calculateRiskDistribution(
-      groupId,
-    );
-    const insights = await this.peerGroupAnalysisService.generateBehavioralInsights(groupId);
-
-    return {
-      peerGroupId: groupId,
-      statistics,
-      riskDistribution,
-      behavioralInsights: insights,
-    };
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Calculating statistics for peer group: ${groupId}`);
+      if (!groupId) throw new BadRequestException('Peer group ID is required');
+      const statistics = await this.peerGroupAnalysisService.calculateGroupStatistics(groupId);
+      const riskDistribution = await this.peerGroupAnalysisService.calculateRiskDistribution(
+        groupId,
+      );
+      const insights = await this.peerGroupAnalysisService.generateBehavioralInsights(groupId);
+      this.logger.log(`[${requestId}] Successfully calculated statistics: ${insights.length} insights generated`);
+      return {
+        peerGroupId: groupId,
+        statistics,
+        riskDistribution,
+        behavioralInsights: insights,
+      };
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to calculate statistics: ${error.message}`, error.stack);
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException({
+        message: 'Failed to calculate peer group statistics',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -736,18 +895,30 @@ export class PeerGroupAnalysisController {
     benchmarks: PeerGroupBenchmark[];
     generatedAt: Date;
   }> {
-    this.logger.log(`Generating benchmarks for peer group ${dto.peerGroupId}`);
-
-    const benchmarks = await this.peerGroupAnalysisService.generateBenchmarks(
-      dto.peerGroupId,
-      dto.metricNames,
-    );
-
-    return {
-      peerGroupId: dto.peerGroupId,
-      benchmarks,
-      generatedAt: new Date(),
-    };
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Generating benchmarks for peer group ${dto.peerGroupId}`);
+      if (!dto || !dto.peerGroupId) throw new BadRequestException('Peer group ID is required');
+      const benchmarks = await this.peerGroupAnalysisService.generateBenchmarks(
+        dto.peerGroupId,
+        dto.metricNames,
+      );
+      this.logger.log(`[${requestId}] Successfully generated ${benchmarks.length} benchmarks`);
+      return {
+        peerGroupId: dto.peerGroupId,
+        benchmarks,
+        generatedAt: new Date(),
+      };
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to generate benchmarks: ${error.message}`, error.stack);
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException({
+        message: 'Failed to generate benchmarks',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -768,18 +939,34 @@ export class PeerGroupAnalysisController {
     emergingRisks: string[];
     recommendations: string[];
   }> {
-    const trends = await this.peerGroupAnalysisService.analyzePeerGroupTrends(groupId, days);
-
-    return {
-      peerGroupId: groupId,
-      timeRange: {
-        start: new Date(Date.now() - days * 24 * 60 * 60 * 1000),
-        end: new Date(),
-      },
-      trends,
-      emergingRisks: this.peerGroupAnalysisService.identifyEmergingRisks(trends),
-      recommendations: this.peerGroupAnalysisService.generateTrendRecommendations(trends),
-    };
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Analyzing trends for peer group ${groupId} over ${days} days`);
+      if (!groupId) throw new BadRequestException('Peer group ID is required');
+      if (days < 1 || days > 365) throw new BadRequestException('Days must be between 1 and 365');
+      const trends = await this.peerGroupAnalysisService.analyzePeerGroupTrends(groupId, days);
+      const emergingRisks = this.peerGroupAnalysisService.identifyEmergingRisks(trends);
+      this.logger.log(`[${requestId}] Trend analysis complete: ${trends.length} trends, ${emergingRisks.length} emerging risks`);
+      return {
+        peerGroupId: groupId,
+        timeRange: {
+          start: new Date(Date.now() - days * 24 * 60 * 60 * 1000),
+          end: new Date(),
+        },
+        trends,
+        emergingRisks,
+        recommendations: this.peerGroupAnalysisService.generateTrendRecommendations(trends),
+      };
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to analyze trends: ${error.message}`, error.stack);
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException({
+        message: 'Failed to analyze peer group trends',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -812,11 +999,29 @@ export class PeerGroupAnalysisController {
     recommendations: string[];
     criticalFindings: CriticalFinding[];
   }> {
-    return this.peerGroupAnalysisService.generateComprehensiveReport(
-      peerGroupId,
-      startDate,
-      endDate,
-    );
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Generating comprehensive report for peer group: ${peerGroupId || 'all'}`);
+      if (startDate && endDate && startDate > endDate) {
+        throw new BadRequestException('Start date must be before end date');
+      }
+      const result = await this.peerGroupAnalysisService.generateComprehensiveReport(
+        peerGroupId,
+        startDate,
+        endDate,
+      );
+      this.logger.log(`[${requestId}] Successfully generated report: ${result.reportId}`);
+      return result;
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to generate comprehensive report: ${error.message}`, error.stack);
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException({
+        message: 'Failed to generate comprehensive report',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 }
 

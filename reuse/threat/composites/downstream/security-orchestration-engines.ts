@@ -30,8 +30,27 @@
  * approval workflows, and HIPAA-compliant security automation.
  */
 
-import { Injectable, Logger, Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
+import {
+  Injectable,
+  Logger,
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UsePipes,
+  ValidationPipe,
+  BadRequestException,
+  NotFoundException,
+  InternalServerErrorException,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody, ApiProperty } from '@nestjs/swagger';
+import { IsString, IsNotEmpty, IsArray, IsEnum, ValidateNested, Type } from 'class-validator';
 import * as crypto from 'crypto';
 
 import {
@@ -315,30 +334,45 @@ export class SecurityOrchestrationEngineService {
     executionId: string,
     action: 'PAUSE' | 'RESUME' | 'CANCEL'
   ): Promise<WorkflowExecution> {
-    this.logger.log(`Managing workflow ${executionId}: ${action}`);
+    const requestId = crypto.randomUUID();
+    try {
+      if (!executionId || executionId.trim() === '') {
+        throw new BadRequestException('Execution ID is required');
+      }
 
-    const execution = this.executions.get(executionId);
-    if (!execution) {
-      throw new Error(`Execution ${executionId} not found`);
+      if (!action || !['PAUSE', 'RESUME', 'CANCEL'].includes(action)) {
+        throw new BadRequestException('Valid action is required: PAUSE, RESUME, or CANCEL');
+      }
+
+      this.logger.log(`[${requestId}] Managing workflow ${executionId}: ${action}`);
+
+      const execution = this.executions.get(executionId);
+      if (!execution) {
+        throw new NotFoundException(`Execution ${executionId} not found`);
+      }
+
+      switch (action) {
+        case 'PAUSE':
+          execution.status = 'PAUSED';
+          this.logger.log(`[${requestId}] Workflow ${executionId} paused`);
+          break;
+        case 'RESUME':
+          execution.status = 'RUNNING';
+          this.logger.log(`[${requestId}] Workflow ${executionId} resumed`);
+          break;
+        case 'CANCEL':
+          execution.status = 'CANCELLED';
+          execution.completedAt = new Date();
+          this.logger.log(`[${requestId}] Workflow ${executionId} cancelled`);
+          break;
+      }
+
+      return execution;
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to manage workflow lifecycle: ${error.message}`, error.stack);
+      if (error instanceof (BadRequestException || NotFoundException)) throw error;
+      throw new InternalServerErrorException('Failed to manage workflow lifecycle');
     }
-
-    switch (action) {
-      case 'PAUSE':
-        execution.status = 'PAUSED';
-        this.logger.log(`Workflow ${executionId} paused`);
-        break;
-      case 'RESUME':
-        execution.status = 'RUNNING';
-        this.logger.log(`Workflow ${executionId} resumed`);
-        break;
-      case 'CANCEL':
-        execution.status = 'CANCELLED';
-        execution.completedAt = new Date();
-        this.logger.log(`Workflow ${executionId} cancelled`);
-        break;
-    }
-
-    return execution;
   }
 
   /**

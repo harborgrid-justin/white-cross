@@ -32,6 +32,7 @@
  * through controlled attack simulations in healthcare environments.
  */
 
+import crypto from 'crypto';
 import {
   Controller,
   Get,
@@ -52,6 +53,8 @@ import {
   BadRequestException,
   NotFoundException,
   ConflictException,
+  InternalServerErrorException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -607,6 +610,7 @@ export class SimulateDataExfiltrationDto {
 @ApiTags('penetration-testing')
 @Controller('api/v1/penetration-testing')
 @ApiBearerAuth()
+@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class PenetrationTestingController {
   private readonly logger = new Logger(PenetrationTestingController.name);
 
@@ -625,8 +629,34 @@ export class PenetrationTestingController {
   @ApiResponse({ status: 201, description: 'Engagement created successfully' })
   @ApiResponse({ status: 400, description: 'Invalid engagement configuration' })
   async createEngagement(@Body() dto: CreatePenTestEngagementDto): Promise<PenTestEngagement> {
-    this.logger.log(`Creating penetration test engagement: ${dto.name}`);
-    return this.pentestService.createEngagement(dto);
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Creating penetration test engagement: ${dto.name}`);
+
+      if (!dto || !dto.name || !dto.description) {
+        throw new BadRequestException({
+          message: 'Invalid engagement configuration',
+          requestId,
+          details: 'name and description are required',
+        });
+      }
+
+      const result = await this.pentestService.createEngagement(dto);
+      this.logger.log(`[${requestId}] Engagement created successfully: ${result.id}`);
+      return result;
+
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to create engagement: ${error.message}`, error.stack);
+
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof NotFoundException) throw error;
+
+      throw new InternalServerErrorException({
+        message: 'Failed to create penetration test engagement',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -645,13 +675,30 @@ export class PenetrationTestingController {
     activeEngagements: number;
     engagements: PenTestEngagement[];
   }> {
-    const engagements = await this.pentestService.getEngagements(status, type);
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Retrieving engagements with status: ${status}, type: ${type}`);
 
-    return {
-      totalEngagements: engagements.length,
-      activeEngagements: engagements.filter((e) => e.status === PenTestStatus.IN_PROGRESS).length,
-      engagements,
-    };
+      const engagements = await this.pentestService.getEngagements(status, type);
+
+      this.logger.log(`[${requestId}] Retrieved ${engagements.length} engagements`);
+      return {
+        totalEngagements: engagements.length,
+        activeEngagements: engagements.filter((e) => e.status === PenTestStatus.IN_PROGRESS).length,
+        engagements,
+      };
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to retrieve engagements: ${error.message}`, error.stack);
+
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof NotFoundException) throw error;
+
+      throw new InternalServerErrorException({
+        message: 'Failed to retrieve penetration test engagements',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -665,7 +712,33 @@ export class PenetrationTestingController {
   async getEngagement(
     @Param('engagementId', ParseUUIDPipe) engagementId: string,
   ): Promise<PenTestEngagement> {
-    return this.pentestService.getEngagement(engagementId);
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Retrieving engagement: ${engagementId}`);
+
+      if (!engagementId) {
+        throw new BadRequestException({
+          message: 'Engagement ID is required',
+          requestId,
+        });
+      }
+
+      const result = await this.pentestService.getEngagement(engagementId);
+      this.logger.log(`[${requestId}] Engagement retrieved successfully`);
+      return result;
+
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to retrieve engagement: ${error.message}`, error.stack);
+
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof NotFoundException) throw error;
+
+      throw new InternalServerErrorException({
+        message: 'Failed to retrieve engagement details',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -687,8 +760,34 @@ export class PenetrationTestingController {
     @Param('engagementId', ParseUUIDPipe) engagementId: string,
     @Body('status') status: PenTestStatus,
   ): Promise<PenTestEngagement> {
-    this.logger.log(`Updating engagement ${engagementId} status to ${status}`);
-    return this.pentestService.updateEngagementStatus(engagementId, status);
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Updating engagement ${engagementId} status to ${status}`);
+
+      if (!engagementId || !status) {
+        throw new BadRequestException({
+          message: 'Missing required parameters',
+          requestId,
+          details: 'engagementId and status are required',
+        });
+      }
+
+      const result = await this.pentestService.updateEngagementStatus(engagementId, status);
+      this.logger.log(`[${requestId}] Status updated successfully to ${status}`);
+      return result;
+
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to update engagement status: ${error.message}`, error.stack);
+
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof NotFoundException) throw error;
+
+      throw new InternalServerErrorException({
+        message: 'Failed to update engagement status',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -700,19 +799,42 @@ export class PenetrationTestingController {
   @ApiBody({ type: CreateRedTeamCampaignDto })
   @ApiResponse({ status: 201, description: 'Campaign created successfully' })
   async createRedTeamCampaign(@Body() dto: CreateRedTeamCampaignDto): Promise<RedTeamCampaign> {
-    this.logger.log(`Creating red team campaign: ${dto.name}`);
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Creating red team campaign: ${dto.name}`);
 
-    const campaign = await createRedTeamCampaign(
-      dto.name,
-      dto.objectives,
-      dto.targetEnvironment,
-      this.sequelize,
-    );
+      if (!dto || !dto.name || !dto.objectives || !dto.targetEnvironment) {
+        throw new BadRequestException({
+          message: 'Invalid campaign configuration',
+          requestId,
+          details: 'name, objectives, and targetEnvironment are required',
+        });
+      }
 
-    // Store campaign
-    await this.pentestService.storeRedTeamCampaign(campaign);
+      const campaign = await createRedTeamCampaign(
+        dto.name,
+        dto.objectives,
+        dto.targetEnvironment,
+        this.sequelize,
+      );
 
-    return campaign;
+      await this.pentestService.storeRedTeamCampaign(campaign);
+      this.logger.log(`[${requestId}] Red team campaign created successfully: ${campaign.id}`);
+
+      return campaign;
+
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to create red team campaign: ${error.message}`, error.stack);
+
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof NotFoundException) throw error;
+
+      throw new InternalServerErrorException({
+        message: 'Failed to create red team campaign',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -731,22 +853,45 @@ export class PenetrationTestingController {
     message: string;
     executionId: string;
   }> {
-    this.logger.warn(`Executing red team campaign: ${campaignId}`);
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Executing red team campaign: ${campaignId}`);
 
-    const campaign = await this.pentestService.getRedTeamCampaign(campaignId);
+      if (!campaignId) {
+        throw new BadRequestException({
+          message: 'Campaign ID is required',
+          requestId,
+        });
+      }
 
-    const executionResult = await executeRedTeamCampaign(
-      campaign,
-      campaign.targetEnvironment,
-      this.sequelize,
-    );
+      const campaign = await this.pentestService.getRedTeamCampaign(campaignId);
 
-    return {
-      campaignId,
-      status: 'STARTED',
-      message: 'Red team campaign execution initiated',
-      executionId: executionResult.id,
-    };
+      const executionResult = await executeRedTeamCampaign(
+        campaign,
+        campaign.targetEnvironment,
+        this.sequelize,
+      );
+
+      this.logger.log(`[${requestId}] Campaign execution started: ${executionResult.id}`);
+      return {
+        campaignId,
+        status: 'STARTED',
+        message: 'Red team campaign execution initiated',
+        executionId: executionResult.id,
+      };
+
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to execute red team campaign: ${error.message}`, error.stack);
+
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof NotFoundException) throw error;
+
+      throw new InternalServerErrorException({
+        message: 'Failed to execute red team campaign',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -760,26 +905,50 @@ export class PenetrationTestingController {
   async createAttackSimulation(
     @Body() dto: CreateAttackSimulationDto,
   ): Promise<AttackSimulationFramework> {
-    this.logger.log(`Creating attack simulation framework: ${dto.frameworkName}`);
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Creating attack simulation framework: ${dto.frameworkName}`);
 
-    const framework = await createAttackSimulationFramework(
-      dto.frameworkName,
-      dto.targetAssets,
-      this.sequelize,
-    );
+      if (!dto || !dto.frameworkName || !dto.targetAssets) {
+        throw new BadRequestException({
+          message: 'Invalid framework configuration',
+          requestId,
+          details: 'frameworkName and targetAssets are required',
+        });
+      }
 
-    // Validate safety before storing
-    const safetyValidation = validateFrameworkSafety(framework);
-    if (!safetyValidation.safe) {
-      throw new BadRequestException({
-        message: 'Framework failed safety validation',
-        issues: safetyValidation.issues,
+      const framework = await createAttackSimulationFramework(
+        dto.frameworkName,
+        dto.targetAssets,
+        this.sequelize,
+      );
+
+      const safetyValidation = validateFrameworkSafety(framework);
+      if (!safetyValidation.safe) {
+        throw new BadRequestException({
+          message: 'Framework failed safety validation',
+          requestId,
+          issues: safetyValidation.issues,
+        });
+      }
+
+      await this.pentestService.storeAttackSimulation(framework);
+      this.logger.log(`[${requestId}] Attack simulation framework created: ${framework.id}`);
+
+      return framework;
+
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to create attack simulation: ${error.message}`, error.stack);
+
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof NotFoundException) throw error;
+
+      throw new InternalServerErrorException({
+        message: 'Failed to create attack simulation framework',
+        requestId,
+        error: error.message,
       });
     }
-
-    await this.pentestService.storeAttackSimulation(framework);
-
-    return framework;
   }
 
   /**
@@ -796,33 +965,57 @@ export class PenetrationTestingController {
     frameworkId: string;
     startTime: Date;
   }> {
-    this.logger.warn(`Executing attack simulation for framework ${dto.frameworkId}`);
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Executing attack simulation for framework ${dto.frameworkId}`);
 
-    const framework = await this.pentestService.getAttackSimulation(dto.frameworkId);
+      if (!dto || !dto.frameworkId) {
+        throw new BadRequestException({
+          message: 'Invalid simulation configuration',
+          requestId,
+          details: 'frameworkId is required',
+        });
+      }
 
-    const execution = await executeAttackSimulationFramework(
-      framework,
-      dto.autoStopOnDetection || false,
-      this.sequelize,
-    );
+      const framework = await this.pentestService.getAttackSimulation(dto.frameworkId);
 
-    const attackExecution: AttackSimulationExecution = {
-      id: crypto.randomUUID(),
-      frameworkId: dto.frameworkId,
-      scenarioId: dto.scenarioId,
-      status: SimulationStatus.RUNNING,
-      startTime: new Date(),
-      detectionPoints: [],
-    };
+      const execution = await executeAttackSimulationFramework(
+        framework,
+        dto.autoStopOnDetection || false,
+        this.sequelize,
+      );
 
-    await this.pentestService.storeAttackExecution(attackExecution);
+      const attackExecution: AttackSimulationExecution = {
+        id: crypto.randomUUID(),
+        frameworkId: dto.frameworkId,
+        scenarioId: dto.scenarioId,
+        status: SimulationStatus.RUNNING,
+        startTime: new Date(),
+        detectionPoints: [],
+      };
 
-    return {
-      executionId: attackExecution.id,
-      status: attackExecution.status,
-      frameworkId: dto.frameworkId,
-      startTime: attackExecution.startTime,
-    };
+      await this.pentestService.storeAttackExecution(attackExecution);
+      this.logger.log(`[${requestId}] Attack simulation execution started: ${attackExecution.id}`);
+
+      return {
+        executionId: attackExecution.id,
+        status: attackExecution.status,
+        frameworkId: dto.frameworkId,
+        startTime: attackExecution.startTime,
+      };
+
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to execute attack simulation: ${error.message}`, error.stack);
+
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof NotFoundException) throw error;
+
+      throw new InternalServerErrorException({
+        message: 'Failed to execute attack simulation',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -847,12 +1040,36 @@ export class PenetrationTestingController {
     @Body('entryPoint') entryPoint: string,
     @Body('targetAsset') targetAsset: string,
   ): Promise<BreachSimulationResult> {
-    this.logger.warn(`Simulating breach scenario: ${scenarioType}`);
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Simulating breach scenario: ${scenarioType}`);
 
-    const scenario = createAssumedBreachScenario(entryPoint, targetAsset);
-    const result = await simulateBreachScenario(scenario, targetAsset, this.sequelize);
+      if (!scenarioType || !entryPoint || !targetAsset) {
+        throw new BadRequestException({
+          message: 'Missing scenario parameters',
+          requestId,
+          details: 'scenarioType, entryPoint, and targetAsset are required',
+        });
+      }
 
-    return result;
+      const scenario = createAssumedBreachScenario(entryPoint, targetAsset);
+      const result = await simulateBreachScenario(scenario, targetAsset, this.sequelize);
+
+      this.logger.log(`[${requestId}] Breach scenario simulation completed`);
+      return result;
+
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to simulate breach: ${error.message}`, error.stack);
+
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof NotFoundException) throw error;
+
+      throw new InternalServerErrorException({
+        message: 'Failed to simulate breach scenario',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -870,29 +1087,48 @@ export class PenetrationTestingController {
     detectedSteps: number;
     recommendations: string[];
   }> {
-    this.logger.warn(
-      `Simulating lateral movement from ${dto.startAssetId} to ${dto.targetAssetId}`,
-    );
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Simulating lateral movement from ${dto.startAssetId} to ${dto.targetAssetId}`);
 
-    const paths = await simulateLateralMovement(
-      dto.startAssetId,
-      dto.targetAssetId,
-      dto.maxHops || 5,
-      this.sequelize,
-    );
+      if (!dto || !dto.startAssetId || !dto.targetAssetId) {
+        throw new BadRequestException({
+          message: 'Invalid movement parameters',
+          requestId,
+          details: 'startAssetId and targetAssetId are required',
+        });
+      }
 
-    const detectedSteps = paths.reduce(
-      (sum, path) => sum + path.steps.filter((s) => s.detected).length,
-      0,
-    );
+      const paths = await simulateLateralMovement(
+        dto.startAssetId,
+        dto.targetAssetId,
+        dto.maxHops || 5,
+        this.sequelize,
+      );
 
-    return {
-      success: paths.length > 0,
-      pathsFound: paths.length,
-      paths,
-      detectedSteps,
-      recommendations: this.pentestService.generateLateralMovementRecommendations(paths),
-    };
+      const detectedSteps = paths.reduce((sum, path) => sum + path.steps.filter((s) => s.detected).length, 0);
+
+      this.logger.log(`[${requestId}] Lateral movement simulation completed: ${paths.length} paths found`);
+      return {
+        success: paths.length > 0,
+        pathsFound: paths.length,
+        paths,
+        detectedSteps,
+        recommendations: this.pentestService.generateLateralMovementRecommendations(paths),
+      };
+
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to simulate lateral movement: ${error.message}`, error.stack);
+
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof NotFoundException) throw error;
+
+      throw new InternalServerErrorException({
+        message: 'Failed to simulate lateral movement',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -909,29 +1145,51 @@ export class PenetrationTestingController {
     detected: boolean;
     recommendations: string[];
   }> {
-    this.logger.warn(
-      `Simulating data exfiltration: ${dto.dataVolumeMB}MB via ${dto.method}`,
-    );
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Simulating data exfiltration: ${dto.dataVolumeMB}MB via ${dto.method}`);
 
-    const result = await simulateDataExfiltration(
-      dto.sourceAssetId,
-      dto.dataVolumeMB,
-      dto.method,
-      this.sequelize,
-    );
+      if (!dto || !dto.sourceAssetId || !dto.dataVolumeMB || !dto.method) {
+        throw new BadRequestException({
+          message: 'Invalid exfiltration parameters',
+          requestId,
+          details: 'sourceAssetId, dataVolumeMB, and method are required',
+        });
+      }
 
-    return {
-      executionId: crypto.randomUUID(),
-      result,
-      detected: result.detected,
-      recommendations: [
-        result.detected
-          ? 'DLP controls detected exfiltration - good coverage'
-          : 'CRITICAL: Data exfiltration went undetected - implement DLP controls',
-        'Review egress filtering rules',
-        'Monitor for DNS tunneling patterns',
-      ],
-    };
+      const result = await simulateDataExfiltration(
+        dto.sourceAssetId,
+        dto.dataVolumeMB,
+        dto.method,
+        this.sequelize,
+      );
+
+      this.logger.log(`[${requestId}] Data exfiltration simulation completed`);
+      return {
+        executionId: crypto.randomUUID(),
+        result,
+        detected: result.detected,
+        recommendations: [
+          result.detected
+            ? 'DLP controls detected exfiltration - good coverage'
+            : 'CRITICAL: Data exfiltration went undetected - implement DLP controls',
+          'Review egress filtering rules',
+          'Monitor for DNS tunneling patterns',
+        ],
+      };
+
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to simulate data exfiltration: ${error.message}`, error.stack);
+
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof NotFoundException) throw error;
+
+      throw new InternalServerErrorException({
+        message: 'Failed to simulate data exfiltration',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -945,19 +1203,43 @@ export class PenetrationTestingController {
   async createPurpleTeamExercise(
     @Body() dto: CreatePurpleTeamExerciseDto,
   ): Promise<PurpleTeamExercise> {
-    this.logger.log(`Creating purple team exercise: ${dto.name}`);
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Creating purple team exercise: ${dto.name}`);
 
-    const exercise = await createPurpleTeamExercise(
-      dto.name,
-      dto.redTeamObjectives,
-      dto.blueTeamObjectives,
-      dto.techniques,
-      this.sequelize,
-    );
+      if (!dto || !dto.name || !dto.redTeamObjectives || !dto.blueTeamObjectives || !dto.techniques) {
+        throw new BadRequestException({
+          message: 'Invalid exercise configuration',
+          requestId,
+          details: 'name, redTeamObjectives, blueTeamObjectives, and techniques are required',
+        });
+      }
 
-    await this.pentestService.storePurpleTeamExercise(exercise);
+      const exercise = await createPurpleTeamExercise(
+        dto.name,
+        dto.redTeamObjectives,
+        dto.blueTeamObjectives,
+        dto.techniques,
+        this.sequelize,
+      );
 
-    return exercise;
+      await this.pentestService.storePurpleTeamExercise(exercise);
+      this.logger.log(`[${requestId}] Purple team exercise created: ${exercise.id}`);
+
+      return exercise;
+
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to create purple team exercise: ${error.message}`, error.stack);
+
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof NotFoundException) throw error;
+
+      throw new InternalServerErrorException({
+        message: 'Failed to create purple team exercise',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -976,41 +1258,62 @@ export class PenetrationTestingController {
     status: string;
     startTime: Date;
   }> {
-    this.logger.log(`Executing purple team exercise: ${exerciseId}`);
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Executing purple team exercise: ${exerciseId}`);
 
-    const exercise = await this.pentestService.getPurpleTeamExercise(exerciseId);
+      if (!exerciseId) {
+        throw new BadRequestException({
+          message: 'Exercise ID is required',
+          requestId,
+        });
+      }
 
-    // Coordinate team activities
-    await coordinateTeamActivities(exercise, this.sequelize);
+      const exercise = await this.pentestService.getPurpleTeamExercise(exerciseId);
+      await coordinateTeamActivities(exercise, this.sequelize);
 
-    const session: PurpleTeamSession = {
-      id: crypto.randomUUID(),
-      exerciseId,
-      name: exercise.name,
-      redTeamObjective: exercise.redTeamObjectives.join(', '),
-      blueTeamObjective: exercise.blueTeamObjectives.join(', '),
-      status: 'ACTIVE',
-      techniques: exercise.techniques,
-      results: {
-        techniquesExecuted: 0,
-        techniquesTested: 0,
-        detectionsValidated: 0,
-        detectionGaps: [],
-        improvements: [],
-        collaborationScore: 0,
-        effectiveness: 0,
-      },
-      startTime: new Date(),
-    };
+      const session: PurpleTeamSession = {
+        id: crypto.randomUUID(),
+        exerciseId,
+        name: exercise.name,
+        redTeamObjective: exercise.redTeamObjectives.join(', '),
+        blueTeamObjective: exercise.blueTeamObjectives.join(', '),
+        status: 'ACTIVE',
+        techniques: exercise.techniques,
+        results: {
+          techniquesExecuted: 0,
+          techniquesTested: 0,
+          detectionsValidated: 0,
+          detectionGaps: [],
+          improvements: [],
+          collaborationScore: 0,
+          effectiveness: 0,
+        },
+        startTime: new Date(),
+      };
 
-    await this.pentestService.storePurpleTeamSession(session);
+      await this.pentestService.storePurpleTeamSession(session);
+      this.logger.log(`[${requestId}] Purple team exercise execution started: ${session.id}`);
 
-    return {
-      exerciseId,
-      sessionId: session.id,
-      status: 'ACTIVE',
-      startTime: session.startTime,
-    };
+      return {
+        exerciseId,
+        sessionId: session.id,
+        status: 'ACTIVE',
+        startTime: session.startTime,
+      };
+
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to execute purple team exercise: ${error.message}`, error.stack);
+
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof NotFoundException) throw error;
+
+      throw new InternalServerErrorException({
+        message: 'Failed to execute purple team exercise',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -1022,8 +1325,34 @@ export class PenetrationTestingController {
   @ApiBody({ type: ReportVulnerabilityDto })
   @ApiResponse({ status: 201, description: 'Vulnerability reported successfully' })
   async reportVulnerability(@Body() dto: ReportVulnerabilityDto): Promise<Vulnerability> {
-    this.logger.warn(`Reporting vulnerability: ${dto.title} (${dto.severity})`);
-    return this.pentestService.reportVulnerability(dto);
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Reporting vulnerability: ${dto.title} (${dto.severity})`);
+
+      if (!dto || !dto.title || !dto.severity || !dto.engagementId) {
+        throw new BadRequestException({
+          message: 'Invalid vulnerability report',
+          requestId,
+          details: 'title, severity, and engagementId are required',
+        });
+      }
+
+      const result = await this.pentestService.reportVulnerability(dto);
+      this.logger.log(`[${requestId}] Vulnerability reported successfully: ${result.id}`);
+      return result;
+
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to report vulnerability: ${error.message}`, error.stack);
+
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof NotFoundException) throw error;
+
+      throw new InternalServerErrorException({
+        message: 'Failed to report vulnerability',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -1043,22 +1372,44 @@ export class PenetrationTestingController {
     vulnerabilities: Vulnerability[];
     severityBreakdown: Record<string, number>;
   }> {
-    const vulnerabilities = await this.pentestService.getEngagementVulnerabilities(
-      engagementId,
-      severity,
-    );
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Retrieving vulnerabilities for engagement: ${engagementId}`);
 
-    const severityBreakdown: Record<string, number> = {};
-    for (const vuln of vulnerabilities) {
-      severityBreakdown[vuln.severity] = (severityBreakdown[vuln.severity] || 0) + 1;
+      if (!engagementId) {
+        throw new BadRequestException({
+          message: 'Engagement ID is required',
+          requestId,
+        });
+      }
+
+      const vulnerabilities = await this.pentestService.getEngagementVulnerabilities(engagementId, severity);
+
+      const severityBreakdown: Record<string, number> = {};
+      for (const vuln of vulnerabilities) {
+        severityBreakdown[vuln.severity] = (severityBreakdown[vuln.severity] || 0) + 1;
+      }
+
+      this.logger.log(`[${requestId}] Retrieved ${vulnerabilities.length} vulnerabilities`);
+      return {
+        engagementId,
+        totalVulnerabilities: vulnerabilities.length,
+        vulnerabilities,
+        severityBreakdown,
+      };
+
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to retrieve vulnerabilities: ${error.message}`, error.stack);
+
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof NotFoundException) throw error;
+
+      throw new InternalServerErrorException({
+        message: 'Failed to retrieve vulnerabilities',
+        requestId,
+        error: error.message,
+      });
     }
-
-    return {
-      engagementId,
-      totalVulnerabilities: vulnerabilities.length,
-      vulnerabilities,
-      severityBreakdown,
-    };
   }
 
   /**
@@ -1082,7 +1433,33 @@ export class PenetrationTestingController {
     metrics: EngagementMetrics;
     recommendations: string[];
   }> {
-    return this.pentestService.generateEngagementReport(engagementId, format);
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Generating engagement report: ${engagementId} (${format} format)`);
+
+      if (!engagementId) {
+        throw new BadRequestException({
+          message: 'Engagement ID is required',
+          requestId,
+        });
+      }
+
+      const result = await this.pentestService.generateEngagementReport(engagementId, format);
+      this.logger.log(`[${requestId}] Engagement report generated successfully`);
+      return result;
+
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to generate engagement report: ${error.message}`, error.stack);
+
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof NotFoundException) throw error;
+
+      throw new InternalServerErrorException({
+        message: 'Failed to generate engagement report',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 
   /**
@@ -1109,7 +1486,26 @@ export class PenetrationTestingController {
     trends: any[];
     recommendations: string[];
   }> {
-    return this.pentestService.generateMetricsDashboard(startDate, endDate);
+    const requestId = crypto.randomUUID();
+    try {
+      this.logger.log(`[${requestId}] Generating metrics dashboard`);
+
+      const result = await this.pentestService.generateMetricsDashboard(startDate, endDate);
+      this.logger.log(`[${requestId}] Metrics dashboard generated successfully`);
+      return result;
+
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to generate metrics dashboard: ${error.message}`, error.stack);
+
+      if (error instanceof BadRequestException) throw error;
+      if (error instanceof NotFoundException) throw error;
+
+      throw new InternalServerErrorException({
+        message: 'Failed to generate metrics dashboard',
+        requestId,
+        error: error.message,
+      });
+    }
   }
 }
 

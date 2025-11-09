@@ -39,6 +39,10 @@ import {
   HttpStatus,
   Injectable,
   Logger,
+  UsePipes,
+  ValidationPipe,
+  BadRequestException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -58,6 +62,7 @@ import {
   Max,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import * as crypto from 'crypto';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -150,6 +155,7 @@ export class CalculateKPIDto {
 @ApiTags('kpi-calculation')
 @Controller('api/v1/kpi-calculation')
 @ApiBearerAuth()
+@UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
 export class KPICalculationController {
   private readonly logger = new Logger(KPICalculationController.name);
 
@@ -236,68 +242,96 @@ export class KPICalculationService {
    * Calculate all KPIs
    */
   async calculateAllKPIs(dto: CalculateKPIDto): Promise<KPI[]> {
-    const { category, startDate, endDate } = dto;
+    const requestId = crypto.randomUUID();
+    try {
+      const { category, startDate, endDate } = dto;
 
-    // Define KPIs to calculate
-    const kpiDefinitions = this.getKPIDefinitions();
+      // Define KPIs to calculate
+      const kpiDefinitions = this.getKPIDefinitions();
 
-    const calculatedKPIs: KPI[] = [];
+      const calculatedKPIs: KPI[] = [];
 
-    for (const def of kpiDefinitions) {
-      if (category && def.category !== category) continue;
+      for (const def of kpiDefinitions) {
+        if (category && def.category !== category) continue;
 
-      const kpi = await this.calculateKPI(def, startDate, endDate);
-      this.kpis.set(kpi.id, kpi);
-      calculatedKPIs.push(kpi);
+        const kpi = await this.calculateKPI(def, startDate, endDate);
+        this.kpis.set(kpi.id, kpi);
+        calculatedKPIs.push(kpi);
 
-      // Check for alerts
-      this.checkKPIAlerts(kpi);
+        // Check for alerts
+        this.checkKPIAlerts(kpi);
+      }
+
+      this.logger.log(`[${requestId}] Calculated ${calculatedKPIs.length} KPIs`);
+      return calculatedKPIs;
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to calculate KPIs: ${error.message}`, error.stack);
+      throw new InternalServerErrorException('Failed to calculate KPIs');
     }
-
-    return calculatedKPIs;
   }
 
   /**
    * Get KPIs
    */
   async getKPIs(category?: KPICategory): Promise<KPI[]> {
-    let kpis = Array.from(this.kpis.values());
+    const requestId = crypto.randomUUID();
+    try {
+      let kpis = Array.from(this.kpis.values());
 
-    if (category) {
-      kpis = kpis.filter((k) => k.category === category);
+      if (category) {
+        kpis = kpis.filter((k) => k.category === category);
+      }
+
+      this.logger.log(`[${requestId}] Retrieved ${kpis.length} KPIs`);
+      return kpis;
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to retrieve KPIs: ${error.message}`, error.stack);
+      throw new InternalServerErrorException('Failed to retrieve KPIs');
     }
-
-    return kpis;
   }
 
   /**
    * Generate KPI report
    */
   async generateKPIReport(startDate?: Date, endDate?: Date): Promise<KPIReport> {
-    const start = startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const end = endDate || new Date();
+    const requestId = crypto.randomUUID();
+    try {
+      const start = startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const end = endDate || new Date();
 
-    const kpis = await this.calculateAllKPIs({ startDate: start, endDate: end });
+      if (start >= end) {
+        throw new BadRequestException('Start date must be before end date');
+      }
 
-    const onTarget = kpis.filter((k) => k.currentValue >= k.targetValue).length;
-    const belowTarget = kpis.length - onTarget;
-    const improving = kpis.filter((k) => k.trend === KPITrend.IMPROVING).length;
-    const degrading = kpis.filter((k) => k.trend === KPITrend.DEGRADING).length;
+      const kpis = await this.calculateAllKPIs({ startDate: start, endDate: end });
 
-    return {
-      reportId: crypto.randomUUID(),
-      generatedAt: new Date(),
-      period: { start, end },
-      kpis,
-      summary: {
-        totalKPIs: kpis.length,
-        onTarget,
-        belowTarget,
-        improving,
-        degrading,
-      },
-      alerts: this.alerts,
-    };
+      const onTarget = kpis.filter((k) => k.currentValue >= k.targetValue).length;
+      const belowTarget = kpis.length - onTarget;
+      const improving = kpis.filter((k) => k.trend === KPITrend.IMPROVING).length;
+      const degrading = kpis.filter((k) => k.trend === KPITrend.DEGRADING).length;
+
+      const report: KPIReport = {
+        reportId: crypto.randomUUID(),
+        generatedAt: new Date(),
+        period: { start, end },
+        kpis,
+        summary: {
+          totalKPIs: kpis.length,
+          onTarget,
+          belowTarget,
+          improving,
+          degrading,
+        },
+        alerts: this.alerts,
+      };
+
+      this.logger.log(`[${requestId}] KPI report generated: ${report.reportId}`);
+      return report;
+    } catch (error) {
+      this.logger.error(`[${requestId}] Failed to generate KPI report: ${error.message}`, error.stack);
+      if (error instanceof BadRequestException) throw error;
+      throw new InternalServerErrorException('Failed to generate KPI report');
+    }
   }
 
   /**
