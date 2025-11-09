@@ -36,25 +36,25 @@ import { promisify } from 'util';
 // TYPE DEFINITIONS
 // ============================================================================
 
-interface CacheEntry<T = any> {
+export interface CacheEntry<T = unknown> {
   key: string;
   value: T;
   ttl: number;
   createdAt: number;
   expiresAt: number;
   tags?: string[];
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
-interface CacheOptions {
+export interface CacheOptions {
   ttl?: number; // Time to live in milliseconds
   tags?: string[];
   namespace?: string;
   compress?: boolean;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
-interface CacheKeyConfig {
+export interface CacheKeyConfig {
   prefix?: string;
   namespace?: string;
   separator?: string;
@@ -62,7 +62,7 @@ interface CacheKeyConfig {
   version?: string;
 }
 
-interface CacheStats {
+export interface CacheStats {
   hits: number;
   misses: number;
   sets: number;
@@ -72,7 +72,7 @@ interface CacheStats {
   memoryUsage: number;
 }
 
-interface CacheLayer {
+export interface CacheLayer {
   name: string;
   priority: number;
   get<T>(key: string): Promise<T | null>;
@@ -352,8 +352,9 @@ export class CacheStatisticsModel extends Model<CacheStatisticsAttributes, Cache
  * Generates a deterministic cache key from arguments.
  *
  * @param {CacheKeyConfig} config - Cache key configuration
- * @param {...any[]} args - Arguments to include in key
+ * @param {...unknown[]} args - Arguments to include in key
  * @returns {string} Generated cache key
+ * @throws {Error} When config is null or undefined
  *
  * @example
  * ```typescript
@@ -365,7 +366,11 @@ export class CacheStatisticsModel extends Model<CacheStatisticsAttributes, Cache
  * // Result: 'auth:user:v1:getUserById:123'
  * ```
  */
-export const generateCacheKey = (config: CacheKeyConfig, ...args: any[]): string => {
+export const generateCacheKey = (config: CacheKeyConfig, ...args: unknown[]): string => {
+  if (!config) {
+    throw new Error('Cache key config is required');
+  }
+
   const parts: string[] = [];
 
   if (config.namespace) parts.push(config.namespace);
@@ -373,7 +378,7 @@ export const generateCacheKey = (config: CacheKeyConfig, ...args: any[]): string
   if (config.includeVersion && config.version) parts.push(config.version);
 
   args.forEach((arg) => {
-    if (typeof arg === 'object') {
+    if (arg !== null && arg !== undefined && typeof arg === 'object') {
       parts.push(hashObject(arg));
     } else {
       parts.push(String(arg));
@@ -1864,12 +1869,18 @@ export const createIntersectionLazyLoader = (
 /**
  * Generates deterministic hash for objects.
  *
- * @param {any} obj - Object to hash
+ * @param {unknown} obj - Object to hash
  * @returns {string} SHA-256 hash
+ * @throws {Error} When object cannot be stringified
  */
-function hashObject(obj: any): string {
-  const str = JSON.stringify(obj, Object.keys(obj).sort());
-  return crypto.createHash('sha256').update(str).digest('hex').substring(0, 16);
+function hashObject(obj: unknown): string {
+  try {
+    const sortedKeys = obj && typeof obj === 'object' ? Object.keys(obj).sort() : [];
+    const str = JSON.stringify(obj, sortedKeys);
+    return crypto.createHash('sha256').update(str).digest('hex').substring(0, 16);
+  } catch (error) {
+    throw new Error(`Failed to hash object: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }
 
 /**

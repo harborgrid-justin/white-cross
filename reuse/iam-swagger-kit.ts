@@ -75,7 +75,7 @@ interface PolicyStatementSchema {
   effect: 'Allow' | 'Deny';
   actions: string[];
   resources: string[];
-  conditions?: Record<string, any>;
+  conditions?: Record<string, unknown>;
 }
 
 interface AuditLogSchema {
@@ -88,7 +88,7 @@ interface AuditLogSchema {
   ipAddress: string;
   userAgent: string;
   timestamp: Date;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 interface MFAEnrollmentSchema {
@@ -1718,7 +1718,7 @@ export const createPaginatedResponseSchema = (
  * });
  * ```
  */
-export const createSwaggerUIConfig = (customOptions?: Record<string, any>) => {
+export const createSwaggerUIConfig = (customOptions?: Record<string, unknown>) => {
   return {
     customSiteTitle: customOptions?.customSiteTitle || 'IAM API Documentation',
     customCss: customOptions?.customCss || '.swagger-ui .topbar { display: none }',

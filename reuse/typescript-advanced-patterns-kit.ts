@@ -933,7 +933,8 @@ export const memoize = <F extends (...args: any[]) => any>(
   fn: F,
   options: MemoizeOptions = {},
 ): F => {
-  const { maxSize = Infinity, ttl, keyGenerator = JSON.stringify } = options;
+  const maxSize = Math.min(options.maxSize || 1000, 10000); // Cap at 10k entries
+  const { ttl, keyGenerator = JSON.stringify } = options;
   const cache = new Map<string, { value: ReturnType<F>; timestamp: number }>();
 
   return ((...args: Parameters<F>): ReturnType<F> => {
@@ -950,9 +951,12 @@ export const memoize = <F extends (...args: any[]) => any>(
     const value = fn(...args);
     cache.set(key, { value, timestamp: Date.now() });
 
+    // Use LRU eviction when cache is full
     if (cache.size > maxSize) {
       const firstKey = cache.keys().next().value;
-      cache.delete(firstKey);
+      if (firstKey !== undefined) {
+        cache.delete(firstKey);
+      }
     }
 
     return value;

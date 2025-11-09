@@ -45,8 +45,8 @@ export interface AdvancedConfigOptions {
   cache?: boolean;
   expandVariables?: boolean;
   ignoreEnvFile?: boolean;
-  validationSchema?: any;
-  validationOptions?: any;
+  validationSchema?: Record<string, any>;
+  validationOptions?: Record<string, any>;
   load?: Array<() => Record<string, any>>;
   ignoreEnvVars?: boolean;
   encoding?: BufferEncoding;
@@ -99,10 +99,10 @@ export interface RemoteConfigSource {
   headers?: Record<string, string>;
   auth?: {
     type: 'bearer' | 'basic' | 'api-key';
-    credentials: any;
+    credentials: string | Record<string, string>;
   };
   interval?: number;
-  transform?: (data: any) => Record<string, any>;
+  transform?: (data: unknown) => Record<string, any>;
 }
 
 /**
@@ -331,7 +331,8 @@ export const buildFeatureConfig = (
  * 6. Creates Joi schema from configuration schema definition.
  *
  * @param {ConfigSchema} schema - Configuration schema
- * @returns {any} Joi validation schema
+ * @returns {Record<string, any>} Joi validation schema placeholder
+ * @throws {Error} When joi package is not available
  *
  * @example
  * ```typescript
@@ -341,18 +342,18 @@ export const buildFeatureConfig = (
  * });
  * ```
  */
-export const createJoiSchema = (schema: ConfigSchema): any => {
+export const createJoiSchema = (schema: ConfigSchema): Record<string, any> => {
   // Placeholder - requires joi import
   // This would build a Joi schema from the ConfigSchema definition
-  console.warn('createJoiSchema requires joi package');
-  return schema;
+  throw new Error('createJoiSchema requires joi package to be installed');
 };
 
 /**
  * 7. Creates class-validator schema from configuration definition.
  *
  * @param {ConfigSchema} schema - Configuration schema
- * @returns {any} Class constructor with validators
+ * @returns {Record<string, any>} Class constructor with validators placeholder
+ * @throws {Error} When class-validator package is not available
  *
  * @example
  * ```typescript
@@ -362,10 +363,9 @@ export const createJoiSchema = (schema: ConfigSchema): any => {
  * });
  * ```
  */
-export const createClassValidatorSchema = (schema: ConfigSchema): any => {
+export const createClassValidatorSchema = (schema: ConfigSchema): Record<string, any> => {
   // Placeholder - would dynamically create class with decorators
-  console.warn('createClassValidatorSchema requires class-validator');
-  return schema;
+  throw new Error('createClassValidatorSchema requires class-validator package to be installed');
 };
 
 /**
@@ -1192,12 +1192,13 @@ export const applyDefaults = (
  * @param {ConfigWatchCallback} callback - Reload callback
  * @param {number} [debounceMs] - Debounce time in ms
  * @returns {() => void} Stop watching function
+ * @throws {Error} When file paths array is empty
  *
  * @example
  * ```typescript
  * const stop = watchConfigFiles(
  *   ['.env', '.env.local'],
- *   (newConfig, oldConfig) => console.log('Config changed')
+ *   (newConfig, oldConfig, diff) => console.log('Config changed')
  * );
  * ```
  */
@@ -1206,9 +1207,15 @@ export const watchConfigFiles = (
   callback: ConfigWatchCallback,
   debounceMs: number = 1000
 ): (() => void) => {
-  // Placeholder - would use fs.watch
-  console.warn('watchConfigFiles requires fs.watch implementation');
-  return () => {};
+  if (!filePaths || filePaths.length === 0) {
+    throw new Error('File paths array cannot be empty');
+  }
+
+  // Placeholder - would use fs.watch with proper implementation
+  // In production: implement debounced fs.watch with error handling
+  return () => {
+    // Cleanup watchers
+  };
 };
 
 /**
@@ -1440,6 +1447,7 @@ export const compareConfigVersions = (
  *
  * @param {RemoteConfigSource} source - Remote source configuration
  * @returns {() => Promise<Record<string, any>>} Remote loader
+ * @throws {Error} When HTTP client is not available
  *
  * @example
  * ```typescript
@@ -1452,10 +1460,12 @@ export const compareConfigVersions = (
 export const createRemoteConfigLoader = (
   source: RemoteConfigSource
 ): (() => Promise<Record<string, any>>) => {
+  if (!source || !source.url) {
+    throw new Error('Remote config source URL is required');
+  }
+
   return async (): Promise<Record<string, any>> => {
-    // Placeholder - would use fetch/axios
-    console.warn('Remote config loading requires HTTP client');
-    return {};
+    throw new Error('Remote config loading requires HTTP client (fetch/axios) to be implemented');
   };
 };
 

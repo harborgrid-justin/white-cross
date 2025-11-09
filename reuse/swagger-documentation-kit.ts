@@ -34,14 +34,14 @@
 
 interface ApiPropertyOptions {
   description?: string;
-  example?: any;
-  type?: any;
+  example?: unknown;
+  type?: string | Function | [Function];
   required?: boolean;
-  enum?: any[];
+  enum?: Array<string | number | boolean>;
   format?: string;
   minimum?: number;
   maximum?: number;
-  default?: any;
+  default?: unknown;
   nullable?: boolean;
   isArray?: boolean;
 }
@@ -49,9 +49,9 @@ interface ApiPropertyOptions {
 interface ApiResponseOptions {
   status: number;
   description: string;
-  type?: any;
+  type?: Function;
   isArray?: boolean;
-  schema?: any;
+  schema?: Record<string, unknown>;
 }
 
 interface ApiOperationOptions {
@@ -114,15 +114,34 @@ export const createStringProperty = (
   maxLength?: number,
   pattern?: string,
 ): ApiPropertyOptions => {
+  if (!description || description.trim().length === 0) {
+    throw new Error('Description is required for string property');
+  }
+
   const options: ApiPropertyOptions = {
     type: String,
-    description,
+    description: description.trim(),
     example: example || 'example string',
   };
 
-  if (minLength !== undefined) options.minimum = minLength;
-  if (maxLength !== undefined) options.maximum = maxLength;
-  if (pattern) options.format = pattern;
+  if (minLength !== undefined) {
+    if (minLength < 0) {
+      throw new Error('minLength must be non-negative');
+    }
+    options.minimum = minLength;
+  }
+  if (maxLength !== undefined) {
+    if (maxLength < 0) {
+      throw new Error('maxLength must be non-negative');
+    }
+    if (minLength !== undefined && maxLength < minLength) {
+      throw new Error('maxLength must be greater than or equal to minLength');
+    }
+    options.maximum = maxLength;
+  }
+  if (pattern && pattern.trim().length > 0) {
+    options.format = pattern.trim();
+  }
 
   return options;
 };
@@ -212,13 +231,25 @@ export const createBooleanProperty = (
  */
 export const createEnumProperty = (
   description: string,
-  enumValues: any[],
-  example?: any,
+  enumValues: Array<string | number | boolean>,
+  example?: string | number | boolean,
 ): ApiPropertyOptions => {
+  if (!description || description.trim().length === 0) {
+    throw new Error('Description is required for enum property');
+  }
+  if (!Array.isArray(enumValues) || enumValues.length === 0) {
+    throw new Error('enumValues must be a non-empty array');
+  }
+
+  const validExample = example !== undefined ? example : enumValues[0];
+  if (!enumValues.includes(validExample)) {
+    throw new Error('Example value must be one of the enum values');
+  }
+
   return {
-    description,
-    enum: enumValues,
-    example: example || enumValues[0],
+    description: description.trim(),
+    enum: [...enumValues],
+    example: validExample,
   };
 };
 
@@ -242,20 +273,40 @@ export const createEnumProperty = (
  */
 export const createArrayProperty = (
   description: string,
-  itemType: any,
-  example?: any[],
+  itemType: Function,
+  example?: unknown[],
   minItems?: number,
   maxItems?: number,
 ): ApiPropertyOptions => {
+  if (!description || description.trim().length === 0) {
+    throw new Error('Description is required for array property');
+  }
+  if (typeof itemType !== 'function') {
+    throw new Error('itemType must be a valid type constructor');
+  }
+
   const options: ApiPropertyOptions = {
-    description,
+    description: description.trim(),
     type: [itemType],
     isArray: true,
-    example: example || [],
+    example: Array.isArray(example) ? [...example] : [],
   };
 
-  if (minItems !== undefined) options.minimum = minItems;
-  if (maxItems !== undefined) options.maximum = maxItems;
+  if (minItems !== undefined) {
+    if (minItems < 0) {
+      throw new Error('minItems must be non-negative');
+    }
+    options.minimum = minItems;
+  }
+  if (maxItems !== undefined) {
+    if (maxItems < 0) {
+      throw new Error('maxItems must be non-negative');
+    }
+    if (minItems !== undefined && maxItems < minItems) {
+      throw new Error('maxItems must be greater than or equal to minItems');
+    }
+    options.maximum = maxItems;
+  }
 
   return options;
 };
@@ -387,8 +438,12 @@ export const createUrlProperty = (
  */
 export const createOptionalProperty = (
   baseOptions: ApiPropertyOptions,
-  defaultValue?: any,
+  defaultValue?: unknown,
 ): ApiPropertyOptions => {
+  if (!baseOptions || typeof baseOptions !== 'object') {
+    throw new Error('baseOptions must be a valid ApiPropertyOptions object');
+  }
+
   return {
     ...baseOptions,
     required: false,
@@ -420,14 +475,21 @@ export const createOptionalProperty = (
 export const createSuccessResponse = (
   status: number,
   description: string,
-  type?: any,
+  type?: Function,
   isArray?: boolean,
 ): ApiResponseOptions => {
+  if (status < 200 || status >= 300) {
+    throw new Error('Success response status must be in the 2xx range');
+  }
+  if (!description || description.trim().length === 0) {
+    throw new Error('Description is required for success response');
+  }
+
   return {
     status,
-    description,
+    description: description.trim(),
     type,
-    isArray: isArray || false,
+    isArray: isArray ?? false,
   };
 };
 
@@ -450,11 +512,18 @@ export const createSuccessResponse = (
 export const createErrorResponse = (
   status: number,
   description: string,
-  errorSchema?: any,
+  errorSchema?: Record<string, unknown>,
 ): ApiResponseOptions => {
+  if (status < 400 || status >= 600) {
+    throw new Error('Error response status must be in the 4xx or 5xx range');
+  }
+  if (!description || description.trim().length === 0) {
+    throw new Error('Description is required for error response');
+  }
+
   return {
     status,
-    description,
+    description: description.trim(),
     schema: errorSchema || {
       type: 'object',
       properties: {
@@ -483,11 +552,18 @@ export const createErrorResponse = (
  */
 export const createPaginatedResponse = (
   description: string,
-  itemType: any,
+  itemType: Function & { name: string },
 ): ApiResponseOptions => {
+  if (!description || description.trim().length === 0) {
+    throw new Error('Description is required for paginated response');
+  }
+  if (typeof itemType !== 'function' || !itemType.name) {
+    throw new Error('itemType must be a valid type constructor with a name property');
+  }
+
   return {
     status: 200,
-    description,
+    description: description.trim(),
     schema: {
       type: 'object',
       properties: {
@@ -525,15 +601,23 @@ export const createPaginatedResponse = (
  * ```
  */
 export const createCrudResponses = (
-  dtoType: any,
+  dtoType: Function,
   resourceName: string,
 ): ApiResponseOptions[] => {
+  if (typeof dtoType !== 'function') {
+    throw new Error('dtoType must be a valid type constructor');
+  }
+  if (!resourceName || resourceName.trim().length === 0) {
+    throw new Error('resourceName is required');
+  }
+
+  const sanitizedResourceName = resourceName.trim();
   return [
-    createSuccessResponse(200, `${resourceName} retrieved successfully`, dtoType),
-    createSuccessResponse(201, `${resourceName} created successfully`, dtoType),
+    createSuccessResponse(200, `${sanitizedResourceName} retrieved successfully`, dtoType),
+    createSuccessResponse(201, `${sanitizedResourceName} created successfully`, dtoType),
     createErrorResponse(400, 'Invalid input data'),
-    createErrorResponse(404, `${resourceName} not found`),
-    createErrorResponse(409, `${resourceName} already exists`),
+    createErrorResponse(404, `${sanitizedResourceName} not found`),
+    createErrorResponse(409, `${sanitizedResourceName} already exists`),
     createErrorResponse(500, 'Internal server error'),
   ];
 };
@@ -1027,16 +1111,25 @@ export const createRequestExample = (exampleData: object, description?: string) 
  * });
  * ```
  */
-export const createMultipleExamples = (examples: Record<string, any>) => {
+export const createMultipleExamples = (examples: Record<string, unknown>): Record<string, { summary: string; value: unknown }> => {
+  if (!examples || typeof examples !== 'object' || Object.keys(examples).length === 0) {
+    throw new Error('examples must be a non-empty object');
+  }
+
   return Object.entries(examples).reduce(
-    (acc, [key, value]) => ({
-      ...acc,
-      [key]: {
-        summary: key,
-        value,
-      },
-    }),
-    {},
+    (acc, [key, value]) => {
+      if (!key || key.trim().length === 0) {
+        throw new Error('Example key must be a non-empty string');
+      }
+      return {
+        ...acc,
+        [key]: {
+          summary: key,
+          value,
+        },
+      };
+    },
+    {} as Record<string, { summary: string; value: unknown }>,
   );
 };
 
@@ -1054,8 +1147,14 @@ export const createMultipleExamples = (examples: Record<string, any>) => {
  * generateExampleByType('boolean'); // true
  * ```
  */
-export const generateExampleByType = (type: string, format?: string): any => {
-  switch (type) {
+export const generateExampleByType = (type: string, format?: string): string | number | boolean | unknown[] | Record<string, unknown> | null => {
+  if (!type || typeof type !== 'string') {
+    throw new Error('Type must be a non-empty string');
+  }
+
+  const normalizedType = type.toLowerCase().trim();
+
+  switch (normalizedType) {
     case 'string':
       if (format === 'email') return 'user@example.com';
       if (format === 'uuid') return '123e4567-e89b-12d3-a456-426614174000';
@@ -1224,14 +1323,24 @@ export const createModuleTags = (moduleNames: string[]): ApiTagOptions[] => {
  */
 export const createNestedSchema = (
   description: string,
-  properties: Record<string, any>,
+  properties: Record<string, unknown>,
   required?: string[],
-) => {
+): Record<string, unknown> => {
+  if (!description || description.trim().length === 0) {
+    throw new Error('Description is required for nested schema');
+  }
+  if (!properties || typeof properties !== 'object' || Object.keys(properties).length === 0) {
+    throw new Error('properties must be a non-empty object');
+  }
+  if (required && !Array.isArray(required)) {
+    throw new Error('required must be an array');
+  }
+
   return {
     type: 'object',
-    description,
-    properties,
-    required: required || [],
+    description: description.trim(),
+    properties: { ...properties },
+    required: required ? [...required] : [],
   };
 };
 
@@ -1301,14 +1410,23 @@ export const createOneOfSchema = (schemaNames: string[], discriminator?: string)
  */
 export const createAllOfSchema = (
   schemaNames: string[],
-  additionalProperties?: Record<string, any>,
-) => {
-  const schemas = schemaNames.map((name) => createSchemaRef(name));
+  additionalProperties?: Record<string, unknown>,
+): { allOf: Array<Record<string, unknown>> } => {
+  if (!Array.isArray(schemaNames) || schemaNames.length === 0) {
+    throw new Error('schemaNames must be a non-empty array');
+  }
 
-  if (additionalProperties) {
+  const schemas = schemaNames.map((name) => {
+    if (!name || typeof name !== 'string' || name.trim().length === 0) {
+      throw new Error('Each schema name must be a non-empty string');
+    }
+    return createSchemaRef(name);
+  });
+
+  if (additionalProperties && typeof additionalProperties === 'object') {
     schemas.push({
       type: 'object',
-      properties: additionalProperties,
+      properties: { ...additionalProperties },
     });
   }
 

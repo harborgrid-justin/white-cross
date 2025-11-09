@@ -51,7 +51,7 @@ interface PaginationMetadata {
 interface FilterOptions {
   field: string;
   operator: 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte' | 'in' | 'nin' | 'like' | 'between';
-  value: any;
+  value: unknown;
 }
 
 interface SortOptions {
@@ -69,7 +69,7 @@ interface SearchOptions {
 interface ApiResponse<T> {
   success: boolean;
   data: T;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   errors?: ApiError[];
   links?: HateoasLinks;
 }
@@ -78,7 +78,7 @@ interface ApiError {
   code: string;
   message: string;
   field?: string;
-  details?: any;
+  details?: unknown;
 }
 
 interface HateoasLinks {
@@ -192,8 +192,9 @@ export const createCursorPagination = (
 /**
  * Encodes pagination cursor from object (base64 encoding).
  *
- * @param {Record<string, any>} cursorData - Cursor data object
+ * @param {Record<string, unknown>} cursorData - Cursor data object
  * @returns {string} Encoded cursor string
+ * @throws {Error} If cursorData cannot be serialized
  *
  * @example
  * ```typescript
@@ -201,16 +202,21 @@ export const createCursorPagination = (
  * // Result: 'eyJpZCI6MTAwLCJ0aW1lc3RhbXAiOjEyMzQ1Njc4OTB9'
  * ```
  */
-export const encodePaginationCursor = (cursorData: Record<string, any>): string => {
-  const jsonStr = JSON.stringify(cursorData);
-  return Buffer.from(jsonStr).toString('base64');
+export const encodePaginationCursor = (cursorData: Record<string, unknown>): string => {
+  try {
+    const jsonStr = JSON.stringify(cursorData);
+    return Buffer.from(jsonStr).toString('base64');
+  } catch (error) {
+    throw new Error(`Failed to encode pagination cursor: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 };
 
 /**
  * Decodes pagination cursor to object.
  *
  * @param {string} cursor - Encoded cursor string
- * @returns {Record<string, any>} Decoded cursor data
+ * @returns {Record<string, unknown>} Decoded cursor data
+ * @throws {Error} If cursor is invalid or cannot be decoded
  *
  * @example
  * ```typescript
@@ -218,12 +224,25 @@ export const encodePaginationCursor = (cursorData: Record<string, any>): string 
  * // Result: { id: 100, timestamp: 1234567890 }
  * ```
  */
-export const decodePaginationCursor = (cursor: string): Record<string, any> => {
+export const decodePaginationCursor = (cursor: string): Record<string, unknown> => {
+  if (!cursor || typeof cursor !== 'string') {
+    throw new Error('Invalid pagination cursor: cursor must be a non-empty string');
+  }
+
   try {
     const jsonStr = Buffer.from(cursor, 'base64').toString('utf-8');
-    return JSON.parse(jsonStr);
+    const parsed = JSON.parse(jsonStr) as unknown;
+
+    if (typeof parsed !== 'object' || parsed === null) {
+      throw new Error('Invalid pagination cursor: decoded value is not an object');
+    }
+
+    return parsed as Record<string, unknown>;
   } catch (error) {
-    throw new Error('Invalid pagination cursor');
+    if (error instanceof Error && error.message.startsWith('Invalid pagination cursor:')) {
+      throw error;
+    }
+    throw new Error(`Invalid pagination cursor: ${error instanceof Error ? error.message : 'decode failed'}`);
   }
 };
 
@@ -351,14 +370,36 @@ export const buildFilterQuery = (filters: FilterOptions[]): Record<string, any> 
  * ```
  */
 export const parseFilterString = (filterString: string): FilterOptions => {
-  const [field, operator, ...valueParts] = filterString.split(':');
+  if (!filterString || typeof filterString !== 'string') {
+    throw new Error('Invalid filter string: must be a non-empty string');
+  }
+
+  const parts = filterString.split(':');
+  if (parts.length < 3) {
+    throw new Error('Invalid filter string format: expected "field:operator:value"');
+  }
+
+  const [field, operator, ...valueParts] = parts;
   const valueStr = valueParts.join(':');
 
-  let value: any = valueStr;
+  if (!field || !operator || !valueStr) {
+    throw new Error('Invalid filter string: field, operator, and value are required');
+  }
+
+  const validOperators = ['eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'in', 'nin', 'like', 'between'];
+  if (!validOperators.includes(operator)) {
+    throw new Error(`Invalid filter operator: ${operator}. Must be one of: ${validOperators.join(', ')}`);
+  }
+
+  let value: unknown = valueStr;
   if (operator === 'in' || operator === 'nin') {
-    value = valueStr.split(',').map(v => v.trim());
+    value = valueStr.split(',').map(v => v.trim()).filter(v => v.length > 0);
   } else if (operator === 'between') {
-    value = valueStr.split(',').map(v => parseFloat(v.trim()));
+    const numValues = valueStr.split(',').map(v => parseFloat(v.trim()));
+    if (numValues.length !== 2 || numValues.some(isNaN)) {
+      throw new Error('Invalid "between" filter: requires exactly two numeric values');
+    }
+    value = numValues;
   } else if (!isNaN(Number(valueStr))) {
     value = Number(valueStr);
   } else if (valueStr === 'true' || valueStr === 'false') {
@@ -409,8 +450,8 @@ export const validateFilter = (
 /**
  * Combines multiple filter queries with AND logic.
  *
- * @param {Record<string, any>[]} queries - Array of filter queries
- * @returns {Record<string, any>} Combined filter query
+ * @param {Record<string, unknown>[]} queries - Array of filter queries
+ * @returns {Record<string, unknown>} Combined filter query
  *
  * @example
  * ```typescript
@@ -422,7 +463,7 @@ export const validateFilter = (
  * // Result: { $and: [{ status: 'active' }, { age: { $gte: 18 } }, { role: { $in: [...] } }] }
  * ```
  */
-export const combineFilters = (queries: Record<string, any>[]): Record<string, any> => {
+export const combineFilters = (queries: ReadonlyArray<Record<string, unknown>>): Record<string, unknown> => {
   if (queries.length === 0) return {};
   if (queries.length === 1) return queries[0];
   return { $and: queries };
@@ -514,7 +555,8 @@ export const validateSort = (
  * Builds search query for multiple fields.
  *
  * @param {SearchOptions} options - Search options
- * @returns {Record<string, any>} Search query object
+ * @returns {Record<string, unknown>} Search query object
+ * @throws {Error} If query or fields are invalid
  *
  * @example
  * ```typescript
@@ -531,10 +573,20 @@ export const validateSort = (
  * // ]}
  * ```
  */
-export const buildSearchQuery = (options: SearchOptions): Record<string, any> => {
+export const buildSearchQuery = (options: SearchOptions): Record<string, unknown> => {
   const { query, fields, fuzzy = false, caseSensitive = false } = options;
 
-  const searchPattern = fuzzy ? `.*${query}.*` : query;
+  if (!query || typeof query !== 'string') {
+    throw new Error('Invalid search query: must be a non-empty string');
+  }
+
+  if (!Array.isArray(fields) || fields.length === 0) {
+    throw new Error('Invalid search fields: must be a non-empty array');
+  }
+
+  // Escape special regex characters to prevent regex injection
+  const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const searchPattern = fuzzy ? `.*${escapedQuery}.*` : escapedQuery;
   const regexOptions = caseSensitive ? '' : 'i';
 
   const conditions = fields.map((field) => ({
@@ -548,8 +600,9 @@ export const buildSearchQuery = (options: SearchOptions): Record<string, any> =>
  * Creates full-text search query with ranking.
  *
  * @param {string} searchText - Search text
- * @param {string[]} [weightedFields] - Fields with search weights
- * @returns {Record<string, any>} Full-text search query
+ * @param {string[]} [weightedFields] - Fields with search weights (currently unused, reserved for future enhancement)
+ * @returns {Record<string, unknown>} Full-text search query
+ * @throws {Error} If searchText is invalid
  *
  * @example
  * ```typescript
@@ -560,7 +613,11 @@ export const buildSearchQuery = (options: SearchOptions): Record<string, any> =>
 export const createFullTextSearch = (
   searchText: string,
   weightedFields?: string[],
-): Record<string, any> => {
+): Record<string, unknown> => {
+  if (!searchText || typeof searchText !== 'string') {
+    throw new Error('Invalid search text: must be a non-empty string');
+  }
+
   return {
     $text: { $search: searchText },
     score: { $meta: 'textScore' },
@@ -592,7 +649,7 @@ export const sanitizeSearchQuery = (query: string): string => {
  *
  * @template T
  * @param {T} data - Response data
- * @param {Record<string, any>} [metadata] - Additional metadata
+ * @param {Record<string, unknown>} [metadata] - Additional metadata
  * @param {HateoasLinks} [links] - HATEOAS links
  * @returns {ApiResponse<T>} Standardized API response
  *
@@ -608,7 +665,7 @@ export const sanitizeSearchQuery = (query: string): string => {
  */
 export const createSuccessResponse = <T>(
   data: T,
-  metadata?: Record<string, any>,
+  metadata?: Record<string, unknown>,
   links?: HateoasLinks,
 ): ApiResponse<T> => {
   return {
@@ -623,7 +680,7 @@ export const createSuccessResponse = <T>(
  * Creates a standardized error response envelope.
  *
  * @param {ApiError | ApiError[]} errors - Error or array of errors
- * @param {Record<string, any>} [metadata] - Additional metadata
+ * @param {Record<string, unknown>} [metadata] - Additional metadata
  * @returns {ApiResponse<null>} Standardized error response
  *
  * @example
@@ -638,7 +695,7 @@ export const createSuccessResponse = <T>(
  */
 export const createErrorResponse = (
   errors: ApiError | ApiError[],
-  metadata?: Record<string, any>,
+  metadata?: Record<string, unknown>,
 ): ApiResponse<null> => {
   return {
     success: false,
@@ -724,7 +781,7 @@ export const generateResourceLinks = (
  *
  * @param {string} baseUrl - Base URL for the endpoint
  * @param {PaginationMetadata} pagination - Pagination metadata
- * @param {Record<string, any>} [queryParams] - Additional query parameters
+ * @param {Record<string, string>} [queryParams] - Additional query parameters
  * @returns {HateoasLinks} Pagination links
  *
  * @example
@@ -746,7 +803,7 @@ export const generateResourceLinks = (
 export const generatePaginationLinks = (
   baseUrl: string,
   pagination: PaginationMetadata,
-  queryParams?: Record<string, any>,
+  queryParams?: Record<string, string>,
 ): HateoasLinks => {
   const buildUrl = (page: number): string => {
     const params = new URLSearchParams({ ...queryParams, page: String(page) });
@@ -986,6 +1043,7 @@ export const shouldAllowRequest = (state: CircuitBreakerState): boolean => {
  * @param {() => Promise<T>} fn - Function to execute
  * @param {RetryPolicy} policy - Retry policy configuration
  * @returns {Promise<T>} Result of successful execution
+ * @throws {Error} Last error encountered after all retry attempts exhausted
  *
  * @example
  * ```typescript
@@ -1004,20 +1062,21 @@ export const executeWithRetry = async <T>(
   fn: () => Promise<T>,
   policy: RetryPolicy,
 ): Promise<T> => {
-  let lastError: any;
+  let lastError: Error | undefined;
 
   for (let attempt = 1; attempt <= policy.maxAttempts; attempt++) {
     try {
       return await fn();
-    } catch (error: any) {
-      lastError = error;
+    } catch (error: unknown) {
+      lastError = error instanceof Error ? error : new Error(String(error));
 
       if (attempt === policy.maxAttempts) {
-        throw error;
+        throw lastError;
       }
 
-      if (policy.retryableErrors && !policy.retryableErrors.includes(error.code)) {
-        throw error;
+      const errorCode = (error as { code?: string }).code;
+      if (policy.retryableErrors && errorCode && !policy.retryableErrors.includes(errorCode)) {
+        throw lastError;
       }
 
       const delay = Math.min(
@@ -1029,7 +1088,8 @@ export const executeWithRetry = async <T>(
     }
   }
 
-  throw lastError;
+  // This should never be reached due to the throw in the catch block, but TypeScript requires it
+  throw lastError || new Error('Retry failed with unknown error');
 };
 
 /**
@@ -1092,6 +1152,7 @@ export const calculateBackoffDelay = (
  * @param {() => Promise<T>} primaryFn - Primary function to execute
  * @param {FallbackStrategy<T>} fallback - Fallback strategy
  * @returns {Promise<T>} Result from primary or fallback
+ * @throws {Error} If both primary and fallback fail
  *
  * @example
  * ```typescript
@@ -1110,9 +1171,16 @@ export const executeWithFallback = async <T>(
 ): Promise<T> => {
   try {
     return await primaryFn();
-  } catch (error) {
-    console.warn(`Primary execution failed, using ${fallback.type} fallback`, error);
-    return await Promise.resolve(fallback.handler());
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.warn(`Primary execution failed, using ${fallback.type} fallback:`, errorMessage);
+
+    try {
+      return await Promise.resolve(fallback.handler());
+    } catch (fallbackError: unknown) {
+      const fallbackErrorMessage = fallbackError instanceof Error ? fallbackError.message : 'Unknown error';
+      throw new Error(`Both primary and fallback execution failed. Primary: ${errorMessage}, Fallback: ${fallbackErrorMessage}`);
+    }
   }
 };
 

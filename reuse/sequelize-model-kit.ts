@@ -105,8 +105,8 @@ export interface ScopeBuilderConfig {
 /**
  * Virtual field configuration
  */
-export interface VirtualFieldConfig<T = any> {
-  type: any;
+export interface VirtualFieldConfig<T = unknown> {
+  type: unknown;
   get?: (this: Model) => T;
   set?: (this: Model, value: T) => void;
   dependencies?: string[];
@@ -143,11 +143,11 @@ export interface ConstraintConfig {
 /**
  * Getter/Setter configuration
  */
-export interface GetterSetterConfig<T = any> {
+export interface GetterSetterConfig<T = unknown> {
   get?: (this: Model) => T;
   set?: (this: Model, value: T) => void;
-  transform?: (value: any) => any;
-  validate?: (value: any) => boolean;
+  transform?: (value: unknown) => unknown;
+  validate?: (value: unknown) => boolean;
 }
 
 /**
@@ -156,7 +156,7 @@ export interface GetterSetterConfig<T = any> {
 export interface ModelMethodConfig<T extends Model = Model> {
   name: string;
   type: 'instance' | 'static';
-  fn: (this: T | ModelStatic<T>, ...args: any[]) => any;
+  fn: (this: T | ModelStatic<T>, ...args: unknown[]) => unknown;
 }
 
 /**
@@ -169,7 +169,7 @@ export interface AttributeValidationRules {
   min?: number;
   max?: number;
   pattern?: RegExp;
-  custom?: (value: any) => boolean | Promise<boolean>;
+  custom?: (value: unknown) => boolean | Promise<boolean>;
   message?: string;
 }
 
@@ -460,7 +460,7 @@ export function createAttributeValidator(rules: AttributeValidationRules): Valid
   }
 
   if (rules.custom) {
-    validation.customValidator = async function (value: any) {
+    validation.customValidator = async function (value: unknown) {
       const isValid = await rules.custom!(value);
       if (!isValid) {
         throw new Error(rules.message || 'Validation failed');
@@ -638,12 +638,13 @@ export function validateDateRange(startField: string, endField: string) {
  * ```
  */
 export function validateUniqueness(field: string, conditions: WhereOptions = {}) {
-  return async function (this: Model, value: any) {
+  return async function (this: Model, value: unknown) {
     const Model = this.constructor as ModelStatic<Model>;
     const where: WhereOptions = { [field]: value, ...conditions };
 
-    if (this.getDataValue('id')) {
-      where.id = { [Op.ne]: this.getDataValue('id') };
+    const id = this.getDataValue('id');
+    if (id !== null && id !== undefined) {
+      where.id = { [Op.ne]: id };
     }
 
     const existing = await Model.findOne({ where });
@@ -697,21 +698,21 @@ export function createEnumType(values: string[], errorMessage?: string) {
  * });
  * ```
  */
-export function createJsonType(schema?: any) {
+export function createJsonType(schema?: Record<string, unknown>) {
   return {
     type: DataTypes.JSONB,
     validate: {
-      isValidJson: function (value: any) {
+      isValidJson: function (value: unknown) {
         if (!value) return;
 
-        if (typeof value !== 'object') {
+        if (typeof value !== 'object' || value === null) {
           throw new Error('Value must be a valid JSON object');
         }
 
         if (schema) {
           // Basic schema validation (in production, use ajv or similar)
-          const validateSchema = (data: any, schemaObj: any): boolean => {
-            if (schemaObj.type === 'object' && typeof data !== 'object') return false;
+          const validateSchema = (data: unknown, schemaObj: Record<string, unknown>): boolean => {
+            if (schemaObj.type === 'object' && (typeof data !== 'object' || data === null)) return false;
             if (schemaObj.type === 'array' && !Array.isArray(data)) return false;
             if (schemaObj.type === 'string' && typeof data !== 'string') return false;
             if (schemaObj.type === 'number' && typeof data !== 'number') return false;
@@ -741,11 +742,11 @@ export function createJsonType(schema?: any) {
  * const tags = createArrayType(DataTypes.STRING, 1, 10);
  * ```
  */
-export function createArrayType(elementType: any, minLength?: number, maxLength?: number) {
+export function createArrayType(elementType: unknown, minLength?: number, maxLength?: number) {
   return {
-    type: DataTypes.ARRAY(elementType),
+    type: DataTypes.ARRAY(elementType as any),
     validate: {
-      isValidArray: function (value: any[]) {
+      isValidArray: function (value: unknown) {
         if (!value) return;
 
         if (!Array.isArray(value)) {
@@ -1350,10 +1351,10 @@ export function addVirtualField<T extends Model>(
  * );
  * ```
  */
-export function createComputedField(
+export function createComputedField<T = unknown>(
   dependencies: string[],
-  computeFn: (...values: any[]) => any,
-): VirtualFieldConfig {
+  computeFn: (...values: unknown[]) => T,
+): VirtualFieldConfig<T> {
   return {
     type: DataTypes.VIRTUAL,
     get() {
@@ -1429,10 +1430,10 @@ export function createAggregateField(
  * };
  * ```
  */
-export function createGetter<T = any>(transformFn: (value: any) => T): () => T {
+export function createGetter<T = unknown>(transformFn: (value: unknown) => T): () => T | null {
   return function (this: Model) {
     const value = this.getDataValue(arguments[0]);
-    return value ? transformFn(value) : null;
+    return value !== null && value !== undefined ? transformFn(value) : null;
   };
 }
 
@@ -1451,9 +1452,9 @@ export function createGetter<T = any>(transformFn: (value: any) => T): () => T {
  * };
  * ```
  */
-export function createSetter(transformFn: (value: any) => any): (value: any) => void {
-  return function (this: Model, value: any) {
-    const transformed = value ? transformFn(value) : null;
+export function createSetter(transformFn: (value: unknown) => unknown): (value: unknown) => void {
+  return function (this: Model, value: unknown) {
+    const transformed = value !== null && value !== undefined ? transformFn(value) : null;
     this.setDataValue(arguments[0], transformed);
   };
 }
@@ -1473,7 +1474,7 @@ export function createSetter(transformFn: (value: any) => any): (value: any) => 
  * };
  * ```
  */
-export function createNormalizer(normalizeFn: (value: any) => any): GetterSetterConfig {
+export function createNormalizer(normalizeFn: (value: unknown) => unknown): GetterSetterConfig {
   return {
     get: createGetter(normalizeFn),
     set: createSetter(normalizeFn),
@@ -1495,16 +1496,16 @@ export function createNormalizer(normalizeFn: (value: any) => any): GetterSetter
  * };
  * ```
  */
-export function createJsonSerializer(defaultValue: any = null): GetterSetterConfig {
+export function createJsonSerializer<T = unknown>(defaultValue: T | null = null): GetterSetterConfig<T> {
   return {
-    get: createGetter((value: string) => {
+    get: createGetter((value: unknown) => {
       try {
-        return value ? JSON.parse(value) : defaultValue;
+        return typeof value === 'string' && value ? JSON.parse(value) : defaultValue;
       } catch {
         return defaultValue;
       }
-    }),
-    set: createSetter((value: any) => {
+    }) as () => T | null,
+    set: createSetter((value: unknown) => {
       try {
         return typeof value === 'string' ? value : JSON.stringify(value);
       } catch {

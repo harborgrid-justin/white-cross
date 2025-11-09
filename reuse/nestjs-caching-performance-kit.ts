@@ -120,6 +120,7 @@ interface ETagOptions {
  * @param {number} [ttl=300] - Cache TTL in seconds
  * @param {Function} [keyGenerator] - Custom cache key generator
  * @returns {MethodDecorator} Cache decorator
+ * @throws {Error} If cacheManager is null or undefined
  *
  * @example
  * ```typescript
@@ -136,6 +137,14 @@ export const createCacheDecorator = (
   ttl: number = 300,
   keyGenerator?: (...args: any[]) => string,
 ) => {
+  if (!cacheManager) {
+    throw new Error('Cache manager is required for createCacheDecorator');
+  }
+
+  if (ttl <= 0) {
+    throw new Error('TTL must be a positive number');
+  }
+
   return function (
     target: any,
     propertyKey: string,
@@ -144,19 +153,25 @@ export const createCacheDecorator = (
     const originalMethod = descriptor.value;
 
     descriptor.value = async function (...args: any[]) {
-      const cacheKey = keyGenerator
-        ? keyGenerator(...args)
-        : `${target.constructor.name}.${propertyKey}:${JSON.stringify(args)}`;
+      try {
+        const cacheKey = keyGenerator
+          ? keyGenerator(...args)
+          : `${target.constructor.name}.${propertyKey}:${JSON.stringify(args)}`;
 
-      const cached = await cacheManager.get(cacheKey);
-      if (cached !== undefined && cached !== null) {
-        return cached;
+        const cached = await cacheManager.get(cacheKey);
+        if (cached !== undefined && cached !== null) {
+          return cached;
+        }
+
+        const result = await originalMethod.apply(this, args);
+        await cacheManager.set(cacheKey, result, ttl);
+
+        return result;
+      } catch (error) {
+        console.error(`Cache decorator error for ${propertyKey}:`, error);
+        // Fall back to executing the original method without caching on error
+        return await originalMethod.apply(this, args);
       }
-
-      const result = await originalMethod.apply(this, args);
-      await cacheManager.set(cacheKey, result, ttl);
-
-      return result;
     };
 
     return descriptor;
