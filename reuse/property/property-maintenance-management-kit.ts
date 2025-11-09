@@ -1289,11 +1289,21 @@ export const calculateVendorPerformance = (
     s => s.actualCost && s.actualCost <= s.costEstimate * 1.1,
   ).length;
 
+  // Calculate average rating from actual vendor ratings
+  // In production, this would aggregate ratings from a vendor rating table
+  // const ratings = await VendorRatingModel.findAll({
+  //   where: { vendorId },
+  //   attributes: [[sequelize.fn('AVG', sequelize.col('rating')), 'avgRating']]
+  // });
+  // const averageRating = ratings[0]?.avgRating || 0;
+
+  const averageRating = vendorServices.reduce((sum, s) => sum + (s.rating || 0), 0) / vendorServices.length || 0;
+
   return {
     totalServices: vendorServices.length,
     onTimeCompletion: Math.round((onTime / vendorServices.length) * 100),
     costAccuracy: Math.round((costAccurate / vendorServices.length) * 100),
-    averageRating: 3.5, // Placeholder for rating system
+    averageRating: Math.round(averageRating * 10) / 10, // Round to 1 decimal place
   };
 };
 
