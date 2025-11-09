@@ -51,6 +51,16 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ConstructionWarranty } from './models/construction-warranty.model';
+import { WarrantyClaim } from './models/warranty-claim.model';
+import { 
+    WarrantyType, 
+    WarrantyStatus, 
+    ClaimStatus, 
+    ClaimPriority, 
+    CallbackStatus, 
+    NotificationFrequency 
+} from './types/warranty.types';
 
 // ============================================================================
 // SECURITY DECORATORS & GUARDS

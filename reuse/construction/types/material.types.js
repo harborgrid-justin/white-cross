@@ -1,0 +1,80 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.InspectionStatus = exports.WasteReason = exports.RequisitionStatus = exports.MaterialStatus = exports.UnitOfMeasure = exports.MaterialCategory = void 0;
+var MaterialCategory;
+(function (MaterialCategory) {
+    MaterialCategory["CONCRETE"] = "concrete";
+    MaterialCategory["STEEL"] = "steel";
+    MaterialCategory["LUMBER"] = "lumber";
+    MaterialCategory["MASONRY"] = "masonry";
+    MaterialCategory["DRYWALL"] = "drywall";
+    MaterialCategory["INSULATION"] = "insulation";
+    MaterialCategory["ROOFING"] = "roofing";
+    MaterialCategory["ELECTRICAL"] = "electrical";
+    MaterialCategory["PLUMBING"] = "plumbing";
+    MaterialCategory["HVAC"] = "hvac";
+    MaterialCategory["PAINT"] = "paint";
+    MaterialCategory["FLOORING"] = "flooring";
+    MaterialCategory["HARDWARE"] = "hardware";
+    MaterialCategory["AGGREGATES"] = "aggregates";
+    MaterialCategory["ASPHALT"] = "asphalt";
+    MaterialCategory["GLASS"] = "glass";
+    MaterialCategory["SEALANTS"] = "sealants";
+    MaterialCategory["HAZARDOUS"] = "hazardous";
+})(MaterialCategory || (exports.MaterialCategory = MaterialCategory = {}));
+var UnitOfMeasure;
+(function (UnitOfMeasure) {
+    UnitOfMeasure["EACH"] = "each";
+    UnitOfMeasure["BOX"] = "box";
+    UnitOfMeasure["CASE"] = "case";
+    UnitOfMeasure["LINEAR_FOOT"] = "linear_foot";
+    UnitOfMeasure["SQUARE_FOOT"] = "square_foot";
+    UnitOfMeasure["CUBIC_YARD"] = "cubic_yard";
+    UnitOfMeasure["TON"] = "ton";
+    UnitOfMeasure["POUND"] = "pound";
+    UnitOfMeasure["GALLON"] = "gallon";
+    UnitOfMeasure["LITER"] = "liter";
+    UnitOfMeasure["PALLET"] = "pallet";
+    UnitOfMeasure["BUNDLE"] = "bundle";
+    UnitOfMeasure["ROLL"] = "roll";
+})(UnitOfMeasure || (exports.UnitOfMeasure = UnitOfMeasure = {}));
+var MaterialStatus;
+(function (MaterialStatus) {
+    MaterialStatus["AVAILABLE"] = "available";
+    MaterialStatus["LOW_STOCK"] = "low_stock";
+    MaterialStatus["OUT_OF_STOCK"] = "out_of_stock";
+    MaterialStatus["ON_ORDER"] = "on_order";
+    MaterialStatus["DISCONTINUED"] = "discontinued";
+    MaterialStatus["QUARANTINED"] = "quarantined";
+})(MaterialStatus || (exports.MaterialStatus = MaterialStatus = {}));
+var RequisitionStatus;
+(function (RequisitionStatus) {
+    RequisitionStatus["DRAFT"] = "draft";
+    RequisitionStatus["SUBMITTED"] = "submitted";
+    RequisitionStatus["APPROVED"] = "approved";
+    RequisitionStatus["REJECTED"] = "rejected";
+    RequisitionStatus["ORDERED"] = "ordered";
+    RequisitionStatus["PARTIALLY_RECEIVED"] = "partially_received";
+    RequisitionStatus["RECEIVED"] = "received";
+    RequisitionStatus["CANCELLED"] = "cancelled";
+})(RequisitionStatus || (exports.RequisitionStatus = RequisitionStatus = {}));
+var WasteReason;
+(function (WasteReason) {
+    WasteReason["SPILLAGE"] = "spillage";
+    WasteReason["DAMAGE"] = "damage";
+    WasteReason["DEFECTIVE"] = "defective";
+    WasteReason["OVERAGE"] = "overage";
+    WasteReason["EXPIRED"] = "expired";
+    WasteReason["CONTAMINATION"] = "contamination";
+    WasteReason["MISCALCULATION"] = "miscalculation";
+    WasteReason["REWORK"] = "rework";
+})(WasteReason || (exports.WasteReason = WasteReason = {}));
+var InspectionStatus;
+(function (InspectionStatus) {
+    InspectionStatus["PENDING"] = "pending";
+    InspectionStatus["PASSED"] = "passed";
+    InspectionStatus["FAILED"] = "failed";
+    InspectionStatus["CONDITIONAL"] = "conditional";
+    InspectionStatus["NOT_REQUIRED"] = "not_required";
+})(InspectionStatus || (exports.InspectionStatus = InspectionStatus = {}));
+//# sourceMappingURL=material.types.js.map
