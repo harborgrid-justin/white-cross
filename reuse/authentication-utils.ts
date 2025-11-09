@@ -1155,14 +1155,16 @@ export const verifyBiometric = (template: string, storedHash: string): boolean =
 };
 
 // ============================================================================
-// SAML INTEGRATION HELPERS (PLACEHOLDER)
+// SAML INTEGRATION HELPERS
 // ============================================================================
 
 /**
- * Generates SAML authentication request (placeholder).
+ * Generates SAML authentication request XML.
+ * For production use, consider passport-saml or saml2-js libraries for complete SAML support.
  *
  * @param {string} entityId - Service provider entity ID
  * @param {string} acsUrl - Assertion consumer service URL
+ * @param {object} [options] - Additional SAML options
  * @returns {string} SAML AuthnRequest XML
  *
  * @example
@@ -1173,42 +1175,103 @@ export const verifyBiometric = (template: string, storedHash: string): boolean =
  * );
  * ```
  */
-export const generateSAMLRequest = (entityId: string, acsUrl: string): string => {
-  const requestId = crypto.randomUUID();
+export const generateSAMLRequest = (
+  entityId: string,
+  acsUrl: string,
+  options?: {
+    destination?: string;
+    forceAuthn?: boolean;
+    nameIDFormat?: string;
+  },
+): string => {
+  const requestId = `_${crypto.randomUUID()}`;
   const timestamp = new Date().toISOString();
+  const destination = options?.destination || '';
+  const forceAuthn = options?.forceAuthn ? 'true' : 'false';
+  const nameIDFormat =
+    options?.nameIDFormat || 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress';
 
-  return `<?xml version="1.0"?>
+  return `<?xml version="1.0" encoding="UTF-8"?>
 <samlp:AuthnRequest xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
+  xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
   ID="${requestId}"
   Version="2.0"
   IssueInstant="${timestamp}"
-  AssertionConsumerServiceURL="${acsUrl}">
-  <saml:Issuer xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion">${entityId}</saml:Issuer>
+  ${destination ? `Destination="${destination}"` : ''}
+  AssertionConsumerServiceURL="${acsUrl}"
+  ProtocolBinding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+  ForceAuthn="${forceAuthn}">
+  <saml:Issuer>${entityId}</saml:Issuer>
+  <samlp:NameIDPolicy Format="${nameIDFormat}" AllowCreate="true"/>
 </samlp:AuthnRequest>`;
 };
 
 /**
- * Parses SAML response (placeholder).
+ * Parses SAML response and extracts user data.
+ * For production use with signature verification, use passport-saml or saml2-js.
  *
  * @param {string} samlResponse - Base64 encoded SAML response
- * @returns {object} Parsed SAML data
+ * @returns {object} Parsed SAML data with user information
  *
  * @example
  * ```typescript
  * const userData = parseSAMLResponse(base64Response);
- * // Result: { userId: '...', attributes: {...} }
+ * console.log(userData.userId, userData.attributes);
  * ```
  */
 export const parseSAMLResponse = (samlResponse: string): any => {
-  // This is a placeholder - actual implementation requires xml2js or similar
-  const decoded = Buffer.from(samlResponse, 'base64').toString('utf8');
-  return {
-    userId: 'user123',
-    attributes: {
-      email: 'user@example.com',
-      name: 'John Doe',
-    },
-  };
+  try {
+    // Decode the base64 SAML response
+    const decoded = Buffer.from(samlResponse, 'base64').toString('utf8');
+
+    // Basic XML parsing without external dependencies
+    // For production, use xml2js or fast-xml-parser for robust parsing
+    const extractValue = (xml: string, tag: string): string | null => {
+      const match = xml.match(new RegExp(`<${tag}[^>]*>([^<]+)</${tag}>`, 'i'));
+      return match ? match[1] : null;
+    };
+
+    const extractAttribute = (xml: string, attributeName: string): string | null => {
+      const pattern = new RegExp(
+        `<saml:Attribute[^>]*Name="${attributeName}"[^>]*>\\s*<saml:AttributeValue[^>]*>([^<]+)</saml:AttributeValue>`,
+        'i',
+      );
+      const match = xml.match(pattern);
+      return match ? match[1] : null;
+    };
+
+    // Extract NameID (user identifier)
+    const userId = extractValue(decoded, 'saml:NameID') || extractValue(decoded, 'NameID');
+
+    // Extract common attributes
+    const email =
+      extractAttribute(decoded, 'email') ||
+      extractAttribute(decoded, 'mail') ||
+      extractAttribute(decoded, 'emailAddress');
+
+    const name =
+      extractAttribute(decoded, 'displayName') ||
+      extractAttribute(decoded, 'name') ||
+      extractAttribute(decoded, 'cn');
+
+    const firstName = extractAttribute(decoded, 'givenName') || extractAttribute(decoded, 'firstName');
+
+    const lastName = extractAttribute(decoded, 'surname') || extractAttribute(decoded, 'lastName');
+
+    return {
+      userId: userId || email || 'unknown',
+      attributes: {
+        email: email || undefined,
+        name: name || `${firstName || ''} ${lastName || ''}`.trim() || undefined,
+        firstName: firstName || undefined,
+        lastName: lastName || undefined,
+      },
+      rawResponse: decoded, // Include raw response for debugging
+    };
+  } catch (error) {
+    console.error('Failed to parse SAML response:', error);
+    throw new Error(`SAML parsing error: ${error.message}`);
+  }
 };
 
 // ============================================================================

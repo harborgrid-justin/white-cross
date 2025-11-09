@@ -897,33 +897,362 @@ export const aggregateThreatFeeds = async (
  * ```
  */
 export const fetchFeedData = async (feed: ThreatFeedConfig): Promise<IOC[]> => {
-  // In production, implement actual HTTP request with authentication
-  // This is a placeholder returning sample data
+  if (!feed.enabled) {
+    throw new Error(`Feed ${feed.name} is disabled`);
+  }
+
+  try {
+    // Build request headers
+    const headers: Record<string, string> = {
+      'User-Agent': 'WhiteCross-ThreatIntel/1.0',
+      'Accept': getAcceptHeader(feed.format),
+    };
+
+    // Add authentication headers
+    if (feed.authentication) {
+      switch (feed.authentication.type) {
+        case 'api_key':
+          headers['X-API-Key'] = feed.authentication.credentials.apiKey;
+          break;
+        case 'basic':
+          const basicAuth = Buffer.from(
+            `${feed.authentication.credentials.username}:${feed.authentication.credentials.password}`
+          ).toString('base64');
+          headers['Authorization'] = `Basic ${basicAuth}`;
+          break;
+        case 'oauth2':
+          headers['Authorization'] = `Bearer ${feed.authentication.credentials.token}`;
+          break;
+      }
+    }
+
+    // Fetch data from feed URL
+    const response = await fetch(feed.feedUrl, {
+      method: 'GET',
+      headers,
+      signal: AbortSignal.timeout(30000), // 30 second timeout
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch feed ${feed.name}: HTTP ${response.status} ${response.statusText}`
+      );
+    }
+
+    const responseText = await response.text();
+
+    // Parse response based on format
+    let parsedData: any;
+    switch (feed.format) {
+      case 'json':
+        parsedData = JSON.parse(responseText);
+        break;
+      case 'csv':
+        parsedData = parseCSVFeed(responseText);
+        break;
+      case 'stix':
+        parsedData = parseSTIXFeed(responseText);
+        break;
+      case 'xml':
+        throw new Error('XML format parsing not yet implemented');
+      default:
+        parsedData = JSON.parse(responseText);
+    }
+
+    // Convert parsed data to IOCs
+    const iocs = convertFeedDataToIOCs(parsedData, feed);
+
+    // Apply filters if configured
+    if (feed.filters && feed.filters.length > 0) {
+      return applyFeedFilters(iocs, feed.filters);
+    }
+
+    return iocs;
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    throw new Error(`Failed to fetch feed ${feed.name}: ${errorMessage}`);
+  }
+};
+
+/**
+ * Gets the appropriate Accept header for the feed format.
+ *
+ * @param {string} format - Feed format
+ * @returns {string} Accept header value
+ */
+const getAcceptHeader = (format: string): string => {
+  switch (format) {
+    case 'json':
+    case 'stix':
+      return 'application/json';
+    case 'xml':
+      return 'application/xml';
+    case 'csv':
+      return 'text/csv';
+    default:
+      return 'application/json';
+  }
+};
+
+/**
+ * Parses CSV feed data into structured format.
+ *
+ * @param {string} csvText - CSV content
+ * @returns {any[]} Parsed records
+ */
+const parseCSVFeed = (csvText: string): any[] => {
+  const lines = csvText.trim().split('\n');
+  if (lines.length === 0) return [];
+
+  const headers = lines[0].split(',').map(h => h.trim());
+  const records: any[] = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const values = lines[i].split(',').map(v => v.trim());
+    const record: any = {};
+    headers.forEach((header, index) => {
+      record[header] = values[index] || '';
+    });
+    records.push(record);
+  }
+
+  return records;
+};
+
+/**
+ * Parses STIX feed data.
+ *
+ * @param {string} stixText - STIX JSON content
+ * @returns {any} Parsed STIX bundle
+ */
+const parseSTIXFeed = (stixText: string): any => {
+  const bundle = JSON.parse(stixText);
+  if (bundle.type !== 'bundle') {
+    throw new Error('Invalid STIX bundle format');
+  }
+  return bundle;
+};
+
+/**
+ * Converts feed data to IOC format.
+ *
+ * @param {any} data - Parsed feed data
+ * @param {ThreatFeedConfig} feed - Feed configuration
+ * @returns {IOC[]} Array of IOCs
+ */
+const convertFeedDataToIOCs = (data: any, feed: ThreatFeedConfig): IOC[] => {
+  const iocs: IOC[] = [];
   const now = new Date();
 
-  return [
-    {
-      id: crypto.randomUUID(),
-      type: IOCType.IPV4,
-      value: '192.0.2.1',
-      hash: normalizeIOCValue(IOCType.IPV4, '192.0.2.1'),
-      severity: ThreatSeverity.HIGH,
-      confidence: 85,
+  if (feed.format === 'stix' && data.objects) {
+    // Handle STIX format
+    for (const obj of data.objects) {
+      if (obj.type === 'indicator') {
+        const ioc = parseSTIXIndicator(obj);
+        if (ioc) {
+          ioc.sources = [{
+            provider: feed.provider,
+            feedId: feed.id,
+            confidence: ioc.confidence,
+            firstSeen: now,
+            lastUpdated: now,
+          }];
+          iocs.push(ioc);
+        }
+      }
+    }
+  } else if (Array.isArray(data)) {
+    // Handle array format (JSON/CSV)
+    for (const item of data) {
+      const ioc = convertGenericItemToIOC(item, feed);
+      if (ioc) {
+        iocs.push(ioc);
+      }
+    }
+  } else if (data.indicators && Array.isArray(data.indicators)) {
+    // Handle wrapped format
+    for (const item of data.indicators) {
+      const ioc = convertGenericItemToIOC(item, feed);
+      if (ioc) {
+        iocs.push(ioc);
+      }
+    }
+  }
+
+  return iocs;
+};
+
+/**
+ * Converts a generic feed item to IOC format.
+ *
+ * @param {any} item - Feed item
+ * @param {ThreatFeedConfig} feed - Feed configuration
+ * @returns {IOC | null} Converted IOC or null
+ */
+const convertGenericItemToIOC = (item: any, feed: ThreatFeedConfig): IOC | null => {
+  const now = new Date();
+
+  // Detect IOC type and value from item
+  let type: IOCType | null = null;
+  let value = '';
+
+  if (item.type && item.value) {
+    type = parseIOCTypeString(item.type);
+    value = item.value;
+  } else if (item.indicator) {
+    value = item.indicator;
+    type = detectIOCType(value);
+  } else if (item.ip) {
+    type = value.includes(':') ? IOCType.IPV6 : IOCType.IPV4;
+    value = item.ip;
+  } else if (item.domain) {
+    type = IOCType.DOMAIN;
+    value = item.domain;
+  } else if (item.hash || item.md5 || item.sha1 || item.sha256) {
+    value = item.hash || item.md5 || item.sha1 || item.sha256;
+    type = detectHashType(value);
+  } else if (item.url) {
+    type = IOCType.URL;
+    value = item.url;
+  }
+
+  if (!type || !value) return null;
+
+  return {
+    id: crypto.randomUUID(),
+    type,
+    value,
+    hash: normalizeIOCValue(type, value),
+    severity: parseSeverity(item.severity) || ThreatSeverity.MEDIUM,
+    confidence: parseConfidence(item.confidence) || 50,
+    firstSeen: item.first_seen ? new Date(item.first_seen) : now,
+    lastSeen: item.last_seen ? new Date(item.last_seen) : now,
+    sources: [{
+      provider: feed.provider,
+      feedId: feed.id,
+      confidence: parseConfidence(item.confidence) || 50,
       firstSeen: now,
-      lastSeen: now,
-      sources: [
-        {
-          provider: feed.provider,
-          feedId: feed.id,
-          confidence: 85,
-          firstSeen: now,
-          lastUpdated: now,
-        },
-      ],
-      tags: ['malware', 'botnet'],
-      status: 'active',
-    },
-  ];
+      lastUpdated: now,
+    }],
+    tags: item.tags || item.labels || [],
+    status: item.status || 'active',
+  };
+};
+
+/**
+ * Parses IOC type string to IOCType enum.
+ *
+ * @param {string} typeStr - Type string
+ * @returns {IOCType | null} IOCType or null
+ */
+const parseIOCTypeString = (typeStr: string): IOCType | null => {
+  const normalized = typeStr.toUpperCase().replace(/[-\s]/g, '_');
+  return (IOCType as any)[normalized] || null;
+};
+
+/**
+ * Detects IOC type from value.
+ *
+ * @param {string} value - IOC value
+ * @returns {IOCType | null} Detected type
+ */
+const detectIOCType = (value: string): IOCType | null => {
+  // IPv4
+  if (/^(\d{1,3}\.){3}\d{1,3}$/.test(value)) return IOCType.IPV4;
+  // IPv6
+  if (/^([0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}$/.test(value)) return IOCType.IPV6;
+  // Domain
+  if (/^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]?(\.[a-zA-Z]{2,})+$/.test(value)) return IOCType.DOMAIN;
+  // URL
+  if (/^https?:\/\//.test(value)) return IOCType.URL;
+  // Email
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return IOCType.EMAIL;
+  // Hash
+  return detectHashType(value);
+};
+
+/**
+ * Detects hash type from value length.
+ *
+ * @param {string} value - Hash value
+ * @returns {IOCType | null} Hash type
+ */
+const detectHashType = (value: string): IOCType | null => {
+  const hexOnly = /^[a-fA-F0-9]+$/;
+  if (!hexOnly.test(value)) return null;
+
+  switch (value.length) {
+    case 32: return IOCType.FILE_HASH_MD5;
+    case 40: return IOCType.FILE_HASH_SHA1;
+    case 64: return IOCType.FILE_HASH_SHA256;
+    case 128: return IOCType.FILE_HASH_SHA512;
+    default: return null;
+  }
+};
+
+/**
+ * Parses severity string to ThreatSeverity enum.
+ *
+ * @param {string} severity - Severity string
+ * @returns {ThreatSeverity | null} ThreatSeverity or null
+ */
+const parseSeverity = (severity: string | undefined): ThreatSeverity | null => {
+  if (!severity) return null;
+  const normalized = severity.toUpperCase();
+  return (ThreatSeverity as any)[normalized] || null;
+};
+
+/**
+ * Parses confidence value to number.
+ *
+ * @param {any} confidence - Confidence value
+ * @returns {number | null} Confidence number or null
+ */
+const parseConfidence = (confidence: any): number | null => {
+  if (typeof confidence === 'number') return Math.min(100, Math.max(0, confidence));
+  if (typeof confidence === 'string') {
+    const num = parseInt(confidence, 10);
+    return isNaN(num) ? null : Math.min(100, Math.max(0, num));
+  }
+  return null;
+};
+
+/**
+ * Applies filters to IOCs.
+ *
+ * @param {IOC[]} iocs - IOCs to filter
+ * @param {ThreatFeedFilter[]} filters - Filters to apply
+ * @returns {IOC[]} Filtered IOCs
+ */
+const applyFeedFilters = (iocs: IOC[], filters: ThreatFeedFilter[]): IOC[] => {
+  return iocs.filter(ioc => {
+    for (const filter of filters) {
+      const fieldValue = (ioc as any)[filter.field];
+
+      switch (filter.operator) {
+        case 'equals':
+          if (fieldValue !== filter.value) return false;
+          break;
+        case 'contains':
+          if (typeof fieldValue === 'string' && !fieldValue.includes(filter.value)) return false;
+          break;
+        case 'in':
+          if (!Array.isArray(filter.value) || !filter.value.includes(fieldValue)) return false;
+          break;
+        case 'greater_than':
+          if (fieldValue <= filter.value) return false;
+          break;
+        case 'less_than':
+          if (fieldValue >= filter.value) return false;
+          break;
+        case 'regex':
+          const regex = new RegExp(filter.value);
+          if (typeof fieldValue === 'string' && !regex.test(fieldValue)) return false;
+          break;
+      }
+    }
+    return true;
+  });
 };
 
 /**
@@ -1975,17 +2304,76 @@ export const publishToTAXII = async (
   }
 ): Promise<{ success: boolean; objectsPublished: number; error?: string }> => {
   try {
-    // In production, implement actual TAXII 2.1 API call
-    // This is a placeholder
+    // Validate bundle
+    if (!bundle || !bundle.objects || bundle.objects.length === 0) {
+      throw new Error('Invalid or empty STIX bundle');
+    }
+
+    if (bundle.type !== 'bundle' || bundle.spec_version !== '2.1') {
+      throw new Error('Invalid STIX bundle format. Must be STIX 2.1 bundle');
+    }
+
+    // Construct TAXII 2.1 API endpoint
+    const baseUrl = config.serverUrl.replace(/\/$/, '');
+    const endpoint = `${baseUrl}/collections/${config.collectionId}/objects/`;
+
+    // Build request headers
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/taxii+json;version=2.1',
+      'Accept': 'application/taxii+json;version=2.1',
+      'User-Agent': 'WhiteCross-ThreatIntel/1.0',
+    };
+
+    if (config.apiKey) {
+      headers['Authorization'] = `Bearer ${config.apiKey}`;
+    }
+
+    // Create TAXII envelope
+    const envelope = {
+      objects: bundle.objects,
+    };
+
+    // Send POST request to TAXII server
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(envelope),
+      signal: AbortSignal.timeout(30000), // 30 second timeout
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(
+        `TAXII server error: HTTP ${response.status} ${response.statusText}. ${errorText}`
+      );
+    }
+
+    // Parse TAXII status response
+    const result = await response.json();
+
+    // TAXII 2.1 status response format
+    const successCount = result.success_count || result.successCount || bundle.objects.length;
+    const failureCount = result.failure_count || result.failureCount || 0;
+
+    if (failureCount > 0) {
+      console.warn(
+        `TAXII publish partial success: ${successCount} succeeded, ${failureCount} failed`,
+        result.failures || result.pending
+      );
+    }
+
     return {
-      success: true,
-      objectsPublished: bundle.objects.length,
+      success: failureCount === 0,
+      objectsPublished: successCount,
+      error: failureCount > 0 ? `${failureCount} objects failed to publish` : undefined,
     };
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Failed to publish to TAXII server:', errorMessage);
     return {
       success: false,
       objectsPublished: 0,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: errorMessage,
     };
   }
 };
@@ -2020,14 +2408,101 @@ export const fetchFromTAXII = async (
     limit?: number;
   }
 ): Promise<STIXBundle> => {
-  // In production, implement actual TAXII 2.1 API call
-  // This is a placeholder
-  return {
-    type: 'bundle',
-    id: `bundle--${crypto.randomUUID()}`,
-    spec_version: '2.1',
-    objects: [],
-  };
+  try {
+    // Construct TAXII 2.1 API endpoint
+    const baseUrl = config.serverUrl.replace(/\/$/, '');
+    const endpoint = `${baseUrl}/collections/${config.collectionId}/objects/`;
+
+    // Build query parameters
+    const queryParams = new URLSearchParams();
+
+    if (filters?.addedAfter) {
+      // TAXII uses RFC 3339 timestamp format
+      queryParams.append('added_after', filters.addedAfter.toISOString());
+    }
+
+    if (filters?.types && filters.types.length > 0) {
+      // TAXII allows filtering by STIX object types
+      queryParams.append('match[type]', filters.types.join(','));
+    }
+
+    if (filters?.limit) {
+      queryParams.append('limit', filters.limit.toString());
+    }
+
+    const url = queryParams.toString()
+      ? `${endpoint}?${queryParams.toString()}`
+      : endpoint;
+
+    // Build request headers
+    const headers: Record<string, string> = {
+      'Accept': 'application/taxii+json;version=2.1',
+      'User-Agent': 'WhiteCross-ThreatIntel/1.0',
+    };
+
+    if (config.apiKey) {
+      headers['Authorization'] = `Bearer ${config.apiKey}`;
+    }
+
+    // Fetch from TAXII server
+    const response = await fetch(url, {
+      method: 'GET',
+      headers,
+      signal: AbortSignal.timeout(60000), // 60 second timeout for fetches
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(
+        `TAXII server error: HTTP ${response.status} ${response.statusText}. ${errorText}`
+      );
+    }
+
+    // Parse TAXII envelope response
+    const envelope = await response.json();
+
+    // TAXII 2.1 returns objects in an envelope
+    const objects = envelope.objects || [];
+
+    // Validate objects are STIX format
+    const validObjects = objects.filter((obj: any) => {
+      return obj && obj.type && obj.id;
+    });
+
+    if (validObjects.length < objects.length) {
+      console.warn(
+        `Filtered out ${objects.length - validObjects.length} invalid STIX objects from TAXII response`
+      );
+    }
+
+    // Create STIX bundle
+    const bundle: STIXBundle = {
+      type: 'bundle',
+      id: `bundle--${crypto.randomUUID()}`,
+      spec_version: '2.1',
+      objects: validObjects,
+    };
+
+    // Handle pagination if more data is available
+    if (envelope.more && envelope.next) {
+      console.info(
+        `Additional TAXII data available. Use pagination token: ${envelope.next}`
+      );
+    }
+
+    return bundle;
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Failed to fetch from TAXII server:', errorMessage);
+
+    // Return empty bundle on error
+    return {
+      type: 'bundle',
+      id: `bundle--${crypto.randomUUID()}`,
+      spec_version: '2.1',
+      objects: [],
+    };
+  }
 };
 
 // ============================================================================

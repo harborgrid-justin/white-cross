@@ -13,11 +13,11 @@ export {
   generatePKCEVerifier,
   generatePKCEChallenge,
   validatePKCEVerifier,
-} from '../authentication-kit';
+} from '../../../authentication-kit';
 
 // Re-export OAuth types
 export type {
   OAuth2Config,
   OAuth2AuthResult,
   OAuth2TokenResponse,
-} from '../authentication-kit';
+} from '../../../authentication-kit';

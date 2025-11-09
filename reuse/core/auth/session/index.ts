@@ -13,10 +13,10 @@ export {
   generateSessionId,
   getSessionTimeRemaining,
   isSessionExpired,
-} from '../authentication-kit';
+} from '../../../authentication-kit';
 
 // Re-export session types
 export type {
   SessionConfig,
   SessionData,
-} from '../authentication-kit';
+} from '../../../authentication-kit';

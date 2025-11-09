@@ -15,11 +15,11 @@ export {
   isJWTExpiringWithin,
   getJWTInfo,
   isValidJWTStructure,
-} from '../authentication-kit';
+} from '../../../authentication-kit';
 
 // Re-export JWT types
 export type {
   JWTPayload,
   JWTConfig,
   TokenValidationResult,
-} from '../authentication-kit';
+} from '../../../authentication-kit';

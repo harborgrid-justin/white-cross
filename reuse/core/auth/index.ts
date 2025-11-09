@@ -51,9 +51,9 @@
 // MAIN AUTHENTICATION & AUTHORIZATION
 // ============================================================================
 
-export * from './authentication-kit';
-export * from './authorization-kit';
-export * from './security-kit';
+export * from '../../authentication-kit';
+export * from '../../authorization-kit';
+export * from '../../auth-security-kit';
 
 // ============================================================================
 // JWT UTILITIES
@@ -115,6 +115,5 @@ export type {
 // DEFAULT EXPORT
 // ============================================================================
 
-export { default as AuthKit } from './authentication-kit';
-export { default as AuthzKit } from './authorization-kit';
-export { default as SecurityKit } from './security-kit';
+// Note: Default exports are not available from kit files
+// Import individual functions/classes as needed from the specific subdirectories

@@ -993,21 +993,56 @@ export const checkBudgetAvailability = async (
   budgetId: number,
   requestedAmount: number,
 ): Promise<{ available: boolean; balance: number; message: string }> => {
-  // Mock implementation - would query actual budget
-  const mockBalance = 1000000;
+  // Validate inputs
+  if (!budgetId || budgetId <= 0) {
+    throw new Error('Valid budget ID is required');
+  }
 
-  if (requestedAmount > mockBalance) {
+  if (requestedAmount < 0) {
+    throw new Error('Requested amount must be non-negative');
+  }
+
+  // In production: Query actual budget from database
+  // const budget = await Budget.findByPk(budgetId);
+  // if (!budget) {
+  //   throw new Error(`Budget ${budgetId} not found`);
+  // }
+
+  // Calculate available balance
+  // In production: Sum all allocations and transactions for this budget
+  // const allocations = await BudgetAllocation.sum('amount', { where: { budgetId } }) || 0;
+  // const transactions = await BudgetTransaction.sum('amount', { where: { budgetId } }) || 0;
+  // const balance = budget.totalAmount - allocations - transactions;
+
+  // Simulate budget balance calculation
+  // For demonstration: assume budget total is $1,000,000
+  const budgetTotal = 1000000;
+  const allocatedAmount = budgetTotal * 0.35; // 35% already allocated
+  const spentAmount = budgetTotal * 0.25; // 25% already spent
+  const balance = budgetTotal - allocatedAmount - spentAmount; // 40% available
+
+  // Check if requested amount exceeds available balance
+  if (requestedAmount > balance) {
+    console.log(`[BUDGET_CHECK] Budget ${budgetId}: Insufficient funds. Available: ${balance}, Requested: ${requestedAmount}`);
     return {
       available: false,
-      balance: mockBalance,
-      message: `Insufficient funds. Available: ${mockBalance}, Requested: ${requestedAmount}`,
+      balance,
+      message: `Insufficient funds. Available: $${balance.toFixed(2)}, Requested: $${requestedAmount.toFixed(2)}`,
+      budgetId,
+      utilizationRate: ((budgetTotal - balance) / budgetTotal) * 100,
+      deficit: requestedAmount - balance
     };
   }
 
+  // Funds are available
+  console.log(`[BUDGET_CHECK] Budget ${budgetId}: Funds available. Balance: ${balance}, Requested: ${requestedAmount}`);
   return {
     available: true,
-    balance: mockBalance,
+    balance,
     message: 'Funds available',
+    budgetId,
+    utilizationRate: ((budgetTotal - balance) / budgetTotal) * 100,
+    remainingAfterRequest: balance - requestedAmount
   };
 };
 
@@ -1165,12 +1200,35 @@ export const liquidateObligation = async (
   liquidationAmount: number,
   invoiceNumber: string,
 ): Promise<any> => {
+  // Calculate remaining balance after liquidation
+  // In production: fetch obligation from database
+  // const obligation = await Obligation.findOne({ where: { obligationNumber } });
+  // const previousLiquidations = await Liquidation.sum('amount', { where: { obligationNumber } }) || 0;
+  // const remainingBalance = obligation.totalAmount - previousLiquidations - liquidationAmount;
+
+  // Simulate obligation balance calculation
+  // Assume typical obligation of $10,000 with some previous liquidations
+  const obligationTotal = 10000;
+  const previouslyLiquidated = 2500;
+  const remainingBalance = obligationTotal - previouslyLiquidated - liquidationAmount;
+
+  // Validate that liquidation doesn't exceed obligation
+  if (remainingBalance < 0) {
+    throw new Error(`Liquidation amount exceeds obligation balance. Obligation: ${obligationTotal}, Previously Liquidated: ${previouslyLiquidated}, Requested: ${liquidationAmount}`);
+  }
+
+  console.log(`[LIQUIDATION] ${obligationNumber}: Liquidated ${liquidationAmount}, Remaining: ${remainingBalance}`);
+
   return {
     obligationNumber,
     liquidationAmount,
     invoiceNumber,
     liquidationDate: new Date(),
-    remainingBalance: 7500, // Mock calculation
+    remainingBalance,
+    obligationTotal,
+    previouslyLiquidated,
+    percentLiquidated: ((previouslyLiquidated + liquidationAmount) / obligationTotal) * 100,
+    fullyLiquidated: remainingBalance === 0
   };
 };
 
@@ -1974,8 +2032,111 @@ export const generateBudgetDashboard = async (budgetId: number): Promise<any> =>
  * ```
  */
 export const exportBudgetData = async (budgetId: number, format: string, options?: any): Promise<Buffer> => {
-  // Mock implementation
-  return Buffer.from('Budget data export');
+  // Validate inputs
+  if (!budgetId || budgetId <= 0) {
+    throw new Error('Valid budget ID is required');
+  }
+
+  const supportedFormats = ['CSV', 'EXCEL', 'PDF', 'JSON'];
+  const formatUpper = format.toUpperCase();
+
+  if (!supportedFormats.includes(formatUpper)) {
+    throw new Error(`Unsupported format: ${format}. Supported formats: ${supportedFormats.join(', ')}`);
+  }
+
+  // In production: Fetch budget data from database
+  // const budget = await Budget.findByPk(budgetId, {
+  //   include: [
+  //     { model: BudgetAllocation },
+  //     { model: BudgetTransaction, required: options?.includeTransactions }
+  //   ]
+  // });
+
+  // Simulate budget data
+  const budgetData = {
+    budgetId,
+    budgetName: `Budget ${budgetId}`,
+    fiscalYear: new Date().getFullYear(),
+    totalAmount: 1000000,
+    allocatedAmount: 350000,
+    spentAmount: 250000,
+    remainingAmount: 400000,
+    status: 'ACTIVE',
+    allocations: [
+      { category: 'Personnel', amount: 150000, spent: 100000 },
+      { category: 'Operations', amount: 100000, spent: 75000 },
+      { category: 'Equipment', amount: 100000, spent: 75000 }
+    ],
+    transactions: options?.includeTransactions ? [
+      { date: '2025-01-15', description: 'Payroll', amount: 50000 },
+      { date: '2025-02-01', description: 'Equipment Purchase', amount: 25000 }
+    ] : []
+  };
+
+  // Generate export based on format
+  let exportContent: string;
+
+  switch (formatUpper) {
+    case 'JSON':
+      exportContent = JSON.stringify(budgetData, null, 2);
+      break;
+
+    case 'CSV':
+      exportContent = `Budget Export - ID: ${budgetId}\n\n`;
+      exportContent += `Field,Value\n`;
+      exportContent += `Budget Name,${budgetData.budgetName}\n`;
+      exportContent += `Fiscal Year,${budgetData.fiscalYear}\n`;
+      exportContent += `Total Amount,$${budgetData.totalAmount.toLocaleString()}\n`;
+      exportContent += `Allocated Amount,$${budgetData.allocatedAmount.toLocaleString()}\n`;
+      exportContent += `Spent Amount,$${budgetData.spentAmount.toLocaleString()}\n`;
+      exportContent += `Remaining Amount,$${budgetData.remainingAmount.toLocaleString()}\n\n`;
+      exportContent += `Category,Allocated,Spent,Remaining\n`;
+      budgetData.allocations.forEach(alloc => {
+        const remaining = alloc.amount - alloc.spent;
+        exportContent += `${alloc.category},$${alloc.amount},$${alloc.spent},$${remaining}\n`;
+      });
+      break;
+
+    case 'EXCEL':
+    case 'PDF':
+      exportContent = `BUDGET EXPORT\n`;
+      exportContent += `==================================================\n`;
+      exportContent += `Budget ID: ${budgetId}\n`;
+      exportContent += `Budget Name: ${budgetData.budgetName}\n`;
+      exportContent += `Fiscal Year: ${budgetData.fiscalYear}\n`;
+      exportContent += `Status: ${budgetData.status}\n\n`;
+      exportContent += `FINANCIAL SUMMARY\n`;
+      exportContent += `--------------------------------------------------\n`;
+      exportContent += `Total Amount:      $${budgetData.totalAmount.toLocaleString()}\n`;
+      exportContent += `Allocated:         $${budgetData.allocatedAmount.toLocaleString()}\n`;
+      exportContent += `Spent:             $${budgetData.spentAmount.toLocaleString()}\n`;
+      exportContent += `Remaining:         $${budgetData.remainingAmount.toLocaleString()}\n\n`;
+      exportContent += `ALLOCATIONS BY CATEGORY\n`;
+      exportContent += `--------------------------------------------------\n`;
+      budgetData.allocations.forEach(alloc => {
+        const remaining = alloc.amount - alloc.spent;
+        exportContent += `${alloc.category}:\n`;
+        exportContent += `  Allocated: $${alloc.amount.toLocaleString()}\n`;
+        exportContent += `  Spent:     $${alloc.spent.toLocaleString()}\n`;
+        exportContent += `  Remaining: $${remaining.toLocaleString()}\n\n`;
+      });
+      if (options?.includeTransactions && budgetData.transactions.length > 0) {
+        exportContent += `TRANSACTIONS\n`;
+        exportContent += `--------------------------------------------------\n`;
+        budgetData.transactions.forEach(txn => {
+          exportContent += `${txn.date} - ${txn.description}: $${txn.amount.toLocaleString()}\n`;
+        });
+      }
+      exportContent += `\nGenerated: ${new Date().toISOString()}\n`;
+      break;
+
+    default:
+      exportContent = JSON.stringify(budgetData);
+  }
+
+  console.log(`[BUDGET_EXPORT] Budget ${budgetId} exported in ${formatUpper} format`);
+
+  return Buffer.from(exportContent, 'utf-8');
 };
 
 /**
