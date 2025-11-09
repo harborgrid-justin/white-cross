@@ -2207,6 +2207,445 @@ export function parseQueryString(query: string): Record<string, string> {
 }
 
 
+
+// ============================================================================
+// ADDITIONAL HELPER FUNCTIONS & UTILITIES
+// ============================================================================
+
+/**
+ * Performs deep merge of two objects
+ */
+export function deepMerge<T extends object>(target: T, source: Partial<T>): T {
+  const result = { ...target };
+  for (const key in source) {
+    if (Object.prototype.hasOwnProperty.call(source, key)) {
+      const sourceValue = source[key];
+      const targetValue = result[key];
+      if (sourceValue && typeof sourceValue === 'object' && !Array.isArray(sourceValue) &&
+          targetValue && typeof targetValue === 'object' && !Array.isArray(targetValue)) {
+        result[key] = deepMerge(targetValue as any, sourceValue as any);
+      } else {
+        result[key] = sourceValue as any;
+      }
+    }
+  }
+  return result;
+}
+
+/**
+ * Sanitizes user input to prevent injection attacks
+ */
+export function sanitizeInput(input: string): string {
+  return input.replace(/[<>]/g, '').replace(/javascript:/gi, '').replace(/on\w+=/gi, '').trim();
+}
+
+/**
+ * Formats date to ISO string
+ */
+export function formatDateISO(date: Date): string {
+  return date.toISOString();
+}
+
+/**
+ * Parses ISO date string
+ */
+export function parseDateISO(dateStr: string): Date {
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) {
+    throw new HttpException(`Invalid date: ${dateStr}`, HttpStatus.BAD_REQUEST);
+  }
+  return date;
+}
+
+/**
+ * Calculates distance between two 3D points
+ */
+export function calculateDistance3D(p1: Point3D, p2: Point3D): number {
+  return Math.sqrt(
+    Math.pow(p2.x - p1.x, 2) +
+    Math.pow(p2.y - p1.y, 2) +
+    Math.pow(p2.z - p1.z, 2)
+  );
+}
+
+/**
+ * Checks if point is within bounding box
+ */
+export function isPointInBounds(point: Point2D, bbox: BoundingBox): boolean {
+  return point.x >= bbox.minX && point.x <= bbox.maxX &&
+         point.y >= bbox.minY && point.y <= bbox.maxY;
+}
+
+/**
+ * Expands bounding box by margin
+ */
+export function expandBoundingBox(bbox: BoundingBox, margin: number): BoundingBox {
+  return {
+    minX: bbox.minX - margin,
+    minY: bbox.minY - margin,
+    maxX: bbox.maxX + margin,
+    maxY: bbox.maxY + margin,
+  };
+}
+
+/**
+ * Checks if two bounding boxes intersect
+ */
+export function boundingBoxesIntersect(bbox1: BoundingBox, bbox2: BoundingBox): boolean {
+  return !(bbox1.maxX < bbox2.minX || bbox1.minX > bbox2.maxX ||
+           bbox1.maxY < bbox2.minY || bbox1.minY > bbox2.maxY);
+}
+
+/**
+ * Linear interpolation between two values
+ */
+export function lerp(start: number, end: number, t: number): number {
+  return start + (end - start) * clamp(t, 0, 1);
+}
+
+/**
+ * Converts radians to degrees
+ */
+export function radiansToDegrees(radians: number): number {
+  return radians * (180 / Math.PI);
+}
+
+/**
+ * Generates random integer between min and max
+ */
+export function randomInt(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+/**
+ * Generates random float between min and max
+ */
+export function randomFloat(min: number, max: number): number {
+  return Math.random() * (max - min) + min;
+}
+
+/**
+ * Calculates pagination offset
+ */
+export function calculateOffset(page: number, limit: number): number {
+  return (page - 1) * limit;
+}
+
+/**
+ * Calculates total pages for pagination
+ */
+export function calculateTotalPages(total: number, limit: number): number {
+  return Math.ceil(total / limit);
+}
+
+/**
+ * Creates paginated response structure
+ */
+export function createPaginatedResponse<T>(data: T[], total: number, page: number, limit: number) {
+  const totalPages = calculateTotalPages(total, limit);
+  return {
+    data,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages,
+      hasNext: page < totalPages,
+      hasPrevious: page > 1,
+    },
+  };
+}
+
+/**
+ * Handles async operations with error wrapping
+ */
+export async function handleAsyncOperation<T>(operation: () => Promise<T>): Promise<OperationResult<T>> {
+  const startTime = Date.now();
+  try {
+    const data = await operation();
+    return {
+      success: true,
+      data,
+      timestamp: new Date(),
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date(),
+    };
+  }
+}
+
+/**
+ * Retries operation with exponential backoff
+ */
+export async function retryOperation<T>(
+  operation: () => Promise<T>,
+  maxRetries: number = 3,
+  baseDelay: number = 1000
+): Promise<T> {
+  let lastError: Error | undefined;
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      if (attempt < maxRetries - 1) {
+        const delay = baseDelay * Math.pow(2, attempt);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  throw lastError || new Error('Operation failed after retries');
+}
+
+/**
+ * Validates email format
+ */
+export function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+/**
+ * Validates phone number format
+ */
+export function isValidPhone(phone: string): boolean {
+  return /^[+]?[\d\s-()]+$/.test(phone);
+}
+
+/**
+ * Validates URL format
+ */
+export function isValidURL(url: string): boolean {
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Generates hash code for string
+ */
+export function hashCode(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return hash;
+}
+
+/**
+ * Throttles function execution
+ */
+export function throttle<T extends (...args: any[]) => any>(
+  func: T,
+  delay: number
+): (...args: Parameters<T>) => void {
+  let timeoutId: NodeJS.Timeout | null = null;
+  let lastRun = 0;
+  
+  return function(...args: Parameters<T>) {
+    const now = Date.now();
+    if (now - lastRun >= delay) {
+      func(...args);
+      lastRun = now;
+    } else {
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        func(...args);
+        lastRun = Date.now();
+      }, delay - (now - lastRun));
+    }
+  };
+}
+
+/**
+ * Debounces function execution
+ */
+export function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  delay: number
+): (...args: Parameters<T>) => void {
+  let timeoutId: NodeJS.Timeout | null = null;
+  
+  return function(...args: Parameters<T>) {
+    if (timeoutId) clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      func(...args);
+    }, delay);
+  };
+}
+
+/**
+ * Chunks array into smaller arrays
+ */
+export function chunkArray<T>(array: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < array.length; i += size) {
+    chunks.push(array.slice(i, i + size));
+  }
+  return chunks;
+}
+
+/**
+ * Removes duplicates from array
+ */
+export function uniqueArray<T>(array: T[]): T[] {
+  return Array.from(new Set(array));
+}
+
+/**
+ * Flattens nested arrays
+ */
+export function flattenArray<T>(array: any[], depth: number = Infinity): T[] {
+  return array.flat(depth);
+}
+
+/**
+ * Groups array by key
+ */
+export function groupBy<T>(array: T[], key: keyof T): Record<string, T[]> {
+  return array.reduce((groups, item) => {
+    const groupKey = String(item[key]);
+    if (!groups[groupKey]) groups[groupKey] = [];
+    groups[groupKey].push(item);
+    return groups;
+  }, {} as Record<string, T[]>);
+}
+
+/**
+ * Sorts array by multiple keys
+ */
+export function sortByKeys<T>(array: T[], keys: (keyof T)[]): T[] {
+  return [...array].sort((a, b) => {
+    for (const key of keys) {
+      if (a[key] < b[key]) return -1;
+      if (a[key] > b[key]) return 1;
+    }
+    return 0;
+  });
+}
+
+/**
+ * Calculates array statistics
+ */
+export function arrayStats(numbers: number[]) {
+  if (numbers.length === 0) return { min: 0, max: 0, avg: 0, sum: 0 };
+  const sum = numbers.reduce((a, b) => a + b, 0);
+  return {
+    min: Math.min(...numbers),
+    max: Math.max(...numbers),
+    avg: sum / numbers.length,
+    sum,
+  };
+}
+
+/**
+ * Formats number with thousands separator
+ */
+export function formatNumber(num: number, decimals: number = 2): string {
+  return num.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+/**
+ * Parses number from formatted string
+ */
+export function parseFormattedNumber(str: string): number {
+  return parseFloat(str.replace(/,/g, ''));
+}
+
+/**
+ * Formats bytes to human readable size
+ */
+export function formatBytes(bytes: number, decimals: number = 2): string {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
+}
+
+/**
+ * Generates random UUID v4
+ */
+export function generateUUIDv4(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+/**
+ * Creates error response
+ */
+export function createErrorResponse(message: string, code?: string) {
+  return {
+    success: false,
+    error: message,
+    code,
+    timestamp: new Date(),
+  };
+}
+
+/**
+ * Creates success response
+ */
+export function createSuccessResponse<T>(data: T, message?: string) {
+  return {
+    success: true,
+    data,
+    message,
+    timestamp: new Date(),
+  };
+}
+
+/**
+ * Validates object schema
+ */
+export function validateSchema(obj: any, schema: Record<string, string>): string[] {
+  const errors: string[] = [];
+  for (const [key, type] of Object.entries(schema)) {
+    if (!(key in obj)) {
+      errors.push(`Missing field: ${key}`);
+    } else if (typeof obj[key] !== type) {
+      errors.push(`Invalid type for ${key}: expected ${type}, got ${typeof obj[key]}`);
+    }
+  }
+  return errors;
+}
+
+/**
+ * Converts object to query string
+ */
+export function toQueryString(obj: Record<string, any>): string {
+  return Object.entries(obj)
+    .filter(([_, v]) => v !== undefined && v !== null)
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .join('&');
+}
+
+/**
+ * Parses query string to object
+ */
+export function parseQueryString(query: string): Record<string, string> {
+  return query
+    .replace(/^\?/, '')
+    .split('&')
+    .filter(Boolean)
+    .reduce((acc, pair) => {
+      const [key, value] = pair.split('=');
+      acc[decodeURIComponent(key)] = decodeURIComponent(value || '');
+      return acc;
+    }, {} as Record<string, string>);
+}
+
+
 // ============================================================================
 // EXPORTS
 // ============================================================================
