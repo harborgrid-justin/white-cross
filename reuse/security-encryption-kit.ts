@@ -974,8 +974,8 @@ export function hashData(data: string, config?: HashConfig): string {
 }
 
 /**
- * Hashes a password using bcrypt (simulated - requires bcrypt package).
- * Note: This is a placeholder. In production, use the bcrypt package.
+ * Hashes a password using bcrypt or PBKDF2 fallback.
+ * Attempts to use bcrypt library if available, otherwise uses secure PBKDF2 implementation.
  *
  * @param password - The password to hash
  * @param config - Bcrypt configuration
@@ -991,16 +991,26 @@ export async function hashPasswordBcrypt(password: string, config?: BcryptConfig
   const pepper = config?.pepper || '';
   const passwordWithPepper = password + pepper;
 
-  // Placeholder: In production, use: return bcrypt.hash(passwordWithPepper, saltRounds);
-  // For now, we'll use a secure alternative with crypto
-  const salt = crypto.randomBytes(16).toString('hex');
-  const hash = crypto.pbkdf2Sync(passwordWithPepper, salt, 100000, 64, 'sha512').toString('hex');
-  return `${salt}:${hash}`;
+  try {
+    // Try to use bcrypt if available
+    const bcrypt = require('bcrypt');
+    return await bcrypt.hash(passwordWithPepper, saltRounds);
+  } catch (error) {
+    // Bcrypt not available, use PBKDF2 as secure alternative
+    console.warn(
+      'bcrypt library not available. Using PBKDF2 fallback. Install bcrypt for better performance: npm install bcrypt',
+    );
+
+    const salt = crypto.randomBytes(16).toString('hex');
+    const iterations = 100000 + saltRounds * 10000; // Scale iterations with salt rounds
+    const hash = crypto.pbkdf2Sync(passwordWithPepper, salt, iterations, 64, 'sha512').toString('hex');
+    return `pbkdf2:${iterations}:${salt}:${hash}`;
+  }
 }
 
 /**
- * Verifies a password against a bcrypt hash (simulated).
- * Note: This is a placeholder. In production, use the bcrypt package.
+ * Verifies a password against a bcrypt hash or PBKDF2 hash.
+ * Supports both bcrypt hashes and PBKDF2 fallback hashes.
  *
  * @param password - The password to verify
  * @param hash - The hash to verify against
@@ -1015,15 +1025,29 @@ export async function hashPasswordBcrypt(password: string, config?: BcryptConfig
 export async function verifyPasswordBcrypt(password: string, hash: string, pepper?: string): Promise<boolean> {
   const passwordWithPepper = password + (pepper || '');
 
-  // Placeholder: In production, use: return bcrypt.compare(passwordWithPepper, hash);
-  const [salt, originalHash] = hash.split(':');
-  const verifyHash = crypto.pbkdf2Sync(passwordWithPepper, salt, 100000, 64, 'sha512').toString('hex');
-  return originalHash === verifyHash;
+  // Check if this is a PBKDF2 fallback hash
+  if (hash.startsWith('pbkdf2:')) {
+    const parts = hash.split(':');
+    const iterations = parseInt(parts[1], 10);
+    const salt = parts[2];
+    const originalHash = parts[3];
+    const verifyHash = crypto.pbkdf2Sync(passwordWithPepper, salt, iterations, 64, 'sha512').toString('hex');
+    return originalHash === verifyHash;
+  }
+
+  try {
+    // Try to use bcrypt if available
+    const bcrypt = require('bcrypt');
+    return await bcrypt.compare(passwordWithPepper, hash);
+  } catch (error) {
+    console.warn('bcrypt library not available and hash format not recognized');
+    return false;
+  }
 }
 
 /**
- * Hashes a password using Argon2 (simulated - requires argon2 package).
- * Note: This is a placeholder. In production, use the argon2 package.
+ * Hashes a password using Argon2 or PBKDF2 fallback.
+ * Attempts to use argon2 library if available, otherwise uses secure PBKDF2 implementation.
  *
  * @param password - The password to hash
  * @param config - Argon2 configuration
@@ -1035,19 +1059,35 @@ export async function verifyPasswordBcrypt(password: string, hash: string, peppe
  * ```
  */
 export async function hashPasswordArgon2(password: string, config?: Argon2Config): Promise<string> {
-  // Placeholder: In production, use argon2 package
-  // For now, we'll use PBKDF2 as a secure alternative
-  const salt = config?.salt || crypto.randomBytes(16);
-  const iterations = config?.timeCost || 3;
-  const keyLength = config?.hashLength || 32;
+  try {
+    // Try to use argon2 if available
+    const argon2 = require('argon2');
+    return await argon2.hash(password, {
+      type: argon2.argon2id,
+      memoryCost: config?.memoryCost || 65536,
+      timeCost: config?.timeCost || 3,
+      parallelism: config?.parallelism || 4,
+      hashLength: config?.hashLength || 32,
+      salt: config?.salt,
+    });
+  } catch (error) {
+    // Argon2 not available, use PBKDF2 as secure alternative
+    console.warn(
+      'argon2 library not available. Using PBKDF2 fallback. Install argon2 for better performance: npm install argon2',
+    );
 
-  const hash = crypto.pbkdf2Sync(password, salt, iterations * 10000, keyLength, 'sha512');
-  return `${salt.toString('hex')}:${hash.toString('hex')}`;
+    const salt = config?.salt || crypto.randomBytes(16);
+    const iterations = (config?.timeCost || 3) * 30000; // Scale iterations
+    const keyLength = config?.hashLength || 32;
+
+    const hash = crypto.pbkdf2Sync(password, salt, iterations, keyLength, 'sha512');
+    return `pbkdf2:${iterations}:${salt.toString('hex')}:${hash.toString('hex')}`;
+  }
 }
 
 /**
- * Verifies a password against an Argon2 hash (simulated).
- * Note: This is a placeholder. In production, use the argon2 package.
+ * Verifies a password against an Argon2 hash or PBKDF2 fallback hash.
+ * Supports both argon2 hashes and PBKDF2 fallback hashes.
  *
  * @param password - The password to verify
  * @param hash - The hash to verify against
@@ -1059,10 +1099,25 @@ export async function hashPasswordArgon2(password: string, config?: Argon2Config
  * ```
  */
 export async function verifyPasswordArgon2(password: string, hash: string): Promise<boolean> {
-  // Placeholder: In production, use argon2.verify
-  const [salt, originalHash] = hash.split(':');
-  const verifyHash = crypto.pbkdf2Sync(password, Buffer.from(salt, 'hex'), 30000, 32, 'sha512');
-  return originalHash === verifyHash.toString('hex');
+  // Check if this is a PBKDF2 fallback hash
+  if (hash.startsWith('pbkdf2:')) {
+    const parts = hash.split(':');
+    const iterations = parseInt(parts[1], 10);
+    const salt = Buffer.from(parts[2], 'hex');
+    const originalHash = parts[3];
+    const keyLength = originalHash.length / 2; // Hex string length / 2 = byte length
+    const verifyHash = crypto.pbkdf2Sync(password, salt, iterations, keyLength, 'sha512');
+    return originalHash === verifyHash.toString('hex');
+  }
+
+  try {
+    // Try to use argon2 if available
+    const argon2 = require('argon2');
+    return await argon2.verify(hash, password);
+  } catch (error) {
+    console.warn('argon2 library not available and hash format not recognized');
+    return false;
+  }
 }
 
 // ============================================================================
