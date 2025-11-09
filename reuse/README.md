@@ -1,6 +1,38 @@
+````markdown
 # White Cross Healthcare Platform - Enterprise Reusable Function Library
 
-**Version 2.0.0** | **433+ Utility Kits** | **15,000+ Exports** | **Production-Ready** | **TypeScript** | **NestJS** | **Sequelize**
+**Version 3.0.0** | **433+ Utility Kits** | **15,000+ Exports** | **Production-Ready** | **TypeScript** | **NestJS** | **Sequelize**
+
+---
+
+## 🚀 What's New in v3.0.0
+
+### Enhanced Organization & Discoverability
+
+✨ **Organized Directory Structure** - Clear categorical organization (core/, infrastructure/, domain/)  
+🔍 **Searchable Function Catalog** - Find any function in seconds with `FUNCTION-CATALOG.md`  
+🗺️ **Visual Navigation Guide** - Decision trees and flowcharts in `NAVIGATION.md`  
+📚 **Quick Reference** - Copy-paste ready examples in `QUICK-REFERENCE.md`  
+⚡ **NPM Search Scripts** - `npm run find "functionName"` to search the codebase  
+📦 **Barrel Exports** - Import from categories: `@white-cross/reuse/infrastructure/notifications`
+
+### Quick Search Tools
+
+```bash
+# Find any function
+npm run find "createJob"
+
+# List available functions
+npm run find:function
+
+# Search for specific term
+npm run search "authentication"
+
+# View catalogs
+npm run catalog          # Function catalog
+npm run navigation       # Navigation guide
+npm run quick-ref        # Quick reference
+```
 
 ---
 
@@ -21,24 +53,60 @@ This is a comprehensive, enterprise-grade reusable function library providing 43
 
 ---
 
+## 📖 Essential Documentation
+
+| Document | Description | Quick Link |
+|----------|-------------|------------|
+| **FUNCTION-CATALOG.md** | Alphabetical listing of ALL 15,000+ functions with search | [View Catalog →](./FUNCTION-CATALOG.md) |
+| **NAVIGATION.md** | Visual navigation with decision trees and flowcharts | [Navigate →](./NAVIGATION.md) |
+| **QUICK-REFERENCE.md** | Copy-paste ready code examples for common tasks | [Quick Start →](./QUICK-REFERENCE.md) |
+| **MASTER-INDEX.md** | Complete catalog of all 433 kits by category | [Master Index →](./MASTER-INDEX.md) |
+| **ORGANIZATION-PLAN.md** | Library structure and architecture overview | [Architecture →](./ORGANIZATION-PLAN.md) |
+
+---
+
 ## Table of Contents
 
 - [Quick Start](#quick-start)
-- [Core Infrastructure Kits (20 Production-Ready)](#core-infrastructure-kits)
-- [Domain-Specific Kits (159 Kits)](#domain-specific-kits)
+- [New Organization Structure](#new-organization-structure)
+- [Core Infrastructure Kits](#core-infrastructure-kits)
+- [Domain-Specific Kits](#domain-specific-kits)
 - [Key Features](#key-features)
 - [Installation & Setup](#installation--setup)
 - [Usage Examples](#usage-examples)
-- [Architecture](#architecture)
 - [Documentation](#documentation)
-- [Contributing](#contributing)
-- [License](#license)
 
 ---
 
 ## Quick Start
 
-### Installation
+### 🔍 Finding Functions
+
+**Method 1: Use the Function Catalog**
+```bash
+# Open the searchable catalog (Ctrl+F to search)
+cat FUNCTION-CATALOG.md
+
+# Or use npm script
+npm run catalog
+```
+
+**Method 2: Use Navigation Guide**
+```bash
+# Follow decision trees to find what you need
+npm run navigation
+```
+
+**Method 3: Search Directly**
+```bash
+# Find function by name
+npm run find "createJob"
+
+# Search for keyword
+npm run search "authentication"
+```
+
+### 📦 Installation
 
 ```bash
 # Clone or copy the reuse directory into your project
@@ -49,7 +117,27 @@ npm install @nestjs/common @nestjs/core @nestjs/swagger sequelize sequelize-type
 npm install bcrypt argon2 bull redis ioredis
 ```
 
-### Basic Usage
+### 💡 Import Patterns (v3.0.0)
+
+```typescript
+// ✅ NEW: Import from organized categories
+import { createJob, scheduleJob } from '@white-cross/reuse/infrastructure/background-jobs';
+import { JwtAuthGuard, hashPassword } from '@white-cross/reuse/core/auth';
+import { sendEmail } from '@white-cross/reuse/infrastructure/notifications';
+
+// ✅ Import namespace
+import * as Jobs from '@white-cross/reuse/infrastructure/background-jobs';
+import * as Auth from '@white-cross/reuse/core/auth';
+
+await Jobs.createJob(...);
+const token = Auth.generateAccessToken(...);
+
+// ✅ Still works: Legacy imports (backward compatible)
+import { JwtAuthGuard } from '@white-cross/reuse/auth-security-kit.prod';
+import { createJob } from '@white-cross/reuse/background-jobs-kit.prod';
+```
+
+### 🎯 Basic Usage
 
 ```typescript
 // Import production-ready authentication kit
@@ -92,6 +180,55 @@ export class ProjectService {
 ```
 
 **See [Full Quick Start Guide](docs/QUICK-START.md) for detailed setup instructions.**
+
+---
+
+## 🗂️ New Organization Structure
+
+The library is now organized into clear categories for easy navigation:
+
+```
+reuse/
+├─ 🎯 core/                      - Platform fundamentals
+│  ├─ api/                       - API design, versioning
+│  ├─ auth/                      - Authentication, RBAC
+│  ├─ cache/                     - Caching strategies
+│  ├─ config/                    - Configuration mgmt
+│  ├─ database/                  - Sequelize, queries
+│  ├─ errors/                    - Error handling
+│  └─ validation/                - Input validation
+│
+├─ 🏗️ infrastructure/            - Cloud services
+│  ├─ background-jobs/           - Queues, scheduling
+│  ├─ notifications/             - Email, SMS, push
+│  ├─ payments/                  - Stripe, PayPal
+│  ├─ storage/                   - S3, Azure, GCP
+│  ├─ webhooks/                  - Webhook management
+│  ├─ logging/                   - Logs, metrics
+│  └─ search/                    - Elasticsearch
+│
+├─ 🏢 domain/                    - Industry-specific
+│  ├─ construction/              - 18 kits
+│  ├─ consulting/                - 10 kits
+│  ├─ education/                 - 26 kits
+│  ├─ engineering/               - 22 kits
+│  ├─ financial/                 - 40 kits
+│  ├─ property/                  - 20 kits
+│  └─ san/                       - 69 kits
+│
+├─ 📚 Documentation
+│  ├─ FUNCTION-CATALOG.md        - Searchable function index
+│  ├─ NAVIGATION.md              - Visual navigation guide
+│  ├─ QUICK-REFERENCE.md         - Copy-paste examples
+│  └─ MASTER-INDEX.md            - Complete kit catalog
+│
+└─ 🛠️ Tools
+   ├─ npm run find               - Find functions
+   ├─ npm run catalog            - View catalog
+   └─ npm run navigation         - View guide
+```
+
+**[View Full Organization Plan →](./ORGANIZATION-PLAN.md)**
 
 ---
 
