@@ -21,7 +21,7 @@
  * Upstream: Reuses financial kits from reuse/financial/
  * Downstream: Backend CEFMS controllers, Treasury reporting, FBWT reconciliation services
  * Dependencies: TypeScript 5.x, Node 18+, NestJS 10.x, Sequelize 6.x
- * Exports: 38+ composite functions for CEFMS fund balance reconciliation competing with legacy CEFMS
+ * Exports: 38+ composite functions for CEFMS fund balance reconciliation and integration
  *
  * LLM Context: Comprehensive USACE CEFMS fund balance reconciliation utilities for production-ready federal financial management.
  * Provides Fund Balance with Treasury (FBWT) reconciliation, suspense account management, unmatched transaction resolution,
