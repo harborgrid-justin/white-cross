@@ -404,8 +404,9 @@ export class BankReconciliationRestApiController {
     }
 
     // Validate file size (max 50MB)
-    if (file.size > 50 * 1024 * 1024) {
-      throw new BadRequestException('File size exceeds 50MB limit');
+    const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024; // 50MB
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      throw new BadRequestException(`File size exceeds ${MAX_FILE_SIZE_BYTES / (1024 * 1024)}MB limit`);
     }
 
     const transaction = await this.sequelize.transaction();
