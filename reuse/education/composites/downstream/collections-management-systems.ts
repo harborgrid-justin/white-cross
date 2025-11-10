@@ -305,7 +305,7 @@ export class CollectionsManagementSystemsService {
    * 6. Disputes collection item.
    */
   async disputeCollection(collectionId: string, reason: string, evidence: any): Promise<{ disputed: boolean; caseNumber: string }> {
-    return { disputed: true, caseNumber: `DISP-${Date.now()}` };
+    return { disputed: true, caseNumber: `DISP-${crypto.randomUUID()}` };
   }
 
   /**
