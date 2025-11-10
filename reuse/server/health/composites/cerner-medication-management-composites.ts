@@ -58,8 +58,6 @@
  *     description: Complete medication management orchestration for Cerner EHR systems
  */
 
-import { Injectable, Logger } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiProperty } from '@nestjs/swagger';
 import * as crypto from 'crypto';
 
 // Import types from base kits
