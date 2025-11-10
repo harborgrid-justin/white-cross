@@ -533,7 +533,7 @@ export class CODReportingModulesService {
     this.logger.log(`Creating COD origination for ${originationData.studentId}`);
 
     return {
-      recordId: `ORG-${Date.now()}`,
+      recordId: `ORG-${crypto.randomUUID()}`,
       studentId: originationData.studentId!,
       awardYear: originationData.awardYear!,
       loanType: originationData.loanType!,
