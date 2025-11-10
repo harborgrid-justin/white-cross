@@ -10,7 +10,7 @@ export class SpendAnalyticsService {
   private readonly logger = new Logger(SpendAnalyticsService.name);
 
   async analyzeSpendTrends(startDate: Date, endDate: Date): Promise<any> {
-    this.logger.log(\`Analyzing spend trends from \${startDate} to \${endDate}\`);
+    this.logger.log(`Analyzing spend trends from ${startDate} to ${endDate}`);
     return {
       totalSpend: 5000000,
       trend: 'INCREASING',
