@@ -10,7 +10,7 @@ export class InternationalTransactionProcessor {
   private readonly logger = new Logger(InternationalTransactionProcessor.name);
 
   async processInternationalTransaction(txn: any): Promise<any> {
-    this.logger.log(\`Processing international transaction\`);
+    this.logger.log(`Processing international transaction`);
     return { processed: true, fxRate: 1.25, fees: 25.00 };
   }
 }
