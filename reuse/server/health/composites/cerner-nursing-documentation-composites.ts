@@ -1709,7 +1709,7 @@ export async function orchestrateStructuredNursingHandoffUsingSBAR(
  *     mentalStatus: 'Anxious, dyspneic',
  *     timeOfChange: new Date(),
  *     nurseName: 'RN-101',
- *     actionsIn initiated: ['Oxygen 4L NC', 'HOB elevated', 'Physician called']
+ *     actionsInitiated: ['Oxygen 4L NC', 'HOB elevated', 'Physician called']
  *   }
  * );
  *
