@@ -101,7 +101,7 @@ export class LeaseAccountingRestApiController {
       totalLeases: 150,
       totalRouAssets: 5000000,
       totalLeaseLiabilities: 4800000,
-      avgLeaseTerem: 5,
+      avgLeaseTerm: 5,
       upcomingRenewals: 15,
     };
   }
