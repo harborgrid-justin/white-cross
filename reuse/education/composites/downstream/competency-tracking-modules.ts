@@ -96,7 +96,7 @@ export class CompetencyTrackingModulesService {
   // 1-8: COMPETENCY DEFINITION & MANAGEMENT
   async defineCompetency(competencyData: CompetencyData): Promise<CompetencyData> {
     this.logger.log(`Defining competency: ${competencyData.competencyName}`);
-    return { ...competencyData, competencyId: `COMP-${Date.now()}` };
+    return { ...competencyData, competencyId: `COMP-${crypto.randomUUID()}` };
   }
 
   async updateCompetencyDefinition(competencyId: string, updates: Partial<CompetencyData>): Promise<CompetencyData> {
