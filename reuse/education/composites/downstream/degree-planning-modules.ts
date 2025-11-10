@@ -14,7 +14,7 @@ export class DegreePlanningModulesService {
   private readonly logger = new Logger(DegreePlanningModulesService.name);
   constructor(@Inject('SEQUELIZE') private readonly sequelize: Sequelize) {}
 
-  async createDegreePlan(studentId: string, programId: string): Promise<any> { return { planId: `PLAN-${Date.now()}` }; }
+  async createDegreePlan(studentId: string, programId: string): Promise<any> { return { planId: `PLAN-${crypto.randomUUID()}` }; }
   async updateDegreePlan(planId: string, updates: any): Promise<any> { return {}; }
   async getDegreePlan(planId: string): Promise<any> { return {}; }
   async deleteDegreePlan(planId: string): Promise<any> { return { deleted: true }; }
