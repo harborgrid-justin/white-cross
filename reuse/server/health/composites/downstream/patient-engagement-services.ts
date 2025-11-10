@@ -17,6 +17,14 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import * as crypto from 'crypto';
+import {
+  RedisCacheService,
+  Cacheable,
+  PerformanceMonitor,
+  ConcurrencyLimiter,
+  chunk,
+  sleep,
+} from '../shared';
 
 /**
  * Patient Engagement Services
@@ -39,6 +47,9 @@ import * as crypto from 'crypto';
 @Injectable()
 export class PatientEngagementService {
   private readonly logger = new Logger(PatientEngagementService.name);
+  private readonly concurrencyLimiter = new ConcurrencyLimiter(50); // Limit concurrent operations
+
+  constructor(private readonly cacheService: RedisCacheService) {}
 
   // ============================================================================
   // APPOINTMENT REMINDER SERVICES
@@ -119,26 +130,62 @@ export class PatientEngagementService {
   /**
    * Automated daily appointment reminder cron job
    * Runs at 8:00 AM daily to send day-ahead reminders
+   *
+   * PERFORMANCE OPTIMIZED:
+   * - Batched processing (50 at a time) to prevent memory issues
+   * - Parallel execution with Promise.allSettled() to prevent single failure from blocking others
+   * - Rate limiting with 1 second delay between batches
+   * - Concurrency limiting to prevent overwhelming external APIs
    */
   @Cron(CronExpression.EVERY_DAY_AT_8AM)
+  @PerformanceMonitor({ threshold: 5000, logAll: true })
   async processAppointmentReminderQueue(): Promise<void> {
     this.logger.log('Processing appointment reminder queue');
 
     const upcomingAppointments = await this.getUpcomingAppointments(24);
 
-    for (const appointment of upcomingAppointments) {
-      try {
-        await this.sendAppointmentReminders(
-          appointment.appointmentId,
-          appointment.patientId,
-          24,
-        );
-      } catch (error) {
-        this.logger.error(`Reminder failed for ${appointment.appointmentId}: ${error.message}`);
+    // Split into batches of 50 to prevent overwhelming the system
+    const batches = chunk(upcomingAppointments, 50);
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const [index, batch] of batches.entries()) {
+      this.logger.log(`Processing batch ${index + 1}/${batches.length} (${batch.length} appointments)`);
+
+      // Process batch in parallel with Promise.allSettled
+      const results = await Promise.allSettled(
+        batch.map(appointment =>
+          this.concurrencyLimiter.execute(() =>
+            this.sendAppointmentReminders(
+              appointment.appointmentId,
+              appointment.patientId,
+              24,
+            )
+          )
+        )
+      );
+
+      // Count successes and failures
+      results.forEach((result, idx) => {
+        if (result.status === 'fulfilled') {
+          successCount++;
+        } else {
+          errorCount++;
+          this.logger.error(
+            `Reminder failed for ${batch[idx].appointmentId}: ${result.reason?.message || result.reason}`
+          );
+        }
+      });
+
+      // Rate limiting: wait 1 second between batches
+      if (index < batches.length - 1) {
+        await sleep(1000);
       }
     }
 
-    this.logger.log(`Processed ${upcomingAppointments.length} appointment reminders`);
+    this.logger.log(
+      `Processed ${upcomingAppointments.length} appointment reminders - Success: ${successCount}, Errors: ${errorCount}`
+    );
   }
 
   // ============================================================================
@@ -379,7 +426,14 @@ export class PatientEngagementService {
    * - Multi-touch outreach campaigns
    * - Provider alerts for opportunistic closure
    * - Real-time gap closure tracking
+   *
+   * PERFORMANCE OPTIMIZED:
+   * - Batched parallel processing (25 patients at a time)
+   * - All operations for a patient run in parallel (check + outreach + schedule)
+   * - Promise.allSettled() to handle individual failures gracefully
+   * - Rate limiting between batches to prevent API throttling
    */
+  @PerformanceMonitor({ threshold: 10000 })
   async executeCareGapClosureCampaign(
     campaignId: string,
     qualityMeasure: string,
@@ -396,28 +450,59 @@ export class PatientEngagementService {
     let outreachSent = 0;
     let gapsClosed = 0;
 
-    for (const patientId of targetPopulation) {
-      try {
-        // Check if gap still exists
-        const gapExists = await this.checkCareGapStatus(patientId, qualityMeasure);
+    // Process in batches of 25 to balance performance and resource usage
+    const batches = chunk(targetPopulation, 25);
 
-        if (gapExists) {
-          // Send outreach
-          await this.sendCareGapOutreach(patientId, qualityMeasure);
-          outreachSent++;
+    for (const [index, batch] of batches.entries()) {
+      this.logger.log(`Processing batch ${index + 1}/${batches.length} (${batch.length} patients)`);
 
-          // Schedule follow-up
-          await this.scheduleGapClosureFollowUp(patientId, qualityMeasure);
+      // Process all patients in batch in parallel
+      const results = await Promise.allSettled(
+        batch.map(async (patientId) => {
+          // Check if gap still exists
+          const gapExists = await this.checkCareGapStatus(patientId, qualityMeasure);
+
+          if (gapExists) {
+            // Run outreach and scheduling in parallel
+            await Promise.all([
+              this.sendCareGapOutreach(patientId, qualityMeasure),
+              this.scheduleGapClosureFollowUp(patientId, qualityMeasure),
+            ]);
+
+            return { patientId, action: 'outreach_sent' };
+          } else {
+            // Gap already closed
+            return { patientId, action: 'already_closed' };
+          }
+        })
+      );
+
+      // Process results
+      results.forEach((result, idx) => {
+        if (result.status === 'fulfilled') {
+          if (result.value.action === 'outreach_sent') {
+            outreachSent++;
+          } else if (result.value.action === 'already_closed') {
+            gapsClosed++;
+          }
         } else {
-          // Gap already closed
-          gapsClosed++;
+          this.logger.error(
+            `Care gap outreach failed for ${batch[idx]}: ${result.reason?.message || result.reason}`
+          );
         }
-      } catch (error) {
-        this.logger.error(`Care gap outreach failed for ${patientId}: ${error.message}`);
+      });
+
+      // Rate limiting: wait 500ms between batches
+      if (index < batches.length - 1) {
+        await sleep(500);
       }
     }
 
     const closureRate = targetPopulation.length > 0 ? (gapsClosed / targetPopulation.length) * 100 : 0;
+
+    this.logger.log(
+      `Campaign ${campaignId} completed - Targeted: ${targetPopulation.length}, Outreach: ${outreachSent}, Closed: ${gapsClosed}`
+    );
 
     return {
       campaignId,
@@ -637,7 +722,14 @@ export class PatientEngagementService {
     return [];
   }
 
+  /**
+   * Get patient demographics with caching
+   * Cache TTL: 15 minutes (900 seconds)
+   * Expected cache hit rate: 80%+
+   */
+  @Cacheable({ namespace: 'patient:demographics', ttl: 900 })
   private async getPatientDemographics(patientId: string): Promise<any> {
+    // In production, this would fetch from database
     return { age: 50, gender: 'female', preferredLanguage: 'en' };
   }
 

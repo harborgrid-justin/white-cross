@@ -41,6 +41,13 @@ import {
   PatientMatchCriteria,
   ConsentRecord,
 } from '../../cerner-interoperability-composites';
+import {
+  RateLimiterFactory,
+  PerformanceMonitor,
+  ConcurrencyLimiter,
+  RedisCacheService,
+  Cacheable,
+} from '../shared';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -136,9 +143,12 @@ export class HIEIntegrationService {
   private readonly logger = new Logger(HIEIntegrationService.name);
   private readonly commonWellClient: AxiosInstance;
   private readonly carequalityClient: AxiosInstance;
+  private readonly hieLimiter = RateLimiterFactory.getHIELimiter(); // 10 req/sec with burst 20
+  private readonly concurrencyLimiter = new ConcurrencyLimiter(10); // Max 10 concurrent document retrievals
 
   constructor(
     private readonly interopService: CernerInteroperabilityCompositeService,
+    private readonly cacheService: RedisCacheService,
   ) {
     // Initialize CommonWell HTTP client
     this.commonWellClient = axios.create({
@@ -552,7 +562,15 @@ export class HIEIntegrationService {
    * Aggregates clinical data from all HIE networks
    * @param patientId Patient identifier
    * @returns Aggregated clinical data
+   *
+   * PERFORMANCE OPTIMIZED:
+   * - Parallel document retrieval with Promise.allSettled()
+   * - Concurrency limiting (max 10 concurrent) to prevent overwhelming HIE networks
+   * - Rate limiting (10 req/sec with burst 20) for HIE API compliance
+   * - Graceful error handling for individual document failures
+   * - Performance monitoring with threshold of 15 seconds
    */
+  @PerformanceMonitor({ threshold: 15000 })
   async aggregateClinicalData(patientId: string): Promise<ClinicalDataAggregation> {
     this.logger.log(`Aggregating clinical data for patient: ${patientId}`);
 
@@ -574,28 +592,57 @@ export class HIEIntegrationService {
     try {
       // Query documents from all networks
       const documents = await this.queryDocumentsAllNetworks(patientId);
+      this.logger.log(`Found ${documents.length} documents to retrieve`);
 
-      // Retrieve and parse each document
-      for (const doc of documents) {
-        try {
-          // Determine network
-          const network = doc.homeCommunityId ? 'Carequality' : 'CommonWell';
+      // Retrieve and parse all documents in parallel with concurrency limiting
+      const results = await Promise.allSettled(
+        documents.map(doc =>
+          this.concurrencyLimiter.execute(async () => {
+            // Rate limit HIE API calls
+            await this.hieLimiter.acquire();
 
-          // Retrieve document
-          const retrieved = await this.retrieveDocument(
-            doc.documentId,
-            network as any,
-            doc.repositoryId,
-          );
+            // Determine network
+            const network = doc.homeCommunityId ? 'Carequality' : 'CommonWell';
 
-          // Parse document (assuming CCD/C-CDA format)
-          const parsed = await this.interopService.parseCCDDocument(
-            retrieved.content.toString('utf-8'),
-          );
+            // Retrieve document
+            const retrieved = await this.retrieveDocument(
+              doc.documentId,
+              network as any,
+              doc.repositoryId,
+            );
+
+            // Parse document (assuming CCD/C-CDA format)
+            const parsed = await this.interopService.parseCCDDocument(
+              retrieved.content.toString('utf-8'),
+            );
+
+            return {
+              doc,
+              network,
+              parsed,
+            };
+          })
+        )
+      );
+
+      // Process successful results
+      let successCount = 0;
+      let errorCount = 0;
+
+      results.forEach((result, idx) => {
+        if (result.status === 'fulfilled') {
+          successCount++;
+          const { doc, network, parsed } = result.value;
 
           // Aggregate data
           aggregation.problems.push(...(parsed.problems || []));
           aggregation.medications.push(...(parsed.medications || []));
+          aggregation.allergies.push(...(parsed.allergies || []));
+          aggregation.immunizations.push(...(parsed.immunizations || []));
+          aggregation.labResults.push(...(parsed.labResults || []));
+          aggregation.procedures.push(...(parsed.procedures || []));
+          aggregation.encounters.push(...(parsed.encounters || []));
+          aggregation.vitalSigns.push(...(parsed.vitalSigns || []));
 
           // Track source
           aggregation.sources.push({
@@ -604,16 +651,21 @@ export class HIEIntegrationService {
             organizationName: doc.authorInstitution,
             dataRetrievedAt: new Date(),
           });
-        } catch (error) {
-          this.logger.warn(`Failed to retrieve/parse document ${doc.documentId}: ${error.message}`);
+        } else {
+          errorCount++;
+          this.logger.warn(
+            `Failed to retrieve/parse document ${documents[idx].documentId}: ${result.reason?.message || result.reason}`
+          );
         }
-      }
+      });
 
       // Deduplicate and reconcile data
       aggregation.problems = this.deduplicateProblems(aggregation.problems);
       aggregation.medications = this.deduplicateMedications(aggregation.medications);
 
-      this.logger.log(`Clinical data aggregation complete: ${aggregation.sources.length} sources`);
+      this.logger.log(
+        `Clinical data aggregation complete: ${successCount} successful, ${errorCount} failed, ${aggregation.sources.length} sources`
+      );
 
       return aggregation;
     } catch (error) {
