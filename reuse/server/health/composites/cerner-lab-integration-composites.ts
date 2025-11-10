@@ -320,7 +320,7 @@ export async function orchestrateCernerLabOrderEntry(
       barcodes.push(barcode);
 
       const specimenCollection: SpecimenCollection = {
-        id: `SPEC-${Date.now()}-${Math.random().toString(36).substring(7)}`,
+        id: crypto.randomUUID(),
         orderId: labOrder.orderId,
         accessionNumber: labOrder.accessionNumber,
         specimenType: test.specimenType,
