@@ -16,7 +16,7 @@ export class ForeignExchangeRestApiController {
   @Get('rates/current')
   @ApiOperation({ summary: 'Get current exchange rates for all currency pairs' })
   async getCurrentRates(@Query('baseCurrency') baseCurrency: string = 'USD'): Promise<any> {
-    this.logger.log(\`Retrieving current rates for base currency \${baseCurrency}\`);
+    this.logger.log(`Retrieving current rates for base currency ${baseCurrency}`);
     return {
       baseCurrency,
       rates: {
