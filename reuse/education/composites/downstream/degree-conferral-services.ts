@@ -15,7 +15,7 @@ export class DegreeConferralServicesService {
   constructor(@Inject('SEQUELIZE') private readonly sequelize: Sequelize) {}
 
   async scheduleConferralDate(term: string, conferralDate: Date): Promise<any> { return {}; }
-  async prepareConferralBatch(conferralDate: Date): Promise<any> { return { batchId: `BATCH-${Date.now()}` }; }
+  async prepareConferralBatch(conferralDate: Date): Promise<any> { return { batchId: `BATCH-${crypto.randomUUID()}` }; }
   async reviewConferralCandidates(batchId: string): Promise<any> { return { candidates: [] }; }
   async validateConferralEligibility(studentId: string): Promise<any> { return { eligible: true }; }
   async approveForConferral(studentId: string, approvedBy: string): Promise<any> { return { approved: true }; }
