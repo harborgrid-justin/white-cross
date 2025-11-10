@@ -36,7 +36,159 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { Sequelize, Model, DataTypes } from 'sequelize';
 
+// ============================================================================
+// SECURITY: Authentication & Authorization
+// ============================================================================
+// SECURITY: Import authentication and authorization
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
+import { RolesGuard } from './security/guards/roles.guard';
+import { PermissionsGuard } from './security/guards/permissions.guard';
+import { Roles } from './security/decorators/roles.decorator';
+import { RequirePermissions } from './security/decorators/permissions.decorator';
+
 @Injectable()
+@UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
+
+
+// ============================================================================
+// PRODUCTION-READY SEQUELIZE MODELS
+// ============================================================================
+
+/**
+ * Production-ready Sequelize model for IntegrationControllersRecord
+ * Features: lifecycle hooks, validations, scopes, virtual attributes, paranoid mode, indexes
+ */
+export const createIntegrationControllersRecordModel = (sequelize: Sequelize) => {
+  class IntegrationControllersRecord extends Model {
+    public id!: string;
+    public status!: string;
+    public data!: Record<string, any>;
+    public readonly createdAt!: Date;
+    public readonly updatedAt!: Date;
+    public readonly deletedAt!: Date | null;
+
+    // Virtual attributes
+    get isActive(): boolean {
+      return this.status === 'active';
+    }
+
+    get statusLabel(): string {
+      return this.status.toUpperCase();
+    }
+  }
+
+  IntegrationControllersRecord.init(
+    {
+      id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+        validate: { isUUID: 4 },
+      },
+      status: {
+        type: DataTypes.ENUM('active', 'inactive', 'pending', 'completed', 'cancelled'),
+        allowNull: false,
+        defaultValue: 'pending',
+        validate: {
+          isIn: [['active', 'inactive', 'pending', 'completed', 'cancelled']],
+          notEmpty: true,
+        },
+      },
+      data: {
+        type: DataTypes.JSONB,
+        allowNull: false,
+        defaultValue: {},
+        validate: {
+          isValidData(value: any) {
+            if (typeof value !== 'object' || value === null) {
+              throw new Error('data must be a valid object');
+            }
+          },
+        },
+      },
+    },
+    {
+      sequelize,
+      tableName: 'integration_controllers_records',
+      timestamps: true,
+      paranoid: true,
+      underscored: true,
+      indexes: [
+        { fields: ['status'] },
+        { fields: ['created_at'] },
+        { fields: ['status', 'created_at'] },
+      ],
+      hooks: {
+        beforeCreate: async (record: IntegrationControllersRecord, options: any) => {
+          console.log(`[AUDIT] Creating IntegrationControllersRecord: ${record.id}`);
+        },
+        afterCreate: async (record: IntegrationControllersRecord, options: any) => {
+          console.log(`[AUDIT] IntegrationControllersRecord created: ${record.id}`);
+        },
+        beforeUpdate: async (record: IntegrationControllersRecord, options: any) => {
+          console.log(`[AUDIT] Updating IntegrationControllersRecord: ${record.id}`);
+        },
+        afterUpdate: async (record: IntegrationControllersRecord, options: any) => {
+          console.log(`[AUDIT] IntegrationControllersRecord updated: ${record.id}`);
+        },
+        beforeDestroy: async (record: IntegrationControllersRecord, options: any) => {
+          console.log(`[AUDIT] Deleting IntegrationControllersRecord: ${record.id}`);
+        },
+        afterDestroy: async (record: IntegrationControllersRecord, options: any) => {
+          console.log(`[AUDIT] IntegrationControllersRecord deleted: ${record.id}`);
+        },
+      },
+      scopes: {
+        defaultScope: { attributes: { exclude: ['deletedAt'] } },
+        active: { where: { status: 'active' } },
+        pending: { where: { status: 'pending' } },
+        completed: { where: { status: 'completed' } },
+        recent: { order: [['createdAt', 'DESC']], limit: 100 },
+      },
+    },
+  );
+
+  return IntegrationControllersRecord;
+};
+
+
+// ============================================================================
+// ERROR RESPONSE DTOS
+// ============================================================================
+
+/**
+ * Standard error response
+ */
+export class ErrorResponseDto {
+  @ApiProperty({ example: 404, description: 'HTTP status code' })
+  statusCode: number;
+
+  @ApiProperty({ example: 'Resource not found', description: 'Error message' })
+  message: string;
+
+  @ApiProperty({ example: 'NOT_FOUND', description: 'Error code' })
+  errorCode: string;
+
+  @ApiProperty({ example: '2025-11-10T12:00:00Z', format: 'date-time', description: 'Timestamp' })
+  timestamp: Date;
+
+  @ApiProperty({ example: '/api/v1/resource', description: 'Request path' })
+  path: string;
+}
+
+/**
+ * Validation error response
+ */
+export class ValidationErrorDto extends ErrorResponseDto {
+  @ApiProperty({
+    type: [Object],
+    example: [{ field: 'fieldName', message: 'validation error' }],
+    description: 'Validation errors'
+  })
+  validationErrors: Array<{ field: string; message: string }>;
+}
+
 export class IntegrationControllersComposite {
   private readonly logger = new Logger(IntegrationControllersComposite.name);
 

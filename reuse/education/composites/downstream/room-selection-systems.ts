@@ -20,7 +20,158 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { Sequelize, Model, DataTypes } from 'sequelize';
 
+// ============================================================================
+// SECURITY: Authentication & Authorization
+// ============================================================================
+// SECURITY: Import authentication and authorization
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
+import { RolesGuard } from './security/guards/roles.guard';
+import { PermissionsGuard } from './security/guards/permissions.guard';
+import { Roles } from './security/decorators/roles.decorator';
+import { RequirePermissions } from './security/decorators/permissions.decorator';
+
+
+
+// ============================================================================
+// PRODUCTION-READY SEQUELIZE MODELS
+// ============================================================================
+
+/**
+ * Production-ready Sequelize model for RoomSelectionSystemsRecord
+ * Features: lifecycle hooks, validations, scopes, virtual attributes, paranoid mode, indexes
+ */
+export const createRoomSelectionSystemsRecordModel = (sequelize: Sequelize) => {
+  class RoomSelectionSystemsRecord extends Model {
+    public id!: string;
+    public status!: string;
+    public data!: Record<string, any>;
+    public readonly createdAt!: Date;
+    public readonly updatedAt!: Date;
+    public readonly deletedAt!: Date | null;
+
+    // Virtual attributes
+    get isActive(): boolean {
+      return this.status === 'active';
+    }
+
+    get statusLabel(): string {
+      return this.status.toUpperCase();
+    }
+  }
+
+  RoomSelectionSystemsRecord.init(
+    {
+      id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+        validate: { isUUID: 4 },
+      },
+      status: {
+        type: DataTypes.ENUM('active', 'inactive', 'pending', 'completed', 'cancelled'),
+        allowNull: false,
+        defaultValue: 'pending',
+        validate: {
+          isIn: [['active', 'inactive', 'pending', 'completed', 'cancelled']],
+          notEmpty: true,
+        },
+      },
+      data: {
+        type: DataTypes.JSONB,
+        allowNull: false,
+        defaultValue: {},
+        validate: {
+          isValidData(value: any) {
+            if (typeof value !== 'object' || value === null) {
+              throw new Error('data must be a valid object');
+            }
+          },
+        },
+      },
+    },
+    {
+      sequelize,
+      tableName: 'room_selection_systems_records',
+      timestamps: true,
+      paranoid: true,
+      underscored: true,
+      indexes: [
+        { fields: ['status'] },
+        { fields: ['created_at'] },
+        { fields: ['status', 'created_at'] },
+      ],
+      hooks: {
+        beforeCreate: async (record: RoomSelectionSystemsRecord, options: any) => {
+          console.log(`[AUDIT] Creating RoomSelectionSystemsRecord: ${record.id}`);
+        },
+        afterCreate: async (record: RoomSelectionSystemsRecord, options: any) => {
+          console.log(`[AUDIT] RoomSelectionSystemsRecord created: ${record.id}`);
+        },
+        beforeUpdate: async (record: RoomSelectionSystemsRecord, options: any) => {
+          console.log(`[AUDIT] Updating RoomSelectionSystemsRecord: ${record.id}`);
+        },
+        afterUpdate: async (record: RoomSelectionSystemsRecord, options: any) => {
+          console.log(`[AUDIT] RoomSelectionSystemsRecord updated: ${record.id}`);
+        },
+        beforeDestroy: async (record: RoomSelectionSystemsRecord, options: any) => {
+          console.log(`[AUDIT] Deleting RoomSelectionSystemsRecord: ${record.id}`);
+        },
+        afterDestroy: async (record: RoomSelectionSystemsRecord, options: any) => {
+          console.log(`[AUDIT] RoomSelectionSystemsRecord deleted: ${record.id}`);
+        },
+      },
+      scopes: {
+        defaultScope: { attributes: { exclude: ['deletedAt'] } },
+        active: { where: { status: 'active' } },
+        pending: { where: { status: 'pending' } },
+        completed: { where: { status: 'completed' } },
+        recent: { order: [['createdAt', 'DESC']], limit: 100 },
+      },
+    },
+  );
+
+  return RoomSelectionSystemsRecord;
+};
+
 @Injectable()
+
+// ============================================================================
+// ERROR RESPONSE DTOS
+// ============================================================================
+
+/**
+ * Standard error response
+ */
+export class ErrorResponseDto {
+  @ApiProperty({ example: 404, description: 'HTTP status code' })
+  statusCode: number;
+
+  @ApiProperty({ example: 'Resource not found', description: 'Error message' })
+  message: string;
+
+  @ApiProperty({ example: 'NOT_FOUND', description: 'Error code' })
+  errorCode: string;
+
+  @ApiProperty({ example: '2025-11-10T12:00:00Z', format: 'date-time', description: 'Timestamp' })
+  timestamp: Date;
+
+  @ApiProperty({ example: '/api/v1/resource', description: 'Request path' })
+  path: string;
+}
+
+/**
+ * Validation error response
+ */
+export class ValidationErrorDto extends ErrorResponseDto {
+  @ApiProperty({
+    type: [Object],
+    example: [{ field: 'fieldName', message: 'validation error' }],
+    description: 'Validation errors'
+  })
+  validationErrors: Array<{ field: string; message: string }>;
+}
+
 export class RoomSelectionSystemsComposite {
   private readonly logger = new Logger(RoomSelectionSystemsComposite.name);
   constructor(@Inject('SEQUELIZE') private readonly sequelize: Sequelize) {}

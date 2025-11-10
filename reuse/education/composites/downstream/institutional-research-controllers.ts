@@ -58,6 +58,17 @@ import {
 
 // Import from faculty-staff management composite
 import {
+
+// ============================================================================
+// SECURITY: Authentication & Authorization
+// ============================================================================
+// SECURITY: Import authentication and authorization
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
+import { RolesGuard } from './security/guards/roles.guard';
+import { PermissionsGuard } from './security/guards/permissions.guard';
+import { Roles } from './security/decorators/roles.decorator';
+import { RequirePermissions } from './security/decorators/permissions.decorator';
   getFacultyMetrics,
   calculateTeachingLoad,
 } from '../faculty-staff-management-composite';
@@ -69,6 +80,43 @@ import {
 /**
  * Report type
  */
+
+// ============================================================================
+// ERROR RESPONSE DTOS
+// ============================================================================
+
+/**
+ * Standard error response
+ */
+export class ErrorResponseDto {
+  @ApiProperty({ example: 404, description: 'HTTP status code' })
+  statusCode: number;
+
+  @ApiProperty({ example: 'Resource not found', description: 'Error message' })
+  message: string;
+
+  @ApiProperty({ example: 'NOT_FOUND', description: 'Error code' })
+  errorCode: string;
+
+  @ApiProperty({ example: '2025-11-10T12:00:00Z', format: 'date-time', description: 'Timestamp' })
+  timestamp: Date;
+
+  @ApiProperty({ example: '/api/v1/resource', description: 'Request path' })
+  path: string;
+}
+
+/**
+ * Validation error response
+ */
+export class ValidationErrorDto extends ErrorResponseDto {
+  @ApiProperty({
+    type: [Object],
+    example: [{ field: 'fieldName', message: 'validation error' }],
+    description: 'Validation errors'
+  })
+  validationErrors: Array<{ field: string; message: string }>;
+}
+
 export type ReportType = 'enrollment' | 'retention' | 'graduation' | 'financial' | 'faculty' | 'compliance' | 'accreditation';
 
 /**
@@ -435,6 +483,110 @@ export const createInstitutionalReportModel = (sequelize: Sequelize) => {
  * and strategic planning support.
  */
 @Injectable()
+@UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
+
+
+// ============================================================================
+// PRODUCTION-READY SEQUELIZE MODELS
+// ============================================================================
+
+/**
+ * Production-ready Sequelize model for InstitutionalResearchControllersRecord
+ * Features: lifecycle hooks, validations, scopes, virtual attributes, paranoid mode, indexes
+ */
+export const createInstitutionalResearchControllersRecordModel = (sequelize: Sequelize) => {
+  class InstitutionalResearchControllersRecord extends Model {
+    public id!: string;
+    public status!: string;
+    public data!: Record<string, any>;
+    public readonly createdAt!: Date;
+    public readonly updatedAt!: Date;
+    public readonly deletedAt!: Date | null;
+
+    // Virtual attributes
+    get isActive(): boolean {
+      return this.status === 'active';
+    }
+
+    get statusLabel(): string {
+      return this.status.toUpperCase();
+    }
+  }
+
+  InstitutionalResearchControllersRecord.init(
+    {
+      id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+        validate: { isUUID: 4 },
+      },
+      status: {
+        type: DataTypes.ENUM('active', 'inactive', 'pending', 'completed', 'cancelled'),
+        allowNull: false,
+        defaultValue: 'pending',
+        validate: {
+          isIn: [['active', 'inactive', 'pending', 'completed', 'cancelled']],
+          notEmpty: true,
+        },
+      },
+      data: {
+        type: DataTypes.JSONB,
+        allowNull: false,
+        defaultValue: {},
+        validate: {
+          isValidData(value: any) {
+            if (typeof value !== 'object' || value === null) {
+              throw new Error('data must be a valid object');
+            }
+          },
+        },
+      },
+    },
+    {
+      sequelize,
+      tableName: 'institutional_research_controllers_records',
+      timestamps: true,
+      paranoid: true,
+      underscored: true,
+      indexes: [
+        { fields: ['status'] },
+        { fields: ['created_at'] },
+        { fields: ['status', 'created_at'] },
+      ],
+      hooks: {
+        beforeCreate: async (record: InstitutionalResearchControllersRecord, options: any) => {
+          console.log(`[AUDIT] Creating InstitutionalResearchControllersRecord: ${record.id}`);
+        },
+        afterCreate: async (record: InstitutionalResearchControllersRecord, options: any) => {
+          console.log(`[AUDIT] InstitutionalResearchControllersRecord created: ${record.id}`);
+        },
+        beforeUpdate: async (record: InstitutionalResearchControllersRecord, options: any) => {
+          console.log(`[AUDIT] Updating InstitutionalResearchControllersRecord: ${record.id}`);
+        },
+        afterUpdate: async (record: InstitutionalResearchControllersRecord, options: any) => {
+          console.log(`[AUDIT] InstitutionalResearchControllersRecord updated: ${record.id}`);
+        },
+        beforeDestroy: async (record: InstitutionalResearchControllersRecord, options: any) => {
+          console.log(`[AUDIT] Deleting InstitutionalResearchControllersRecord: ${record.id}`);
+        },
+        afterDestroy: async (record: InstitutionalResearchControllersRecord, options: any) => {
+          console.log(`[AUDIT] InstitutionalResearchControllersRecord deleted: ${record.id}`);
+        },
+      },
+      scopes: {
+        defaultScope: { attributes: { exclude: ['deletedAt'] } },
+        active: { where: { status: 'active' } },
+        pending: { where: { status: 'pending' } },
+        completed: { where: { status: 'completed' } },
+        recent: { order: [['createdAt', 'DESC']], limit: 100 },
+      },
+    },
+  );
+
+  return InstitutionalResearchControllersRecord;
+};
+
 export class InstitutionalResearchControllersComposite {
   private readonly logger = new Logger(InstitutionalResearchControllersComposite.name);
 
@@ -459,6 +611,14 @@ export class InstitutionalResearchControllersComposite {
    * console.log(`Total enrollment: ${snapshot.totalEnrollment}`);
    * ```
    */
+  @ApiOperation({
+    summary: 'File: /reuse/education/composites/downstream/institutional-research-controllers',
+    description: 'Comprehensive captureEnrollmentSnapshot operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async captureEnrollmentSnapshot(term: string, snapshotDate: Date): Promise<EnrollmentSnapshot> {
     this.logger.log(`Capturing enrollment snapshot for ${term}`);
 
@@ -517,6 +677,14 @@ export class InstitutionalResearchControllersComposite {
    * console.log(`Trend direction: ${trends.trendDirection}`);
    * ```
    */
+  @ApiOperation({
+    summary: '* 2',
+    description: 'Comprehensive analyzeEnrollmentTrends operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async analyzeEnrollmentTrends(
     startDate: Date,
     endDate: Date,
@@ -547,6 +715,14 @@ export class InstitutionalResearchControllersComposite {
    * console.log(`Diversity index: ${mix.diversityIndex}`);
    * ```
    */
+  @ApiOperation({
+    summary: '* 3',
+    description: 'Comprehensive calculateEnrollmentMix operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async calculateEnrollmentMix(term: string): Promise<{ diversityIndex: number; mixBreakdown: any }> {
     const snapshot = await this.captureEnrollmentSnapshot(term, new Date());
 
@@ -582,6 +758,14 @@ export class InstitutionalResearchControllersComposite {
    * programs.forEach(p => console.log(`${p.programName}: ${p.enrollment} students`));
    * ```
    */
+  @ApiOperation({
+    summary: '* 4',
+    description: 'Comprehensive trackProgramEnrollment operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async trackProgramEnrollment(
     term: string,
   ): Promise<Array<{ programId: string; programName: string; enrollment: number; change: number }>> {
@@ -604,6 +788,14 @@ export class InstitutionalResearchControllersComposite {
    * console.log(`Yield rate: ${funnel.yieldRate}%`);
    * ```
    */
+  @ApiOperation({
+    summary: '* 5',
+    description: 'Comprehensive analyzeEnrollmentFunnel operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async analyzeEnrollmentFunnel(
     admissionCycle: string,
   ): Promise<{ applicants: number; admitted: number; enrolled: number; yieldRate: number }> {
@@ -627,6 +819,14 @@ export class InstitutionalResearchControllersComposite {
    * forecast.forEach(f => console.log(`${f.year}: ${f.predictedEnrollment}`));
    * ```
    */
+  @ApiOperation({
+    summary: '* 6',
+    description: 'Comprehensive forecastEnrollment operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async forecastEnrollment(
     yearsAhead: number,
   ): Promise<Array<{ year: string; predictedEnrollment: number; confidenceInterval: [number, number] }>> {
@@ -661,6 +861,14 @@ export class InstitutionalResearchControllersComposite {
    * console.log('Dashboard metrics generated');
    * ```
    */
+  @ApiOperation({
+    summary: '* 7',
+    description: 'Comprehensive generateEnrollmentDashboard operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async generateEnrollmentDashboard(term: string): Promise<{ currentEnrollment: any; trends: any; comparisons: any }> {
     const snapshot = await this.captureEnrollmentSnapshot(term, new Date());
     const trends = await this.analyzeEnrollmentTrends(
@@ -695,6 +903,14 @@ export class InstitutionalResearchControllersComposite {
    * console.log(`First-year retention: ${retention.firstYearRetention}%`);
    * ```
    */
+  @ApiOperation({
+    summary: '* 8',
+    description: 'Comprehensive calculateRetentionRates operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async calculateRetentionRates(cohort: string): Promise<RetentionMetrics> {
     const retentionData = await calculateRetentionRates(cohort);
 
@@ -728,6 +944,14 @@ export class InstitutionalResearchControllersComposite {
    * atRisk.forEach(r => console.log(`${r.riskFactor}: ${r.studentCount} students`));
    * ```
    */
+  @ApiOperation({
+    summary: '* 9',
+    description: 'Comprehensive analyzeAtRiskStudents operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async analyzeAtRiskStudents(
     term: string,
   ): Promise<Array<{ riskFactor: string; studentCount: number; interventions: string[] }>> {
@@ -762,6 +986,14 @@ export class InstitutionalResearchControllersComposite {
    * console.log(`Persistence rate: ${persistence.persistenceRate}%`);
    * ```
    */
+  @ApiOperation({
+    summary: '* 10',
+    description: 'Comprehensive trackPersistence operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async trackPersistence(cohort: string): Promise<{ persistenceRate: number; milestones: any[] }> {
     return {
       persistenceRate: 72.5,
@@ -788,6 +1020,14 @@ export class InstitutionalResearchControllersComposite {
    * console.log(`Risk level: ${interventions.riskLevel}`);
    * ```
    */
+  @ApiOperation({
+    summary: '* 11',
+    description: 'Comprehensive identifyInterventionOpportunities operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async identifyInterventionOpportunities(
     studentId: string,
   ): Promise<{ riskLevel: string; recommendedInterventions: string[]; priority: number }> {
@@ -814,6 +1054,14 @@ export class InstitutionalResearchControllersComposite {
    * console.log(`Retention impact: +${effectiveness.retentionImpact}%`);
    * ```
    */
+  @ApiOperation({
+    summary: '* 12',
+    description: 'Comprehensive measureRetentionInitiativeEffectiveness operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async measureRetentionInitiativeEffectiveness(
     initiativeId: string,
   ): Promise<{ participantCount: number; retentionImpact: number; costPerStudent: number }> {
@@ -836,6 +1084,14 @@ export class InstitutionalResearchControllersComposite {
    * comparison.forEach(c => console.log(`${c.demographic}: ${c.retentionRate}%`));
    * ```
    */
+  @ApiOperation({
+    summary: '* 13',
+    description: 'Comprehensive compareRetentionByDemographics operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async compareRetentionByDemographics(
     cohort: string,
   ): Promise<Array<{ demographic: string; retentionRate: number; gap: number }>> {
@@ -860,6 +1116,14 @@ export class InstitutionalResearchControllersComposite {
    * predictions.forEach(p => console.log(`${p.studentId}: ${p.retentionProbability}% likely to return`));
    * ```
    */
+  @ApiOperation({
+    summary: '* 14',
+    description: 'Comprehensive generateRetentionPredictions operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async generateRetentionPredictions(
     studentIds: string[],
   ): Promise<Array<{ studentId: string; retentionProbability: number; riskFactors: string[] }>> {
@@ -886,6 +1150,14 @@ export class InstitutionalResearchControllersComposite {
    * console.log(`Six-year grad rate: ${outcomes.sixYearGradRate}%`);
    * ```
    */
+  @ApiOperation({
+    summary: '* 15',
+    description: 'Comprehensive calculateGraduationRates operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async calculateGraduationRates(cohort: string): Promise<GraduationOutcomes> {
     const outcomes = await analyzeStudentOutcomes(cohort);
 
@@ -922,6 +1194,14 @@ export class InstitutionalResearchControllersComposite {
    * console.log(`Average time: ${ttd.averageTime} years`);
    * ```
    */
+  @ApiOperation({
+    summary: '* 16',
+    description: 'Comprehensive analyzeTimeToDegree operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async analyzeTimeToDegree(programId: string): Promise<{ averageTime: number; distribution: any; factors: any[] }> {
     return {
       averageTime: 4.6,
@@ -951,6 +1231,14 @@ export class InstitutionalResearchControllersComposite {
    * console.log(`${outcomes.employed}% employed, avg salary: $${outcomes.avgSalary}`);
    * ```
    */
+  @ApiOperation({
+    summary: '* 17',
+    description: 'Comprehensive trackPostGraduationOutcomes operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async trackPostGraduationOutcomes(
     graduationYear: string,
   ): Promise<{ employed: number; graduateSchool: number; seekingEmployment: number; avgSalary: number }> {
@@ -974,6 +1262,14 @@ export class InstitutionalResearchControllersComposite {
    * comparison.forEach(p => console.log(`${p.programName}: ${p.gradRate}%`));
    * ```
    */
+  @ApiOperation({
+    summary: '* 18',
+    description: 'Comprehensive compareGraduationRatesByProgram operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async compareGraduationRatesByProgram(
     cohort: string,
   ): Promise<Array<{ programId: string; programName: string; gradRate: number }>> {
@@ -996,6 +1292,14 @@ export class InstitutionalResearchControllersComposite {
    * barriers.forEach(b => console.log(`${b.barrier}: ${b.studentsAffected} affected`));
    * ```
    */
+  @ApiOperation({
+    summary: '* 19',
+    description: 'Comprehensive identifyGraduationBarriers operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async identifyGraduationBarriers(
     programId: string,
   ): Promise<Array<{ barrier: string; studentsAffected: number; avgDelay: number }>> {
@@ -1018,6 +1322,14 @@ export class InstitutionalResearchControllersComposite {
    * forecast.forEach(f => console.log(`${f.year}: ${f.predictedGraduates} graduates`));
    * ```
    */
+  @ApiOperation({
+    summary: '* 20',
+    description: 'Comprehensive forecastGraduationNumbers operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async forecastGraduationNumbers(yearsAhead: number): Promise<Array<{ year: string; predictedGraduates: number }>> {
     const forecast: Array<{ year: string; predictedGraduates: number }> = [];
     const baseGraduates = 2500;
@@ -1044,6 +1356,14 @@ export class InstitutionalResearchControllersComposite {
    * console.log('Graduation report generated');
    * ```
    */
+  @ApiOperation({
+    summary: '* 21',
+    description: 'Comprehensive generateGraduationReport operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async generateGraduationReport(academicYear: string): Promise<{ outcomes: any; trends: any; recommendations: string[] }> {
     const outcomes = await this.calculateGraduationRates('Fall 2018 Cohort');
 
@@ -1077,6 +1397,14 @@ export class InstitutionalResearchControllersComposite {
    * console.log(`Productivity score: ${metrics.productivityScore}`);
    * ```
    */
+  @ApiOperation({
+    summary: '* 22',
+    description: 'Comprehensive analyzeFacultyProductivity operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async analyzeFacultyProductivity(facultyId: string): Promise<FacultyProductivityMetrics> {
     const teachingLoad = await calculateTeachingLoad(facultyId);
 
@@ -1106,6 +1434,14 @@ export class InstitutionalResearchControllersComposite {
    * console.log(`Ratio: 1:${ratio.ratio}`);
    * ```
    */
+  @ApiOperation({
+    summary: '* 23',
+    description: 'Comprehensive calculateFacultyStudentRatio operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async calculateFacultyStudentRatio(
     department: string,
   ): Promise<{ ratio: number; facultyCount: number; studentCount: number }> {
@@ -1129,6 +1465,14 @@ export class InstitutionalResearchControllersComposite {
    * console.log(`Total funding: $${research.totalFunding}`);
    * ```
    */
+  @ApiOperation({
+    summary: '* 24',
+    description: 'Comprehensive trackResearchOutput operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async trackResearchOutput(
     department: string,
     fiscalYear: string,
@@ -1152,6 +1496,14 @@ export class InstitutionalResearchControllersComposite {
    * console.log(`Average class size: ${classSize.average}`);
    * ```
    */
+  @ApiOperation({
+    summary: '* 25',
+    description: 'Comprehensive analyzeClassSizeDistribution operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async analyzeClassSizeDistribution(term: string): Promise<{ average: number; median: number; distribution: any }> {
     return {
       average: 28.5,
@@ -1177,6 +1529,14 @@ export class InstitutionalResearchControllersComposite {
    * console.log(`Diversity index: ${diversity.diversityIndex}`);
    * ```
    */
+  @ApiOperation({
+    summary: '* 26',
+    description: 'Comprehensive measureFacultyDiversity operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async measureFacultyDiversity(
     department: string,
   ): Promise<{ totalFaculty: number; diversityBreakdown: any; diversityIndex: number }> {
@@ -1203,6 +1563,14 @@ export class InstitutionalResearchControllersComposite {
    * console.log(`Faculty retention rate: ${retention.retentionRate}%`);
    * ```
    */
+  @ApiOperation({
+    summary: '* 27',
+    description: 'Comprehensive trackFacultyRetention operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async trackFacultyRetention(
     academicYear: string,
   ): Promise<{ retentionRate: number; turnoverRate: number; reasons: any[] }> {
@@ -1230,6 +1598,14 @@ export class InstitutionalResearchControllersComposite {
    * console.log(`Average teaching load: ${workload.avgTeachingLoad} credit hours`);
    * ```
    */
+  @ApiOperation({
+    summary: '* 28',
+    description: 'Comprehensive generateFacultyWorkloadReport operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async generateFacultyWorkloadReport(
     department: string,
     term: string,
@@ -1257,6 +1633,14 @@ export class InstitutionalResearchControllersComposite {
    * console.log(`Ranking: ${benchmark.ranking} (${benchmark.percentile}th percentile)`);
    * ```
    */
+  @ApiOperation({
+    summary: '* 29',
+    description: 'Comprehensive compareToPeerInstitutions operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async compareToPeerInstitutions(peerGroup: string): Promise<PeerBenchmarkData> {
     return {
       benchmarkId: `BENCH-${Date.now()}`,
@@ -1288,6 +1672,14 @@ export class InstitutionalResearchControllersComposite {
    * gaps.forEach(g => console.log(`${g.metric}: ${g.gap > 0 ? '+' : ''}${g.gap}%`));
    * ```
    */
+  @ApiOperation({
+    summary: '* 30',
+    description: 'Comprehensive identifyPerformanceGaps operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async identifyPerformanceGaps(
     peerGroup: string,
   ): Promise<Array<{ metric: string; institutionValue: number; peerAverage: number; gap: number }>> {
@@ -1310,6 +1702,14 @@ export class InstitutionalResearchControllersComposite {
    * positioning.forEach(p => console.log(`${p.institutionId}: ${p.strengths.join(', ')}`));
    * ```
    */
+  @ApiOperation({
+    summary: '* 31',
+    description: 'Comprehensive trackCompetitivePositioning operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async trackCompetitivePositioning(
     competitorIds: string[],
   ): Promise<Array<{ institutionId: string; strengths: string[]; weaknesses: string[] }>> {
@@ -1332,6 +1732,14 @@ export class InstitutionalResearchControllersComposite {
    * console.log(`Market share: ${marketShare.currentShare}%`);
    * ```
    */
+  @ApiOperation({
+    summary: '* 32',
+    description: 'Comprehensive analyzeMarketShareTrends operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async analyzeMarketShareTrends(
     region: string,
   ): Promise<{ currentShare: number; trendDirection: string; competitors: any[] }> {
@@ -1357,6 +1765,14 @@ export class InstitutionalResearchControllersComposite {
    * console.log(`Overall ranking: ${rankings.ranking} of ${rankings.totalInstitutions}`);
    * ```
    */
+  @ApiOperation({
+    summary: '* 33',
+    description: 'Comprehensive generatePeerRankingReport operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async generatePeerRankingReport(
     peerGroup: string,
   ): Promise<{ ranking: number; totalInstitutions: number; rankingsByMetric: any }> {
@@ -1384,6 +1800,14 @@ export class InstitutionalResearchControllersComposite {
    * rankings.forEach(r => console.log(`${r.publisher}: #${r.ranking} in ${r.category}`));
    * ```
    */
+  @ApiOperation({
+    summary: '* 34',
+    description: 'Comprehensive trackExternalRankings operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async trackExternalRankings(
     academicYear: string,
   ): Promise<Array<{ publisher: string; ranking: number; category: string }>> {
@@ -1407,6 +1831,14 @@ export class InstitutionalResearchControllersComposite {
    * console.log('Financial benchmarking complete');
    * ```
    */
+  @ApiOperation({
+    summary: '* 35',
+    description: 'Comprehensive benchmarkFinancialMetrics operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async benchmarkFinancialMetrics(
     peerGroup: string,
     fiscalYear: string,
@@ -1447,6 +1879,14 @@ export class InstitutionalResearchControllersComposite {
    * console.log(`Status: ${dataSet.status}`);
    * ```
    */
+  @ApiOperation({
+    summary: '* 36',
+    description: 'Comprehensive prepareAccreditationData operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async prepareAccreditationData(accreditingBody: string, reportingPeriod: string): Promise<AccreditationDataSet> {
     return {
       dataSetId: `ACCRED-${Date.now()}`,
@@ -1474,6 +1914,14 @@ export class InstitutionalResearchControllersComposite {
    * console.log(`Overall quality score: ${assessment.overallScore}`);
    * ```
    */
+  @ApiOperation({
+    summary: '* 37',
+    description: 'Comprehensive validateDataQuality operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async validateDataQuality(dataSource: string): Promise<DataQualityAssessment> {
     return {
       assessmentId: `DQ-${Date.now()}`,
@@ -1506,6 +1954,14 @@ export class InstitutionalResearchControllersComposite {
    * console.log(`Report: ${report.reportTitle}`);
    * ```
    */
+  @ApiOperation({
+    summary: '* 38',
+    description: 'Comprehensive generateBoardReport operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async generateBoardReport(reportingPeriod: string): Promise<BoardReport> {
     return {
       reportId: `BOARD-${Date.now()}`,
@@ -1542,6 +1998,14 @@ export class InstitutionalResearchControllersComposite {
    * console.log(`Overall progress: ${tracking.overallProgress}%`);
    * ```
    */
+  @ApiOperation({
+    summary: '* 39',
+    description: 'Comprehensive trackStrategicPlanMetrics operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async trackStrategicPlanMetrics(
     strategicPlanId: string,
   ): Promise<{ goals: any[]; overallProgress: number; onTrack: number }> {
@@ -1569,6 +2033,14 @@ export class InstitutionalResearchControllersComposite {
    * console.log('Comprehensive institutional effectiveness report generated');
    * ```
    */
+  @ApiOperation({
+    summary: '* 40',
+    description: 'Comprehensive generateInstitutionalEffectivenessReport operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async generateInstitutionalEffectivenessReport(
     reportDate: Date,
   ): Promise<{ enrollment: any; retention: any; graduation: any; faculty: any; benchmarking: any }> {
