@@ -219,7 +219,7 @@ export class CommencementManagementService {
     return { cancelled: true, refundsIssued: 0 };
   }
 
-  async reschedule Ceremony(ceremonyId: string, newDate: Date, newLocation: string): Promise<{ rescheduled: boolean }> {
+  async rescheduleCeremony(ceremonyId: string, newDate: Date, newLocation: string): Promise<{ rescheduled: boolean }> {
     return { rescheduled: true };
   }
 
