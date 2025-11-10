@@ -10,7 +10,7 @@ export class CurrencyRevaluationJobScheduler {
   private readonly logger = new Logger(CurrencyRevaluationJobScheduler.name);
 
   async scheduleRevaluation(frequency: string): Promise<any> {
-    this.logger.log(\`Scheduling revaluation job: \${frequency}\`);
+    this.logger.log(`Scheduling revaluation job: ${frequency}`);
     return { scheduled: true, nextRun: new Date() };
   }
 
