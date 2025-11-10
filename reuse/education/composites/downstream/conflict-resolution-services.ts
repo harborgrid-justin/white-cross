@@ -14,7 +14,7 @@ export class ConflictResolutionServicesService {
   private readonly logger = new Logger(ConflictResolutionServicesService.name);
   constructor(@Inject('SEQUELIZE') private readonly sequelize: Sequelize) {}
 
-  async initiateConflictCase(parties: string[], description: string): Promise<any> { return { caseId: `CASE-${Date.now()}` }; }
+  async initiateConflictCase(parties: string[], description: string): Promise<any> { return { caseId: `CASE-${crypto.randomUUID()}` }; }
   async assignMediator(caseId: string, mediatorId: string): Promise<any> { return { assigned: true }; }
   async scheduleMediationSession(caseId: string, dateTime: Date): Promise<any> { return {}; }
   async conductMediationSession(sessionId: string): Promise<any> { return {}; }
