@@ -523,7 +523,7 @@ export class CertificationModulesService {
     this.logger.log(`Creating certification for ${certData.studentId}`);
 
     return {
-      certificationId: `CERT-${Date.now()}`,
+      certificationId: `CERT-${crypto.randomUUID()}`,
       studentId: certData.studentId!,
       certificationType: certData.certificationType!,
       certificationName: certData.certificationName!,
