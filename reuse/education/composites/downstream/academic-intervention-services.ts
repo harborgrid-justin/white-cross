@@ -250,7 +250,7 @@ export class AcademicInterventionServicesService {
     return [];
   }
 
-  async createPersonalizedSupport Plan(studentId: string): Promise<any> {
+  async createPersonalizedSupportPlan(studentId: string): Promise<any> {
     return {};
   }
 
