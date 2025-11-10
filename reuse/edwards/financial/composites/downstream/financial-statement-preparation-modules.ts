@@ -10,7 +10,7 @@ export class FinancialStatementPreparationService {
   private readonly logger = new Logger(FinancialStatementPreparationService.name);
 
   async prepareBalanceSheet(periodEnd: Date): Promise<any> {
-    this.logger.log(\`Preparing balance sheet for \${periodEnd}\`);
+    this.logger.log(`Preparing balance sheet for ${periodEnd}`);
     return { assets: 10000000, liabilities: 6000000, equity: 4000000 };
   }
 
