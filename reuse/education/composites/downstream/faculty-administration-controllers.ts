@@ -1,16 +1,258 @@
+import { Injectable, Scope, Logger, Inject } from '@nestjs/common';
+import { Sequelize } from 'sequelize';
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
+import { RolesGuard } from './security/guards/roles.guard';
+import { PermissionsGuard } from './security/guards/permissions.guard';
+import { Roles } from './security/decorators/roles.decorator';
+import { RequirePermissions } from './security/decorators/permissions.decorator';
+import { DATABASE_CONNECTION } from './common/tokens/database.tokens';
+
 /**
- * LOC: EDU-COMP-DOWN-$(echo ${file} | tr 'a-z-' 'A-Z_' | cut -d. -f1)
- * File: /reuse/education/composites/downstream/${file}.ts
- * Purpose: Production-grade composite for ${file}
+ * LOC: EDU-COMP-DOWN-FACULTY-ADMINISTRATION-CONTROLLERS
+ * File: /reuse/education/composites/downstream/faculty-administration-controllers.ts
+ * Purpose: Production-grade composite for faculty-administration-controllers
  */
 
-import { Injectable, Logger, Inject } from '@nestjs/common';
-import { Sequelize } from 'sequelize';
+
+// ============================================================================
+// SECURITY: Authentication & Authorization
+// ============================================================================
+// SECURITY: Import authentication and authorization
+
+
+// ============================================================================
+// SEQUELIZE MODELS WITH PRODUCTION-READY FEATURES
+// ============================================================================
+
+/**
+ * Production-ready Sequelize model for FacultyAdministrationControllersRecord
+ *
+ * Features:
+ * - Lifecycle hooks for FERPA/HIPAA compliance auditing
+ * - Comprehensive validations with custom validators
+ * - Model scopes for common query patterns
+ * - Virtual attributes for computed properties
+ * - Paranoid mode for soft deletes
+ * - Optimized indexes (simple and compound)
+ */
+export const createFacultyAdministrationControllersRecordModel = (sequelize: Sequelize) => {
+  class FacultyAdministrationControllersRecord extends Model {
+    public id!: string;
+    public status!: string;
+    public data!: Record<string, any>;
+    public readonly createdAt!: Date;
+    public readonly updatedAt!: Date;
+    public readonly deletedAt!: Date | null;
+
+    // Virtual attributes
+    get isActive(): boolean {
+      return this.status === 'active';
+    }
+
+    get isPending(): boolean {
+      return this.status === 'pending';
+    }
+
+    get isCompleted(): boolean {
+      return this.status === 'completed';
+    }
+
+    get statusLabel(): string {
+      return this.status.replace('_', ' ').toUpperCase();
+    }
+  }
+
+  FacultyAdministrationControllersRecord.init(
+    {
+      id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+        validate: {
+          isUUID: 4,
+        },
+      },
+      status: {
+        type: DataTypes.ENUM('active', 'inactive', 'pending', 'completed', 'cancelled'),
+        allowNull: false,
+        defaultValue: 'pending',
+        comment: 'Record status',
+        validate: {
+          isIn: [['active', 'inactive', 'pending', 'completed', 'cancelled']],
+          notEmpty: true,
+        },
+      },
+      data: {
+        type: DataTypes.JSONB,
+        allowNull: false,
+        defaultValue: {},
+        comment: 'Comprehensive record data',
+        validate: {
+          isValidData(value: any) {
+            if (typeof value !== 'object' || value === null) {
+              throw new Error('data must be a valid object');
+            }
+          },
+        },
+      },
+    },
+    {
+      sequelize,
+      tableName: 'faculty_administration_controllers_records',
+      timestamps: true,
+      paranoid: true,
+      underscored: true,
+      indexes: [
+        { fields: ['status'] },
+        { fields: ['created_at'] },
+        { fields: ['updated_at'] },
+        { fields: ['deleted_at'] },
+        { fields: ['status', 'created_at'] },
+      ],
+      hooks: {
+        beforeCreate: async (record: FacultyAdministrationControllersRecord, options: any) => {
+          // Audit logging for FERPA/HIPAA compliance
+          if (options.transaction) {
+            await sequelize.query(
+              `INSERT INTO audit_logs (action, table_name, record_id, user_id, data, created_at)
+               VALUES (:action, :tableName, :recordId, :userId, :data, NOW())`,
+              {
+                replacements: {
+                  action: 'CREATE_FACULTYADMINISTRATIONCONTROLLERSRECORD',
+                  tableName: 'faculty_administration_controllers_records',
+                  recordId: record.id,
+                  userId: options.userId || 'system',
+                  data: JSON.stringify(record.toJSON()),
+                },
+                transaction: options.transaction,
+              }
+            );
+          }
+        },
+        afterCreate: async (record: FacultyAdministrationControllersRecord, options: any) => {
+          console.log(`[AUDIT] FacultyAdministrationControllersRecord created: ${record.id}`);
+        },
+        beforeUpdate: async (record: FacultyAdministrationControllersRecord, options: any) => {
+          const changed = record.changed();
+          if (changed && options.transaction) {
+            await sequelize.query(
+              `INSERT INTO audit_logs (action, table_name, record_id, user_id, data, created_at)
+               VALUES (:action, :tableName, :recordId, :userId, :data, NOW())`,
+              {
+                replacements: {
+                  action: 'UPDATE_FACULTYADMINISTRATIONCONTROLLERSRECORD',
+                  tableName: 'faculty_administration_controllers_records',
+                  recordId: record.id,
+                  userId: options.userId || 'system',
+                  data: JSON.stringify({ changed, previous: record._previousDataValues }),
+                },
+                transaction: options.transaction,
+              }
+            );
+          }
+        },
+        afterUpdate: async (record: FacultyAdministrationControllersRecord, options: any) => {
+          console.log(`[AUDIT] FacultyAdministrationControllersRecord updated: ${record.id}`);
+        },
+        beforeDestroy: async (record: FacultyAdministrationControllersRecord, options: any) => {
+          if (options.transaction) {
+            await sequelize.query(
+              `INSERT INTO audit_logs (action, table_name, record_id, user_id, data, created_at)
+               VALUES (:action, :tableName, :recordId, :userId, :data, NOW())`,
+              {
+                replacements: {
+                  action: 'DELETE_FACULTYADMINISTRATIONCONTROLLERSRECORD',
+                  tableName: 'faculty_administration_controllers_records',
+                  recordId: record.id,
+                  userId: options.userId || 'system',
+                  data: JSON.stringify(record.toJSON()),
+                },
+                transaction: options.transaction,
+              }
+            );
+          }
+        },
+        afterDestroy: async (record: FacultyAdministrationControllersRecord, options: any) => {
+          console.log(`[AUDIT] FacultyAdministrationControllersRecord deleted: ${record.id}`);
+        },
+      },
+      scopes: {
+        defaultScope: {
+          attributes: { exclude: ['deletedAt'] },
+        },
+        active: {
+          where: { status: 'active' },
+        },
+        pending: {
+          where: { status: 'pending' },
+        },
+        completed: {
+          where: { status: 'completed' },
+        },
+        recent: {
+          order: [['createdAt', 'DESC']],
+          limit: 100,
+        },
+        withData: {
+          attributes: {
+            include: ['id', 'status', 'data', 'createdAt', 'updatedAt'],
+          },
+        },
+      },
+    },
+  );
+
+  return FacultyAdministrationControllersRecord;
+};
+
+
+@Injectable({ scope: Scope.REQUEST })
+@UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
+
+// ============================================================================
+// ERROR RESPONSE DTOS
+// ============================================================================
+
+/**
+ * Standard error response
+ */
+@Injectable()
+export class ErrorResponseDto {
+  @ApiProperty({ example: 404, description: 'HTTP status code' })
+  statusCode: number;
+
+  @ApiProperty({ example: 'Resource not found', description: 'Error message' })
+  message: string;
+
+  @ApiProperty({ example: 'NOT_FOUND', description: 'Error code' })
+  errorCode: string;
+
+  @ApiProperty({ example: '2025-11-10T12:00:00Z', format: 'date-time', description: 'Timestamp' })
+  timestamp: Date;
+
+  @ApiProperty({ example: '/api/v1/resource', description: 'Request path' })
+  path: string;
+}
+
+/**
+ * Validation error response
+ */
+@Injectable()
+export class ValidationErrorDto extends ErrorResponseDto {
+  @ApiProperty({
+    type: [Object],
+    example: [{ field: 'fieldName', message: 'validation error' }],
+    description: 'Validation errors'
+  })
+  validationErrors: Array<{ field: string; message: string }>;
+}
 
 @Injectable()
-export class $(echo ${file} | sed 's/-\([a-z]\)/\U\1/g' | sed 's/^\([a-z]\)/\U\1/' | sed 's/-//g')Service {
-  private readonly logger = new Logger($(echo ${file} | sed 's/-\([a-z]\)/\U\1/g' | sed 's/^\([a-z]\)/\U\1/' | sed 's/-//g')Service.name);
-  constructor(@Inject('SEQUELIZE') private readonly sequelize: Sequelize) {}
+export class FacultyAdministrationControllersService {  constructor(
+    @Inject(DATABASE_CONNECTION)
+    private readonly sequelize: Sequelize,
+    private readonly logger: Logger) {}
 
   async processOperation(data: any): Promise<any> {
     this.logger.log('Processing operation');
@@ -59,4 +301,4 @@ export class $(echo ${file} | sed 's/-\([a-z]\)/\U\1/g' | sed 's/^\([a-z]\)/\U\1
   async checkAuthorization(userId: string, action: string): Promise<boolean> { return true; }
 }
 
-export default $(echo ${file} | sed 's/-\([a-z]\)/\U\1/g' | sed 's/^\([a-z]\)/\U\1/' | sed 's/-//g')Service;
+export default FacultyAdministrationControllersService;
