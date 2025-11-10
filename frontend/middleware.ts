@@ -40,6 +40,9 @@ const PUBLIC_ROUTES = [
   '/_next',
   '/favicon.ico',
   '/api/health',
+  '/api/auth/login',
+  '/api/auth/refresh',
+  '/api/auth/logout',
 ];
 
 /**
@@ -69,6 +72,27 @@ const ADMIN_ROUTES = [
  */
 export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Fix for GitHub Codespaces Server Actions
+  // Server Actions validate origin against x-forwarded-host
+  const isCodespaces = process.env.CODESPACES === 'true' || 
+                       request.headers.get('x-forwarded-host')?.includes('.app.github.dev');
+  
+  if (isCodespaces) {
+    const response = NextResponse.next();
+    const forwardedHost = request.headers.get('x-forwarded-host');
+    
+    // Override origin to match forwarded host for Server Actions
+    if (forwardedHost) {
+      response.headers.set('x-forwarded-host', forwardedHost);
+      response.headers.set('x-forwarded-proto', 'https');
+    }
+    
+    // For Server Actions POST requests, we need to rewrite headers
+    if (request.method === 'POST' && request.headers.get('content-type')?.includes('multipart/form-data')) {
+      return response;
+    }
+  }
 
   // Allow public routes
   if (PUBLIC_ROUTES.some(route => pathname.startsWith(route))) {

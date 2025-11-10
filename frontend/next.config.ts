@@ -9,6 +9,12 @@
 
 import type { NextConfig } from 'next';
 
+/**
+ * Determine if running in GitHub Codespaces
+ */
+const isCodespaces = process.env.CODESPACES === 'true' || 
+                     process.env.CODESPACE_NAME !== undefined;
+
 const nextConfig: NextConfig = {
   // ... keep your existing configuration ...
 
@@ -97,8 +103,12 @@ const nextConfig: NextConfig = {
       '@radix-ui/react-label',
       '@radix-ui/react-switch',
     ],
-    // Allow forwarded headers in development for Server Actions
-    serverComponentsExternalPackages: [],
+    // Allow Server Actions from Codespaces origin
+    ...(isCodespaces && {
+      serverActions: {
+        allowedOrigins: ['*.app.github.dev', 'localhost:3000'],
+      },
+    }),
   },
 
   // Remove console.log in production (except errors/warnings)
@@ -121,23 +131,29 @@ const nextConfig: NextConfig = {
   // Output standalone for Docker deployment
   output: process.env.DOCKER_BUILD === 'true' ? 'standalone' : undefined,
 
-  // Handle forwarded headers for development (Server Actions)
+  // Handle Codespaces forwarded headers for Server Actions
   async headers() {
-    const headers = [];
+    if (!isCodespaces) return [];
 
-    if (process.env.NODE_ENV === 'development') {
-      headers.push({
-        source: '/(.*)',
+    return [
+      {
+        source: '/:path*',
         headers: [
           {
-            key: 'X-Forwarded-Host',
-            value: 'localhost:3000',
+            key: 'Access-Control-Allow-Origin',
+            value: '*',
+          },
+          {
+            key: 'Access-Control-Allow-Methods',
+            value: 'GET, POST, PUT, DELETE, OPTIONS',
+          },
+          {
+            key: 'Access-Control-Allow-Headers',
+            value: 'X-Requested-With, Content-Type, Authorization',
           },
         ],
-      });
-    }
-
-    return headers;
+      },
+    ];
   },
 };
 

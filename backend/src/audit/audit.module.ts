@@ -5,6 +5,7 @@ import { HealthRecordAuditInterceptor } from '../health-record/interceptors/heal
 import { AuditLog } from '../database/models/audit-log.model';
 import { PhiDisclosureAudit } from '../database/models/phi-disclosure-audit.model';
 import { AuditService } from './audit.service';
+import { AuditController } from './audit.controller';
 import { AuditLogService } from './services/audit-log.service';
 import { AuditQueryService } from './services/audit-query.service';
 import { AuditStatisticsService } from './services/audit-statistics.service';
@@ -26,6 +27,7 @@ import { SecurityAnalysisService } from './services/security-analysis.service';
  */
 @Module({
   imports: [SequelizeModule.forFeature([AuditLog, PhiDisclosureAudit])],
+  controllers: [AuditController],
   providers: [
     AuditService,
     AuditLogService,

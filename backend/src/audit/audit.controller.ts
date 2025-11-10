@@ -1,11 +1,13 @@
-import { Controller, Get, HttpException, HttpStatus, Param, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuditService } from './audit.service';
 import { AuditLogFilterDto } from './dto/audit-log-filter.dto';
 import { AuditLogSearchDto } from './dto/audit-log-search.dto';
 import { DateRangeDto } from './dto/date-range.dto';
 import { PaginatedAuditLogsDto } from './dto/paginated-audit-logs.dto';
 import { PHIAccessFilterDto } from './dto/phi-access-filter.dto';
+import { CreateAuditLogDto } from './dto/create-audit-log.dto';
+import { CreatePHIAccessLogDto } from './dto/create-phi-access-log.dto';
 
 /**
  * Audit Controller
@@ -22,7 +24,76 @@ import { PHIAccessFilterDto } from './dto/phi-access-filter.dto';
 export class AuditController {
   constructor(private readonly auditService: AuditService) {}
 
-  // ========== AUDIT LOG ENDPOINTS ==========
+  // ========== AUDIT LOG CREATION ENDPOINTS ==========
+
+  @Post('log')
+  @ApiOperation({ 
+    summary: 'Create audit log entry',
+    description: 'Log a general system action for audit trail compliance'
+  })
+  @ApiBody({ type: CreateAuditLogDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Audit log created successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid audit log data',
+  })
+  async createAuditLog(@Body() createAuditLogDto: CreateAuditLogDto) {
+    await this.auditService.logAction({
+      userId: createAuditLogDto.userId,
+      action: createAuditLogDto.action,
+      entityType: createAuditLogDto.entityType,
+      entityId: createAuditLogDto.entityId,
+      changes: createAuditLogDto.changes,
+      ipAddress: createAuditLogDto.ipAddress,
+      userAgent: createAuditLogDto.userAgent,
+      success: createAuditLogDto.success,
+      errorMessage: createAuditLogDto.errorMessage,
+    });
+    return {
+      success: true,
+      message: 'Audit log created successfully',
+    };
+  }
+
+  @Post('phi-access')
+  @ApiOperation({ 
+    summary: 'Log PHI access (HIPAA required)',
+    description: 'Log access to Protected Health Information for HIPAA compliance'
+  })
+  @ApiBody({ type: CreatePHIAccessLogDto })
+  @ApiResponse({
+    status: 201,
+    description: 'PHI access log created successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid PHI access log data',
+  })
+  async createPHIAccessLog(@Body() createPHIAccessLogDto: CreatePHIAccessLogDto) {
+    await this.auditService.logPHIAccess({
+      userId: createPHIAccessLogDto.userId,
+      action: createPHIAccessLogDto.action,
+      entityType: createPHIAccessLogDto.entityType,
+      entityId: createPHIAccessLogDto.entityId,
+      changes: createPHIAccessLogDto.changes,
+      ipAddress: createPHIAccessLogDto.ipAddress,
+      userAgent: createPHIAccessLogDto.userAgent,
+      success: createPHIAccessLogDto.success,
+      errorMessage: createPHIAccessLogDto.errorMessage,
+      studentId: createPHIAccessLogDto.studentId,
+      accessType: createPHIAccessLogDto.accessType,
+      dataCategory: createPHIAccessLogDto.dataCategory,
+    });
+    return {
+      success: true,
+      message: 'PHI access log created successfully',
+    };
+  }
+
+  // ========== AUDIT LOG QUERY ENDPOINTS ==========
 
   @Get('logs')
   @ApiOperation({ summary: 'Get audit logs with filters' })
