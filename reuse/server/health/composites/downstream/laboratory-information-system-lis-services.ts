@@ -44,6 +44,12 @@
 
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import * as crypto from 'crypto';
+import {
+  RedisCacheService,
+  Cacheable,
+  PerformanceMonitor,
+  RateLimiterFactory,
+} from '../shared';
 
 // Upstream composite imports
 import {
@@ -264,6 +270,9 @@ export interface ProficiencyTestingRecord {
 @Injectable()
 export class LaboratoryInformationSystemService {
   private readonly logger = new Logger(LaboratoryInformationSystemService.name);
+  private readonly labLimiter = RateLimiterFactory.getLabLimiter('default', 60, 60000);
+
+  constructor(private readonly cacheService: RedisCacheService) {}
 
   /**
    * Process instrument results with auto-verification
@@ -272,7 +281,15 @@ export class LaboratoryInformationSystemService {
    * @param results Raw instrument results
    * @param context Lab context
    * @returns Auto-verification results
+   *
+   * PERFORMANCE OPTIMIZED:
+   * - Batch fetch all verification rules once (not per result)
+   * - Use Map for O(1) rule lookup by test code
+   * - Cache verification rules (application-level, rarely change)
+   * - Process all verification rules in parallel per result
+   * - Performance monitoring with 5 second threshold
    */
+  @PerformanceMonitor({ threshold: 5000 })
   async processInstrumentResults(
     instrumentId: string,
     results: Array<{
@@ -287,13 +304,30 @@ export class LaboratoryInformationSystemService {
     this.logger.log(`Processing ${results.length} results from instrument ${instrumentId}`);
 
     try {
+      // OPTIMIZATION: Collect all unique test codes
+      const uniqueTestCodes = [...new Set(results.map(r => r.testCode))];
+      this.logger.log(`Fetching verification rules for ${uniqueTestCodes.length} unique test codes`);
+
+      // OPTIMIZATION: Batch fetch all rules at once instead of per result (N+1 fix)
+      const rulesPromises = uniqueTestCodes.map(testCode =>
+        this.getAutoVerificationRulesCached(testCode)
+      );
+      const allRulesArrays = await Promise.all(rulesPromises);
+
+      // OPTIMIZATION: Create a Map for O(1) lookup
+      const rulesMap = new Map<string, any[]>();
+      uniqueTestCodes.forEach((testCode, idx) => {
+        rulesMap.set(testCode, allRulesArrays[idx]);
+      });
+
+      // Process all results with parallel verification
       const verificationResults: AutoVerificationResult[] = [];
 
       for (const result of results) {
-        // Fetch auto-verification rules
-        const rules = await this.getAutoVerificationRules(result.testCode);
+        // Lookup rules from map (O(1))
+        const rules = rulesMap.get(result.testCode) || [];
 
-        // Apply verification rules
+        // Apply verification rules in parallel
         const ruleResults = await Promise.all(
           rules.map(async (rule) => {
             const passed = await this.evaluateVerificationRule(rule, result);
@@ -781,12 +815,29 @@ export class LaboratoryInformationSystemService {
   // PRIVATE HELPER METHODS
   // ============================================================================
 
+  /**
+   * Get auto-verification rules (uncached, direct database access)
+   */
   private async getAutoVerificationRules(testCode: string): Promise<any[]> {
     return [
       { name: 'within_reference_range', description: 'Result within reference range' },
       { name: 'no_critical_flags', description: 'No critical flags present' },
       { name: 'delta_check_passed', description: 'Delta check within limits' },
     ];
+  }
+
+  /**
+   * Get auto-verification rules with caching
+   * Cache TTL: Application-level (verification rules rarely change)
+   * Expected cache hit rate: 95%+
+   */
+  @Cacheable({
+    namespace: 'lab:verification:rules',
+    ttl: 86400, // 24 hours - rules change infrequently
+    tags: ['lab-rules']
+  })
+  private async getAutoVerificationRulesCached(testCode: string): Promise<any[]> {
+    return this.getAutoVerificationRules(testCode);
   }
 
   private async evaluateVerificationRule(rule: any, result: any): Promise<boolean> {

@@ -6,11 +6,41 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
+import {
+  RedisCacheService,
+  Cacheable,
+  CacheInvalidate,
+  PerformanceMonitor,
+  RateLimiterFactory,
+} from '../shared';
 
 @Injectable()
 export class AppointmentBookingService {
   private readonly logger = new Logger(AppointmentBookingService.name);
+  private readonly ehrLimiter = RateLimiterFactory.getEpicLimiter(); // Assuming Epic integration
 
+  constructor(private readonly cacheService: RedisCacheService) {}
+
+  /**
+   * Search available appointment slots
+   *
+   * PERFORMANCE OPTIMIZED:
+   * - Cache provider availability for 5 minutes
+   * - High traffic endpoint during online booking
+   * - Cache hit rate: 70%+ expected
+   * - Reduces EHR API load significantly
+   */
+  @PerformanceMonitor({ threshold: 2000 })
+  @Cacheable({
+    namespace: 'appointment:slots',
+    ttl: 300, // 5 minutes - slots change frequently
+    keyGenerator: (providerId, appointmentType, startDate, endDate, insuranceId) => {
+      const start = new Date(startDate).toISOString().split('T')[0];
+      const end = new Date(endDate).toISOString().split('T')[0];
+      return `${providerId}:${appointmentType}:${start}:${end}:${insuranceId || 'any'}`;
+    },
+    tags: (providerId) => [`provider:${providerId}`],
+  })
   async searchAvailableSlots(
     providerId: string,
     appointmentType: string,
@@ -24,9 +54,23 @@ export class AppointmentBookingService {
     availabilityStatus: 'AVAILABLE' | 'LIMITED' | 'WAITLIST';
   }>> {
     this.logger.log(\`Searching slots for provider \${providerId}\`);
+
+    // Rate limit EHR API calls
+    await this.ehrLimiter.acquire();
+
     return await this.queryProviderAvailability(providerId, startDate, endDate, appointmentType);
   }
 
+  /**
+   * Book an appointment
+   *
+   * PERFORMANCE OPTIMIZED:
+   * - Run independent operations in parallel (createRecord + sendConfirmation)
+   * - Invalidate provider slot cache after booking
+   * - Performance monitoring
+   */
+  @PerformanceMonitor({ threshold: 3000 })
+  @CacheInvalidate('appointment:slots:*', { byPattern: true })
   async bookAppointment(
     patientId: string,
     slotId: string,
@@ -39,18 +83,23 @@ export class AppointmentBookingService {
   }> {
     this.logger.log(\`Booking appointment for patient \${patientId}\`);
 
+    // Step 1: Reserve slot
     const slot = await this.reserveSlot(slotId);
     if (!slot.available) {
       throw new Error('Time slot no longer available');
     }
 
+    // Step 2: Optional insurance verification (sequential - must complete before booking)
     if (insuranceVerification) {
       await this.verifyInsuranceEligibility(patientId);
     }
 
+    // Step 3: Create appointment and send confirmation IN PARALLEL
     const appointmentId = \`APPT-\${Date.now()}\`;
-    await this.createAppointmentRecord(appointmentId, patientId, slot);
-    await this.sendConfirmation(patientId, appointmentId);
+    await Promise.all([
+      this.createAppointmentRecord(appointmentId, patientId, slot),
+      this.sendConfirmation(patientId, appointmentId),
+    ]);
 
     return {
       appointmentId,

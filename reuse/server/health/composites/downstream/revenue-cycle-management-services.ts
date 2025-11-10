@@ -34,7 +34,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 
 @Injectable()
-export class RevenueC ycleManagementService {
+export class RevenueCycleManagementService {
   private readonly logger = new Logger(RevenueCycleManagementService.name);
 
   async calculateARAging(): Promise<any> {
