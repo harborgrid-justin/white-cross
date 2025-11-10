@@ -144,10 +144,62 @@ export interface LockMetrics {
 // ============================================================================
 
 /**
- * Adds optimistic locking capability to a Sequelize model
- * @param model - Sequelize model to add versioning to
- * @param versionField - Name of the version field (default: 'version')
- * @returns Modified model with optimistic locking
+ * Adds optimistic locking capability to Sequelize model for safe concurrent updates
+ *
+ * Essential for healthcare data integrity - prevents lost updates when multiple users
+ * modify patient records, prescriptions, or appointments simultaneously
+ *
+ * @template T - Model type extending Sequelize Model
+ * @param {ModelStatic<T>} model - Sequelize model to enhance with version tracking
+ * @param {string} versionField - Name of the version field (default: 'version'). Must be integer column
+ * @returns {ModelStatic<T>} Enhanced model with automatic version increment hooks
+ *
+ * @example
+ * ```typescript
+ * // Add optimistic locking to Patient model
+ * const PatientWithVersioning = addOptimisticLocking(Patient, 'version');
+ *
+ * // Updates will now automatically check version and increment
+ * const patient = await Patient.findByPk(123);
+ * patient.diagnosis = 'Updated diagnosis';
+ * await patient.save(); // Automatically increments version and validates
+ *
+ * // Concurrent update scenario
+ * const p1 = await Patient.findByPk(123); // version: 5
+ * const p2 = await Patient.findByPk(123); // version: 5
+ * await p1.save(); // Success, version now 6
+ * await p2.save(); // Throws OptimisticLockError - version mismatch
+ * ```
+ *
+ * @database
+ * - Requires integer 'version' column (or custom versionField)
+ * - Version incremented on every update
+ * - Uses database WHERE clause for atomic version check
+ *
+ * @performance
+ * - Zero overhead for reads (version only checked on writes)
+ * - Single atomic UPDATE with version check
+ * - No additional database round trips
+ *
+ * @healthcare
+ * - Prevents medication dosage conflicts from concurrent updates
+ * - Protects appointment schedules from double-booking
+ * - Ensures patient demographic changes are not lost
+ * - Critical for electronic health record (EHR) systems with multiple concurrent users
+ *
+ * @hooks
+ * - beforeUpdate: Increments version and stores previous value
+ * - afterUpdate: Validates update succeeded based on version
+ *
+ * @throws {OptimisticLockError} If update fails due to version mismatch
+ *
+ * @notes
+ * - Version field must be included in model definition
+ * - Initial version should be 0 or 1
+ * - Consider pessimistic locking for highly contended records
+ * - Log OptimisticLockError occurrences for conflict analysis
+ *
+ * @see {@link optimisticUpdate} For updates with automatic retry
  */
 export function addOptimisticLocking<T extends Model>(
   model: ModelStatic<T>,

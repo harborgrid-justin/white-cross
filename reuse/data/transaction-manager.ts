@@ -28,7 +28,13 @@ import * as crypto from 'crypto';
 // ============================================================================
 
 /**
- * Transaction context for ambient transaction support
+ * Transaction context for ambient transaction support with ACID guarantees
+ *
+ * ACID Properties:
+ * - Atomicity: All operations within context complete or none do
+ * - Consistency: Transaction leaves database in valid state
+ * - Isolation: Controlled by isolationLevel setting
+ * - Durability: Committed changes persist through system failures
  */
 export interface TransactionContext {
   transaction: Transaction;
@@ -38,6 +44,8 @@ export interface TransactionContext {
   metadata: Record<string, any>;
   nestedLevel: number;
   parentId?: string;
+  readonly: boolean;
+  lockAcquired: boolean;
 }
 
 /**
@@ -203,11 +211,28 @@ export class AmbientTransactionError extends Error {
 // ============================================================================
 
 /**
- * Creates and begins a new transaction with full lifecycle support
+ * Creates and begins a new transaction with full lifecycle support and ACID compliance
+ *
+ * ACID Guarantees:
+ * - Atomicity: Transaction boundary ensures all-or-nothing execution
+ * - Consistency: Isolation level prevents dirty reads/phantom reads
+ * - Isolation: Configurable via options.isolationLevel
+ * - Durability: Changes persist after commit completes
+ *
  * @param sequelize - Sequelize instance
- * @param options - Transaction options
- * @param hooks - Lifecycle hooks
- * @returns Transaction context
+ * @param options - Transaction options including isolation level
+ * @param hooks - Lifecycle hooks for monitoring transaction lifecycle
+ * @returns Transaction context with metadata tracking
+ * @throws Error if transaction creation fails
+ *
+ * @example
+ * const context = await beginTransaction(sequelize, {
+ *   isolationLevel: IsolationLevel.SERIALIZABLE
+ * }, {
+ *   afterBegin: async (ctx) => {
+ *     logger.info(`Transaction ${ctx.id} started`);
+ *   }
+ * });
  */
 export async function beginTransaction(
   sequelize: Sequelize,
@@ -220,14 +245,21 @@ export async function beginTransaction(
     isolationLevel: options?.isolationLevel || IsolationLevel.READ_COMMITTED,
     startTime: Date.now(),
     metadata: {},
-    nestedLevel: 0
+    nestedLevel: 0,
+    readonly: false,
+    lockAcquired: false
   };
 
   if (hooks?.beforeBegin) {
     await hooks.beforeBegin(context);
   }
 
-  context.transaction = await sequelize.transaction(options);
+  try {
+    context.transaction = await sequelize.transaction(options);
+    context.lockAcquired = true;
+  } catch (error) {
+    throw new Error(`Failed to begin transaction: ${(error as Error).message}`);
+  }
 
   if (hooks?.afterBegin) {
     await hooks.afterBegin(context);
@@ -237,9 +269,43 @@ export async function beginTransaction(
 }
 
 /**
- * Commits a transaction with pre/post hooks
- * @param context - Transaction context
- * @param hooks - Lifecycle hooks
+ * Commits a transaction with pre/post hooks ensuring ACID compliance
+ *
+ * ACID Guarantees on Commit:
+ * - Atomicity: All operations within transaction become permanent together
+ * - Consistency: Database constraints validated before commit succeeds
+ * - Isolation: Changes become visible to other transactions atomically
+ * - Durability: Changes survive system failures after commit returns
+ *
+ * Commit Lifecycle:
+ * 1. beforeCommit hook executes (validation, logging)
+ * 2. Database commit operation executes
+ * 3. afterCommit hook executes (cleanup, notifications)
+ * 4. Locks released, resources freed
+ *
+ * Error Handling:
+ * - beforeCommit failure prevents commit, transaction still active
+ * - Commit failure triggers automatic rollback
+ * - afterCommit failure doesn't affect commit (changes already permanent)
+ * - All errors propagated to caller for handling
+ *
+ * @param context - Transaction context with transaction instance and metadata
+ * @param hooks - Optional lifecycle hooks for pre/post commit actions
+ * @throws Error if beforeCommit hook fails or commit operation fails
+ *
+ * @example
+ * await commitTransaction(context, {
+ *   beforeCommit: async (ctx) => {
+ *     // Validate business rules before committing
+ *     const valid = await validateBusinessRules(ctx);
+ *     if (!valid) throw new Error('Validation failed');
+ *   },
+ *   afterCommit: async (ctx) => {
+ *     // Send notifications after successful commit
+ *     await eventBus.emit('transaction:committed', ctx.id);
+ *     await cache.invalidate(`transaction:${ctx.id}`);
+ *   }
+ * });
  */
 export async function commitTransaction(
   context: TransactionContext,
@@ -255,10 +321,19 @@ export async function commitTransaction(
     await context.transaction.commit();
 
     if (hooks?.afterCommit) {
-      await hooks.afterCommit(context);
+      try {
+        await hooks.afterCommit(context);
+      } catch (afterCommitError) {
+        // Log but don't throw - commit already succeeded
+        logger.error(
+          `afterCommit hook failed for transaction ${context.id}`,
+          afterCommitError
+        );
+      }
     }
 
-    logger.log(`Transaction ${context.id} committed successfully`);
+    const duration = Date.now() - context.startTime;
+    logger.log(`Transaction ${context.id} committed successfully in ${duration}ms`);
   } catch (error) {
     logger.error(`Failed to commit transaction ${context.id}`, error);
     throw error;
@@ -844,22 +919,78 @@ export async function retryTransaction<T>(
 }
 
 /**
- * Checks if error is retryable
+ * Checks if error is retryable based on comprehensive deadlock and serialization patterns
+ *
+ * Detects:
+ * - Deadlock conditions (database-level lock conflicts)
+ * - Lock timeout (waiting for resource locks)
+ * - Serialization failures (isolation level conflicts)
+ * - Connection issues (network/connection pool)
+ * - Statement timeout (query execution time limits)
+ * - Unique constraint violations during concurrent inserts
+ *
  * @param error - Error to check
- * @returns True if retryable, false otherwise
+ * @returns True if error indicates a transient condition suitable for retry
+ *
+ * @example
+ * try {
+ *   await transaction.commit();
+ * } catch (error) {
+ *   if (isTransactionRetryable(error)) {
+ *     // Retry the transaction
+ *     await retryTransaction(sequelize, fn, config);
+ *   } else {
+ *     throw error; // Non-retryable error
+ *   }
+ * }
  */
 export function isTransactionRetryable(error: any): boolean {
   const retryablePatterns = [
+    // Deadlock detection
     /deadlock/i,
+    /deadlock detected/i,
+
+    // Lock timeouts
     /lock timeout/i,
+    /lock wait timeout/i,
+    /timeout waiting for lock/i,
+
+    // Serialization failures
     /could not serialize/i,
+    /serialization failure/i,
+    /concurrent update/i,
+
+    // Connection issues
     /connection refused/i,
     /connection terminated/i,
-    /statement timeout/i
+    /connection reset/i,
+    /ECONNRESET/,
+    /ETIMEDOUT/,
+    /ECONNREFUSED/,
+
+    // Statement timeouts
+    /statement timeout/i,
+    /query timeout/i,
+
+    // Concurrent modification
+    /unique constraint/i,
+    /duplicate key/i,
+
+    // PostgreSQL specific
+    /40P01/,  // deadlock_detected
+    /40001/,  // serialization_failure
+
+    // MySQL specific
+    /1213/,   // ER_LOCK_DEADLOCK
+    /1205/,   // ER_LOCK_WAIT_TIMEOUT
   ];
 
   const errorMessage = error?.message || error?.toString() || '';
-  return retryablePatterns.some(pattern => pattern.test(errorMessage));
+  const errorCode = error?.code || error?.parent?.code || '';
+
+  return retryablePatterns.some(pattern =>
+    pattern.test(errorMessage) || pattern.test(errorCode)
+  );
 }
 
 /**

@@ -69,23 +69,68 @@ export interface ResourcePool<T> {
 // ============================================================================
 
 /**
- * Wraps a promise with a timeout
+ * Wraps a promise with hard timeout to prevent hanging operations in healthcare systems
  *
- * @template T - Promise result type
- * @param promise - Promise to wrap
- * @param timeoutMs - Timeout in milliseconds
- * @param errorMessage - Optional custom error message
- * @returns Promise that rejects if timeout is exceeded
- * @throws {Error} If timeout is exceeded
+ * Critical for maintaining system responsiveness - prevents slow database queries or
+ * external API calls from blocking medical workflows indefinitely
+ *
+ * @template T - Promise result type (e.g., PatientData, LabResult, ApiResponse)
+ * @param {Promise<T>} promise - Promise to wrap with timeout protection
+ * @param {number} timeoutMs - Timeout in milliseconds (healthcare recommendation: 5000-30000ms)
+ * @param {string} errorMessage - Custom error message for timeout (default: 'Promise timeout exceeded')
+ * @returns {Promise<T>} Promise that rejects with timeout error if duration exceeds limit
+ * @throws {Error} Throws timeout error if promise doesn't resolve within timeoutMs
  *
  * @example
  * ```typescript
- * const result = await promiseWithTimeout(
- *   fetchData(),
+ * // Protect patient data fetch with 5-second timeout
+ * const patientData = await promiseWithTimeout(
+ *   Patient.findByPk(patientId, { include: ['medicalRecords'] }),
  *   5000,
- *   'Data fetch timeout'
+ *   'Patient data fetch timeout'
  * );
+ *
+ * // Protect external insurance verification API with 10-second timeout
+ * const insuranceStatus = await promiseWithTimeout(
+ *   insuranceAPI.verifyEligibility(patientId),
+ *   10000,
+ *   'Insurance verification timeout'
+ * );
+ *
+ * // Critical medication lookup with short timeout
+ * try {
+ *   const medication = await promiseWithTimeout(
+ *     Medication.findByCode(medicationCode),
+ *     3000,
+ *     'Medication lookup timeout - using cache'
+ *   );
+ * } catch (error) {
+ *   // Fallback to cached medication data
+ *   return await getMedicationFromCache(medicationCode);
+ * }
  * ```
+ *
+ * @performance
+ * - Uses Promise.race for efficient timeout implementation
+ * - Timeout timer is properly cleaned up on resolution
+ * - Zero overhead if promise resolves before timeout
+ *
+ * @healthcare
+ * - Essential for emergency department real-time systems
+ * - Prevents UI freezing during patient data retrieval
+ * - Allows graceful degradation to cached/local data
+ * - Timeout values should account for network latency in distributed hospitals
+ *
+ * @bestpractices
+ * - Set timeout based on p95 latency + safety margin
+ * - Log timeout occurrences for performance monitoring
+ * - Implement fallback strategies for timeout scenarios
+ * - Consider circuit breaker pattern for repeated timeouts
+ *
+ * @monitoring
+ * - Track timeout frequency by operation type
+ * - Alert if timeout rate exceeds 1% of requests
+ * - Correlate timeouts with database performance metrics
  */
 export async function promiseWithTimeout<T>(
   promise: Promise<T>,

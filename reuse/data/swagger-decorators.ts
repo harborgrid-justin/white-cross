@@ -28,41 +28,80 @@ import {
 
 /**
  * Type definitions for decorator options
+ * These interfaces provide strong typing for all decorator configuration options
+ */
+
+/**
+ * Pagination configuration options for paginated endpoints
  */
 export interface PaginationOptions {
+  /** Default page number (default: 1) */
   defaultPage?: number;
+  /** Default items per page (default: 20) */
   defaultLimit?: number;
+  /** Maximum items per page (default: 100) */
   maxLimit?: number;
+  /** Custom description for pagination parameters */
   description?: string;
 }
 
+/**
+ * Rate limiting configuration for endpoints
+ */
 export interface RateLimitOptions {
+  /** Maximum number of requests allowed in the time window */
   limit: number;
+  /** Time window for rate limiting (e.g., '1m', '1h', '1d') */
   window: string;
+  /** Custom description for rate limit */
   description?: string;
 }
 
+/**
+ * Cache configuration for responses
+ */
 export interface CacheOptions {
+  /** Time-to-live in seconds for cached responses */
   ttl: number;
+  /** Optional cache key pattern */
   key?: string;
+  /** Custom description for caching behavior */
   description?: string;
 }
 
+/**
+ * Authentication configuration for endpoints
+ */
 export interface AuthOptions {
+  /** Array of security scheme names (e.g., ['bearer', 'api_key']) */
   schemes: string[];
+  /** Optional OAuth2 scopes required for the endpoint */
   scopes?: string[];
+  /** Custom description for authentication requirements */
   description?: string;
 }
 
+/**
+ * File download/upload response configuration
+ */
 export interface FileResponseOptions {
+  /** MIME type of the file (e.g., 'application/pdf', 'image/png') */
   mimeType: string;
+  /** Optional filename for Content-Disposition header */
   filename?: string;
+  /** Custom description for file response */
   description?: string;
 }
 
+/**
+ * Example value configuration for requests/responses
+ */
 export interface ExampleOptions {
+  /** Short summary of the example */
   summary?: string;
+  /** Detailed description of the example */
   description?: string;
+  /** The actual example value (can be any type) */
   value: any;
 }
 
@@ -72,17 +111,42 @@ export interface ExampleOptions {
 
 /**
  * Enhanced API operation decorator with additional metadata and security.
+ * Provides a comprehensive way to document API endpoints with full OpenAPI 3.0 compliance.
  *
- * @param summary - Short operation summary
- * @param description - Detailed operation description
- * @param tags - Array of operation tags
+ * @param summary - Short operation summary (recommended: < 50 characters)
+ * @param description - Detailed operation description (supports CommonMark syntax)
+ * @param tags - Array of operation tags for grouping in documentation
  * @param deprecated - Whether the operation is deprecated
  * @returns Combined decorator
  *
  * @example
  * ```typescript
- * @ApiOperationCustom('Get user', 'Retrieves user by ID', ['users'], false)
- * async getUser(@Param('id') id: string) { }
+ * // Basic usage
+ * @ApiOperationCustom('Get user', 'Retrieves a user by their unique identifier', ['users'])
+ * async getUser(@Param('id') id: string) {
+ *   return this.userService.findOne(id);
+ * }
+ *
+ * // With deprecation
+ * @ApiOperationCustom(
+ *   'Get user (deprecated)',
+ *   'Legacy endpoint. Use GET /v2/users/:id instead.',
+ *   ['users', 'deprecated'],
+ *   true
+ * )
+ * async getUserLegacy(@Param('id') id: string) {
+ *   return this.userService.findOne(id);
+ * }
+ *
+ * // Multiple tags for cross-referencing
+ * @ApiOperationCustom(
+ *   'Create order',
+ *   'Creates a new order and associates it with the authenticated user',
+ *   ['orders', 'users', 'commerce']
+ * )
+ * async createOrder(@Body() createOrderDto: CreateOrderDto) {
+ *   return this.orderService.create(createOrderDto);
+ * }
  * ```
  */
 export function ApiOperationCustom(
@@ -429,7 +493,7 @@ export function ApiOperationRateLimit(
 }
 
 // ============================================================================
-// RESPONSE SCHEMA DECORATORS (6 functions)
+// RESPONSE SCHEMA DECORATORS (10 functions)
 // ============================================================================
 
 /**
@@ -469,16 +533,53 @@ export function ApiResponseSchema<T>(
 }
 
 /**
- * Paginated response decorator with metadata.
+ * Paginated response decorator with comprehensive metadata.
+ * Follows common pagination patterns with complete OpenAPI 3.0 schema definition.
  *
- * @param type - Item type class
+ * @param type - Item type class for the paginated items
  * @param description - Response description
  * @returns Decorator
  *
  * @example
  * ```typescript
- * @ApiResponsePaginated(ProductDto, 'Paginated products')
- * async listProducts() { }
+ * // Basic paginated response
+ * @ApiResponsePaginated(ProductDto, 'Paginated list of products')
+ * @Get('products')
+ * async listProducts(
+ *   @Query('page') page: number = 1,
+ *   @Query('limit') limit: number = 20
+ * ) {
+ *   return this.productService.findPaginated(page, limit);
+ * }
+ *
+ * // With sorting and filtering
+ * @ApiResponsePaginated(UserDto, 'Paginated users with filters applied')
+ * @ApiQuery({ name: 'sortBy', required: false })
+ * @ApiQuery({ name: 'status', enum: UserStatus, required: false })
+ * @Get('users')
+ * async listUsers(
+ *   @Query('page') page: number,
+ *   @Query('limit') limit: number,
+ *   @Query('sortBy') sortBy?: string,
+ *   @Query('status') status?: UserStatus
+ * ) {
+ *   return this.userService.findPaginated({ page, limit, sortBy, status });
+ * }
+ * ```
+ *
+ * Expected response format:
+ * ```json
+ * {
+ *   "data": [...items],
+ *   "pagination": {
+ *     "page": 1,
+ *     "limit": 20,
+ *     "total": 100,
+ *     "totalPages": 5,
+ *     "hasNextPage": true,
+ *     "hasPreviousPage": false
+ *   }
+ * }
  * ```
  */
 export function ApiResponsePaginated<T>(type: Type<T>, description = 'Paginated response') {
@@ -493,18 +594,20 @@ export function ApiResponsePaginated<T>(type: Type<T>, description = 'Paginated 
           data: {
             type: 'array',
             items: { $ref: getSchemaPath(type) },
+            description: 'Array of items for the current page',
           },
           pagination: {
             type: 'object',
+            description: 'Pagination metadata',
             properties: {
-              page: { type: 'number', example: 1 },
-              limit: { type: 'number', example: 20 },
-              total: { type: 'number', example: 100 },
-              totalPages: { type: 'number', example: 5 },
-              hasNextPage: { type: 'boolean', example: true },
-              hasPreviousPage: { type: 'boolean', example: false },
+              page: { type: 'number', example: 1, description: 'Current page number (1-indexed)' },
+              limit: { type: 'number', example: 20, description: 'Number of items per page' },
+              total: { type: 'number', example: 100, description: 'Total number of items across all pages' },
+              totalPages: { type: 'number', example: 5, description: 'Total number of pages' },
+              hasNextPage: { type: 'boolean', example: true, description: 'Whether there is a next page available' },
+              hasPreviousPage: { type: 'boolean', example: false, description: 'Whether there is a previous page available' },
             },
-            required: ['page', 'limit', 'total', 'totalPages'],
+            required: ['page', 'limit', 'total', 'totalPages', 'hasNextPage', 'hasPreviousPage'],
           },
         },
         required: ['data', 'pagination'],
@@ -674,8 +777,160 @@ export function ApiResponseStream(
   );
 }
 
+/**
+ * Standard error responses decorator.
+ * Adds common error response documentation (400, 401, 403, 404, 500).
+ *
+ * @returns Combined decorator with all standard error responses
+ *
+ * @example
+ * ```typescript
+ * @ApiResponseStandardErrors()
+ * @ApiResponseSchema(200, UserDto, 'User retrieved successfully')
+ * @Get('users/:id')
+ * async getUser(@Param('id') id: string) {
+ *   return this.userService.findOne(id);
+ * }
+ * ```
+ */
+export function ApiResponseStandardErrors() {
+  return applyDecorators(
+    ApiResponse({
+      status: 400,
+      description: 'Bad Request - Invalid input data',
+      schema: {
+        type: 'object',
+        properties: {
+          statusCode: { type: 'number', example: 400 },
+          message: { type: 'string', example: 'Validation failed' },
+          error: { type: 'string', example: 'Bad Request' },
+        },
+      },
+    }),
+    ApiResponse({
+      status: 401,
+      description: 'Unauthorized - Authentication required or failed',
+      schema: {
+        type: 'object',
+        properties: {
+          statusCode: { type: 'number', example: 401 },
+          message: { type: 'string', example: 'Unauthorized' },
+        },
+      },
+    }),
+    ApiResponse({
+      status: 403,
+      description: 'Forbidden - Insufficient permissions',
+      schema: {
+        type: 'object',
+        properties: {
+          statusCode: { type: 'number', example: 403 },
+          message: { type: 'string', example: 'Forbidden resource' },
+        },
+      },
+    }),
+    ApiResponse({
+      status: 404,
+      description: 'Not Found - Resource does not exist',
+      schema: {
+        type: 'object',
+        properties: {
+          statusCode: { type: 'number', example: 404 },
+          message: { type: 'string', example: 'Resource not found' },
+        },
+      },
+    }),
+    ApiResponse({
+      status: 500,
+      description: 'Internal Server Error - Unexpected server error',
+      schema: {
+        type: 'object',
+        properties: {
+          statusCode: { type: 'number', example: 500 },
+          message: { type: 'string', example: 'Internal server error' },
+          timestamp: { type: 'string', format: 'date-time' },
+        },
+      },
+    })
+  );
+}
+
+/**
+ * Conflict response decorator (409).
+ * Used when a request conflicts with the current state of the resource.
+ *
+ * @param description - Custom conflict description
+ * @returns Decorator
+ *
+ * @example
+ * ```typescript
+ * @ApiResponseConflict('User with this email already exists')
+ * @Post('users')
+ * async createUser(@Body() createUserDto: CreateUserDto) {
+ *   return this.userService.create(createUserDto);
+ * }
+ * ```
+ */
+export function ApiResponseConflict(description = 'Conflict - Resource already exists or conflicts with current state') {
+  return ApiResponse({
+    status: 409,
+    description,
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number', example: 409 },
+        message: { type: 'string', example: 'Resource conflict' },
+        error: { type: 'string', example: 'Conflict' },
+        conflictingField: { type: 'string', example: 'email', description: 'Field causing the conflict' },
+      },
+    },
+  });
+}
+
+/**
+ * Unprocessable Entity response decorator (422).
+ * Used when the request is well-formed but contains semantic errors.
+ *
+ * @param description - Custom validation description
+ * @returns Decorator
+ *
+ * @example
+ * ```typescript
+ * @ApiResponseUnprocessableEntity('Validation failed for business rules')
+ * @Post('orders')
+ * async createOrder(@Body() createOrderDto: CreateOrderDto) {
+ *   return this.orderService.create(createOrderDto);
+ * }
+ * ```
+ */
+export function ApiResponseUnprocessableEntity(description = 'Unprocessable Entity - Semantic validation failed') {
+  return ApiResponse({
+    status: 422,
+    description,
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number', example: 422 },
+        message: { type: 'string', example: 'Unprocessable entity' },
+        error: { type: 'string', example: 'Unprocessable Entity' },
+        validationErrors: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              field: { type: 'string', example: 'orderDate' },
+              message: { type: 'string', example: 'Order date cannot be in the past' },
+              constraint: { type: 'string', example: 'futureDate' },
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
 // ============================================================================
-// REQUEST BODY DECORATORS (4 functions)
+// REQUEST BODY DECORATORS (6 functions)
 // ============================================================================
 
 /**
@@ -776,16 +1031,43 @@ export function ApiBodyPartial<T>(
 }
 
 /**
- * Multipart form data body decorator.
+ * Multipart form data body decorator for file uploads.
+ * Supports file uploads with additional form fields.
  *
- * @param fields - Field definitions
+ * @param fields - Field definitions with types
  * @param description - Body description
  * @returns Decorator
  *
  * @example
  * ```typescript
- * @ApiBodyMultipart({ file: 'binary', name: 'string', description: 'string' })
- * async uploadFile(@UploadedFile() file: Express.Multer.File, @Body() body: any) { }
+ * // Single file upload with metadata
+ * @ApiBodyMultipart({
+ *   file: 'binary',
+ *   name: 'string',
+ *   description: 'string',
+ *   tags: 'array'
+ * }, 'Upload file with metadata')
+ * @Post('upload')
+ * async uploadFile(
+ *   @UploadedFile() file: Express.Multer.File,
+ *   @Body() body: { name: string; description: string; tags: string[] }
+ * ) {
+ *   return this.fileService.upload(file, body);
+ * }
+ *
+ * // Multiple files upload
+ * @ApiBodyMultipart({
+ *   files: 'binary',
+ *   category: 'string',
+ *   isPublic: 'boolean'
+ * }, 'Upload multiple files')
+ * @Post('upload-multiple')
+ * async uploadMultiple(
+ *   @UploadedFiles() files: Express.Multer.File[],
+ *   @Body() body: { category: string; isPublic: boolean }
+ * ) {
+ *   return this.fileService.uploadMultiple(files, body);
+ * }
  * ```
  */
 export function ApiBodyMultipart(
@@ -796,11 +1078,19 @@ export function ApiBodyMultipart(
 
   Object.entries(fields).forEach(([name, type]) => {
     if (type === 'binary') {
-      properties[name] = { type: 'string', format: 'binary' };
+      properties[name] = {
+        type: 'string',
+        format: 'binary',
+        description: `Binary file data for field '${name}'`
+      };
     } else if (type === 'array') {
-      properties[name] = { type: 'array', items: { type: 'string' } };
+      properties[name] = {
+        type: 'array',
+        items: { type: 'string' },
+        description: `Array of values for field '${name}'`
+      };
     } else {
-      properties[name] = { type };
+      properties[name] = { type, description: `${type} value for field '${name}'` };
     }
   });
 
@@ -811,6 +1101,117 @@ export function ApiBodyMultipart(
         type: 'object',
         properties,
       },
+    })
+  );
+}
+
+/**
+ * File upload body decorator with validation constraints.
+ *
+ * @param fieldName - Name of the file field
+ * @param options - File upload options
+ * @returns Decorator
+ *
+ * @example
+ * ```typescript
+ * @ApiBodyFileUpload('avatar', {
+ *   maxSize: 5242880, // 5MB
+ *   allowedMimeTypes: ['image/jpeg', 'image/png', 'image/gif'],
+ *   description: 'User avatar image'
+ * })
+ * @Post('avatar')
+ * async uploadAvatar(@UploadedFile() file: Express.Multer.File) {
+ *   return this.userService.updateAvatar(file);
+ * }
+ * ```
+ */
+export function ApiBodyFileUpload(
+  fieldName = 'file',
+  options: {
+    maxSize?: number;
+    allowedMimeTypes?: string[];
+    description?: string;
+    required?: boolean;
+  } = {}
+) {
+  const {
+    maxSize,
+    allowedMimeTypes,
+    description = 'File upload',
+    required = true
+  } = options;
+
+  const constraints: string[] = [];
+  if (maxSize) {
+    constraints.push(`Max size: ${(maxSize / 1024 / 1024).toFixed(2)}MB`);
+  }
+  if (allowedMimeTypes && allowedMimeTypes.length > 0) {
+    constraints.push(`Allowed types: ${allowedMimeTypes.join(', ')}`);
+  }
+
+  const fullDescription = constraints.length > 0
+    ? `${description} | ${constraints.join(' | ')}`
+    : description;
+
+  return applyDecorators(
+    ApiBody({
+      description: fullDescription,
+      required,
+      schema: {
+        type: 'object',
+        properties: {
+          [fieldName]: {
+            type: 'string',
+            format: 'binary',
+            description: fullDescription,
+          },
+        },
+        ...(required && { required: [fieldName] }),
+      },
+    })
+  );
+}
+
+/**
+ * Content negotiation decorator for endpoints that accept multiple content types.
+ *
+ * @param contentTypes - Array of supported content types
+ * @param schemas - Schema for each content type
+ * @param description - Body description
+ * @returns Decorator
+ *
+ * @example
+ * ```typescript
+ * @ApiBodyContentNegotiation(
+ *   ['application/json', 'application/xml'],
+ *   {
+ *     'application/json': { $ref: getSchemaPath(CreateUserDto) },
+ *     'application/xml': { type: 'string', example: '<user><name>John</name></user>' }
+ *   },
+ *   'User data in JSON or XML format'
+ * )
+ * @Post('users')
+ * async createUser(@Body() data: any, @Headers('content-type') contentType: string) {
+ *   return this.userService.create(data, contentType);
+ * }
+ * ```
+ */
+export function ApiBodyContentNegotiation(
+  contentTypes: string[],
+  schemas: Record<string, any>,
+  description = 'Request body with content negotiation'
+) {
+  const content: Record<string, any> = {};
+  contentTypes.forEach(type => {
+    if (schemas[type]) {
+      content[type] = { schema: schemas[type] };
+    }
+  });
+
+  return applyDecorators(
+    ApiBody({
+      description: `${description} | Supported: ${contentTypes.join(', ')}`,
+      content,
     })
   );
 }

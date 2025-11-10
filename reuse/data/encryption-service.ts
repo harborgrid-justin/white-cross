@@ -110,6 +110,10 @@ export class EncryptionService {
 
   constructor() {
     this.initializeDefaultKey();
+    this.logger.warn(
+      'EncryptionService initialized with in-memory key storage. ' +
+      'For production, integrate with ConfigService and use HSM/KMS for key management.'
+    );
   }
 
   // ==================== Core Encryption Functions ====================
@@ -117,13 +121,29 @@ export class EncryptionService {
   /**
    * Encrypts data using AES-256-GCM with authenticated encryption
    *
-   * @param plaintext - Data to encrypt
-   * @param keyId - Optional key identifier for key rotation
-   * @returns Encrypted envelope with metadata
-   * @security Uses authenticated encryption with associated data (AEAD)
-   * @throws Error if encryption fails
+   * @param plaintext - Data to encrypt (string)
+   * @param keyId - Optional key identifier for key rotation (defaults to active key)
+   * @returns Encrypted envelope with algorithm, ciphertext, IV, auth tag, and metadata
+   * @security Uses authenticated encryption with associated data (AEAD) - prevents tampering
+   * @throws Error if plaintext is invalid, key not found, or encryption fails
+   * @example
+   * ```typescript
+   * const envelope = await encryptAES256GCM('sensitive data');
+   * // Returns: { algorithm: 'aes-256-gcm', ciphertext: '...', iv: '...', authTag: '...', ... }
+   * ```
    */
   async encryptAES256GCM(plaintext: string, keyId?: string): Promise<EncryptedEnvelope> {
+    // Input validation
+    if (!plaintext || typeof plaintext !== 'string') {
+      throw new Error('Plaintext must be a non-empty string');
+    }
+
+    // Maximum plaintext size (10MB)
+    const MAX_PLAINTEXT_SIZE = 10 * 1024 * 1024;
+    if (plaintext.length > MAX_PLAINTEXT_SIZE) {
+      throw new Error('Plaintext exceeds maximum allowed size');
+    }
+
     try {
       const effectiveKeyId = keyId || this.activeKeyId;
       const key = this.getKey(effectiveKeyId);
@@ -154,12 +174,30 @@ export class EncryptionService {
   /**
    * Decrypts AES-256-GCM encrypted data with authentication verification
    *
-   * @param envelope - Encrypted data envelope
-   * @returns Decrypted plaintext
-   * @security Verifies authentication tag to prevent tampering
-   * @throws Error if decryption or authentication fails
+   * @param envelope - Encrypted data envelope containing ciphertext, IV, and auth tag
+   * @returns Decrypted plaintext string
+   * @security Verifies authentication tag to prevent tampering and detect corruption
+   * @throws Error if envelope is invalid, authentication fails, or decryption fails
+   * @example
+   * ```typescript
+   * const plaintext = await decryptAES256GCM(envelope);
+   * // Returns: 'sensitive data'
+   * ```
    */
   async decryptAES256GCM(envelope: EncryptedEnvelope): Promise<string> {
+    // Input validation
+    if (!envelope || typeof envelope !== 'object') {
+      throw new Error('Envelope must be a valid EncryptedEnvelope object');
+    }
+
+    if (!envelope.ciphertext || !envelope.iv || !envelope.authTag) {
+      throw new Error('Envelope missing required fields: ciphertext, iv, or authTag');
+    }
+
+    if (envelope.algorithm !== EncryptionAlgorithm.AES_256_GCM) {
+      throw new Error(`Invalid algorithm: expected ${EncryptionAlgorithm.AES_256_GCM}, got ${envelope.algorithm}`);
+    }
+
     try {
       const key = this.getKey(envelope.keyId || this.activeKeyId);
       const iv = Buffer.from(envelope.iv, 'hex');
@@ -412,12 +450,28 @@ export class EncryptionService {
    * Encrypts a field deterministically for equality searches
    *
    * @param value - Value to encrypt
-   * @param keyId - Key identifier
-   * @returns Deterministic encrypted value
-   * @security Same plaintext always produces same ciphertext (no random IV)
-   * @warning Use only for indexed fields, not for sensitive data
+   * @param keyId - Key identifier (optional)
+   * @returns Deterministic encrypted value (same input → same output)
+   * @security Same plaintext always produces same ciphertext (uses deterministic IV)
+   * @warning SECURITY RISK: Deterministic encryption is LESS SECURE than standard encryption.
+   * - Enables frequency analysis attacks
+   * - Reveals if two records have the same value
+   * - Use ONLY for low-sensitivity indexed fields requiring exact match searches
+   * - DO NOT use for highly sensitive data (SSN, passwords, credit cards)
+   * - Consider using searchable encryption index instead
+   * @example
+   * ```typescript
+   * // Acceptable: Low-sensitivity indexed field
+   * const encrypted = await encryptFieldDeterministic('user@example.com');
+   *
+   * // NOT ACCEPTABLE: High-sensitivity data
+   * const bad = await encryptFieldDeterministic('123-45-6789'); // ✗ DO NOT DO THIS
+   * ```
    */
   async encryptFieldDeterministic(value: string, keyId?: string): Promise<string> {
+    if (!value || typeof value !== 'string') {
+      throw new Error('Value must be a non-empty string');
+    }
     const effectiveKeyId = keyId || this.activeKeyId;
     const key = this.getKey(effectiveKeyId);
 
@@ -613,21 +667,45 @@ export class EncryptionService {
   // ==================== Key Derivation ====================
 
   /**
-   * Derives encryption key using PBKDF2
+   * Derives encryption key using PBKDF2 (Password-Based Key Derivation Function 2)
    *
-   * @param password - Password to derive key from
-   * @param salt - Cryptographic salt
-   * @param iterations - Number of iterations (min 100,000)
-   * @returns Derived key
-   * @security NIST approved KDF, resistant to brute-force
+   * @param password - Password/passphrase to derive key from
+   * @param salt - Cryptographic salt (must be random, at least 16 bytes)
+   * @param iterations - Number of iterations (minimum 100,000, recommended 310,000+)
+   * @returns Derived 256-bit encryption key
+   * @security NIST SP 800-132 approved KDF, resistant to brute-force attacks
+   * @throws Error if password is empty, salt is too short, or iterations too low
+   * @example
+   * ```typescript
+   * const salt = await randomBytes(32);
+   * const key = await deriveKeyPBKDF2('user-password', salt, 310000);
+   * // Returns: 32-byte Buffer suitable for AES-256
+   * ```
    */
   async deriveKeyPBKDF2(
     password: string,
     salt: Buffer,
-    iterations: number = 100000,
+    iterations: number = 310000, // OWASP 2023 recommendation
   ): Promise<Buffer> {
+    // Input validation
+    if (!password || typeof password !== 'string') {
+      throw new Error('Password must be a non-empty string');
+    }
+
+    if (!salt || !Buffer.isBuffer(salt)) {
+      throw new Error('Salt must be a Buffer');
+    }
+
+    if (salt.length < 16) {
+      throw new Error('Salt must be at least 16 bytes for security');
+    }
+
     if (iterations < 100000) {
-      throw new Error('PBKDF2 iterations must be at least 100,000 for security');
+      throw new Error('PBKDF2 iterations must be at least 100,000 (OWASP recommends 310,000+)');
+    }
+
+    if (iterations > 10000000) {
+      this.logger.warn(`Very high iteration count (${iterations}) may cause performance issues`);
     }
 
     return (await pbkdf2(
@@ -640,19 +718,48 @@ export class EncryptionService {
   }
 
   /**
-   * Derives encryption key using scrypt
+   * Derives encryption key using scrypt (memory-hard KDF)
    *
-   * @param password - Password to derive key from
-   * @param salt - Cryptographic salt
-   * @param cost - CPU/memory cost parameter (default: 16384)
-   * @returns Derived key
-   * @security Memory-hard KDF, resistant to hardware attacks
+   * @param password - Password/passphrase to derive key from
+   * @param salt - Cryptographic salt (must be random, at least 16 bytes)
+   * @param cost - CPU/memory cost parameter N (default: 16384, must be power of 2)
+   * @returns Derived 256-bit encryption key
+   * @security Memory-hard KDF resistant to ASIC/GPU attacks, preferred over PBKDF2
+   * @throws Error if password is empty, salt is invalid, or cost is not power of 2
+   * @example
+   * ```typescript
+   * const salt = await randomBytes(32);
+   * const key = await deriveKeyScrypt('user-password', salt, 16384);
+   * // Returns: 32-byte Buffer, more resistant to hardware attacks than PBKDF2
+   * ```
    */
   async deriveKeyScrypt(
     password: string,
     salt: Buffer,
     cost: number = 16384,
   ): Promise<Buffer> {
+    // Input validation
+    if (!password || typeof password !== 'string') {
+      throw new Error('Password must be a non-empty string');
+    }
+
+    if (!salt || !Buffer.isBuffer(salt)) {
+      throw new Error('Salt must be a Buffer');
+    }
+
+    if (salt.length < 16) {
+      throw new Error('Salt must be at least 16 bytes for security');
+    }
+
+    // Cost must be a power of 2
+    if (cost < 1 || (cost & (cost - 1)) !== 0) {
+      throw new Error('Cost parameter N must be a power of 2');
+    }
+
+    if (cost < 16384) {
+      this.logger.warn('Scrypt cost parameter is below recommended minimum of 16384');
+    }
+
     return (await scrypt(
       password,
       salt,
@@ -808,19 +915,43 @@ export class EncryptionService {
   // ==================== Encrypt-then-MAC Patterns ====================
 
   /**
-   * Encrypts data and then generates HMAC for authentication
+   * Encrypts data and then generates HMAC for authentication (Encrypt-then-MAC)
    *
    * @param plaintext - Data to encrypt
-   * @param encryptionKey - Encryption key
+   * @param encryptionKey - Encryption key (must be 32 bytes for AES-256)
    * @param macKey - MAC key (must be different from encryption key)
-   * @returns Encrypted envelope with HMAC
-   * @security Provides both confidentiality and authentication
+   * @returns Encrypted envelope with HMAC for authentication
+   * @security Provides both confidentiality and authentication, prevents padding oracle attacks
+   * @throws Error if keys are invalid, same, or plaintext is empty
+   * @example
+   * ```typescript
+   * const masterKey = await generateSecureRandomBytes(32);
+   * const { encryptionKey, macKey } = await deriveEncryptionAndMACKeys(masterKey);
+   * const result = await encryptThenMAC('sensitive data', encryptionKey, macKey);
+   * ```
    */
   async encryptThenMAC(
     plaintext: string,
     encryptionKey: Buffer,
     macKey: Buffer,
   ): Promise<{ ciphertext: string; iv: string; hmac: string }> {
+    // Input validation
+    if (!plaintext || typeof plaintext !== 'string') {
+      throw new Error('Plaintext must be a non-empty string');
+    }
+
+    if (!Buffer.isBuffer(encryptionKey) || encryptionKey.length !== this.KEY_LENGTH) {
+      throw new Error('Encryption key must be a 32-byte Buffer');
+    }
+
+    if (!Buffer.isBuffer(macKey) || macKey.length !== this.KEY_LENGTH) {
+      throw new Error('MAC key must be a 32-byte Buffer');
+    }
+
+    // Ensure keys are different (critical for security)
+    if (encryptionKey.equals(macKey)) {
+      throw new Error('Encryption and MAC keys must be different for security');
+    }
     // Encrypt
     const iv = await randomBytes(this.IV_LENGTH);
     const cipher = crypto.createCipheriv(EncryptionAlgorithm.AES_256_CBC, encryptionKey, iv);
@@ -1199,6 +1330,14 @@ export class EncryptionService {
 
   /**
    * Initializes default encryption key
+   *
+   * @private
+   * @security WARNING: This generates an ephemeral key that is lost on restart.
+   * For production:
+   * 1. Load keys from secure storage (HSM/KMS)
+   * 2. Use environment variables with ConfigService
+   * 3. Implement key backup and recovery procedures
+   * 4. Enable key rotation policies
    */
   private initializeDefaultKey(): void {
     const defaultKey = crypto.randomBytes(this.KEY_LENGTH);
@@ -1213,15 +1352,84 @@ export class EncryptionService {
     };
 
     this.keyMetadata.set('default', metadata);
+
+    this.logger.warn(
+      'Default encryption key initialized in memory. ' +
+      'This key will be lost on application restart, causing data loss. ' +
+      'Implement persistent key storage for production.'
+    );
+  }
+
+  /**
+   * Initializes encryption keys from secure configuration
+   *
+   * @param config - Configuration object with key material
+   * @security Production method for loading keys from ConfigService/environment
+   * @example
+   * ```typescript
+   * // In your module:
+   * const configService = moduleRef.get(ConfigService);
+   * await encryptionService.initializeFromConfig({
+   *   masterKey: configService.get('ENCRYPTION_MASTER_KEY'),
+   *   keyId: 'production-v1',
+   * });
+   * ```
+   */
+  async initializeFromConfig(config: {
+    masterKey: string;
+    keyId?: string;
+    algorithm?: EncryptionAlgorithm;
+  }): Promise<void> {
+    if (!config.masterKey || typeof config.masterKey !== 'string') {
+      throw new Error('Master key must be provided as a non-empty string');
+    }
+
+    // Decode base64 key or derive from passphrase
+    let keyBuffer: Buffer;
+    try {
+      // Try base64 decode first
+      keyBuffer = Buffer.from(config.masterKey, 'base64');
+      if (keyBuffer.length !== this.KEY_LENGTH) {
+        // If not 32 bytes, derive key from passphrase
+        const salt = await randomBytes(this.SALT_LENGTH);
+        keyBuffer = await this.deriveKeyPBKDF2(config.masterKey, salt);
+      }
+    } catch {
+      // Derive key from passphrase
+      const salt = await randomBytes(this.SALT_LENGTH);
+      keyBuffer = await this.deriveKeyPBKDF2(config.masterKey, salt);
+    }
+
+    const keyId = config.keyId || 'production';
+    this.keys.set(keyId, keyBuffer);
+
+    const metadata: KeyMetadata = {
+      keyId,
+      version: 1,
+      algorithm: config.algorithm || EncryptionAlgorithm.AES_256_GCM,
+      createdAt: new Date(),
+      status: 'active',
+    };
+
+    this.keyMetadata.set(keyId, metadata);
+    this.activeKeyId = keyId;
+
+    this.logger.log(`Initialized encryption key from configuration: ${keyId}`);
   }
 
   /**
    * Retrieves encryption key by ID
+   *
+   * @private
+   * @param keyId - Key identifier
+   * @returns Encryption key buffer
+   * @throws Error if key not found
    */
   private getKey(keyId: string): Buffer {
     const key = this.keys.get(keyId);
 
     if (!key) {
+      this.logger.error(`Encryption key not found: ${keyId}`);
       throw new Error(`Encryption key not found: ${keyId}`);
     }
 
@@ -1289,6 +1497,32 @@ export class EncryptionService {
 
 /**
  * TypeORM transformer for automatic field encryption
+ *
+ * @warning TypeORM transformers are synchronous, but encryption is async.
+ * This transformer provides a stub implementation for reference.
+ *
+ * For production, use one of these approaches:
+ *
+ * 1. **Subscriber Pattern** (Recommended):
+ * ```typescript
+ * @EventSubscriber()
+ * export class EncryptionSubscriber implements EntitySubscriberInterface {
+ *   async beforeInsert(event: InsertEvent<any>) {
+ *     if (event.entity.sensitiveField) {
+ *       event.entity.sensitiveField = await encryptionService.encryptField(
+ *         event.entity.sensitiveField
+ *       );
+ *     }
+ *   }
+ * }
+ * ```
+ *
+ * 2. **Interceptor Pattern**:
+ * Use NestJS interceptors to encrypt/decrypt at the controller/service layer
+ *
+ * 3. **Entity Hooks** (if using supported ORM features)
+ *
+ * @see https://typeorm.io/listeners-and-subscribers
  */
 export class EncryptedColumnTransformer {
   private encryptionService: EncryptionService;
@@ -1297,22 +1531,67 @@ export class EncryptedColumnTransformer {
     this.encryptionService = encryptionService;
   }
 
+  /**
+   * Transforms value before writing to database
+   *
+   * @param value - Plaintext value
+   * @returns Encrypted value (stub - implement async encryption via subscriber)
+   * @warning This is a synchronous method. Use EntitySubscriber for async encryption.
+   */
   to(value: string | null): string | null {
     if (value === null || value === undefined) {
       return null;
     }
 
-    // Encryption happens synchronously in TypeORM transformers
-    // In production, consider using a different approach for async encryption
+    // TypeORM transformers are synchronous - encryption must be done elsewhere
+    // This is a pass-through. Encrypt using @BeforeInsert/@BeforeUpdate hooks instead
+    console.warn(
+      'EncryptedColumnTransformer.to() called - implement async encryption via EntitySubscriber'
+    );
     return value;
   }
 
+  /**
+   * Transforms value after reading from database
+   *
+   * @param value - Encrypted value from database
+   * @returns Decrypted value (stub - implement async decryption via subscriber)
+   * @warning This is a synchronous method. Use custom repository methods for async decryption.
+   */
   from(value: string | null): string | null {
     if (value === null || value === undefined) {
       return null;
     }
 
-    // Decryption happens synchronously
+    // TypeORM transformers are synchronous - decryption must be done elsewhere
+    // Decrypt in service layer or use custom repository methods
+    console.warn(
+      'EncryptedColumnTransformer.from() called - implement async decryption in service layer'
+    );
     return value;
   }
+}
+
+/**
+ * Decorator for marking entity fields as encrypted
+ *
+ * @example
+ * ```typescript
+ * @Entity()
+ * export class Patient {
+ *   @Column()
+ *   @Encrypted()
+ *   ssn: string;
+ *
+ *   @Column()
+ *   @Encrypted()
+ *   medicalRecordNumber: string;
+ * }
+ * ```
+ */
+export function Encrypted(): PropertyDecorator {
+  return function (target: any, propertyKey: string | symbol) {
+    Reflect.defineMetadata('encrypted', true, target, propertyKey);
+    Reflect.defineMetadata('encryption:algorithm', EncryptionAlgorithm.AES_256_GCM, target, propertyKey);
+  };
 }

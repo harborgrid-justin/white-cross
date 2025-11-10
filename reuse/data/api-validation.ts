@@ -91,9 +91,19 @@ addFormats(ajv);
 // ============================================================================
 
 /**
- * Validates request body exists and is not empty
- * @param body - Request body
- * @returns Validation result
+ * Validates that request body exists and is not empty.
+ * Checks for null, undefined, and empty objects.
+ *
+ * @param body - Request body to validate
+ * @returns ValidationResult with valid=true if body exists, otherwise includes error details
+ *
+ * @example
+ * ```typescript
+ * const result = validateBodyExists(req.body);
+ * if (!result.valid) {
+ *   return res.status(400).json({ errors: result.errors });
+ * }
+ * ```
  */
 export function validateBodyExists(body: any): ValidationResult {
   if (!body || (typeof body === 'object' && Object.keys(body).length === 0)) {
@@ -113,10 +123,20 @@ export function validateBodyExists(body: any): ValidationResult {
 }
 
 /**
- * Validates required fields in request body
- * @param body - Request body
+ * Validates that required fields are present in request body.
+ * Checks for null, undefined, and empty string values.
+ *
+ * @param body - Request body object to validate
  * @param requiredFields - Array of required field names
- * @returns Validation result
+ * @returns ValidationResult with errors for each missing field
+ *
+ * @example
+ * ```typescript
+ * const result = validateRequiredFields(req.body, ['email', 'password', 'name']);
+ * if (!result.valid) {
+ *   return res.status(400).json({ errors: result.errors });
+ * }
+ * ```
  */
 export function validateRequiredFields(body: any, requiredFields: string[]): ValidationResult {
   const errors: ValidationError[] = [];
@@ -462,11 +482,26 @@ export function validateFilterParams(
 // ============================================================================
 
 /**
- * Validates UUID path parameter
- * @param paramName - Parameter name
- * @param paramValue - UUID value
- * @param version - Required UUID version (optional)
- * @returns Validation result
+ * Validates UUID path parameter format and optionally checks version.
+ * Uses the 'uuid' library for validation.
+ *
+ * @param paramName - Parameter name for error reporting
+ * @param paramValue - UUID string value to validate
+ * @param version - Optional required UUID version (1, 2, 3, 4, or 5)
+ * @returns ValidationResult with error if UUID is invalid or wrong version
+ *
+ * @example
+ * ```typescript
+ * // Validate any UUID version
+ * const result = validateUuidParam('userId', req.params.id);
+ *
+ * // Validate UUID v4 only
+ * const result = validateUuidParam('userId', req.params.id, 4);
+ *
+ * if (!result.valid) {
+ *   return res.status(400).json({ errors: result.errors });
+ * }
+ * ```
  */
 export function validateUuidParam(
   paramName: string,
@@ -705,10 +740,31 @@ export function validateAuthorizationHeader(
 // ============================================================================
 
 /**
- * Validates data against JSON schema
- * @param data - Data to validate
- * @param schema - JSON schema
- * @returns Validation result
+ * Validates data against JSON Schema using AJV (Another JSON Validator).
+ * Supports full JSON Schema draft-07 specification with format validation.
+ *
+ * @param data - Data object to validate
+ * @param schema - JSON Schema (JSONSchemaType) definition
+ * @returns ValidationResult with detailed error information for each validation failure
+ *
+ * @example
+ * ```typescript
+ * const userSchema: JSONSchemaType<User> = {
+ *   type: 'object',
+ *   properties: {
+ *     name: { type: 'string', minLength: 1 },
+ *     email: { type: 'string', format: 'email' },
+ *     age: { type: 'number', minimum: 0 }
+ *   },
+ *   required: ['name', 'email'],
+ *   additionalProperties: false
+ * };
+ *
+ * const result = validateJsonSchema(userData, userSchema);
+ * if (!result.valid) {
+ *   return res.status(400).json({ errors: result.errors });
+ * }
+ * ```
  */
 export function validateJsonSchema<T>(data: any, schema: JSONSchemaType<T>): ValidationResult {
   const validate = ajv.compile(schema);
@@ -1170,10 +1226,30 @@ export function extractFirstErrors(errors: ValidationError[]): Record<string, st
 // ============================================================================
 
 /**
- * Creates Express middleware for validation
- * @param validator - Validation function
- * @param target - Validation target (body, query, params)
- * @returns Express middleware
+ * Creates Express middleware for validating request data (body, query, or params).
+ * Returns 400 Bad Request with error details if validation fails.
+ *
+ * @param validator - Validation function that returns ValidationResult or Promise<ValidationResult>
+ * @param target - Request property to validate: 'body', 'query', or 'params'
+ * @returns Express middleware function
+ *
+ * @example
+ * ```typescript
+ * // Create middleware for body validation
+ * const validateUserBody = createValidationMiddleware(
+ *   (data) => validateRequiredFields(data, ['email', 'password']),
+ *   'body'
+ * );
+ *
+ * // Use in route
+ * app.post('/users', validateUserBody, createUserHandler);
+ *
+ * // With async validator
+ * const validateUniqueEmail = createValidationMiddleware(
+ *   async (data) => await validateEmailUniqueness(data.email, checkEmailExists),
+ *   'body'
+ * );
+ * ```
  */
 export function createValidationMiddleware(
   validator: (data: any) => ValidationResult | Promise<ValidationResult>,
@@ -1229,9 +1305,38 @@ export function chainValidators(
 }
 
 /**
- * Creates comprehensive request validator middleware
- * @param options - Validation options
- * @returns Express middleware
+ * Creates comprehensive request validator middleware that validates multiple request parts.
+ * Validates body, query parameters, path parameters, and headers in a single middleware.
+ * Accumulates all validation errors before responding.
+ *
+ * @param options - Validation options object with optional validators for each request part
+ * @param options.body - Optional body validation function
+ * @param options.query - Optional query parameters validation function
+ * @param options.params - Optional path parameters validation function
+ * @param options.headers - Optional headers validation function
+ * @returns Express middleware function that validates all specified parts
+ *
+ * @example
+ * ```typescript
+ * const validateCreateUser = validateRequest({
+ *   body: (data) => validateRequiredFields(data, ['email', 'password', 'name']),
+ *   query: (data) => validatePaginationParams(data),
+ *   params: (data) => validateUuidParam('userId', data.userId),
+ *   headers: (data) => validateRequiredHeaders(data, ['Authorization'])
+ * });
+ *
+ * app.post('/users/:userId', validateCreateUser, createUserHandler);
+ *
+ * // With async validators
+ * const validateUpdateUser = validateRequest({
+ *   body: async (data) => {
+ *     const schemaResult = validateJsonSchema(data, userUpdateSchema);
+ *     if (!schemaResult.valid) return schemaResult;
+ *     return await validateEmailUniqueness(data.email, checkEmailExists);
+ *   },
+ *   params: (data) => validateUuidParam('id', data.id, 4)
+ * });
+ * ```
  */
 export function validateRequest(options: {
   body?: (data: any) => ValidationResult | Promise<ValidationResult>;
@@ -1289,10 +1394,36 @@ export function validateRequest(options: {
 // ============================================================================
 
 /**
- * Sanitizes string input
- * @param value - String to sanitize
- * @param options - Sanitization options
+ * Sanitizes string input by applying various transformations and safety measures.
+ * Helps prevent XSS attacks and ensures consistent data formatting.
+ *
+ * @param value - String value to sanitize
+ * @param options - Sanitization options object
+ * @param options.trim - Remove leading/trailing whitespace
+ * @param options.lowercase - Convert to lowercase
+ * @param options.uppercase - Convert to uppercase
+ * @param options.escape - Escape HTML special characters to prevent XSS
+ * @param options.maxLength - Truncate to maximum length
  * @returns Sanitized string
+ *
+ * @example
+ * ```typescript
+ * // Basic sanitization
+ * const clean = sanitizeString('  Hello World  ', { trim: true });
+ * // Result: 'Hello World'
+ *
+ * // XSS prevention
+ * const safe = sanitizeString('<script>alert("xss")</script>', { escape: true });
+ * // Result: '&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;'
+ *
+ * // Email normalization
+ * const email = sanitizeString(' User@Example.COM ', { trim: true, lowercase: true });
+ * // Result: 'user@example.com'
+ *
+ * // Length limiting
+ * const limited = sanitizeString('Very long text...', { maxLength: 10 });
+ * // Result: 'Very long '
+ * ```
  */
 export function sanitizeString(value: string, options: SanitizationOptions = {}): string {
   let sanitized = value;

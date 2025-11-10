@@ -8,6 +8,115 @@
  * @requires sequelize ^6.x
  * @requires @nestjs/common ^10.x
  * @requires sequelize-typescript ^2.x
+ *
+ * ## Repository Pattern Best Practices
+ *
+ * ### Repository Types and When to Use Them
+ *
+ * #### 1. BaseRepository
+ * - **Use for**: Standard CRUD operations
+ * - **Scope**: Singleton (DEFAULT)
+ * - **Features**: Full CRUD, pagination, specifications
+ * - **Example**: UserRepository, PatientRepository
+ *
+ * #### 2. ReadOnlyRepository
+ * - **Use for**: Query-only operations (CQRS read side)
+ * - **Scope**: Singleton (DEFAULT)
+ * - **Features**: Read operations only, no mutations
+ * - **Example**: ReportingRepository, AnalyticsRepository
+ *
+ * #### 3. CachedRepository
+ * - **Use for**: Frequently accessed, rarely changed data
+ * - **Scope**: Singleton (DEFAULT)
+ * - **Features**: In-memory cache layer, TTL support
+ * - **Example**: ConfigRepository, ReferenceDataRepository
+ *
+ * #### 4. TransactionalRepository
+ * - **Use for**: Multi-step operations requiring atomicity
+ * - **Scope**: Singleton (DEFAULT)
+ * - **Features**: Automatic transaction management
+ * - **Example**: OrderRepository, PaymentRepository
+ *
+ * #### 5. AuditRepository
+ * - **Use for**: HIPAA/compliance-sensitive data
+ * - **Scope**: Singleton (DEFAULT)
+ * - **Features**: Comprehensive audit logging
+ * - **Example**: MedicalRecordRepository, FinancialRepository
+ *
+ * #### 6. SoftDeleteRepository
+ * - **Use for**: Data that should be recoverable
+ * - **Scope**: Singleton (DEFAULT)
+ * - **Features**: Soft delete, restore capabilities
+ * - **Example**: PatientRepository, DocumentRepository
+ *
+ * #### 7. MultiTenantRepository
+ * - **Use for**: Multi-tenant applications
+ * - **Scope**: Singleton (DEFAULT)
+ * - **Features**: Automatic tenant filtering
+ * - **Example**: SchoolDataRepository, OrganizationRepository
+ *
+ * ## Dependency Injection Best Practices
+ *
+ * ### Repository Registration
+ * ```typescript
+ * @Module({
+ *   providers: [
+ *     {
+ *       provide: 'PatientRepository',
+ *       useClass: PatientRepository,
+ *       scope: Scope.DEFAULT // Singleton
+ *     },
+ *     UnitOfWork,
+ *   ],
+ *   exports: ['PatientRepository', UnitOfWork]
+ * })
+ * export class DataModule {}
+ * ```
+ *
+ * ### Repository Usage in Services
+ * ```typescript
+ * @Injectable()
+ * export class PatientService {
+ *   constructor(
+ *     @Inject('PatientRepository')
+ *     private readonly patientRepo: PatientRepository,
+ *     private readonly unitOfWork: UnitOfWork
+ *   ) {}
+ * }
+ * ```
+ *
+ * ## Transaction Management
+ *
+ * ### Using Unit of Work Pattern
+ * ```typescript
+ * async transferPatient(patientId: string, newSchoolId: string): Promise<void> {
+ *   await this.unitOfWork.begin();
+ *   try {
+ *     const tx = this.unitOfWork.getTransaction();
+ *     await this.patientRepo.update(patientId, { schoolId: newSchoolId }, audit, tx);
+ *     await this.enrollmentRepo.create({ patientId, schoolId: newSchoolId }, audit, tx);
+ *     await this.unitOfWork.commit();
+ *   } catch (error) {
+ *     await this.unitOfWork.rollback();
+ *     throw error;
+ *   }
+ * }
+ * ```
+ *
+ * ## Circular Dependency Prevention
+ *
+ * 1. **Repositories should NOT inject services** - only other repositories or utilities
+ * 2. **Services inject repositories** - never the reverse
+ * 3. **Use events** for cross-repository communication
+ * 4. **Extract shared queries** to specification objects
+ *
+ * ## Performance Optimization
+ *
+ * 1. **Use eager loading** for known associations
+ * 2. **Implement caching** for reference data
+ * 3. **Use specifications** to reuse complex queries
+ * 4. **Batch operations** when processing multiple records
+ * 5. **Index frequently queried fields**
  */
 
 import { Logger, Injectable, NotFoundException } from '@nestjs/common';
@@ -38,28 +147,124 @@ import {
 
 /**
  * Specification interface for query specifications
+ * @template T Entity type
+ * @description Defines the contract for reusable query specifications.
+ * Specifications encapsulate query logic and can be composed using combinators.
+ *
+ * @remarks
+ * - **Pattern**: Specification pattern for query composition
+ * - **Use Case**: Reusable complex queries, business rule enforcement
+ * - **Benefits**: Testable, composable, maintainable queries
+ *
+ * @example
+ * ```typescript
+ * // Define specifications
+ * class ActivePatientSpec extends Specification<Patient> {
+ *   toQuery(): WhereOptions<any> {
+ *     return { deletedAt: null, status: 'active' };
+ *   }
+ * }
+ *
+ * class SchoolPatientSpec extends Specification<Patient> {
+ *   constructor(private schoolId: string) { super(); }
+ *   toQuery(): WhereOptions<any> {
+ *     return { schoolId: this.schoolId };
+ *   }
+ * }
+ *
+ * // Compose specifications
+ * const activeSchoolPatients = new ActivePatientSpec()
+ *   .and(new SchoolPatientSpec('school-123'));
+ *
+ * // Use in repository
+ * const patients = await patientRepo.findBySpecification(activeSchoolPatients);
+ * ```
  */
 export interface ISpecification<T> {
+  /**
+   * Converts specification to Sequelize where clause
+   * @returns Sequelize where options
+   */
   toQuery(): WhereOptions<any>;
+
+  /**
+   * Combines this specification with another using AND logic
+   * @param spec Specification to combine
+   * @returns Combined specification
+   */
   and(spec: ISpecification<T>): ISpecification<T>;
+
+  /**
+   * Combines this specification with another using OR logic
+   * @param spec Specification to combine
+   * @returns Combined specification
+   */
   or(spec: ISpecification<T>): ISpecification<T>;
+
+  /**
+   * Negates this specification
+   * @returns Negated specification
+   */
   not(): ISpecification<T>;
 }
 
 /**
  * Base specification implementation
+ * @template T Entity type
+ * @description Abstract base class for creating reusable query specifications.
+ *
+ * @example
+ * ```typescript
+ * class PatientAgeSpec extends Specification<Patient> {
+ *   constructor(private minAge: number, private maxAge: number) {
+ *     super();
+ *   }
+ *
+ *   toQuery(): WhereOptions<any> {
+ *     return {
+ *       age: {
+ *         [Op.gte]: this.minAge,
+ *         [Op.lte]: this.maxAge
+ *       }
+ *     };
+ *   }
+ * }
+ *
+ * // Usage
+ * const teenagerSpec = new PatientAgeSpec(13, 19);
+ * const teenagers = await patientRepo.findBySpecification(teenagerSpec);
+ * ```
  */
 export abstract class Specification<T> implements ISpecification<T> {
+  /**
+   * Converts specification to Sequelize where clause
+   * @returns Sequelize where options
+   * @abstract Must be implemented by derived classes
+   */
   abstract toQuery(): WhereOptions<any>;
 
+  /**
+   * Combines this specification with another using AND logic
+   * @param spec Specification to combine
+   * @returns Combined AND specification
+   */
   and(spec: ISpecification<T>): ISpecification<T> {
     return new AndSpecification(this, spec);
   }
 
+  /**
+   * Combines this specification with another using OR logic
+   * @param spec Specification to combine
+   * @returns Combined OR specification
+   */
   or(spec: ISpecification<T>): ISpecification<T> {
     return new OrSpecification(this, spec);
   }
 
+  /**
+   * Negates this specification
+   * @returns Negated specification
+   */
   not(): ISpecification<T> {
     return new NotSpecification(this);
   }
@@ -118,25 +323,97 @@ class NotSpecification<T> extends Specification<T> {
 
 /**
  * Unit of Work interface for managing transactions
+ * @description Defines the contract for managing database transactions across repositories
  */
 export interface IUnitOfWork {
+  /**
+   * Begins a new database transaction
+   * @returns Promise resolving to the transaction instance
+   * @throws {Error} If a transaction is already active
+   */
   begin(): Promise<Transaction>;
+
+  /**
+   * Commits the active transaction
+   * @returns Promise that resolves when commit is complete
+   * @throws {Error} If no active transaction exists
+   */
   commit(): Promise<void>;
+
+  /**
+   * Rolls back the active transaction
+   * @returns Promise that resolves when rollback is complete
+   * @throws {Error} If no active transaction exists
+   */
   rollback(): Promise<void>;
+
+  /**
+   * Gets the current active transaction if any
+   * @returns Active transaction or undefined
+   */
   getTransaction(): Transaction | undefined;
+
+  /**
+   * Checks if a transaction is currently active
+   * @returns True if transaction is active
+   */
   isActive(): boolean;
 }
 
 /**
- * Unit of Work implementation
+ * Unit of Work implementation for Sequelize
+ * @description Manages database transactions across multiple repository operations.
+ * This class ensures ACID properties for complex multi-repository operations.
+ *
+ * @remarks
+ * - **Scope**: Singleton (DEFAULT) - one instance per application
+ * - **Pattern**: Unit of Work pattern for transaction management
+ * - **Thread Safety**: Request-scoped for concurrent operations
+ * - **Use Case**: Multi-repository operations requiring atomicity
+ *
+ * @example
+ * ```typescript
+ * @Injectable()
+ * export class TransferService {
+ *   constructor(
+ *     private readonly unitOfWork: UnitOfWork,
+ *     private readonly accountRepo: AccountRepository,
+ *     private readonly auditRepo: AuditRepository
+ *   ) {}
+ *
+ *   async transferFunds(fromId: string, toId: string, amount: number): Promise<void> {
+ *     await this.unitOfWork.begin();
+ *
+ *     try {
+ *       const transaction = this.unitOfWork.getTransaction();
+ *       await this.accountRepo.debit(fromId, amount, transaction);
+ *       await this.accountRepo.credit(toId, amount, transaction);
+ *       await this.auditRepo.log('TRANSFER', { fromId, toId, amount }, transaction);
+ *       await this.unitOfWork.commit();
+ *     } catch (error) {
+ *       await this.unitOfWork.rollback();
+ *       throw error;
+ *     }
+ *   }
+ * }
+ * ```
  */
 @Injectable()
 export class UnitOfWork implements IUnitOfWork {
   private logger = new Logger(UnitOfWork.name);
   private transaction?: Transaction;
 
+  /**
+   * Creates a new Unit of Work instance
+   * @param sequelize Sequelize instance for transaction management
+   */
   constructor(private sequelize: Sequelize) {}
 
+  /**
+   * Begins a new database transaction
+   * @returns Promise resolving to the transaction instance
+   * @throws {Error} If a transaction is already active
+   */
   async begin(): Promise<Transaction> {
     if (this.transaction) {
       throw new Error('Transaction already active');
@@ -147,6 +424,11 @@ export class UnitOfWork implements IUnitOfWork {
     return this.transaction;
   }
 
+  /**
+   * Commits the active transaction
+   * @returns Promise that resolves when commit is complete
+   * @throws {Error} If no active transaction exists
+   */
   async commit(): Promise<void> {
     if (!this.transaction) {
       throw new Error('No active transaction');
@@ -157,6 +439,11 @@ export class UnitOfWork implements IUnitOfWork {
     this.transaction = undefined;
   }
 
+  /**
+   * Rolls back the active transaction
+   * @returns Promise that resolves when rollback is complete
+   * @throws {Error} If no active transaction exists
+   */
   async rollback(): Promise<void> {
     if (!this.transaction) {
       throw new Error('No active transaction');
@@ -167,10 +454,18 @@ export class UnitOfWork implements IUnitOfWork {
     this.transaction = undefined;
   }
 
+  /**
+   * Gets the current active transaction if any
+   * @returns Active transaction or undefined
+   */
   getTransaction(): Transaction | undefined {
     return this.transaction;
   }
 
+  /**
+   * Checks if a transaction is currently active
+   * @returns True if transaction is active
+   */
   isActive(): boolean {
     return this.transaction !== undefined;
   }
@@ -178,25 +473,124 @@ export class UnitOfWork implements IUnitOfWork {
 
 /**
  * Repository interface defining standard operations
+ * @template T Model type extending Sequelize Model
+ * @description Contract for all repository implementations
  */
 export interface IRepository<T extends Model> {
+  /**
+   * Find a record by primary key
+   * @param id Primary key value
+   * @param options Optional query options
+   * @returns Promise resolving to record or null
+   */
   findById(id: string, options?: FindOptions<Attributes<T>>): Promise<T | null>;
+
+  /**
+   * Find all records matching criteria
+   * @param options Optional query options
+   * @returns Promise resolving to array of records
+   */
   findAll(options?: FindOptions<Attributes<T>>): Promise<T[]>;
+
+  /**
+   * Find one record matching criteria
+   * @param options Query options
+   * @returns Promise resolving to record or null
+   */
   findOne(options: FindOptions<Attributes<T>>): Promise<T | null>;
+
+  /**
+   * Find and count all records
+   * @param options Query options
+   * @returns Promise resolving to rows and count
+   */
   findAndCountAll(options: FindOptions<Attributes<T>>): Promise<{ rows: T[]; count: number }>;
+
+  /**
+   * Create a new record with audit metadata
+   * @param data Record data
+   * @param audit Audit metadata (userId, timestamp, etc.)
+   * @param transaction Optional transaction
+   * @returns Promise resolving to created record
+   */
   create(data: any, audit: AuditMetadata, transaction?: Transaction): Promise<T>;
+
+  /**
+   * Update an existing record with audit metadata
+   * @param id Record identifier
+   * @param data Partial record data
+   * @param audit Audit metadata
+   * @param transaction Optional transaction
+   * @returns Promise resolving to updated record
+   */
   update(id: string, data: Partial<any>, audit: AuditMetadata, transaction?: Transaction): Promise<T>;
+
+  /**
+   * Soft delete a record
+   * @param id Record identifier
+   * @param audit Audit metadata
+   * @param transaction Optional transaction
+   * @returns Promise resolving to success status
+   */
   delete(id: string, audit: AuditMetadata, transaction?: Transaction): Promise<boolean>;
+
+  /**
+   * Count records matching criteria
+   * @param where Optional where conditions
+   * @param transaction Optional transaction
+   * @returns Promise resolving to count
+   */
   count(where?: WhereOptions<any>, transaction?: Transaction): Promise<number>;
+
+  /**
+   * Check if records exist matching criteria
+   * @param where Where conditions
+   * @param transaction Optional transaction
+   * @returns Promise resolving to existence status
+   */
   exists(where: WhereOptions<any>, transaction?: Transaction): Promise<boolean>;
 }
 
 /**
  * Generic base repository implementation
+ * @template T Model type extending Sequelize Model
+ * @description Base class for all repositories providing standard CRUD operations.
+ * This class implements the Repository pattern for data access abstraction.
+ *
+ * @remarks
+ * - **Scope**: Singleton (DEFAULT) - one repository instance per model
+ * - **Pattern**: Repository pattern for data access layer
+ * - **Dependencies**: Requires Sequelize model injected via constructor
+ * - **Circular Dependencies**: Avoid injecting services that depend on this repository
+ *
+ * @example
+ * ```typescript
+ * @Injectable()
+ * export class PatientRepository extends BaseRepository<Patient> {
+ *   constructor(@InjectModel(Patient) patientModel: typeof Patient) {
+ *     super(patientModel);
+ *   }
+ *
+ *   // Custom query methods
+ *   async findByStudentId(studentId: string): Promise<Patient[]> {
+ *     return this.findAll({ where: { studentId } });
+ *   }
+ *
+ *   async findActivePatients(): Promise<Patient[]> {
+ *     return this.findAll({
+ *       where: { deletedAt: null, status: 'active' }
+ *     });
+ *   }
+ * }
+ * ```
  */
 export abstract class BaseRepository<T extends Model> implements IRepository<T> {
   protected logger: Logger;
 
+  /**
+   * Creates a new repository instance
+   * @param model Sequelize model class
+   */
   constructor(protected model: ModelCtor<T>) {
     this.logger = new Logger(`${model.name}Repository`);
   }

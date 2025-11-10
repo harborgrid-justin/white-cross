@@ -261,7 +261,17 @@ export async function handleFindOne<T extends BaseEntity>(
 }
 
 /**
- * Generic handler for POST (create) resource
+ * Generic handler for POST (create) resource with comprehensive error handling.
+ *
+ * @param service - CRUD service instance implementing CrudService interface
+ * @param data - Partial entity data for creation
+ * @returns Promise resolving to created entity
+ * @throws BadRequestException if creation fails
+ *
+ * @example
+ * ```typescript
+ * const newUser = await handleCreate(usersService, { name: 'John', email: 'john@example.com' });
+ * ```
  */
 export async function handleCreate<T extends BaseEntity>(
   service: CrudService<T>,
@@ -270,12 +280,25 @@ export async function handleCreate<T extends BaseEntity>(
   try {
     return await service.create(data);
   } catch (error) {
-    throw new BadRequestException(`Failed to create resource: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    throw new BadRequestException(`Failed to create resource: ${errorMessage}`);
   }
 }
 
 /**
- * Generic handler for PUT/PATCH (update) resource
+ * Generic handler for PUT/PATCH (update) resource with existence check.
+ *
+ * @param service - CRUD service instance implementing CrudService interface
+ * @param id - Entity identifier
+ * @param data - Partial entity data for update
+ * @returns Promise resolving to updated entity
+ * @throws NotFoundException if resource doesn't exist
+ * @throws BadRequestException if update fails
+ *
+ * @example
+ * ```typescript
+ * const updatedUser = await handleUpdate(usersService, '123', { name: 'Jane' });
+ * ```
  */
 export async function handleUpdate<T extends BaseEntity>(
   service: CrudService<T>,
@@ -288,12 +311,24 @@ export async function handleUpdate<T extends BaseEntity>(
   try {
     return await service.update(id, data);
   } catch (error) {
-    throw new BadRequestException(`Failed to update resource: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    throw new BadRequestException(`Failed to update resource: ${errorMessage}`);
   }
 }
 
 /**
- * Generic handler for DELETE resource
+ * Generic handler for DELETE resource with existence check.
+ *
+ * @param service - CRUD service instance implementing CrudService interface
+ * @param id - Entity identifier
+ * @returns Promise resolving when deletion completes
+ * @throws NotFoundException if resource doesn't exist
+ * @throws InternalServerErrorException if deletion fails
+ *
+ * @example
+ * ```typescript
+ * await handleDelete(usersService, '123');
+ * ```
  */
 export async function handleDelete<T extends BaseEntity>(
   service: CrudService<T>,
@@ -305,7 +340,8 @@ export async function handleDelete<T extends BaseEntity>(
   try {
     await service.delete(id);
   } catch (error) {
-    throw new InternalServerErrorException(`Failed to delete resource: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    throw new InternalServerErrorException(`Failed to delete resource: ${errorMessage}`);
   }
 }
 
@@ -328,7 +364,21 @@ export async function handleSoftDelete<T extends BaseEntity>(
 // ============================================================================
 
 /**
- * Handles bulk create operations
+ * Handles bulk create operations with individual error tracking.
+ * Processes all items and returns both successful and failed results.
+ *
+ * @param service - CRUD service instance implementing CrudService interface
+ * @param items - Array of partial entity data for bulk creation
+ * @returns Promise resolving to bulk operation result with success/failure details
+ *
+ * @example
+ * ```typescript
+ * const result = await handleBulkCreate(usersService, [
+ *   { name: 'User1', email: 'user1@example.com' },
+ *   { name: 'User2', email: 'user2@example.com' }
+ * ]);
+ * console.log(`Created: ${result.summary.successCount}, Failed: ${result.summary.failureCount}`);
+ * ```
  */
 export async function handleBulkCreate<T extends BaseEntity>(
   service: CrudService<T>,
@@ -350,10 +400,11 @@ export async function handleBulkCreate<T extends BaseEntity>(
       result.successful.push(created);
       result.summary.successCount++;
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       result.failed.push({
         index: i,
         data: items[i],
-        error: error.message,
+        error: errorMessage,
       });
       result.summary.failureCount++;
     }
@@ -385,10 +436,11 @@ export async function handleBulkUpdate<T extends BaseEntity>(
       result.successful.push(updated);
       result.summary.successCount++;
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       result.failed.push({
         index: i,
         data: updates[i],
-        error: error.message,
+        error: errorMessage,
       });
       result.summary.failureCount++;
     }
@@ -419,10 +471,11 @@ export async function handleBulkDelete<T extends BaseEntity>(
       await service.delete(ids[i]);
       result.summary.successCount++;
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       result.failed.push({
         index: i,
         data: { id: ids[i] },
-        error: error.message,
+        error: errorMessage,
       });
       result.summary.failureCount++;
     }
@@ -470,10 +523,13 @@ export async function handleBatchRequests<T, R>(
         result.successful.push(promiseResult.value);
         result.summary.successCount++;
       } else {
+        const errorMessage = promiseResult.reason instanceof Error
+          ? promiseResult.reason.message
+          : 'Unknown error occurred';
         result.failed.push({
           index: currentIndex,
           data: chunk[chunkIndex],
-          error: promiseResult.reason?.message || 'Unknown error',
+          error: errorMessage,
         });
         result.summary.failureCount++;
       }
@@ -516,10 +572,11 @@ export async function handleSequentialBatch<T, R>(
       } catch (error) {
         retries++;
         if (retries >= maxRetries) {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
           result.failed.push({
             index: i,
             data: requests[i],
-            error: `Failed after ${maxRetries} retries: ${error.message}`,
+            error: `Failed after ${maxRetries} retries: ${errorMessage}`,
           });
           result.summary.failureCount++;
         } else {
@@ -592,12 +649,14 @@ export async function handleFileUpload(
           hash: hash.digest('hex'),
         });
       } catch (error) {
-        reject(new InternalServerErrorException(`Failed to save file: ${error.message}`));
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        reject(new InternalServerErrorException(`Failed to save file: ${errorMessage}`));
       }
     });
 
     fileStream.on('error', (error) => {
-      reject(new InternalServerErrorException(`Failed to read file: ${error.message}`));
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      reject(new InternalServerErrorException(`Failed to read file: ${errorMessage}`));
     });
   });
 }
@@ -695,7 +754,8 @@ export async function finalizeChunkedUpload(
     });
 
     writeStream.on('error', (error) => {
-      reject(new InternalServerErrorException(`Failed to finalize upload: ${error.message}`));
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      reject(new InternalServerErrorException(`Failed to finalize upload: ${errorMessage}`));
     });
   });
 }
@@ -1081,10 +1141,11 @@ export async function handleCSVImport<T>(
           result.imported.push(validatedRow);
           result.summary.importedCount++;
         } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
           result.errors.push({
             row: rowNumber,
             data: row,
-            error: error.message,
+            error: errorMessage,
           });
           result.summary.errorCount++;
         }
@@ -1093,7 +1154,8 @@ export async function handleCSVImport<T>(
         resolve(result);
       })
       .on('error', (error) => {
-        reject(new InternalServerErrorException(`Failed to parse CSV: ${error.message}`));
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        reject(new InternalServerErrorException(`Failed to parse CSV: ${errorMessage}`));
       });
   });
 }
@@ -1130,10 +1192,11 @@ export async function handleJSONImport<T>(
       result.imported.push(validatedItem);
       result.summary.importedCount++;
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       result.errors.push({
         row: i + 1,
         data: data[i],
-        error: error.message,
+        error: errorMessage,
       });
       result.summary.errorCount++;
     }
@@ -1196,7 +1259,8 @@ export async function handleWebhook(
     await processor(webhookPayload);
     return { success: true, message: 'Webhook processed successfully' };
   } catch (error) {
-    throw new InternalServerErrorException(`Webhook processing failed: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    throw new InternalServerErrorException(`Webhook processing failed: ${errorMessage}`);
   }
 }
 
@@ -1228,7 +1292,8 @@ export async function sendWebhook(
       statusCode: response.status,
     };
   } catch (error) {
-    throw new InternalServerErrorException(`Failed to send webhook: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    throw new InternalServerErrorException(`Failed to send webhook: ${errorMessage}`);
   }
 }
 

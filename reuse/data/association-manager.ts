@@ -125,6 +125,14 @@ export function createAssociation(config: AssociationConfig): Association {
 /**
  * Establishes a belongsTo relationship with optimized foreign key handling
  *
+ * Follows Sequelize 6.x best practices:
+ * - Foreign keys default to NOT NULL for data integrity
+ * - CASCADE operations by default for referential integrity
+ * - Automatic index creation on foreign key
+ * - Proper constraint naming
+ *
+ * @template S - Source model type
+ * @template T - Target model type
  * @param source - Source model
  * @param target - Target model
  * @param options - BelongsTo options
@@ -133,9 +141,11 @@ export function createAssociation(config: AssociationConfig): Association {
  * @example
  * ```typescript
  * setupBelongsTo(Post, User, {
- *   foreignKey: 'authorId',
+ *   foreignKey: { name: 'authorId', allowNull: false },
  *   targetKey: 'id',
- *   as: 'author'
+ *   as: 'author',
+ *   onDelete: 'CASCADE',
+ *   onUpdate: 'CASCADE'
  * });
  * ```
  */
@@ -144,14 +154,23 @@ export function setupBelongsTo<S extends Model, T extends Model>(
   target: ModelStatic<T>,
   options: BelongsToOptions
 ): Association<S, T> {
+  // Validate required options
+  if (!options.as) {
+    throw new Error(`Association alias 'as' is required for ${source.name} belongsTo ${target.name}`);
+  }
+
   const defaultOptions: BelongsToOptions = {
     foreignKey: {
       allowNull: options.foreignKey && typeof options.foreignKey === 'object'
-        ? options.foreignKey.allowNull
+        ? (options.foreignKey.allowNull ?? false)
         : false,
+      name: options.foreignKey && typeof options.foreignKey === 'object'
+        ? options.foreignKey.name
+        : options.foreignKey,
     },
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
+    constraints: true, // Enforce foreign key constraints
     ...options,
   };
 
@@ -286,6 +305,10 @@ export function setupBidirectionalBelongsToMany<M1 extends Model, M2 extends Mod
 /**
  * Sets up a polymorphic belongsTo association
  *
+ * Implements polymorphic associations following Sequelize 6.x patterns.
+ * Validates discriminator values and ensures proper scope configuration.
+ *
+ * @template S - Source model type
  * @param source - Source model that has the polymorphic association
  * @param config - Polymorphic configuration
  * @returns Array of created associations
@@ -307,17 +330,55 @@ export function setupPolymorphicBelongsTo<S extends Model>(
   config: PolymorphicConfig
 ): Association<S, any>[] {
   const { foreignKey, discriminator, models } = config;
+
+  // Validate polymorphic configuration
+  if (!models || models.length === 0) {
+    throw new Error('Polymorphic association requires at least one target model');
+  }
+
+  const discriminatorValues = new Set<string>();
   const associations: Association<S, any>[] = [];
 
   for (const { model, discriminatorValue } of models) {
+    // Validate unique discriminator values
+    if (discriminatorValues.has(discriminatorValue)) {
+      throw new Error(`Duplicate discriminator value '${discriminatorValue}' in polymorphic association`);
+    }
+    discriminatorValues.add(discriminatorValue);
+
+    // Validate discriminator value matches model name (convention)
+    if (discriminatorValue !== model.name) {
+      console.warn(
+        `Polymorphic discriminator '${discriminatorValue}' doesn't match model name '${model.name}'. ` +
+        `This may cause issues with auto-loading.`
+      );
+    }
+
     const association = source.belongsTo(model, {
       foreignKey,
-      constraints: false,
+      constraints: false, // Polymorphic associations can't have DB constraints
       scope: {
         [discriminator]: discriminatorValue,
       },
+      as: `${discriminatorValue.toLowerCase()}Target`, // Unique alias per target
     });
     associations.push(association);
+  }
+
+  // Add composite index on foreignKey + discriminator for performance
+  const sourceIndexes = (source.options.indexes as any[]) || [];
+  const compositeIndexExists = sourceIndexes.some((idx) =>
+    idx.fields && idx.fields.length === 2 &&
+    idx.fields.includes(foreignKey) && idx.fields.includes(discriminator)
+  );
+
+  if (!compositeIndexExists) {
+    sourceIndexes.push({
+      name: `${source.tableName}_polymorphic_idx`,
+      fields: [discriminator, foreignKey],
+      type: 'BTREE',
+    });
+    source.options.indexes = sourceIndexes;
   }
 
   return associations;
@@ -376,6 +437,10 @@ export function setupPolymorphicHasMany<T extends Model, S extends Model>(
 /**
  * Creates a self-referential association (e.g., hierarchical data)
  *
+ * Implements tree/hierarchy patterns with proper circular reference handling.
+ * Supports configurable cascade behavior and nullable parent references.
+ *
+ * @template M - Model type
  * @param model - Model to create self-reference on
  * @param config - Self-reference configuration
  * @returns Object with parent and children associations
@@ -385,7 +450,9 @@ export function setupPolymorphicHasMany<T extends Model, S extends Model>(
  * setupSelfReferential(Category, {
  *   foreignKey: 'parentId',
  *   parentAlias: 'parent',
- *   childrenAlias: 'children'
+ *   childrenAlias: 'children',
+ *   onDelete: 'CASCADE',
+ *   allowNullParent: true
  * });
  * ```
  */
@@ -395,25 +462,58 @@ export function setupSelfReferential<M extends Model>(
     foreignKey: string;
     parentAlias: string;
     childrenAlias: string;
-    onDelete?: string;
+    onDelete?: 'CASCADE' | 'SET NULL' | 'RESTRICT' | 'NO ACTION';
+    allowNullParent?: boolean;
   }
 ): {
   parent: Association<M, M>;
   children: Association<M, M>;
 } {
-  const { foreignKey, parentAlias, childrenAlias, onDelete = 'CASCADE' } = config;
-
-  const parent = model.belongsTo(model, {
+  const {
     foreignKey,
+    parentAlias,
+    childrenAlias,
+    onDelete = 'CASCADE',
+    allowNullParent = true
+  } = config;
+
+  // Validate configuration
+  if (parentAlias === childrenAlias) {
+    throw new Error('Parent and children aliases must be different');
+  }
+
+  // Setup parent association (belongsTo)
+  const parent = model.belongsTo(model, {
+    foreignKey: {
+      name: foreignKey,
+      allowNull: allowNullParent, // Root nodes have null parent
+    },
     as: parentAlias,
     onDelete: onDelete as any,
+    constraints: true,
   });
 
+  // Setup children association (hasMany)
   const children = model.hasMany(model, {
     foreignKey,
     as: childrenAlias,
     onDelete: onDelete as any,
   });
+
+  // Add index on foreign key for efficient parent/children queries
+  const indexes = (model.options.indexes as any[]) || [];
+  const indexExists = indexes.some((idx) =>
+    idx.fields && idx.fields.length === 1 && idx.fields[0] === foreignKey
+  );
+
+  if (!indexExists) {
+    indexes.push({
+      name: `${model.tableName}_${foreignKey}_hierarchy_idx`,
+      fields: [foreignKey],
+      type: 'BTREE',
+    });
+    model.options.indexes = indexes;
+  }
 
   return { parent, children };
 }
@@ -835,6 +935,9 @@ export function manageConstraints(
 /**
  * Disables constraints for bulk operations
  *
+ * Database-agnostic constraint management for bulk operations.
+ * Supports PostgreSQL, MySQL, SQLite, and MSSQL.
+ *
  * @param sequelize - Sequelize instance
  * @param models - Models to disable constraints for
  * @returns Promise that resolves when constraints are disabled
@@ -850,12 +953,35 @@ export async function disableConstraintsForBulkOp(
   sequelize: Sequelize,
   models: ModelStatic<any>[]
 ): Promise<void> {
-  // PostgreSQL-specific
-  await sequelize.query('SET CONSTRAINTS ALL DEFERRED');
+  const dialect = sequelize.getDialect();
+
+  switch (dialect) {
+    case 'postgres':
+      await sequelize.query('SET CONSTRAINTS ALL DEFERRED');
+      break;
+    case 'mysql':
+    case 'mariadb':
+      await sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
+      break;
+    case 'mssql':
+      // Disable constraints per table
+      for (const model of models) {
+        await sequelize.query(`ALTER TABLE ${model.tableName} NOCHECK CONSTRAINT ALL`);
+      }
+      break;
+    case 'sqlite':
+      await sequelize.query('PRAGMA foreign_keys = OFF');
+      break;
+    default:
+      console.warn(`Constraint disabling not implemented for dialect: ${dialect}`);
+  }
 }
 
 /**
  * Re-enables constraints after bulk operations
+ *
+ * Database-agnostic constraint re-enabling with validation.
+ * Supports PostgreSQL, MySQL, SQLite, and MSSQL.
  *
  * @param sequelize - Sequelize instance
  * @param models - Models to enable constraints for
@@ -870,8 +996,28 @@ export async function enableConstraintsForBulkOp(
   sequelize: Sequelize,
   models: ModelStatic<any>[]
 ): Promise<void> {
-  // PostgreSQL-specific
-  await sequelize.query('SET CONSTRAINTS ALL IMMEDIATE');
+  const dialect = sequelize.getDialect();
+
+  switch (dialect) {
+    case 'postgres':
+      await sequelize.query('SET CONSTRAINTS ALL IMMEDIATE');
+      break;
+    case 'mysql':
+    case 'mariadb':
+      await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
+      break;
+    case 'mssql':
+      // Re-enable and validate constraints per table
+      for (const model of models) {
+        await sequelize.query(`ALTER TABLE ${model.tableName} WITH CHECK CHECK CONSTRAINT ALL`);
+      }
+      break;
+    case 'sqlite':
+      await sequelize.query('PRAGMA foreign_keys = ON');
+      break;
+    default:
+      console.warn(`Constraint enabling not implemented for dialect: ${dialect}`);
+  }
 }
 
 /**
@@ -910,6 +1056,9 @@ export function syncBidirectionalAssociations(
 /**
  * Validates association consistency
  *
+ * Comprehensive association validation following Sequelize 6.x requirements.
+ * Checks for common configuration errors and potential issues.
+ *
  * @param model - Model to validate
  * @returns Array of validation errors
  *
@@ -930,6 +1079,7 @@ export function validateAssociationConsistency(
     // Check if target model exists
     if (!association.target) {
       errors.push(`Association '${assocName}' has no target model`);
+      continue;
     }
 
     // Check for belongsToMany without through
@@ -937,6 +1087,49 @@ export function validateAssociationConsistency(
       const btmAssoc = association as any;
       if (!btmAssoc.through) {
         errors.push(`BelongsToMany association '${assocName}' missing through model`);
+      } else {
+        // Validate through model has both foreign keys
+        const throughModel = btmAssoc.through.model;
+        if (throughModel) {
+          const foreignKey = btmAssoc.foreignKey;
+          const otherKey = btmAssoc.otherKey;
+
+          if (!throughModel.rawAttributes[foreignKey]) {
+            errors.push(
+              `Through model '${throughModel.name}' missing foreign key '${foreignKey}' for association '${assocName}'`
+            );
+          }
+          if (!throughModel.rawAttributes[otherKey]) {
+            errors.push(
+              `Through model '${throughModel.name}' missing foreign key '${otherKey}' for association '${assocName}'`
+            );
+          }
+        }
+      }
+    }
+
+    // Check for missing foreign keys in belongsTo
+    if (association.associationType === 'belongsTo') {
+      const foreignKey = (association as any).foreignKey;
+      if (foreignKey && !model.rawAttributes[foreignKey]) {
+        errors.push(
+          `Model '${model.name}' missing foreign key '${foreignKey}' for belongsTo association '${assocName}'`
+        );
+      }
+    }
+
+    // Check for missing aliases
+    if (!association.as) {
+      errors.push(`Association '${assocName}' missing alias ('as' option)`);
+    }
+
+    // Check for self-referential associations without proper configuration
+    if (association.target === model && association.associationType !== 'belongsToMany') {
+      const foreignKey = (association as any).foreignKey;
+      if (!foreignKey) {
+        errors.push(
+          `Self-referential association '${assocName}' missing explicit foreignKey`
+        );
       }
     }
   }
@@ -1007,13 +1200,22 @@ export async function preloadAssociations<M extends Model>(
 /**
  * Creates a batch loader for associations to prevent N+1
  *
+ * Implements DataLoader-like batching for Sequelize associations.
+ * Reduces N+1 query problems by batching multiple association loads
+ * into a single database query within a short time window.
+ *
+ * @template M - Model type
  * @param model - Model to load associations for
  * @param associationName - Name of the association to load
+ * @param options - Batch loader configuration
  * @returns Batch loader function
  *
  * @example
  * ```typescript
- * const loadPosts = createAssociationBatchLoader(User, 'posts');
+ * const loadPosts = createAssociationBatchLoader(User, 'posts', {
+ *   batchWindow: 10,
+ *   maxBatchSize: 100
+ * });
  * const user1Posts = await loadPosts(user1.id);
  * const user2Posts = await loadPosts(user2.id);
  * // Both executed in single query
@@ -1021,59 +1223,131 @@ export async function preloadAssociations<M extends Model>(
  */
 export function createAssociationBatchLoader<M extends Model>(
   model: ModelStatic<M>,
-  associationName: string
+  associationName: string,
+  options: {
+    batchWindow?: number;
+    maxBatchSize?: number;
+    cacheResults?: boolean;
+  } = {}
 ): (id: any) => Promise<any[]> {
   const association = model.associations[associationName];
   if (!association) {
-    throw new Error(`Association '${associationName}' not found`);
+    throw new Error(`Association '${associationName}' not found on model ${model.name}`);
   }
+
+  const {
+    batchWindow = 10,
+    maxBatchSize = 100,
+    cacheResults = false
+  } = options;
 
   const batchCache = new Map<any, Promise<any[]>>();
   let batchQueue: any[] = [];
   let batchTimeout: NodeJS.Timeout | null = null;
+  const resultCache = cacheResults ? new Map<any, any[]>() : null;
 
-  const executeBatch = async () => {
+  const executeBatch = async (): Promise<Map<any, any[]>> => {
     const ids = [...new Set(batchQueue)];
     batchQueue = [];
 
-    const results = await model.findAll({
-      where: { id: ids } as any,
-      include: [{ association: associationName }],
-    });
-
-    const resultMap = new Map<any, any[]>();
-    for (const result of results) {
-      const assocData = (result as any)[associationName];
-      resultMap.set(result.get('id'), Array.isArray(assocData) ? assocData : [assocData]);
+    if (ids.length === 0) {
+      return new Map();
     }
 
-    return resultMap;
+    try {
+      const results = await model.findAll({
+        where: { id: ids } as any,
+        include: [{ association: associationName }],
+      });
+
+      const resultMap = new Map<any, any[]>();
+      for (const result of results) {
+        const assocData = (result as any)[associationName];
+        const dataArray = Array.isArray(assocData) ? assocData : (assocData ? [assocData] : []);
+        const resultId = result.get('id');
+        resultMap.set(resultId, dataArray);
+
+        // Cache results if enabled
+        if (resultCache) {
+          resultCache.set(resultId, dataArray);
+        }
+      }
+
+      // Ensure all requested IDs have a result (even if empty array)
+      for (const id of ids) {
+        if (!resultMap.has(id)) {
+          resultMap.set(id, []);
+        }
+      }
+
+      return resultMap;
+    } catch (error) {
+      console.error(`Batch load failed for ${model.name}.${associationName}:`, error);
+      // Return empty results for all IDs on error
+      const errorMap = new Map<any, any[]>();
+      for (const id of ids) {
+        errorMap.set(id, []);
+      }
+      return errorMap;
+    }
   };
 
   return (id: any) => {
+    // Check result cache first
+    if (resultCache && resultCache.has(id)) {
+      return Promise.resolve(resultCache.get(id)!);
+    }
+
+    // Check if already in pending batch
     if (batchCache.has(id)) {
       return batchCache.get(id)!;
     }
 
-    const promise = new Promise<any[]>((resolve) => {
+    const promise = new Promise<any[]>((resolve, reject) => {
       batchQueue.push(id);
 
+      // Flush immediately if batch size limit reached
+      if (batchQueue.length >= maxBatchSize) {
+        if (batchTimeout) {
+          clearTimeout(batchTimeout);
+          batchTimeout = null;
+        }
+
+        executeBatch()
+          .then((resultMap) => {
+            for (const [batchId, data] of resultMap) {
+              const cachedPromise = batchCache.get(batchId);
+              if (cachedPromise) {
+                batchCache.delete(batchId);
+              }
+            }
+            resolve(resultMap.get(id) || []);
+          })
+          .catch(reject);
+        return;
+      }
+
+      // Schedule batch execution
       if (batchTimeout) {
         clearTimeout(batchTimeout);
       }
 
       batchTimeout = setTimeout(async () => {
-        const resultMap = await executeBatch();
+        try {
+          const resultMap = await executeBatch();
 
-        for (const [batchId, data] of resultMap) {
-          const cachedPromise = batchCache.get(batchId);
-          if (cachedPromise) {
-            batchCache.delete(batchId);
+          for (const [batchId, data] of resultMap) {
+            const cachedPromise = batchCache.get(batchId);
+            if (cachedPromise) {
+              batchCache.delete(batchId);
+            }
           }
-        }
 
-        resolve(resultMap.get(id) || []);
-      }, 10); // 10ms batching window
+          resolve(resultMap.get(id) || []);
+        } catch (error) {
+          reject(error);
+        }
+      }, batchWindow);
     });
 
     batchCache.set(id, promise);

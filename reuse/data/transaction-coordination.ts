@@ -177,10 +177,31 @@ export class DistributedTransactionError extends Error {
 // ============================================================================
 
 /**
- * Creates a transaction with enhanced configuration
+ * Creates a transaction with enhanced configuration and ACID compliance
+ *
+ * Isolation Levels:
+ * - READ_UNCOMMITTED: Lowest isolation, allows dirty reads (rarely used)
+ * - READ_COMMITTED: Default, prevents dirty reads
+ * - REPEATABLE_READ: Prevents non-repeatable reads
+ * - SERIALIZABLE: Highest isolation, prevents phantom reads
+ *
+ * Transaction Types:
+ * - DEFERRED: Start transaction on first query (default)
+ * - IMMEDIATE: Start transaction immediately
+ * - EXCLUSIVE: Lock database exclusively (SQLite only)
+ *
  * @param sequelize - Sequelize instance
- * @param config - Transaction configuration
- * @returns Transaction instance
+ * @param config - Transaction configuration with isolation level and options
+ * @returns Transaction instance ready for use
+ * @throws TransactionError if transaction creation fails
+ *
+ * @example
+ * // Critical financial transaction requiring serializable isolation
+ * const tx = await createTransaction(sequelize, {
+ *   isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE,
+ *   readOnly: false,
+ *   logging: (sql) => logger.debug(sql)
+ * });
  */
 export async function createTransaction(
   sequelize: Sequelize,
@@ -195,47 +216,118 @@ export async function createTransaction(
     logging
   } = config;
 
-  return await sequelize.transaction({
-    isolationLevel,
-    type,
-    deferrable,
-    autocommit,
-    // @ts-ignore - Sequelize types may not include all options
-    readOnly,
-    logging
-  });
+  try {
+    return await sequelize.transaction({
+      isolationLevel,
+      type,
+      deferrable,
+      autocommit,
+      // @ts-ignore - Sequelize types may not include all options
+      readOnly,
+      logging
+    });
+  } catch (error) {
+    throw new TransactionError(
+      `Failed to create transaction: ${(error as Error).message}`,
+      undefined,
+      TransactionState.FAILED
+    );
+  }
 }
 
 /**
- * Executes a function within a managed transaction
+ * Executes a function within a managed transaction with automatic commit/rollback
+ *
+ * ACID Properties Enforcement:
+ * - Atomicity: Function succeeds completely or rolls back entirely
+ * - Consistency: Database constraints validated before commit
+ * - Isolation: Controlled by config.isolationLevel parameter
+ * - Durability: Successful commits are permanently recorded
+ *
+ * Automatic Lifecycle Management:
+ * - Transaction automatically begins before function execution
+ * - Commits on successful completion
+ * - Rolls back on any error or exception
+ * - Ensures proper cleanup in all scenarios
+ *
  * @param sequelize - Sequelize instance
- * @param fn - Function to execute
- * @param config - Transaction configuration
+ * @param fn - Function to execute within transaction context
+ * @param config - Transaction configuration (isolation level, logging, etc.)
  * @returns Result of function execution
+ * @throws TransactionError if transaction fails or is rolled back
+ *
+ * @example
+ * // Critical operation with serializable isolation
+ * const result = await withTransaction(sequelize,
+ *   async (tx) => {
+ *     const account = await Account.findByPk(id, { transaction: tx, lock: true });
+ *     account.balance -= amount;
+ *     await account.save({ transaction: tx });
+ *     return account;
+ *   },
+ *   {
+ *     isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE,
+ *     logging: (sql, timing) => logger.debug(`Query: ${sql} (${timing}ms)`)
+ *   }
+ * );
  */
 export async function withTransaction<T>(
   sequelize: Sequelize,
   fn: (transaction: Transaction) => Promise<T>,
   config: TransactionConfig = {}
 ): Promise<T> {
-  return await sequelize.transaction(
-    {
-      isolationLevel: config.isolationLevel,
-      type: config.type,
-      deferrable: config.deferrable,
-      autocommit: config.autocommit,
-      logging: config.logging
-    },
-    async (transaction) => {
-      return await fn(transaction);
-    }
-  );
+  try {
+    return await sequelize.transaction(
+      {
+        isolationLevel: config.isolationLevel,
+        type: config.type,
+        deferrable: config.deferrable,
+        autocommit: config.autocommit,
+        logging: config.logging
+      },
+      async (transaction) => {
+        return await fn(transaction);
+      }
+    );
+  } catch (error) {
+    // Re-throw with enhanced context
+    throw new TransactionError(
+      `Transaction failed: ${(error as Error).message}`,
+      undefined,
+      TransactionState.ROLLED_BACK
+    );
+  }
 }
 
 /**
- * Commits a transaction with validation
- * @param transaction - Transaction to commit
- * @param validate - Optional validation function
+ * Commits a transaction with optional validation ensuring ACID compliance
+ *
+ * Pre-Commit Validation:
+ * - Validates business rules before committing
+ * - Rolls back automatically if validation fails
+ * - Prevents invalid data from being persisted
+ * - Ensures database consistency
+ *
+ * Commit Guarantees:
+ * - All changes become permanent and visible to other transactions
+ * - Changes survive system failures (durability)
+ * - Releases all locks held by the transaction
+ * - Frees resources allocated to transaction
+ *
+ * @param transaction - Transaction instance to commit
+ * @param validate - Optional validation function executed before commit
+ * @throws TransactionError if validation fails or commit unsuccessful
+ *
+ * @example
+ * // Commit with business rule validation
+ * await commitTransaction(transaction, async () => {
+ *   const totalBalance = await Account.sum('balance', { transaction });
+ *   if (totalBalance < 0) {
+ *     logger.error('Invalid state: negative total balance');
+ *     return false; // Validation failed, will rollback
+ *   }
+ *   return true; // Validation passed, commit proceeds
+ * });
  */
 export async function commitTransaction(
   transaction: Transaction,
@@ -245,27 +337,76 @@ export async function commitTransaction(
     const isValid = await validate();
     if (!isValid) {
       await transaction.rollback();
-      throw new TransactionError('Transaction validation failed');
+      throw new TransactionError(
+        'Transaction validation failed, rolled back',
+        undefined,
+        TransactionState.ROLLED_BACK
+      );
     }
   }
 
-  await transaction.commit();
+  try {
+    await transaction.commit();
+  } catch (error) {
+    throw new TransactionError(
+      `Failed to commit transaction: ${(error as Error).message}`,
+      undefined,
+      TransactionState.FAILED
+    );
+  }
 }
 
 /**
- * Rolls back a transaction with cleanup
- * @param transaction - Transaction to rollback
- * @param cleanup - Optional cleanup function
+ * Rolls back a transaction with guaranteed cleanup and resource release
+ *
+ * Rollback Guarantees:
+ * - All changes made within transaction are discarded
+ * - Database returns to state before transaction began
+ * - All locks are immediately released
+ * - Resources are freed for other transactions
+ *
+ * Cleanup Actions:
+ * - Cleanup function executes regardless of rollback success/failure
+ * - Use for releasing application-level resources
+ * - Helpful for cache invalidation, file cleanup, etc.
+ * - Ensures no resource leaks even on error
+ *
+ * @param transaction - Transaction instance to rollback
+ * @param cleanup - Optional cleanup function for additional resource release
+ * @throws TransactionError if rollback fails (rare, usually indicates serious issue)
+ *
+ * @example
+ * // Rollback with application cleanup
+ * await rollbackTransaction(transaction, async () => {
+ *   await cache.invalidate(`user:${userId}`);
+ *   await eventBus.emit('transaction:rolled_back', { userId });
+ *   logger.warn(`Transaction rolled back for user ${userId}`);
+ * });
  */
 export async function rollbackTransaction(
   transaction: Transaction,
   cleanup?: () => Promise<void>
 ): Promise<void> {
+  const logger = new Logger('TransactionRollback');
+
   try {
     await transaction.rollback();
+    logger.debug('Transaction rolled back successfully');
+  } catch (error) {
+    logger.error(`Failed to rollback transaction: ${(error as Error).message}`);
+    throw new TransactionError(
+      `Rollback failed: ${(error as Error).message}`,
+      undefined,
+      TransactionState.FAILED
+    );
   } finally {
     if (cleanup) {
-      await cleanup();
+      try {
+        await cleanup();
+      } catch (cleanupError) {
+        logger.error(`Cleanup failed after rollback: ${(cleanupError as Error).message}`);
+        // Don't throw - rollback already completed
+      }
     }
   }
 }
@@ -309,39 +450,141 @@ export function getTransactionInfo(transaction: Transaction): {
 // ============================================================================
 
 /**
- * Checks if an error is retryable
- * @param error - Error to check
- * @param customPatterns - Additional error patterns to check
- * @returns True if retryable, false otherwise
+ * Checks if an error is retryable with comprehensive deadlock detection
+ *
+ * Deadlock Prevention Strategy:
+ * - Detects database-level deadlocks (circular lock dependencies)
+ * - Identifies lock timeout scenarios (resource contention)
+ * - Recognizes serialization failures (isolation level conflicts)
+ * - Handles connection pool exhaustion
+ * - Manages statement timeouts
+ *
+ * Best Practices to Minimize Deadlocks:
+ * 1. Always access tables in the same order
+ * 2. Keep transactions short and focused
+ * 3. Use appropriate isolation levels (avoid SERIALIZABLE unless needed)
+ * 4. Create indexes on foreign key columns
+ * 5. Use FOR UPDATE NOWAIT for explicit locking
+ *
+ * @param error - Error to check for retry suitability
+ * @param customPatterns - Additional error patterns specific to your application
+ * @returns True if error indicates a transient condition suitable for retry
+ *
+ * @example
+ * try {
+ *   await transaction.commit();
+ * } catch (error) {
+ *   if (isRetryableError(error)) {
+ *     logger.warn('Retryable error detected, will retry transaction');
+ *     return await retryTransaction(sequelize, fn, retryConfig);
+ *   }
+ *   throw error; // Non-retryable, propagate to caller
+ * }
  */
 export function isRetryableError(
   error: any,
   customPatterns: RegExp[] = []
 ): boolean {
   const defaultPatterns = [
+    // Deadlock conditions
     /deadlock detected/i,
+    /deadlock found/i,
+    /circular dependency/i,
+
+    // Lock timeouts
     /lock wait timeout/i,
+    /lock timeout exceeded/i,
+    /timeout waiting for lock/i,
+
+    // Serialization failures
     /could not serialize/i,
+    /serialization failure/i,
+    /concurrent update/i,
+    /snapshot too old/i,
+
+    // Connection issues
     /connection terminated/i,
     /connection reset/i,
+    /connection refused/i,
+    /connection pool exhausted/i,
     /ECONNRESET/,
     /ETIMEDOUT/,
+    /ECONNREFUSED/,
+    /ENOTFOUND/,
+
+    // Sequelize-specific errors
     /SequelizeConnectionError/,
-    /SequelizeConnectionRefusedError/
+    /SequelizeConnectionRefusedError/,
+    /SequelizeConnectionTimedOutError/,
+    /SequelizeDatabaseError.*deadlock/i,
+
+    // PostgreSQL error codes
+    /40P01/,  // deadlock_detected
+    /40001/,  // serialization_failure
+    /55P03/,  // lock_not_available
+
+    // MySQL error codes
+    /ER_LOCK_DEADLOCK/,    // 1213
+    /ER_LOCK_WAIT_TIMEOUT/, // 1205
+    /ER_LOCK_TABLE_FULL/,   // 1206
+
+    // Statement timeouts
+    /statement timeout/i,
+    /query timeout/i,
+    /execution timeout/i,
   ];
 
   const patterns = [...defaultPatterns, ...customPatterns];
   const errorMessage = error?.message || error?.toString() || '';
+  const errorCode = error?.code || error?.parent?.code || '';
+  const sqlState = error?.parent?.sqlState || '';
 
-  return patterns.some(pattern => pattern.test(errorMessage));
+  return patterns.some(pattern =>
+    pattern.test(errorMessage) ||
+    pattern.test(errorCode) ||
+    pattern.test(sqlState)
+  );
 }
 
 /**
- * Retries a transaction with exponential backoff
+ * Retries a transaction with exponential backoff and jitter for deadlock prevention
+ *
+ * Retry Strategy:
+ * - Exponential backoff: delay *= backoffMultiplier after each retry
+ * - Jitter: Random delay variation to prevent thundering herd
+ * - Max delay cap: Prevents excessive wait times
+ * - Selective retry: Only retries known transient errors
+ *
+ * Deadlock Prevention:
+ * - Random jitter breaks synchronization between competing transactions
+ * - Exponential backoff reduces contention over time
+ * - Configurable retry limits prevent infinite loops
+ *
  * @param sequelize - Sequelize instance
- * @param fn - Transaction function
- * @param config - Retry configuration
- * @returns Result of transaction function
+ * @param fn - Transaction function to execute
+ * @param config - Retry configuration with backoff parameters
+ * @returns Result of successful transaction execution
+ * @throws TransactionError if max retries exceeded or non-retryable error
+ *
+ * @example
+ * // Retry with aggressive backoff for high-contention scenarios
+ * await retryTransaction(sequelize,
+ *   async (tx) => {
+ *     await Model.update({ qty: qty - 1 }, {
+ *       where: { id },
+ *       transaction: tx
+ *     });
+ *   },
+ *   {
+ *     maxRetries: 5,
+ *     initialDelay: 50,
+ *     maxDelay: 2000,
+ *     backoffMultiplier: 2,
+ *     onRetry: (attempt, error) => {
+ *       logger.warn(`Retry attempt ${attempt} due to: ${error.message}`);
+ *     }
+ *   }
+ * );
  */
 export async function retryTransaction<T>(
   sequelize: Sequelize,
@@ -358,6 +601,7 @@ export async function retryTransaction<T>(
   } = config;
 
   let lastError: Error | null = null;
+  const logger = new Logger('TransactionRetry');
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
@@ -367,35 +611,49 @@ export async function retryTransaction<T>(
     } catch (error: any) {
       lastError = error;
 
+      // Check if error is retryable
       if (!isRetryableError(error, retryableErrors)) {
+        logger.error(`Non-retryable error encountered: ${error.message}`);
         throw error;
       }
 
+      // Check if we've exhausted retries
       if (attempt === maxRetries) {
         throw new TransactionError(
-          `Transaction failed after ${maxRetries} retries: ${error.message}`
+          `Transaction failed after ${maxRetries} retries: ${error.message}`,
+          undefined,
+          TransactionState.FAILED
         );
       }
 
-      const delay = Math.min(
+      // Calculate delay with exponential backoff
+      let delay = Math.min(
         initialDelay * Math.pow(backoffMultiplier, attempt),
         maxDelay
       );
+
+      // Add jitter to prevent thundering herd (0.5x to 1.5x of calculated delay)
+      const jitter = delay * (0.5 + Math.random());
+      delay = Math.min(jitter, maxDelay);
 
       if (onRetry) {
         onRetry(attempt + 1, error);
       }
 
-      const logger = new Logger('TransactionRetry');
       logger.warn(
-        `Transaction failed, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`
+        `Transaction failed with retryable error (${error.message}), ` +
+        `retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${maxRetries})`
       );
 
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
 
-  throw lastError || new Error('Transaction retry failed');
+  throw lastError || new TransactionError(
+    'Transaction retry failed',
+    undefined,
+    TransactionState.FAILED
+  );
 }
 
 /**
@@ -499,71 +757,166 @@ export async function resilientTransaction<T>(
 // ============================================================================
 
 /**
- * Creates a savepoint within a transaction
- * @param transaction - Transaction to create savepoint in
- * @param config - Savepoint configuration
- * @returns Savepoint name
+ * Creates a savepoint within a transaction for partial rollback capability
+ *
+ * Savepoint Benefits:
+ * - Allows rolling back part of a transaction without losing all work
+ * - Enables try-catch blocks within longer transactions
+ * - Supports nested transaction-like behavior
+ * - Maintains ACID properties for parent transaction
+ *
+ * Use Cases:
+ * - Multi-step operations where early steps shouldn't be lost
+ * - Trying optional operations that might fail
+ * - Complex workflows with checkpoints
+ * - Nested business logic requiring isolation
+ *
+ * Database Support:
+ * - PostgreSQL: Full support
+ * - MySQL: Full support
+ * - SQLite: Full support (SAVEPOINT command)
+ *
+ * @param transaction - Active transaction to create savepoint within
+ * @param config - Savepoint configuration (optional custom name)
+ * @returns Savepoint identifier for later rollback/release operations
+ * @throws SavepointError if savepoint creation fails
+ *
+ * @example
+ * // Create savepoint before risky operation
+ * const sp = await createSavepoint(transaction);
+ * try {
+ *   await performRiskyOperation(transaction);
+ *   await releaseSavepoint(transaction, sp); // Success, release savepoint
+ * } catch (error) {
+ *   await rollbackToSavepoint(transaction, sp); // Failure, rollback to savepoint
+ *   logger.warn('Risky operation failed, rolled back to savepoint');
+ * }
  */
 export async function createSavepoint(
   transaction: Transaction,
   config: SavepointConfig = {}
 ): Promise<string> {
-  const savepointName = config.name || `sp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const savepointName = config.name ||
+    `sp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
   try {
-    await transaction.sequelize.query(
-      `SAVEPOINT ${savepointName}`,
-      { transaction }
-    );
+    // Use dialect-appropriate syntax
+    const dialect = transaction.sequelize.getDialect();
+    const savepointSQL = dialect === 'postgres' || dialect === 'mysql' || dialect === 'sqlite'
+      ? `SAVEPOINT "${savepointName}"`
+      : `SAVEPOINT ${savepointName}`;
+
+    await transaction.sequelize.query(savepointSQL, { transaction });
 
     return savepointName;
   } catch (error: any) {
     throw new SavepointError(
-      `Failed to create savepoint: ${error.message}`,
+      `Failed to create savepoint '${savepointName}': ${error.message}`,
       savepointName
     );
   }
 }
 
 /**
- * Rolls back to a savepoint
+ * Rolls back transaction to a specific savepoint, undoing subsequent work
+ *
+ * Rollback Behavior:
+ * - Discards all changes made after savepoint was created
+ * - Keeps changes made before savepoint
+ * - Savepoint remains valid and can be used again
+ * - Parent transaction continues to be active
+ * - Locks acquired after savepoint are released
+ *
+ * ACID Implications:
+ * - Atomicity: Partial rollback maintains transaction atomicity
+ * - Consistency: Database returns to consistent savepoint state
+ * - Isolation: Isolation level maintained for parent transaction
+ * - Durability: Nothing committed yet, so no durability impact
+ *
  * @param transaction - Transaction containing the savepoint
- * @param savepointName - Name of the savepoint
+ * @param savepointName - Name/identifier of savepoint to rollback to
+ * @throws SavepointError if savepoint doesn't exist or rollback fails
+ *
+ * @example
+ * const sp1 = await createSavepoint(transaction);
+ * await operation1(transaction); // This will be kept
+ *
+ * const sp2 = await createSavepoint(transaction);
+ * await operation2(transaction); // This will be rolled back
+ *
+ * await rollbackToSavepoint(transaction, sp2); // Undo operation2
+ * await operation3(transaction); // Try alternative approach
+ * await commitTransaction(transaction); // Commits operation1 and operation3
  */
 export async function rollbackToSavepoint(
   transaction: Transaction,
   savepointName: string
 ): Promise<void> {
   try {
-    await transaction.sequelize.query(
-      `ROLLBACK TO SAVEPOINT ${savepointName}`,
-      { transaction }
-    );
+    const dialect = transaction.sequelize.getDialect();
+    const rollbackSQL = dialect === 'postgres' || dialect === 'mysql' || dialect === 'sqlite'
+      ? `ROLLBACK TO SAVEPOINT "${savepointName}"`
+      : `ROLLBACK TO SAVEPOINT ${savepointName}`;
+
+    await transaction.sequelize.query(rollbackSQL, { transaction });
   } catch (error: any) {
     throw new SavepointError(
-      `Failed to rollback to savepoint: ${error.message}`,
+      `Failed to rollback to savepoint '${savepointName}': ${error.message}`,
       savepointName
     );
   }
 }
 
 /**
- * Releases a savepoint
+ * Releases a savepoint, committing nested work within parent transaction
+ *
+ * Release Behavior:
+ * - Destroys the savepoint (can no longer rollback to it)
+ * - Makes savepoint changes part of parent transaction
+ * - Does NOT commit parent transaction
+ * - Frees resources associated with savepoint
+ * - Subsequent rollback won't undo these changes
+ *
+ * When to Release:
+ * - After successful completion of savepoint block
+ * - When savepoint is no longer needed
+ * - To free resources in long-running transactions
+ * - When certain that changes should persist with parent transaction
+ *
+ * Performance Consideration:
+ * - Releasing savepoints frees memory and reduces overhead
+ * - Important in transactions with many savepoints
+ * - Not strictly required (parent commit releases all)
+ * - Good practice for explicit resource management
+ *
  * @param transaction - Transaction containing the savepoint
- * @param savepointName - Name of the savepoint
+ * @param savepointName - Name/identifier of savepoint to release
+ * @throws SavepointError if savepoint doesn't exist or release fails
+ *
+ * @example
+ * const sp = await createSavepoint(transaction);
+ * try {
+ *   await performOperation(transaction);
+ *   await releaseSavepoint(transaction, sp); // Success, commit nested work
+ * } catch (error) {
+ *   await rollbackToSavepoint(transaction, sp); // Failure, undo nested work
+ *   // Savepoint still exists, can rollback again if needed
+ * }
  */
 export async function releaseSavepoint(
   transaction: Transaction,
   savepointName: string
 ): Promise<void> {
   try {
-    await transaction.sequelize.query(
-      `RELEASE SAVEPOINT ${savepointName}`,
-      { transaction }
-    );
+    const dialect = transaction.sequelize.getDialect();
+    const releaseSQL = dialect === 'postgres' || dialect === 'mysql' || dialect === 'sqlite'
+      ? `RELEASE SAVEPOINT "${savepointName}"`
+      : `RELEASE SAVEPOINT ${savepointName}`;
+
+    await transaction.sequelize.query(releaseSQL, { transaction });
   } catch (error: any) {
     throw new SavepointError(
-      `Failed to release savepoint: ${error.message}`,
+      `Failed to release savepoint '${savepointName}': ${error.message}`,
       savepointName
     );
   }

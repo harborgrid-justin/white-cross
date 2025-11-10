@@ -255,11 +255,32 @@ export function Underscored(): ClassDecorator {
 export function Field(options: FieldOptions): PropertyDecorator {
   return function (target: any, propertyKey: string | symbol) {
     const attributes = Reflect.getMetadata(METADATA_KEYS.ATTRIBUTES, target) || {};
-    attributes[propertyKey as string] = {
+
+    // Default to allowNull: false for better data integrity (Sequelize 6.x best practice)
+    const fieldConfig = {
       type: options.type || DataTypes.STRING,
-      allowNull: options.allowNull !== false,
+      allowNull: options.allowNull ?? false,
       ...options,
     };
+
+    // Add index to foreign keys by default for performance
+    if (fieldConfig.references && !fieldConfig.unique) {
+      const indexes = Reflect.getMetadata(METADATA_KEYS.INDEXES, target.constructor) || [];
+      const indexExists = indexes.some((idx: any) =>
+        idx.fields.length === 1 && idx.fields[0] === propertyKey
+      );
+
+      if (!indexExists) {
+        indexes.push({
+          name: `${propertyKey.toString()}_fk_idx`,
+          fields: [propertyKey as string],
+          type: 'BTREE',
+        });
+        Reflect.defineMetadata(METADATA_KEYS.INDEXES, indexes, target.constructor);
+      }
+    }
+
+    attributes[propertyKey as string] = fieldConfig;
     Reflect.defineMetadata(METADATA_KEYS.ATTRIBUTES, attributes, target);
   };
 }
@@ -576,14 +597,40 @@ export function IsAlphanumeric(message?: string): PropertyDecorator {
  * }
  * ```
  */
+/**
+ * Decorator to transform field value to lowercase
+ *
+ * Handles null/undefined values safely and preserves existing setters.
+ *
+ * @returns Property decorator
+ *
+ * @example
+ * ```typescript
+ * class User extends Model {
+ *   @Lowercase()
+ *   @Field({ type: DataTypes.STRING })
+ *   email: string;
+ * }
+ * ```
+ */
 export function Lowercase(): PropertyDecorator {
   return function (target: any, propertyKey: string | symbol) {
     const attributes = Reflect.getMetadata(METADATA_KEYS.ATTRIBUTES, target) || {};
     const attr = attributes[propertyKey as string] || {};
 
     const originalSet = attr.set;
-    attr.set = function (value: string) {
-      const transformed = value ? value.toLowerCase() : value;
+    attr.set = function (value: string | null | undefined) {
+      // Handle null/undefined safely
+      if (value === null || value === undefined) {
+        if (originalSet) {
+          originalSet.call(this, value);
+        } else {
+          this.setDataValue(propertyKey as string, value);
+        }
+        return;
+      }
+
+      const transformed = typeof value === 'string' ? value.toLowerCase() : value;
       if (originalSet) {
         originalSet.call(this, transformed);
       } else {
@@ -610,14 +657,40 @@ export function Lowercase(): PropertyDecorator {
  * }
  * ```
  */
+/**
+ * Decorator to transform field value to uppercase
+ *
+ * Handles null/undefined values safely and preserves existing setters.
+ *
+ * @returns Property decorator
+ *
+ * @example
+ * ```typescript
+ * class Country extends Model {
+ *   @Uppercase()
+ *   @Field({ type: DataTypes.STRING })
+ *   code: string;
+ * }
+ * ```
+ */
 export function Uppercase(): PropertyDecorator {
   return function (target: any, propertyKey: string | symbol) {
     const attributes = Reflect.getMetadata(METADATA_KEYS.ATTRIBUTES, target) || {};
     const attr = attributes[propertyKey as string] || {};
 
     const originalSet = attr.set;
-    attr.set = function (value: string) {
-      const transformed = value ? value.toUpperCase() : value;
+    attr.set = function (value: string | null | undefined) {
+      // Handle null/undefined safely
+      if (value === null || value === undefined) {
+        if (originalSet) {
+          originalSet.call(this, value);
+        } else {
+          this.setDataValue(propertyKey as string, value);
+        }
+        return;
+      }
+
+      const transformed = typeof value === 'string' ? value.toUpperCase() : value;
       if (originalSet) {
         originalSet.call(this, transformed);
       } else {
@@ -762,31 +835,84 @@ export function Computed(dependencies?: string[]): PropertyDecorator {
  * }
  * ```
  */
+/**
+ * Decorator to automatically encrypt/decrypt a field
+ *
+ * IMPORTANT: For production use, ensure encryption key is stored securely
+ * (e.g., environment variables, key management service).
+ * Each value is encrypted with a unique IV for maximum security.
+ *
+ * @param options - Encryption configuration
+ * @returns Property decorator
+ *
+ * @example
+ * ```typescript
+ * class User extends Model {
+ *   @Encrypted({ key: process.env.ENCRYPTION_KEY })
+ *   @Field({ type: DataTypes.TEXT })
+ *   ssn: string;
+ * }
+ * ```
+ */
 export function Encrypted(options: EncryptionOptions): PropertyDecorator {
   return function (target: any, propertyKey: string | symbol) {
+    // Validate encryption key is provided
+    if (!options.key) {
+      throw new Error(`Encryption key is required for field '${propertyKey.toString()}'`);
+    }
+
     const algorithm = options.algorithm || 'aes-256-cbc';
-    const key = Buffer.from(options.key, 'hex');
-    const iv = options.iv ? Buffer.from(options.iv, 'hex') : crypto.randomBytes(16);
+    let key: Buffer;
+
+    try {
+      key = Buffer.from(options.key, 'hex');
+
+      // Validate key length for AES-256 (32 bytes)
+      if (algorithm.includes('256') && key.length !== 32) {
+        throw new Error(`AES-256 requires a 32-byte (64 hex character) key, got ${key.length} bytes`);
+      }
+    } catch (error) {
+      throw new Error(`Invalid encryption key format for field '${propertyKey.toString()}': ${(error as Error).message}`);
+    }
 
     const attributes = Reflect.getMetadata(METADATA_KEYS.ATTRIBUTES, target) || {};
     const attr = attributes[propertyKey as string] || {};
 
-    // Encrypt on set
-    attr.set = function (value: string) {
-      if (value) {
-        const cipher = crypto.createCipheriv(algorithm, key, iv);
-        let encrypted = cipher.update(value, 'utf8', 'hex');
-        encrypted += cipher.final('hex');
-        this.setDataValue(propertyKey as string, `${iv.toString('hex')}:${encrypted}`);
-      } else {
+    // Encrypt on set - generate unique IV for each value
+    attr.set = function (value: string | null | undefined) {
+      if (value === null || value === undefined) {
         this.setDataValue(propertyKey as string, value);
+        return;
+      }
+
+      try {
+        // Generate unique IV for each encryption operation (security best practice)
+        const iv = crypto.randomBytes(16);
+        const cipher = crypto.createCipheriv(algorithm, key, iv);
+        let encrypted = cipher.update(String(value), 'utf8', 'hex');
+        encrypted += cipher.final('hex');
+
+        // Store IV with encrypted value for decryption
+        this.setDataValue(propertyKey as string, `${iv.toString('hex')}:${encrypted}`);
+      } catch (error) {
+        throw new Error(`Encryption failed for field '${propertyKey.toString()}': ${(error as Error).message}`);
       }
     };
 
     // Decrypt on get
     attr.get = function () {
       const value = this.getDataValue(propertyKey as string);
-      if (value && typeof value === 'string' && value.includes(':')) {
+
+      if (value === null || value === undefined) {
+        return value;
+      }
+
+      if (typeof value !== 'string' || !value.includes(':')) {
+        // Return as-is if not in expected format (may be unencrypted legacy data)
+        return value;
+      }
+
+      try {
         const [ivHex, encrypted] = value.split(':');
         const decipher = crypto.createDecipheriv(
           algorithm,
@@ -796,8 +922,9 @@ export function Encrypted(options: EncryptionOptions): PropertyDecorator {
         let decrypted = decipher.update(encrypted, 'hex', 'utf8');
         decrypted += decipher.final('utf8');
         return decrypted;
+      } catch (error) {
+        throw new Error(`Decryption failed for field '${propertyKey.toString()}': ${(error as Error).message}`);
       }
-      return value;
     };
 
     attributes[propertyKey as string] = attr;
@@ -828,22 +955,53 @@ export function Encrypted(options: EncryptionOptions): PropertyDecorator {
  * }
  * ```
  */
+/**
+ * Decorator to create an index on a field
+ *
+ * Supports standard and specialized index types (BTREE, HASH, GIN, GIST, etc.)
+ * for optimal query performance in Sequelize 6.x.
+ *
+ * @param options - Index configuration
+ * @returns Property decorator
+ *
+ * @example
+ * ```typescript
+ * class User extends Model {
+ *   @Index({ name: 'email_idx', unique: true, type: 'BTREE' })
+ *   @Field({ type: DataTypes.STRING })
+ *   email: string;
+ * }
+ * ```
+ */
 export function Index(options?: {
   name?: string;
   unique?: boolean;
   type?: string;
+  using?: string;
+  operator?: string;
+  prefix?: string;
+  parser?: string;
 }): PropertyDecorator {
   return function (target: any, propertyKey: string | symbol) {
     const indexes = Reflect.getMetadata(METADATA_KEYS.INDEXES, target.constructor) || [];
-    indexes.push({
+
+    const indexConfig: IndexOptions = {
       name: options?.name || `${propertyKey.toString()}_idx`,
       fields: [propertyKey as string],
       unique: options?.unique || false,
-      type: options?.type,
-    });
+    };
+
+    // Add optional index properties for Sequelize 6.x
+    if (options?.type) indexConfig.type = options.type;
+    if (options?.using) indexConfig.using = options.using;
+    if (options?.operator) (indexConfig as any).operator = options.operator;
+    if (options?.prefix) (indexConfig as any).prefix = options.prefix;
+    if (options?.parser) (indexConfig as any).parser = options.parser;
+
+    indexes.push(indexConfig);
     Reflect.defineMetadata(METADATA_KEYS.INDEXES, indexes, target.constructor);
 
-    // Also update model options
+    // Update model options with consolidated indexes
     const modelOptions =
       Reflect.getMetadata(METADATA_KEYS.MODEL_OPTIONS, target.constructor) || {};
     modelOptions.indexes = indexes;
@@ -960,26 +1118,68 @@ export function CompositeUnique(
  * }
  * ```
  */
+/**
+ * Decorator to define a foreign key relationship
+ *
+ * Automatically creates index on foreign key for optimal join performance.
+ * Supports cascade operations following Sequelize 6.x best practices.
+ *
+ * @param targetModel - Name of the target model
+ * @param targetKey - Key in the target model (default: 'id')
+ * @param options - Additional foreign key options
+ * @returns Property decorator
+ *
+ * @example
+ * ```typescript
+ * class Order extends Model {
+ *   @ForeignKey('User', 'id', { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+ *   @Field({ type: DataTypes.INTEGER })
+ *   userId: number;
+ * }
+ * ```
+ */
 export function ForeignKey(
   targetModel: string,
   targetKey: string = 'id',
-  options?: { onDelete?: string; onUpdate?: string }
+  options?: {
+    onDelete?: 'CASCADE' | 'SET NULL' | 'RESTRICT' | 'NO ACTION' | 'SET DEFAULT';
+    onUpdate?: 'CASCADE' | 'SET NULL' | 'RESTRICT' | 'NO ACTION' | 'SET DEFAULT';
+  }
 ): PropertyDecorator {
   return function (target: any, propertyKey: string | symbol) {
     const attributes = Reflect.getMetadata(METADATA_KEYS.ATTRIBUTES, target) || {};
     const attr = attributes[propertyKey as string] || {};
+
     attr.references = {
       model: targetModel,
       key: targetKey,
     };
-    if (options?.onDelete) attr.onDelete = options.onDelete;
-    if (options?.onUpdate) attr.onUpdate = options.onUpdate;
+
+    // Set default cascade behavior (best practice for data integrity)
+    attr.onDelete = options?.onDelete || 'CASCADE';
+    attr.onUpdate = options?.onUpdate || 'CASCADE';
+
     attributes[propertyKey as string] = attr;
     Reflect.defineMetadata(METADATA_KEYS.ATTRIBUTES, attributes, target);
 
     const foreignKeys = Reflect.getMetadata(METADATA_KEYS.FOREIGN_KEYS, target) || {};
     foreignKeys[propertyKey as string] = { targetModel, targetKey, options };
     Reflect.defineMetadata(METADATA_KEYS.FOREIGN_KEYS, foreignKeys, target);
+
+    // Automatically add index on foreign key (Sequelize 6.x best practice for performance)
+    const indexes = Reflect.getMetadata(METADATA_KEYS.INDEXES, target.constructor) || [];
+    const indexExists = indexes.some((idx: any) =>
+      idx.fields.length === 1 && idx.fields[0] === propertyKey
+    );
+
+    if (!indexExists) {
+      indexes.push({
+        name: `${propertyKey.toString()}_fk_idx`,
+        fields: [propertyKey as string],
+        type: 'BTREE',
+      });
+      Reflect.defineMetadata(METADATA_KEYS.INDEXES, indexes, target.constructor);
+    }
   };
 }
 

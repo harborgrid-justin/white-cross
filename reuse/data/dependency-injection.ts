@@ -3,6 +3,75 @@
  * @module reuse/data/dependency-injection
  * @description Production-grade DI patterns, dynamic providers, factory patterns,
  * scope management, and advanced IoC container utilities for scalable NestJS applications
+ *
+ * ## Provider Scopes - When to Use What
+ *
+ * ### Singleton (Scope.DEFAULT)
+ * - **Use for**: Services, repositories, configurations, database connections
+ * - **Lifecycle**: One instance per application
+ * - **Performance**: Best (lowest memory, fastest)
+ * - **Thread Safety**: Must handle concurrent access
+ *
+ * ### Request-Scoped (Scope.REQUEST)
+ * - **Use for**: Request context, user sessions, per-request caching
+ * - **Lifecycle**: One instance per HTTP request
+ * - **Performance**: Moderate (new instance per request)
+ * - **Thread Safety**: Isolated per request
+ *
+ * ### Transient (Scope.TRANSIENT)
+ * - **Use for**: Unique instances, stateless utilities, task processors
+ * - **Lifecycle**: New instance every injection
+ * - **Performance**: Slowest (highest memory usage)
+ * - **Thread Safety**: Each injection is isolated
+ *
+ * ## Circular Dependency Prevention
+ *
+ * ### Best Practices
+ * 1. **Use forwardRef()** for unavoidable circular dependencies
+ * 2. **Prefer interface-based dependencies** over concrete classes
+ * 3. **Extract shared logic** into a third service
+ * 4. **Use events** instead of direct service calls
+ * 5. **Validate dependency graph** in unit tests
+ *
+ * ### Example: Breaking Circular Dependencies
+ * ```typescript
+ * // BAD - Circular dependency
+ * @Injectable()
+ * class UserService {
+ *   constructor(private authService: AuthService) {}
+ * }
+ *
+ * @Injectable()
+ * class AuthService {
+ *   constructor(private userService: UserService) {} // CIRCULAR!
+ * }
+ *
+ * // GOOD - Using forwardRef
+ * @Injectable()
+ * class UserService {
+ *   constructor(
+ *     @Inject(forwardRef(() => AuthService))
+ *     private authService: AuthService
+ *   ) {}
+ * }
+ *
+ * // BETTER - Extract to third service
+ * @Injectable()
+ * class UserAuthService {
+ *   constructor(
+ *     private userRepo: UserRepository,
+ *     private authRepo: AuthRepository
+ *   ) {}
+ * }
+ * ```
+ *
+ * ## Module Organization Best Practices
+ *
+ * 1. **Feature Modules**: Group related providers
+ * 2. **Shared Modules**: Export common providers as Global
+ * 3. **Core Module**: Singleton services, imported once
+ * 4. **Dynamic Modules**: Configuration-based providers
+ * 5. **Testing Modules**: Override providers for testing
  */
 
 import {
@@ -44,8 +113,37 @@ export interface DynamicProviderOptions {
 /**
  * Registers a dynamic provider with the IoC container
  * @param options Provider configuration options
- * @returns Provider object
- * @description Creates a provider configuration for dynamic module registration
+ * @returns Provider object ready for module registration
+ * @description Creates a provider configuration for dynamic module registration.
+ * Supports class, value, and factory-based providers with configurable scope.
+ *
+ * @remarks
+ * - **Scope**: Configurable via options.scope (DEFAULT, REQUEST, TRANSIENT)
+ * - **Use Case**: Dynamic provider registration in configurable modules
+ * - **Circular Dependencies**: Use inject array with forwardRef for circular deps
+ *
+ * @example
+ * ```typescript
+ * // Class provider
+ * const userServiceProvider = registerDynamicProvider({
+ *   provide: 'USER_SERVICE',
+ *   useClass: UserService,
+ *   scope: Scope.DEFAULT
+ * });
+ *
+ * // Value provider
+ * const configProvider = registerDynamicProvider({
+ *   provide: 'CONFIG',
+ *   useValue: { apiUrl: 'https://api.example.com' }
+ * });
+ *
+ * // Factory provider with dependencies
+ * const dbProvider = registerDynamicProvider({
+ *   provide: 'DATABASE',
+ *   useFactory: (config: ConfigService) => createConnection(config),
+ *   inject: [ConfigService]
+ * });
+ * ```
  */
 export function registerDynamicProvider(options: DynamicProviderOptions): Provider {
   const provider: Provider = {
@@ -88,9 +186,46 @@ export interface FactoryProviderConfig<T = any> {
 
 /**
  * Creates a factory provider
+ * @template T Return type of the factory function
  * @param config Factory provider configuration
- * @returns Provider object
- * @description Simplifies creation of factory-based providers
+ * @returns Provider object ready for module registration
+ * @description Simplifies creation of factory-based providers.
+ * Use factories when provider instantiation requires custom logic or async operations.
+ *
+ * @remarks
+ * - **Scope**: Configurable via config.scope
+ * - **Dependencies**: Automatically injected into factory function
+ * - **Use Case**: Complex initialization, async setup, configuration-based creation
+ *
+ * @example
+ * ```typescript
+ * // Database connection factory
+ * const dbProvider = createFactoryProvider({
+ *   token: 'DATABASE',
+ *   factory: async (config: ConfigService) => {
+ *     const connection = await createConnection({
+ *       host: config.get('DB_HOST'),
+ *       port: config.get('DB_PORT'),
+ *     });
+ *     await connection.connect();
+ *     return connection;
+ *   },
+ *   dependencies: [ConfigService],
+ *   scope: Scope.DEFAULT
+ * });
+ *
+ * // API client factory with authentication
+ * const apiClientProvider = createFactoryProvider({
+ *   token: 'API_CLIENT',
+ *   factory: (config: ConfigService, http: HttpService) => {
+ *     return http.create({
+ *       baseURL: config.get('API_URL'),
+ *       headers: { 'X-API-Key': config.get('API_KEY') }
+ *     });
+ *   },
+ *   dependencies: [ConfigService, HttpService]
+ * });
+ * ```
  */
 export function createFactoryProvider<T>(config: FactoryProviderConfig<T>): Provider {
   return {
@@ -208,8 +343,40 @@ export function registerConditionalProviders(
  * Creates a request-scoped provider
  * @param token Provider token
  * @param useClass Provider class
- * @returns Provider object
- * @description Simplifies creation of REQUEST-scoped providers
+ * @returns Provider object configured with REQUEST scope
+ * @description Simplifies creation of REQUEST-scoped providers.
+ * A new instance is created for each incoming HTTP request.
+ *
+ * @remarks
+ * - **Scope**: REQUEST - new instance per HTTP request
+ * - **Lifecycle**: Created on request start, destroyed on request end
+ * - **Use Case**: Request context, user-specific state, per-request caching
+ * - **Performance**: Higher memory usage, slower than singleton
+ * - **Thread Safety**: Each request gets isolated instance
+ *
+ * @example
+ * ```typescript
+ * // Request context service
+ * const requestContextProvider = createRequestScopedProvider(
+ *   'REQUEST_CONTEXT',
+ *   RequestContextService
+ * );
+ *
+ * // Usage in module
+ * @Module({
+ *   providers: [requestContextProvider],
+ *   exports: ['REQUEST_CONTEXT']
+ * })
+ * export class CoreModule {}
+ *
+ * // Inject in service
+ * @Injectable()
+ * export class AuditService {
+ *   constructor(
+ *     @Inject('REQUEST_CONTEXT') private context: RequestContextService
+ *   ) {}
+ * }
+ * ```
  */
 export function createRequestScopedProvider(
   token: ProviderToken,
@@ -226,8 +393,36 @@ export function createRequestScopedProvider(
  * Creates a transient-scoped provider
  * @param token Provider token
  * @param useClass Provider class
- * @returns Provider object
- * @description Simplifies creation of TRANSIENT-scoped providers
+ * @returns Provider object configured with TRANSIENT scope
+ * @description Simplifies creation of TRANSIENT-scoped providers.
+ * A new instance is created each time the provider is injected.
+ *
+ * @remarks
+ * - **Scope**: TRANSIENT - new instance per injection
+ * - **Lifecycle**: Created on injection, no shared state
+ * - **Use Case**: Unique instances, stateless utilities, task processors
+ * - **Performance**: Highest memory usage, slowest initialization
+ * - **Thread Safety**: Each injection gets isolated instance
+ *
+ * @example
+ * ```typescript
+ * // Task processor with unique ID per instance
+ * const taskProcessorProvider = createTransientProvider(
+ *   'TASK_PROCESSOR',
+ *   TaskProcessor
+ * );
+ *
+ * // Usage in service
+ * @Injectable()
+ * export class JobQueue {
+ *   constructor(
+ *     @Inject('TASK_PROCESSOR') private processor1: TaskProcessor,
+ *     @Inject('TASK_PROCESSOR') private processor2: TaskProcessor
+ *   ) {
+ *     // processor1 and processor2 are different instances
+ *   }
+ * }
+ * ```
  */
 export function createTransientProvider(
   token: ProviderToken,
@@ -244,8 +439,39 @@ export function createTransientProvider(
  * Creates a singleton provider (default scope)
  * @param token Provider token
  * @param useClass Provider class
- * @returns Provider object
- * @description Explicitly creates DEFAULT-scoped providers
+ * @returns Provider object configured with DEFAULT (singleton) scope
+ * @description Explicitly creates DEFAULT-scoped providers.
+ * A single instance is created and shared across the entire application.
+ *
+ * @remarks
+ * - **Scope**: DEFAULT (Singleton) - one instance per application
+ * - **Lifecycle**: Created on first injection, reused throughout app lifetime
+ * - **Use Case**: Services, repositories, configurations, caches
+ * - **Performance**: Best performance, lowest memory usage
+ * - **Thread Safety**: Must be designed for concurrent access
+ * - **Circular Dependencies**: Use forwardRef() to resolve circular deps
+ *
+ * @example
+ * ```typescript
+ * // Database connection pool (singleton)
+ * const dbProvider = createSingletonProvider(
+ *   'DATABASE',
+ *   DatabaseService
+ * );
+ *
+ * // Configuration service (singleton)
+ * const configProvider = createSingletonProvider(
+ *   'CONFIG',
+ *   ConfigService
+ * );
+ *
+ * // Usage in module
+ * @Module({
+ *   providers: [dbProvider, configProvider],
+ *   exports: ['DATABASE', 'CONFIG']
+ * })
+ * export class DatabaseModule {}
+ * ```
  */
 export function createSingletonProvider(
   token: ProviderToken,
@@ -710,16 +936,62 @@ export function createLazyProvider<T>(
 }
 
 /**
- * Provider dependency resolver
+ * Provider dependency resolver for analyzing and preventing circular dependencies
+ * @description Tracks provider dependencies and detects circular references.
+ * Critical for maintaining healthy dependency injection architecture.
+ *
+ * @remarks
+ * - **Use Case**: Detect circular dependencies at build/test time
+ * - **Prevention**: Use forwardRef() in NestJS to break circular deps
+ * - **Best Practice**: Keep dependency graphs acyclic
+ * - **Testing**: Validate dependency graph in unit tests
+ *
+ * @example
+ * ```typescript
+ * // Setup resolver
+ * const resolver = new ProviderDependencyResolver();
+ *
+ * // Register dependencies
+ * resolver.registerDependencies('UserService', ['UserRepository', 'EmailService']);
+ * resolver.registerDependencies('EmailService', ['ConfigService']);
+ * resolver.registerDependencies('UserRepository', ['Database']);
+ *
+ * // Check for circular dependencies
+ * if (resolver.hasCircularDependency('UserService')) {
+ *   throw new Error('Circular dependency detected!');
+ * }
+ *
+ * // Get resolution order
+ * const order = resolver.getResolutionOrder();
+ * // ['Database', 'UserRepository', 'ConfigService', 'EmailService', 'UserService']
+ *
+ * // Breaking circular deps with forwardRef
+ * @Injectable()
+ * export class UserService {
+ *   constructor(
+ *     private userRepo: UserRepository,
+ *     @Inject(forwardRef(() => EmailService))
+ *     private emailService: EmailService
+ *   ) {}
+ * }
+ * ```
  */
 export class ProviderDependencyResolver {
   private dependencyGraph = new Map<ProviderToken, Set<ProviderToken>>();
   private readonly logger = new Logger('ProviderDependencyResolver');
 
   /**
-   * Registers a provider dependency
+   * Registers a provider's dependencies
    * @param provider Provider token
-   * @param dependencies Dependencies array
+   * @param dependencies Array of dependency tokens
+   *
+   * @example
+   * ```typescript
+   * resolver.registerDependencies(
+   *   PatientService,
+   *   [PatientRepository, AuditService, EmailService]
+   * );
+   * ```
    */
   registerDependencies(
     provider: ProviderToken,
@@ -732,7 +1004,7 @@ export class ProviderDependencyResolver {
   /**
    * Gets direct dependencies of a provider
    * @param provider Provider token
-   * @returns Array of dependency tokens
+   * @returns Array of direct dependency tokens
    */
   getDependencies(provider: ProviderToken): ProviderToken[] {
     return Array.from(this.dependencyGraph.get(provider) || []);
@@ -741,7 +1013,14 @@ export class ProviderDependencyResolver {
   /**
    * Gets all transitive dependencies of a provider
    * @param provider Provider token
-   * @returns Array of all dependency tokens
+   * @returns Array of all dependency tokens (direct and indirect)
+   *
+   * @example
+   * ```typescript
+   * // If A depends on B, and B depends on C
+   * // getAllDependencies(A) returns [B, C]
+   * const allDeps = resolver.getAllDependencies('UserService');
+   * ```
    */
   getAllDependencies(provider: ProviderToken): ProviderToken[] {
     const visited = new Set<ProviderToken>();
@@ -764,8 +1043,20 @@ export class ProviderDependencyResolver {
 
   /**
    * Checks for circular dependencies
-   * @param provider Provider token
+   * @param provider Provider token to check
    * @returns True if circular dependency exists
+   *
+   * @remarks
+   * Circular dependencies should be avoided or resolved with forwardRef().
+   *
+   * @example
+   * ```typescript
+   * // Detect circular dependency
+   * if (resolver.hasCircularDependency('UserService')) {
+   *   console.error('Circular dependency detected in UserService');
+   *   // Solution: Use forwardRef()
+   * }
+   * ```
    */
   hasCircularDependency(provider: ProviderToken): boolean {
     const visited = new Set<ProviderToken>();
@@ -791,8 +1082,21 @@ export class ProviderDependencyResolver {
   }
 
   /**
-   * Gets providers in dependency order
-   * @returns Array of provider tokens in topological order
+   * Gets providers in topological dependency order
+   * @returns Array of provider tokens sorted by dependency order
+   *
+   * @remarks
+   * Dependencies appear before dependents in the returned array.
+   * Useful for determining initialization order.
+   *
+   * @example
+   * ```typescript
+   * const order = resolver.getResolutionOrder();
+   * // Initialize providers in this order
+   * for (const token of order) {
+   *   await initializeProvider(token);
+   * }
+   * ```
    */
   getResolutionOrder(): ProviderToken[] {
     const visited = new Set<ProviderToken>();

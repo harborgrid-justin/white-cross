@@ -17,58 +17,147 @@ import {
 } from '@nestjs/swagger';
 
 /**
- * Type definitions for configuration options
+ * OpenAPI specification version constants
+ */
+export const OPENAPI_VERSION_3_0 = '3.0.3';
+export const OPENAPI_VERSION_3_1 = '3.1.0';
+
+/**
+ * Type definitions for OpenAPI configuration options
+ * Fully compliant with OpenAPI 3.0 specification
+ */
+
+/**
+ * OpenAPI Info Object
+ * @see https://spec.openapis.org/oas/v3.0.3#info-object
  */
 export interface OpenApiInfo {
+  /** REQUIRED. The title of the API. */
   title: string;
+  /** REQUIRED. A short description of the API. CommonMark syntax MAY be used. */
   description: string;
+  /** REQUIRED. The version of the OpenAPI document. */
   version: string;
+  /** A URL to the Terms of Service for the API. MUST be in the format of a URL. */
   termsOfService?: string;
+  /** The contact information for the exposed API. */
   contact?: {
+    /** The identifying name of the contact person/organization. */
     name?: string;
+    /** The URL pointing to the contact information. MUST be in the format of a URL. */
     url?: string;
+    /** The email address of the contact person/organization. MUST be in the format of an email address. */
     email?: string;
   };
+  /** The license information for the exposed API. */
   license?: {
+    /** REQUIRED. The license name used for the API. */
     name: string;
+    /** A URL to the license used for the API. MUST be in the format of a URL. */
     url?: string;
   };
 }
 
+/**
+ * OpenAPI Server Object
+ * @see https://spec.openapis.org/oas/v3.0.3#server-object
+ */
 export interface OpenApiServer {
+  /** REQUIRED. A URL to the target host. */
   url: string;
+  /** An optional string describing the host designated by the URL. */
   description?: string;
-  variables?: Record<string, {
-    default: string;
-    description?: string;
-    enum?: string[];
-  }>;
+  /** A map between a variable name and its value for server URL template substitution. */
+  variables?: Record<string, ServerVariable>;
 }
 
+/**
+ * OpenAPI Server Variable Object
+ * @see https://spec.openapis.org/oas/v3.0.3#server-variable-object
+ */
+export interface ServerVariable {
+  /** REQUIRED. The default value to use for substitution. */
+  default: string;
+  /** An optional description for the server variable. */
+  description?: string;
+  /** An enumeration of string values to be used if the substitution options are from a limited set. */
+  enum?: string[];
+}
+
+/**
+ * OpenAPI Tag Object
+ * @see https://spec.openapis.org/oas/v3.0.3#tag-object
+ */
 export interface OpenApiTag {
+  /** REQUIRED. The name of the tag. */
   name: string;
+  /** A short description for the tag. CommonMark syntax MAY be used. */
   description?: string;
-  externalDocs?: {
-    description?: string;
-    url: string;
-  };
+  /** Additional external documentation for this tag. */
+  externalDocs?: ExternalDocumentation;
 }
 
+/**
+ * OpenAPI External Documentation Object
+ * @see https://spec.openapis.org/oas/v3.0.3#external-documentation-object
+ */
+export interface ExternalDocumentation {
+  /** A short description of the target documentation. CommonMark syntax MAY be used. */
+  description?: string;
+  /** REQUIRED. The URL for the target documentation. Value MUST be in the format of a URL. */
+  url: string;
+}
+
+/**
+ * OpenAPI Security Scheme Object
+ * @see https://spec.openapis.org/oas/v3.0.3#security-scheme-object
+ */
 export interface SecurityScheme {
+  /** REQUIRED. The type of the security scheme. */
   type: 'apiKey' | 'http' | 'oauth2' | 'openIdConnect';
-  name?: string;
-  in?: 'query' | 'header' | 'cookie';
-  scheme?: string;
-  bearerFormat?: string;
-  flows?: any;
-  openIdConnectUrl?: string;
+  /** A short description for security scheme. CommonMark syntax MAY be used. */
   description?: string;
+  /** REQUIRED for apiKey. The name of the header, query or cookie parameter to be used. */
+  name?: string;
+  /** REQUIRED for apiKey. The location of the API key. */
+  in?: 'query' | 'header' | 'cookie';
+  /** REQUIRED for http. The name of the HTTP Authorization scheme (bearer, basic, etc.). */
+  scheme?: string;
+  /** A hint to the client to identify how the bearer token is formatted (JWT, etc.). */
+  bearerFormat?: string;
+  /** REQUIRED for oauth2. An object containing configuration information for the flow types supported. */
+  flows?: OAuth2Flows;
+  /** REQUIRED for openIdConnect. OpenId Connect URL to discover OAuth2 configuration values. */
+  openIdConnectUrl?: string;
 }
 
+/**
+ * OpenAPI OAuth2 Flows Object
+ * @see https://spec.openapis.org/oas/v3.0.3#oauth-flows-object
+ */
+export interface OAuth2Flows {
+  /** Configuration for the OAuth Implicit flow */
+  implicit?: OAuth2Flow;
+  /** Configuration for the OAuth Resource Owner Password flow */
+  password?: OAuth2Flow;
+  /** Configuration for the OAuth Client Credentials flow. Previously called application in OAuth2. */
+  clientCredentials?: OAuth2Flow;
+  /** Configuration for the OAuth Authorization Code flow. Previously called accessCode in OAuth2. */
+  authorizationCode?: OAuth2Flow;
+}
+
+/**
+ * OpenAPI OAuth2 Flow Object
+ * @see https://spec.openapis.org/oas/v3.0.3#oauth-flow-object
+ */
 export interface OAuth2Flow {
+  /** The authorization URL to be used for this flow. REQUIRED for implicit and authorizationCode. */
   authorizationUrl?: string;
+  /** The token URL to be used for this flow. REQUIRED for password, clientCredentials and authorizationCode. */
   tokenUrl?: string;
+  /** The URL to be used for obtaining refresh tokens. */
   refreshUrl?: string;
+  /** REQUIRED. The available scopes for the OAuth2 security scheme. A map between scope name and a short description. */
   scopes: Record<string, string>;
 }
 
@@ -347,7 +436,61 @@ export function buildOpenApiExternalDocs(
 }
 
 /**
+ * OpenAPI Schema Object type (simplified for common use cases)
+ */
+export interface SchemaObject {
+  type?: 'string' | 'number' | 'integer' | 'boolean' | 'array' | 'object' | 'null';
+  format?: string;
+  description?: string;
+  properties?: Record<string, SchemaObject>;
+  items?: SchemaObject;
+  required?: string[];
+  enum?: any[];
+  example?: any;
+  examples?: any[];
+  default?: any;
+  nullable?: boolean;
+  readOnly?: boolean;
+  writeOnly?: boolean;
+  deprecated?: boolean;
+  allOf?: SchemaObject[];
+  oneOf?: SchemaObject[];
+  anyOf?: SchemaObject[];
+  not?: SchemaObject;
+  discriminator?: { propertyName: string; mapping?: Record<string, string> };
+  $ref?: string;
+  [key: string]: any; // Allow vendor extensions and additional properties
+}
+
+/**
+ * OpenAPI Response Object type
+ */
+export interface ResponseObject {
+  description: string;
+  content?: Record<string, { schema?: SchemaObject; example?: any; examples?: Record<string, any> }>;
+  headers?: Record<string, any>;
+  links?: Record<string, any>;
+}
+
+/**
+ * OpenAPI Parameter Object type
+ */
+export interface ParameterObject {
+  name: string;
+  in: 'query' | 'header' | 'path' | 'cookie';
+  description?: string;
+  required?: boolean;
+  deprecated?: boolean;
+  schema?: SchemaObject;
+  example?: any;
+  examples?: Record<string, any>;
+  style?: string;
+  explode?: boolean;
+}
+
+/**
  * Builds the components section with reusable schemas, responses, and parameters.
+ * Compliant with OpenAPI 3.0 Components Object specification.
  *
  * @param document - OpenAPI document object
  * @param schemas - Map of schema names to schema definitions
@@ -358,23 +501,54 @@ export function buildOpenApiExternalDocs(
  * @example
  * ```typescript
  * const document = buildOpenApiComponents(baseDocument, {
- *   Error: { type: 'object', properties: { message: { type: 'string' } } }
+ *   Error: {
+ *     type: 'object',
+ *     required: ['code', 'message'],
+ *     properties: {
+ *       code: { type: 'string', example: 'VALIDATION_ERROR' },
+ *       message: { type: 'string', example: 'Invalid input provided' },
+ *       details: { type: 'array', items: { type: 'object' } }
+ *     }
+ *   },
+ *   User: {
+ *     type: 'object',
+ *     required: ['id', 'email'],
+ *     properties: {
+ *       id: { type: 'string', format: 'uuid' },
+ *       email: { type: 'string', format: 'email' },
+ *       name: { type: 'string' }
+ *     }
+ *   }
  * }, {
- *   NotFound: { description: 'Resource not found' }
- * }, {});
+ *   NotFound: {
+ *     description: 'Resource not found',
+ *     content: {
+ *       'application/json': {
+ *         schema: { $ref: '#/components/schemas/Error' }
+ *       }
+ *     }
+ *   }
+ * }, {
+ *   PageParam: {
+ *     name: 'page',
+ *     in: 'query',
+ *     description: 'Page number',
+ *     schema: { type: 'integer', minimum: 1, default: 1 }
+ *   }
+ * });
  * ```
  */
 export function buildOpenApiComponents(
   document: OpenAPIObject,
-  schemas: Record<string, any> = {},
-  responses: Record<string, any> = {},
-  parameters: Record<string, any> = {}
+  schemas: Record<string, SchemaObject> = {},
+  responses: Record<string, ResponseObject> = {},
+  parameters: Record<string, ParameterObject> = {}
 ): OpenAPIObject {
   if (!document.components) {
     document.components = {};
   }
 
-  // Merge schemas
+  // Merge schemas with validation
   if (Object.keys(schemas).length > 0) {
     document.components.schemas = {
       ...(document.components.schemas || {}),
@@ -382,16 +556,26 @@ export function buildOpenApiComponents(
     };
   }
 
-  // Merge responses
+  // Merge responses with validation
   if (Object.keys(responses).length > 0) {
+    Object.entries(responses).forEach(([name, response]) => {
+      if (!response.description) {
+        throw new Error(`Response component '${name}' must have a description`);
+      }
+    });
     document.components.responses = {
       ...(document.components.responses || {}),
       ...responses,
     };
   }
 
-  // Merge parameters
+  // Merge parameters with validation
   if (Object.keys(parameters).length > 0) {
+    Object.entries(parameters).forEach(([name, param]) => {
+      if (!param.name || !param.in) {
+        throw new Error(`Parameter component '${name}' must have 'name' and 'in' properties`);
+      }
+    });
     document.components.parameters = {
       ...(document.components.parameters || {}),
       ...parameters,
@@ -443,20 +627,51 @@ export function configureJwtSecurity(
 
 /**
  * Configures OAuth2 authentication with multiple flows.
+ * Compliant with OpenAPI 3.0 OAuth2 Security Scheme.
  *
  * @param builder - DocumentBuilder instance
  * @param name - Security scheme name
- * @param flows - OAuth2 flow configurations
+ * @param flows - OAuth2 flow configurations (OAuth2Flows object)
  * @param description - Scheme description
  * @returns DocumentBuilder instance with OAuth2 configured
  *
  * @example
  * ```typescript
+ * // Authorization Code Flow (recommended for web apps)
  * const builder = configureOAuth2Security(baseBuilder, 'oauth2', {
  *   authorizationCode: {
  *     authorizationUrl: 'https://example.com/oauth/authorize',
  *     tokenUrl: 'https://example.com/oauth/token',
- *     scopes: { 'read:users': 'Read user data' }
+ *     refreshUrl: 'https://example.com/oauth/refresh',
+ *     scopes: {
+ *       'read:users': 'Read user data',
+ *       'write:users': 'Modify user data',
+ *       'admin': 'Admin access'
+ *     }
+ *   }
+ * }, 'OAuth2 Authorization Code Flow');
+ *
+ * // Client Credentials Flow (for server-to-server)
+ * const builder2 = configureOAuth2Security(baseBuilder, 'oauth2_client', {
+ *   clientCredentials: {
+ *     tokenUrl: 'https://example.com/oauth/token',
+ *     scopes: {
+ *       'api:access': 'API access',
+ *       'data:read': 'Read data'
+ *     }
+ *   }
+ * }, 'OAuth2 Client Credentials Flow');
+ *
+ * // Multiple flows
+ * const builder3 = configureOAuth2Security(baseBuilder, 'oauth2_multi', {
+ *   authorizationCode: {
+ *     authorizationUrl: 'https://example.com/oauth/authorize',
+ *     tokenUrl: 'https://example.com/oauth/token',
+ *     scopes: { 'read': 'Read access', 'write': 'Write access' }
+ *   },
+ *   implicit: {
+ *     authorizationUrl: 'https://example.com/oauth/authorize',
+ *     scopes: { 'read': 'Read access' }
  *   }
  * });
  * ```
@@ -464,14 +679,25 @@ export function configureJwtSecurity(
 export function configureOAuth2Security(
   builder: DocumentBuilder,
   name = 'oauth2',
-  flows: {
-    implicit?: OAuth2Flow;
-    password?: OAuth2Flow;
-    clientCredentials?: OAuth2Flow;
-    authorizationCode?: OAuth2Flow;
-  },
+  flows: OAuth2Flows,
   description = 'OAuth2 authentication'
 ): DocumentBuilder {
+  // Validate flows according to OpenAPI 3.0 specification
+  if (flows.authorizationCode) {
+    if (!flows.authorizationCode.authorizationUrl || !flows.authorizationCode.tokenUrl) {
+      throw new Error('Authorization Code flow requires both authorizationUrl and tokenUrl');
+    }
+  }
+  if (flows.implicit && !flows.implicit.authorizationUrl) {
+    throw new Error('Implicit flow requires authorizationUrl');
+  }
+  if (flows.password && !flows.password.tokenUrl) {
+    throw new Error('Password flow requires tokenUrl');
+  }
+  if (flows.clientCredentials && !flows.clientCredentials.tokenUrl) {
+    throw new Error('Client Credentials flow requires tokenUrl');
+  }
+
   return builder.addOAuth2(flows, name);
 }
 
@@ -733,30 +959,73 @@ export function configureMultipleSecurity(
 
 /**
  * Builds server configuration with URL and description.
+ * Compliant with OpenAPI 3.0 Server Object specification.
  *
- * @param url - Server URL
+ * @param url - Server URL (supports templating with variables)
  * @param description - Server description
- * @param variables - Server variables for templating
+ * @param variables - Server variables for URL template substitution
  * @returns Server configuration object
  *
  * @example
  * ```typescript
- * const server = buildServerConfig(
- *   'https://{environment}.example.com',
- *   'API Server',
- *   { environment: { default: 'api', enum: ['api', 'staging'] } }
+ * // Simple server without variables
+ * const server1 = buildServerConfig('https://api.example.com', 'Production API');
+ *
+ * // Server with variable substitution
+ * const server2 = buildServerConfig(
+ *   'https://{environment}.example.com:{port}/v1',
+ *   'Environment-based API Server',
+ *   {
+ *     environment: {
+ *       default: 'api',
+ *       enum: ['api', 'staging', 'dev'],
+ *       description: 'Environment name'
+ *     },
+ *     port: {
+ *       default: '443',
+ *       enum: ['443', '8443'],
+ *       description: 'HTTPS port'
+ *     }
+ *   }
+ * );
+ *
+ * // Regional server
+ * const server3 = buildServerConfig(
+ *   'https://{region}.api.example.com',
+ *   'Regional API Server',
+ *   {
+ *     region: {
+ *       default: 'us-east',
+ *       enum: ['us-east', 'us-west', 'eu-central', 'ap-south'],
+ *       description: 'Geographic region'
+ *     }
+ *   }
  * );
  * ```
  */
 export function buildServerConfig(
   url: string,
   description?: string,
-  variables?: Record<string, {
-    default: string;
-    description?: string;
-    enum?: string[];
-  }>
+  variables?: Record<string, ServerVariable>
 ): OpenApiServer {
+  // Validate URL format
+  if (!url || url.trim() === '') {
+    throw new Error('Server URL is required');
+  }
+
+  // Validate that all variables referenced in URL are defined
+  if (variables) {
+    const urlVariables = url.match(/\{([^}]+)\}/g);
+    if (urlVariables) {
+      urlVariables.forEach(varRef => {
+        const varName = varRef.slice(1, -1); // Remove { and }
+        if (!variables[varName]) {
+          throw new Error(`Variable '${varName}' used in URL but not defined in variables`);
+        }
+      });
+    }
+  }
+
   return {
     url,
     ...(description && { description }),
@@ -768,23 +1037,26 @@ export function buildServerConfig(
  * Builds server variables for URL templating.
  *
  * @param variables - Map of variable names to configurations
- * @returns Server variables object
+ * @returns Server variables object compliant with OpenAPI 3.0 Server Variable Object
  *
  * @example
  * ```typescript
  * const variables = buildServerVariables({
- *   protocol: { default: 'https', enum: ['http', 'https'] },
- *   port: { default: '443', description: 'Server port' }
+ *   protocol: { default: 'https', enum: ['http', 'https'], description: 'Protocol' },
+ *   port: { default: '443', description: 'Server port', enum: ['443', '8443'] },
+ *   environment: { default: 'production', enum: ['production', 'staging', 'development'] }
  * });
  * ```
  */
 export function buildServerVariables(
-  variables: Record<string, {
-    default: string;
-    description?: string;
-    enum?: string[];
-  }>
-): Record<string, { default: string; description?: string; enum?: string[] }> {
+  variables: Record<string, ServerVariable>
+): Record<string, ServerVariable> {
+  // Validate that each variable has a default value (required by OpenAPI 3.0)
+  Object.entries(variables).forEach(([name, variable]) => {
+    if (!variable.default) {
+      throw new Error(`Server variable '${name}' must have a default value`);
+    }
+  });
   return variables;
 }
 
