@@ -509,7 +509,7 @@ export class BursarOfficeControllersService {
     this.logger.log(`Processing payment for ${studentId}: $${amount}`);
 
     return {
-      transactionId: `TXN-${Date.now()}`,
+      transactionId: `TXN-${crypto.randomUUID()}`,
       studentId,
       amount,
       paymentMethod,
