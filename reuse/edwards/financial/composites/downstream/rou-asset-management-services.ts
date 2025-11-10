@@ -10,7 +10,7 @@ export class ROUAssetManagementService {
   private readonly logger = new Logger(ROUAssetManagementService.name);
 
   async createROUAsset(leaseId: number, value: number): Promise<any> {
-    this.logger.log(\`Creating ROU asset for lease \${leaseId}\`);
+    this.logger.log(`Creating ROU asset for lease ${leaseId}`);
     return { rouAssetId: 1, leaseId, value, bookValue: value };
   }
 
