@@ -9,7 +9,7 @@ import { Injectable, Logger } from '@nestjs/common';
 export class ACHWireTransferOrchestrationService {
   private readonly logger = new Logger(ACHWireTransferOrchestrationService.name);
 
-  async orchestrateACHPayment(payment: any): Promise<any> {
+  async orchestrateACHPayment(payment: { amount: number; [key: string]: any }): Promise<{ achFileGenerated: boolean; batchNumber: string }> {
     this.logger.log('Orchestrating ACH payment');
     return { achFileGenerated: true, batchNumber: 'ACH-2024-001' };
   }
