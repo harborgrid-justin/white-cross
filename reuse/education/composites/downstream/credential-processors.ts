@@ -14,7 +14,7 @@ export class CredentialProcessorsService {
   private readonly logger = new Logger(CredentialProcessorsService.name);
   constructor(@Inject('SEQUELIZE') private readonly sequelize: Sequelize) {}
 
-  async processCredentialRequest(studentId: string, credentialType: string): Promise<any> { return { requestId: `REQ-${Date.now()}` }; }
+  async processCredentialRequest(studentId: string, credentialType: string): Promise<any> { return { requestId: `REQ-${crypto.randomUUID()}` }; }
   async validateCredentialEligibility(studentId: string, credentialType: string): Promise<any> { return { eligible: true }; }
   async generateCredentialDocument(requestId: string): Promise<any> { return { documentId: `DOC-${Date.now()}` }; }
   async applyDigitalSignature(documentId: string, signerId: string): Promise<any> { return { signed: true }; }
