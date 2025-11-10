@@ -420,7 +420,7 @@ export async function manageShiftBasedNursingDocumentation(
   transaction?: Transaction,
 ): Promise<ShiftDocumentationResult> {
   // Initialize shift documentation
-  const shiftDocId = `SHIFT-DOC-${Date.now()}`;
+  const shiftDocId = `SHIFT-DOC-${crypto.randomUUID()}`;
 
   // Compute patient acuity
   const acuity = await computeNursingAcuityScore(shiftConfig.patientMRN);
