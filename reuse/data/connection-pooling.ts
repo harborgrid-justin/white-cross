@@ -143,12 +143,33 @@ export interface ConnectionPoolEvent {
 // ============================================================================
 
 /**
- * Calculates optimal pool size based on system resources
- * @param cpuCores - Number of CPU cores (defaults to system cores)
- * @param connectionLatency - Average connection latency in ms
- * @param avgQueryTime - Average query execution time in ms
- * @param targetUtilization - Target CPU utilization (0-1)
- * @returns Recommended pool configuration
+ * Calculates optimal connection pool size based on system resources and workload characteristics
+ *
+ * Uses the formula: connections = cores * (1 + wait_time / service_time) * utilization
+ * This accounts for I/O wait time vs CPU-bound processing to prevent over/under-provisioning
+ *
+ * @param {number} cpuCores - Number of CPU cores (defaults to system cores). Healthcare systems typically run on 4-16 core instances
+ * @param {number} connectionLatency - Average connection latency in milliseconds (database RTT)
+ * @param {number} avgQueryTime - Average query execution time in milliseconds (application-side measurement)
+ * @param {number} targetUtilization - Target CPU utilization (0-1). Recommended 0.7 for healthcare to allow headroom for spikes
+ * @returns {PoolConfig} Recommended pool configuration with min, max, idle, acquire, and evict settings
+ *
+ * @example
+ * ```typescript
+ * // For a healthcare API server with moderate load
+ * const poolConfig = calculateOptimalPoolSize(8, 50, 100, 0.7);
+ * // Returns: { max: 19, min: 5, idle: 10000, acquire: 30000, evict: 1000 }
+ *
+ * // For high-throughput medical records system
+ * const highThroughputConfig = calculateOptimalPoolSize(16, 30, 80, 0.75);
+ * ```
+ *
+ * @performance
+ * - Minimum pool size is 30% of maximum to handle baseline load
+ * - Idle timeout of 10s balances connection reuse with resource cleanup
+ * - Acquire timeout of 30s accommodates complex healthcare transactions
+ *
+ * @see {@link https://github.com/brettwooldridge/HikariCP/wiki/About-Pool-Sizing HikariCP Pool Sizing}
  */
 export function calculateOptimalPoolSize(
   cpuCores: number = os.cpus().length,
@@ -174,12 +195,37 @@ export function calculateOptimalPoolSize(
 }
 
 /**
- * Calculates pool size based on expected concurrent users
- * @param concurrentUsers - Expected number of concurrent users
- * @param requestsPerUser - Average requests per user per second
- * @param avgRequestDuration - Average request duration in ms
- * @param safetyMargin - Safety margin multiplier (default: 1.2)
- * @returns Recommended pool configuration
+ * Calculates connection pool size based on expected concurrent user load and request patterns
+ *
+ * Critical for healthcare applications where user load can spike during peak hours (e.g., 8am-10am clinic check-ins)
+ * Accounts for request concurrency, duration, and safety margin to prevent connection exhaustion
+ *
+ * @param {number} concurrentUsers - Expected number of concurrent users (active sessions)
+ * @param {number} requestsPerUser - Average requests per user per second (typical healthcare: 0.5-2 req/s)
+ * @param {number} avgRequestDuration - Average request duration in milliseconds (typical: 100-500ms)
+ * @param {number} safetyMargin - Safety margin multiplier for peak load handling (default: 1.2 = 20% buffer)
+ * @returns {PoolConfig} Recommended pool configuration sized for expected load
+ *
+ * @example
+ * ```typescript
+ * // Small clinic with 50 concurrent users
+ * const clinicConfig = calculatePoolSizeByLoad(50, 1, 200, 1.2);
+ * // Returns: { max: 12, min: 2, idle: 10000, acquire: 30000, evict: 1000 }
+ *
+ * // Large hospital system with 500 concurrent users
+ * const hospitalConfig = calculatePoolSizeByLoad(500, 1.5, 300, 1.3);
+ * // Returns: { max: 293, min: 58, idle: 10000, acquire: 30000, evict: 1000 }
+ * ```
+ *
+ * @performance
+ * - Formula: (users × requests/sec × duration/sec) × safety_margin
+ * - Minimum pool is 20% of maximum to handle baseline traffic
+ * - Safety margin prevents connection starvation during traffic spikes
+ *
+ * @healthcare
+ * - Consider peak clinic hours (typically 2-3x baseline traffic)
+ * - Account for batch operations (lab results, prescription renewals)
+ * - Emergency department traffic can be highly variable
  */
 export function calculatePoolSizeByLoad(
   concurrentUsers: number,
@@ -520,10 +566,44 @@ export class ConnectionPoolManager implements OnModuleDestroy {
 // ============================================================================
 
 /**
- * Performs a health check on a database connection
- * @param sequelize - Sequelize instance
- * @param timeout - Health check timeout
- * @returns Health status
+ * Performs comprehensive health check on database connection with timeout protection
+ *
+ * Essential for healthcare systems requiring high availability - detects connection issues
+ * before they impact patient data access or critical medical workflows
+ *
+ * @param {Sequelize} sequelize - Sequelize instance to health check
+ * @param {number} timeout - Health check timeout in milliseconds (default: 5000ms)
+ * @returns {Promise<ConnectionHealth>} Detailed health status including response time and metadata
+ *
+ * @throws {Error} Does not throw - captures all errors in result object for graceful handling
+ *
+ * @example
+ * ```typescript
+ * // Basic health check
+ * const health = await checkConnectionHealth(sequelize);
+ * if (!health.isHealthy) {
+ *   logger.error('Database connection unhealthy', health.metadata);
+ *   // Trigger alerts for on-call team
+ * }
+ *
+ * // Health check with custom timeout for critical operations
+ * const quickHealth = await checkConnectionHealth(sequelize, 2000);
+ * ```
+ *
+ * @performance
+ * - Uses Promise.race for hard timeout enforcement
+ * - Tracks consecutive failures for circuit breaker patterns
+ * - Response time measured for latency monitoring
+ *
+ * @healthcare
+ * - Critical for patient data access during emergencies
+ * - Should integrate with hospital-wide monitoring systems
+ * - Failed health checks should trigger immediate investigation
+ *
+ * @monitoring
+ * - Response times >1000ms indicate database performance issues
+ * - Consecutive failures >3 should trigger automated failover
+ * - Track health check results in time-series database for trending
  */
 export async function checkConnectionHealth(
   sequelize: Sequelize,

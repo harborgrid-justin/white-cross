@@ -161,10 +161,18 @@ export function formatSuccessResponse<T>(
 }
 
 /**
- * Sends a formatted JSON response
+ * Sends a formatted JSON response with proper status code and headers.
+ * Sets Content-Type to application/json automatically.
+ *
  * @param res - Express response object
- * @param statusCode - HTTP status code
- * @param responseData - API response data
+ * @param statusCode - HTTP status code (e.g., 200, 201, 400, 500)
+ * @param responseData - API response data following ApiResponse interface
+ *
+ * @example
+ * ```typescript
+ * const response = formatSuccessResponse({ id: '123', name: 'John' });
+ * sendJsonResponse(res, 200, response);
+ * ```
  */
 export function sendJsonResponse(
   res: Response,

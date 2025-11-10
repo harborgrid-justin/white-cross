@@ -101,18 +101,22 @@ const modelRegistry: Map<string, ModelRegistryEntry> = new Map();
 /**
  * Creates a dynamic Sequelize model with specified attributes and options
  *
+ * Follows Sequelize 6.x best practices for model initialization with proper
+ * TypeScript typing and default configurations for production use.
+ *
+ * @template T - Model type extending Sequelize Model
  * @param modelName - Name of the model to create
  * @param attributes - Model attributes definition
  * @param options - Model configuration options
  * @param sequelize - Sequelize instance
- * @returns Created model class
+ * @returns Created model class with proper typing
  *
  * @example
  * ```typescript
  * const User = createDynamicModel('User', {
- *   id: { type: DataTypes.INTEGER, primaryKey: true },
+ *   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
  *   name: { type: DataTypes.STRING, allowNull: false }
- * }, {}, sequelize);
+ * }, { timestamps: true, paranoid: true }, sequelize);
  * ```
  */
 export function createDynamicModel<T extends Model>(
@@ -123,12 +127,18 @@ export function createDynamicModel<T extends Model>(
 ): ModelStatic<T> {
   class DynamicModel extends Model<T> {}
 
-  DynamicModel.init(attributes, {
+  // Apply Sequelize 6.x best practice defaults
+  const modelOptions: ModelOptions<T> = {
+    timestamps: true, // Enable timestamps by default
+    underscored: true, // Use snake_case for auto-generated fields
+    freezeTableName: true, // Prevent table name pluralization
     ...options,
     sequelize,
     modelName,
-    tableName: options.tableName || modelName.toLowerCase() + 's',
-  });
+    tableName: options.tableName || (options.freezeTableName ? modelName : modelName.toLowerCase() + 's'),
+  };
+
+  DynamicModel.init(attributes, modelOptions);
 
   return DynamicModel as ModelStatic<T>;
 }
@@ -582,6 +592,10 @@ export function registerLifecycleHooks<T extends Model>(
 /**
  * Adds an audit logging hook that tracks all model changes
  *
+ * Implements comprehensive audit trail for HIPAA compliance and data tracking.
+ * Supports transaction context and field-level change tracking.
+ *
+ * @template T - Model type extending Sequelize Model
  * @param model - Model to add audit logging to
  * @param auditModel - Model for storing audit logs
  * @param options - Audit configuration options
@@ -590,8 +604,9 @@ export function registerLifecycleHooks<T extends Model>(
  * @example
  * ```typescript
  * addAuditLoggingHook(User, AuditLog, {
- *   trackFields: ['email', 'status'],
- *   userId: () => getCurrentUserId()
+ *   trackFields: ['email', 'status', 'role'],
+ *   userId: () => getCurrentUserId(),
+ *   includeOldValues: true
  * });
  * ```
  */
@@ -602,49 +617,70 @@ export function addAuditLoggingHook<T extends Model>(
     trackFields?: string[];
     userId?: () => string | number;
     includeOldValues?: boolean;
+    excludeFields?: string[]; // Fields to never audit (e.g., passwords)
   } = {}
 ): ModelStatic<T> {
-  const { trackFields, userId, includeOldValues = true } = options;
+  const { trackFields, userId, includeOldValues = true, excludeFields = [] } = options;
 
   const createAuditLog = async (
     instance: T,
     action: 'CREATE' | 'UPDATE' | 'DELETE',
-    changes?: any
+    changes?: any,
+    transaction?: any
   ) => {
-    await auditModel.create({
-      modelName: model.name,
-      recordId: (instance as any).id,
-      action,
-      changes: changes || instance.toJSON(),
-      userId: userId ? userId() : null,
-      timestamp: new Date(),
-    });
+    try {
+      await auditModel.create({
+        modelName: model.name,
+        recordId: (instance as any).id,
+        action,
+        changes: changes || instance.toJSON(),
+        userId: userId ? userId() : null,
+        timestamp: new Date(),
+        ipAddress: (instance as any)._auditContext?.ipAddress || null,
+        userAgent: (instance as any)._auditContext?.userAgent || null,
+      }, { transaction });
+    } catch (error) {
+      // Log audit failures but don't block the main operation
+      console.error(`Audit log creation failed for ${model.name}:`, error);
+    }
   };
 
-  model.addHook('afterCreate', async (instance) => {
-    await createAuditLog(instance, 'CREATE');
+  model.addHook('afterCreate', async (instance, hookOptions) => {
+    await createAuditLog(instance, 'CREATE', undefined, hookOptions.transaction);
   });
 
-  model.addHook('afterUpdate', async (instance) => {
+  model.addHook('afterUpdate', async (instance, hookOptions) => {
     const changes: any = {};
     const changedFields = instance.changed() as string[] || [];
 
     changedFields.forEach((field) => {
+      // Skip excluded fields (e.g., passwords, tokens)
+      if (excludeFields.includes(field)) {
+        return;
+      }
+
+      // Apply field filter if specified
       if (!trackFields || trackFields.includes(field)) {
-        changes[field] = {
-          new: (instance as any)[field],
-          old: includeOldValues ? (instance as any)._previousDataValues?.[field] : undefined,
-        };
+        const newValue = (instance as any)[field];
+        const oldValue = includeOldValues ? (instance as any)._previousDataValues?.[field] : undefined;
+
+        // Only track if values actually changed
+        if (JSON.stringify(newValue) !== JSON.stringify(oldValue)) {
+          changes[field] = {
+            new: newValue,
+            old: oldValue,
+          };
+        }
       }
     });
 
     if (Object.keys(changes).length > 0) {
-      await createAuditLog(instance, 'UPDATE', changes);
+      await createAuditLog(instance, 'UPDATE', changes, hookOptions.transaction);
     }
   });
 
-  model.addHook('afterDestroy', async (instance) => {
-    await createAuditLog(instance, 'DELETE');
+  model.addHook('afterDestroy', async (instance, hookOptions) => {
+    await createAuditLog(instance, 'DELETE', undefined, hookOptions.transaction);
   });
 
   return model;
@@ -807,6 +843,10 @@ export function configureTimestamps<T extends Model>(
 /**
  * Enables soft delete (paranoid mode) on a model
  *
+ * Implements soft delete pattern following Sequelize 6.x best practices.
+ * Adds indexed deletedAt field for efficient querying of active records.
+ *
+ * @template T - Model type extending Sequelize Model
  * @param model - Model to enable soft delete on
  * @param config - Soft delete configuration
  * @returns Model with soft delete enabled
@@ -833,6 +873,21 @@ export function enableSoftDelete<T extends Model>(
     allowNull: config.allowNull,
     defaultValue: config.defaultValue,
   };
+
+  // Add index on deletedAt for efficient active record queries
+  const indexes = (model.options.indexes as any[]) || [];
+  const indexExists = indexes.some((idx) =>
+    idx.fields && idx.fields.length === 1 && idx.fields[0] === config.field
+  );
+
+  if (!indexExists) {
+    indexes.push({
+      name: `${model.tableName}_${config.field}_idx`,
+      fields: [config.field],
+      type: 'BTREE',
+    });
+    model.options.indexes = indexes;
+  }
 
   return model;
 }
@@ -1253,6 +1308,10 @@ export function areInstancesEqual<T extends Model>(
 /**
  * Enables versioning on a model with automatic version incrementation
  *
+ * Implements optimistic locking to prevent concurrent update conflicts.
+ * Uses transaction-safe versioning for production reliability.
+ *
+ * @template T - Model type extending Sequelize Model
  * @param model - Model to enable versioning on
  * @param config - Versioning configuration
  * @returns Model with versioning enabled
@@ -1280,21 +1339,48 @@ export function enableVersioning<T extends Model>(
     defaultValue: 1,
   };
 
-  // Add beforeUpdate hook to increment version
-  model.addHook('beforeUpdate', (instance: any) => {
-    if (instance.changed()) {
-      instance[versionField] = (instance[versionField] || 0) + 1;
+  // Add beforeUpdate hook with optimistic locking
+  model.addHook('beforeUpdate', async (instance: any, options) => {
+    if (!instance.changed()) {
+      return;
     }
+
+    const currentVersion = instance[versionField] || 0;
+    const previousVersion = instance._previousDataValues?.[versionField] || 0;
+
+    // Optimistic locking: verify version hasn't changed since load
+    if (currentVersion !== previousVersion) {
+      // Check if record was modified by another transaction
+      const fresh = await model.findByPk(instance.id, {
+        attributes: [versionField],
+        transaction: options.transaction,
+      });
+
+      if (fresh && (fresh as any)[versionField] !== previousVersion) {
+        throw new Error(
+          `Optimistic lock error: Record version mismatch. Expected ${previousVersion}, found ${(fresh as any)[versionField]}`
+        );
+      }
+    }
+
+    // Increment version for update
+    instance[versionField] = currentVersion + 1;
+
+    // Add version check to WHERE clause for atomic update
+    if (!options.where) {
+      options.where = {};
+    }
+    (options.where as any)[versionField] = previousVersion;
   });
 
-  // Optionally track changes in history table
+  // Optionally track changes in history table with transaction support
   if (trackChanges && historyTable) {
-    model.addHook('afterUpdate', async (instance: any, options) => {
+    model.addHook('afterUpdate', async (instance: any, hookOptions) => {
       const changes: any = {};
       const changedFields = instance.changed() as string[] || [];
 
       changedFields.forEach((field) => {
-        if (!compareFields || compareFields.includes(field)) {
+        if (field !== versionField && (!compareFields || compareFields.includes(field))) {
           changes[field] = {
             old: instance._previousDataValues?.[field],
             new: (instance as any)[field],
@@ -1303,17 +1389,27 @@ export function enableVersioning<T extends Model>(
       });
 
       if (Object.keys(changes).length > 0) {
-        await model.sequelize?.query(
-          `INSERT INTO ${historyTable} (record_id, version, changes, created_at) VALUES (?, ?, ?, ?)`,
-          {
-            replacements: [
-              instance.id,
-              instance[versionField],
-              JSON.stringify(changes),
-              new Date(),
-            ],
-          }
-        );
+        // Use query interface for database abstraction
+        const sequelize = model.sequelize;
+        if (!sequelize) return;
+
+        try {
+          await sequelize.query(
+            `INSERT INTO ${historyTable} (record_id, version, changes, created_at) VALUES (?, ?, ?, ?)`,
+            {
+              replacements: [
+                instance.id,
+                instance[versionField],
+                JSON.stringify(changes),
+                new Date(),
+              ],
+              transaction: hookOptions.transaction,
+              type: 'INSERT',
+            }
+          );
+        } catch (error) {
+          console.error(`Failed to write version history for ${model.name}:`, error);
+        }
       }
     });
   }

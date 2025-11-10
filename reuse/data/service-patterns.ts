@@ -3,6 +3,89 @@
  * @module reuse/data/service-patterns
  * @description Production-grade service base classes, CQRS patterns, event sourcing,
  * saga orchestration, circuit breakers, and health checks for scalable enterprise applications
+ *
+ * ## Service Layer Organization Best Practices
+ *
+ * ### Service Types and When to Use Them
+ *
+ * #### 1. BaseService
+ * - **Use for**: Foundation for all services
+ * - **Provides**: Lifecycle hooks, logging, initialization
+ * - **Scope**: Singleton (DEFAULT)
+ * - **Example**: Any domain service
+ *
+ * #### 2. RepositoryService
+ * - **Use for**: Data access layer abstraction
+ * - **Provides**: CRUD operations interface
+ * - **Scope**: Singleton (DEFAULT)
+ * - **Example**: PatientService, UserService
+ *
+ * #### 3. DomainService
+ * - **Use for**: Complex business logic
+ * - **Provides**: Domain events, invariant enforcement
+ * - **Scope**: Singleton (DEFAULT)
+ * - **Example**: OrderProcessingService, PaymentService
+ *
+ * #### 4. ApplicationService
+ * - **Use for**: Use case orchestration
+ * - **Provides**: Transaction management, service coordination
+ * - **Scope**: Singleton or REQUEST
+ * - **Example**: CreatePatientUseCase, ProcessPaymentUseCase
+ *
+ * #### 5. InfrastructureService
+ * - **Use for**: External integrations
+ * - **Provides**: Retry logic, circuit breakers
+ * - **Scope**: Singleton (DEFAULT)
+ * - **Example**: EmailService, SmsService, PaymentGatewayService
+ *
+ * ## Dependency Injection Best Practices
+ *
+ * ### Constructor Injection (Recommended)
+ * ```typescript
+ * @Injectable()
+ * export class PatientService extends BaseService<Patient> {
+ *   constructor(
+ *     private readonly patientRepo: PatientRepository,
+ *     private readonly auditService: AuditService,
+ *     @Inject(forwardRef(() => EmailService))
+ *     private readonly emailService: EmailService
+ *   ) {
+ *     super('PatientService');
+ *   }
+ * }
+ * ```
+ *
+ * ### Avoiding Circular Dependencies
+ * 1. **Use forwardRef()** for unavoidable circular deps
+ * 2. **Extract common logic** to a third service
+ * 3. **Use events** instead of direct service calls
+ * 4. **Implement interfaces** instead of concrete dependencies
+ * 5. **Validate at build time** using dependency analyzers
+ *
+ * ## Service Design Patterns
+ *
+ * ### CQRS (Command Query Responsibility Segregation)
+ * - Separate read and write operations
+ * - Scale independently
+ * - Optimize for different workloads
+ *
+ * ### Event Sourcing
+ * - Store events instead of state
+ * - Rebuild state from events
+ * - Audit trail built-in
+ *
+ * ### Saga Pattern
+ * - Distributed transactions
+ * - Compensating transactions
+ * - Eventual consistency
+ *
+ * ## Error Handling Best Practices
+ *
+ * 1. **Use domain-specific exceptions**
+ * 2. **Log errors with context**
+ * 3. **Don't swallow exceptions**
+ * 4. **Provide meaningful error messages**
+ * 5. **Use circuit breakers for external services**
  */
 
 import {
@@ -23,16 +106,55 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 /**
  * Base service class with common lifecycle management and logging
  * @template TEntity Entity type this service manages
- * @description Provides foundation for all domain services with built-in lifecycle hooks
+ * @description Provides foundation for all domain services with built-in lifecycle hooks.
+ * This class is designed to be extended by domain services and is singleton-scoped by default.
+ *
+ * @remarks
+ * - **Scope**: Singleton (DEFAULT) - one instance per application lifecycle
+ * - **Lifecycle**: Implements OnModuleInit and OnModuleDestroy hooks
+ * - **Thread Safety**: Not thread-safe, use request-scoped services for concurrent operations
+ * - **Circular Dependencies**: Use forwardRef() when injecting circular dependencies
+ *
+ * @example
+ * ```typescript
+ * @Injectable()
+ * export class UserService extends BaseService<User> {
+ *   constructor(
+ *     private readonly userRepository: UserRepository,
+ *     @Inject(forwardRef(() => EmailService))
+ *     private readonly emailService: EmailService
+ *   ) {
+ *     super('UserService');
+ *   }
+ *
+ *   protected async initialize(): Promise<void> {
+ *     // Custom initialization logic
+ *     this.logger.log('UserService custom initialization');
+ *   }
+ *
+ *   protected async cleanup(): Promise<void> {
+ *     // Custom cleanup logic
+ *     this.logger.log('UserService custom cleanup');
+ *   }
+ * }
+ * ```
  */
 export abstract class BaseService<TEntity = any> implements OnModuleInit, OnModuleDestroy {
   protected readonly logger: Logger;
   protected isInitialized = false;
 
+  /**
+   * Creates a new base service instance
+   * @param serviceName Name of the service for logging purposes
+   */
   constructor(serviceName: string) {
     this.logger = new Logger(serviceName);
   }
 
+  /**
+   * NestJS lifecycle hook called after module initialization
+   * @throws {Error} If initialization fails
+   */
   async onModuleInit(): Promise<void> {
     this.logger.log('Service initializing...');
     await this.initialize();
@@ -40,16 +162,32 @@ export abstract class BaseService<TEntity = any> implements OnModuleInit, OnModu
     this.logger.log('Service initialized successfully');
   }
 
+  /**
+   * NestJS lifecycle hook called before module destruction
+   * @throws {Error} If cleanup fails
+   */
   async onModuleDestroy(): Promise<void> {
     this.logger.log('Service shutting down...');
     await this.cleanup();
     this.logger.log('Service shutdown complete');
   }
 
+  /**
+   * Custom initialization logic to be implemented by derived classes
+   * @protected
+   * @virtual
+   * @returns Promise that resolves when initialization is complete
+   */
   protected async initialize(): Promise<void> {
     // Override in derived classes
   }
 
+  /**
+   * Custom cleanup logic to be implemented by derived classes
+   * @protected
+   * @virtual
+   * @returns Promise that resolves when cleanup is complete
+   */
   protected async cleanup(): Promise<void> {
     // Override in derived classes
   }
@@ -59,9 +197,44 @@ export abstract class BaseService<TEntity = any> implements OnModuleInit, OnModu
  * Generic repository service pattern base class
  * @template TEntity Entity type
  * @template TRepository Repository interface
- * @description Provides CRUD operations with audit logging and validation
+ * @description Provides CRUD operations with audit logging and validation.
+ * This abstract class enforces implementation of standard repository methods.
+ *
+ * @remarks
+ * - **Scope**: Singleton (DEFAULT) - inherits from BaseService
+ * - **Pattern**: Repository Pattern abstraction layer
+ * - **Dependencies**: Requires a repository implementation injected via constructor
+ * - **Circular Dependencies**: Avoid circular references with domain services
+ *
+ * @example
+ * ```typescript
+ * @Injectable()
+ * export class PatientService extends RepositoryService<Patient, PatientRepository> {
+ *   constructor(
+ *     @InjectModel(Patient) private readonly patientRepository: PatientRepository,
+ *     private readonly auditService: AuditService
+ *   ) {
+ *     super('PatientService', patientRepository);
+ *   }
+ *
+ *   async findById(id: string): Promise<Patient | null> {
+ *     return this.repository.findByPk(id);
+ *   }
+ *
+ *   async create(data: Partial<Patient>): Promise<Patient> {
+ *     const patient = await this.repository.create(data);
+ *     await this.auditService.log('CREATE', 'Patient', patient.id);
+ *     return patient;
+ *   }
+ * }
+ * ```
  */
 export abstract class RepositoryService<TEntity, TRepository> extends BaseService<TEntity> {
+  /**
+   * Creates a new repository service instance
+   * @param serviceName Name of the service for logging
+   * @param repository Repository implementation instance
+   */
   constructor(
     serviceName: string,
     protected readonly repository: TRepository,
@@ -69,10 +242,45 @@ export abstract class RepositoryService<TEntity, TRepository> extends BaseServic
     super(serviceName);
   }
 
+  /**
+   * Find an entity by its unique identifier
+   * @param id Entity identifier
+   * @returns Promise resolving to entity or null if not found
+   * @abstract Must be implemented by derived classes
+   */
   abstract findById(id: string): Promise<TEntity | null>;
+
+  /**
+   * Find all entities matching optional criteria
+   * @param options Optional query options
+   * @returns Promise resolving to array of entities
+   * @abstract Must be implemented by derived classes
+   */
   abstract findAll(options?: any): Promise<TEntity[]>;
+
+  /**
+   * Create a new entity
+   * @param entity Partial entity data for creation
+   * @returns Promise resolving to created entity
+   * @abstract Must be implemented by derived classes
+   */
   abstract create(entity: Partial<TEntity>): Promise<TEntity>;
+
+  /**
+   * Update an existing entity
+   * @param id Entity identifier
+   * @param entity Partial entity data for update
+   * @returns Promise resolving to updated entity
+   * @abstract Must be implemented by derived classes
+   */
   abstract update(id: string, entity: Partial<TEntity>): Promise<TEntity>;
+
+  /**
+   * Delete an entity (soft or hard delete)
+   * @param id Entity identifier
+   * @returns Promise resolving to true if successful
+   * @abstract Must be implemented by derived classes
+   */
   abstract delete(id: string): Promise<boolean>;
 }
 
@@ -225,8 +433,46 @@ export function createEventHandler<TEvent extends IEvent>(
 
 /**
  * Service orchestration pattern for coordinating multiple services
- * @description Manages complex workflows across multiple bounded contexts
+ * @description Manages complex workflows across multiple bounded contexts.
+ * Use this pattern when coordinating operations across multiple domain services.
+ *
+ * @remarks
+ * - **Scope**: Singleton (DEFAULT) - one orchestrator instance
+ * - **Pattern**: Orchestration/Mediator pattern for service coordination
+ * - **Dependencies**: Services are registered dynamically, not injected
+ * - **Use Case**: Complex multi-service workflows, saga coordination
+ *
+ * @example
+ * ```typescript
+ * @Injectable()
+ * export class OrderOrchestrator extends ServiceOrchestrator {
+ *   constructor(
+ *     private readonly orderService: OrderService,
+ *     private readonly paymentService: PaymentService,
+ *     private readonly inventoryService: InventoryService,
+ *   ) {
+ *     super();
+ *     this.registerService('order', orderService);
+ *     this.registerService('payment', paymentService);
+ *     this.registerService('inventory', inventoryService);
+ *   }
+ *
+ *   async processOrder(orderData: CreateOrderDto): Promise<Order> {
+ *     return this.executeWorkflow<Order>([
+ *       async (orch) => {
+ *         const orderSvc = orch.getService<OrderService>('order');
+ *         return orderSvc.createOrder(orderData);
+ *       },
+ *       async (orch) => {
+ *         const paymentSvc = orch.getService<PaymentService>('payment');
+ *         return paymentSvc.processPayment(orderData.paymentInfo);
+ *       },
+ *     ]);
+ *   }
+ * }
+ * ```
  */
+@Injectable()
 export class ServiceOrchestrator extends BaseService {
   private services: Map<string, any> = new Map();
 
@@ -234,11 +480,23 @@ export class ServiceOrchestrator extends BaseService {
     super('ServiceOrchestrator');
   }
 
+  /**
+   * Registers a service with the orchestrator
+   * @param name Unique service identifier
+   * @param service Service instance
+   */
   registerService(name: string, service: any): void {
     this.services.set(name, service);
     this.logger.debug(`Service registered: ${name}`);
   }
 
+  /**
+   * Retrieves a registered service by name
+   * @template T Service type
+   * @param name Service identifier
+   * @returns Service instance
+   * @throws {Error} If service is not found
+   */
   getService<T>(name: string): T {
     const service = this.services.get(name);
     if (!service) {
@@ -247,10 +505,21 @@ export class ServiceOrchestrator extends BaseService {
     return service as T;
   }
 
+  /**
+   * Checks if a service is registered
+   * @param name Service identifier
+   * @returns True if service exists
+   */
   hasService(name: string): boolean {
     return this.services.has(name);
   }
 
+  /**
+   * Executes a workflow of sequential steps
+   * @template T Return type of the workflow
+   * @param steps Array of workflow step functions
+   * @returns Promise resolving to the result of the last step
+   */
   async executeWorkflow<T>(
     steps: Array<(orchestrator: ServiceOrchestrator) => Promise<any>>,
   ): Promise<T> {

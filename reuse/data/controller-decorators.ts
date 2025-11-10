@@ -36,6 +36,11 @@ import {
   Type,
   BadRequestException,
   UnauthorizedException,
+  Get,
+  Post,
+  Put,
+  Patch,
+  Delete,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -165,39 +170,55 @@ export const API_VERSION_KEY = 'apiVersion';
 // ============================================================================
 
 /**
- * Combined GET decorator with standard configurations
- * @param path - Route path
- * @param summary - API operation summary
+ * Combined GET decorator with standard configurations for NestJS controllers.
+ * Applies HTTP GET method, Swagger documentation, and standard response codes.
+ *
+ * @param path - Route path (string or array of strings for multiple routes)
+ * @param summary - API operation summary for Swagger documentation
+ * @returns Combined decorator for GET endpoints
+ *
+ * @example
+ * ```typescript
+ * @ApiGet('users', 'Get all users')
+ * async findAll() {
+ *   return this.usersService.findAll();
+ * }
+ * ```
  */
 export function ApiGet(path?: string | string[], summary?: string) {
-  const decorators = [
-    (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-      const Get = require('@nestjs/common').Get;
-      return Get(path)(target, propertyKey, descriptor);
-    },
+  const decorators: Array<MethodDecorator | ClassDecorator> = [
+    Get(path),
   ];
 
   if (summary) {
     decorators.push(ApiOperation({ summary }));
   }
 
-  decorators.push(ApiResponse({ status: 200, description: 'Success' }));
-  decorators.push(ApiResponse({ status: 400, description: 'Bad Request' }));
+  decorators.push(ApiResponse({ status: 200, description: 'Request successful' }));
+  decorators.push(ApiResponse({ status: 400, description: 'Invalid request parameters' }));
 
   return applyDecorators(...decorators);
 }
 
 /**
- * Combined POST decorator with standard configurations
- * @param path - Route path
- * @param summary - API operation summary
+ * Combined POST decorator with standard configurations for NestJS controllers.
+ * Applies HTTP POST method, 201 status code, Swagger documentation, and standard response codes.
+ *
+ * @param path - Route path (string or array of strings for multiple routes)
+ * @param summary - API operation summary for Swagger documentation
+ * @returns Combined decorator for POST endpoints
+ *
+ * @example
+ * ```typescript
+ * @ApiPost('users', 'Create a new user')
+ * async create(@Body() createUserDto: CreateUserDto) {
+ *   return this.usersService.create(createUserDto);
+ * }
+ * ```
  */
 export function ApiPost(path?: string | string[], summary?: string) {
-  const decorators = [
-    (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-      const Post = require('@nestjs/common').Post;
-      return Post(path)(target, propertyKey, descriptor);
-    },
+  const decorators: Array<MethodDecorator | ClassDecorator> = [
+    Post(path),
     HttpCode(HttpStatus.CREATED),
   ];
 
@@ -205,23 +226,31 @@ export function ApiPost(path?: string | string[], summary?: string) {
     decorators.push(ApiOperation({ summary }));
   }
 
-  decorators.push(ApiResponse({ status: 201, description: 'Created' }));
-  decorators.push(ApiResponse({ status: 400, description: 'Bad Request' }));
+  decorators.push(ApiResponse({ status: 201, description: 'Resource created successfully' }));
+  decorators.push(ApiResponse({ status: 400, description: 'Invalid request body or parameters' }));
 
   return applyDecorators(...decorators);
 }
 
 /**
- * Combined PUT decorator with standard configurations
- * @param path - Route path
- * @param summary - API operation summary
+ * Combined PUT decorator with standard configurations for NestJS controllers.
+ * Applies HTTP PUT method, Swagger documentation, and standard response codes.
+ *
+ * @param path - Route path (string or array of strings for multiple routes)
+ * @param summary - API operation summary for Swagger documentation
+ * @returns Combined decorator for PUT endpoints
+ *
+ * @example
+ * ```typescript
+ * @ApiPut(':id', 'Update user by ID')
+ * async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+ *   return this.usersService.update(id, updateUserDto);
+ * }
+ * ```
  */
 export function ApiPut(path?: string | string[], summary?: string) {
-  const decorators = [
-    (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-      const Put = require('@nestjs/common').Put;
-      return Put(path)(target, propertyKey, descriptor);
-    },
+  const decorators: Array<MethodDecorator | ClassDecorator> = [
+    Put(path),
     HttpCode(HttpStatus.OK),
   ];
 
@@ -229,23 +258,32 @@ export function ApiPut(path?: string | string[], summary?: string) {
     decorators.push(ApiOperation({ summary }));
   }
 
-  decorators.push(ApiResponse({ status: 200, description: 'Updated' }));
-  decorators.push(ApiResponse({ status: 404, description: 'Not Found' }));
+  decorators.push(ApiResponse({ status: 200, description: 'Resource updated successfully' }));
+  decorators.push(ApiResponse({ status: 404, description: 'Resource not found' }));
+  decorators.push(ApiResponse({ status: 400, description: 'Invalid request body or parameters' }));
 
   return applyDecorators(...decorators);
 }
 
 /**
- * Combined PATCH decorator with standard configurations
- * @param path - Route path
- * @param summary - API operation summary
+ * Combined PATCH decorator with standard configurations for NestJS controllers.
+ * Applies HTTP PATCH method, Swagger documentation, and standard response codes.
+ *
+ * @param path - Route path (string or array of strings for multiple routes)
+ * @param summary - API operation summary for Swagger documentation
+ * @returns Combined decorator for PATCH endpoints
+ *
+ * @example
+ * ```typescript
+ * @ApiPatch(':id', 'Partially update user')
+ * async patch(@Param('id') id: string, @Body() patchUserDto: PatchUserDto) {
+ *   return this.usersService.patch(id, patchUserDto);
+ * }
+ * ```
  */
 export function ApiPatch(path?: string | string[], summary?: string) {
-  const decorators = [
-    (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-      const Patch = require('@nestjs/common').Patch;
-      return Patch(path)(target, propertyKey, descriptor);
-    },
+  const decorators: Array<MethodDecorator | ClassDecorator> = [
+    Patch(path),
     HttpCode(HttpStatus.OK),
   ];
 
@@ -253,23 +291,32 @@ export function ApiPatch(path?: string | string[], summary?: string) {
     decorators.push(ApiOperation({ summary }));
   }
 
-  decorators.push(ApiResponse({ status: 200, description: 'Patched' }));
-  decorators.push(ApiResponse({ status: 404, description: 'Not Found' }));
+  decorators.push(ApiResponse({ status: 200, description: 'Resource partially updated successfully' }));
+  decorators.push(ApiResponse({ status: 404, description: 'Resource not found' }));
+  decorators.push(ApiResponse({ status: 400, description: 'Invalid request body or parameters' }));
 
   return applyDecorators(...decorators);
 }
 
 /**
- * Combined DELETE decorator with standard configurations
- * @param path - Route path
- * @param summary - API operation summary
+ * Combined DELETE decorator with standard configurations for NestJS controllers.
+ * Applies HTTP DELETE method, 204 No Content status, Swagger documentation, and standard response codes.
+ *
+ * @param path - Route path (string or array of strings for multiple routes)
+ * @param summary - API operation summary for Swagger documentation
+ * @returns Combined decorator for DELETE endpoints
+ *
+ * @example
+ * ```typescript
+ * @ApiDelete(':id', 'Delete user by ID')
+ * async remove(@Param('id') id: string) {
+ *   await this.usersService.remove(id);
+ * }
+ * ```
  */
 export function ApiDelete(path?: string | string[], summary?: string) {
-  const decorators = [
-    (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-      const Delete = require('@nestjs/common').Delete;
-      return Delete(path)(target, propertyKey, descriptor);
-    },
+  const decorators: Array<MethodDecorator | ClassDecorator> = [
+    Delete(path),
     HttpCode(HttpStatus.NO_CONTENT),
   ];
 
@@ -277,8 +324,8 @@ export function ApiDelete(path?: string | string[], summary?: string) {
     decorators.push(ApiOperation({ summary }));
   }
 
-  decorators.push(ApiResponse({ status: 204, description: 'Deleted' }));
-  decorators.push(ApiResponse({ status: 404, description: 'Not Found' }));
+  decorators.push(ApiResponse({ status: 204, description: 'Resource deleted successfully' }));
+  decorators.push(ApiResponse({ status: 404, description: 'Resource not found' }));
 
   return applyDecorators(...decorators);
 }
@@ -288,42 +335,104 @@ export function ApiDelete(path?: string | string[], summary?: string) {
 // ============================================================================
 
 /**
- * Marks a route as requiring specific roles
- * @param roles - Array of required roles
+ * Marks a route as requiring specific roles for access control.
+ * This decorator sets metadata that can be read by a RolesGuard.
+ *
+ * @param roles - Array of required roles from UserRole enum
+ * @returns Metadata decorator for role-based access control
+ *
+ * @example
+ * ```typescript
+ * @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+ * @Get('sensitive-data')
+ * async getSensitiveData() {
+ *   return this.service.getSensitiveData();
+ * }
+ * ```
  */
 export function Roles(...roles: UserRole[]) {
   return SetMetadata(ROLES_KEY, roles);
 }
 
 /**
- * Marks a route as publicly accessible (no authentication required)
+ * Marks a route as publicly accessible (no authentication required).
+ * This decorator bypasses authentication guards.
+ *
+ * @returns Metadata decorator for public endpoints
+ *
+ * @example
+ * ```typescript
+ * @Public()
+ * @Get('health')
+ * async healthCheck() {
+ *   return { status: 'ok' };
+ * }
+ * ```
  */
 export function Public() {
   return SetMetadata(IS_PUBLIC_KEY, true);
 }
 
 /**
- * Healthcare-specific role decorator for medical staff
+ * Healthcare-specific role decorator for medical staff only.
+ * Restricts access to doctors and nurses.
+ *
+ * @returns Role-based access decorator for medical staff
+ *
+ * @example
+ * ```typescript
+ * @MedicalStaffOnly()
+ * @Get('patient/:id/medical-records')
+ * async getMedicalRecords(@Param('id') patientId: string) {
+ *   return this.service.getMedicalRecords(patientId);
+ * }
+ * ```
  */
 export function MedicalStaffOnly() {
   return Roles(UserRole.DOCTOR, UserRole.NURSE);
 }
 
 /**
- * Healthcare-specific role decorator for administrative staff
+ * Healthcare-specific role decorator for administrative staff only.
+ * Restricts access to admin and super admin roles.
+ *
+ * @returns Role-based access decorator for administrators
+ *
+ * @example
+ * ```typescript
+ * @AdminOnly()
+ * @Delete('users/:id')
+ * async deleteUser(@Param('id') userId: string) {
+ *   return this.service.deleteUser(userId);
+ * }
+ * ```
  */
 export function AdminOnly() {
   return Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN);
 }
 
 /**
- * Combined decorator for authenticated healthcare professionals
+ * Combined decorator for authenticated healthcare professionals.
+ * Includes doctors, nurses, pharmacists, and lab technicians.
+ * Adds Bearer authentication and appropriate API documentation.
+ *
+ * @returns Combined decorator for healthcare professional access
+ *
+ * @example
+ * ```typescript
+ * @HealthcareProfessional()
+ * @Get('medications')
+ * async getMedications() {
+ *   return this.service.getMedications();
+ * }
+ * ```
  */
 export function HealthcareProfessional() {
   return applyDecorators(
     Roles(UserRole.DOCTOR, UserRole.NURSE, UserRole.PHARMACIST, UserRole.LAB_TECHNICIAN),
     ApiBearerAuth(),
-    ApiUnauthorizedResponse({ description: 'Unauthorized - Healthcare professional access required' }),
+    ApiUnauthorizedResponse({ description: 'Unauthorized: Healthcare professional credentials required' }),
+    ApiForbiddenResponse({ description: 'Forbidden: Insufficient healthcare professional permissions' }),
   );
 }
 

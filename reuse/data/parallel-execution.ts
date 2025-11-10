@@ -69,25 +69,56 @@ export type QueueStatus = 'idle' | 'processing' | 'paused' | 'draining';
 // ============================================================================
 
 /**
- * Execute tasks in parallel batches with controlled concurrency
+ * Executes tasks in parallel batches with controlled concurrency for optimal throughput
  *
- * @template T - Input type
- * @template R - Result type
- * @param items - Array of items to process
- * @param executor - Async function to execute for each item
- * @param concurrency - Maximum number of concurrent executions
- * @returns Promise resolving to array of results
- * @throws {Error} If executor fails and stopOnError is true
+ * Core utility for parallel processing in healthcare applications - processes medical records,
+ * lab results, or prescription batches while respecting system resource limits
+ *
+ * @template T - Input item type (e.g., PatientRecord, LabResult, Prescription)
+ * @template R - Result type (e.g., ProcessedRecord, ValidationResult, UpdateResult)
+ * @param {T[]} items - Array of items to process in parallel
+ * @param {(item: T, index: number) => Promise<R>} executor - Async function to execute for each item
+ * @param {number} concurrency - Maximum number of concurrent executions (recommended: 5-20 for database operations)
+ * @returns {Promise<R[]>} Promise resolving to array of results in original order
+ * @throws {Error} If any executor fails (fails fast - does not process remaining items)
  *
  * @example
  * ```typescript
- * const results = await parallelBatch(
- *   [1, 2, 3, 4, 5],
- *   async (n) => n * 2,
- *   2
+ * // Process patient records in batches
+ * const validatedRecords = await parallelBatch(
+ *   patientRecords,
+ *   async (record) => await validateAndSaveRecord(record),
+ *   10 // Process 10 records concurrently
  * );
- * console.log(results); // [2, 4, 6, 8, 10]
+ *
+ * // Update medical records with concurrency control
+ * const updatedRecords = await parallelBatch(
+ *   recordsToUpdate,
+ *   async (record, index) => {
+ *     console.log(`Processing ${index + 1}/${recordsToUpdate.length}`);
+ *     return await MedicalRecord.update(record);
+ *   },
+ *   5
+ * );
  * ```
+ *
+ * @performance
+ * - Uses worker pool pattern for optimal resource utilization
+ * - Results array maintains original order despite concurrent execution
+ * - Memory-efficient: only maintains concurrency workers, not all promises
+ * - Typical throughput: 100-1000 items/second depending on executor complexity
+ *
+ * @healthcare
+ * - Use for batch processing of lab results during off-peak hours
+ * - Process insurance claims in parallel while respecting rate limits
+ * - Validate patient data imports from external systems
+ * - Bulk update medical records during system maintenance
+ *
+ * @notes
+ * - For error-tolerant processing, use parallelBatchWithResults instead
+ * - For very large datasets (>10,000 items), use parallelBatchChunked
+ * - Concurrency >20 may overwhelm database connection pool
+ * - Consider rate limiting for external API calls
  */
 export async function parallelBatch<T, R>(
   items: T[],

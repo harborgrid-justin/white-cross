@@ -487,10 +487,95 @@ export async function createReadSnapshot<T extends Model>(
 // ============================================================================
 
 /**
- * Executes query with serializable isolation (strictest level)
- * @param sequelize - Sequelize instance
- * @param fn - Function to execute
- * @returns Result of function execution
+ * Executes query with SERIALIZABLE isolation level for maximum data consistency
+ *
+ * Strictest isolation level - prevents all read anomalies (dirty reads, non-repeatable reads,
+ * phantom reads) at the cost of reduced concurrency. Critical for healthcare financial transactions
+ * and medication dispensing where absolute consistency is required
+ *
+ * @template T - Return type of transaction function
+ * @param {Sequelize} sequelize - Sequelize instance
+ * @param {(transaction: Transaction) => Promise<T>} fn - Function to execute within serializable transaction
+ * @returns {Promise<T>} Result of transaction function
+ *
+ * @throws {SerializationError} If transaction conflicts with concurrent transaction
+ * @throws {Error} Any error from fn execution will trigger automatic rollback
+ *
+ * @example
+ * ```typescript
+ * // Financial transaction requiring absolute consistency
+ * await withSerializable(sequelize, async (transaction) => {
+ *   const account = await PatientAccount.findByPk(accountId, { transaction });
+ *   const currentBalance = account.balance;
+ *
+ *   // Deduct payment - guaranteed no concurrent modifications
+ *   account.balance -= paymentAmount;
+ *   await account.save({ transaction });
+ *
+ *   // Record payment history
+ *   await PaymentHistory.create({
+ *     accountId,
+ *     amount: paymentAmount,
+ *     previousBalance: currentBalance
+ *   }, { transaction });
+ * });
+ *
+ * // Medication dispensing with inventory management
+ * await withSerializable(sequelize, async (transaction) => {
+ *   const medication = await Medication.findByPk(medicationId, {
+ *     transaction,
+ *     lock: Transaction.LOCK.UPDATE
+ *   });
+ *
+ *   if (medication.stockQuantity < dispensedQuantity) {
+ *     throw new Error('Insufficient medication stock');
+ *   }
+ *
+ *   // Guaranteed atomic stock reduction
+ *   medication.stockQuantity -= dispensedQuantity;
+ *   await medication.save({ transaction });
+ *
+ *   await DispenseLog.create({
+ *     medicationId,
+ *     quantity: dispensedQuantity,
+ *     patientId
+ *   }, { transaction });
+ * });
+ * ```
+ *
+ * @performance
+ * - Highest isolation overhead - may cause serialization failures
+ * - Use only when absolute consistency is required
+ * - Consider optimistic locking for better concurrency
+ * - Expect 10-30% throughput reduction vs REPEATABLE READ
+ *
+ * @healthcare
+ * - REQUIRED for billing and payment processing
+ * - REQUIRED for controlled substance dispensing
+ * - RECOMMENDED for appointment scheduling to prevent double-booking
+ * - RECOMMENDED for inventory management of critical medications
+ * - Avoid for read-heavy medical record queries
+ *
+ * @isolation_guarantees
+ * - Prevents dirty reads (reading uncommitted data)
+ * - Prevents non-repeatable reads (data changes between reads)
+ * - Prevents phantom reads (new rows appearing in range queries)
+ * - Prevents write skew anomalies
+ * - Guarantees transactions execute as if serial
+ *
+ * @retry_strategy
+ * - Serialization failures are common under high concurrency
+ * - Implement exponential backoff retry (3-5 attempts)
+ * - Log serialization failures for capacity planning
+ * - Consider read replica routing for read-only queries
+ *
+ * @monitoring
+ * - Track serialization failure rate (should be <5%)
+ * - Monitor transaction duration (aim for <100ms)
+ * - Alert if failure rate exceeds threshold
+ *
+ * @see {@link withRepeatableRead} For less strict isolation with better performance
+ * @see {@link transactionWithDeadlockRetry} For automatic retry on serialization failures
  */
 export async function withSerializable<T>(
   sequelize: Sequelize,

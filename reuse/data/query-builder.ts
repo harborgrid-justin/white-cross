@@ -356,10 +356,50 @@ export function buildOrderClause(sorts: SortOptions[]): OrderItem[] {
 }
 
 /**
- * Build include options for associations
+ * Build include options for associations with N+1 prevention
  *
- * @param associations - Array of association names with optional nested includes
- * @returns Sequelize include options
+ * @param associations - Array of association configurations
+ * @returns Sequelize include options optimized to prevent N+1 queries
+ *
+ * @remarks
+ * **N+1 Prevention Best Practices:**
+ * - Always specify `attributes` to limit columns fetched
+ * - Use `required: true` for INNER JOINs (excludes parent if relation is null)
+ * - Use `required: false` (default) for LEFT JOINs (includes parent even if relation is null)
+ * - Use `separate: true` for hasMany/belongsToMany to prevent row multiplication
+ * - Nest includes carefully - each level can multiply queries
+ * - Consider using `subQuery: false` in parent query for JOIN-based loading
+ *
+ * @example
+ * ```typescript
+ * // Prevent N+1 with proper includes:
+ * const includes = buildIncludeOptions([
+ *   {
+ *     association: 'posts',
+ *     required: false, // LEFT JOIN - include users without posts
+ *     attributes: ['id', 'title', 'createdAt'], // Limit columns
+ *     where: { status: 'published' },
+ *     separate: true, // Separate query to avoid row multiplication
+ *     nested: [{
+ *       association: 'comments',
+ *       required: false,
+ *       attributes: ['id', 'content'],
+ *       separate: true // Nested hasMany should also use separate
+ *     }]
+ *   },
+ *   {
+ *     association: 'profile',
+ *     required: true, // INNER JOIN - only users with profiles
+ *     attributes: ['id', 'firstName', 'lastName'] // Don't fetch all profile fields
+ *   }
+ * ]);
+ *
+ * // Use with findAll:
+ * const users = await User.findAll({
+ *   include: includes,
+ *   subQuery: false // Use JOINs for better performance
+ * });
+ * ```
  */
 export function buildIncludeOptions(
   associations: Array<{
@@ -368,23 +408,32 @@ export function buildIncludeOptions(
     attributes?: string[];
     where?: WhereOptions<any>;
     nested?: any[];
+    separate?: boolean; // For hasMany/belongsToMany to prevent row multiplication
   }>
 ): IncludeOptions[] {
   return associations.map(assoc => {
     const include: IncludeOptions = {
       association: assoc.association,
-      required: assoc.required ?? false,
+      required: assoc.required ?? false, // Default to LEFT JOIN
     };
 
+    // Always specify attributes to reduce data transfer
     if (assoc.attributes) {
       include.attributes = assoc.attributes;
     }
 
+    // Add WHERE clause for filtering related records
     if (assoc.where) {
       include.where = assoc.where;
     }
 
-    if (assoc.nested) {
+    // Use separate queries for hasMany/belongsToMany to prevent row multiplication
+    if (assoc.separate !== undefined) {
+      include.separate = assoc.separate;
+    }
+
+    // Recursively build nested includes
+    if (assoc.nested && assoc.nested.length > 0) {
       include.include = buildIncludeOptions(assoc.nested);
     }
 
@@ -421,51 +470,141 @@ export function buildAttributes(
 }
 
 /**
- * Build subquery for EXISTS check
+ * Build subquery for EXISTS check with proper parameterization
  *
  * @param model - Model to query
- * @param where - Where conditions for subquery
+ * @param where - Where conditions for subquery (use Sequelize Op operators)
  * @param correlationField - Field to correlate with parent query
  * @returns Literal SQL for EXISTS subquery
+ * @throws Error if correlation field is invalid
+ *
+ * @warning This function builds raw SQL. Use model.findAll with includes for safer N+1 prevention.
+ *
+ * @example
+ * ```typescript
+ * // Prefer using includes for N+1 prevention:
+ * const users = await User.findAll({
+ *   include: [{
+ *     model: Post,
+ *     as: 'posts',
+ *     required: true,
+ *     where: { status: 'published' }
+ *   }]
+ * });
+ *
+ * // Only use EXISTS subquery when includes are not suitable:
+ * const existsClause = buildExistsSubquery(Post, { status: 'published' }, 'authorId');
+ * ```
  */
 export function buildExistsSubquery(
   model: ModelCtor<any>,
   where: WhereOptions<any>,
   correlationField: string
 ): ReturnType<typeof literal> {
+  const logger = new Logger('QueryBuilder::buildExistsSubquery');
+
+  // Validate correlation field to prevent SQL injection
+  if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(correlationField)) {
+    throw new Error(`Invalid correlation field name: ${correlationField}`);
+  }
+
+  const sequelize = model.sequelize;
+  if (!sequelize) {
+    throw new Error('Model does not have sequelize instance');
+  }
+
   const tableName = model.getTableName();
-  const whereClause = Object.entries(where)
-    .map(([key, value]) => `"${key}" = '${value}'`)
+  const quotedTableName = sequelize.getQueryInterface().quoteTable(tableName as string);
+  const quotedCorrelationField = sequelize.getQueryInterface().quoteIdentifier(correlationField);
+
+  // Build WHERE clause using Sequelize's query generator for safety
+  // Note: This is still a simplified version. For production, consider using
+  // model.findAll with includes instead to prevent N+1 and ensure type safety.
+  const whereConditions = Object.entries(where)
+    .map(([key, value]) => {
+      const quotedKey = sequelize.getQueryInterface().quoteIdentifier(key);
+      // For complex operators, this needs more sophisticated handling
+      if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+        return `${quotedKey} = ${sequelize.escape(value)}`;
+      } else {
+        logger.warn('Complex WHERE conditions in EXISTS subquery may not be properly escaped');
+        return `${quotedKey} = ${sequelize.escape(String(value))}`;
+      }
+    })
     .join(' AND ');
 
   return literal(`EXISTS (
-    SELECT 1 FROM "${tableName as string}"
-    WHERE "${correlationField}" = "${model.name}"."id"
-    AND ${whereClause}
+    SELECT 1 FROM ${quotedTableName}
+    WHERE ${quotedCorrelationField} = "${model.name}"."id"
+    ${whereConditions ? `AND ${whereConditions}` : ''}
   )`);
 }
 
 /**
- * Build IN subquery
+ * Build IN subquery with proper escaping
  *
  * @param model - Model to query
  * @param selectField - Field to select in subquery
- * @param where - Where conditions
+ * @param where - Where conditions (use Sequelize Op operators for safety)
  * @returns Literal SQL for IN subquery
+ * @throws Error if field names are invalid
+ *
+ * @warning For better N+1 prevention and type safety, prefer using:
+ * ```typescript
+ * where: { id: { [Op.in]: await RelatedModel.findAll({ where, attributes: ['id'], raw: true }) } }
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Safer approach using Sequelize operators:
+ * const publishedAuthorIds = await Post.findAll({
+ *   where: { status: 'published' },
+ *   attributes: ['authorId'],
+ *   raw: true
+ * }).then(posts => posts.map(p => p.authorId));
+ *
+ * const users = await User.findAll({
+ *   where: { id: { [Op.in]: publishedAuthorIds } }
+ * });
+ * ```
  */
 export function buildInSubquery(
   model: ModelCtor<any>,
   selectField: string,
   where: WhereOptions<any>
 ): ReturnType<typeof literal> {
+  const logger = new Logger('QueryBuilder::buildInSubquery');
+
+  // Validate field name to prevent SQL injection
+  if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(selectField)) {
+    throw new Error(`Invalid select field name: ${selectField}`);
+  }
+
+  const sequelize = model.sequelize;
+  if (!sequelize) {
+    throw new Error('Model does not have sequelize instance');
+  }
+
   const tableName = model.getTableName();
-  const whereClause = Object.entries(where)
-    .map(([key, value]) => `"${key}" = '${value}'`)
+  const quotedTableName = sequelize.getQueryInterface().quoteTable(tableName as string);
+  const quotedSelectField = sequelize.getQueryInterface().quoteIdentifier(selectField);
+
+  // Build WHERE clause with proper escaping
+  const whereConditions = Object.entries(where)
+    .map(([key, value]) => {
+      const quotedKey = sequelize.getQueryInterface().quoteIdentifier(key);
+      if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+        return `${quotedKey} = ${sequelize.escape(value)}`;
+      } else {
+        logger.warn('Complex WHERE conditions in IN subquery may not be properly escaped');
+        return `${quotedKey} = ${sequelize.escape(String(value))}`;
+      }
+    })
     .join(' AND ');
 
   return literal(`(
-    SELECT "${selectField}" FROM "${tableName as string}"
-    WHERE ${whereClause}
+    SELECT ${quotedSelectField} FROM ${quotedTableName}
+    ${whereConditions ? `WHERE ${whereConditions}` : ''}
   )`);
 }
 
@@ -805,10 +944,44 @@ export async function buildPaginatedQuery<M extends Model>(
 }
 
 /**
- * Build optimized query with includes
+ * Build optimized query with includes to prevent N+1 queries
  *
- * @param config - Query configuration
- * @returns Optimized find options
+ * @param config - Query configuration with model, includes, and options
+ * @returns Optimized find options with N+1 prevention strategies
+ *
+ * @remarks
+ * **N+1 Prevention Strategies:**
+ * - Sets `subQuery: false` by default when includes are present to use JOINs instead of subqueries
+ * - Uses `distinct: true` for accurate counts with multiple joins
+ * - Optimizes attribute selection to reduce data transfer
+ * - Supports separate queries for better performance with many-to-many relations
+ *
+ * **Performance Considerations:**
+ * - `subQuery: false`: Faster for most cases, uses JOINs
+ * - `subQuery: true`: Better for LIMIT/OFFSET with includes, but can cause N+1 if not careful
+ * - Always specify `attributes` to limit columns fetched
+ * - Use `required: true` in includes for INNER JOINs (filters out null relations)
+ * - Use `separate: true` for hasMany/belongsToMany to avoid row multiplication
+ *
+ * @example
+ * ```typescript
+ * // Optimized query preventing N+1:
+ * const options = buildOptimizedQuery({
+ *   model: User,
+ *   where: { status: 'active' },
+ *   include: [{
+ *     model: Post,
+ *     as: 'posts',
+ *     required: false, // LEFT JOIN
+ *     attributes: ['id', 'title', 'createdAt'], // Limit columns
+ *     where: { published: true },
+ *     separate: true // Separate query to avoid row multiplication
+ *   }],
+ *   attributes: ['id', 'name', 'email'], // Don't fetch unnecessary columns
+ *   subQuery: false, // Use JOIN instead of subquery
+ *   distinct: true // Accurate count with joins
+ * });
+ * ```
  */
 export function buildOptimizedQuery<M extends Model>(
   config: QueryBuilderConfig<M>
@@ -822,17 +995,24 @@ export function buildOptimizedQuery<M extends Model>(
     transaction: config.transaction,
   };
 
-  // Optimize with subQuery: false for better performance with includes
+  // N+1 Prevention: Use subQuery: false by default with includes
+  // This makes Sequelize use JOINs instead of separate queries
   if (config.include && config.include.length > 0) {
+    // Default to false for better performance (uses JOINs)
+    // Set to true if you need LIMIT/OFFSET to work correctly with includes
     options.subQuery = config.subQuery ?? false;
   }
 
   // Use distinct for accurate counts with joins
+  // Prevents duplicate rows when using LEFT JOIN with hasMany relations
   if (config.distinct !== undefined) {
     options.distinct = config.distinct;
+  } else if (config.include && config.include.length > 0 && (config.limit || config.offset !== undefined)) {
+    // Auto-enable distinct when using pagination with includes
+    options.distinct = true;
   }
 
-  // Add attributes selection
+  // Add attributes selection - always specify to reduce data transfer
   if (config.attributes) {
     options.attributes = config.attributes as any;
   }

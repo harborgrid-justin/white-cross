@@ -320,21 +320,25 @@ export async function renameTableWithDependencies(
   // Rename table
   await queryInterface.renameTable(oldTableName, newTableName, { transaction });
 
-  // Update sequences for PostgreSQL
+  // Update sequences for PostgreSQL (using parameterized queries to prevent SQL injection)
   if (dialect === 'postgres') {
     const [sequences] = await sequelize.query(
       `
       SELECT sequence_name
       FROM information_schema.sequences
-      WHERE sequence_name LIKE '${oldTableName}%'
+      WHERE sequence_name LIKE :pattern
     `,
-      { transaction },
+      {
+        replacements: { pattern: `${oldTableName}%` },
+        transaction
+      },
     );
 
     for (const seq of sequences as any[]) {
       const newSeqName = seq.sequence_name.replace(oldTableName, newTableName);
+      // Use identifier quoting for safety
       await sequelize.query(
-        `ALTER SEQUENCE ${seq.sequence_name} RENAME TO ${newSeqName}`,
+        `ALTER SEQUENCE "${seq.sequence_name}" RENAME TO "${newSeqName}"`,
         { transaction },
       );
     }
@@ -382,10 +386,14 @@ export async function addColumnWithDefaults(
     transaction,
   });
 
-  // Populate default values if specified
+  // Populate default values if specified (with proper escaping)
   if (populateDefault && definition.defaultValue !== undefined) {
+    const dialect = queryInterface.sequelize.getDialect();
+    const tableRef = dialect === 'postgres' ? `"${tableName}"` : `\`${tableName}\``;
+    const columnRef = dialect === 'postgres' ? `"${columnName}"` : `\`${columnName}\``;
+
     await queryInterface.sequelize.query(
-      `UPDATE "${tableName}" SET "${columnName}" = :defaultValue WHERE "${columnName}" IS NULL`,
+      `UPDATE ${tableRef} SET ${columnRef} = :defaultValue WHERE ${columnRef} IS NULL`,
       {
         replacements: { defaultValue: definition.defaultValue },
         transaction,

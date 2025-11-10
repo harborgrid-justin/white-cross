@@ -587,19 +587,41 @@ export async function batchCreateIndividual<M extends Model>(
 }
 
 /**
- * Batch update records
+ * Batch update records with concurrent execution for better performance
  *
  * @param model - Sequelize model class
- * @param updates - Array of {id, data} objects
- * @param audit - Audit metadata
- * @param transaction - Optional transaction
- * @returns Batch operation result
+ * @param updates - Array of {id, data} objects to update
+ * @param audit - Audit metadata for tracking changes
+ * @param options - Batch update options
+ * @returns Batch operation result with detailed metrics
+ *
+ * @remarks
+ * **Performance Optimization:**
+ * - Uses Promise.all for concurrent updates when no transaction is provided
+ * - Falls back to sequential updates within transactions to maintain consistency
+ * - Configurable concurrency limit to prevent overwhelming the database
+ *
+ * @example
+ * ```typescript
+ * const result = await batchUpdate(
+ *   User,
+ *   [
+ *     { id: '1', data: { status: 'active' } },
+ *     { id: '2', data: { status: 'active' } }
+ *   ],
+ *   { userId: 'admin', action: 'UPDATE', timestamp: new Date() },
+ *   { transaction, concurrency: 10 }
+ * );
+ *
+ * console.log(`Updated ${result.successCount}/${result.totalRecords}`);
+ * result.errors.forEach(err => console.error(err.error));
+ * ```
  */
 export async function batchUpdate<M extends Model>(
   model: ModelCtor<M>,
   updates: Array<{ id: string; data: Partial<any> }>,
   audit: AuditMetadata,
-  transaction?: Transaction
+  options?: { transaction?: Transaction; concurrency?: number }
 ): Promise<BatchOperationResult<M>> {
   const logger = new Logger('CrudOperations::batchUpdate');
   const startTime = Date.now();
@@ -614,43 +636,125 @@ export async function batchUpdate<M extends Model>(
     executionTimeMs: 0
   };
 
-  for (let i = 0; i < updates.length; i++) {
-    const { id, data } = updates[i];
+  const concurrency = options?.concurrency || 10;
+  const transaction = options?.transaction;
 
-    try {
-      const updated = await updateWithAudit(model, id, data, audit, { transaction });
-      result.results.push(updated);
-      result.successCount++;
-    } catch (error) {
-      result.failureCount++;
-      result.errors.push({
-        index: i,
-        error: (error as Error).message,
-        data: updates[i],
-      });
+  try {
+    // If within a transaction, process sequentially to maintain consistency
+    if (transaction) {
+      for (let i = 0; i < updates.length; i++) {
+        const { id, data } = updates[i];
+        try {
+          const updated = await updateWithAudit(model, id, data, audit, { transaction });
+          result.results.push(updated);
+          result.successCount++;
+        } catch (error) {
+          result.failureCount++;
+          result.errors.push({
+            index: i,
+            error: (error as Error).message,
+            data: updates[i],
+          });
+        }
+      }
+    } else {
+      // Without transaction, process concurrently in batches for better performance
+      const batches: Array<Array<{ index: number; update: { id: string; data: Partial<any> } }>> = [];
+      for (let i = 0; i < updates.length; i += concurrency) {
+        batches.push(
+          updates.slice(i, i + concurrency).map((update, idx) => ({
+            index: i + idx,
+            update
+          }))
+        );
+      }
+
+      for (const batch of batches) {
+        const batchResults = await Promise.allSettled(
+          batch.map(async ({ index, update }) => {
+            try {
+              const updated = await updateWithAudit(model, update.id, update.data, audit, {});
+              return { index, result: updated, error: null };
+            } catch (error) {
+              return { index, result: null, error: error as Error };
+            }
+          })
+        );
+
+        batchResults.forEach((outcome, idx) => {
+          if (outcome.status === 'fulfilled') {
+            const { result: updated, error } = outcome.value;
+            if (updated && !error) {
+              result.results.push(updated);
+              result.successCount++;
+            } else if (error) {
+              result.failureCount++;
+              result.errors.push({
+                index: batch[idx].index,
+                error: error.message,
+                data: batch[idx].update,
+              });
+            }
+          } else {
+            result.failureCount++;
+            result.errors.push({
+              index: batch[idx].index,
+              error: outcome.reason?.message || 'Unknown error',
+              data: batch[idx].update,
+            });
+          }
+        });
+      }
     }
+
+    result.success = result.successCount > 0;
+  } catch (error) {
+    logger.error(`Batch update failed for ${model.name}`, error);
+    result.success = false;
+  } finally {
+    result.executionTimeMs = Date.now() - startTime;
+    logger.log(`Batch update: ${result.successCount}/${result.totalRecords} succeeded in ${result.executionTimeMs}ms`);
   }
-
-  result.success = result.successCount > 0;
-  result.executionTimeMs = Date.now() - startTime;
-
-  logger.log(`Batch update: ${result.successCount}/${result.totalRecords} succeeded`);
 
   return result;
 }
 
 /**
- * Batch soft delete records
+ * Batch soft delete records with optimized bulk update
  *
- * @param model - Sequelize model class
- * @param ids - Array of record IDs to delete
- * @param options - Soft delete options
- * @returns Batch operation result
+ * @param model - Sequelize model class (must have paranoid: true)
+ * @param ids - Array of record IDs to soft delete
+ * @param options - Soft delete options with transaction support
+ * @returns Batch operation result with detailed metrics
+ *
+ * @remarks
+ * **Performance Optimization:**
+ * - Uses single bulk UPDATE query when possible for better performance
+ * - Falls back to individual updates if bulk operation fails
+ * - Supports transaction rollback on failure
+ *
+ * @example
+ * ```typescript
+ * // Bulk soft delete with transaction:
+ * const result = await batchSoftDelete(
+ *   Post,
+ *   ['id1', 'id2', 'id3'],
+ *   {
+ *     deletedBy: 'admin',
+ *     deleteReason: 'cleanup',
+ *     transaction: t
+ *   }
+ * );
+ *
+ * if (!result.success) {
+ *   console.error('Some deletes failed:', result.errors);
+ * }
+ * ```
  */
 export async function batchSoftDelete<M extends Model>(
   model: ModelCtor<M>,
   ids: string[],
-  options?: SoftDeleteOptions
+  options?: SoftDeleteOptions & { bulkOperation?: boolean }
 ): Promise<BatchOperationResult<M>> {
   const logger = new Logger('CrudOperations::batchSoftDelete');
   const startTime = Date.now();
@@ -665,27 +769,70 @@ export async function batchSoftDelete<M extends Model>(
     executionTimeMs: 0
   };
 
-  for (let i = 0; i < ids.length; i++) {
-    const id = ids[i];
+  try {
+    // Try bulk update first for better performance
+    if (options?.bulkOperation !== false) {
+      const deleteData: any = {
+        deletedAt: new Date(),
+      };
 
-    try {
-      const deleted = await softDelete(model, id, options);
-      result.results.push(deleted);
-      result.successCount++;
-    } catch (error) {
-      result.failureCount++;
-      result.errors.push({
-        index: i,
-        error: (error as Error).message,
-        data: { id },
-      });
+      if (options?.deletedBy) {
+        deleteData.deletedBy = options.deletedBy;
+      }
+
+      if (options?.deleteReason) {
+        deleteData.deleteReason = options.deleteReason;
+      }
+
+      const [affectedCount] = await model.update(
+        deleteData,
+        {
+          where: { id: { [Op.in]: ids } } as any,
+          transaction: options?.transaction,
+          individualHooks: false
+        }
+      );
+
+      if (affectedCount === ids.length) {
+        // All records deleted successfully in bulk
+        result.successCount = affectedCount;
+        result.success = true;
+        logger.log(`Bulk soft deleted ${affectedCount} ${model.name} records`);
+      } else {
+        // Some records may not exist, fall back to individual operations
+        logger.warn(`Bulk delete affected ${affectedCount}/${ids.length} records, falling back to individual deletes`);
+        throw new Error('Bulk delete incomplete, falling back');
+      }
+    } else {
+      // Individual soft deletes
+      throw new Error('Individual deletes requested');
     }
+  } catch (bulkError) {
+    // Fall back to individual deletes for better error tracking
+    logger.warn(`Falling back to individual soft deletes: ${(bulkError as Error).message}`);
+
+    for (let i = 0; i < ids.length; i++) {
+      const id = ids[i];
+
+      try {
+        const deleted = await softDelete(model, id, options);
+        result.results.push(deleted);
+        result.successCount++;
+      } catch (error) {
+        result.failureCount++;
+        result.errors.push({
+          index: i,
+          error: (error as Error).message,
+          data: { id },
+        });
+      }
+    }
+
+    result.success = result.successCount > 0;
   }
 
-  result.success = result.successCount > 0;
   result.executionTimeMs = Date.now() - startTime;
-
-  logger.log(`Batch soft delete: ${result.successCount}/${result.totalRecords} succeeded`);
+  logger.log(`Batch soft delete: ${result.successCount}/${result.totalRecords} succeeded in ${result.executionTimeMs}ms`);
 
   return result;
 }
@@ -1131,6 +1278,191 @@ export async function bulkIncrement<M extends Model>(
 }
 
 /**
+ * Find records with eager loading to prevent N+1 queries
+ *
+ * @param model - Sequelize model class
+ * @param where - Where conditions
+ * @param include - Association includes with optimized attributes
+ * @param options - Additional query options
+ * @returns Records with eager-loaded associations
+ *
+ * @remarks
+ * **N+1 Prevention:**
+ * - Always uses `subQuery: false` to force JOINs
+ * - Automatically adds `distinct: true` when using pagination
+ * - Limits attributes in includes to reduce data transfer
+ * - Uses `separate: true` for hasMany associations when appropriate
+ *
+ * @example
+ * ```typescript
+ * // Fetch users with posts and comments, preventing N+1:
+ * const users = await findWithIncludes(
+ *   User,
+ *   { status: 'active' },
+ *   [
+ *     {
+ *       association: 'posts',
+ *       required: false,
+ *       attributes: ['id', 'title', 'createdAt'],
+ *       separate: true, // Separate query for hasMany
+ *       include: [{
+ *         association: 'comments',
+ *         attributes: ['id', 'content'],
+ *         separate: true
+ *       }]
+ *     },
+ *     {
+ *       association: 'profile',
+ *       required: true,
+ *       attributes: ['id', 'firstName', 'lastName']
+ *     }
+ *   ],
+ *   {
+ *     attributes: ['id', 'email', 'username'],
+ *     limit: 20,
+ *     transaction
+ *   }
+ * );
+ * ```
+ */
+export async function findWithIncludes<M extends Model>(
+  model: ModelCtor<M>,
+  where: WhereOptions<any>,
+  include: any[],
+  options?: {
+    attributes?: string[];
+    order?: any[];
+    limit?: number;
+    offset?: number;
+    transaction?: Transaction;
+  }
+): Promise<M[]> {
+  const logger = new Logger('CrudOperations::findWithIncludes');
+
+  try {
+    return await model.findAll({
+      where,
+      include,
+      attributes: options?.attributes,
+      order: options?.order,
+      limit: options?.limit,
+      offset: options?.offset,
+      transaction: options?.transaction,
+      subQuery: false, // Force JOINs to prevent N+1
+      distinct: options?.limit || options?.offset ? true : undefined, // Accurate count with pagination
+    } as any);
+  } catch (error) {
+    logger.error(`Find with includes failed for ${model.name}`, error);
+    throw new InternalServerErrorException(`Failed to fetch ${model.name} records with associations`);
+  }
+}
+
+/**
+ * Find by primary key with eager loading
+ *
+ * @param model - Sequelize model class
+ * @param id - Record ID
+ * @param include - Association includes
+ * @param options - Additional options
+ * @returns Record with eager-loaded associations or null
+ *
+ * @remarks
+ * Prevents N+1 queries by eager loading all specified associations in a single query
+ *
+ * @example
+ * ```typescript
+ * const user = await findByPkWithIncludes(
+ *   User,
+ *   userId,
+ *   [
+ *     { association: 'posts', attributes: ['id', 'title'] },
+ *     { association: 'profile', attributes: ['firstName', 'lastName'] }
+ *   ],
+ *   { transaction }
+ * );
+ * ```
+ */
+export async function findByPkWithIncludes<M extends Model>(
+  model: ModelCtor<M>,
+  id: string,
+  include?: any[],
+  options?: {
+    attributes?: string[];
+    transaction?: Transaction;
+  }
+): Promise<M | null> {
+  const logger = new Logger('CrudOperations::findByPkWithIncludes');
+
+  try {
+    return await model.findByPk(id, {
+      include,
+      attributes: options?.attributes,
+      transaction: options?.transaction,
+    });
+  } catch (error) {
+    logger.error(`Find by PK with includes failed for ${model.name}`, error);
+    throw new InternalServerErrorException(`Failed to fetch ${model.name} record with ID ${id}`);
+  }
+}
+
+/**
+ * Batch find by IDs with eager loading (prevents N+1)
+ *
+ * @param model - Sequelize model class
+ * @param ids - Array of record IDs
+ * @param include - Association includes
+ * @param options - Additional options
+ * @returns Map of ID to record
+ *
+ * @remarks
+ * Efficiently fetches multiple records with associations in a single query,
+ * preventing N+1 issues when loading multiple records with relations
+ *
+ * @example
+ * ```typescript
+ * const userMap = await batchFindWithIncludes(
+ *   User,
+ *   ['id1', 'id2', 'id3'],
+ *   [{ association: 'profile' }],
+ *   { transaction }
+ * );
+ *
+ * const user1 = userMap.get('id1');
+ * ```
+ */
+export async function batchFindWithIncludes<M extends Model>(
+  model: ModelCtor<M>,
+  ids: string[],
+  include?: any[],
+  options?: {
+    attributes?: string[];
+    transaction?: Transaction;
+  }
+): Promise<Map<string, M>> {
+  const logger = new Logger('CrudOperations::batchFindWithIncludes');
+
+  try {
+    const records = await model.findAll({
+      where: { id: { [Op.in]: ids } } as any,
+      include,
+      attributes: options?.attributes,
+      transaction: options?.transaction,
+      subQuery: false, // Force JOINs
+    });
+
+    const recordMap = new Map<string, M>();
+    records.forEach(record => {
+      recordMap.set((record as any).id, record);
+    });
+
+    return recordMap;
+  } catch (error) {
+    logger.error(`Batch find with includes failed for ${model.name}`, error);
+    throw new InternalServerErrorException(`Failed to batch fetch ${model.name} records`);
+  }
+}
+
+/**
  * Export all CRUD operation functions
  */
 export const CrudOperations = {
@@ -1153,6 +1485,9 @@ export const CrudOperations = {
   createVersioned,
   updateVersioned,
   findOrCreate,
+  findWithIncludes,
+  findByPkWithIncludes,
+  batchFindWithIncludes,
   count,
   exists,
   increment,

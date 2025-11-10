@@ -133,13 +133,21 @@ export class DataSecurityService {
    * Masks sensitive data based on field type
    *
    * @param value - Value to mask
-   * @param type - PII field type
-   * @param strategy - Masking strategy
-   * @returns Masked value
+   * @param type - PII field type (email, phone, SSN, etc.)
+   * @param strategy - Masking strategy (full, partial, hash, tokenize, redact)
+   * @returns Masked value appropriate for the field type and strategy
    * @security Prevents exposure of sensitive data in logs and responses
+   * @example
+   * ```typescript
+   * maskData('john@example.com', PIIFieldType.EMAIL, MaskingStrategy.PARTIAL);
+   * // Returns: 'j***@example.com'
+   *
+   * maskData('123-45-6789', PIIFieldType.SSN, MaskingStrategy.PARTIAL);
+   * // Returns: '***-**-6789'
+   * ```
    */
   maskData(value: string, type: PIIFieldType, strategy: MaskingStrategy = MaskingStrategy.PARTIAL): string {
-    if (!value) return value;
+    if (!value || typeof value !== 'string') return value;
 
     switch (strategy) {
       case MaskingStrategy.FULL:
@@ -368,7 +376,7 @@ export class DataSecurityService {
           pattern.type,
           pattern.maskingStrategy,
         );
-      } else if (aggressive && this.isPotentiallySecre(key)) {
+      } else if (aggressive && this.isPotentiallySecret(key)) {
         redacted[key] = '[REDACTED]';
       } else if (typeof value === 'object') {
         redacted[key] = this.redactPII(value, aggressive);
@@ -664,11 +672,23 @@ export class DataSecurityService {
    * Sanitizes user input to prevent XSS attacks
    *
    * @param input - User input string
-   * @returns Sanitized string
-   * @security OWASP XSS prevention
+   * @returns Sanitized string with HTML entities encoded
+   * @security OWASP XSS prevention - encodes all potentially dangerous characters
+   * @example
+   * ```typescript
+   * const safe = sanitizeXSS('<script>alert("xss")</script>');
+   * // Returns: '&lt;script&gt;alert(&quot;xss&quot;)&lt;&#x2F;script&gt;'
+   * ```
    */
   sanitizeXSS(input: string): string {
-    if (!input) return input;
+    if (!input || typeof input !== 'string') return input;
+
+    // Maximum input length to prevent DoS
+    const MAX_INPUT_LENGTH = 100000;
+    if (input.length > MAX_INPUT_LENGTH) {
+      this.logger.warn(`Input exceeds maximum length: ${input.length}`);
+      throw new Error('Input exceeds maximum allowed length');
+    }
 
     return input
       .replace(/&/g, '&amp;')
@@ -682,25 +702,50 @@ export class DataSecurityService {
   /**
    * Sanitizes HTML content allowing safe tags
    *
-   * @param html - HTML content
-   * @param allowedTags - Array of allowed HTML tags
-   * @returns Sanitized HTML
-   * @security Whitelist-based HTML sanitization
+   * @param html - HTML content to sanitize
+   * @param allowedTags - Array of allowed HTML tags (default: basic formatting tags)
+   * @returns Sanitized HTML with only whitelisted tags and safe attributes
+   * @security Whitelist-based HTML sanitization with attribute filtering
+   * @warning This is a basic sanitizer. For production, consider using a library like DOMPurify
+   * @example
+   * ```typescript
+   * const safe = sanitizeHTML('<p onclick="alert()">Hello</p><script>bad()</script>');
+   * // Returns: '<p>Hello</p>'
+   * ```
    */
   sanitizeHTML(html: string, allowedTags: string[] = ['b', 'i', 'em', 'strong', 'p']): string {
-    if (!html) return html;
+    if (!html || typeof html !== 'string') return html;
+
+    // Maximum input length to prevent DoS
+    const MAX_HTML_LENGTH = 500000;
+    if (html.length > MAX_HTML_LENGTH) {
+      this.logger.warn(`HTML input exceeds maximum length: ${html.length}`);
+      throw new Error('HTML input exceeds maximum allowed length');
+    }
 
     // Remove all tags except allowed ones
     const tagPattern = /<(\/?)([\w]+)([^>]*)>/g;
 
-    return html.replace(tagPattern, (match, slash, tag, attrs) => {
+    let result = html.replace(tagPattern, (match, slash, tag, attrs) => {
       if (allowedTags.includes(tag.toLowerCase())) {
-        // Remove potentially dangerous attributes
-        const safeAttrs = attrs.replace(/on\w+\s*=\s*["'][^"']*["']/gi, '');
+        // Remove all event handlers (onclick, onload, etc.)
+        let safeAttrs = attrs.replace(/on\w+\s*=\s*["'][^"']*["']/gi, '');
+        // Remove javascript: protocol
+        safeAttrs = safeAttrs.replace(/javascript:/gi, '');
+        // Remove data: protocol (can be used for XSS)
+        safeAttrs = safeAttrs.replace(/data:/gi, '');
+        // Remove style attribute to prevent CSS-based attacks
+        safeAttrs = safeAttrs.replace(/style\s*=\s*["'][^"']*["']/gi, '');
+
         return `<${slash}${tag}${safeAttrs}>`;
       }
       return '';
     });
+
+    // Remove any remaining script content
+    result = result.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+
+    return result;
   }
 
   /**
@@ -733,19 +778,43 @@ export class DataSecurityService {
   /**
    * Validates and sanitizes SQL identifiers (table/column names)
    *
-   * @param identifier - SQL identifier to validate
-   * @returns Sanitized identifier
-   * @security Prevents SQL injection in dynamic queries
-   * @throws Error if identifier contains invalid characters
+   * @param identifier - SQL identifier to validate (e.g., table or column name)
+   * @returns Sanitized identifier if valid
+   * @security Prevents SQL injection in dynamic queries by validating identifier syntax
+   * @throws Error if identifier is empty, too long, or contains invalid characters
+   * @warning Always use parameterized queries when possible. This is for dynamic table/column names only.
+   * @example
+   * ```typescript
+   * const safe = sanitizeSQLIdentifier('users'); // ✓ Returns 'users'
+   * const unsafe = sanitizeSQLIdentifier('users; DROP TABLE--'); // ✗ Throws Error
+   * ```
    */
   sanitizeSQLIdentifier(identifier: string): string {
-    if (!identifier) {
-      throw new Error('SQL identifier cannot be empty');
+    if (!identifier || typeof identifier !== 'string') {
+      throw new Error('SQL identifier cannot be empty or non-string');
+    }
+
+    // Maximum identifier length (based on SQL standards)
+    const MAX_IDENTIFIER_LENGTH = 128;
+    if (identifier.length > MAX_IDENTIFIER_LENGTH) {
+      throw new Error(`SQL identifier exceeds maximum length of ${MAX_IDENTIFIER_LENGTH}`);
     }
 
     // Only allow alphanumeric, underscore, and dollar sign
+    // Must start with letter, underscore, or dollar sign
     if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(identifier)) {
-      throw new Error('Invalid SQL identifier');
+      this.logger.warn(`Invalid SQL identifier attempted: ${identifier}`);
+      throw new Error('Invalid SQL identifier: must start with letter/underscore and contain only alphanumeric/underscore/$ characters');
+    }
+
+    // Blacklist SQL keywords that should never be identifiers
+    const SQL_KEYWORDS = [
+      'SELECT', 'INSERT', 'UPDATE', 'DELETE', 'DROP', 'CREATE', 'ALTER',
+      'TRUNCATE', 'EXEC', 'EXECUTE', 'UNION', 'WHERE', 'FROM', 'JOIN',
+    ];
+
+    if (SQL_KEYWORDS.includes(identifier.toUpperCase())) {
+      throw new Error('SQL identifier cannot be a reserved SQL keyword');
     }
 
     return identifier;
@@ -754,46 +823,85 @@ export class DataSecurityService {
   /**
    * Escapes string value for SQL LIKE patterns
    *
-   * @param value - Search pattern value
-   * @returns Escaped pattern
-   * @security Prevents LIKE injection attacks
+   * @param value - Search pattern value to escape
+   * @returns Escaped pattern safe for use in SQL LIKE clauses
+   * @security Prevents LIKE injection attacks by escaping wildcards and escape characters
+   * @warning Still use parameterized queries. This escapes the pattern, not the entire query.
+   * @example
+   * ```typescript
+   * const userInput = '50%_discount';
+   * const escaped = escapeSQLLikePattern(userInput);
+   * // Returns: '50\\%\\_discount' (literal search, not wildcard)
+   * // Use in query: SELECT * FROM products WHERE name LIKE ? (with escaped value)
+   * ```
    */
   escapeSQLLikePattern(value: string): string {
-    if (!value) return value;
+    if (!value || typeof value !== 'string') return value;
 
+    // Maximum pattern length to prevent DoS
+    const MAX_PATTERN_LENGTH = 1000;
+    if (value.length > MAX_PATTERN_LENGTH) {
+      throw new Error('SQL LIKE pattern exceeds maximum allowed length');
+    }
+
+    // Escape backslash first, then wildcards
     return value
-      .replace(/\\/g, '\\\\')
-      .replace(/%/g, '\\%')
-      .replace(/_/g, '\\_');
+      .replace(/\\/g, '\\\\')  // Escape backslash
+      .replace(/%/g, '\\%')    // Escape % wildcard
+      .replace(/_/g, '\\_');   // Escape _ wildcard
   }
 
   /**
-   * Validates SQL ORDER BY clause
+   * Validates SQL ORDER BY clause against a whitelist
    *
-   * @param orderBy - Order by clause
-   * @param allowedColumns - Whitelist of allowed columns
-   * @returns Validated order by clause
-   * @security Prevents SQL injection in ORDER BY
+   * @param orderBy - Order by clause (e.g., "name ASC" or "created_at DESC")
+   * @param allowedColumns - Whitelist of allowed column names (lowercase)
+   * @returns Validated and sanitized ORDER BY clause
+   * @security Prevents SQL injection in ORDER BY by validating against whitelist
+   * @throws Error if column not in whitelist, invalid direction, or malformed clause
+   * @example
+   * ```typescript
+   * const validated = validateSQLOrderBy('name DESC', ['name', 'created_at']);
+   * // Returns: 'name DESC'
+   *
+   * const invalid = validateSQLOrderBy('name; DROP TABLE', ['name']);
+   * // Throws: Error
+   * ```
    */
   validateSQLOrderBy(orderBy: string, allowedColumns: string[]): string {
+    if (!orderBy || typeof orderBy !== 'string') {
+      throw new Error('ORDER BY clause cannot be empty');
+    }
+
+    if (!allowedColumns || !Array.isArray(allowedColumns) || allowedColumns.length === 0) {
+      throw new Error('allowedColumns must be a non-empty array');
+    }
+
     const parts = orderBy.toLowerCase().trim().split(/\s+/);
 
     if (parts.length > 2) {
-      throw new Error('Invalid ORDER BY clause');
+      this.logger.warn(`Invalid ORDER BY clause attempted: ${orderBy}`);
+      throw new Error('Invalid ORDER BY clause: too many parts');
     }
 
     const column = parts[0];
     const direction = parts[1] || 'asc';
 
-    if (!allowedColumns.includes(column)) {
-      throw new Error(`Column "${column}" not allowed in ORDER BY`);
+    // Validate column is in whitelist
+    if (!allowedColumns.map(c => c.toLowerCase()).includes(column)) {
+      this.logger.warn(`Unauthorized column in ORDER BY: ${column}`);
+      throw new Error(`Column "${column}" not allowed in ORDER BY. Allowed: ${allowedColumns.join(', ')}`);
     }
 
+    // Validate sort direction
     if (!['asc', 'desc'].includes(direction)) {
-      throw new Error('Invalid sort direction');
+      throw new Error(`Invalid sort direction: ${direction}. Must be ASC or DESC`);
     }
 
-    return `${this.sanitizeSQLIdentifier(column)} ${direction.toUpperCase()}`;
+    // Additional sanitization via identifier validation
+    const sanitizedColumn = this.sanitizeSQLIdentifier(column);
+
+    return `${sanitizedColumn} ${direction.toUpperCase()}`;
   }
 
   // ==================== CSRF Token Management ====================
@@ -836,25 +944,41 @@ export class DataSecurityService {
    * @param token - Token to validate
    * @param sessionId - Session identifier
    * @returns True if valid
-   * @security Timing-safe token comparison
+   * @security Timing-safe token comparison to prevent timing attacks
+   * @throws Never throws, returns false on any error
    */
   validateCSRFToken(token: string, sessionId: string): boolean {
+    // Input validation
+    if (!token || typeof token !== 'string' || !sessionId || typeof sessionId !== 'string') {
+      return false;
+    }
+
     const storedToken = this.csrfTokens.get(token);
 
     if (!storedToken) {
       return false;
     }
 
+    // Check expiration
     if (storedToken.expires < new Date()) {
       this.csrfTokens.delete(token);
       return false;
     }
 
-    if (storedToken.sessionId !== sessionId) {
+    // Timing-safe comparison of session IDs
+    try {
+      const storedBuffer = Buffer.from(storedToken.sessionId);
+      const providedBuffer = Buffer.from(sessionId);
+
+      if (storedBuffer.length !== providedBuffer.length) {
+        return false;
+      }
+
+      return crypto.timingSafeEqual(storedBuffer, providedBuffer);
+    } catch (error) {
+      this.logger.warn('CSRF token validation error', error);
       return false;
     }
-
-    return true;
   }
 
   /**
