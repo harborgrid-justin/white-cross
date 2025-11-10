@@ -23,7 +23,7 @@
  * Upstream: Composes utilities from financial kits for comprehensive GL management
  * Downstream: ../../../backend/cefms/*, GL controllers, financial reporting, period close automation
  * Dependencies: TypeScript 5.x, Node 18+, NestJS 10.x, Sequelize 6.x
- * Exports: 48+ composite functions for USACE CEFMS general ledger operations
+ * Exports: 55 composite functions for USACE CEFMS general ledger operations
  *
  * LLM Context: Production-ready USACE CEFMS general ledger accounting system.
  * Comprehensive GL chart of accounts management, journal entry processing, automated trial balance generation,
