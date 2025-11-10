@@ -14,7 +14,7 @@ export class ACHWireTransferOrchestrationService {
     return { achFileGenerated: true, batchNumber: 'ACH-2024-001' };
   }
 
-  async orchestrateWireTransfer(wire: any): Promise<any> {
+  async orchestrateWireTransfer(wire: { amount: number; [key: string]: any }): Promise<{ wireInitiated: boolean; referenceNumber: string }> {
     this.logger.log('Orchestrating wire transfer');
     return { wireInitiated: true, referenceNumber: 'WT-2024-001' };
   }
