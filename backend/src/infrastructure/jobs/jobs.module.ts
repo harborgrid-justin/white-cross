@@ -17,10 +17,12 @@ import { JobType } from './enums/job-type.enum';
 import { QueueManagerService } from '@/infrastructure/jobs/services';
 import { InventoryMaintenanceProcessor, MedicationReminderProcessor } from './processors';
 import { EmailModule } from '../email/email.module';
+import { InventoryModule } from '../../inventory/inventory.module';
 
 @Module({
   imports: [
     EmailModule,
+    InventoryModule,
     // Import BullModule with Redis configuration
     BullModule.forRootAsync({
       imports: [ConfigModule],

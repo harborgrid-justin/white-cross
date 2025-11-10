@@ -6,6 +6,7 @@ import { MedicationService } from './services/medication.service';
 import { MedicationRepository } from './medication.repository';
 import { StudentMedication } from '../database/models/student-medication.model';
 import { Medication } from '../database/models/medication.model';
+import { AuditModule } from '../audit/audit.module';
 
 /**
  * Medication Module
@@ -65,6 +66,8 @@ import { Medication } from '../database/models/medication.model';
     SequelizeModule.forFeature([StudentMedication, Medication]),
     // EventEmitter for decoupled notifications (no circular dependency)
     EventEmitterModule.forRoot(),
+    // Import AuditModule to access PHIAccessLogger for audit interceptor
+    AuditModule,
   ],
   controllers: [MedicationController],
   providers: [MedicationService, MedicationRepository],

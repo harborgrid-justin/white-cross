@@ -23,6 +23,7 @@ import {
 } from './services';
 import { HealthRecord, MentalHealthRecord, Student, User } from '@/database';
 import { AcademicTranscriptModule } from '@/academic-transcript';
+import { AuditModule } from '@/audit';
 
 /**
  * Student Module
@@ -47,6 +48,9 @@ import { AcademicTranscriptModule } from '@/academic-transcript';
 
     // Import AcademicTranscriptModule for transcript-related operations
     AcademicTranscriptModule,
+
+    // Import AuditModule to access PHIAccessLogger for HealthRecordAuditInterceptor
+    AuditModule,
   ],
   controllers: [
     StudentController, // Keep original for backward compatibility

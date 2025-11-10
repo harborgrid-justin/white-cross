@@ -35,6 +35,7 @@ import { HealthRecordModule } from '@/health-record';
 import { EmergencyContactModule } from '@/emergency-contact';
 import { ChronicConditionModule } from '@/chronic-condition';
 import { IncidentReportModule } from '@/incident-report';
+import { AllergyModule } from '@/health-record/allergy';
 import { AuthModule } from '@/auth';
 import { GraphQLJSON } from 'graphql-scalars';
 import { containsPHI, sanitizeGraphQLError } from './errors/phi-sanitizer';
@@ -182,6 +183,7 @@ import { DateTimeScalar, EmailAddressScalar, PhoneNumberScalar, UUIDScalar } fro
     EmergencyContactModule,
     ChronicConditionModule,
     IncidentReportModule,
+    AllergyModule, // Required for AllergyService in DataLoaderFactory
     AuthModule, // Required for TokenBlacklistService in GqlAuthGuard
     PubSubModule, // Required for subscriptions
   ],
