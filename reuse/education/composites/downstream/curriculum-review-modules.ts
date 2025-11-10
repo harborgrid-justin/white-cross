@@ -25,7 +25,7 @@ export class CurriculumReviewModulesService {
   async reviewCreditRequirements(programId: string): Promise<any> { return {}; }
   async analyzeStudentProgressData(programId: string): Promise<any> { return {}; }
   async identifyBottleneckCourses(programId: string): Promise<any> { return []; }
-  async assessProgramCompletion Rates(programId: string): Promise<any> { return {}; }
+  async assessProgramCompletionRates(programId: string): Promise<any> { return {}; }
   async gatherStakeholderFeedback(reviewId: string): Promise<any> { return {}; }
   async conductStudentSurveys(programId: string): Promise<any> { return {}; }
   async interviewFaculty(programId: string): Promise<any> { return {}; }
