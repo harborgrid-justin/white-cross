@@ -103,7 +103,7 @@ export class CommunicationControllersService {
   // 1-8: MESSAGE MANAGEMENT
   async createMessage(messageData: MessageData): Promise<MessageData> {
     this.logger.log(`Creating message: ${messageData.subject}`);
-    return { ...messageData, messageId: `MSG-${Date.now()}`, status: 'draft' };
+    return { ...messageData, messageId: `MSG-${crypto.randomUUID()}`, status: 'draft' };
   }
 
   async sendMessage(messageId: string): Promise<{ sent: boolean; deliveryStatus: Record<string, string> }> {
