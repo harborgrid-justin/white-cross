@@ -10,7 +10,7 @@ export class LeasePaymentProcessingService {
   private readonly logger = new Logger(LeasePaymentProcessingService.name);
 
   async processLeasePayment(leaseId: number, amount: number): Promise<any> {
-    this.logger.log(\`Processing lease payment for lease \${leaseId}\`);
+    this.logger.log(`Processing lease payment for lease ${leaseId}`);
     return { paymentProcessed: true, newLiability: 90000, interestExpense: 500 };
   }
 
