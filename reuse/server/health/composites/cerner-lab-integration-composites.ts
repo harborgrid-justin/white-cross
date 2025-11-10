@@ -40,14 +40,7 @@
  * laboratory billing integration, and comprehensive audit logging for CAP/CLIA compliance.
  */
 
-import {
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-  ConflictException,
-  ForbiddenException,
-  Logger,
-} from '@nestjs/common';
+import * as Boom from '@hapi/boom';
 
 // Health Kit Imports
 import {
