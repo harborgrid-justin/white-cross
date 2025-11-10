@@ -611,7 +611,7 @@ export class DegreePlanningSystemsService {
       const requirements = await getProgramRequirements(programId);
 
       return {
-        pathwayId: `PATH-${programId}-${Date.now()}`,
+        pathwayId: `PATH-${programId}-${crypto.randomUUID()}`,
         pathwayName: `Standard Pathway - ${programId}`,
         programId,
         programName: programId,
