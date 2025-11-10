@@ -14,7 +14,7 @@ export class DegreeCompletionProcessorsService {
   private readonly logger = new Logger(DegreeCompletionProcessorsService.name);
   constructor(@Inject('SEQUELIZE') private readonly sequelize: Sequelize) {}
 
-  async initiateCompletionReview(studentId: string): Promise<any> { return { reviewId: `REV-${Date.now()}` }; }
+  async initiateCompletionReview(studentId: string): Promise<any> { return { reviewId: `REV-${crypto.randomUUID()}` }; }
   async conductDegreeAudit(studentId: string, programId: string): Promise<any> { return {}; }
   async verifyRequirementsFulfillment(studentId: string): Promise<any> { return { fulfilled: true }; }
   async checkCreditRequirements(studentId: string): Promise<any> { return {}; }
