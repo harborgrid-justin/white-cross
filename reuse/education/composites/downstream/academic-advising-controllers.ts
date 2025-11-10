@@ -590,7 +590,7 @@ export class AcademicAdvisingControllersService {
    */
   async completeAdvisingSession(
     sessionId: string,
-    outcomes: any,
+    outcomes: { notes: string; actionItems: string[]; followUpRequired?: boolean; },
   ): Promise<{ completed: boolean; followUpScheduled: boolean }> {
     await recordAdvisingNotes(sessionId, outcomes);
 
