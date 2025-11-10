@@ -77,7 +77,7 @@ export class ForeignExchangeRestApiController {
   async getCurrencyExposure(): Promise<any> {
     return {
       totalExposure: 5000000,
-      exposureByurrency: [
+      exposureByCurrency: [
         { currency: 'EUR', amount: 2000000, percentage: 40 },
         { currency: 'GBP', amount: 1500000, percentage: 30 },
         { currency: 'JPY', amount: 1000000, percentage: 20 },
