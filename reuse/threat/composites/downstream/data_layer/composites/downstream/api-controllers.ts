@@ -130,6 +130,16 @@ import {
   isValidUUID,
 } from '../../../_production-patterns';
 
+// Import security guards and decorators
+import { JWTAuthGuard } from './guards/jwt-auth.guard';
+import { RolesGuard, UserRole } from './guards/roles.guard';
+import { PermissionsGuard } from './guards/permissions.guard';
+import { RateLimitGuard } from './guards/rate-limit.guard';
+import { Public } from './decorators/public.decorator';
+import { Roles } from './decorators/roles.decorator';
+import { RequirePermissions } from './decorators/permissions.decorator';
+import { RateLimit } from './decorators/rate-limit.decorator';
+
 // ============================================================================
 // INTERCEPTORS
 // ============================================================================
@@ -430,10 +440,13 @@ export class PatientDataAccessDto extends BaseDto {
 /**
  * Threat Intelligence Controller
  * Handles all threat intelligence CRUD operations
+ *
+ * SECURITY FIX: Added authentication and authorization guards
  */
 @Controller('api/v1/threat-intelligence')
 @ApiTags('Threat Intelligence')
 @ApiBearerAuth()
+@UseGuards(JWTAuthGuard, RolesGuard, PermissionsGuard, RateLimitGuard)
 @UseInterceptors(LoggingInterceptor, HIPAAAuditInterceptor)
 export class ThreatIntelligenceController {
   private readonly logger = createLogger(ThreatIntelligenceController.name);
@@ -901,10 +914,13 @@ export class ThreatIntelligenceController {
 /**
  * Data Management Controller
  * Handles data export, import, and transformation operations
+ *
+ * SECURITY FIX: Added authentication and authorization guards
  */
 @Controller('api/v1/data-management')
 @ApiTags('Data Management')
 @ApiBearerAuth()
+@UseGuards(JWTAuthGuard, RolesGuard, PermissionsGuard, RateLimitGuard)
 @UseInterceptors(LoggingInterceptor)
 export class DataManagementController {
   private readonly logger = createLogger(DataManagementController.name);
@@ -1042,10 +1058,13 @@ export class DataManagementController {
 /**
  * Validation Controller
  * Handles data validation operations
+ *
+ * SECURITY FIX: Added authentication and authorization guards
  */
 @Controller('api/v1/validation')
 @ApiTags('Validation')
 @ApiBearerAuth()
+@UseGuards(JWTAuthGuard, RolesGuard, PermissionsGuard, RateLimitGuard)
 export class ValidationController {
   private readonly logger = createLogger(ValidationController.name);
 
