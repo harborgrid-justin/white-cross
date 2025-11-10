@@ -14,7 +14,7 @@ export class CourseReserveSystemsService {
   private readonly logger = new Logger(CourseReserveSystemsService.name);
   constructor(@Inject('SEQUELIZE') private readonly sequelize: Sequelize) {}
 
-  async createCourseReserve(courseId: string, facultyId: string): Promise<any> { return { reserveId: `RES-${Date.now()}` }; }
+  async createCourseReserve(courseId: string, facultyId: string): Promise<any> { return { reserveId: `RES-${crypto.randomUUID()}` }; }
   async addItemToReserve(reserveId: string, itemId: string): Promise<any> { return {}; }
   async removeItemFromReserve(reserveId: string, itemId: string): Promise<any> { return {}; }
   async updateReserveStatus(reserveId: string, status: string): Promise<any> { return {}; }
