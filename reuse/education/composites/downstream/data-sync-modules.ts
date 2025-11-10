@@ -14,7 +14,7 @@ export class DataSyncModulesService {
   private readonly logger = new Logger(DataSyncModulesService.name);
   constructor(@Inject('SEQUELIZE') private readonly sequelize: Sequelize) {}
 
-  async configureSyncJob(jobConfig: any): Promise<any> { return { jobId: `SYNC-${Date.now()}` }; }
+  async configureSyncJob(jobConfig: any): Promise<any> { return { jobId: `SYNC-${crypto.randomUUID()}` }; }
   async scheduleSync(jobId: string, schedule: any): Promise<any> { return {}; }
   async executeSyncJob(jobId: string): Promise<any> { return { status: 'running' }; }
   async monitorSyncProgress(jobId: string): Promise<any> { return { progress: 0 }; }
