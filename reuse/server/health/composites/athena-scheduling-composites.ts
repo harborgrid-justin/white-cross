@@ -301,7 +301,7 @@ export async function orchestrateAthenaAppointmentBooking(
 
     // Create appointment
     const appointment: Appointment = {
-      id: `APPT-${Date.now()}-${Math.random().toString(36).substring(7)}`,
+      id: crypto.randomUUID(),
       patientId,
       providerId: bookingData.providerId,
       facilityId: context.practiceId,
