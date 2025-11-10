@@ -1,3 +1,14 @@
+import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Sequelize, Model, DataTypes, ModelAttributes, ModelOptions, Op } from 'sequelize';
+import {
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
+import { RolesGuard } from './security/guards/roles.guard';
+import { PermissionsGuard } from './security/guards/permissions.guard';
+import { Roles } from './security/decorators/roles.decorator';
+import { RequirePermissions } from './security/decorators/permissions.decorator';
+import { DATABASE_CONNECTION } from './common/tokens/database.tokens';
+
 /**
  * LOC: EDU-COMP-DOWNSTREAM-IR-003
  * File: /reuse/education/composites/downstream/institutional-research-controllers.ts
@@ -34,41 +45,29 @@
  * board reporting, and strategic planning support for higher education institutions.
  */
 
-import { Injectable, Logger, Inject } from '@nestjs/common';
-import { Sequelize, Model, DataTypes, ModelAttributes, ModelOptions, Op } from 'sequelize';
 
 // Import from student analytics composite
-import {
   getEnrollmentTrends,
   calculateRetentionRates,
   analyzeStudentOutcomes,
 } from '../student-analytics-insights-composite';
 
 // Import from compliance reporting composite
-import {
   generateComplianceReport,
   trackRegulatoryRequirement,
 } from '../compliance-reporting-composite';
 
 // Import from enrollment lifecycle composite
-import {
   getEnrollmentData,
   trackStudentProgression,
 } from '../student-enrollment-lifecycle-composite';
 
 // Import from faculty-staff management composite
-import {
 
 // ============================================================================
 // SECURITY: Authentication & Authorization
 // ============================================================================
 // SECURITY: Import authentication and authorization
-import { UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
-import { RolesGuard } from './security/guards/roles.guard';
-import { PermissionsGuard } from './security/guards/permissions.guard';
-import { Roles } from './security/decorators/roles.decorator';
-import { RequirePermissions } from './security/decorators/permissions.decorator';
   getFacultyMetrics,
   calculateTeachingLoad,
 } from '../faculty-staff-management-composite';
@@ -88,6 +87,7 @@ import { RequirePermissions } from './security/decorators/permissions.decorator'
 /**
  * Standard error response
  */
+@Injectable()
 export class ErrorResponseDto {
   @ApiProperty({ example: 404, description: 'HTTP status code' })
   statusCode: number;
@@ -108,6 +108,7 @@ export class ErrorResponseDto {
 /**
  * Validation error response
  */
+@Injectable()
 export class ValidationErrorDto extends ErrorResponseDto {
   @ApiProperty({
     type: [Object],
@@ -587,12 +588,12 @@ export const createInstitutionalResearchControllersRecordModel = (sequelize: Seq
   return InstitutionalResearchControllersRecord;
 };
 
+@Injectable()
 export class InstitutionalResearchControllersComposite {
-  private readonly logger = new Logger(InstitutionalResearchControllersComposite.name);
-
   constructor(
-    @Inject('SEQUELIZE') private readonly sequelize: Sequelize,
-  ) {}
+    @Inject(DATABASE_CONNECTION)
+    private readonly sequelize: Sequelize,
+    private readonly logger: Logger) {}
 
   // ============================================================================
   // 1. ENROLLMENT ANALYTICS (Functions 1-7)

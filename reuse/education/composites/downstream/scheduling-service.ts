@@ -1,3 +1,14 @@
+import { Injectable, Scope, Logger, Inject, Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
+import { Sequelize, Model, DataTypes, ModelAttributes, ModelOptions, Op } from 'sequelize';
+import {
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
+import { RolesGuard } from './security/guards/roles.guard';
+import { PermissionsGuard } from './security/guards/permissions.guard';
+import { Roles } from './security/decorators/roles.decorator';
+import { RequirePermissions } from './security/decorators/permissions.decorator';
+import { DATABASE_CONNECTION } from './common/tokens/database.tokens';
+
 /**
  * LOC: EDU-COMP-DOWNSTREAM-003
  * File: /reuse/education/composites/downstream/scheduling-controllers.ts
@@ -36,11 +47,8 @@
  * for comprehensive academic scheduling operations.
  */
 
-import { Injectable, Logger, Inject, Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
-import { Sequelize, Model, DataTypes, ModelAttributes, ModelOptions, Op } from 'sequelize';
 
 // Import from class scheduling kit
-import {
   createClassSchedule,
   updateClassSchedule,
   getClassSchedule,
@@ -49,32 +57,23 @@ import {
 } from '../../class-scheduling-kit';
 
 // Import from course catalog kit
-import {
   getCourseDetails,
   getCourseOfferings,
   createCourseSection,
 } from '../../course-catalog-kit';
 
 // Import from faculty management kit
-import {
   getFacultySchedule,
   assignFacultyToCourse,
   checkFacultyAvailability,
 } from '../../faculty-management-kit';
 
 // Import from student records kit
-import {
 
 // ============================================================================
 // SECURITY: Authentication & Authorization
 // ============================================================================
 // SECURITY: Import authentication and authorization
-import { UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
-import { RolesGuard } from './security/guards/roles.guard';
-import { PermissionsGuard } from './security/guards/permissions.guard';
-import { Roles } from './security/decorators/roles.decorator';
-import { RequirePermissions } from './security/decorators/permissions.decorator';
   getEnrollmentData,
   updateEnrollmentStatus,
 } from '../../student-records-kit';
@@ -94,6 +93,7 @@ import { RequirePermissions } from './security/decorators/permissions.decorator'
 /**
  * Standard error response
  */
+@Injectable()
 export class ErrorResponseDto {
   @ApiProperty({ example: 404, description: 'HTTP status code' })
   statusCode: number;
@@ -114,6 +114,7 @@ export class ErrorResponseDto {
 /**
  * Validation error response
  */
+@Injectable()
 export class ValidationErrorDto extends ErrorResponseDto {
   @ApiProperty({
     type: [Object],
@@ -636,13 +637,12 @@ export const createScheduleConflictModel = (sequelize: Sequelize) => {
 @ApiTags('Education Services')
 @ApiBearerAuth('JWT-auth')
 @ApiExtraModels(ErrorResponseDto, ValidationErrorDto)
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class SchedulingControllersCompositeService {
-  private readonly logger = new Logger(SchedulingControllersCompositeService.name);
-
   constructor(
-    @Inject('SEQUELIZE') private readonly sequelize: Sequelize,
-  ) {}
+    @Inject(DATABASE_CONNECTION)
+    private readonly sequelize: Sequelize,
+    private readonly logger: Logger) {}
 
   // ============================================================================
   // 1. TERM SCHEDULE MANAGEMENT (Functions 1-8)

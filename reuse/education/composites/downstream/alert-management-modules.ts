@@ -1,10 +1,20 @@
+import { ApiTags, ApiBearerAuth, ApiExtraModels, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiBadRequestResponse, ApiUnauthorizedResponse, ApiNotFoundResponse, ApiConflictResponse, ApiInternalServerErrorResponse, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Injectable, Scope, Logger, Inject } from '@nestjs/common';
+import { Sequelize, Model, DataTypes } from 'sequelize';
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
+import { RolesGuard } from './security/guards/roles.guard';
+import { PermissionsGuard } from './security/guards/permissions.guard';
+import { Roles } from './security/decorators/roles.decorator';
+import { RequirePermissions } from './security/decorators/permissions.decorator';
+import { DATABASE_CONNECTION } from './common/tokens/database.tokens';
+
 /**
  * LOC: EDU-DOWN-ALERT-010
  * File: /reuse/education/composites/downstream/alert-management-modules.ts
  *
  * UPSTREAM (imports from):
  *   - @nestjs/common (v10.x)
-import { ApiTags, ApiBearerAuth, ApiExtraModels, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiBadRequestResponse, ApiUnauthorizedResponse, ApiNotFoundResponse, ApiConflictResponse, ApiInternalServerErrorResponse, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
  *   - sequelize (v6.x)
  *   - ../academic-advising-composite
  *   - ../student-analytics-insights-composite
@@ -18,21 +28,11 @@ import { ApiTags, ApiBearerAuth, ApiExtraModels, ApiOperation, ApiOkResponse, Ap
  *   - Faculty alert portals
  */
 
-import { Injectable, Logger, Inject } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiExtraModels, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiBadRequestResponse, ApiUnauthorizedResponse, ApiNotFoundResponse, ApiConflictResponse, ApiInternalServerErrorResponse, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Sequelize, Model, DataTypes } from 'sequelize';
 
 // ============================================================================
 // SECURITY: Authentication & Authorization
 // ============================================================================
 // SECURITY: Import authentication and authorization
-import { UseGuards } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiExtraModels, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiBadRequestResponse, ApiUnauthorizedResponse, ApiNotFoundResponse, ApiConflictResponse, ApiInternalServerErrorResponse, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
-import { RolesGuard } from './security/guards/roles.guard';
-import { PermissionsGuard } from './security/guards/permissions.guard';
-import { Roles } from './security/decorators/roles.decorator';
-import { RequirePermissions } from './security/decorators/permissions.decorator';
 
 
 // ============================================================================
@@ -42,6 +42,7 @@ import { RequirePermissions } from './security/decorators/permissions.decorator'
 /**
  * Standard error response
  */
+@Injectable()
 export class ErrorResponseDto {
   @ApiProperty({ example: 404, description: 'HTTP status code' })
   statusCode: number;
@@ -62,6 +63,7 @@ export class ErrorResponseDto {
 /**
  * Validation error response
  */
+@Injectable()
 export class ValidationErrorDto extends ErrorResponseDto {
   @ApiProperty({
     type: [Object],
@@ -291,10 +293,11 @@ export const createAlertModel = (sequelize: Sequelize) => {
 @ApiTags('Communication & Notifications')
 @ApiBearerAuth('JWT-auth')
 @ApiExtraModels(ErrorResponseDto, ValidationErrorDto)
-@Injectable()
-export class AlertManagementModulesService {
-  private readonly logger = new Logger(AlertManagementModulesService.name);
-  constructor(@Inject('SEQUELIZE') private readonly sequelize: Sequelize) {}
+@Injectable({ scope: Scope.REQUEST })
+export class AlertManagementModulesService {  constructor(
+    @Inject(DATABASE_CONNECTION)
+    private readonly sequelize: Sequelize,
+    private readonly logger: Logger) {}
 
   async createAlert(data: Alert): Promise<Alert> { return { ...data, alertId: `ALERT-${Date.now()}` }; }
   async assignAlert(alertId: string, assignTo: string): Promise<any> { return {}; }

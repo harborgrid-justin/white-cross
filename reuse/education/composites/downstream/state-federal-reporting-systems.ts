@@ -1,3 +1,14 @@
+import { Injectable, Scope, Logger, Inject } from '@nestjs/common';
+import { Sequelize, Model, DataTypes } from 'sequelize';
+import {
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
+import { RolesGuard } from './security/guards/roles.guard';
+import { PermissionsGuard } from './security/guards/permissions.guard';
+import { Roles } from './security/decorators/roles.decorator';
+import { RequirePermissions } from './security/decorators/permissions.decorator';
+import { DATABASE_CONNECTION } from './common/tokens/database.tokens';
+
 /**
  * LOC: EDU-COMP-DOWNSTREAM-006
  * File: /reuse/education/composites/downstream/state-federal-reporting-systems.ts
@@ -34,34 +45,23 @@
  * and comprehensive regulatory compliance for colleges and universities.
  */
 
-import { Injectable, Logger, Inject } from '@nestjs/common';
-import { Sequelize, Model, DataTypes } from 'sequelize';
 
-import {
   generateComplianceReport,
   submitToRegulator,
   validateReportData,
   archiveReport,
 } from '../../compliance-reporting-kit';
 
-import {
   getEnrollmentData,
   getGraduationData,
   getRetentionData,
 } from '../../student-records-kit';
 
-import {
 
 // ============================================================================
 // SECURITY: Authentication & Authorization
 // ============================================================================
 // SECURITY: Import authentication and authorization
-import { UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
-import { RolesGuard } from './security/guards/roles.guard';
-import { PermissionsGuard } from './security/guards/permissions.guard';
-import { Roles } from './security/decorators/roles.decorator';
-import { RequirePermissions } from './security/decorators/permissions.decorator';
   getTitleIVData,
   getFISAPData,
   getFinancialAidMetrics,
@@ -79,6 +79,7 @@ import { RequirePermissions } from './security/decorators/permissions.decorator'
 /**
  * Standard error response
  */
+@Injectable()
 export class ErrorResponseDto {
   @ApiProperty({ example: 404, description: 'HTTP status code' })
   statusCode: number;
@@ -99,6 +100,7 @@ export class ErrorResponseDto {
 /**
  * Validation error response
  */
+@Injectable()
 export class ValidationErrorDto extends ErrorResponseDto {
   @ApiProperty({
     type: [Object],
@@ -325,11 +327,12 @@ export const createComplianceReportModelModel = (sequelize: Sequelize) => {
 @ApiTags('Compliance & Reporting')
 @ApiBearerAuth('JWT-auth')
 @ApiExtraModels(ErrorResponseDto, ValidationErrorDto)
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class StateFederalReportingSystemsCompositeService {
-  private readonly logger = new Logger(StateFederalReportingSystemsCompositeService.name);
-
-  constructor(@Inject('SEQUELIZE') private readonly sequelize: Sequelize) {}
+  constructor(
+    @Inject(DATABASE_CONNECTION)
+    private readonly sequelize: Sequelize,
+    private readonly logger: Logger) {}
 
   // IPEDS Reporting (Functions 1-10)
   async generateIPEDSFallEnrollment(year: number): Promise<any> {

@@ -1,3 +1,8 @@
+import { Sequelize, Model, DataTypes } from 'sequelize';
+import {
+import { StudentPortalControllersCompositeService } from './student-portal-service';
+import type { ServiceData, Status } from './student-portal-service';
+
 /**
  * LOC: EDU-COMP-DOWNSTREAM-CTRL-012
  * File: /reuse/education/composites/downstream/student-portal-controller.ts
@@ -9,7 +14,6 @@
  * Dependencies: NestJS 10.x, Swagger/OpenAPI
  */
 
-import {
   Controller,
   Get,
   Post,
@@ -26,7 +30,6 @@ import {
   ValidationPipe,
   Logger,
 } from '@nestjs/common';
-import {
   ApiTags,
   ApiOperation,
   ApiResponse,
@@ -40,20 +43,203 @@ import {
   ApiNotFoundResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { StudentPortalControllersCompositeService } from './student-portal-service';
-import type { ServiceData, Status } from './student-portal-service';
 
 @ApiTags('Student Portal')
 @Controller('portal')
 @ApiBearerAuth()
 // @UseGuards(JwtAuthGuard, RolesGuard)
 // @UseInterceptors(LoggingInterceptor)
-export class StudentPortalController {
-  private readonly logger = new Logger(StudentPortalController.name);
 
+// ============================================================================
+// SEQUELIZE MODELS WITH PRODUCTION-READY FEATURES
+// ============================================================================
+
+/**
+ * Production-ready Sequelize model for StudentPortalControllerRecord
+ *
+ * Features:
+ * - Lifecycle hooks for FERPA/HIPAA compliance auditing
+ * - Comprehensive validations with custom validators
+ * - Model scopes for common query patterns
+ * - Virtual attributes for computed properties
+ * - Paranoid mode for soft deletes
+ * - Optimized indexes (simple and compound)
+ */
+export const createStudentPortalControllerRecord = (sequelize: Sequelize) => {
+  class StudentPortalControllerRecord extends Model {
+    public id!: string;
+    public status!: string;
+    public data!: Record<string, any>;
+    public readonly createdAt!: Date;
+    public readonly updatedAt!: Date;
+    public readonly deletedAt!: Date | null;
+
+    // Virtual attributes
+    get isActive(): boolean {
+      return this.status === 'active';
+    }
+
+    get isPending(): boolean {
+      return this.status === 'pending';
+    }
+
+    get isCompleted(): boolean {
+      return this.status === 'completed';
+    }
+
+    get statusLabel(): string {
+      return this.status.replace('_', ' ').toUpperCase();
+    }
+  }
+
+  StudentPortalControllerRecord.init(
+    {
+      id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+        validate: {
+          isUUID: 4,
+        },
+      },
+      status: {
+        type: DataTypes.ENUM('active', 'inactive', 'pending', 'completed', 'cancelled'),
+        allowNull: false,
+        defaultValue: 'pending',
+        comment: 'Record status',
+        validate: {
+          isIn: [['active', 'inactive', 'pending', 'completed', 'cancelled']],
+          notEmpty: true,
+        },
+      },
+      data: {
+        type: DataTypes.JSONB,
+        allowNull: false,
+        defaultValue: {},
+        comment: 'Comprehensive record data',
+        validate: {
+          isValidData(value: any) {
+            if (typeof value !== 'object' || value === null) {
+              throw new Error('data must be a valid object');
+            }
+          },
+        },
+      },
+    },
+    {
+      sequelize,
+      tableName: 'student_portal_controller_records',
+      timestamps: true,
+      paranoid: true,
+      underscored: true,
+      indexes: [
+        { fields: ['status'] },
+        { fields: ['created_at'] },
+        { fields: ['updated_at'] },
+        { fields: ['deleted_at'] },
+        { fields: ['status', 'created_at'] },
+      ],
+      hooks: {
+        beforeCreate: async (record: StudentPortalControllerRecord, options: any) => {
+          // Audit logging for FERPA/HIPAA compliance
+          if (options.transaction) {
+            await sequelize.query(
+              `INSERT INTO audit_logs (action, table_name, record_id, user_id, data, created_at)
+               VALUES (:action, :tableName, :recordId, :userId, :data, NOW())`,
+              {
+                replacements: {
+                  action: 'CREATE_StudentPOrtalCoNtroller',
+                  tableName: 'student_portal_controller_records',
+                  recordId: record.id,
+                  userId: options.userId || 'system',
+                  data: JSON.stringify(record.toJSON()),
+                },
+                transaction: options.transaction,
+              }
+            );
+          }
+        },
+        afterCreate: async (record: StudentPortalControllerRecord, options: any) => {
+          console.log(`[AUDIT] StudentPortalControllerRecord created: ${record.id}`);
+        },
+        beforeUpdate: async (record: StudentPortalControllerRecord, options: any) => {
+          const changed = record.changed();
+          if (changed && options.transaction) {
+            await sequelize.query(
+              `INSERT INTO audit_logs (action, table_name, record_id, user_id, data, created_at)
+               VALUES (:action, :tableName, :recordId, :userId, :data, NOW())`,
+              {
+                replacements: {
+                  action: 'UPDATE_StudentPOrtalCoNtroller',
+                  tableName: 'student_portal_controller_records',
+                  recordId: record.id,
+                  userId: options.userId || 'system',
+                  data: JSON.stringify({ changed, previous: record._previousDataValues }),
+                },
+                transaction: options.transaction,
+              }
+            );
+          }
+        },
+        afterUpdate: async (record: StudentPortalControllerRecord, options: any) => {
+          console.log(`[AUDIT] StudentPortalControllerRecord updated: ${record.id}`);
+        },
+        beforeDestroy: async (record: StudentPortalControllerRecord, options: any) => {
+          if (options.transaction) {
+            await sequelize.query(
+              `INSERT INTO audit_logs (action, table_name, record_id, user_id, data, created_at)
+               VALUES (:action, :tableName, :recordId, :userId, :data, NOW())`,
+              {
+                replacements: {
+                  action: 'DELETE_StudentPOrtalCoNtroller',
+                  tableName: 'student_portal_controller_records',
+                  recordId: record.id,
+                  userId: options.userId || 'system',
+                  data: JSON.stringify(record.toJSON()),
+                },
+                transaction: options.transaction,
+              }
+            );
+          }
+        },
+        afterDestroy: async (record: StudentPortalControllerRecord, options: any) => {
+          console.log(`[AUDIT] StudentPortalControllerRecord deleted: ${record.id}`);
+        },
+      },
+      scopes: {
+        defaultScope: {
+          attributes: { exclude: ['deletedAt'] },
+        },
+        active: {
+          where: { status: 'active' },
+        },
+        pending: {
+          where: { status: 'pending' },
+        },
+        completed: {
+          where: { status: 'completed' },
+        },
+        recent: {
+          order: [['createdAt', 'DESC']],
+          limit: 100,
+        },
+        withData: {
+          attributes: {
+            include: ['id', 'status', 'data', 'createdAt', 'updatedAt'],
+          },
+        },
+      },
+    },
+  );
+
+  return StudentPortalControllerRecord;
+};
+
+
+@Injectable()
+export class StudentPortalController {
   constructor(
-    private readonly portalService: StudentPortalControllersCompositeService,
-  ) {}
+    private readonly portalService: StudentPortalControllersCompositeService) {}
 
   // ============================================================================
   // DASHBOARD & PROFILE
@@ -66,6 +252,12 @@ export class StudentPortalController {
   })
   @ApiOkResponse({ description: 'Dashboard data retrieved successfully' })
   @ApiUnauthorizedResponse({ description: 'Unauthorized access' })
+  @ApiOperation({ summary: 'getDashboard', description: 'Execute getDashboard operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async getDashboard(): Promise<any> {
     this.logger.log('Retrieving student dashboard');
     return this.portalService.operation1();
@@ -77,6 +269,12 @@ export class StudentPortalController {
     description: 'Retrieves complete student profile information',
   })
   @ApiOkResponse({ description: 'Profile retrieved successfully' })
+  @ApiOperation({ summary: 'getProfile', description: 'Execute getProfile operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async getProfile(): Promise<any> {
     this.logger.log('Retrieving student profile');
     return this.portalService.operation2();
@@ -90,6 +288,12 @@ export class StudentPortalController {
   @ApiBody({ description: 'Profile update data' })
   @ApiOkResponse({ description: 'Profile updated successfully' })
   @ApiBadRequestResponse({ description: 'Invalid profile data' })
+  @ApiOperation({ summary: 'updateProfile', description: 'Execute updateProfile operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async updateProfile(@Body(ValidationPipe) profileData: any): Promise<any> {
     this.logger.log('Updating student profile');
     return this.portalService.operation3();
@@ -106,6 +310,12 @@ export class StudentPortalController {
   })
   @ApiQuery({ name: 'term', description: 'Academic term', required: false })
   @ApiOkResponse({ description: 'Schedule retrieved successfully' })
+  @ApiOperation({ summary: 'getSchedule', description: 'Execute getSchedule operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async getSchedule(@Query('term') term?: string): Promise<any> {
     this.logger.log(`Retrieving schedule for term: ${term || 'current'}`);
     return this.portalService.dataOp1();
@@ -117,6 +327,12 @@ export class StudentPortalController {
     description: 'Retrieves list of courses student is currently registered for',
   })
   @ApiOkResponse({ description: 'Registered courses retrieved successfully' })
+  @ApiOperation({ summary: 'getRegisteredCourses', description: 'Execute getRegisteredCourses operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async getRegisteredCourses(): Promise<any> {
     this.logger.log('Retrieving registered courses');
     return this.portalService.dataOp2();
@@ -141,6 +357,12 @@ export class StudentPortalController {
   })
   @ApiCreatedResponse({ description: 'Courses registered successfully' })
   @ApiBadRequestResponse({ description: 'Registration failed' })
+  @ApiOperation({ summary: 'registerCourses', description: 'Execute registerCourses operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async registerCourses(@Body(ValidationPipe) registrationData: { courseIds: string[]; termId: string }): Promise<any> {
     this.logger.log(`Registering for ${registrationData.courseIds.length} courses`);
     return this.portalService.operation4();
@@ -155,6 +377,12 @@ export class StudentPortalController {
   @ApiParam({ name: 'courseId', description: 'Course identifier' })
   @ApiOkResponse({ description: 'Course dropped successfully' })
   @ApiNotFoundResponse({ description: 'Course not found' })
+  @ApiOperation({ summary: 'dropCourse', description: 'Execute dropCourse operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async dropCourse(@Param('courseId') courseId: string): Promise<any> {
     this.logger.log(`Dropping course ${courseId}`);
     return this.portalService.operation5();
@@ -171,6 +399,12 @@ export class StudentPortalController {
   })
   @ApiQuery({ name: 'term', description: 'Filter by academic term', required: false })
   @ApiOkResponse({ description: 'Grades retrieved successfully' })
+  @ApiOperation({ summary: 'getGrades', description: 'Execute getGrades operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async getGrades(@Query('term') term?: string): Promise<any> {
     this.logger.log(`Retrieving grades for term: ${term || 'all'}`);
     return this.portalService.dataOp3();
@@ -182,6 +416,12 @@ export class StudentPortalController {
     description: 'Retrieves official academic transcript with all course history',
   })
   @ApiOkResponse({ description: 'Transcript retrieved successfully' })
+  @ApiOperation({ summary: 'getTranscript', description: 'Execute getTranscript operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async getTranscript(): Promise<any> {
     this.logger.log('Retrieving official transcript');
     return this.portalService.dataOp4();
@@ -193,6 +433,12 @@ export class StudentPortalController {
     description: 'Retrieves cumulative and term GPA information',
   })
   @ApiOkResponse({ description: 'GPA information retrieved successfully' })
+  @ApiOperation({ summary: 'getGPA', description: 'Execute getGPA operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async getGPA(): Promise<any> {
     this.logger.log('Retrieving GPA information');
     return this.portalService.analytics1();
@@ -208,6 +454,12 @@ export class StudentPortalController {
     description: 'Retrieves student financial account summary including balance and payments',
   })
   @ApiOkResponse({ description: 'Financial account retrieved successfully' })
+  @ApiOperation({ summary: 'getFinancialAccount', description: 'Execute getFinancialAccount operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async getFinancialAccount(): Promise<any> {
     this.logger.log('Retrieving financial account');
     return this.portalService.dataOp5();
@@ -219,6 +471,12 @@ export class StudentPortalController {
     description: 'Retrieves financial aid awards and status',
   })
   @ApiOkResponse({ description: 'Financial aid information retrieved successfully' })
+  @ApiOperation({ summary: 'getFinancialAid', description: 'Execute getFinancialAid operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async getFinancialAid(): Promise<any> {
     this.logger.log('Retrieving financial aid information');
     return this.portalService.dataOp6();
@@ -233,6 +491,12 @@ export class StudentPortalController {
   @ApiBody({ description: 'Payment information' })
   @ApiCreatedResponse({ description: 'Payment processed successfully' })
   @ApiBadRequestResponse({ description: 'Payment failed' })
+  @ApiOperation({ summary: 'makePayment', description: 'Execute makePayment operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async makePayment(@Body(ValidationPipe) paymentData: any): Promise<any> {
     this.logger.log('Processing payment');
     return this.portalService.process1();
@@ -248,6 +512,12 @@ export class StudentPortalController {
     description: 'Retrieves list of available student documents',
   })
   @ApiOkResponse({ description: 'Documents retrieved successfully' })
+  @ApiOperation({ summary: 'getDocuments', description: 'Execute getDocuments operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async getDocuments(): Promise<any> {
     this.logger.log('Retrieving student documents');
     return this.portalService.dataOp7();
@@ -272,6 +542,12 @@ export class StudentPortalController {
     },
   })
   @ApiCreatedResponse({ description: 'Document request submitted successfully' })
+  @ApiOperation({ summary: 'requestDocument', description: 'Execute requestDocument operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async requestDocument(@Body(ValidationPipe) requestData: any): Promise<any> {
     this.logger.log(`Requesting document: ${requestData.documentType}`);
     return this.portalService.process2();
@@ -288,6 +564,12 @@ export class StudentPortalController {
   })
   @ApiQuery({ name: 'unreadOnly', description: 'Filter unread notifications', required: false, type: Boolean })
   @ApiOkResponse({ description: 'Notifications retrieved successfully' })
+  @ApiOperation({ summary: 'getNotifications', description: 'Execute getNotifications operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async getNotifications(@Query('unreadOnly') unreadOnly?: boolean): Promise<any> {
     this.logger.log(`Retrieving notifications (unreadOnly: ${unreadOnly})`);
     return this.portalService.integration1();
@@ -300,6 +582,12 @@ export class StudentPortalController {
   })
   @ApiParam({ name: 'notificationId', description: 'Notification identifier' })
   @ApiOkResponse({ description: 'Notification marked as read' })
+  @ApiOperation({ summary: 'markNotificationRead', description: 'Execute markNotificationRead operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async markNotificationRead(@Param('notificationId', ParseUUIDPipe) notificationId: string): Promise<any> {
     this.logger.log(`Marking notification ${notificationId} as read`);
     return this.portalService.integration2();
@@ -315,6 +603,12 @@ export class StudentPortalController {
     description: 'Retrieves comprehensive degree progress including completed requirements',
   })
   @ApiOkResponse({ description: 'Degree progress retrieved successfully' })
+  @ApiOperation({ summary: 'getDegreeProgress', description: 'Execute getDegreeProgress operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async getDegreeProgress(): Promise<any> {
     this.logger.log('Retrieving degree progress');
     return this.portalService.analytics2();
@@ -326,6 +620,12 @@ export class StudentPortalController {
     description: 'Generates detailed degree audit showing all requirements and completion status',
   })
   @ApiOkResponse({ description: 'Degree audit generated successfully' })
+  @ApiOperation({ summary: 'getDegreeAudit', description: 'Execute getDegreeAudit operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async getDegreeAudit(): Promise<any> {
     this.logger.log('Generating degree audit');
     return this.portalService.report1();
@@ -341,6 +641,12 @@ export class StudentPortalController {
     description: 'Generates comprehensive report including all student academic and financial data',
   })
   @ApiOkResponse({ description: 'Report generated successfully' })
+  @ApiOperation({ summary: 'generateComprehensiveReport', description: 'Execute generateComprehensiveReport operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async generateComprehensiveReport(): Promise<any> {
     this.logger.log('Generating comprehensive report');
     return this.portalService.generateComprehensiveReport();
@@ -363,6 +669,12 @@ export class StudentPortalController {
     },
   })
   @ApiOkResponse({ description: 'Data exported successfully' })
+  @ApiOperation({ summary: 'exportData', description: 'Execute exportData operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async exportData(@Body(ValidationPipe) exportOptions: any): Promise<any> {
     this.logger.log(`Exporting data in format: ${exportOptions.format}`);
     return this.portalService.export1();

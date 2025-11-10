@@ -1,3 +1,13 @@
+import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Sequelize, Model, DataTypes } from 'sequelize';
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
+import { RolesGuard } from './security/guards/roles.guard';
+import { PermissionsGuard } from './security/guards/permissions.guard';
+import { Roles } from './security/decorators/roles.decorator';
+import { RequirePermissions } from './security/decorators/permissions.decorator';
+import { DATABASE_CONNECTION } from './common/tokens/database.tokens';
+
 /**
  * LOC: EDU-COMP-DOWNSTREAM-PATH-012
  * File: /reuse/education/composites/downstream/pathway-visualization-tools.ts
@@ -17,19 +27,11 @@
  * Production-grade PathwayVisualizationToolsComposite for Ellucian SIS competitors.
  */
 
-import { Injectable, Logger, Inject } from '@nestjs/common';
-import { Sequelize, Model, DataTypes } from 'sequelize';
 
 // ============================================================================
 // SECURITY: Authentication & Authorization
 // ============================================================================
 // SECURITY: Import authentication and authorization
-import { UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
-import { RolesGuard } from './security/guards/roles.guard';
-import { PermissionsGuard } from './security/guards/permissions.guard';
-import { Roles } from './security/decorators/roles.decorator';
-import { RequirePermissions } from './security/decorators/permissions.decorator';
 
 
 
@@ -143,6 +145,7 @@ export const createPathwayVisualizationToolsRecordModel = (sequelize: Sequelize)
 /**
  * Standard error response
  */
+@Injectable()
 export class ErrorResponseDto {
   @ApiProperty({ example: 404, description: 'HTTP status code' })
   statusCode: number;
@@ -163,6 +166,7 @@ export class ErrorResponseDto {
 /**
  * Validation error response
  */
+@Injectable()
 export class ValidationErrorDto extends ErrorResponseDto {
   @ApiProperty({
     type: [Object],
@@ -172,9 +176,11 @@ export class ValidationErrorDto extends ErrorResponseDto {
   validationErrors: Array<{ field: string; message: string }>;
 }
 
-export class PathwayVisualizationToolsComposite {
-  private readonly logger = new Logger(PathwayVisualizationToolsComposite.name);
-  constructor(@Inject('SEQUELIZE') private readonly sequelize: Sequelize) {}
+@Injectable()
+export class PathwayVisualizationToolsComposite {  constructor(
+    @Inject(DATABASE_CONNECTION)
+    private readonly sequelize: Sequelize,
+    private readonly logger: Logger) {}
 
   // 40+ production-ready functions
   async function001(): Promise<any> { return { result: 'Function 1 executed' }; }

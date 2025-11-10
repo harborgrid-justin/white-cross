@@ -1,3 +1,8 @@
+import {
+import { AcademicAdvisingControllersService } from './academic-advising-service';
+import type {
+import { DATABASE_CONNECTION } from './common/tokens/database.tokens';
+
 /**
  * LOC: EDU-DOWN-ADVISING-CTRL-001
  * File: /reuse/education/composites/downstream/academic-advising-controller.ts
@@ -9,7 +14,6 @@
  * Dependencies: NestJS 10.x, Swagger/OpenAPI
  */
 
-import {
   Controller,
   Get,
   Post,
@@ -28,7 +32,6 @@ import {
   ValidationPipe,
   Logger,
 } from '@nestjs/common';
-import {
   ApiTags,
   ApiOperation,
   ApiResponse,
@@ -43,8 +46,6 @@ import {
   ApiUnauthorizedResponse,
   ApiForbiddenResponse,
 } from '@nestjs/swagger';
-import { AcademicAdvisingControllersService } from './academic-advising-service';
-import type {
   AdvisingSessionData,
   AdvisorCaseload,
   ProgressSummary,
@@ -136,19 +137,66 @@ export const createAcademicAdvisingControllerRecordModel = (sequelize: Sequelize
       ],
       hooks: {
         beforeCreate: async (record: AcademicAdvisingControllerRecord, options: any) => {
-          console.log(`[AUDIT] Creating AcademicAdvisingControllerRecord: ${record.id}`);
+          // Audit logging for FERPA/HIPAA compliance
+          if (options.transaction) {
+            await sequelize.query(
+              `INSERT INTO audit_logs (action, table_name, record_id, user_id, data, created_at)
+               VALUES (:action, :tableName, :recordId, :userId, :data, NOW())`,
+              {
+                replacements: {
+                  action: 'CREATE_ACADEMICADVISINGCONTROLLER',
+                  tableName: 'academic_advising_controller_records',
+                  recordId: record.id,
+                  userId: options.userId || 'system',
+                  data: JSON.stringify(record.toJSON()),
+                },
+                transaction: options.transaction,
+              }
+            );
+          }
         },
         afterCreate: async (record: AcademicAdvisingControllerRecord, options: any) => {
           console.log(`[AUDIT] AcademicAdvisingControllerRecord created: ${record.id}`);
         },
         beforeUpdate: async (record: AcademicAdvisingControllerRecord, options: any) => {
-          console.log(`[AUDIT] Updating AcademicAdvisingControllerRecord: ${record.id}`);
+          const changed = record.changed();
+          if (changed && options.transaction) {
+            await sequelize.query(
+              `INSERT INTO audit_logs (action, table_name, record_id, user_id, data, created_at)
+               VALUES (:action, :tableName, :recordId, :userId, :data, NOW())`,
+              {
+                replacements: {
+                  action: 'UPDATE_ACADEMICADVISINGCONTROLLER',
+                  tableName: 'academic_advising_controller_records',
+                  recordId: record.id,
+                  userId: options.userId || 'system',
+                  data: JSON.stringify({ changed, previous: record._previousDataValues }),
+                },
+                transaction: options.transaction,
+              }
+            );
+          }
         },
         afterUpdate: async (record: AcademicAdvisingControllerRecord, options: any) => {
           console.log(`[AUDIT] AcademicAdvisingControllerRecord updated: ${record.id}`);
         },
         beforeDestroy: async (record: AcademicAdvisingControllerRecord, options: any) => {
-          console.log(`[AUDIT] Deleting AcademicAdvisingControllerRecord: ${record.id}`);
+          if (options.transaction) {
+            await sequelize.query(
+              `INSERT INTO audit_logs (action, table_name, record_id, user_id, data, created_at)
+               VALUES (:action, :tableName, :recordId, :userId, :data, NOW())`,
+              {
+                replacements: {
+                  action: 'DELETE_ACADEMICADVISINGCONTROLLER',
+                  tableName: 'academic_advising_controller_records',
+                  recordId: record.id,
+                  userId: options.userId || 'system',
+                  data: JSON.stringify(record.toJSON()),
+                },
+                transaction: options.transaction,
+              }
+            );
+          }
         },
         afterDestroy: async (record: AcademicAdvisingControllerRecord, options: any) => {
           console.log(`[AUDIT] AcademicAdvisingControllerRecord deleted: ${record.id}`);
@@ -167,12 +215,10 @@ export const createAcademicAdvisingControllerRecordModel = (sequelize: Sequelize
   return AcademicAdvisingControllerRecord;
 };
 
+@Injectable()
 export class AcademicAdvisingController {
-  private readonly logger = new Logger(AcademicAdvisingController.name);
-
   constructor(
-    private readonly advisingService: AcademicAdvisingControllersService,
-  ) {}
+    private readonly advisingService: AcademicAdvisingControllersService) {}
 
   // ============================================================================
   // ADVISING SESSIONS
@@ -205,6 +251,18 @@ export class AcademicAdvisingController {
       },
     },
   })
+  @ApiOperation({ summary: 'scheduleSession', description: 'Execute scheduleSession operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
+  @ApiOperation({ summary: 'scheduleSession', description: 'Execute scheduleSession operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async scheduleSession(
     @Body(ValidationPipe) sessionData: AdvisingSessionData,
   ): Promise<AdvisingSessionData> {
@@ -220,6 +278,18 @@ export class AcademicAdvisingController {
   @ApiParam({ name: 'studentId', description: 'Student identifier', example: 'STU123' })
   @ApiOkResponse({ description: 'Session history retrieved successfully' })
   @ApiNotFoundResponse({ description: 'Student not found' })
+  @ApiOperation({ summary: 'getSessionHistory', description: 'Execute getSessionHistory operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
+  @ApiOperation({ summary: 'getSessionHistory', description: 'Execute getSessionHistory operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async getSessionHistory(
     @Param('studentId') studentId: string,
   ): Promise<AdvisingSessionData[]> {
@@ -235,6 +305,18 @@ export class AcademicAdvisingController {
   @ApiParam({ name: 'sessionId', description: 'Session identifier' })
   @ApiOkResponse({ description: 'Session started successfully' })
   @ApiNotFoundResponse({ description: 'Session not found' })
+  @ApiOperation({ summary: 'startSession', description: 'Execute startSession operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
+  @ApiOperation({ summary: 'startSession', description: 'Execute startSession operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async startSession(
     @Param('sessionId', ParseUUIDPipe) sessionId: string,
   ): Promise<{ started: boolean; session: AdvisingSessionData }> {
@@ -261,6 +343,18 @@ export class AcademicAdvisingController {
   })
   @ApiOkResponse({ description: 'Session completed successfully' })
   @ApiNotFoundResponse({ description: 'Session not found' })
+  @ApiOperation({ summary: 'completeSession', description: 'Execute completeSession operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
+  @ApiOperation({ summary: 'completeSession', description: 'Execute completeSession operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async completeSession(
     @Param('sessionId', ParseUUIDPipe) sessionId: string,
     @Body() completionData: { notes: string; followUpRequired?: boolean; nextSteps?: string[] },
@@ -279,6 +373,18 @@ export class AcademicAdvisingController {
   @ApiQuery({ name: 'reason', description: 'Cancellation reason', required: false })
   @ApiOkResponse({ description: 'Session cancelled successfully' })
   @ApiNotFoundResponse({ description: 'Session not found' })
+  @ApiOperation({ summary: 'cancelSession', description: 'Execute cancelSession operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
+  @ApiOperation({ summary: 'cancelSession', description: 'Execute cancelSession operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async cancelSession(
     @Param('sessionId', ParseUUIDPipe) sessionId: string,
     @Query('reason') reason?: string,
@@ -306,6 +412,18 @@ export class AcademicAdvisingController {
   })
   @ApiOkResponse({ description: 'Session rescheduled successfully' })
   @ApiNotFoundResponse({ description: 'Session not found' })
+  @ApiOperation({ summary: 'rescheduleSession', description: 'Execute rescheduleSession operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
+  @ApiOperation({ summary: 'rescheduleSession', description: 'Execute rescheduleSession operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async rescheduleSession(
     @Param('sessionId', ParseUUIDPipe) sessionId: string,
     @Body() scheduleData: { newStart: Date; newEnd: Date },
@@ -336,6 +454,18 @@ export class AcademicAdvisingController {
     },
   })
   @ApiCreatedResponse({ description: 'Walk-in session created successfully' })
+  @ApiOperation({ summary: 'handleWalkIn', description: 'Execute handleWalkIn operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
+  @ApiOperation({ summary: 'handleWalkIn', description: 'Execute handleWalkIn operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async handleWalkIn(
     @Body() walkInData: { studentId: string; advisorId: string },
   ): Promise<AdvisingSessionData> {
@@ -358,6 +488,18 @@ export class AcademicAdvisingController {
   @ApiParam({ name: 'advisorId', description: 'Advisor identifier' })
   @ApiOkResponse({ description: 'Caseload retrieved successfully' })
   @ApiNotFoundResponse({ description: 'Advisor not found' })
+  @ApiOperation({ summary: 'getCaseload', description: 'Execute getCaseload operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
+  @ApiOperation({ summary: 'getCaseload', description: 'Execute getCaseload operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async getCaseload(
     @Param('advisorId') advisorId: string,
   ): Promise<AdvisorCaseload> {
@@ -379,6 +521,18 @@ export class AcademicAdvisingController {
     example: 7,
   })
   @ApiOkResponse({ description: 'Appointments retrieved successfully' })
+  @ApiOperation({ summary: 'getUpcomingAppointments', description: 'Execute getUpcomingAppointments operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
+  @ApiOperation({ summary: 'getUpcomingAppointments', description: 'Execute getUpcomingAppointments operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async getUpcomingAppointments(
     @Param('advisorId') advisorId: string,
     @Query('days', new ParseIntPipe({ optional: true })) days: number = 7,
@@ -406,6 +560,18 @@ export class AcademicAdvisingController {
     },
   })
   @ApiCreatedResponse({ description: 'Students assigned successfully' })
+  @ApiOperation({ summary: 'assignStudents', description: 'Execute assignStudents operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
+  @ApiOperation({ summary: 'assignStudents', description: 'Execute assignStudents operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async assignStudents(
     @Param('advisorId') advisorId: string,
     @Body() assignmentData: { studentIds: string[]; priority?: string },
@@ -436,6 +602,18 @@ export class AcademicAdvisingController {
     type: Number,
   })
   @ApiOkResponse({ description: 'At-risk students identified successfully' })
+  @ApiOperation({ summary: 'getAtRiskStudents', description: 'Execute getAtRiskStudents operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
+  @ApiOperation({ summary: 'getAtRiskStudents', description: 'Execute getAtRiskStudents operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async getAtRiskStudents(
     @Query('threshold', new ParseIntPipe({ optional: true })) threshold?: number,
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
@@ -452,6 +630,18 @@ export class AcademicAdvisingController {
   @ApiParam({ name: 'studentId', description: 'Student identifier' })
   @ApiOkResponse({ description: 'Progress summary generated successfully' })
   @ApiNotFoundResponse({ description: 'Student not found' })
+  @ApiOperation({ summary: 'getProgressSummary', description: 'Execute getProgressSummary operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
+  @ApiOperation({ summary: 'getProgressSummary', description: 'Execute getProgressSummary operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async getProgressSummary(
     @Param('studentId') studentId: string,
   ): Promise<ProgressSummary> {
@@ -485,6 +675,18 @@ export class AcademicAdvisingController {
     },
   })
   @ApiCreatedResponse({ description: 'Early alert created successfully' })
+  @ApiOperation({ summary: 'createAlert', description: 'Execute createAlert operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
+  @ApiOperation({ summary: 'createAlert', description: 'Execute createAlert operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async createAlert(
     @Body(ValidationPipe) alertData: EarlyAlert,
   ): Promise<EarlyAlert> {
@@ -510,6 +712,18 @@ export class AcademicAdvisingController {
     },
   })
   @ApiCreatedResponse({ description: 'Intervention plan created successfully' })
+  @ApiOperation({ summary: 'createInterventionPlan', description: 'Execute createInterventionPlan operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
+  @ApiOperation({ summary: 'createInterventionPlan', description: 'Execute createInterventionPlan operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async createInterventionPlan(
     @Param('studentId') studentId: string,
     @Body() riskData: { riskLevel: RiskLevel },
@@ -543,6 +757,18 @@ export class AcademicAdvisingController {
     },
   })
   @ApiCreatedResponse({ description: 'Hold placed successfully' })
+  @ApiOperation({ summary: 'placeHold', description: 'Execute placeHold operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
+  @ApiOperation({ summary: 'placeHold', description: 'Execute placeHold operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async placeHold(
     @Body(ValidationPipe) holdData: StudentHold,
   ): Promise<StudentHold> {
@@ -560,6 +786,18 @@ export class AcademicAdvisingController {
   @ApiQuery({ name: 'resolvedBy', description: 'User who resolved the hold', required: false })
   @ApiOkResponse({ description: 'Hold removed successfully' })
   @ApiNotFoundResponse({ description: 'Hold not found' })
+  @ApiOperation({ summary: 'removeHold', description: 'Execute removeHold operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
+  @ApiOperation({ summary: 'removeHold', description: 'Execute removeHold operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async removeHold(
     @Param('holdId', ParseUUIDPipe) holdId: string,
     @Query('resolvedBy') resolvedBy?: string,
@@ -575,6 +813,18 @@ export class AcademicAdvisingController {
   })
   @ApiParam({ name: 'studentId', description: 'Student identifier' })
   @ApiOkResponse({ description: 'Holds retrieved successfully' })
+  @ApiOperation({ summary: 'getStudentHolds', description: 'Execute getStudentHolds operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
+  @ApiOperation({ summary: 'getStudentHolds', description: 'Execute getStudentHolds operation' })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiCreatedResponse({ description: 'Resource created' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async getStudentHolds(
     @Param('studentId') studentId: string,
   ): Promise<StudentHold[]> {

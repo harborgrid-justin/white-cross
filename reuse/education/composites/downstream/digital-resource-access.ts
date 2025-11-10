@@ -1,3 +1,14 @@
+import { Injectable, Scope, Logger, Inject } from '@nestjs/common';
+import { Sequelize, Model, DataTypes, Op } from 'sequelize';
+import {
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
+import { RolesGuard } from './security/guards/roles.guard';
+import { PermissionsGuard } from './security/guards/permissions.guard';
+import { Roles } from './security/decorators/roles.decorator';
+import { RequirePermissions } from './security/decorators/permissions.decorator';
+import { DATABASE_CONNECTION } from './common/tokens/database.tokens';
+
 /**
  * LOC: EDU-COMP-DOWN-DIGRES-004
  * File: /reuse/education/composites/downstream/digital-resource-access.ts
@@ -33,33 +44,22 @@
  * usage tracking, discovery services, interlibrary loan integration, and content analytics.
  */
 
-import { Injectable, Logger, Inject } from '@nestjs/common';
-import { Sequelize, Model, DataTypes, Op } from 'sequelize';
 
-import {
   getLibraryResource,
   searchLibraryResources,
   trackResourceUsage,
   getResourceLicense,
 } from '../../library-integration-kit';
 
-import {
   getEnrollmentStatus,
   verifyStudentEligibility,
 } from '../../student-enrollment-kit';
 
-import {
 
 // ============================================================================
 // SECURITY: Authentication & Authorization
 // ============================================================================
 // SECURITY: Import authentication and authorization
-import { UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
-import { RolesGuard } from './security/guards/roles.guard';
-import { PermissionsGuard } from './security/guards/permissions.guard';
-import { Roles } from './security/decorators/roles.decorator';
-import { RequirePermissions } from './security/decorators/permissions.decorator';
   getCourseDetails,
   getCourseReadingList,
 } from '../../course-catalog-kit';
@@ -76,6 +76,7 @@ import { RequirePermissions } from './security/decorators/permissions.decorator'
 /**
  * Standard error response
  */
+@Injectable()
 export class ErrorResponseDto {
   @ApiProperty({ example: 404, description: 'HTTP status code' })
   statusCode: number;
@@ -96,6 +97,7 @@ export class ErrorResponseDto {
 /**
  * Validation error response
  */
+@Injectable()
 export class ValidationErrorDto extends ErrorResponseDto {
   @ApiProperty({
     type: [Object],
@@ -539,11 +541,12 @@ export const createResourceLicenseModel = (sequelize: Sequelize) => {
 @ApiTags('Education Services')
 @ApiBearerAuth('JWT-auth')
 @ApiExtraModels(ErrorResponseDto, ValidationErrorDto)
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class DigitalResourceAccessService {
-  private readonly logger = new Logger(DigitalResourceAccessService.name);
-
-  constructor(@Inject('SEQUELIZE') private readonly sequelize: Sequelize) {}
+  constructor(
+    @Inject(DATABASE_CONNECTION)
+    private readonly sequelize: Sequelize,
+    private readonly logger: Logger) {}
 
   // Functions 1-8: Resource Discovery
   async searchDigitalResources(criteria: any): Promise<DigitalResource[]> {

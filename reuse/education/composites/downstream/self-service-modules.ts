@@ -1,3 +1,14 @@
+import { Injectable, Scope, Logger, Inject } from '@nestjs/common';
+import { Sequelize, Model, DataTypes } from 'sequelize';
+import {
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
+import { RolesGuard } from './security/guards/roles.guard';
+import { PermissionsGuard } from './security/guards/permissions.guard';
+import { Roles } from './security/decorators/roles.decorator';
+import { RequirePermissions } from './security/decorators/permissions.decorator';
+import { DATABASE_CONNECTION } from './common/tokens/database.tokens';
+
 /**
  * LOC: EDU-COMP-DOWNSTREAM-005
  * File: /reuse/education/composites/downstream/self-service-modules.ts
@@ -35,43 +46,31 @@
  * uploads, communication preferences, and comprehensive self-service tools for students.
  */
 
-import { Injectable, Logger, Inject } from '@nestjs/common';
-import { Sequelize, Model, DataTypes } from 'sequelize';
 
 // Imports from kits
-import {
   getStudentProfile,
   updateStudentProfile,
   getStudentDashboard,
   getStudentNotifications,
 } from '../../student-portal-kit';
 
-import {
   getTranscript,
   requestTranscript,
   getAcademicHistory,
   getDegreeProgress,
 } from '../../student-records-kit';
 
-import {
   addCourseToCart,
   submitRegistration,
   dropCourse,
   viewSchedule,
 } from '../../course-registration-kit';
 
-import {
 
 // ============================================================================
 // SECURITY: Authentication & Authorization
 // ============================================================================
 // SECURITY: Import authentication and authorization
-import { UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
-import { RolesGuard } from './security/guards/roles.guard';
-import { PermissionsGuard } from './security/guards/permissions.guard';
-import { Roles } from './security/decorators/roles.decorator';
-import { RequirePermissions } from './security/decorators/permissions.decorator';
   viewAccountBalance,
   makePayment,
   viewPaymentHistory,
@@ -90,6 +89,7 @@ import { RequirePermissions } from './security/decorators/permissions.decorator'
 /**
  * Standard error response
  */
+@Injectable()
 export class ErrorResponseDto {
   @ApiProperty({ example: 404, description: 'HTTP status code' })
   statusCode: number;
@@ -110,6 +110,7 @@ export class ErrorResponseDto {
 /**
  * Validation error response
  */
+@Injectable()
 export class ValidationErrorDto extends ErrorResponseDto {
   @ApiProperty({
     type: [Object],
@@ -341,11 +342,12 @@ export const createSelfServiceRequestModel = (sequelize: Sequelize) => {
 @ApiTags('Education Services')
 @ApiBearerAuth('JWT-auth')
 @ApiExtraModels(ErrorResponseDto, ValidationErrorDto)
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class SelfServiceModulesCompositeService {
-  private readonly logger = new Logger(SelfServiceModulesCompositeService.name);
-
-  constructor(@Inject('SEQUELIZE') private readonly sequelize: Sequelize) {}
+  constructor(
+    @Inject(DATABASE_CONNECTION)
+    private readonly sequelize: Sequelize,
+    private readonly logger: Logger) {}
 
   // ============================================================================
   // 1. PROFILE & DASHBOARD (Functions 1-8)

@@ -1,3 +1,13 @@
+import { Injectable, Scope, Logger, Inject } from '@nestjs/common';
+import { Sequelize, Model, DataTypes } from 'sequelize';
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
+import { RolesGuard } from './security/guards/roles.guard';
+import { PermissionsGuard } from './security/guards/permissions.guard';
+import { Roles } from './security/decorators/roles.decorator';
+import { RequirePermissions } from './security/decorators/permissions.decorator';
+import { DATABASE_CONNECTION } from './common/tokens/database.tokens';
+
 /**
  * LOC: EDU-COMP-DOWNSTREAM-INT-004
  * File: /reuse/education/composites/downstream/integration-controllers.ts
@@ -33,21 +43,13 @@
  * real-time data synchronization, and integration monitoring for higher education institutions.
  */
 
-import { Injectable, Logger, Inject } from '@nestjs/common';
-import { Sequelize, Model, DataTypes } from 'sequelize';
 
 // ============================================================================
 // SECURITY: Authentication & Authorization
 // ============================================================================
 // SECURITY: Import authentication and authorization
-import { UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
-import { RolesGuard } from './security/guards/roles.guard';
-import { PermissionsGuard } from './security/guards/permissions.guard';
-import { Roles } from './security/decorators/roles.decorator';
-import { RequirePermissions } from './security/decorators/permissions.decorator';
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
 
 
@@ -160,6 +162,7 @@ export const createIntegrationControllersRecordModel = (sequelize: Sequelize) =>
 /**
  * Standard error response
  */
+@Injectable()
 export class ErrorResponseDto {
   @ApiProperty({ example: 404, description: 'HTTP status code' })
   statusCode: number;
@@ -180,6 +183,7 @@ export class ErrorResponseDto {
 /**
  * Validation error response
  */
+@Injectable()
 export class ValidationErrorDto extends ErrorResponseDto {
   @ApiProperty({
     type: [Object],
@@ -189,10 +193,13 @@ export class ValidationErrorDto extends ErrorResponseDto {
   validationErrors: Array<{ field: string; message: string }>;
 }
 
+@Injectable()
 export class IntegrationControllersComposite {
-  private readonly logger = new Logger(IntegrationControllersComposite.name);
-
-  constructor(@Inject('SEQUELIZE') private readonly sequelize: Sequelize) {}
+  constructor(
+    private readonly configService: ConfigService,
+  @Inject(DATABASE_CONNECTION)
+    private readonly sequelize: Sequelize,
+    private readonly logger: Logger) {}
 
   async registerAPIEndpoint(endpoint: any): Promise<any> { return endpoint; }
   async validateAPIRequest(requestId: string): Promise<any> { return {}; }

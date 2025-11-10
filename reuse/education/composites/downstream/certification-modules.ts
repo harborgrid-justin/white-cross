@@ -1,3 +1,13 @@
+import { Injectable, Scope, Logger, Inject } from '@nestjs/common';
+import { Sequelize, Model, DataTypes, ModelAttributes, ModelOptions, Op } from 'sequelize';
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
+import { RolesGuard } from './security/guards/roles.guard';
+import { PermissionsGuard } from './security/guards/permissions.guard';
+import { Roles } from './security/decorators/roles.decorator';
+import { RequirePermissions } from './security/decorators/permissions.decorator';
+import { DATABASE_CONNECTION } from './common/tokens/database.tokens';
+
 /**
  * LOC: EDU-COMP-DOWN-CERT-003
  * File: /reuse/education/composites/downstream/certification-modules.ts
@@ -35,19 +45,11 @@
  * higher education institutions and professional programs.
  */
 
-import { Injectable, Logger, Inject } from '@nestjs/common';
-import { Sequelize, Model, DataTypes, ModelAttributes, ModelOptions, Op } from 'sequelize';
 
 // ============================================================================
 // SECURITY: Authentication & Authorization
 // ============================================================================
 // SECURITY: Import authentication and authorization
-import { UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
-import { RolesGuard } from './security/guards/roles.guard';
-import { PermissionsGuard } from './security/guards/permissions.guard';
-import { Roles } from './security/decorators/roles.decorator';
-import { RequirePermissions } from './security/decorators/permissions.decorator';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -64,6 +66,7 @@ import { RequirePermissions } from './security/decorators/permissions.decorator'
 /**
  * Standard error response
  */
+@Injectable()
 export class ErrorResponseDto {
   @ApiProperty({ example: 404, description: 'HTTP status code' })
   statusCode: number;
@@ -84,6 +87,7 @@ export class ErrorResponseDto {
 /**
  * Validation error response
  */
+@Injectable()
 export class ValidationErrorDto extends ErrorResponseDto {
   @ApiProperty({
     type: [Object],
@@ -859,13 +863,12 @@ export const createProfessionalCertificationModel = (sequelize: Sequelize) => {
 @ApiTags('Education Services')
 @ApiBearerAuth('JWT-auth')
 @ApiExtraModels(ErrorResponseDto, ValidationErrorDto)
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class CertificationModulesService {
-  private readonly logger = new Logger(CertificationModulesService.name);
-
   constructor(
-    @Inject('SEQUELIZE') private readonly sequelize: Sequelize,
-  ) {}
+    @Inject(DATABASE_CONNECTION)
+    private readonly sequelize: Sequelize,
+    private readonly logger: Logger) {}
 
   // ============================================================================
   // 1. CERTIFICATION MANAGEMENT (Functions 1-8)

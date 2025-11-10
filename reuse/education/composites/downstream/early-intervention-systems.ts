@@ -1,22 +1,24 @@
-/**
- * LOC: EDU-COMP-DOWN-EINT-008
- * File: /reuse/education/composites/downstream/early-intervention-systems.ts
- * Purpose: Early Intervention Systems - Proactive student support and intervention management
- */
-
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Scope, Logger, Inject } from '@nestjs/common';
 import { Sequelize } from 'sequelize';
-
-// ============================================================================
-// SECURITY: Authentication & Authorization
-// ============================================================================
-// SECURITY: Import authentication and authorization
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
 import { RolesGuard } from './security/guards/roles.guard';
 import { PermissionsGuard } from './security/guards/permissions.guard';
 import { Roles } from './security/decorators/roles.decorator';
 import { RequirePermissions } from './security/decorators/permissions.decorator';
+import { DATABASE_CONNECTION } from './common/tokens/database.tokens';
+
+/**
+ * LOC: EDU-COMP-DOWN-EINT-008
+ * File: /reuse/education/composites/downstream/early-intervention-systems.ts
+ * Purpose: Early Intervention Systems - Proactive student support and intervention management
+ */
+
+
+// ============================================================================
+// SECURITY: Authentication & Authorization
+// ============================================================================
+// SECURITY: Import authentication and authorization
 
 
 // ============================================================================
@@ -26,6 +28,7 @@ import { RequirePermissions } from './security/decorators/permissions.decorator'
 /**
  * Standard error response
  */
+@Injectable()
 export class ErrorResponseDto {
   @ApiProperty({ example: 404, description: 'HTTP status code' })
   statusCode: number;
@@ -46,6 +49,7 @@ export class ErrorResponseDto {
 /**
  * Validation error response
  */
+@Injectable()
 export class ValidationErrorDto extends ErrorResponseDto {
   @ApiProperty({
     type: [Object],
@@ -248,10 +252,11 @@ export const createEarlyInterventionSystemsRecordModel = (sequelize: Sequelize) 
 @ApiTags('Education Services')
 @ApiBearerAuth('JWT-auth')
 @ApiExtraModels(ErrorResponseDto, ValidationErrorDto)
-@Injectable()
-export class EarlyInterventionSystemsService {
-  private readonly logger = new Logger(EarlyInterventionSystemsService.name);
-  constructor(@Inject('SEQUELIZE') private readonly sequelize: Sequelize) {}
+@Injectable({ scope: Scope.REQUEST })
+export class EarlyInterventionSystemsService {  constructor(
+    @Inject(DATABASE_CONNECTION)
+    private readonly sequelize: Sequelize,
+    private readonly logger: Logger) {}
 
   async createIntervention(data: any): Promise<any> {
     this.logger.log('Creating intervention');

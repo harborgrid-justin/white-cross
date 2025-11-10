@@ -1,22 +1,24 @@
-/**
- * LOC: EDU-COMP-DOWN-ENGAGE-011
- * File: /reuse/education/composites/downstream/engagement-tracking-systems.ts
- * Purpose: Engagement Tracking Systems - Student engagement monitoring and analysis
- */
-
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Scope, Logger, Inject } from '@nestjs/common';
 import { Sequelize } from 'sequelize';
-
-// ============================================================================
-// SECURITY: Authentication & Authorization
-// ============================================================================
-// SECURITY: Import authentication and authorization
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
 import { RolesGuard } from './security/guards/roles.guard';
 import { PermissionsGuard } from './security/guards/permissions.guard';
 import { Roles } from './security/decorators/roles.decorator';
 import { RequirePermissions } from './security/decorators/permissions.decorator';
+import { DATABASE_CONNECTION } from './common/tokens/database.tokens';
+
+/**
+ * LOC: EDU-COMP-DOWN-ENGAGE-011
+ * File: /reuse/education/composites/downstream/engagement-tracking-systems.ts
+ * Purpose: Engagement Tracking Systems - Student engagement monitoring and analysis
+ */
+
+
+// ============================================================================
+// SECURITY: Authentication & Authorization
+// ============================================================================
+// SECURITY: Import authentication and authorization
 
 
 // ============================================================================
@@ -26,6 +28,7 @@ import { RequirePermissions } from './security/decorators/permissions.decorator'
 /**
  * Standard error response
  */
+@Injectable()
 export class ErrorResponseDto {
   @ApiProperty({ example: 404, description: 'HTTP status code' })
   statusCode: number;
@@ -46,6 +49,7 @@ export class ErrorResponseDto {
 /**
  * Validation error response
  */
+@Injectable()
 export class ValidationErrorDto extends ErrorResponseDto {
   @ApiProperty({
     type: [Object],
@@ -247,10 +251,11 @@ export const createEngagementTrackingSystemsRecordModel = (sequelize: Sequelize)
 @ApiTags('Education Services')
 @ApiBearerAuth('JWT-auth')
 @ApiExtraModels(ErrorResponseDto, ValidationErrorDto)
-@Injectable()
-export class EngagementTrackingSystemsService {
-  private readonly logger = new Logger(EngagementTrackingSystemsService.name);
-  constructor(@Inject('SEQUELIZE') private readonly sequelize: Sequelize) {}
+@Injectable({ scope: Scope.REQUEST })
+export class EngagementTrackingSystemsService {  constructor(
+    @Inject(DATABASE_CONNECTION)
+    private readonly sequelize: Sequelize,
+    private readonly logger: Logger) {}
 
   async trackStudentEngagement(studentId: string, activityType: EngagementType, data: any): Promise<any> {
     this.logger.log(\`Tracking \${activityType} engagement for student \${studentId}\`);

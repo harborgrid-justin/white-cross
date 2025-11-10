@@ -1,3 +1,14 @@
+import { Injectable, Scope, Logger, Inject } from '@nestjs/common';
+import { Sequelize, Model, DataTypes, ModelAttributes, ModelOptions, Op } from 'sequelize';
+import {
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
+import { RolesGuard } from './security/guards/roles.guard';
+import { PermissionsGuard } from './security/guards/permissions.guard';
+import { Roles } from './security/decorators/roles.decorator';
+import { RequirePermissions } from './security/decorators/permissions.decorator';
+import { DATABASE_CONNECTION } from './common/tokens/database.tokens';
+
 /**
  * LOC: EDU-COMP-DOWN-BADGE-003
  * File: /reuse/education/composites/downstream/digital-badge-issuance.ts
@@ -34,11 +45,8 @@
  * verification services for competency-based education and professional development.
  */
 
-import { Injectable, Logger, Inject } from '@nestjs/common';
-import { Sequelize, Model, DataTypes, ModelAttributes, ModelOptions, Op } from 'sequelize';
 
 // Import from credential management kit
-import {
   createCredential,
   validateCredential,
   issueCredential,
@@ -46,32 +54,23 @@ import {
 } from '../../credential-management-kit';
 
 // Import from learning outcomes kit
-import {
   assessLearningOutcome,
   validateCompetency,
   trackSkillAcquisition,
 } from '../../learning-outcomes-kit';
 
 // Import from student records kit
-import {
   getStudentRecord,
   updateStudentRecord,
   verifyAcademicStanding,
 } from '../../student-records-kit';
 
 // Import from course catalog kit
-import {
 
 // ============================================================================
 // SECURITY: Authentication & Authorization
 // ============================================================================
 // SECURITY: Import authentication and authorization
-import { UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
-import { RolesGuard } from './security/guards/roles.guard';
-import { PermissionsGuard } from './security/guards/permissions.guard';
-import { Roles } from './security/decorators/roles.decorator';
-import { RequirePermissions } from './security/decorators/permissions.decorator';
   getCourseDetails,
   getCourseCompetencies,
 } from '../../course-catalog-kit';
@@ -91,6 +90,7 @@ import { RequirePermissions } from './security/decorators/permissions.decorator'
 /**
  * Standard error response
  */
+@Injectable()
 export class ErrorResponseDto {
   @ApiProperty({ example: 404, description: 'HTTP status code' })
   statusCode: number;
@@ -111,6 +111,7 @@ export class ErrorResponseDto {
 /**
  * Validation error response
  */
+@Injectable()
 export class ValidationErrorDto extends ErrorResponseDto {
   @ApiProperty({
     type: [Object],
@@ -850,13 +851,12 @@ export const createMicroCredentialModel = (sequelize: Sequelize) => {
 @ApiTags('Education Services')
 @ApiBearerAuth('JWT-auth')
 @ApiExtraModels(ErrorResponseDto, ValidationErrorDto)
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class DigitalBadgeIssuanceService {
-  private readonly logger = new Logger(DigitalBadgeIssuanceService.name);
-
   constructor(
-    @Inject('SEQUELIZE') private readonly sequelize: Sequelize,
-  ) {}
+    @Inject(DATABASE_CONNECTION)
+    private readonly sequelize: Sequelize,
+    private readonly logger: Logger) {}
 
   // ============================================================================
   // 1. BADGE CREATION & MANAGEMENT (Functions 1-8)

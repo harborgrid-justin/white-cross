@@ -1,10 +1,20 @@
+import { ApiTags, ApiBearerAuth, ApiExtraModels, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiBadRequestResponse, ApiUnauthorizedResponse, ApiNotFoundResponse, ApiConflictResponse, ApiInternalServerErrorResponse, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Injectable, Scope, Logger, Inject } from '@nestjs/common';
+import { Sequelize, Model, DataTypes, Op } from 'sequelize';
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
+import { RolesGuard } from './security/guards/roles.guard';
+import { PermissionsGuard } from './security/guards/permissions.guard';
+import { Roles } from './security/decorators/roles.decorator';
+import { RequirePermissions } from './security/decorators/permissions.decorator';
+import { DATABASE_CONNECTION } from './common/tokens/database.tokens';
+
 /**
  * LOC: EDU-DOWN-HISTORY-004
  * File: /reuse/education/composites/downstream/academic-history-modules.ts
  *
  * UPSTREAM (imports from):
  *   - @nestjs/common (v10.x)
-import { ApiTags, ApiBearerAuth, ApiExtraModels, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiBadRequestResponse, ApiUnauthorizedResponse, ApiNotFoundResponse, ApiConflictResponse, ApiInternalServerErrorResponse, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
  *   - sequelize (v6.x)
  *   - ../student-records-management-composite
  *   - ../grading-assessment-composite
@@ -34,21 +44,11 @@ import { ApiTags, ApiBearerAuth, ApiExtraModels, ApiOperation, ApiOkResponse, Ap
  * and comprehensive academic timeline management for higher education institutions.
  */
 
-import { Injectable, Logger, Inject } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiExtraModels, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiBadRequestResponse, ApiUnauthorizedResponse, ApiNotFoundResponse, ApiConflictResponse, ApiInternalServerErrorResponse, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Sequelize, Model, DataTypes, Op } from 'sequelize';
 
 // ============================================================================
 // SECURITY: Authentication & Authorization
 // ============================================================================
 // SECURITY: Import authentication and authorization
-import { UseGuards } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiExtraModels, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiBadRequestResponse, ApiUnauthorizedResponse, ApiNotFoundResponse, ApiConflictResponse, ApiInternalServerErrorResponse, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
-import { RolesGuard } from './security/guards/roles.guard';
-import { PermissionsGuard } from './security/guards/permissions.guard';
-import { Roles } from './security/decorators/roles.decorator';
-import { RequirePermissions } from './security/decorators/permissions.decorator';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -62,6 +62,7 @@ import { RequirePermissions } from './security/decorators/permissions.decorator'
 /**
  * Standard error response
  */
+@Injectable()
 export class ErrorResponseDto {
   @ApiProperty({ example: 404, description: 'HTTP status code' })
   statusCode: number;
@@ -82,6 +83,7 @@ export class ErrorResponseDto {
 /**
  * Validation error response
  */
+@Injectable()
 export class ValidationErrorDto extends ErrorResponseDto {
   @ApiProperty({
     type: [Object],
@@ -327,13 +329,12 @@ export const createAcademicHistoryModel = (sequelize: Sequelize) => {
 @ApiTags('Education Services')
 @ApiBearerAuth('JWT-auth')
 @ApiExtraModels(ErrorResponseDto, ValidationErrorDto)
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class AcademicHistoryModulesService {
-  private readonly logger = new Logger(AcademicHistoryModulesService.name);
-
   constructor(
-    @Inject('SEQUELIZE') private readonly sequelize: Sequelize,
-  ) {}
+    @Inject(DATABASE_CONNECTION)
+    private readonly sequelize: Sequelize,
+    private readonly logger: Logger) {}
 
   // Functions 1-40 implementing comprehensive academic history management
   async getCompleteAcademicHistory(studentId: string): Promise<AcademicHistoryRecord[]> {

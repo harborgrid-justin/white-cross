@@ -1,22 +1,24 @@
-/**
- * LOC: EDU-COMP-DOWN-FINANCIAL-AID-OFFICE-CONTROLLERS
- * File: /reuse/education/composites/downstream/financial-aid-office-controllers.ts
- * Purpose: Production-grade composite for financial-aid-office-controllers
- */
-
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Scope, Logger, Inject } from '@nestjs/common';
 import { Sequelize } from 'sequelize';
-
-// ============================================================================
-// SECURITY: Authentication & Authorization
-// ============================================================================
-// SECURITY: Import authentication and authorization
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
 import { RolesGuard } from './security/guards/roles.guard';
 import { PermissionsGuard } from './security/guards/permissions.guard';
 import { Roles } from './security/decorators/roles.decorator';
 import { RequirePermissions } from './security/decorators/permissions.decorator';
+import { DATABASE_CONNECTION } from './common/tokens/database.tokens';
+
+/**
+ * LOC: EDU-COMP-DOWN-FINANCIAL-AID-OFFICE-CONTROLLERS
+ * File: /reuse/education/composites/downstream/financial-aid-office-controllers.ts
+ * Purpose: Production-grade composite for financial-aid-office-controllers
+ */
+
+
+// ============================================================================
+// SECURITY: Authentication & Authorization
+// ============================================================================
+// SECURITY: Import authentication and authorization
 
 
 // ============================================================================
@@ -387,7 +389,7 @@ export const createAwardPackageModel = (sequelize: Sequelize) => {
 };
 
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 
 // ============================================================================
 // ERROR RESPONSE DTOS
@@ -396,6 +398,7 @@ export const createAwardPackageModel = (sequelize: Sequelize) => {
 /**
  * Standard error response
  */
+@Injectable()
 export class ErrorResponseDto {
   @ApiProperty({ example: 404, description: 'HTTP status code' })
   statusCode: number;
@@ -416,6 +419,7 @@ export class ErrorResponseDto {
 /**
  * Validation error response
  */
+@Injectable()
 export class ValidationErrorDto extends ErrorResponseDto {
   @ApiProperty({
     type: [Object],
@@ -425,9 +429,11 @@ export class ValidationErrorDto extends ErrorResponseDto {
   validationErrors: Array<{ field: string; message: string }>;
 }
 
-export class FinancialAidOfficeServiceService {
-  private readonly logger = new Logger(FinancialAidOfficeServiceService.name);
-  constructor(@Inject('SEQUELIZE') private readonly sequelize: Sequelize) {}
+@Injectable()
+export class FinancialAidOfficeServiceService {  constructor(
+    @Inject(DATABASE_CONNECTION)
+    private readonly sequelize: Sequelize,
+    private readonly logger: Logger) {}
 
   async processOperation(data: any): Promise<any> {
     this.logger.log('Processing operation');

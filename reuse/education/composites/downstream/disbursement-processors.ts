@@ -1,3 +1,14 @@
+import { Injectable, Scope, Logger, Inject } from '@nestjs/common';
+import { Sequelize, Model, DataTypes, Op } from 'sequelize';
+import {
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
+import { RolesGuard } from './security/guards/roles.guard';
+import { PermissionsGuard } from './security/guards/permissions.guard';
+import { Roles } from './security/decorators/roles.decorator';
+import { RequirePermissions } from './security/decorators/permissions.decorator';
+import { DATABASE_CONNECTION } from './common/tokens/database.tokens';
+
 /**
  * LOC: EDU-COMP-DOWN-DISB-005
  * File: /reuse/education/composites/downstream/disbursement-processors.ts
@@ -33,40 +44,28 @@
  * third-party servicer integration, compliance validation, disbursement tracking, and reconciliation.
  */
 
-import { Injectable, Logger, Inject } from '@nestjs/common';
-import { Sequelize, Model, DataTypes, Op } from 'sequelize';
 
-import {
   getFinancialAidPackage,
   validateAidEligibility,
   calculateDisbursementAmount,
   trackDisbursement,
 } from '../../financial-aid-kit';
 
-import {
   getStudentAccount,
   applyPayment,
   calculateRefund,
   processRefund,
 } from '../../student-billing-kit';
 
-import {
   getEnrollmentStatus,
   verifyEnrollmentCriteria,
 } from '../../student-enrollment-kit';
 
-import {
 
 // ============================================================================
 // SECURITY: Authentication & Authorization
 // ============================================================================
 // SECURITY: Import authentication and authorization
-import { UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
-import { RolesGuard } from './security/guards/roles.guard';
-import { PermissionsGuard } from './security/guards/permissions.guard';
-import { Roles } from './security/decorators/roles.decorator';
-import { RequirePermissions } from './security/decorators/permissions.decorator';
   getStudentRecord,
   verifyAcademicStanding,
 } from '../../student-records-kit';
@@ -83,6 +82,7 @@ import { RequirePermissions } from './security/decorators/permissions.decorator'
 /**
  * Standard error response
  */
+@Injectable()
 export class ErrorResponseDto {
   @ApiProperty({ example: 404, description: 'HTTP status code' })
   statusCode: number;
@@ -103,6 +103,7 @@ export class ErrorResponseDto {
 /**
  * Validation error response
  */
+@Injectable()
 export class ValidationErrorDto extends ErrorResponseDto {
   @ApiProperty({
     type: [Object],
@@ -572,11 +573,12 @@ export const createDisbursementModel = (sequelize: Sequelize) => {
 @ApiTags('Education Services')
 @ApiBearerAuth('JWT-auth')
 @ApiExtraModels(ErrorResponseDto, ValidationErrorDto)
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class DisbursementProcessorsService {
-  private readonly logger = new Logger(DisbursementProcessorsService.name);
-
-  constructor(@Inject('SEQUELIZE') private readonly sequelize: Sequelize) {}
+  constructor(
+    @Inject(DATABASE_CONNECTION)
+    private readonly sequelize: Sequelize,
+    private readonly logger: Logger) {}
 
   // Functions 1-8: Disbursement Processing
   async processDisbursement(disbursementData: Disbursement): Promise<any> {

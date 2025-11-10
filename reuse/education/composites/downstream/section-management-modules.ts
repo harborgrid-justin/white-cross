@@ -1,3 +1,14 @@
+import { Injectable, Scope, Logger, Inject } from '@nestjs/common';
+import { Sequelize, Model, DataTypes, Op } from 'sequelize';
+import {
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
+import { RolesGuard } from './security/guards/roles.guard';
+import { PermissionsGuard } from './security/guards/permissions.guard';
+import { Roles } from './security/decorators/roles.decorator';
+import { RequirePermissions } from './security/decorators/permissions.decorator';
+import { DATABASE_CONNECTION } from './common/tokens/database.tokens';
+
 /**
  * LOC: EDU-COMP-DOWNSTREAM-004
  * File: /reuse/education/composites/downstream/section-management-modules.ts
@@ -36,11 +47,8 @@
  * for comprehensive course section operations in academic institutions.
  */
 
-import { Injectable, Logger, Inject } from '@nestjs/common';
-import { Sequelize, Model, DataTypes, Op } from 'sequelize';
 
 // Import from class scheduling kit
-import {
   createSection,
   updateSection,
   deleteSection,
@@ -48,32 +56,23 @@ import {
 } from '../../class-scheduling-kit';
 
 // Import from course catalog kit
-import {
   getCourseDetails,
   validateCoursePrerequisites,
   getCourseAttributes,
 } from '../../course-catalog-kit';
 
 // Import from faculty management kit
-import {
   assignInstructor,
   removeInstructor,
   getInstructorInfo,
 } from '../../faculty-management-kit';
 
 // Import from student enrollment kit
-import {
 
 // ============================================================================
 // SECURITY: Authentication & Authorization
 // ============================================================================
 // SECURITY: Import authentication and authorization
-import { UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
-import { RolesGuard } from './security/guards/roles.guard';
-import { PermissionsGuard } from './security/guards/permissions.guard';
-import { Roles } from './security/decorators/roles.decorator';
-import { RequirePermissions } from './security/decorators/permissions.decorator';
   enrollStudent,
   dropStudent,
   getEnrollmentList,
@@ -95,6 +94,7 @@ import { RequirePermissions } from './security/decorators/permissions.decorator'
 /**
  * Standard error response
  */
+@Injectable()
 export class ErrorResponseDto {
   @ApiProperty({ example: 404, description: 'HTTP status code' })
   statusCode: number;
@@ -115,6 +115,7 @@ export class ErrorResponseDto {
 /**
  * Validation error response
  */
+@Injectable()
 export class ValidationErrorDto extends ErrorResponseDto {
   @ApiProperty({
     type: [Object],
@@ -604,13 +605,12 @@ export const createCourseSectionModel = (sequelize: Sequelize) => {
 @ApiTags('Education Services')
 @ApiBearerAuth('JWT-auth')
 @ApiExtraModels(ErrorResponseDto, ValidationErrorDto)
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class SectionManagementModulesCompositeService {
-  private readonly logger = new Logger(SectionManagementModulesCompositeService.name);
-
   constructor(
-    @Inject('SEQUELIZE') private readonly sequelize: Sequelize,
-  ) {}
+    @Inject(DATABASE_CONNECTION)
+    private readonly sequelize: Sequelize,
+    private readonly logger: Logger) {}
 
   // ============================================================================
   // 1. SECTION CREATION & CONFIGURATION (Functions 1-8)

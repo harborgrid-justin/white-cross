@@ -1,3 +1,15 @@
+import { Injectable, Scope, Logger, Inject, HttpStatus } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth, ApiExtraModels, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiBadRequestResponse, ApiUnauthorizedResponse, ApiNotFoundResponse, ApiConflictResponse, ApiInternalServerErrorResponse, ApiProperty, ApiPropertyOptional, ApiParam } from '@nestjs/swagger';
+import { Sequelize, Model, DataTypes, ModelAttributes, ModelOptions, Op } from 'sequelize';
+import {
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
+import { RolesGuard } from './security/guards/roles.guard';
+import { PermissionsGuard } from './security/guards/permissions.guard';
+import { Roles } from './security/decorators/roles.decorator';
+import { RequirePermissions } from './security/decorators/permissions.decorator';
+import { DATABASE_CONNECTION } from './common/tokens/database.tokens';
+
 /**
  * LOC: EDU-DOWN-ADVISING-001
  * File: /reuse/education/composites/downstream/academic-advising-controllers.ts
@@ -34,12 +46,8 @@
  * higher education institutions.
  */
 
-import { Injectable, Logger, Inject, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiExtraModels, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiBadRequestResponse, ApiUnauthorizedResponse, ApiNotFoundResponse, ApiConflictResponse, ApiInternalServerErrorResponse, ApiProperty, ApiPropertyOptional, ApiParam } from '@nestjs/swagger';
-import { Sequelize, Model, DataTypes, ModelAttributes, ModelOptions, Op } from 'sequelize';
 
 // Import from academic advising composite
-import {
   scheduleAdvisingAppointment,
   recordAdvisingNotes,
   trackStudentProgress,
@@ -47,32 +55,23 @@ import {
 } from '../academic-advising-composite';
 
 // Import from academic planning pathways composite
-import {
   createComprehensiveAcademicPlan,
   validateAcademicPlan,
   generateDegreePlan,
 } from '../academic-planning-pathways-composite';
 
 // Import from student records management composite
-import {
   getStudentRecord,
   updateStudentRecord,
   getStudentTranscript,
 } from '../student-records-management-composite';
 
 // Import from course scheduling composite
-import {
 
 // ============================================================================
 // SECURITY: Authentication & Authorization
 // ============================================================================
 // SECURITY: Import authentication and authorization
-import { UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
-import { RolesGuard } from './security/guards/roles.guard';
-import { PermissionsGuard } from './security/guards/permissions.guard';
-import { Roles } from './security/decorators/roles.decorator';
-import { RequirePermissions } from './security/decorators/permissions.decorator';
   getCourseSchedule,
   checkCourseAvailability,
 } from '../course-scheduling-management-composite';
@@ -84,6 +83,7 @@ import { RequirePermissions } from './security/decorators/permissions.decorator'
 /**
  * Standard error response
  */
+@Injectable()
 export class ErrorResponseDto {
   @ApiProperty({ example: 404, description: 'HTTP status code' })
   statusCode: number;
@@ -104,6 +104,7 @@ export class ErrorResponseDto {
 /**
  * Validation error response
  */
+@Injectable()
 export class ValidationErrorDto extends ErrorResponseDto {
   @ApiProperty({
     type: [Object],
@@ -860,13 +861,12 @@ export const createAdvisingSessionModel = (sequelize: Sequelize) => {
 @ApiTags('Academic Advising')
 @ApiBearerAuth('JWT-auth')
 @ApiExtraModels(ErrorResponseDto, ValidationErrorDto)
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class AcademicAdvisingControllersService {
-  private readonly logger = new Logger(AcademicAdvisingControllersService.name);
-
   constructor(
-    @Inject('SEQUELIZE') private readonly sequelize: Sequelize,
-  ) {}
+    @Inject(DATABASE_CONNECTION)
+    private readonly sequelize: Sequelize,
+    private readonly logger: Logger) {}
 
   // ============================================================================
   // 1. ADVISING SESSION MANAGEMENT (Functions 1-8)

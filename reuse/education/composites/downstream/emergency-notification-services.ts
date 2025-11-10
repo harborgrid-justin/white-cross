@@ -1,22 +1,24 @@
-/**
- * LOC: EDU-COMP-DOWN-EMERG-010
- * File: /reuse/education/composites/downstream/emergency-notification-services.ts
- * Purpose: Emergency Notification Services - Mass notification and crisis communication
- */
-
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Scope, Logger, Inject } from '@nestjs/common';
 import { Sequelize } from 'sequelize';
-
-// ============================================================================
-// SECURITY: Authentication & Authorization
-// ============================================================================
-// SECURITY: Import authentication and authorization
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
 import { RolesGuard } from './security/guards/roles.guard';
 import { PermissionsGuard } from './security/guards/permissions.guard';
 import { Roles } from './security/decorators/roles.decorator';
 import { RequirePermissions } from './security/decorators/permissions.decorator';
+import { DATABASE_CONNECTION } from './common/tokens/database.tokens';
+
+/**
+ * LOC: EDU-COMP-DOWN-EMERG-010
+ * File: /reuse/education/composites/downstream/emergency-notification-services.ts
+ * Purpose: Emergency Notification Services - Mass notification and crisis communication
+ */
+
+
+// ============================================================================
+// SECURITY: Authentication & Authorization
+// ============================================================================
+// SECURITY: Import authentication and authorization
 
 
 // ============================================================================
@@ -26,6 +28,7 @@ import { RequirePermissions } from './security/decorators/permissions.decorator'
 /**
  * Standard error response
  */
+@Injectable()
 export class ErrorResponseDto {
   @ApiProperty({ example: 404, description: 'HTTP status code' })
   statusCode: number;
@@ -46,6 +49,7 @@ export class ErrorResponseDto {
 /**
  * Validation error response
  */
+@Injectable()
 export class ValidationErrorDto extends ErrorResponseDto {
   @ApiProperty({
     type: [Object],
@@ -248,10 +252,11 @@ export const createEmergencyNotificationServicesRecordModel = (sequelize: Sequel
 @ApiTags('Communication & Notifications')
 @ApiBearerAuth('JWT-auth')
 @ApiExtraModels(ErrorResponseDto, ValidationErrorDto)
-@Injectable()
-export class EmergencyNotificationServicesService {
-  private readonly logger = new Logger(EmergencyNotificationServicesService.name);
-  constructor(@Inject('SEQUELIZE') private readonly sequelize: Sequelize) {}
+@Injectable({ scope: Scope.REQUEST })
+export class EmergencyNotificationServicesService {  constructor(
+    @Inject(DATABASE_CONNECTION)
+    private readonly sequelize: Sequelize,
+    private readonly logger: Logger) {}
 
   async sendEmergencyNotification(message: string, level: EmergencyLevel, channels: NotificationChannel[]): Promise<any> {
     this.logger.log(\`Sending \${level} emergency notification via \${channels.join(', ')}\`);
