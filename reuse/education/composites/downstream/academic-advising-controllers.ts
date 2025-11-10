@@ -696,7 +696,7 @@ export class AcademicAdvisingControllersService {
    */
   async handleWalkInSession(studentId: string, advisorId: string): Promise<AdvisingSessionData> {
     return {
-      sessionId: `WALKIN-${Date.now()}`,
+      sessionId: `WALKIN-${crypto.randomUUID()}`,
       studentId,
       advisorId,
       appointmentType: 'general',
